@@ -14,5 +14,9 @@
   "kindPayment": "To'lov qilindi",
   "runningBalance": "Balans qoldig'i",
   "change": "O'zgarish",
-  "paymentSuccess": "To'lov muvaffaqiyatli saqlandi"
+  "paymentSuccess": "To'lov muvaffaqiyatli saqlandi",
+  "contactPerson": "Mas'ul shaxs",
+  "telegramHandle": "Telegram",
+  "noPartnersFound": "Hamkorlar topilmadi",
+  "noLedgerEntries": "Hisob-kitob yozuvlari topilmadi"
 }

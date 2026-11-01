@@ -15,5 +15,8 @@
   "creditLimitExceeded": "Hamkorning kredit limiti yetarli emas",
   "limitDetails": "Limit: {creditLimit}, Joriy qarz: {outstanding}, So'ralgan: {agreedPrice}, Jami: {projected}",
   "consignSuccess": "Nasiya muvaffaqiyatli rasmiylashtirildi",
-  "settleSuccess": "Nasiya muvaffaqiyatli yopildi"
+  "settleSuccess": "Nasiya muvaffaqiyatli yopildi",
+  "returnSuccess": "Qurilma qaytarildi",
+  "returnReason": "Qaytarish sababi",
+  "noConsignmentsFound": "Nasiyalar topilmadi"
 }

@@ -14,5 +14,9 @@
   "kindPayment": "Payment Received",
   "runningBalance": "Running Balance",
   "change": "Change",
-  "paymentSuccess": "Payment recorded successfully"
+  "paymentSuccess": "Payment recorded successfully",
+  "contactPerson": "Contact Person",
+  "telegramHandle": "Telegram",
+  "noPartnersFound": "No partners found",
+  "noLedgerEntries": "No ledger entries found"
 }
