@@ -50,3 +50,9 @@ route; opt out with `@Public()`. Protected routes declare
 a 1 MB JSON body limit. **CORS is disabled**: the client is served same-origin
 behind the LAN proxy, so no cross-origin access is expected. See
 `src/auth/README.md`, `src/access/README.md`, `src/common/README.md`, ADR 0005.
+
+## Dev users
+
+After `bootstrap:admin`, create staff accounts through the API as the admin (`POST /users` with
+`roleCodes: ["CASHIER"]` / `["QC"]`) and keep their credentials in `.env` under `SEED_CASHIER_*` and
+`SEED_QC_*` so other tools (client dev, Gemini handoffs) can log in. `.env` is git-ignored.
