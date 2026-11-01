@@ -10,6 +10,10 @@ import { AccessModule } from './access/access.module.js';
 import { UsersModule } from './users/users.module.js';
 import { PartnersModule } from './partners/partners.module.js';
 import { ConsignmentsModule } from './consignments/consignments.module.js';
+import { ExpenseCategoriesModule } from './expense-categories/expense-categories.module.js';
+import { ExpensesModule } from './expenses/expenses.module.js';
+import { SettingsModule } from './settings/settings.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -24,6 +28,10 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     UsersModule,
     PartnersModule,
     ConsignmentsModule,
+    ExpenseCategoriesModule,
+    ExpensesModule,
+    SettingsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
