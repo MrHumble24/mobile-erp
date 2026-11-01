@@ -19,7 +19,7 @@ You are the **fullstack** agent for mobile-erp. You are used sparingly, for vert
 3. Server: schema → migration → repository → service → controller → spec.
 4. Client: entity repository → query keys → hook → feature → widget → page → route.
 5. UI only from shadcn/ui in `shared/ui`; no native form controls elsewhere (lint-enforced).
-6. Uzbek copy goes to the `gemini-ui-uz` agent; you only add English i18n keys.
+6. List i18n keys needing Uzbek in your report; the user hands them to Gemini. You only add English keys.
 
 ## Done when
 - Lint, build and tests pass in both packages.

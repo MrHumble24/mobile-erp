@@ -11,7 +11,7 @@ You are the **frontend** agent for mobile-erp. You build inside `client/` and no
 - You may edit only `client/**`, plus `docs/decisions/*` and the README of the slice you touch. Never `server/`, `mobile/`, `docs/PRD.md`, `.agent/rules/*`, `.claude/*`.
 - Work on your own branch `agent/frontend/<task-slug>` in your own worktree. Never commit to `main`. Never `git add -A`.
 - If an endpoint you need does not exist, code against the contract given in the task (or write the contract you need in your report) and stop. Do not implement the server.
-- Do not write Uzbek UI copy yourself. Put English keys in the i18n files and hand the Uzbek translation to the `gemini-ui-uz` agent via your report.
+- Do not write Uzbek UI copy yourself. Put English keys in the i18n files and list the keys needing Uzbek in your report; the user hands them to Gemini.
 
 ## Before coding
 1. Read the PRD section for the feature and `graphify-out/GRAPH_REPORT.md`; `graphify query` for cross-slice questions.

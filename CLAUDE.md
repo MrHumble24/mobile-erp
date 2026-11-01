@@ -21,7 +21,7 @@ Local-first ERP/POS for a phone retailer (Malika Bazaar, Tashkent). Requirements
 @.agent/rules/agents.md
 
 ## Agents
-Defined in `.claude/agents/`: `backend`, `frontend`, `fullstack` (Opus 5.5 builders, own worktrees), `prd-guardian`, `security-auditor` (read-only), `gemini-ui-uz` (Uzbek copy via Gemini CLI). Ownership and flow: `.agent/rules/agents.md`.
+Defined in `.claude/agents/`: `backend`, `frontend`, `fullstack` (Opus 5.5 builders, own worktrees), `prd-guardian`, `security-auditor` (read-only). Gemini (Antigravity) is piloted by the user via `docs/handoffs/gemini/`. Ownership and flow: `.agent/rules/agents.md`.
 
 ## Definition of done — every task, no exceptions
 
