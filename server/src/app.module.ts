@@ -8,6 +8,8 @@ import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AccessModule } from './access/access.module.js';
 import { UsersModule } from './users/users.module.js';
+import { SalesModule } from './sales/sales.module.js';
+import { CustomersModule } from './customers/customers.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -20,6 +22,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     AuthModule,
     AccessModule,
     UsersModule,
+    SalesModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [
