@@ -38,7 +38,9 @@ export class JwtAuthGuard implements CanActivate {
     if (!token) throw new UnauthorizedException('Missing bearer token');
 
     try {
-      const payload = await this.jwt.verifyAsync<JwtPayload>(token);
+      const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
+        algorithms: ['HS256'],
+      });
       req.user = {
         id: payload.sub,
         email: payload.email,

@@ -7,22 +7,31 @@ import {
 } from '@nestjs/common';
 import { AccessRepository } from './access.repository.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
-import { PermissionView, RoleView } from './types/access.types.js';
+import {
+  EffectiveAccess,
+  PermissionView,
+  RoleView,
+} from './types/access.types.js';
 
 @Injectable()
 export class AccessService {
   constructor(private readonly repo: AccessRepository) {}
 
   /**
-   * Effective set = (union of every role's permissions ∪ user grants) − user
-   * revokes. A revoke always wins over a role grant and a user grant.
+   * Account state + effective set in one query. Effective set =
+   * (union of every role's permissions ∪ user grants) − user revokes. A revoke
+   * always wins over a role grant and a user grant.
    */
-  async getEffectivePermissions(userId: string): Promise<Set<string>> {
-    const { rolePermissionCodes, grantedCodes, revokedCodes } =
+  async getEffectiveAccess(userId: string): Promise<EffectiveAccess> {
+    const { isActive, rolePermissionCodes, grantedCodes, revokedCodes } =
       await this.repo.getPermissionSources(userId);
-    const effective = new Set([...rolePermissionCodes, ...grantedCodes]);
-    for (const code of revokedCodes) effective.delete(code);
-    return effective;
+    const permissions = new Set([...rolePermissionCodes, ...grantedCodes]);
+    for (const code of revokedCodes) permissions.delete(code);
+    return { isActive, permissions };
+  }
+
+  async getEffectivePermissions(userId: string): Promise<Set<string>> {
+    return (await this.getEffectiveAccess(userId)).permissions;
   }
 
   listRoles(): Promise<RoleView[]> {
@@ -57,6 +66,9 @@ export class AccessService {
     if (!role) throw new NotFoundException(`Role ${code} not found`);
     if (role.isSystem) {
       throw new ForbiddenException(`System role ${code} cannot be deleted`);
+    }
+    if ((await this.repo.countUsersWithRole(code)) > 0) {
+      throw new ConflictException(`Role ${code} is assigned to users`);
     }
     await this.repo.deleteRole(code);
   }

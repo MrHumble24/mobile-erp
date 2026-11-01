@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AccessService } from '../../access/access.service.js';
@@ -33,7 +34,11 @@ export class PermissionsGuard implements CanActivate {
     const user = req.user;
     if (!user) throw new ForbiddenException('Not authenticated');
 
-    user.permissions = await this.access.getEffectivePermissions(user.id);
+    const { isActive, permissions } = await this.access.getEffectiveAccess(
+      user.id,
+    );
+    if (!isActive) throw new UnauthorizedException('Account is inactive');
+    user.permissions = permissions;
 
     const required =
       this.reflector.getAllAndOverride<string[]>(PERMISSIONS_KEY, [

@@ -1,4 +1,8 @@
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AccessService } from '../../access/access.service.js';
 import { PermissionsGuard } from './permissions.guard.js';
@@ -14,7 +18,7 @@ function contextFor(user: unknown): ExecutionContext {
 
 function guardWith(
   effective: string[],
-  meta: { isPublic?: boolean; required?: string[] },
+  meta: { isPublic?: boolean; required?: string[]; isActive?: boolean },
 ): { guard: PermissionsGuard; access: AccessService } {
   const reflector = {
     getAllAndOverride: jest.fn((key: string) =>
@@ -22,7 +26,10 @@ function guardWith(
     ),
   } as unknown as Reflector;
   const access = {
-    getEffectivePermissions: jest.fn().mockResolvedValue(new Set(effective)),
+    getEffectiveAccess: jest.fn().mockResolvedValue({
+      isActive: meta.isActive ?? true,
+      permissions: new Set(effective),
+    }),
   } as unknown as AccessService;
   return { guard: new PermissionsGuard(reflector, access), access };
 }
@@ -31,13 +38,24 @@ describe('PermissionsGuard', () => {
   it('skips public routes without touching access', async () => {
     const { guard, access } = guardWith([], { isPublic: true });
     await expect(guard.canActivate(contextFor(undefined))).resolves.toBe(true);
-    expect(access.getEffectivePermissions).not.toHaveBeenCalled();
+    expect(access.getEffectiveAccess).not.toHaveBeenCalled();
   });
 
   it('rejects when no authenticated user is present', async () => {
     const { guard } = guardWith([], { required: ['user.manage'] });
     await expect(guard.canActivate(contextFor(undefined))).rejects.toThrow(
       ForbiddenException,
+    );
+  });
+
+  it('rejects an inactive account with 401', async () => {
+    const user = { id: 'u1', permissions: new Set<string>() };
+    const { guard } = guardWith(['device.read'], {
+      required: [],
+      isActive: false,
+    });
+    await expect(guard.canActivate(contextFor(user))).rejects.toThrow(
+      UnauthorizedException,
     );
   });
 

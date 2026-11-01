@@ -5,8 +5,11 @@ Login and the current-user projection. See ADR 0005.
 ## Exposes (HTTP)
 
 - `POST /auth/login` `{ email, password }` → `{ accessToken, user }`.
-  argon2-verifies the password, rejects `isActive=false` with 401, sets
-  `lastLoginAt`, signs an HS256 token. `@Public()`.
+  argon2-verifies the password, sets `lastLoginAt`, signs an HS256 token.
+  `@Public()`, throttled to 5/min. Unknown email, wrong password and disabled
+  accounts all return the same `401 Invalid credentials`; an unknown email still
+  runs a verify against a dummy hash so timing does not leak which emails exist
+  (disabled logins are logged server-side).
 - `GET /auth/me` → `{ id, email, profile, roles: string[], permissions: string[] }`.
   Requires a valid token (no specific permission).
 

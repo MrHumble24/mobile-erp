@@ -11,29 +11,47 @@ import {
 export class AccessRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** One query: account state, role permissions and per-user overrides. */
   async getPermissionSources(userId: string): Promise<PermissionSources> {
-    const roles = await this.prisma.userRole.findMany({
-      where: { userId },
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
       select: {
-        role: { select: { permissions: { select: { permissionCode: true } } } },
+        isActive: true,
+        roles: {
+          select: {
+            role: {
+              select: { permissions: { select: { permissionCode: true } } },
+            },
+          },
+        },
+        permissions: { select: { permissionCode: true, granted: true } },
       },
     });
-    const overrides = await this.prisma.userPermission.findMany({
-      where: { userId },
-      select: { permissionCode: true, granted: true },
-    });
+    if (!user) {
+      return {
+        isActive: false,
+        rolePermissionCodes: [],
+        grantedCodes: [],
+        revokedCodes: [],
+      };
+    }
 
     return {
-      rolePermissionCodes: roles.flatMap((r) =>
+      isActive: user.isActive,
+      rolePermissionCodes: user.roles.flatMap((r) =>
         r.role.permissions.map((p) => p.permissionCode),
       ),
-      grantedCodes: overrides
+      grantedCodes: user.permissions
         .filter((o) => o.granted)
         .map((o) => o.permissionCode),
-      revokedCodes: overrides
+      revokedCodes: user.permissions
         .filter((o) => !o.granted)
         .map((o) => o.permissionCode),
     };
+  }
+
+  countUsersWithRole(code: string): Promise<number> {
+    return this.prisma.userRole.count({ where: { roleCode: code } });
   }
 
   async listRoles(): Promise<RoleView[]> {

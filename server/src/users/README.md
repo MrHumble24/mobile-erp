@@ -21,8 +21,16 @@ User accounts, profiles, and their role/permission assignments.
 - Role and permission codes are validated against `AccessService` before write;
   this module imports `AccessModule` and uses its **service**, never its
   repository or tables.
+- **No privilege escalation** (enforced in the service using the caller's own
+  effective set from `@CurrentUser()`):
+  - A caller cannot change their **own** roles or permissions (403).
+  - A caller may assign a role only when every permission that role grants is in
+    the caller's effective set (403 otherwise). Applies to `POST /users` too.
+  - A caller may `granted:true` a permission only if they hold it themselves;
+    revokes (`granted:false`) are always allowed.
 
 ## Must never
 
 - Return `passwordHash`.
 - Edit the role→permission matrix (that is `access`).
+- Let a `user.manage` holder grant more than they themselves hold.

@@ -17,7 +17,7 @@ Owns the RBAC matrix: roles, permissions and the effective-permission math.
 - `POST /access/roles` `{ code, name, description? }` → `RoleView` (409 if exists)
 - `PUT /access/roles/:code/permissions` `{ permissionCodes[] }` → `RoleView`
   (replaces the matrix row; 404 unknown role, 400 unknown permission)
-- `DELETE /access/roles/:code` → 204 (403 if `isSystem`)
+- `DELETE /access/roles/:code` → 204 (403 if `isSystem`, 409 if assigned to users)
 
 ## Must never
 

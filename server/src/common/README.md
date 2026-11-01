@@ -4,11 +4,14 @@ Cross-cutting HTTP plumbing. No business logic, no domain words.
 
 ## Exposes
 
-- **Guards** (`guards/`), registered globally in `app.module.ts`:
-  - `JwtAuthGuard` — verifies the HS256 bearer token, attaches `{ id, email }`
-    to the request. Skips `@Public()` routes.
-  - `PermissionsGuard` — loads the user's effective permission set fresh (via
-    `AccessService`), attaches it to the request, and enforces
+- **Guards** (`guards/`), registered globally in `app.module.ts` in this order:
+  `ThrottlerGuard` (from `@nestjs/throttler`, 100/min default) → `JwtAuthGuard`
+  → `PermissionsGuard`.
+  - `JwtAuthGuard` — verifies the bearer token pinned to `algorithms: ['HS256']`,
+    attaches `{ id, email }` to the request. Skips `@Public()` routes.
+  - `PermissionsGuard` — loads the user's `{ isActive, permissions }` fresh in
+    one query (via `AccessService.getEffectiveAccess`), throws 401 when the
+    account is inactive, attaches the set to the request, and enforces
     `@RequirePermissions(...)`. Checks permission codes, never role names.
 - **Decorators** (`decorators/`): `@Public()`, `@RequirePermissions(...)`,
   `@CurrentUser()`.

@@ -2,9 +2,13 @@ import { AccessService } from './access.service.js';
 import { AccessRepository } from './access.repository.js';
 import { PermissionSources } from './types/access.types.js';
 
-function serviceWith(sources: PermissionSources): AccessService {
+function serviceWith(
+  sources: Omit<PermissionSources, 'isActive'>,
+): AccessService {
   const repo = {
-    getPermissionSources: jest.fn().mockResolvedValue(sources),
+    getPermissionSources: jest
+      .fn()
+      .mockResolvedValue({ isActive: true, ...sources }),
   } as unknown as AccessRepository;
   return new AccessService(repo);
 }
