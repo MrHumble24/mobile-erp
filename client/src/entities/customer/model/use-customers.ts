@@ -18,6 +18,14 @@ export function useCustomer(id: string) {
   })
 }
 
+export function useCustomerSales(id: string) {
+  return useQuery({
+    queryKey: customerKeys.sales(id),
+    queryFn: () => customerRepository.getSales(id),
+    enabled: Boolean(id),
+  })
+}
+
 export function useCreateCustomer() {
   const queryClient = useQueryClient()
   return useMutation({

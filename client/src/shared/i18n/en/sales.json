@@ -20,5 +20,15 @@
   "returnToDefective": "Return as Defective (DEFECTIVE)",
   "returnSuccess": "Return processed successfully",
   "alreadyReturned": "This sale has already been returned",
-  "noSalesFound": "No sales found"
+  "noSalesFound": "No sales found",
+  "customersTitle": "Customers",
+  "newCustomer": "New Customer",
+  "customerName": "Customer Name",
+  "customerPhone": "Phone Number",
+  "customerNotes": "Notes",
+  "customerSalesHistory": "Purchase History",
+  "noCustomersFound": "No customers found",
+  "customerSaved": "Customer saved successfully",
+  "receipt": "Receipt",
+  "printReceipt": "Print Receipt"
 }

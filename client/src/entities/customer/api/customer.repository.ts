@@ -1,6 +1,7 @@
 import { http } from "@/shared/api/http"
 import type {
   CreateCustomerDto,
+  CustomerSaleView,
   CustomerView,
   UpdateCustomerDto,
 } from "../model/customer.types"
@@ -14,6 +15,10 @@ export const customerRepository = {
 
   get: async (id: string): Promise<CustomerView> => {
     return http<CustomerView>(`/customers/${id}`)
+  },
+
+  getSales: async (id: string): Promise<CustomerSaleView[]> => {
+    return http<CustomerSaleView[]>(`/customers/${id}/sales`)
   },
 
   create: async (dto: CreateCustomerDto): Promise<CustomerView> => {
