@@ -22,6 +22,9 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
+    "backup:db": "sh scripts/backup-db.sh",
+    "backup:verify": "sh scripts/verify-backup.sh",
+    "backup:restore": "sh scripts/restore-db.sh",
     "graphify": "graphify update ."
   },
   "dependencies": {

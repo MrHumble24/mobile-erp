@@ -62,3 +62,6 @@ graphify-out/
 graphify.db
 graphify-cache/
 
+
+# Database backups (scripts/backup-db.sh)
+backups/
