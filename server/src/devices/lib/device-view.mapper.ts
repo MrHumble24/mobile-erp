@@ -1,0 +1,37 @@
+import { DeviceView } from '../types/device.types.js';
+
+/** Structural shape of a scalar device row — avoids importing generated types. */
+export interface DeviceScalarRow {
+  id: string;
+  imei: string;
+  shipmentId: string;
+  modelId: string;
+  specs: unknown;
+  acquisitionCost: { toString(): string };
+  landedCost: { toString(): string };
+  targetPrice: { toString(): string } | null;
+  statusCode: string;
+  intakeDate: Date;
+  version: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** Maps a Prisma device row to the client-facing view (Decimal → string). */
+export function toDeviceView(row: DeviceScalarRow): DeviceView {
+  return {
+    id: row.id,
+    imei: row.imei,
+    shipmentId: row.shipmentId,
+    modelId: row.modelId,
+    specs: (row.specs ?? {}) as Record<string, unknown>,
+    acquisitionCost: row.acquisitionCost.toString(),
+    landedCost: row.landedCost.toString(),
+    targetPrice: row.targetPrice ? row.targetPrice.toString() : null,
+    statusCode: row.statusCode,
+    intakeDate: row.intakeDate,
+    version: row.version,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}

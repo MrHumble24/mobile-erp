@@ -1,0 +1,70 @@
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { DevicesQueryRepository } from './devices-query.repository.js';
+import { DevicesStatusRepository } from './devices-status.repository.js';
+import { DevicesService } from './devices.service.js';
+import { OptimisticLockError } from './types/optimistic-lock.error.js';
+import { isAllowedTransition } from './types/status-transitions.js';
+
+function build(state: { statusCode: string; version: number } | null) {
+  const status = {
+    findState: jest.fn().mockResolvedValue(state),
+    applyStatusChange: jest.fn().mockResolvedValue({ id: 'd1' }),
+  };
+  const query = {} as unknown as DevicesQueryRepository;
+  const service = new DevicesService(
+    query,
+    status as unknown as DevicesStatusRepository,
+  );
+  return { service, status };
+}
+
+describe('isAllowedTransition', () => {
+  it('accepts every seeded transition and rejects same-status/unknown', () => {
+    expect(isAllowedTransition('IN_STOCK', 'DEFECTIVE')).toBe(true);
+    expect(isAllowedTransition('CONSIGNED', 'SOLD')).toBe(true);
+    expect(isAllowedTransition('SOLD', 'IN_STOCK')).toBe(true);
+    expect(isAllowedTransition('IN_STOCK', 'IN_STOCK')).toBe(false);
+    expect(isAllowedTransition('DEFECTIVE', 'SOLD')).toBe(false);
+    expect(isAllowedTransition('DEFECTIVE', 'CONSIGNED')).toBe(false);
+  });
+});
+
+describe('DevicesService.changeStatus', () => {
+  it('applies an allowed transition with the caller version', async () => {
+    const { service, status } = build({ statusCode: 'IN_STOCK', version: 3 });
+    await service.changeStatus('d1', 'DEFECTIVE', 'u1', 'QC', 3);
+    expect(status.applyStatusChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deviceId: 'd1',
+        fromStatusCode: 'IN_STOCK',
+        toStatusCode: 'DEFECTIVE',
+        changedById: 'u1',
+        expectedVersion: 3,
+      }),
+    );
+  });
+
+  it('falls back to the read version when expectedVersion is omitted', async () => {
+    const { service, status } = build({ statusCode: 'DEFECTIVE', version: 7 });
+    await service.changeStatus('d1', 'IN_STOCK', 'u1', 'QC');
+    expect(status.applyStatusChange).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedVersion: 7 }),
+    );
+  });
+
+  it('rejects an illegal transition before touching the repo', async () => {
+    const { service, status } = build({ statusCode: 'DEFECTIVE', version: 1 });
+    await expect(
+      service.changeStatus('d1', 'SOLD', 'u1', undefined, 1),
+    ).rejects.toThrow(BadRequestException);
+    expect(status.applyStatusChange).not.toHaveBeenCalled();
+  });
+
+  it('maps a version mismatch to 409', async () => {
+    const { service, status } = build({ statusCode: 'IN_STOCK', version: 1 });
+    status.applyStatusChange.mockRejectedValueOnce(new OptimisticLockError());
+    await expect(
+      service.changeStatus('d1', 'SOLD', 'u1', undefined, 0),
+    ).rejects.toThrow(ConflictException);
+  });
+});

@@ -3,6 +3,8 @@ export const COST_KEYS = [
   'acquisitionCost',
   'landedCost',
   'landedCostSnapshot',
+  'overheadCost',
+  'repairCostEstimate',
 ] as const;
 
 /** Profit keys, visible only with `sale.profit.view`. */
