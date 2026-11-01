@@ -10,5 +10,10 @@
   "incurredAt": "Date Incurred",
   "summaryTitle": "Expense Summary by Category",
   "totalExpenses": "Total Expenses",
-  "expenseSaved": "Expense logged successfully"
+  "expenseSaved": "Expense logged successfully",
+  "noExpensesFound": "No expenses found",
+  "categorySaved": "Category saved successfully",
+  "filterRecurring": "Recurring only",
+  "deleteExpense": "Delete expense",
+  "expenseDeleted": "Expense deleted"
 }

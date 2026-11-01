@@ -10,5 +10,10 @@
   "incurredAt": "Xarajat sanasi",
   "summaryTitle": "Toifalar bo'yicha sarhisob",
   "totalExpenses": "Jami xarajat",
-  "expenseSaved": "Xarajat muvaffaqiyatli saqlandi"
+  "expenseSaved": "Xarajat muvaffaqiyatli saqlandi",
+  "noExpensesFound": "Xarajatlar topilmadi",
+  "categorySaved": "Toifa muvaffaqiyatli saqlandi",
+  "filterRecurring": "Doimiy xarajatlar",
+  "deleteExpense": "Xarajatni o'chirish",
+  "expenseDeleted": "Xarajat o'chirildi"
 }
