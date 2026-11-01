@@ -1,0 +1,23 @@
+// ---------------------------------------------------------------------------
+// Offline sync (PRD §5). Pending ⇔ resolvedAt IS NULL (no status column).
+// ---------------------------------------------------------------------------
+
+/// Raised when two terminals change the same IMEI offline; Admin resolves.
+model SyncConflict {
+  id              String    @id @default(uuid())
+  deviceId        String
+  device          Device    @relation(fields: [deviceId], references: [id])
+  terminalId      String
+  /// The rejected mutation payload as sent by the terminal.
+  attemptedChange Json      @db.JsonB
+  baseVersion     Int
+  resolvedById    String?
+  resolvedBy      User?     @relation(fields: [resolvedById], references: [id])
+  resolution      String?
+  resolvedAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([resolvedAt])
+  @@index([deviceId])
+  @@map("sync_conflicts")
+}

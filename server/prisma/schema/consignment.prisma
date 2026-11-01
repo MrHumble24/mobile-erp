@@ -1,0 +1,81 @@
+// ---------------------------------------------------------------------------
+// B2B consignment / "Nasiya" (PRD Module 4)
+// ---------------------------------------------------------------------------
+
+model Partner {
+  id             String   @id @default(uuid())
+  shopName       String
+  contactPerson  String?
+  phone          String?
+  telegramHandle String?
+  creditLimit    Decimal  @default(0) @db.Decimal(14, 2)
+  notes          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  consignments Consignment[]
+  payments     PartnerPayment[]
+
+  @@map("partners")
+}
+
+/// OUT, SETTLED, RETURNED seeded; extendable.
+model ConsignmentStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  isTerminal Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  consignments Consignment[]
+
+  @@map("consignment_statuses")
+}
+
+/// One device handed to one partner. Outstanding balance per partner =
+/// sum(agreedPrice where status not RETURNED) − sum(PartnerPayment.amount).
+model Consignment {
+  id               String            @id @default(uuid())
+  clientMutationId String?           @unique
+  partnerId        String
+  partner          Partner           @relation(fields: [partnerId], references: [id])
+  deviceId         String
+  device           Device            @relation(fields: [deviceId], references: [id])
+  agreedPrice      Decimal           @db.Decimal(14, 2)
+  dueDate          DateTime
+  statusCode       String            @default("OUT")
+  status           ConsignmentStatus @relation(fields: [statusCode], references: [code])
+  consignedAt      DateTime          @default(now())
+  resolvedAt       DateTime?
+  notes            String?
+  createdById      String
+  createdBy        User              @relation(fields: [createdById], references: [id])
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  sale     Sale?
+  payments PartnerPayment[]
+
+  @@index([partnerId, statusCode])
+  @@index([dueDate])
+  @@map("consignments")
+}
+
+/// Full or partial payment from a partner, optionally tied to one consignment.
+model PartnerPayment {
+  id            String       @id @default(uuid())
+  partnerId     String
+  partner       Partner      @relation(fields: [partnerId], references: [id])
+  consignmentId String?
+  consignment   Consignment? @relation(fields: [consignmentId], references: [id])
+  amount        Decimal      @db.Decimal(14, 2)
+  paidAt        DateTime     @default(now())
+  notes         String?
+  receivedById  String
+  receivedBy    User         @relation(fields: [receivedById], references: [id])
+  createdAt     DateTime     @default(now())
+
+  @@index([partnerId, paidAt])
+  @@map("partner_payments")
+}

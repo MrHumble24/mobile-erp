@@ -1,0 +1,15 @@
+# Logs
+logs
+*.log
+
+# Dependencies & Build
+node_modules/
+dist/
+build/
+.DS_Store
+
+# Graphify
+graphify-out/
+graphify.db
+graphify-cache/
+

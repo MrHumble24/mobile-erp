@@ -1,0 +1,15 @@
+// Malika Bazaar Mobile Retail ERP & POS — Prisma schema (multi-file, one domain per file).
+// Conventions (see .agent/rules/database.md):
+//   - No Prisma enums. Closed sets are lookup tables keyed by a stable `code`.
+//   - Money is Decimal(14,2), single currency.
+//   - Open-ended attributes are JSONB; identity/filter columns stay relational.
+//   - Derivable facts are not stored twice (no channel/netProfit/status flags).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}

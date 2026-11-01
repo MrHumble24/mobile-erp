@@ -1,0 +1,19 @@
+// ---------------------------------------------------------------------------
+// Store settings & Telegram (PRD Module 6). Singleton row (id = 1).
+// Bot token lives in env, not here.
+// ---------------------------------------------------------------------------
+
+model StoreSettings {
+  id                  Int      @id @default(1)
+  telegramChatId      String?
+  /// Local shop closing time "HH:mm" for the daily digest.
+  closingTime         String   @default("20:00")
+  defaultWarrantyDays Int      @default(14)
+  /// Alert when a sale's margin falls below this percent of landed cost.
+  minMarginPercent    Decimal  @default(0) @db.Decimal(5, 2)
+  /// Fallback low-stock threshold when no StockAlertRule matches.
+  lowStockThreshold   Int      @default(2)
+  updatedAt           DateTime @updatedAt
+
+  @@map("store_settings")
+}

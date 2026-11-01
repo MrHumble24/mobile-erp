@@ -1,0 +1,72 @@
+// ---------------------------------------------------------------------------
+// B2C POS, customers, warranty, returns (PRD Module 3)
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?  @unique
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sales Sale[]
+
+  @@map("customers")
+}
+
+/// One sale event. Channel is derived: consignmentId null → retail, else B2B.
+/// Net profit is derived: salePrice − landedCostSnapshot.
+model Sale {
+  id               String       @id @default(uuid())
+  /// Idempotency key from the offline terminal's mutation queue.
+  clientMutationId String?      @unique
+  deviceId         String
+  device           Device       @relation(fields: [deviceId], references: [id])
+  customerId       String?
+  customer         Customer?    @relation(fields: [customerId], references: [id])
+  consignmentId    String?      @unique
+  consignment      Consignment? @relation(fields: [consignmentId], references: [id])
+  soldById         String
+  soldBy           User         @relation(fields: [soldById], references: [id])
+
+  salePrice          Decimal @db.Decimal(14, 2)
+  /// Device.landedCost at sale time so later edits don't rewrite history.
+  landedCostSnapshot Decimal @db.Decimal(14, 2)
+
+  soldAt    DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  warranty Warranty?
+  return   SaleReturn?
+
+  @@index([soldAt])
+  @@index([deviceId])
+  @@map("sales")
+}
+
+model Warranty {
+  saleId   String   @id
+  sale     Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  days     Int
+  startsAt DateTime
+  endsAt   DateTime
+
+  @@index([endsAt])
+  @@map("warranties")
+}
+
+model SaleReturn {
+  saleId        String   @id
+  sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  returnedAt    DateTime @default(now())
+  reason        String?
+  refundAmount  Decimal  @db.Decimal(14, 2)
+  processedById String
+  processedBy   User     @relation(fields: [processedById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@map("sale_returns")
+}

@@ -1,0 +1,114 @@
+// ---------------------------------------------------------------------------
+// Identity, profile and the RBAC permission matrix (PRD §2)
+// Effective permissions for a user =
+//   (union of permissions of all their roles) ∪ {user grants} − {user revokes}
+// ---------------------------------------------------------------------------
+
+/// Identity only: who can log in. Everything human-facing is in UserProfile.
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  profile     UserProfile?
+  roles       UserRole[]
+  permissions UserPermission[]
+
+  // Audit back-relations
+  shipmentsCreated    Shipment[]
+  salesSold           Sale[]
+  returnsProcessed    SaleReturn[]
+  consignmentsCreated Consignment[]
+  paymentsReceived    PartnerPayment[]
+  expensesCreated     Expense[]
+  qcInspections       QcInspection[]
+  statusChanges       DeviceStatusHistory[]
+  conflictsResolved   SyncConflict[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  userId         String   @id
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String?
+  phone          String?
+  telegramHandle String?
+  avatarUrl      String?
+  locale         String   @default("uz")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+/// Data-defined roles (ADMIN, CASHIER, QC seeded; admins may add more).
+model Role {
+  code        String   @id
+  name        String
+  description String?
+  /// Seeded roles cannot be deleted from the UI.
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+/// Fine-grained capability, code = "<resource>.<action>", e.g. "device.cost.view".
+model Permission {
+  code        String  @id
+  resource    String
+  action      String
+  description String?
+
+  roles RolePermission[]
+  users UserPermission[]
+
+  @@index([resource])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleCode       String
+  role           Role       @relation(fields: [roleCode], references: [code], onDelete: Cascade)
+  permissionCode String
+  permission     Permission @relation(fields: [permissionCode], references: [code], onDelete: Cascade)
+
+  @@id([roleCode, permissionCode])
+  @@map("role_permissions")
+}
+
+/// A user may hold several roles.
+model UserRole {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleCode   String
+  role       Role     @relation(fields: [roleCode], references: [code], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+
+  @@id([userId, roleCode])
+  @@map("user_roles")
+}
+
+/// Per-user override on top of roles: granted=true adds, granted=false removes.
+model UserPermission {
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionCode String
+  permission     Permission @relation(fields: [permissionCode], references: [code], onDelete: Cascade)
+  granted        Boolean
+  reason         String?
+  createdAt      DateTime   @default(now())
+
+  @@id([userId, permissionCode])
+  @@map("user_permissions")
+}

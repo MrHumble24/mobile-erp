@@ -1,0 +1,79 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "eslint",
+    "oxc",
+    "react",
+    "typescript"
+  ],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ],
+    "max-lines": [
+      "error",
+      {
+        "max": 300
+      }
+    ],
+    "max-lines-per-function": [
+      "warn",
+      {
+        "max": 50,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "react/forbid-elements": [
+      "error",
+      {
+        "forbid": [
+          {
+            "element": "button",
+            "message": "Use Button from shared/ui"
+          },
+          {
+            "element": "input",
+            "message": "Use Input/Checkbox/Switch from shared/ui"
+          },
+          {
+            "element": "select",
+            "message": "Use Select from shared/ui"
+          },
+          {
+            "element": "textarea",
+            "message": "Use Textarea from shared/ui"
+          },
+          {
+            "element": "dialog",
+            "message": "Use Dialog from shared/ui"
+          },
+          {
+            "element": "table",
+            "message": "Use Table from shared/ui"
+          }
+        ]
+      }
+    ]
+  },
+  "ignorePatterns": [
+    "dist",
+    "graphify-out"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "src/shared/ui/**",
+        "src/components/ui/**"
+      ],
+      "rules": {
+        "react/forbid-elements": "off",
+        "react/only-export-components": "off"
+      }
+    }
+  ]
+}

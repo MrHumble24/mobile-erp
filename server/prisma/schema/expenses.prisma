@@ -1,0 +1,35 @@
+// ---------------------------------------------------------------------------
+// Operational expenses (PRD Module 5) — categories are user-managed data.
+// ---------------------------------------------------------------------------
+
+model ExpenseCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  expenses Expense[]
+
+  @@map("expense_categories")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  categoryId  String
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  amount      Decimal         @db.Decimal(14, 2)
+  description String?
+  isRecurring Boolean         @default(false)
+  incurredAt  DateTime        @default(now())
+  createdById String
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([incurredAt])
+  @@index([categoryId])
+  @@map("expenses")
+}

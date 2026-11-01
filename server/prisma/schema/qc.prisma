@@ -1,0 +1,59 @@
+// ---------------------------------------------------------------------------
+// Quality control (PRD Module 1) — a device may be inspected many times.
+// ---------------------------------------------------------------------------
+
+/// Checklist items (SCREEN_SCRATCHES, FACE_ID, CAMERA ... seeded; extendable).
+model DefectType {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  findings QcDefect[]
+
+  @@map("defect_types")
+}
+
+/// Cosmetic grades (A, B, C, D seeded; extendable).
+model CosmeticGrade {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  inspections QcInspection[]
+
+  @@map("cosmetic_grades")
+}
+
+model QcInspection {
+  id                 String         @id @default(uuid())
+  deviceId           String
+  device             Device         @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  inspectedById      String
+  inspectedBy        User           @relation(fields: [inspectedById], references: [id])
+  passed             Boolean
+  gradeCode          String?
+  grade              CosmeticGrade? @relation(fields: [gradeCode], references: [code])
+  batteryHealth      Int?
+  repairCostEstimate Decimal?       @db.Decimal(14, 2)
+  notes              String?
+  inspectedAt        DateTime       @default(now())
+  createdAt          DateTime       @default(now())
+
+  defects QcDefect[]
+
+  @@index([deviceId, inspectedAt])
+  @@map("qc_inspections")
+}
+
+model QcDefect {
+  inspectionId String
+  inspection   QcInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+  defectCode   String
+  defect       DefectType   @relation(fields: [defectCode], references: [code])
+  notes        String?
+
+  @@id([inspectionId, defectCode])
+  @@map("qc_defects")
+}

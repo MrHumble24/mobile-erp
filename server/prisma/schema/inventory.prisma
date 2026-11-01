@@ -1,0 +1,107 @@
+// ---------------------------------------------------------------------------
+// Catalog + IMEI-driven inventory (PRD Module 2)
+// ---------------------------------------------------------------------------
+
+/// Catalog entry: what is being sold (brand + model), independent of any unit.
+model DeviceModel {
+  id        String   @id @default(uuid())
+  brand     String
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  devices    Device[]
+  alertRules StockAlertRule[]
+
+  @@unique([brand, name])
+  @@map("device_models")
+}
+
+/// Lifecycle states (IN_STOCK, DEFECTIVE, CONSIGNED, SOLD seeded; extendable).
+model DeviceStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  /// SOLD etc. — no further transitions expected.
+  isTerminal Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  devices     Device[]
+  historyFrom DeviceStatusHistory[] @relation("HistoryFrom")
+  historyTo   DeviceStatusHistory[] @relation("HistoryTo")
+
+  @@map("device_statuses")
+}
+
+/// One physical unit. Specs are open-ended JSONB:
+/// { storage: "256GB", color: "Black", ram: "8GB", region: "KR", ... }
+/// Filter with `specs->>'storage'`; the GIN index covers containment queries.
+model Device {
+  id         String      @id @default(uuid())
+  /// 15-digit IMEI. Unique index also enforces duplicate-scan prevention.
+  imei       String      @unique @db.VarChar(15)
+  shipmentId String
+  shipment   Shipment    @relation(fields: [shipmentId], references: [id])
+  modelId    String
+  model      DeviceModel @relation(fields: [modelId], references: [id])
+  specs      Json        @default("{}") @db.JsonB
+
+  /// Price paid to supplier for this unit.
+  acquisitionCost Decimal  @db.Decimal(14, 2)
+  /// acquisitionCost + this unit's share of Shipment.overheadCost.
+  landedCost      Decimal  @db.Decimal(14, 2)
+  targetPrice     Decimal? @db.Decimal(14, 2)
+
+  statusCode String       @default("IN_STOCK")
+  status     DeviceStatus @relation(fields: [statusCode], references: [code])
+  intakeDate DateTime     @default(now())
+
+  /// Optimistic lock for IMEI state-locking across offline terminals (PRD §5).
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inspections   QcInspection[]
+  statusHistory DeviceStatusHistory[]
+  sales         Sale[]
+  consignments  Consignment[]
+  conflicts     SyncConflict[]
+
+  @@index([statusCode])
+  @@index([modelId])
+  @@index([specs(ops: JsonbPathOps)], type: Gin)
+  @@map("devices")
+}
+
+/// Append-only audit of every status transition.
+model DeviceStatusHistory {
+  id             String        @id @default(uuid())
+  deviceId       String
+  device         Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  fromStatusCode String?
+  fromStatus     DeviceStatus? @relation("HistoryFrom", fields: [fromStatusCode], references: [code])
+  toStatusCode   String
+  toStatus       DeviceStatus  @relation("HistoryTo", fields: [toStatusCode], references: [code])
+  changedById    String
+  changedBy      User          @relation(fields: [changedById], references: [id])
+  reason         String?
+  changedAt      DateTime      @default(now())
+
+  @@index([deviceId, changedAt])
+  @@map("device_status_history")
+}
+
+/// Low-stock threshold per model + storage (matched against specs->>'storage').
+model StockAlertRule {
+  id        String      @id @default(uuid())
+  modelId   String
+  model     DeviceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  storage   String
+  threshold Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([modelId, storage])
+  @@map("stock_alert_rules")
+}

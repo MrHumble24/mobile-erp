@@ -1,0 +1,39 @@
+// ---------------------------------------------------------------------------
+// Procurement (PRD Module 1)
+// ---------------------------------------------------------------------------
+
+model Supplier {
+  id        String   @id @default(uuid())
+  name      String
+  country   String?
+  contact   String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shipments Shipment[]
+
+  @@map("suppliers")
+}
+
+/// One incoming batch. Overhead (shipping/customs) is spread evenly across
+/// its devices to produce Device.landedCost.
+model Shipment {
+  id            String   @id @default(uuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  shipmentDate  DateTime
+  expectedCount Int
+  overheadCost  Decimal  @default(0) @db.Decimal(14, 2)
+  notes         String?
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  devices Device[]
+
+  @@index([shipmentDate])
+  @@map("shipments")
+}
