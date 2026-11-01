@@ -14,6 +14,8 @@ import { ExpenseCategoriesModule } from './expense-categories/expense-categories
 import { ExpensesModule } from './expenses/expenses.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { ReportsModule } from './reports/reports.module.js';
+import { SalesModule } from './sales/sales.module.js';
+import { CustomersModule } from './customers/customers.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -32,6 +34,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     ExpensesModule,
     SettingsModule,
     ReportsModule,
+    SalesModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [
