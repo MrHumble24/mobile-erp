@@ -8,6 +8,12 @@ import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { AccessModule } from './access/access.module.js';
 import { UsersModule } from './users/users.module.js';
+import { SuppliersModule } from './suppliers/suppliers.module.js';
+import { DeviceModelsModule } from './device-models/device-models.module.js';
+import { ShipmentsModule } from './shipments/shipments.module.js';
+import { DevicesModule } from './devices/devices.module.js';
+import { QcModule } from './qc/qc.module.js';
+import { StockAlertRulesModule } from './stock-alert-rules/stock-alert-rules.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -20,6 +26,12 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     AuthModule,
     AccessModule,
     UsersModule,
+    SuppliersModule,
+    DeviceModelsModule,
+    ShipmentsModule,
+    DevicesModule,
+    QcModule,
+    StockAlertRulesModule,
   ],
   controllers: [AppController],
   providers: [
