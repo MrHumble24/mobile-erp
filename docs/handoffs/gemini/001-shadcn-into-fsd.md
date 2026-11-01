@@ -21,7 +21,7 @@ Read `.agent/rules/client-fsd.md` and `.agent/rules/client-stack.md` first, then
 === END ===
 
 ## Result (Gemini fills)
-- Commit: feat(client): shadcn/ui in shared/ui (FSD)
+- Commit: `6b185d0` (feat(client): shadcn/ui in shared/ui (FSD))
 - Components added:
   - `Button`: Caldera pill primary (Ember), secondary, outline, ghost, destructive, sizes sm (48px)/default (56px)/lg (64px)/icon
   - `Input`: 100px radius, 56px height, light and dark surface variants
