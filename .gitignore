@@ -28,3 +28,4 @@ graphify-cache/
 
 # Agent worktrees
 .worktrees/
+.claude/worktrees/

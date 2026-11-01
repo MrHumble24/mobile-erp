@@ -1,0 +1,213 @@
+@import "tailwindcss";
+@import "@fontsource/bebas-neue";
+@import "@fontsource/dm-sans/500.css";
+
+@theme {
+  /* Colors */
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
+
+  /* Typography */
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', 'Bebas Neue', Anton, 'Druk Wide Bold', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'PP Neue Corp Compact', 'Bebas Neue', Anton, 'Druk Wide Bold', ui-sans-serif, system-ui, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Typography — Scale */
+  --text-caption: 12px;
+  --text-body-sm: 14px;
+  --text-body: 16px;
+  --text-subheading: 26px;
+  --text-heading-sm: 30px;
+  --text-heading: 32px;
+  --text-heading-lg: 48px;
+  --text-heading-2xl: 80px;
+  --text-heading-3xl: 96px;
+  --text-display: 189px;
+
+  /* Border Radius */
+  --radius-cards: 40px;
+  --radius-pills: 800px;
+  --radius-inputs: 100px;
+  --radius-small: 16px;
+  --radius-medium: 20px;
+  --radius-buttons: 40px;
+  --radius-2xl: 16px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
+  --radius-3xl-2: 32px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
+}
+
+:root {
+  /* Caldera Colors */
+  --color-ember: #fc5000;
+  --color-plasma-violet: #524ae9;
+  --color-sulfur: #f5f28e;
+  --color-limestone: #f7f6f2;
+  --color-pumice: #e2e2df;
+  --color-obsidian: #070607;
+  --color-chalk: #ffffff;
+
+  /* Typography — Font Families */
+  --font-pp-neue-corp-compact: 'PP Neue Corp Compact', 'Bebas Neue', Anton, 'Druk Wide Bold', ui-sans-serif, system-ui, sans-serif;
+  --font-dm-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-system-sans-serif: 'System sans-serif', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Typography — Scale */
+  --text-caption: 12px;
+  --leading-caption: 1.2;
+  --text-body-sm: 14px;
+  --leading-body-sm: 1.2;
+  --text-body: 16px;
+  --leading-body: 1.55;
+  --text-subheading: 26px;
+  --leading-subheading: 1.2;
+  --text-heading-sm: 30px;
+  --leading-heading-sm: 1.5;
+  --text-heading: 32px;
+  --leading-heading: 1;
+  --tracking-heading: 0.64px;
+  --text-heading-lg: 48px;
+  --leading-heading-lg: 1;
+  --text-heading-2xl: 80px;
+  --leading-heading-2xl: 1.1;
+  --text-heading-3xl: 96px;
+  --leading-heading-3xl: 0.95;
+  --text-display: 189px;
+  --leading-display: 0.94;
+
+  /* Typography — Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+
+  /* Named Spacing Tokens for custom reference */
+  --caldera-spacing-4: 4px;
+  --caldera-spacing-8: 8px;
+  --caldera-spacing-9: 9px;
+  --caldera-spacing-10: 10px;
+  --caldera-spacing-12: 12px;
+  --caldera-spacing-16: 16px;
+  --caldera-spacing-18: 18px;
+  --caldera-spacing-20: 20px;
+  --caldera-spacing-24: 24px;
+  --caldera-spacing-32: 32px;
+  --caldera-spacing-40: 40px;
+  --caldera-spacing-48: 48px;
+  --caldera-spacing-56: 56px;
+  --caldera-spacing-64: 64px;
+  --caldera-spacing-80: 80px;
+  --caldera-spacing-92: 92px;
+
+  /* Layout */
+  --page-max-width: 1280px;
+  --section-gap: 80px;
+  --card-padding: 40px;
+  --element-gap: 16px;
+
+  /* Border Radius */
+  --radius-2xl: 16px;
+  --radius-2xl-2: 20px;
+  --radius-3xl: 24px;
+  --radius-3xl-2: 32px;
+  --radius-3xl-3: 40px;
+  --radius-full: 100px;
+  --radius-full-2: 800px;
+
+  /* Named Radii */
+  --radius-cards: 40px;
+  --radius-pills: 800px;
+  --radius-small: 16px;
+  --radius-inputs: 100px;
+  --radius-medium: 20px;
+  --radius-buttons: 40px;
+
+  /* Surfaces */
+  --surface-pumice-canvas: #e2e2df;
+  --surface-limestone-surface: #f7f6f2;
+  --surface-ember-feature: #fc5000;
+  --surface-plasma-hero: #524ae9;
+
+  /* Shadcn Semantic Mapping */
+  --background: #e2e2df;
+  --foreground: #070607;
+  --card: #f7f6f2;
+  --card-foreground: #070607;
+  --popover: #f7f6f2;
+  --popover-foreground: #070607;
+  --primary: #fc5000;
+  --primary-foreground: #070607;
+  --secondary: #f7f6f2;
+  --secondary-foreground: #070607;
+  --muted: #e2e2df;
+  --muted-foreground: #666562;
+  --accent: #f5f28e;
+  --accent-foreground: #070607;
+  --destructive: #fc5000;
+  --destructive-foreground: #ffffff;
+  --border: #070607;
+  --input: #070607;
+  --ring: #fc5000;
+  --radius: 40px;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-pumice);
+    color: var(--color-obsidian);
+    font-family: var(--font-dm-sans);
+    font-weight: 500;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-pp-neue-corp-compact);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    font-feature-settings: "ss06", "ss10";
+    line-height: 1;
+    text-transform: uppercase;
+  }
+}
+
+/* Halftone Dot Pattern signature */
+.caldera-halftone {
+  background-color: var(--color-plasma-violet);
+  background-image:
+    radial-gradient(rgba(252, 80, 0, 0.95) 2.2px, transparent 2.5px),
+    linear-gradient(135deg, rgba(82, 74, 233, 1) 0%, rgba(252, 80, 0, 0.75) 100%);
+  background-size: 14px 14px, 100% 100%;
+}
+
+.caldera-halftone-white {
+  background-color: var(--color-plasma-violet);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.85) 2px, transparent 2.4px),
+    linear-gradient(135deg, rgba(82, 74, 233, 1) 0%, rgba(252, 80, 0, 0.6) 100%);
+  background-size: 14px 14px, 100% 100%;
+}
+
+/* Dotted dividers */
+.divider-dotted-v {
+  border-left: 1.5px dotted var(--color-obsidian);
+}
+
+.divider-dotted-h {
+  border-top: 1.5px dotted var(--color-obsidian);
+}

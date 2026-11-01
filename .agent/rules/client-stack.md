@@ -51,3 +51,4 @@
 - Forms use shadcn `Form` + `react-hook-form` + `zod` schemas placed in the slice's `model/`.
 - Icons: `lucide-react` only, via shadcn conventions.
 - Linter enforces this: `react/forbid-elements` in `.oxlintrc.json` (allowed only under `shared/ui/**`).
+- **Pre-built Component Kit**: All base Caldera components are ready in `@/shared/ui` (documented in `docs/COMPONENTS.md`). Agents may freely use, extend, or modify them as feature requirements evolve.
