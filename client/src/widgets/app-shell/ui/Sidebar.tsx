@@ -40,45 +40,70 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
 ]
 
-export function Sidebar() {
+/** Shared with the header so the brand row and the top bar sit on one baseline. */
+export const SHELL_BAR_HEIGHT = "h-16"
+
+interface SidebarProps {
+  collapsed: boolean
+}
+
+function SidebarItem({ item, collapsed, isActive }: { item: NavItem; collapsed: boolean; isActive: boolean }) {
   const { t } = useI18n()
+  const Icon = item.icon
+  const label = t(item.labelKey)
+  return (
+    <Link
+      to={item.to}
+      title={collapsed ? label : undefined}
+      aria-label={label}
+      className={cn(
+        "flex items-center gap-3 h-11 rounded-[800px] text-sm font-medium transition-colors no-underline hover:no-underline",
+        collapsed ? "justify-center px-0" : "px-4",
+        isActive
+          ? "bg-ember text-obsidian hover:brightness-105"
+          : "text-limestone/70 hover:bg-limestone/10 hover:text-limestone"
+      )}
+    >
+      <Icon className="w-5 h-5 shrink-0" />
+      {!collapsed && <span className="truncate">{label}</span>}
+    </Link>
+  )
+}
+
+export function Sidebar({ collapsed }: SidebarProps) {
   const location = useLocation()
   const hasPermission = useAuthStore((s) => s.hasPermission)
 
   const visibleItems = NAV_ITEMS.filter((item) => hasPermission(item.permission))
 
   return (
-    <aside className="w-64 border-r border-border bg-card/50 flex flex-col h-screen sticky top-0 shrink-0">
-      <div className="p-4 border-b border-border flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-black text-sm">
+    <aside
+      className={cn(
+        "bg-obsidian text-limestone flex flex-col h-screen sticky top-0 shrink-0 transition-[width] duration-200",
+        collapsed ? "w-[72px]" : "w-64"
+      )}
+    >
+      <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-limestone/15 flex items-center gap-3 shrink-0")}>
+        <div className="w-10 h-10 rounded-[800px] bg-ember flex items-center justify-center font-display text-xl text-obsidian shrink-0">
           M
         </div>
-        <div>
-          <h1 className="font-bold text-base leading-none tracking-tight">Malika ERP</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">POS & Inventory</p>
-        </div>
+        {!collapsed && (
+          <div className="min-w-0">
+            <h1 className="font-display text-xl leading-none tracking-wide text-limestone">Malika ERP</h1>
+            <p className="text-[11px] text-limestone/60 mt-0.5 truncate">POS & Inventory</p>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {visibleItems.map((item) => {
-          const Icon = item.icon
-          const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors no-underline",
-                isActive
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              )}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{t(item.labelKey)}</span>
-            </Link>
-          )
-        })}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1">
+        {visibleItems.map((item) => (
+          <SidebarItem
+            key={item.to}
+            item={item}
+            collapsed={collapsed}
+            isActive={location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))}
+          />
+        ))}
       </nav>
     </aside>
   )
