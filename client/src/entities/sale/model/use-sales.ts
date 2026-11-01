@@ -1,0 +1,59 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { saleRepository } from "../api/sale.repository"
+import { saleKeys } from "../api/sale.keys"
+import { deviceKeys } from "@/entities/device"
+import type { CreateSaleDto, ReturnSaleDto, SaleFilters } from "./sale.types"
+
+export function useSales(filters?: SaleFilters) {
+  return useQuery({
+    queryKey: saleKeys.list(filters),
+    queryFn: () => saleRepository.list(filters),
+  })
+}
+
+export function useSale(id: string) {
+  return useQuery({
+    queryKey: saleKeys.detail(id),
+    queryFn: () => saleRepository.get(id),
+    enabled: Boolean(id),
+  })
+}
+
+export function useSaleReceipt(id?: string | null) {
+  return useQuery({
+    queryKey: saleKeys.receipt(id || ""),
+    queryFn: () => saleRepository.getReceipt(id || ""),
+    enabled: Boolean(id),
+  })
+}
+
+export function useWarrantyLookup(imei?: string | null) {
+  return useQuery({
+    queryKey: saleKeys.warranty(imei || ""),
+    queryFn: () => saleRepository.getWarranty(imei || ""),
+    enabled: Boolean(imei && imei.length === 15),
+  })
+}
+
+export function useCreateSale() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (dto: CreateSaleDto) => saleRepository.create(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
+    },
+  })
+}
+
+export function useReturnSale() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: ReturnSaleDto }) =>
+      saleRepository.returnSale(id, dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
+    },
+  })
+}
