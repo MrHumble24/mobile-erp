@@ -1,0 +1,18 @@
+{
+  "title": "Hamkorlar va hisob-kitob",
+  "newPartner": "Yangi hamkor",
+  "name": "Hamkor nomi",
+  "phone": "Telefon raqami",
+  "creditLimit": "Kredit limiti ($)",
+  "outstanding": "Joriy qarzdorlik ($)",
+  "openCount": "Ochiq nasiyalar soni",
+  "overdueCount": "Muddati o'tganlar soni",
+  "recordPayment": "To'lov qabul qilish",
+  "paymentAmount": "To'lov summasi ($)",
+  "ledgerTitle": "Hisob-kitob daftari (Ledger)",
+  "kindConsignment": "Nasiya berildi",
+  "kindPayment": "To'lov qilindi",
+  "runningBalance": "Balans qoldig'i",
+  "change": "O'zgarish",
+  "paymentSuccess": "To'lov muvaffaqiyatli saqlandi"
+}

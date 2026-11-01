@@ -1,0 +1,19 @@
+{
+  "title": "Nasiyalar (Consignment)",
+  "newConsignment": "Yangi nasiya rasmiylashtirish",
+  "tabOut": "Nasiyadagilar (Ochiq)",
+  "tabOverdue": "Muddati o'tganlar",
+  "tabSettled": "Yopilganlar",
+  "partner": "Hamkor",
+  "selectPartner": "Hamkorni tanlang",
+  "device": "Qurilma (IMEI)",
+  "agreedPrice": "Kelishilgan narx ($)",
+  "dueDate": "Qaytarish / To'lov muddati",
+  "settle": "Hisob-kitob qilish (Yopish)",
+  "settlePrice": "Haqiqiy sotilgan narx ($)",
+  "return": "Tovarni qaytarib olish",
+  "creditLimitExceeded": "Hamkorning kredit limiti yetarli emas",
+  "limitDetails": "Limit: {creditLimit}, Joriy qarz: {outstanding}, So'ralgan: {agreedPrice}, Jami: {projected}",
+  "consignSuccess": "Nasiya muvaffaqiyatli rasmiylashtirildi",
+  "settleSuccess": "Nasiya muvaffaqiyatli yopildi"
+}

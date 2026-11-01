@@ -1,0 +1,19 @@
+{
+  "title": "Consignments",
+  "newConsignment": "Create Consignment",
+  "tabOut": "Out (Open)",
+  "tabOverdue": "Overdue",
+  "tabSettled": "Settled",
+  "partner": "Partner",
+  "selectPartner": "Select Partner",
+  "device": "Device (IMEI)",
+  "agreedPrice": "Agreed Price ($)",
+  "dueDate": "Due Date",
+  "settle": "Settle Consignment",
+  "settlePrice": "Actual Sale Price ($)",
+  "return": "Return Consignment",
+  "creditLimitExceeded": "Partner credit limit exceeded",
+  "limitDetails": "Limit: {creditLimit}, Outstanding: {outstanding}, Agreed: {agreedPrice}, Projected: {projected}",
+  "consignSuccess": "Consignment created successfully",
+  "settleSuccess": "Consignment settled successfully"
+}

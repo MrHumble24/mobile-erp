@@ -1,0 +1,14 @@
+{
+  "title": "Do'kon xarajatlari",
+  "newExpense": "Yangi xarajat",
+  "categories": "Xarajat toifalari",
+  "newCategory": "Yangi toifa",
+  "category": "Toifa",
+  "amount": "Summa ($)",
+  "description": "Izoh / Maqsad",
+  "isRecurring": "Doimiy xarajat (oylik)",
+  "incurredAt": "Xarajat sanasi",
+  "summaryTitle": "Toifalar bo'yicha sarhisob",
+  "totalExpenses": "Jami xarajat",
+  "expenseSaved": "Xarajat muvaffaqiyatli saqlandi"
+}

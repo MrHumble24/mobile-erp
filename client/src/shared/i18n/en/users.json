@@ -1,0 +1,22 @@
+{
+  "title": "Users & Access Control (RBAC)",
+  "tabUsers": "Users",
+  "tabRoles": "Roles",
+  "tabPermissions": "Permissions Matrix",
+  "newUser": "New User",
+  "editUser": "Edit User",
+  "fullName": "Full Name",
+  "email": "Email",
+  "password": "Password",
+  "isActive": "Active",
+  "roles": "Assigned Roles",
+  "newRole": "New Role",
+  "roleCode": "Role Code (e.g., CASHIER)",
+  "roleName": "Role Name",
+  "description": "Description",
+  "permissionsCount": "Permissions Count",
+  "saveMatrix": "Save Matrix",
+  "userSaved": "User saved successfully",
+  "roleSaved": "Role saved successfully",
+  "matrixSaved": "Permissions updated successfully"
+}

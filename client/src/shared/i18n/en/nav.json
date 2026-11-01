@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "pos": "POS Terminal",
+  "inventory": "Inventory",
+  "shipments": "Shipments",
+  "qc": "Inspection (QC)",
+  "sales": "Sales",
+  "consignments": "Consignments",
+  "partners": "Partners",
+  "expenses": "Expenses",
+  "reports": "Reports",
+  "settings": "Settings",
+  "users": "Users & Access"
+}

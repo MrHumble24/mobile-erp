@@ -1,0 +1,11 @@
+{
+  "title": "System Settings",
+  "storeSettings": "Store Core Settings",
+  "telegramChatId": "Telegram Chat ID",
+  "closingTime": "Daily Closing Time (e.g., 20:00)",
+  "defaultWarrantyDays": "Default Warranty Days",
+  "minMarginPercent": "Minimum Margin (%)",
+  "lowStockThreshold": "Default Low Stock Threshold",
+  "settingsSaved": "Settings saved successfully",
+  "saving": "Saving..."
+}
