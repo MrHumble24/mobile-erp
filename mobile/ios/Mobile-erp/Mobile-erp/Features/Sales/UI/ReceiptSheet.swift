@@ -1,0 +1,132 @@
+import SwiftUI
+
+/// 58mm printable receipt for one sale. Fetches the server `ReceiptView` (no
+/// cost/profit, ever) and renders it monospaced. Copy + system print both work.
+struct ReceiptSheet: View {
+    let saleId: String
+    @Environment(AppContainer.self) private var container
+    @Environment(I18n.self) private var i18n
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var receipt: ReceiptView?
+    @State private var error: String?
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if let receipt {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            AppCard { paper(receipt) }
+                            actions(receipt)
+                        }
+                        .frame(maxWidth: 360)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                    }
+                    .background(Color(.systemGroupedBackground))
+                } else if let error {
+                    ErrorStateView(message: error) { load() }
+                } else {
+                    LoadingView()
+                }
+            }
+            .navigationTitle(i18n.t("sales.receipt"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(i18n.t("common.close")) { dismiss() }
+                }
+            }
+            .task { if receipt == nil { load() } }
+        }
+    }
+
+    private func paper(_ r: ReceiptView) -> some View {
+        VStack(spacing: 6) {
+            Text(i18n.t("pos.storeName")).font(.mono(13, weight: .bold))
+            Text(i18n.t("pos.storeLocation")).font(.mono(11))
+            rule
+            row(i18n.t("pos.receiptNumber"), r.saleId)
+            row(i18n.t("pos.soldAt"), SaleDate.dayTime(r.soldAt))
+            row(i18n.t("pos.cashier"), r.cashier)
+            if let customer = r.customer { row(i18n.t("sales.customer"), customer.name) }
+            rule
+            ForEach(Array(r.items.enumerated()), id: \.offset) { _, item in
+                VStack(spacing: 2) {
+                    Text(item.model).font(.mono(12))
+                    Text(item.imei).font(.mono(10))
+                    row(subtitle(item), MoneyText.format(item.price.string))
+                }
+            }
+            rule
+            row(i18n.t("pos.totalDue"), MoneyText.format(r.total.string), bold: true)
+            if let w = r.warranty, let endsAt = w.endsAt {
+                row(i18n.t("pos.warrantyUntil"), SaleDate.day(endsAt))
+            }
+            Text(i18n.t("pos.thankYou")).font(.mono(11)).padding(.top, 6)
+            Text(i18n.t("pos.warrantyNotice")).font(.mono(9)).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+    }
+
+    private func actions(_ r: ReceiptView) -> some View {
+        VStack(spacing: 10) {
+            Button {
+                SalesReceiptPrinting.copy(text(r))
+            } label: {
+                Label(i18n.t("pos.copyCheque"), systemImage: "doc.on.doc").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            Button {
+                SalesReceiptPrinting.print(text(r), jobName: i18n.t("sales.receipt"))
+            } label: {
+                Label(i18n.t("sales.printReceipt"), systemImage: "printer").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+    }
+
+    private func subtitle(_ item: ReceiptView.Item) -> String {
+        [item.storage, item.color].compactMap { $0 }.joined(separator: " · ")
+    }
+
+    private func text(_ r: ReceiptView) -> String {
+        var lines = [
+            i18n.t("pos.storeName"),
+            i18n.t("pos.storeLocation"),
+            "\(i18n.t("pos.receiptNumber")): \(r.saleId)",
+            "\(i18n.t("pos.cashier")): \(r.cashier)",
+            String(repeating: "-", count: 30),
+        ]
+        lines += r.items.map { "\($0.model) (\($0.imei))  \(MoneyText.format($0.price.string))" }
+        lines.append(String(repeating: "-", count: 30))
+        lines.append("\(i18n.t("pos.totalDue")): \(MoneyText.format(r.total.string))")
+        lines.append(i18n.t("pos.thankYou"))
+        return lines.joined(separator: "\n")
+    }
+
+    private func row(_ label: String, _ value: String, bold: Bool = false) -> some View {
+        HStack(alignment: .top) {
+            Text(label).font(.mono(11))
+            Spacer(minLength: 8)
+            Text(value).font(.mono(11, weight: bold ? .bold : .regular))
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private var rule: some View {
+        Text(String(repeating: "-", count: 30)).font(.mono(11))
+    }
+
+    private func load() {
+        error = nil
+        let repo = SalesRepository(api: container.api, context: container.modelContext)
+        Task {
+            do { receipt = try await repo.receipt(saleId) }
+            catch let e as AppError { error = e.message }
+            catch { self.error = error.localizedDescription }
+        }
+    }
+}
