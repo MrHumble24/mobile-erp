@@ -27,14 +27,16 @@ import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Process-return dialog. Returns are ONLINE-ONLY (not an offline mutation type),
- * so submit blocks with a needs-connection message when offline.
+ * so submit blocks with a needs-connection message when offline. On success it
+ * toasts and closes; the error shows inline (it may be retried).
  */
 @Composable
-fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, onClose: () -> Unit) {
+fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, toaster: Toaster, onClose: () -> Unit) {
     val t = LocalT.current
     val ui by vm.ret.collectAsState()
     var refund by remember { mutableStateOf("") }
@@ -42,7 +44,7 @@ fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, onClose: (
     var condition by remember { mutableStateOf("IN_STOCK") }
 
     LaunchedEffect(ui.done) {
-        if (ui.done) { vm.resetReturn(); onClose() }
+        if (ui.done) { toaster.success(t("sales.returnSuccess", null)); vm.resetReturn(); onClose() }
     }
 
     AlertDialog(

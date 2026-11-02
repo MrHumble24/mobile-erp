@@ -39,6 +39,21 @@ fun CustomerListItemDto.toDomain() = CustomerListItem(
     returnsCount = returnsCount,
 )
 
+/** Aggregate tiles for the customer directory (`GET /customers/stats`). */
+data class CustomerStats(
+    val total: Int,
+    val newThisMonth: Int,
+    val withPurchases: Int,
+    val repeatBuyers: Int,
+)
+
+fun CustomerStatsDto.toDomain() = CustomerStats(
+    total = total,
+    newThisMonth = newThisMonth,
+    withPurchases = withPurchases,
+    repeatBuyers = repeatBuyers,
+)
+
 /** One row of a customer's purchase history (`GET /customers/:id/sales`). */
 data class CustomerSale(
     val id: String,

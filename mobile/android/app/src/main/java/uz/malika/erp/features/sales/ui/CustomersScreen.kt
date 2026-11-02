@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,18 +35,24 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
+import uz.malika.erp.core.nowIso
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomersRepository
 import uz.malika.erp.features.sales.data.SalesApi
+import uz.malika.erp.features.sales.lib.customersCsv
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.shareTextFile
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppTextField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
+import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.Loading
+import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 
@@ -62,6 +69,9 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     )
     val ui by vm.list.collectAsState()
     val filters by vm.filters.collectAsState()
+    val stats by vm.stats.collectAsState()
+    val context = LocalContext.current
+    val listItems = ui.state.items
 
     var search by remember { mutableStateOf("") }
     var hasPurchases by remember { mutableStateOf("all") }
@@ -80,8 +90,23 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     ) { pad ->
         Column(Modifier.fillMaxSize().padding(pad)) {
             Column(Modifier.padding(16.dp)) {
-                Text(t("sales.customersTitle", null), style = MaterialTheme.typography.headlineSmall)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        t("sales.customersTitle", null),
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PillButton(
+                        text = t("customers.exportCsv", null),
+                        onClick = {
+                            shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems))
+                        },
+                        variant = ButtonVariant.OUTLINE,
+                        enabled = listItems.isNotEmpty(),
+                    )
+                }
                 Spacer(Modifier.height(12.dp))
+                stats?.let { CustomerSummary(it); Spacer(Modifier.height(12.dp)) }
                 AppTextField(
                     value = search,
                     onValueChange = { search = it },
@@ -115,11 +140,12 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
                 )
             }
             when {
-                ui.loading -> Box(Modifier.fillMaxSize()) { Loading() }
+                ui.state.loading && listItems.isEmpty() -> Box(Modifier.fillMaxSize()) { Loading() }
                 ui.error != null -> ErrorView(ui.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null))
-                ui.items.isEmpty() -> EmptyView(t("sales.noCustomersFound", null))
+                listItems.isEmpty() -> EmptyView(t("sales.noCustomersFound", null))
                 else -> LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    items(ui.items) { c -> CustomerRow(c, t) { selected = c } }
+                    items(listItems) { c -> CustomerRow(c, t) { selected = c } }
+                    item { LoadMoreFooter(ui.state.hasMore, ui.state.loading, vm::loadMore) }
                 }
             }
         }

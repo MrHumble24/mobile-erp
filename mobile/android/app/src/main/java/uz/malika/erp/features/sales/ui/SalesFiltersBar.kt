@@ -1,81 +1,140 @@
 package uz.malika.erp.features.sales.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import uz.malika.erp.core.nowIso
+import kotlinx.coroutines.delay
 import uz.malika.erp.features.sales.data.SaleChannel
+import uz.malika.erp.features.sales.data.UserOption
 import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
-import java.util.Calendar
+import uz.malika.erp.i18n.Translate
+import uz.malika.erp.shared.ui.AppDateRangeField
+import uz.malika.erp.shared.ui.AppSelect
+import uz.malika.erp.shared.ui.AppTextField
+import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.DateRange
+import uz.malika.erp.shared.ui.PillButton
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
-private const val MS_PER_DAY = 86_400_000L
+private const val END_OF_DAY = 86_399_999L
+
+/** Current filter values the bar renders (owned by the ViewModel's SaleFilters). */
+data class SalesFilterValues(
+    val channel: SaleChannel?,
+    val returned: String?,
+    val warranty: String?,
+    val soldById: String?,
+)
 
 /**
- * Channel + date-range filters for the sales list. The range uses lazy presets
- * (all / last 7 / last 30 days) instead of a full calendar picker.
- *
- * ponytail: presets over a calendar range picker. Add a DateRangePicker only if
- * a specific historical window is needed.
+ * The sales list filters: search, date range, channel, returned-status, warranty
+ * and (admins only) cashier. Each change resets to page 1 via the ViewModel. The
+ * cashier select shows only when [canReadUsers]; its options come from the VM.
  */
 @Composable
-fun SalesFiltersBar(vm: SalesViewModel, channel: SaleChannel?, rangeDays: Int, onRangeDays: (Int) -> Unit) {
+fun SalesFiltersBar(
+    vm: SalesViewModel,
+    values: SalesFilterValues,
+    canReadUsers: Boolean,
+    cashiers: List<UserOption>,
+) {
     val t = LocalT.current
+    var search by remember { mutableStateOf("") }
+    var range by remember { mutableStateOf(DateRange()) }
+
+    LaunchedEffect(search) {
+        delay(300)
+        vm.setSearch(search.trim().takeIf { it.isNotBlank() })
+    }
+
     Column(Modifier.fillMaxWidth()) {
-        SegmentedControl(
-            options = listOf(
-                SegmentOption<String>("all", t("common.all", null)),
-                SegmentOption("retail", t("sales.channelRetail", null)),
-                SegmentOption("b2b", t("sales.channelB2B", null)),
-            ),
-            selected = when (channel) {
-                SaleChannel.RETAIL -> "retail"
-                SaleChannel.B2B -> "b2b"
-                null -> "all"
-            },
-            onSelect = {
-                vm.setChannel(
-                    when (it) {
-                        "retail" -> SaleChannel.RETAIL
-                        "b2b" -> SaleChannel.B2B
-                        else -> null
-                    },
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
+        AppTextField(
+            value = search,
+            onValueChange = { search = it },
+            placeholder = t("sales.filterSearch", null),
+            imeAction = ImeAction.Search,
         )
         Spacer(Modifier.height(8.dp))
-        SegmentedControl(
-            options = listOf(
-                SegmentOption<Int>(0, t("common.all", null)),
-                SegmentOption(7, t("sales.daysShort", mapOf("count" to 7))),
-                SegmentOption(30, t("sales.daysShort", mapOf("count" to 30))),
-            ),
-            selected = rangeDays,
-            onSelect = { days ->
-                onRangeDays(days)
-                if (days == 0) {
-                    vm.setRange(null, null)
-                } else {
-                    vm.setRange(isoDaysAgo(days), nowIso())
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
+        AppDateRangeField(
+            label = t("reports.period", null),
+            range = range,
+            onPick = { range = it; vm.setRange(isoFrom(it.startMillis), isoTo(it.endMillis)) },
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth()) {
+            AppSelect(
+                value = values.channel,
+                options = listOf(SaleChannel.RETAIL, SaleChannel.B2B),
+                optionLabel = { channelLabel(it, t) },
+                onSelect = vm::setChannel,
+                label = t("sales.filterChannel", null),
+                nullOption = t("common.all", null),
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(Modifier.width(8.dp))
+            AppSelect(
+                value = values.returned,
+                options = listOf("false", "true"),
+                optionLabel = { if (it == "true") t("sales.statusReturned", null) else t("sales.statusActive", null) },
+                onSelect = vm::setReturned,
+                label = t("sales.filterStatus", null),
+                nullOption = t("common.all", null),
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth()) {
+            AppSelect(
+                value = values.warranty,
+                options = listOf("active", "expired"),
+                optionLabel = { if (it == "expired") t("sales.warrantyExpired", null) else t("sales.warrantyValid", null) },
+                onSelect = vm::setWarranty,
+                label = t("sales.filterWarranty", null),
+                nullOption = t("common.all", null),
+                modifier = Modifier.weight(1f),
+            )
+            if (canReadUsers) {
+                Spacer(Modifier.width(8.dp))
+                AppSelect(
+                    value = cashiers.firstOrNull { it.id == values.soldById },
+                    options = cashiers,
+                    optionLabel = { it.name },
+                    onSelect = { vm.setSoldById(it?.id) },
+                    label = t("sales.soldBy", null),
+                    nullOption = t("common.all", null),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        PillButton(
+            text = t("sales.resetFilters", null),
+            onClick = { search = ""; range = DateRange(); vm.clearFilters() },
+            variant = ButtonVariant.GHOST,
         )
     }
 }
 
-private fun isoDaysAgo(days: Int): String {
-    val cal = Calendar.getInstance()
-    cal.timeInMillis = System.currentTimeMillis() - days * MS_PER_DAY
-    return java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
-        .apply { timeZone = java.util.TimeZone.getTimeZone("UTC") }
-        .format(cal.time)
-}
+private fun channelLabel(channel: SaleChannel, t: Translate) =
+    if (channel == SaleChannel.B2B) t("sales.channelB2B", null) else t("sales.channelRetail", null)
+
+private val isoUtc = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+    .apply { timeZone = TimeZone.getTimeZone("UTC") }
+
+private fun isoFrom(millis: Long?): String? = millis?.let { isoUtc.format(it) }
+private fun isoTo(millis: Long?): String? = millis?.let { isoUtc.format(it + END_OF_DAY) }
