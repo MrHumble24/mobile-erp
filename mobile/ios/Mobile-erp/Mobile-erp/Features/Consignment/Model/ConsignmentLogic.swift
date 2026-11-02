@@ -39,6 +39,21 @@ enum ConsignmentLogic {
         }
     }
 
+    /// CSV of the loaded list (no cost fields), columns matching the web export.
+    /// `t` localizes the header row; values stay raw.
+    static func csv(_ items: [Consignment], t: (String) -> String) -> String {
+        let headers = [
+            t("consignments.partner"), t("consignments.device"),
+            t("consignments.agreedPrice"), t("consignments.dueDate"),
+            t("common.status"), t("consignments.daysOverdue"),
+        ]
+        let rows = items.map { c in
+            [c.partnerShopName, c.imei, c.agreedPrice, String(c.dueDate.prefix(10)),
+             c.statusCode, String(daysOverdue(dueDate: c.dueDate, statusCode: c.statusCode))]
+        }
+        return KitCSV.build(headers: headers, rows: rows)
+    }
+
     /// Whole days an OUT consignment is past due; 0 for resolved or not-yet-due.
     static func daysOverdue(dueDate: String, statusCode: String, now: Date = Date()) -> Int {
         guard statusCode == "OUT", let due = parseDate(dueDate) else { return 0 }

@@ -19,7 +19,6 @@ struct UsersListView: View {
             summarySection
             filterSection
             listSection
-            if model.hasPrev || model.hasNext { pagerSection }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -28,7 +27,7 @@ struct UsersListView: View {
         }
         .task {
             model.bind(container)
-            if model.data == nil { await model.load() }
+            if !model.started { await model.load() }
         }
         .sheet(isPresented: $createOpen) {
             CreateUserSheet(catalog: catalog) { Task { await model.load() } }
@@ -85,44 +84,25 @@ struct UsersListView: View {
 
     @ViewBuilder private var listSection: some View {
         Section {
-            if model.loading && model.data == nil {
+            if model.pager.isLoading && model.pager.items.isEmpty {
                 LoadingView()
-            } else if let error = model.loadError {
-                ErrorStateView(message: error.message) { Task { await model.load() } }
-            } else if let items = model.data?.items, !items.isEmpty {
-                ForEach(items) { user in
+            } else if let error = model.pager.error, model.pager.items.isEmpty {
+                ErrorStateView(message: error) { Task { await model.load() } }
+            } else if model.pager.items.isEmpty {
+                EmptyStateView(systemImage: "person.slash", title: i18n.t("common.notFound"))
+            } else {
+                ForEach(model.pager.items) { user in
                     Button { detailUser = user } label: {
                         UserRowView(user: user)
                     }
                     .buttonStyle(.plain)
                 }
-            } else {
-                EmptyStateView(systemImage: "person.slash", title: i18n.t("common.notFound"))
+                KitLoadMoreFooter(pager: model.pager)
             }
             if let err = model.actionError {
                 Label(err, systemImage: "exclamationmark.triangle")
                     .font(.footnote).foregroundStyle(Tokens.danger)
             }
-        }
-    }
-
-    private var pagerSection: some View {
-        Section {
-            HStack {
-                Button(i18n.t("common.back")) { model.setPage(model.page - 1) }
-                    .disabled(!model.hasPrev)
-                Spacer()
-                Text(i18n.t("users.rangeLabel", [
-                    "from": "\((model.page - 1) * UsersListModel.pageSize + 1)",
-                    "to": "\(min(model.page * UsersListModel.pageSize, model.total))",
-                    "total": "\(model.total)",
-                ], default: "\(model.page)"))
-                    .font(.footnote).foregroundStyle(.secondary)
-                Spacer()
-                Button(i18n.t("common.submit", default: "Next")) { model.setPage(model.page + 1) }
-                    .disabled(!model.hasNext)
-            }
-            .buttonStyle(.bordered)
         }
     }
 }

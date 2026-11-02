@@ -6,10 +6,12 @@ RBAC administration — the native port of the web `pages/users` +
 ## Owns
 - `UsersModule.feature` — nav + route, gated `user.manage`.
 - `UsersView` — segmented Users / Roles / Permission-matrix root.
-- Users tab (`UsersListView`): stats, search/role/status filters, pagination,
-  create, and a detail sheet (profile, roles, per-user overrides, reset
-  password, activate/deactivate).
-- Roles tab (`RolesListView` + `RoleDialogs`): create / rename / delete.
+- Users tab (`UsersListView`): stats, search/role/status filters, load-more
+  pagination (`KitPaginator`), create, and a detail sheet (profile, roles,
+  per-user overrides, reset password, activate/deactivate).
+- Roles tab (`RolesListView` + `RoleDialogs`): create / rename / delete; a
+  delete blocked by assignments (409) shows the counted `users.roleInUse`
+  message, matching the web.
 - Matrix tab (`PermissionMatrixView`): edit a role's permissions.
 - `UsersCatalog` (roles + permissions + role CRUD), `UsersListModel`,
   `UserDetailModel`, `OverrideMatrix` (pure override reducer + DEBUG self-check).
