@@ -1,6 +1,6 @@
 # 011 — Uzbek copy for the completed sales management screen
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full sales management screen"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full sales management screen"
 
 ## Why
 `/sales` now has two tabs (sales list, warranty lookup), a filter row (period presets, search by IMEI /
@@ -27,7 +27,7 @@ Then review in context with the `cashier@malika.uz` and `owner@malika.uz` logins
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: `770be05` (`feat(client): uzbek copy for sales management`)
+- Glossary terms added: Refund (Qaytarilgan pul / Qaytarilgan summa), Average Price (O'rtacha narx)
+- Wording changes proposed for `en`: None; key sets remain identical (67 keys). `filterChannel` in `uz` standardized to "Kanal" to match `en` "Channel".
+- Notes for other agents: All 35 placeholder keys translated into native Uzbek (Malika Bazaar POS context); summary tiles and warranty badges remain short (1-char suffix `{count}k`).

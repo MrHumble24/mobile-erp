@@ -53,3 +53,5 @@
 | Cheque / Receipt | Chek | Savdo cheki / to'lov kvitansiyasi |
 | Shortcut | Tezkor tugma | Klaviatura orqali tezkor amallar |
 | Subtotal | Oraliq summa | Chegirma va soliqlargacha bo'lgan jami summa |
+| Refund | Qaytarilgan pul / Qaytarilgan summa | Xaridorga qaytarib berilgan mablag' |
+| Average Price | O'rtacha narx | Birlik tovarning o'rtacha sotuv narxi |
