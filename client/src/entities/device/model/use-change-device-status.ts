@@ -12,6 +12,7 @@ export function useChangeDeviceStatus() {
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: deviceKeys.detail(variables.id) })
       queryClient.invalidateQueries({ queryKey: deviceKeys.history(variables.id) })
+      queryClient.invalidateQueries({ queryKey: deviceKeys.byImeis() })
     },
   })
 }
@@ -24,6 +25,7 @@ export function useUpdateDevice() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: deviceKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: deviceKeys.byImeis() })
     },
   })
 }

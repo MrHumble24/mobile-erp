@@ -13,14 +13,42 @@ interface DeviceTableProps {
   devices: DeviceView[]
   modelsMap?: Record<string, string>
   canViewCost?: boolean
+  canEdit?: boolean
   onSelect?: (device: DeviceView) => void
+  onEdit?: (device: DeviceView) => void
+}
+
+function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
+  const { t } = useI18n()
+  return (
+    <TableHeader>
+      <TableRow>
+        <TableHead>IMEI</TableHead>
+        <TableHead>{t("inventory.model")}</TableHead>
+        <TableHead>{t("inventory.storage")}</TableHead>
+        <TableHead>{t("inventory.color")}</TableHead>
+        <TableHead>{t("inventory.status")}</TableHead>
+        <TableHead>{t("inventory.targetPrice")}</TableHead>
+        {canViewCost && (
+          <>
+            <TableHead>{t("inventory.acquisitionCost")}</TableHead>
+            <TableHead>{t("inventory.landedCost")}</TableHead>
+          </>
+        )}
+        <TableHead>{t("inventory.intakeDate")}</TableHead>
+        <TableHead className="text-right">{t("common.actions")}</TableHead>
+      </TableRow>
+    </TableHeader>
+  )
 }
 
 export function DeviceTable({
   devices,
   modelsMap = {},
   canViewCost,
+  canEdit,
   onSelect,
+  onEdit,
 }: DeviceTableProps) {
   const { t } = useI18n()
 
@@ -35,22 +63,7 @@ export function DeviceTable({
   return (
     <div className="rounded-lg border bg-card">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>IMEI</TableHead>
-            <TableHead>{t("inventory.model")}</TableHead>
-            <TableHead>{t("inventory.storage")}</TableHead>
-            <TableHead>{t("inventory.status")}</TableHead>
-            <TableHead>{t("inventory.targetPrice")}</TableHead>
-            {canViewCost && (
-              <>
-                <TableHead>{t("inventory.acquisitionCost")}</TableHead>
-                <TableHead>{t("inventory.landedCost")}</TableHead>
-              </>
-            )}
-            <TableHead className="text-right">{t("common.actions")}</TableHead>
-          </TableRow>
-        </TableHeader>
+        <DeviceTableHead canViewCost={canViewCost} />
         <TableBody>
           {devices.map((device) => (
             <DeviceTableRow
@@ -58,7 +71,9 @@ export function DeviceTable({
               device={device}
               modelName={modelsMap[device.modelId]}
               canViewCost={canViewCost}
+              canEdit={canEdit}
               onSelect={onSelect}
+              onEdit={onEdit}
             />
           ))}
         </TableBody>
