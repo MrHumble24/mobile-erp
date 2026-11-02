@@ -18,9 +18,10 @@ Owns the RBAC matrix: roles, permissions and the effective-permission math.
 - `GET /access/roles` → `RoleView[]` (`{ code, name, description, isSystem, permissionCodes }`)
 - `GET /access/permissions` → `PermissionView[]`
 - `POST /access/roles` `{ code, name, description? }` → `RoleView` (409 if exists)
-- `PATCH /access/roles/:code` `{ name?, description? }` → `RoleView` (rename/re-describe; 404 unknown)
+- `PATCH /access/roles/:code` `{ name?, description? }` → `RoleView` (rename/re-describe; 404 unknown, 403 if `isSystem`)
 - `PUT /access/roles/:code/permissions` `{ permissionCodes[] }` → `RoleView`
-  (replaces the matrix row; 404 unknown role, 400 unknown permission)
+  (replaces the matrix row; 404 unknown role, 400 unknown permission, 403 if `isSystem`
+  or if the caller lacks a permission being added — no self-escalation, ADR 0019)
 - `DELETE /access/roles/:code` → 204 (403 if `isSystem`, 409 `{ assignedUsers: n }` if assigned)
 
 ## Must never

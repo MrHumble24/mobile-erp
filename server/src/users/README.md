@@ -35,6 +35,9 @@ User accounts, profiles, and their role/permission assignments.
   - A caller may `granted:true` a permission only if they hold it themselves;
     revokes (`granted:false`) are always allowed.
   - A caller cannot deactivate their **own** account (`PATCH isActive:false` on self → 403).
+  - A caller may reset a password only when the target's effective permissions
+    are a subset of the caller's (403 otherwise — stops seizing the owner account) (ADR 0019).
+  - The last active ADMIN cannot be deactivated or stripped of ADMIN (409) (ADR 0019).
 - `GET /users/:id/effective-permissions` is read-only; it never exposes `passwordHash`.
 
 ## Must never

@@ -1,15 +1,10 @@
-import {
-  IsNumber,
-  IsObject,
-  IsOptional,
-  Min,
-  ValidateIf,
-} from 'class-validator';
+import { IsNumber, IsOptional, Min, ValidateIf } from 'class-validator';
+import { IsSpecsObject } from './specs.validator.js';
 
 export class UpdateDeviceDto {
   /** Open-ended specs (JSONB). Replaces the stored object when present. */
   @IsOptional()
-  @IsObject()
+  @IsSpecsObject()
   specs?: Record<string, unknown>;
 
   /** `null` clears the target price. */

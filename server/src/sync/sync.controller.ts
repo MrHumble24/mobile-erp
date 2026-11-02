@@ -41,7 +41,10 @@ export class SyncController {
 
   @Get('changes')
   @RequirePermissions('device.read')
-  getChanges(@Query() query: ChangesQueryDto) {
-    return this.changes.changes(query);
+  getChanges(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: ChangesQueryDto,
+  ) {
+    return this.changes.changes(user, query);
   }
 }

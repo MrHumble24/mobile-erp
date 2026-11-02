@@ -9,7 +9,9 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { AccessService } from './access.service.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
 import { SetRolePermissionsDto } from './dto/set-role-permissions.dto.js';
@@ -42,10 +44,11 @@ export class AccessController {
 
   @Put('roles/:code/permissions')
   setRolePermissions(
+    @CurrentUser() caller: AuthenticatedUser,
     @Param('code') code: string,
     @Body() dto: SetRolePermissionsDto,
   ) {
-    return this.access.setRolePermissions(code, dto.permissionCodes);
+    return this.access.setRolePermissions(caller, code, dto.permissionCodes);
   }
 
   @Delete('roles/:code')

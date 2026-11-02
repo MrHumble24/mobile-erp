@@ -1,3 +1,5 @@
+import { ForbiddenException } from '@nestjs/common';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { AccessService } from './access.service.js';
 import { AccessRepository } from './access.repository.js';
 import { PermissionSources } from './types/access.types.js';
@@ -75,5 +77,68 @@ describe('AccessService.describeUser', () => {
     const result = await new AccessService(repo).describeUser('u1');
     expect(result.effective.sort()).toEqual(['report.finance', 'sale.read']);
     expect(result.roles).toEqual(['CASHIER']);
+  });
+});
+
+describe('AccessService.setRolePermissions', () => {
+  function build(isSystem: boolean, callerPerms: string[]) {
+    const replace = jest.fn().mockResolvedValue(undefined);
+    const repo = {
+      findRole: jest.fn().mockResolvedValue({ code: 'CLERK', isSystem }),
+      listPermissions: jest
+        .fn()
+        .mockResolvedValue([
+          { code: 'device.read' },
+          { code: 'device.cost.view' },
+        ]),
+      replaceRolePermissions: replace,
+      listRoles: jest
+        .fn()
+        .mockResolvedValue([{ code: 'CLERK', permissionCodes: [] }]),
+    } as unknown as AccessRepository;
+    const caller: AuthenticatedUser = {
+      id: 'c',
+      email: 'c@x',
+      permissions: new Set(callerPerms),
+    };
+    return { service: new AccessService(repo), caller, replace };
+  }
+
+  it('rejects adding a permission the caller does not hold', async () => {
+    const { service, caller, replace } = build(false, ['device.read']);
+    await expect(
+      service.setRolePermissions(caller, 'CLERK', [
+        'device.read',
+        'device.cost.view',
+      ]),
+    ).rejects.toThrow(ForbiddenException);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('allows setting permissions the caller holds', async () => {
+    const { service, caller, replace } = build(false, [
+      'device.read',
+      'device.cost.view',
+    ]);
+    await service.setRolePermissions(caller, 'CLERK', ['device.read']);
+    expect(replace).toHaveBeenCalledWith('CLERK', ['device.read']);
+  });
+
+  it('refuses to edit permissions of a system role', async () => {
+    const { service, caller, replace } = build(true, ['device.read']);
+    await expect(
+      service.setRolePermissions(caller, 'CLERK', ['device.read']),
+    ).rejects.toThrow(ForbiddenException);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('refuses to rename a system role', async () => {
+    const repo = {
+      findRole: jest.fn().mockResolvedValue({ code: 'ADMIN', isSystem: true }),
+      renameRole: jest.fn(),
+    } as unknown as AccessRepository;
+    await expect(
+      new AccessService(repo).renameRole('ADMIN', { name: 'x' }),
+    ).rejects.toThrow(ForbiddenException);
   });
 });

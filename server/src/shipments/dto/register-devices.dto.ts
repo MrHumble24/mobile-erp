@@ -3,13 +3,13 @@ import {
   ArrayMinSize,
   IsArray,
   IsNumber,
-  IsObject,
   IsOptional,
   IsUUID,
   Matches,
   Min,
   ValidateNested,
 } from 'class-validator';
+import { IsSpecsObject } from '../../devices/dto/specs.validator.js';
 
 export class RegisterDeviceDto {
   /** Exactly 15 numeric digits. */
@@ -19,7 +19,7 @@ export class RegisterDeviceDto {
   @IsUUID()
   modelId!: string;
 
-  @IsObject()
+  @IsSpecsObject()
   specs!: Record<string, unknown>;
 
   @IsNumber({ maxDecimalPlaces: 2 })

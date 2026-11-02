@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -24,6 +25,8 @@ import {
   UserListFilters,
   UserView,
 } from './types/user.types.js';
+
+const ADMIN_ROLE = 'ADMIN';
 
 @Injectable()
 export class UsersService {
@@ -57,8 +60,13 @@ export class UsersService {
     return this.access.describeUser(id);
   }
 
-  async resetPassword(id: string, password: string): Promise<void> {
+  async resetPassword(
+    caller: AuthenticatedUser,
+    id: string,
+    password: string,
+  ): Promise<void> {
     await this.require(id);
+    await this.assertTargetWithinCallerScope(caller, id);
     const passwordHash = await argon2.hash(password);
     await this.repo.setPassword(id, passwordHash);
   }
@@ -87,7 +95,8 @@ export class UsersService {
     if (caller.id === id && dto.isActive === false) {
       throw new ForbiddenException('You cannot deactivate your own account');
     }
-    await this.require(id);
+    const target = await this.require(id);
+    if (dto.isActive === false) await this.assertNotLastAdmin(id, target);
     return this.repo.update(id, dto);
   }
 
@@ -97,10 +106,13 @@ export class UsersService {
     dto: SetRolesDto,
   ): Promise<UserView> {
     this.assertNotSelf(caller, id, 'roles');
-    await this.require(id);
+    const target = await this.require(id);
     const roles = await this.access.listRoles();
     this.assertRolesKnown(roles, dto.roleCodes);
     this.assertCanAssignRoles(caller, roles, dto.roleCodes);
+    if (!dto.roleCodes.includes(ADMIN_ROLE)) {
+      await this.assertNotLastAdmin(id, target);
+    }
     return this.repo.setRoles(id, dto.roleCodes);
   }
 
@@ -123,6 +135,37 @@ export class UsersService {
     const user = await this.repo.findById(id);
     if (!user) throw new NotFoundException(`User ${id} not found`);
     return user;
+  }
+
+  /**
+   * A caller may only reset the password of a user whose effective permissions
+   * are a subset of their own — otherwise `user.manage` lets anyone seize a more
+   * privileged account (e.g. the owner) by resetting its password.
+   */
+  private async assertTargetWithinCallerScope(
+    caller: AuthenticatedUser,
+    id: string,
+  ): Promise<void> {
+    const targetPerms = await this.access.getEffectivePermissions(id);
+    const beyond = [...targetPerms].filter((p) => !caller.permissions.has(p));
+    if (beyond.length > 0) {
+      throw new ForbiddenException(
+        `Cannot reset the password of a user holding permissions you lack: ${beyond.join(', ')}`,
+      );
+    }
+  }
+
+  /** Refuse to strip the last active ADMIN of their access (deactivate / de-role). */
+  private async assertNotLastAdmin(
+    id: string,
+    target: UserView,
+  ): Promise<void> {
+    if (!target.isActive || !target.roles.includes(ADMIN_ROLE)) return;
+    if ((await this.repo.countOtherActiveAdmins(id)) === 0) {
+      throw new ConflictException(
+        'Cannot remove the last active administrator',
+      );
+    }
   }
 
   private assertNotSelf(

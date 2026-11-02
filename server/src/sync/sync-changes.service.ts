@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { PartnersService } from '../partners/partners.service.js';
 import { ChangesQueryDto } from './dto/changes.query.dto.js';
 import { SyncChangesRepository } from './sync-changes.repository.js';
@@ -12,11 +13,19 @@ export class SyncChangesService {
     private readonly partners: PartnersService,
   ) {}
 
-  async changes(query: ChangesQueryDto): Promise<ChangesResponse> {
+  async changes(
+    caller: AuthenticatedUser,
+    query: ChangesQueryDto,
+  ): Promise<ChangesResponse> {
     const since = query.since ? new Date(query.since) : new Date(0);
+    // Partner balances (creditLimit/outstanding) require partner.read; device
+    // terminals without it get an empty partners block, not every partner's debt.
+    const canReadPartners = caller.permissions.has('partner.read');
     const [devices, partners] = await Promise.all([
       this.repo.devicesSince(since),
-      this.partners.list(),
+      canReadPartners
+        ? this.partners.list()
+        : Promise.resolve<Awaited<ReturnType<PartnersService['list']>>>([]),
     ]);
     // ponytail: cursor skips devices sharing the last millisecond; acceptable at
     // bazaar scale (a few thousand units). Switch to (updatedAt, id) if it bites.

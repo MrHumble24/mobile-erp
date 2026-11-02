@@ -20,7 +20,8 @@ Offline mutation queue, conflict resolution, and the offline-cache feed (PRD §5
   still clashes, returns 409 and leaves it pending. No force path (ADR 0011).
 - `GET /changes?since=` (`device.read`) — `{ serverTime, nextSince, devices[],
   partners[] }`. Devices changed since `since` (cap 2000, `nextSince` to page);
-  **no cost fields are selected at all**. Partners = all active, via PartnersService.
+  **no cost fields are selected at all**. Partners (with `creditLimit`/`outstanding`)
+  are returned only when the caller holds `partner.read`; otherwise `partners: []`.
 
 ## Structure
 

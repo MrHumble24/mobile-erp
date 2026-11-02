@@ -81,6 +81,17 @@ export class UsersRepository {
     return { total, active };
   }
 
+  /** Active users holding ADMIN other than `excludeUserId` (last-admin guard). */
+  countOtherActiveAdmins(excludeUserId: string): Promise<number> {
+    return this.prisma.user.count({
+      where: {
+        id: { not: excludeUserId },
+        isActive: true,
+        roles: { some: { roleCode: 'ADMIN' } },
+      },
+    });
+  }
+
   async findById(id: string): Promise<UserView | null> {
     const row = await this.prisma.user.findUnique({
       where: { id },
