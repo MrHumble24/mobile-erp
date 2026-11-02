@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { AccessRepository } from './access.repository.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
 import {
@@ -65,22 +66,43 @@ export class AccessService {
     code: string,
     data: { name?: string; description?: string },
   ): Promise<RoleView> {
-    if (!(await this.repo.findRole(code))) {
-      throw new NotFoundException(`Role ${code} not found`);
+    const role = await this.repo.findRole(code);
+    if (!role) throw new NotFoundException(`Role ${code} not found`);
+    if (role.isSystem) {
+      throw new ForbiddenException(`System role ${code} cannot be modified`);
     }
     return this.repo.renameRole(code, data);
   }
 
   async setRolePermissions(
+    caller: AuthenticatedUser,
     code: string,
     permissionCodes: string[],
   ): Promise<RoleView> {
-    if (!(await this.repo.findRole(code))) {
-      throw new NotFoundException(`Role ${code} not found`);
+    const role = await this.repo.findRole(code);
+    if (!role) throw new NotFoundException(`Role ${code} not found`);
+    if (role.isSystem) {
+      throw new ForbiddenException(
+        `System role ${code} permissions cannot be changed`,
+      );
     }
     await this.assertPermissionsExist(permissionCodes);
+    this.assertCallerHolds(caller, permissionCodes);
     await this.repo.replaceRolePermissions(code, permissionCodes);
     return (await this.repo.listRoles()).find((r) => r.code === code)!;
+  }
+
+  /** A caller may only put permissions they themselves hold onto a role. */
+  private assertCallerHolds(
+    caller: AuthenticatedUser,
+    permissionCodes: string[],
+  ): void {
+    const missing = permissionCodes.filter((c) => !caller.permissions.has(c));
+    if (missing.length > 0) {
+      throw new ForbiddenException(
+        `Cannot grant permissions you lack: ${missing.join(', ')}`,
+      );
+    }
   }
 
   async deleteRole(code: string): Promise<void> {

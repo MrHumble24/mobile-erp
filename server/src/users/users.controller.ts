@@ -67,8 +67,12 @@ export class UsersController {
 
   @Post(':id/password')
   @HttpCode(204)
-  resetPassword(@Param('id') id: string, @Body() dto: ResetPasswordDto) {
-    return this.users.resetPassword(id, dto.password);
+  resetPassword(
+    @CurrentUser() caller: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: ResetPasswordDto,
+  ) {
+    return this.users.resetPassword(caller, id, dto.password);
   }
 
   @Put(':id/roles')

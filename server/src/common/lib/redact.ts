@@ -1,14 +1,30 @@
-/** Cost keys, visible only with `device.cost.view`. */
+/**
+ * Cost keys, visible only with `device.cost.view`. Includes report aggregate
+ * aliases (COGS, landed-value and rolling-average cost columns) so derived
+ * cost figures are redacted the same as raw device cost columns.
+ */
 export const COST_KEYS = [
   'acquisitionCost',
   'landedCost',
   'landedCostSnapshot',
   'overheadCost',
   'repairCostEstimate',
+  'cogs',
+  'inStockLandedValue',
+  'landedValue',
+  'avgAcquisitionCost',
+  'avgLandedCost',
 ] as const;
 
-/** Profit keys, visible only with `sale.profit.view`. */
-export const PROFIT_KEYS = ['netProfit'] as const;
+/**
+ * Profit keys, visible only with `sale.profit.view`. Includes the derived
+ * gross-profit and net-operating-income aggregates exposed by reports.
+ */
+export const PROFIT_KEYS = [
+  'netProfit',
+  'grossProfit',
+  'netOperatingIncome',
+] as const;
 
 /**
  * Recursively deletes `keys` from a response in place. Only descends into plain

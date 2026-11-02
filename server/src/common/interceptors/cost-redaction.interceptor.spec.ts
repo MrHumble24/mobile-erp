@@ -45,6 +45,37 @@ describe('CostRedactionInterceptor', () => {
     expect(kept.netProfit).toBe(50);
   });
 
+  it('strips report cost aliases without device.cost.view', async () => {
+    const out = (await run([], {
+      revenue: 1000,
+      cogs: 400,
+      inStockLandedValue: 9000,
+      byModel: [{ label: 'X', units: 3, landedValue: 300 }],
+      avgAcquisitionCost: 100,
+      avgLandedCost: 110,
+    })) as any;
+    expect(out).toEqual({ revenue: 1000, byModel: [{ label: 'X', units: 3 }] });
+  });
+
+  it('strips derived profit aliases without sale.profit.view', async () => {
+    const out = (await run(['device.cost.view'], {
+      revenue: 1000,
+      cogs: 400,
+      grossProfit: 600,
+      netOperatingIncome: 500,
+    })) as Record<string, unknown>;
+    expect(out).toEqual({ revenue: 1000, cogs: 400 });
+  });
+
+  it('keeps aliases when both finance permissions are held', async () => {
+    const out = (await run(['device.cost.view', 'sale.profit.view'], {
+      cogs: 400,
+      grossProfit: 600,
+      landedValue: 300,
+    })) as Record<string, unknown>;
+    expect(out).toEqual({ cogs: 400, grossProfit: 600, landedValue: 300 });
+  });
+
   it('recurses into nested objects and arrays', async () => {
     const out = (await run([], {
       items: [

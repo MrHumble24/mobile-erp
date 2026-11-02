@@ -1,18 +1,38 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { AccessService } from '../access/access.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { UsersService } from './users.service.js';
 import { UsersRepository } from './users.repository.js';
 
-function build(callerPerms: string[]): {
+interface BuildOpts {
+  target?: Record<string, unknown>;
+  otherAdmins?: number;
+  targetPermissions?: string[];
+}
+
+function build(
+  callerPerms: string[],
+  opts: BuildOpts = {},
+): {
   service: UsersService;
-  repo: { setRoles: jest.Mock; setPermissions: jest.Mock };
+  repo: {
+    setRoles: jest.Mock;
+    setPermissions: jest.Mock;
+    setPassword: jest.Mock;
+    update: jest.Mock;
+    countOtherActiveAdmins: jest.Mock;
+  };
   caller: AuthenticatedUser;
 } {
   const repo = {
-    findById: jest.fn().mockResolvedValue({ id: 'target', email: 'x' }),
+    findById: jest
+      .fn()
+      .mockResolvedValue(opts.target ?? { id: 'target', email: 'x' }),
     setRoles: jest.fn().mockResolvedValue({ id: 'target' }),
     setPermissions: jest.fn().mockResolvedValue(undefined),
+    setPassword: jest.fn().mockResolvedValue(undefined),
+    update: jest.fn().mockResolvedValue({ id: 'target' }),
+    countOtherActiveAdmins: jest.fn().mockResolvedValue(opts.otherAdmins ?? 0),
   };
   const access = {
     listRoles: jest.fn().mockResolvedValue([
@@ -25,6 +45,9 @@ function build(callerPerms: string[]): {
         { code: 'device.cost.view' },
         { code: 'device.read' },
       ]),
+    getEffectivePermissions: jest
+      .fn()
+      .mockResolvedValue(new Set(opts.targetPermissions ?? [])),
   };
   const service = new UsersService(
     repo as unknown as UsersRepository,
@@ -84,5 +107,60 @@ describe('UsersService privilege escalation', () => {
     await expect(
       service.update(caller, 'caller', { isActive: false }),
     ).rejects.toThrow(ForbiddenException);
+  });
+});
+
+describe('UsersService.resetPassword subset rule', () => {
+  it('refuses resetting a target holding permissions the caller lacks', async () => {
+    const { service, caller, repo } = build(['user.manage'], {
+      targetPermissions: ['user.manage', 'device.cost.view'],
+    });
+    await expect(
+      service.resetPassword(caller, 'target', 'secret12'),
+    ).rejects.toThrow(ForbiddenException);
+    expect(repo.setPassword).not.toHaveBeenCalled();
+  });
+
+  it('allows resetting a target within the caller scope', async () => {
+    const { service, caller, repo } = build(['user.manage', 'device.read'], {
+      targetPermissions: ['device.read'],
+    });
+    await service.resetPassword(caller, 'target', 'secret12');
+    expect(repo.setPassword).toHaveBeenCalled();
+  });
+});
+
+describe('UsersService last-admin protection', () => {
+  const admin = { id: 'target', email: 'a', isActive: true, roles: ['ADMIN'] };
+
+  it('refuses to deactivate the last active admin', async () => {
+    const { service, caller, repo } = build(['user.manage'], {
+      target: admin,
+      otherAdmins: 0,
+    });
+    await expect(
+      service.update(caller, 'target', { isActive: false }),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('allows deactivating an admin when another active admin remains', async () => {
+    const { service, caller, repo } = build(['user.manage'], {
+      target: admin,
+      otherAdmins: 1,
+    });
+    await service.update(caller, 'target', { isActive: false });
+    expect(repo.update).toHaveBeenCalled();
+  });
+
+  it('refuses to remove ADMIN from the last active admin via setRoles', async () => {
+    const { service, caller, repo } = build(
+      ['user.manage', 'device.read', 'device.cost.view'],
+      { target: admin, otherAdmins: 0 },
+    );
+    await expect(
+      service.setRoles(caller, 'target', { roleCodes: ['CLERK'] }),
+    ).rejects.toThrow(ConflictException);
+    expect(repo.setRoles).not.toHaveBeenCalled();
   });
 });

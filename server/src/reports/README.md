@@ -42,10 +42,14 @@ in `lib/` (pure, unit-tested in `reports-math.spec.ts`).
 
 ## Redaction gate
 
-`report.finance` IS the gate for cost/profit names here (cogs, grossProfit,
-netOperatingIncome, avgAcquisitionCost, avgLandedCost, landedValue, settledRevenue).
-They are deliberately NOT added to the `CostRedactionInterceptor` key lists — the
-permission guards the whole controller. Never add report fields to those lists.
+`report.finance` gates access to the endpoints, but cost/profit figures carry a
+second gate: the global `CostRedactionInterceptor` strips cost aliases (`cogs`,
+`inStockLandedValue`, `landedValue`, `avgAcquisitionCost`, `avgLandedCost`) unless
+the caller holds `device.cost.view`, and profit aliases (`grossProfit`,
+`netOperatingIncome`, `netProfit`) unless they hold `sale.profit.view` (ADR 0019).
+Revenue-only figures (`revenue`, `settledRevenue`, `avgSellingPrice`) are not
+redacted. Any new cost/profit-derived report field must be added to the key lists
+in `common/lib/redact.ts`.
 
 ## Must never
 
