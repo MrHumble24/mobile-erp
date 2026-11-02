@@ -4,8 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import {
+  PartnerPaymentReceivedEvent,
+  TelegramEvents,
+} from '../telegram/events/telegram-events.js';
 import { CreatePartnerDto } from './dto/create-partner.dto.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UpdatePartnerDto } from './dto/update-partner.dto.js';
@@ -18,7 +23,10 @@ import {
 
 @Injectable()
 export class PartnersService {
-  constructor(private readonly repo: PartnersRepository) {}
+  constructor(
+    private readonly repo: PartnersRepository,
+    private readonly events: EventEmitter2,
+  ) {}
 
   list(): Promise<PartnerView[]> {
     return this.repo.listWithBalance();
@@ -62,7 +70,7 @@ export class PartnersService {
     partnerId: string,
     dto: CreatePaymentDto,
   ): Promise<PaymentView> {
-    await this.require(partnerId);
+    const partner = await this.require(partnerId);
     if (dto.consignmentId) {
       const ok = await this.repo.consignmentBelongsTo(
         dto.consignmentId,
@@ -74,7 +82,7 @@ export class PartnersService {
         );
       }
     }
-    return this.repo.createPayment({
+    const payment = await this.repo.createPayment({
       partnerId,
       consignmentId: dto.consignmentId,
       amount: new Prisma.Decimal(dto.amount),
@@ -82,6 +90,11 @@ export class PartnersService {
       notes: dto.notes,
       receivedById: caller.id,
     });
+    this.events.emit(
+      TelegramEvents.partnerPaymentReceived,
+      new PartnerPaymentReceivedEvent(partner.shopName, Number(dto.amount)),
+    );
+    return payment;
   }
 
   /**

@@ -15,5 +15,6 @@ import { ReportsService } from './reports.service.js';
     ReportsModelPricingRepository,
     ReportsDailyClosingRepository,
   ],
+  exports: [ReportsService],
 })
 export class ReportsModule {}

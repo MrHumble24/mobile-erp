@@ -113,10 +113,17 @@ export class SalesRepository {
     statusCode: string;
     version: number;
     landedCost: Prisma.Decimal;
+    targetPrice: Prisma.Decimal | null;
   } | null> {
     return this.prisma.device.findUnique({
       where: { imei },
-      select: { id: true, statusCode: true, version: true, landedCost: true },
+      select: {
+        id: true,
+        statusCode: true,
+        version: true,
+        landedCost: true,
+        targetPrice: true,
+      },
     });
   }
 

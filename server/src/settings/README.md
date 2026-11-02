@@ -6,6 +6,9 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 
 - telegramChatId, closingTime ("HH:mm"), defaultWarrantyDays, minMarginPercent
   (0–100), lowStockThreshold. The bot token lives in env, not here.
+- `digestSentOn` (`@db.Date`, nullable) — the day the Telegram closing digest
+  last went out, so the minute-cron fires it once per day. Written only by
+  `SettingsService.markDigestSent(date)`; not exposed on the write DTO.
 
 ## Exposes
 
@@ -16,6 +19,8 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 - `SettingsService.get()` — the public API for later waves (warranty default,
   Telegram daily digest, margin alerts) via DI. Returns schema defaults if the
   row is somehow absent.
+- `SettingsService.markDigestSent(date)` — upserts `digestSentOn` for the
+  Telegram closing-digest cron.
 
 ## Must never
 

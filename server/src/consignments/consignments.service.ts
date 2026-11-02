@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { PartnersService } from '../partners/partners.service.js';
+import {
+  ConsignmentCreatedEvent,
+  TelegramEvents,
+} from '../telegram/events/telegram-events.js';
 import { ConsignmentsRepository } from './consignments.repository.js';
 import { ConsignmentsWriteRepository } from './consignments.write.repository.js';
 import { CreateConsignmentDto } from './dto/create-consignment.dto.js';
@@ -20,7 +25,12 @@ export class ConsignmentsService {
     private readonly reads: ConsignmentsRepository,
     private readonly writes: ConsignmentsWriteRepository,
     private readonly partners: PartnersService,
+    private readonly events: EventEmitter2,
   ) {}
+
+  findByClientMutationId(id: string): Promise<ConsignmentView | null> {
+    return this.reads.findByClientMutationId(id);
+  }
 
   /** One-tap transfer. Idempotent on clientMutationId; enforces credit limit. */
   async create(
@@ -37,7 +47,7 @@ export class ConsignmentsService {
     // ponytail: credit check reads balance outside the write txn; a concurrent
     // transfer could briefly overshoot the limit. Acceptable at bazaar scale.
     await this.partners.assertWithinCreditLimit(dto.partnerId, agreedPrice);
-    return this.writes.createTransfer({
+    const view = await this.writes.createTransfer({
       imei: dto.imei,
       partnerId: dto.partnerId,
       agreedPrice,
@@ -47,6 +57,17 @@ export class ConsignmentsService {
       expectedVersion: dto.expectedVersion,
       createdById: caller.id,
     });
+    const partner = await this.partners.get(dto.partnerId);
+    this.events.emit(
+      TelegramEvents.consignmentCreated,
+      new ConsignmentCreatedEvent(
+        partner.shopName,
+        view.imei,
+        Number(view.agreedPrice),
+        view.dueDate,
+      ),
+    );
+    return view;
   }
 
   list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {

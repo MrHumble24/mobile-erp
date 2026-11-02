@@ -22,4 +22,12 @@ export class SettingsRepository {
       update: dto,
     });
   }
+
+  markDigestSent(on: Date) {
+    return this.prisma.storeSettings.upsert({
+      where: { id: SINGLETON_ID },
+      create: { id: SINGLETON_ID, digestSentOn: on },
+      update: { digestSentOn: on },
+    });
+  }
 }

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -22,6 +24,8 @@ import { ShipmentsModule } from './shipments/shipments.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { QcModule } from './qc/qc.module.js';
 import { StockAlertRulesModule } from './stock-alert-rules/stock-alert-rules.module.js';
+import { SyncModule } from './sync/sync.module.js';
+import { TelegramModule } from './telegram/telegram.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -29,6 +33,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
 @Module({
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     PrismaModule,
     HealthModule,
     AuthModule,
@@ -48,6 +54,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     DevicesModule,
     QcModule,
     StockAlertRulesModule,
+    SyncModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [

@@ -11,6 +11,7 @@ const DEFAULTS: StoreSettings = {
   defaultWarrantyDays: 14,
   minMarginPercent: new Prisma.Decimal(0),
   lowStockThreshold: 2,
+  digestSentOn: null,
   updatedAt: new Date(0),
 };
 
@@ -28,5 +29,10 @@ export class SettingsService {
 
   update(dto: UpdateSettingsDto): Promise<StoreSettings> {
     return this.repo.upsert(dto);
+  }
+
+  /** Records that the closing digest went out, so the minute-cron fires once a day. */
+  markDigestSent(on: Date): Promise<StoreSettings> {
+    return this.repo.markDigestSent(on);
   }
 }
