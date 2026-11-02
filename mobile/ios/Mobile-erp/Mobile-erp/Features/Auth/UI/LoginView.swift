@@ -9,7 +9,7 @@ struct LoginView: View {
 
     @State private var email = ""
     @State private var password = ""
-    @State private var showDevPanel = false
+    @State private var showDevConsole = false
     @FocusState private var focus: Field?
 
     private enum Field { case email, password }
@@ -83,13 +83,13 @@ struct LoginView: View {
 
                 Section {
                     Button(i18n.t("auth.devPanel", default: "Developer settings")) {
-                        showDevPanel = true
+                        showDevConsole = true
                     }
                     .font(.footnote)
                 }
             }
-            .sheet(isPresented: $showDevPanel) {
-                DevPanelView()
+            .sheet(isPresented: $showDevConsole) {
+                DevConsoleGate()
             }
         }
     }

@@ -55,15 +55,19 @@ final class Session {
                 keychain.set(String(decoding: data, as: UTF8.self), for: .user)
             }
             user = result.user
+            AppLog.info("auth", "login ok: \(result.user.displayName)")
             onLogin?()   // hydrate the cache
         } catch let error as AppError {
+            AppLog.warn("auth", "login failed: \(error.statusCode) \(error.message)")
             loginError = error
         } catch {
+            AppLog.warn("auth", "login failed: \(error.localizedDescription)")
             loginError = AppError(statusCode: 0, message: error.localizedDescription)
         }
     }
 
     func logout() {
+        AppLog.info("auth", "logout")
         clear()
     }
 

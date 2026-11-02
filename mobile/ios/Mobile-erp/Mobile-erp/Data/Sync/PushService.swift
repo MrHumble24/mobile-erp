@@ -48,13 +48,17 @@ struct PushService {
             FetchDescriptor<OutboxEntry>(predicate: #Predicate { $0.id == id })
         ).first
         guard let entry else { return }
-        switch r["status"] as? String {
+        let status = r["status"] as? String
+        switch status {
         case "applied", "duplicate":
+            AppLog.info("sync", "push \(status!) \(entry.type) \(id)")
             context.delete(entry)
         case "conflict":
+            AppLog.warn("sync", "push conflict \(entry.type) \(id)")
             entry.status = "conflict"
             entry.lastError = (r["conflictId"] as? String)
         default:   // "rejected" or anything unexpected → keep + flag
+            AppLog.error("sync", "push rejected \(entry.type) \(id): \((r["error"] as? String) ?? "rejected")")
             entry.status = "rejected"
             entry.lastError = (r["error"] as? String) ?? "rejected"
         }

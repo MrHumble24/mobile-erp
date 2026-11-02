@@ -17,6 +17,7 @@ final class AppContainer {
     let sync: SyncController
     let modelContainer: ModelContainer
     let terminalID: String
+    let devAccess = DevConsoleAccess()
 
     var modelContext: ModelContext { modelContainer.mainContext }
     var outbox: Outbox { Outbox(context: modelContext) }

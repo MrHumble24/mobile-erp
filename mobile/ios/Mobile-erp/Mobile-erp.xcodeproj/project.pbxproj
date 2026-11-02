@@ -79,6 +79,7 @@
 				E3CADEA43098A5FC003C7EC5 /* Frameworks */,
 				E3CADEA53098A5FC003C7EC5 /* Resources */,
 				E3CADEC03098A5FD003C7EC5 /* Bundle i18n (web single source) */,
+				E3CADEC23098A5FD003C7EC5 /* Embed dev host (LAN IP) */,
 			);
 			buildRules = (
 			);
@@ -147,6 +148,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\nSRC=\"$SRCROOT/../../../client/src/shared/i18n\"\nDEST=\"$BUILT_PRODUCTS_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/i18n\"\nif [ ! -d \"$SRC\" ]; then echo \"warning: i18n source not found at $SRC\"; exit 0; fi\nrm -rf \"$DEST\"\nfor loc in uz en; do\n  mkdir -p \"$DEST/$loc\"\n  cp \"$SRC/$loc/\"*.json \"$DEST/$loc/\"\ndone\n";
+		};
+		E3CADEC23098A5FD003C7EC5 /* Embed dev host (LAN IP) */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Embed dev host (LAN IP)";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/dev-host.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Write the build Mac's LAN IPv4 into the BUILT Info.plist as DevHost so a\n# device build reaches the dev server without the user typing an IP. Never\n# touches the source plist. The built plist is declared as an input so this\n# phase is ordered AFTER ProcessInfoPlistFile. Omits the key (not an error)\n# if no IP is found.\nset -e\nSTAMP=\"$DERIVED_FILE_DIR/dev-host.stamp\"\nmkdir -p \"$DERIVED_FILE_DIR\"; : > \"$STAMP\"\nPLIST=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\nif [ ! -f \"$PLIST\" ]; then echo \"note: built Info.plist not found; skipping DevHost\"; exit 0; fi\nIP=$(ipconfig getifaddr en0 2>/dev/null || true)\n[ -z \"$IP\" ] && IP=$(ipconfig getifaddr en1 2>/dev/null || true)\n[ -z \"$IP\" ] && IP=$(ifconfig 2>/dev/null | awk '/inet /{if($2!=\"127.0.0.1\"){print $2; exit}}' || true)\nif [ -z \"$IP\" ]; then echo \"note: no LAN IPv4 found; DevHost omitted\"; exit 0; fi\n/usr/libexec/PlistBuddy -c \"Set :DevHost $IP\" \"$PLIST\" 2>/dev/null || /usr/libexec/PlistBuddy -c \"Add :DevHost string $IP\" \"$PLIST\"\necho \"DevHost=$IP\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

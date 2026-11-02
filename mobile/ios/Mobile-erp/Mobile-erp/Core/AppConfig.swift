@@ -1,11 +1,15 @@
 import Foundation
 
-/// Build-time defaults. The server has **no global prefix** and listens on
-/// :3000. The production URL here is the factory default shown in the dev
-/// panel; override it there at runtime (persisted) without a rebuild.
+/// Build-time defaults. The server has **no global prefix** and the LAN dev
+/// server listens on :3000. Production/Staging URLs are the factory defaults
+/// shown in the developer console; override any of them there at runtime
+/// (persisted) without a rebuild. The Development URL is detected automatically
+/// (build Mac LAN IP / simulator localhost) — see `DevHost`.
 enum AppConfig {
-    /// Default production base URL. Edit in the dev panel per environment.
-    static let defaultProdURL = "http://localhost:3000"
-    /// Default development base URL (LAN server during field testing).
-    static let defaultDevURL = "http://localhost:3000"
+    /// Default Production base URL.
+    static let defaultProdURL = "https://mobile-api.abdulboriy.dev"
+    /// Staging has no server yet — empty until a URL is entered in the console.
+    static let defaultStagingURL = ""
+    /// Port the LAN development server listens on.
+    static let devPort = 3000
 }

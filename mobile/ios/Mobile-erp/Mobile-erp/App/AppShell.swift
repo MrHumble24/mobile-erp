@@ -12,9 +12,11 @@ struct AppShell: View {
     @State private var selection: String = FeatureRegistry.all.first?.id ?? ""
 
     private var visible: [FeatureModule] {
-        FeatureRegistry.all.filter {
+        var mods = FeatureRegistry.all.filter {
             $0.permission == nil || container.session.can($0.permission!)
         }
+        if container.devAccess.showsTab { mods.append(DevConsoleModule.feature) }
+        return mods
     }
 
     var body: some View {
