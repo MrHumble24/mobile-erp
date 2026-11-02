@@ -28,9 +28,15 @@ import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
-/** Detail view for one sale: facts, the printable receipt, and the return flow. */
+/** Detail view for one sale: facts, the printable receipt, the device link, and the return flow. */
 @Composable
-fun SaleDetailSheet(sale: Sale, canReturn: Boolean, onReceipt: () -> Unit, onReturn: () -> Unit) {
+fun SaleDetailSheet(
+    sale: Sale,
+    canReturn: Boolean,
+    onReceipt: () -> Unit,
+    onReturn: () -> Unit,
+    onOpenDevice: () -> Unit,
+) {
     val t = LocalT.current
     val retail = sale.channel == SaleChannel.RETAIL
     Column(Modifier.fillMaxWidth().padding(20.dp)) {
@@ -49,7 +55,9 @@ fun SaleDetailSheet(sale: Sale, canReturn: Boolean, onReceipt: () -> Unit, onRet
         sale.soldAt?.let { Kv(t("sales.soldAt", null), formatDate(it)) }
         sale.warrantyDays?.let { Kv(t("pos.warrantyDays", null), it.toString()) }
         sale.returnedAt?.let { Kv(t("sales.returnedAt", null), formatDate(it)) }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
+        PillButton(t("sales.openDevice", null), onOpenDevice, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
+        Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PillButton(t("sales.receipt", null), onReceipt, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
             if (canReturn && sale.returnedAt == null) {

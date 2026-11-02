@@ -4,19 +4,34 @@ import kotlinx.serialization.json.Json
 import uz.malika.erp.core.runApi
 import uz.malika.erp.data.local.AppDatabase
 import uz.malika.erp.features.sales.lib.remainingWarrantyDays
+import uz.malika.erp.shared.lib.DEFAULT_PAGE_SIZE
 
-/** Server filters for the sales list. Empty values are dropped from the query. */
+/**
+ * Server filters for the sales list. Empty values are dropped from the query.
+ * `returned` is "true"/"false"; `warranty` is "active"/"expired" (mirrors the
+ * server `ListSalesQueryDto`). `page`/`pageSize` drive load-more pagination.
+ */
 data class SaleFilters(
     val from: String? = null,
     val to: String? = null,
     val channel: SaleChannel? = null,
     val search: String? = null,
+    val returned: String? = null,
+    val warranty: String? = null,
+    val soldById: String? = null,
+    val page: Int = 1,
+    val pageSize: Int = DEFAULT_PAGE_SIZE,
 ) {
     fun toQuery(): Map<String, String> = buildMap {
         from?.let { put("from", it) }
         to?.let { put("to", it) }
         channel?.let { put("channel", if (it == SaleChannel.B2B) "b2b" else "retail") }
         search?.takeIf { it.isNotBlank() }?.let { put("search", it) }
+        returned?.let { put("returned", it) }
+        warranty?.let { put("warranty", it) }
+        soldById?.let { put("soldById", it) }
+        put("page", page.toString())
+        put("pageSize", pageSize.toString())
     }
 }
 
@@ -35,6 +50,15 @@ class SalesRepository(
     suspend fun list(filters: SaleFilters): SalesPage = runApi {
         val dto = api.sales(filters.toQuery())
         SalesPage(items = dto.items.map { it.toDomain() }, total = dto.total)
+    }
+
+    suspend fun stats(filters: SaleFilters): SaleStats = runApi {
+        api.salesStats(filters.toQuery()).toDomain()
+    }
+
+    /** Cashier options for the filter; returns empty when the caller lacks `user.read` (403). */
+    suspend fun cashiers(): List<UserOption> = runApi {
+        api.users(mapOf("pageSize" to "200")).items.map { it.toOption() }
     }
 
     suspend fun warrantyOnline(imei: String): Warranty = runApi { api.warranty(imei).toDomain() }

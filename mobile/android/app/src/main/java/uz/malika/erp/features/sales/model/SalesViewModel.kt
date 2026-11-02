@@ -8,20 +8,24 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.sales.data.ReceiptData
+import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SaleFilters
-import uz.malika.erp.features.sales.data.SalesPage
+import uz.malika.erp.features.sales.data.SaleStats
 import uz.malika.erp.features.sales.data.SalesRepository
+import uz.malika.erp.features.sales.data.UserOption
 import uz.malika.erp.features.sales.data.Warranty
+import uz.malika.erp.shared.lib.PageState
 
-data class SalesListUi(val loading: Boolean = true, val error: String? = null, val page: SalesPage? = null)
+data class SalesListUi(val state: PageState<Sale> = PageState(), val error: String? = null)
 data class WarrantyUi(val loading: Boolean = false, val searched: Boolean = false, val result: Warranty? = null)
 data class ReceiptUi(val loading: Boolean = false, val error: String? = null, val data: ReceiptData? = null)
 data class ReturnUi(val busy: Boolean = false, val error: String? = null, val done: Boolean = false)
 
 /**
- * Sales list (filtered), the IMEI warranty lookup (online or offline), on-demand
- * receipts, and the online-only return. One ViewModel for the one sales screen.
+ * Sales list (filtered + paginated + stats), the IMEI warranty lookup (online or
+ * offline), on-demand receipts, and the online-only return. One ViewModel for the
+ * one sales screen.
  */
 class SalesViewModel(private val repo: SalesRepository) : ViewModel() {
 
@@ -30,6 +34,12 @@ class SalesViewModel(private val repo: SalesRepository) : ViewModel() {
 
     private val _filters = MutableStateFlow(SaleFilters())
     val filters: StateFlow<SaleFilters> = _filters.asStateFlow()
+
+    private val _stats = MutableStateFlow<SaleStats?>(null)
+    val stats: StateFlow<SaleStats?> = _stats.asStateFlow()
+
+    private val _cashiers = MutableStateFlow<List<UserOption>>(emptyList())
+    val cashiers: StateFlow<List<UserOption>> = _cashiers.asStateFlow()
 
     private val _warranty = MutableStateFlow(WarrantyUi())
     val warranty: StateFlow<WarrantyUi> = _warranty.asStateFlow()
@@ -42,19 +52,52 @@ class SalesViewModel(private val repo: SalesRepository) : ViewModel() {
 
     init { refresh() }
 
+    /** Reload from page 1 (replaces the list) and refresh the stats tiles. */
     fun refresh() {
-        _list.value = _list.value.copy(loading = true, error = null)
+        _filters.value = _filters.value.copy(page = 1)
+        _list.value = _list.value.copy(state = _list.value.state.copy(loading = true), error = null)
         viewModelScope.launch {
             try {
-                _list.value = SalesListUi(loading = false, page = repo.list(_filters.value))
+                val page = repo.list(_filters.value)
+                _list.value = SalesListUi(state = PageState<Sale>().append(page.items, page.total, 1))
             } catch (e: Exception) {
-                _list.value = SalesListUi(loading = false, error = (e as? AppException)?.message ?: "error")
+                _list.value = SalesListUi(error = (e as? AppException)?.message ?: "error")
             }
+        }
+        viewModelScope.launch {
+            _stats.value = runCatching { repo.stats(_filters.value) }.getOrNull()
+        }
+    }
+
+    fun loadMore() {
+        val current = _list.value.state
+        if (current.loading || !current.hasMore) return
+        val next = current.nextPage
+        _list.value = _list.value.copy(state = current.copy(loading = true))
+        _filters.value = _filters.value.copy(page = next)
+        viewModelScope.launch {
+            try {
+                val page = repo.list(_filters.value)
+                _list.value = _list.value.copy(state = _list.value.state.append(page.items, page.total, next))
+            } catch (_: Exception) {
+                _list.value = _list.value.copy(state = _list.value.state.copy(loading = false))
+            }
+        }
+    }
+
+    fun loadCashiers() {
+        if (_cashiers.value.isNotEmpty()) return
+        viewModelScope.launch {
+            _cashiers.value = runCatching { repo.cashiers() }.getOrDefault(emptyList())
         }
     }
 
     fun setChannel(channel: SaleChannel?) { _filters.value = _filters.value.copy(channel = channel); refresh() }
     fun setRange(from: String?, to: String?) { _filters.value = _filters.value.copy(from = from, to = to); refresh() }
+    fun setSearch(search: String?) { _filters.value = _filters.value.copy(search = search); refresh() }
+    fun setReturned(returned: String?) { _filters.value = _filters.value.copy(returned = returned); refresh() }
+    fun setWarranty(warranty: String?) { _filters.value = _filters.value.copy(warranty = warranty); refresh() }
+    fun setSoldById(id: String?) { _filters.value = _filters.value.copy(soldById = id); refresh() }
     fun clearFilters() { _filters.value = SaleFilters(); refresh() }
 
     fun lookupWarranty(imei: String, online: Boolean) {

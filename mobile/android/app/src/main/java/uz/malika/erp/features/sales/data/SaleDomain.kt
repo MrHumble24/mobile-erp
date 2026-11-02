@@ -34,6 +34,33 @@ fun SaleDto.toDomain() = Sale(
     returnedAt = returnInfo?.returnedAt,
 )
 
+/** Aggregate stats for the sales list header. Money stays a string; profit is redacted (nullable). */
+data class SaleStats(
+    val count: Int,
+    val revenue: String,
+    val avgPrice: String,
+    val returnedCount: Int,
+    val refundTotal: String,
+    val netProfit: String?,
+)
+
+fun SaleStatsDto.toDomain() = SaleStats(
+    count = count,
+    revenue = revenue,
+    avgPrice = avgPrice,
+    returnedCount = returnedCount,
+    refundTotal = refundTotal,
+    netProfit = netProfit,
+)
+
+/** A cashier option for the sales filter. */
+data class UserOption(val id: String, val name: String)
+
+fun UserOptionDto.toOption() = UserOption(
+    id = id,
+    name = profile?.let { "${it.firstName} ${it.lastName ?: ""}".trim() }?.takeIf { it.isNotBlank() } ?: email,
+)
+
 /** Warranty status for a returning customer, keyed by IMEI. Built online or offline. */
 data class Warranty(
     val imei: String,

@@ -10,13 +10,15 @@ import uz.malika.erp.core.AppException
 import uz.malika.erp.features.sales.data.CustomerFilters
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomerSale
+import uz.malika.erp.features.sales.data.CustomerStats
 import uz.malika.erp.features.sales.data.CustomersRepository
+import uz.malika.erp.shared.lib.PageState
 
-data class CustomerListUi(val loading: Boolean = true, val error: String? = null, val items: List<CustomerListItem> = emptyList())
+data class CustomerListUi(val state: PageState<CustomerListItem> = PageState(), val error: String? = null)
 data class CustomerSalesUi(val loading: Boolean = true, val error: String? = null, val items: List<CustomerSale> = emptyList())
 data class CustomerFormUi(val busy: Boolean = false, val error: String? = null, val done: Boolean = false)
 
-/** Customer directory: filtered list, purchase history, and online-only create/edit. */
+/** Customer directory: filtered + paginated list, stats, purchase history, and online-only create/edit. */
 class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
 
     private val _list = MutableStateFlow(CustomerListUi())
@@ -24,6 +26,9 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
 
     private val _filters = MutableStateFlow(CustomerFilters())
     val filters: StateFlow<CustomerFilters> = _filters.asStateFlow()
+
+    private val _stats = MutableStateFlow<CustomerStats?>(null)
+    val stats: StateFlow<CustomerStats?> = _stats.asStateFlow()
 
     private val _sales = MutableStateFlow(CustomerSalesUi())
     val sales: StateFlow<CustomerSalesUi> = _sales.asStateFlow()
@@ -34,12 +39,31 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
     init { refresh() }
 
     fun refresh() {
-        _list.value = _list.value.copy(loading = true, error = null)
+        _filters.value = _filters.value.copy(page = 1)
+        _list.value = _list.value.copy(state = _list.value.state.copy(loading = true), error = null)
         viewModelScope.launch {
             try {
-                _list.value = CustomerListUi(loading = false, items = repo.list(_filters.value))
+                val page = repo.list(_filters.value)
+                _list.value = CustomerListUi(state = PageState<CustomerListItem>().append(page.items, page.total, 1))
             } catch (e: Exception) {
-                _list.value = CustomerListUi(loading = false, error = (e as? AppException)?.message ?: "error")
+                _list.value = CustomerListUi(error = (e as? AppException)?.message ?: "error")
+            }
+        }
+        viewModelScope.launch { _stats.value = runCatching { repo.stats() }.getOrNull() }
+    }
+
+    fun loadMore() {
+        val current = _list.value.state
+        if (current.loading || !current.hasMore) return
+        val next = current.nextPage
+        _list.value = _list.value.copy(state = current.copy(loading = true))
+        _filters.value = _filters.value.copy(page = next)
+        viewModelScope.launch {
+            try {
+                val page = repo.list(_filters.value)
+                _list.value = _list.value.copy(state = _list.value.state.append(page.items, page.total, next))
+            } catch (_: Exception) {
+                _list.value = _list.value.copy(state = _list.value.state.copy(loading = false))
             }
         }
     }

@@ -15,6 +15,27 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 data class SalesPageDto(val items: List<SaleDto> = emptyList(), val total: Int = 0)
 
+/** `/sales/stats`. Money is a Decimal string; `netProfit` is redacted (nullable) for under-privileged callers. */
+@Serializable
+data class SaleStatsDto(
+    val count: Int = 0,
+    val revenue: String = "0",
+    val avgPrice: String = "0",
+    val returnedCount: Int = 0,
+    val refundTotal: String = "0",
+    val netProfit: String? = null,
+)
+
+/** `/users` — only the id + display name are needed for the cashier filter. */
+@Serializable
+data class UsersPageDto(val items: List<UserOptionDto> = emptyList(), val total: Int = 0)
+
+@Serializable
+data class UserOptionDto(val id: String = "", val email: String = "", val profile: UserProfileNameDto? = null)
+
+@Serializable
+data class UserProfileNameDto(val firstName: String = "", val lastName: String? = null)
+
 @Serializable
 data class SaleDto(
     val id: String = "",
@@ -136,6 +157,15 @@ data class CustomerDto(
     val phone: String? = null,
     val notes: String? = null,
     val createdAt: String? = null,
+)
+
+/** `/customers/stats` aggregate tiles. */
+@Serializable
+data class CustomerStatsDto(
+    val total: Int = 0,
+    val newThisMonth: Int = 0,
+    val withPurchases: Int = 0,
+    val repeatBuyers: Int = 0,
 )
 
 @Serializable

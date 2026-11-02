@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,13 +12,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import uz.malika.erp.features.sales.data.Customer
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
@@ -49,7 +47,6 @@ fun CustomerPicker(
     enabled: Boolean,
 ) {
     val t = LocalT.current
-    val scope = rememberCoroutineScope()
     var picked by remember { mutableStateOf<Customer?>(null) }
     var addNew by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -65,6 +62,16 @@ fun CustomerPicker(
                 else -> CustomerSelection()
             },
         )
+    }
+
+    // Typeahead: debounce keystrokes, then search existing customers.
+    LaunchedEffect(query) {
+        if (query.isBlank()) {
+            results = emptyList()
+        } else {
+            delay(300)
+            results = runCatching { lookup(query) }.getOrDefault(emptyList())
+        }
     }
 
     Column(Modifier.fillMaxWidth()) {
@@ -96,9 +103,6 @@ fun CustomerPicker(
                     placeholder = t("pos.searchCustomer", null),
                     enabled = enabled,
                     imeAction = ImeAction.Search,
-                    keyboardActions = KeyboardActions(onSearch = {
-                        scope.launch { results = runCatching { lookup(query) }.getOrDefault(emptyList()) }
-                    }),
                 )
                 results.take(6).forEach { c ->
                     Spacer(Modifier.height(6.dp))

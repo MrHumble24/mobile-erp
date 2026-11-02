@@ -20,6 +20,13 @@ interface SalesApi {
     @GET("sales")
     suspend fun sales(@QueryMap query: Map<String, String>): SalesPageDto
 
+    @GET("sales/stats")
+    suspend fun salesStats(@QueryMap query: Map<String, String>): SaleStatsDto
+
+    /** Cashier options for the sales filter; gated by `user.read` (admins only). */
+    @GET("users")
+    suspend fun users(@QueryMap query: Map<String, String>): UsersPageDto
+
     @GET("sales/{id}")
     suspend fun sale(@Path("id") id: String): SaleDto
 
@@ -37,6 +44,9 @@ interface SalesApi {
 
     @GET("customers")
     suspend fun customers(@QueryMap query: Map<String, String>): CustomerPageDto
+
+    @GET("customers/stats")
+    suspend fun customerStats(): CustomerStatsDto
 
     @GET("customers/lookup")
     suspend fun customerLookup(@Query("q") q: String?): List<CustomerDto>

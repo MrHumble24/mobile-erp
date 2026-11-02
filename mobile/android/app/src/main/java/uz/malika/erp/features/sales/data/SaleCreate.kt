@@ -4,7 +4,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import uz.malika.erp.shared.lib.parseMoney
 import java.math.BigDecimal
+
+/** One `sale.create` ready for the outbox: its payload and the device baseVersion. */
+data class SaleOp(val payload: JsonObject, val baseVersion: Int)
 
 /**
  * Pure builder for a `sale.create` outbox payload. Kept free of HTTP/Android so
@@ -39,6 +43,32 @@ object SaleCreate {
         }
         warrantyDays?.let { put("warrantyDays", it) }
         notes?.trim()?.takeIf { it.isNotEmpty() }?.let { put("notes", it) }
+    }
+
+    /**
+     * Fan a multi-device cart out into one [SaleOp] per line: the shared customer
+     * and notes ride every op; price/warranty come from the line; the baseVersion
+     * is that device's version (its own optimistic-lock token). Pure — unit-tested.
+     */
+    fun ops(
+        lines: List<CartLine>,
+        customerId: String? = null,
+        customerName: String? = null,
+        customerPhone: String? = null,
+        notes: String? = null,
+    ): List<SaleOp> = lines.map { line ->
+        SaleOp(
+            payload = payload(
+                imei = line.device.imei,
+                salePrice = parseMoney(line.salePrice),
+                customerId = customerId,
+                customerName = customerName,
+                customerPhone = customerPhone,
+                warrantyDays = line.warrantyDays.trim().toIntOrNull(),
+                notes = notes,
+            ),
+            baseVersion = line.device.version,
+        )
     }
 
     /** IMEI is exactly 15 digits (mirrors the server `CreateSaleDto` rule). */
