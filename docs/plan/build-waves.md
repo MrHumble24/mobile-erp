@@ -4,6 +4,12 @@ Order follows data dependencies: identity/access → inventory → money flows �
 One agent per package per wave; wave N+1 starts after wave N is merged to `main`.
 Shared files in a wave: only `server/src/app.module.ts` (one import line per agent).
 
+**Progress (2026-11-02):** waves 1, 2a–2d, 3 and 3b are merged to `main` (server: auth/RBAC, inventory, QC,
+sales, consignment, expenses/settings/reports, offline sync, Telegram alerts, encrypted backups). Frontend is
+being built by Gemini on `gemini/ui-waves-1-2` (handoff 003). Open: Uzbek Telegram copy (handoff 004 to
+write), routing sales/consignment device writes through `DevicesService.changeStatus`, client offline cache
+against `/sync/changes` and `/sync/push`.
+
 | Wave | Agent    | Branch                          | Scope (server modules)                                              | Depends on |
 |------|----------|---------------------------------|----------------------------------------------------------------------|------------|
 | 1    | backend  | agent/backend/foundation        | common (pipes, filters, guards, decorators), auth, users+profile, access (roles, permissions, user overrides, effective set), bootstrap first admin | schema |
