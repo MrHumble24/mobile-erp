@@ -17,6 +17,7 @@ import '../../features/consignments/consignments_module.dart';
 import '../../features/partners/partners_module.dart';
 import '../../features/expenses/expenses_module.dart';
 import '../../features/reports/reports_module.dart';
+import '../../features/sync/sync_module.dart';
 import '../../features/users/users_module.dart';
 import '../../features/settings/settings_module.dart';
 
@@ -42,6 +43,7 @@ List<NavItem> appNavItems = [
   ...partnersNavItems,
   ...expensesNavItems,
   ...reportsNavItems,
+  ...syncNavItems,
   ...usersNavItems,
   ...settingsNavItems,
 ];
@@ -59,6 +61,7 @@ List<RouteBase> featureRoutes = [
   ...partnersRoutes,
   ...expensesRoutes,
   ...reportsRoutes,
+  ...syncRoutes,
   ...usersRoutes,
   ...settingsRoutes,
 ];

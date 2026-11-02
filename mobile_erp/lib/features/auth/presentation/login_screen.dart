@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/app_exception.dart';
+import '../../../data/sync/connectivity.dart';
 import '../../../l10n/i18n.dart';
 import '../../../shared/ui/app_form_field.dart';
 import '../application/session_controller.dart';
@@ -40,6 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final session = ref.watch(sessionControllerProvider);
     final busy = session.isLoading;
     final error = session.hasError ? session.error : null;
+    final online = ref.watch(connectivityProvider).valueOrNull ?? true;
     final text = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -56,6 +58,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text(context.t('auth.loginTitle'), style: text.headlineMedium),
                   const SizedBox(height: 4),
                   Text(context.t('auth.loginSubtitle'), style: text.bodyMedium),
+                  if (!online) ...[
+                    const SizedBox(height: 16),
+                    _OfflineBanner(message: context.t('auth.offlineSignIn')),
+                  ],
                   const SizedBox(height: 24),
                   AppFormField(
                     label: context.t('auth.emailLabel'),
@@ -115,5 +121,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           : error.message;
     }
     return context.t('common.error');
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off, size: 18),
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: Theme.of(context).textTheme.bodySmall)),
+        ],
+      ),
+    );
   }
 }

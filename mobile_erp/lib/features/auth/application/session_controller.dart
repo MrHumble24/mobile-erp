@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth_events.dart';
+import '../../../core/jwt.dart';
 import '../../../core/secure_storage.dart';
 import '../../../data/sync/sync_controller.dart';
 import '../data/auth_models.dart';
@@ -26,6 +27,7 @@ class SessionController extends AsyncNotifier<AuthUser?> {
     final token = await storage.read(key: SecureKeys.token);
     final userJson = await storage.read(key: SecureKeys.user);
     if (token == null || token.isEmpty || userJson == null) return null;
+    if (isJwtExpired(token)) return null; // expired 12h session → force re-login
     return AuthUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
   }
 
