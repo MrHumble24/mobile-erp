@@ -2,67 +2,97 @@ import { Truck } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Button } from "@/shared/ui/button"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDate } from "@/shared/lib/format"
 import type { ShipmentView } from "@/entities/shipment"
+import { ShipmentProgressBadge } from "./ShipmentProgressBadge"
+
+export interface ShipmentsTableProps {
+  shipments: ShipmentView[]
+  suppliersMap: Record<string, string>
+  canViewCost: boolean
+  canIntake: boolean
+  canManage: boolean
+  onOpen: (s: ShipmentView) => void
+  onIntake: (id: string) => void
+  onEdit: (s: ShipmentView) => void
+}
 
 function EmptyShipmentsState() {
   const { t } = useI18n()
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white rounded-[12px] border border-[#e8e8e8]">
-      <div className="size-12 rounded-full bg-[#f8f9fa] border border-[#e8e8e8] flex items-center justify-center mb-3">
-        <Truck className="size-6 text-[#838383]" />
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border rounded-lg bg-card/30">
+      <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
+        <Truck className="size-6 text-muted-foreground" />
       </div>
-      <h3 className="text-sm font-bold font-display text-[#090c1d] mb-1">
-        {t("shipments.title")} {t("common.notFound").toLowerCase()}
-      </h3>
-      <p className="text-xs text-[#838383] max-w-sm">
-        Hozircha tizimda hech qanday tovar partiyasi mavjud emas. Yuqoridagi tugma orqali yangi partiya qabul qilishingiz mumkin.
-      </p>
+      <h3 className="text-sm font-semibold mb-1">{t("shipments.empty")}</h3>
+      <p className="text-xs text-muted-foreground max-w-sm">{t("shipments.emptyHint")}</p>
     </div>
   )
 }
 
-export function ShipmentsTable({
-  shipments,
-  suppliersMap,
+function RowActions({
+  shipment,
+  canIntake,
+  canManage,
+  onOpen,
   onIntake,
-}: {
-  shipments: ShipmentView[]
-  suppliersMap: Record<string, string>
-  onIntake: (id: string) => void
+  onEdit,
+}: Pick<ShipmentsTableProps, "canIntake" | "canManage" | "onOpen" | "onIntake" | "onEdit"> & {
+  shipment: ShipmentView
 }) {
   const { t } = useI18n()
+  return (
+    <div className="flex justify-end gap-1.5">
+      <Button variant="ghost" size="sm" onClick={() => onOpen(shipment)}>{t("shipments.openDetail")}</Button>
+      {canIntake && (
+        <Button size="sm" onClick={() => onIntake(shipment.id)} className="h-8 rounded-full text-xs">
+          {t("shipments.continueIntake")}
+        </Button>
+      )}
+      {canManage && (
+        <Button variant="outline" size="sm" onClick={() => onEdit(shipment)}>{t("common.edit")}</Button>
+      )}
+    </div>
+  )
+}
 
-  if (shipments.length === 0) {
-    return <EmptyShipmentsState />
-  }
+function ShipmentRow({ shipment, suppliersMap, canViewCost, ...actions }: ShipmentsTableProps & { shipment: ShipmentView }) {
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{suppliersMap[shipment.supplierId] || shipment.supplierId}</TableCell>
+      <TableCell className="text-xs font-mono">{formatDate(shipment.shipmentDate)}</TableCell>
+      <TableCell><ShipmentProgressBadge received={shipment.deviceCount} expected={shipment.expectedCount} /></TableCell>
+      {canViewCost && <TableCell>{formatMoney(shipment.overheadCost)}</TableCell>}
+      <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">{shipment.notes || "-"}</TableCell>
+      <TableCell className="text-right">
+        <RowActions shipment={shipment} {...actions} />
+      </TableCell>
+    </TableRow>
+  )
+}
+
+export function ShipmentsTable(props: ShipmentsTableProps) {
+  const { t } = useI18n()
+  const { shipments, canViewCost } = props
+
+  if (shipments.length === 0) return <EmptyShipmentsState />
 
   return (
-    <div className="rounded-[12px] border border-[#e8e8e8] bg-white overflow-hidden">
+    <div className="rounded-lg border bg-card overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("shipments.shipmentDate")}</TableHead>
             <TableHead>{t("shipments.supplier")}</TableHead>
-            <TableHead>{t("shipments.expectedCount")}</TableHead>
+            <TableHead>{t("shipments.shipmentDate")}</TableHead>
             <TableHead>{t("shipments.receivedCount")}</TableHead>
-            <TableHead>{t("shipments.overheadCost")}</TableHead>
+            {canViewCost && <TableHead>{t("shipments.overheadCost")}</TableHead>}
+            <TableHead>{t("common.notes")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {shipments.map((s) => (
-            <TableRow key={s.id}>
-              <TableCell className="font-medium text-xs font-mono">{new Date(s.shipmentDate).toLocaleDateString()}</TableCell>
-              <TableCell className="font-medium">{suppliersMap[s.supplierId] || s.supplierId}</TableCell>
-              <TableCell>{s.expectedCount}</TableCell>
-              <TableCell className="font-semibold text-primary">{s.deviceCount}</TableCell>
-              <TableCell>${s.overheadCost || "0"}</TableCell>
-              <TableCell className="text-right">
-                <Button size="sm" onClick={() => onIntake(s.id)} className="h-8 rounded-full text-xs">
-                  {t("shipments.intakeDevices")}
-                </Button>
-              </TableCell>
-            </TableRow>
+            <ShipmentRow key={s.id} shipment={s} {...props} />
           ))}
         </TableBody>
       </Table>
