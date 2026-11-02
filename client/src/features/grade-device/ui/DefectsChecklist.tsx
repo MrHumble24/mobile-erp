@@ -1,5 +1,5 @@
 import type { UseFormReturn } from "react-hook-form"
-import { useFieldArray } from "react-hook-form"
+import { useFieldArray, useWatch } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
 import type { LookupView } from "@/entities/qc"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -11,16 +11,31 @@ type Form = UseFormReturn<GradeDeviceValues>
 
 function DefectRow({ form, index, label }: { form: Form; index: number; label: string }) {
   const { t } = useI18n()
-  const selected = form.watch(`defects.${index}.selected`)
+  const id = `defect-${index}`
+  const selected = useWatch({
+    control: form.control,
+    name: `defects.${index}.selected`,
+  })
+
+  const handleToggle = (checked: boolean) => {
+    form.setValue(`defects.${index}.selected`, checked, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
+
   return (
     <div className="space-y-1.5">
-      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <div className="flex items-center gap-2 text-sm font-medium">
         <Checkbox
-          checked={selected}
-          onCheckedChange={(val) => form.setValue(`defects.${index}.selected`, Boolean(val))}
+          id={id}
+          checked={Boolean(selected)}
+          onCheckedChange={(val) => handleToggle(Boolean(val))}
         />
-        <span>{label}</span>
-      </label>
+        <label htmlFor={id} className="cursor-pointer select-none text-xs sm:text-sm text-[#202020]">
+          {label}
+        </label>
+      </div>
       {selected && (
         <Input
           className="h-9 text-xs"
