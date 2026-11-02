@@ -9,7 +9,12 @@ import SwiftUI
 struct AppShell: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-    @State private var selection: String = FeatureRegistry.all.first?.id ?? ""
+
+    /// Tab selection is owned by the router so any feature can `open(...)` another.
+    private var selection: Binding<String> {
+        Binding(get: { container.router.selection },
+                set: { container.router.selection = $0 })
+    }
 
     private var visible: [FeatureModule] {
         var mods = FeatureRegistry.all.filter {
@@ -22,10 +27,15 @@ struct AppShell: View {
     var body: some View {
         tabView
             .modifier(SidebarAdaptableStyle())
+            .onAppear {
+                if container.router.selection.isEmpty {
+                    container.router.selection = visible.first?.id ?? ""
+                }
+            }
     }
 
     private var tabView: some View {
-        TabView(selection: $selection) {
+        TabView(selection: selection) {
             ForEach(visible) { module in
                 NavigationStack {
                     PermissionGate(permission: module.permission, content: module.root)
