@@ -1,0 +1,11 @@
+{
+  "title": "Tizim sozlamalari",
+  "storeSettings": "Do'kon asosiy sozlamalari",
+  "telegramChatId": "Telegram guruh/kanal Chat ID",
+  "closingTime": "Kunlik yopilish vaqti (masalan, 20:00)",
+  "defaultWarrantyDays": "Birlamchi kafolat muddati (kun)",
+  "minMarginPercent": "Minimal ruxsat etilgan marja (%)",
+  "lowStockThreshold": "Birlamchi kam qoldiq chegarasi (dona)",
+  "settingsSaved": "Sozlamalar saqlandi",
+  "saving": "Saqlanmoqda..."
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Financial Reports",
+  "tabProfit": "Profit & Loss (P&L)",
+  "tabExpenses": "Expense Analysis",
+  "tabModelPricing": "Model Pricing & Margins",
+  "tabDailyClosing": "Daily Register Closing",
+  "selectDate": "Select date",
+  "dateFrom": "From date",
+  "dateTo": "To date",
+  "groupBy": "Group by",
+  "groupByCategory": "By Category",
+  "groupByMonth": "By Month",
+  "closingReport": "Daily Report"
+}

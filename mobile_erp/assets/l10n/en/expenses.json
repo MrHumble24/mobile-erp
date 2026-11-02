@@ -1,0 +1,19 @@
+{
+  "title": "Shop Expenses",
+  "newExpense": "Log Expense",
+  "categories": "Expense Categories",
+  "newCategory": "New Category",
+  "category": "Category",
+  "amount": "Amount ($)",
+  "description": "Description / Purpose",
+  "isRecurring": "Recurring (Monthly)",
+  "incurredAt": "Date Incurred",
+  "summaryTitle": "Expense Summary by Category",
+  "totalExpenses": "Total Expenses",
+  "expenseSaved": "Expense logged successfully",
+  "noExpensesFound": "No expenses found",
+  "categorySaved": "Category saved successfully",
+  "filterRecurring": "Recurring only",
+  "deleteExpense": "Delete expense",
+  "expenseDeleted": "Expense deleted"
+}
