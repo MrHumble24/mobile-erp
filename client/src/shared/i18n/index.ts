@@ -2,6 +2,7 @@ import { create } from "zustand"
 import uzAuth from "./uz/auth.json"
 import uzCommon from "./uz/common.json"
 import uzConsignments from "./uz/consignments.json"
+import uzCustomers from "./uz/customers.json"
 import uzDashboard from "./uz/dashboard.json"
 import uzExpenses from "./uz/expenses.json"
 import uzInventory from "./uz/inventory.json"
@@ -18,6 +19,7 @@ import uzUsers from "./uz/users.json"
 import enAuth from "./en/auth.json"
 import enCommon from "./en/common.json"
 import enConsignments from "./en/consignments.json"
+import enCustomers from "./en/customers.json"
 import enDashboard from "./en/dashboard.json"
 import enExpenses from "./en/expenses.json"
 import enInventory from "./en/inventory.json"
@@ -38,6 +40,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     auth: uzAuth,
     common: uzCommon,
     consignments: uzConsignments,
+    customers: uzCustomers,
     dashboard: uzDashboard,
     expenses: uzExpenses,
     inventory: uzInventory,
@@ -55,6 +58,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     auth: enAuth,
     common: enCommon,
     consignments: enConsignments,
+    customers: enCustomers,
     dashboard: enDashboard,
     expenses: enExpenses,
     inventory: enInventory,

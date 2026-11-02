@@ -1,148 +1,109 @@
 import * as React from "react"
-import { Plus, Search, User, History } from "lucide-react"
+import { Download, Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useCustomers, type CustomerView } from "@/entities/customer"
+import { useAuthStore } from "@/features/auth"
+import { useCustomerList, type CustomerView } from "@/entities/customer"
+import { CustomerFormDialog } from "@/features/manage-customer"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table"
-import { CreateCustomerDialog } from "./CreateCustomerDialog"
-import { CustomerDetailsDrawer } from "./CustomerDetailsDrawer"
+import { Pagination } from "@/shared/ui/pagination"
+import { Skeleton } from "@/shared/ui/skeleton"
+import { useCustomerFilters } from "../model/use-customer-filters"
+import { exportCustomersCsv } from "../lib/customers-csv"
+import { CustomerFilters } from "./CustomerFilters"
+import { CustomerSummary } from "./CustomerSummary"
+import { CustomerTable } from "./CustomerTable"
+import { CustomerDetailSheet } from "./CustomerDetailSheet"
 
-function CustomerTableRow({
-  customer,
-  onSelect,
-}: {
-  customer: CustomerView
-  onSelect: (customer: CustomerView) => void
-}) {
-  const { t } = useI18n()
-
-  return (
-    <TableRow>
-      <TableCell className="font-semibold text-sm">
-        <div className="flex items-center gap-2">
-          <User className="size-4 text-muted-foreground" />
-          <span>{customer.name}</span>
-        </div>
-      </TableCell>
-      <TableCell className="text-sm font-mono text-muted-foreground">
-        {customer.phone || "—"}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {customer.notes || "—"}
-      </TableCell>
-      <TableCell className="text-xs text-muted-foreground">
-        {new Date(customer.createdAt).toLocaleDateString()}
-      </TableCell>
-      <TableCell className="text-right">
-        <Button
-          size="sm"
-          variant="outline"
-          className="gap-1.5 h-8 text-xs rounded-full"
-          onClick={() => onSelect(customer)}
-        >
-          <History className="size-3.5" />
-          {t("sales.customerSalesHistory")}
-        </Button>
-      </TableCell>
-    </TableRow>
-  )
-}
-
-function CustomersListTable({
-  customers,
-  onSelect,
-}: {
-  customers: CustomerView[]
-  onSelect: (customer: CustomerView) => void
-}) {
-  const { t } = useI18n()
-  if (customers.length === 0) {
-    return (
-      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#e8e8e8] rounded-[12px] bg-white">
-        {t("sales.noCustomersFound")}
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("common.name")}</TableHead>
-            <TableHead>{t("common.phone")}</TableHead>
-            <TableHead>{t("common.notes")}</TableHead>
-            <TableHead>{t("common.date")}</TableHead>
-            <TableHead className="text-right">{t("common.actions")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {customers.map((c) => (
-            <CustomerTableRow key={c.id} customer={c} onSelect={onSelect} />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
+interface FormState {
+  open: boolean
+  customer: CustomerView | null
 }
 
 export function CustomersPage() {
   const { t } = useI18n()
-  const [search, setSearch] = React.useState("")
-  const [createOpen, setCreateOpen] = React.useState(false)
-  const [selectedCustomer, setSelectedCustomer] = React.useState<CustomerView | null>(null)
+  const canManage = useAuthStore((s) => s.hasPermission("customer.manage"))
+  const filters = useCustomerFilters()
+  const { data, isLoading } = useCustomerList(filters.queryFilters)
 
-  const { data: customers, isLoading } = useCustomers(search || undefined)
+  const [form, setForm] = React.useState<FormState>({ open: false, customer: null })
+  const [detailId, setDetailId] = React.useState<string | null>(null)
+
+  const actions = React.useMemo(
+    () => ({
+      onOpenDetail: (customer: CustomerView) => setDetailId(customer.id),
+      onEdit: (customer: CustomerView) => setForm({ open: true, customer }),
+    }),
+    []
+  )
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t("sales.customersTitle")}
-        description="Do'kon mijozlari bazasi, aloqa ma'lumotlari va shaxsiy savdolar tarixi"
+        title={t("customers.title")}
+        description={t("customers.description")}
         actions={
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs"
-          >
-            <Plus className="size-4" />
-            {t("sales.newCustomer")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={!data || data.items.length === 0}
+              onClick={() => data && exportCustomersCsv(data.items)}
+            >
+              <Download className="size-4" />
+              {t("customers.exportCsv")}
+            </Button>
+            {canManage && (
+              <Button
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setForm({ open: true, customer: null })}
+              >
+                <Plus className="size-4" />
+                {t("customers.newCustomer")}
+              </Button>
+            )}
+          </div>
         }
       />
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("common.search")}
-          className="pl-9 h-9 rounded-[9px]"
+      <CustomerFilters filters={filters} />
+      <CustomerSummary />
+
+      {isLoading ? (
+        <Skeleton className="h-96 rounded-[16px]" />
+      ) : (
+        <CustomerTable
+          customers={data?.items ?? []}
+          canManage={canManage}
+          actions={actions}
         />
-      </div>
-
-      {isLoading && (
-        <div className="p-8 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
       )}
 
-      {customers && (
-        <CustomersListTable customers={customers} onSelect={setSelectedCustomer} />
+      {data && data.total > 0 && (
+        <Pagination
+          page={filters.page}
+          pageSize={filters.pageSize}
+          total={data.total}
+          rangeLabel={(from, to, total) => t("inventory.pageRange", { from, to, total })}
+          perPageLabel={t("inventory.perPage")}
+          onPageChange={filters.setPage}
+          onPageSizeChange={filters.setPageSize}
+        />
       )}
 
-      <CreateCustomerDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CustomerFormDialog
+        customer={form.customer}
+        open={form.open}
+        onOpenChange={(open) => setForm((s) => ({ ...s, open }))}
+      />
 
-      <CustomerDetailsDrawer
-        customer={selectedCustomer}
-        open={Boolean(selectedCustomer)}
-        onOpenChange={(open) => !open && setSelectedCustomer(null)}
+      <CustomerDetailSheet
+        customerId={detailId}
+        open={Boolean(detailId)}
+        onOpenChange={(open) => !open && setDetailId(null)}
+        onEdit={(customer) => setForm({ open: true, customer })}
       />
     </div>
   )
