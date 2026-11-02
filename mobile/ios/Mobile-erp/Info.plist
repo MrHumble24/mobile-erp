@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Partial Info.plist: Xcode merges the generated keys (INFOPLIST_KEY_*,
+	     scene manifest, launch screen, orientations) on top of this base. Only
+	     keys with no INFOPLIST_KEY scalar live here. -->
+
+	<!-- The ERP server runs on a plain-HTTP LAN address (http://<lan-ip>:3000),
+	     so allow arbitrary loads. This is an internal retail app, not an App
+	     Store build. Tighten to NSAllowsLocalNetworking if TLS is added later. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+
+	<!-- Sometype Mono (Caldera mono face) for IMEI and money columns. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>SometypeMono.ttf</string>
+	</array>
+</dict>
+</plist>
