@@ -56,32 +56,45 @@ fun ExpenseRow(expense: Expense, onClick: () -> Unit) {
     }
 }
 
-/** Expense detail sheet with an online-only delete for users with `expense.manage`. */
+/** Expense detail sheet with online-only edit/delete for users with `expense.manage`. */
 @Composable
 fun ExpenseDetailSheet(
     expense: Expense,
     canManage: Boolean,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
     AppBottomSheet(onDismiss = onDismiss) {
         Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(expense.categoryName, style = MaterialTheme.typography.headlineSmall)
+            Text(t("expenses.detailTitle", null), style = MaterialTheme.typography.headlineSmall)
+            DetailLine(t("expenses.category", null), expense.categoryName)
             DetailLine(t("common.amount", null), null) { MoneyText(expense.amount, style = MaterialTheme.typography.bodyLarge) }
             DetailLine(t("expenses.incurredAt", null), dayOf(expense.incurredAt))
+            DetailLine(t("expenses.vendor", null), expense.vendor?.ifBlank { null })
             DetailLine(t("expenses.isRecurring", null), if (expense.isRecurring) t("common.yes", null) else t("common.no", null))
             if (!expense.description.isNullOrBlank()) {
                 DetailLine(t("expenses.description", null), expense.description)
             }
+            DetailLine(t("expenses.recordedBy", null), expense.createdBy?.displayName?.ifBlank { null })
+            DetailLine(t("common.date", null), dayOf(expense.createdAt))
             if (canManage) {
                 Spacer(Modifier.height(8.dp))
-                PillButton(
-                    t("expenses.deleteExpense", null),
-                    onClick = onDelete,
-                    variant = ButtonVariant.DESTRUCTIVE,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    PillButton(
+                        t("common.edit", null),
+                        onClick = onEdit,
+                        variant = ButtonVariant.OUTLINE,
+                        modifier = Modifier.weight(1f),
+                    )
+                    PillButton(
+                        t("expenses.deleteExpense", null),
+                        onClick = onDelete,
+                        variant = ButtonVariant.DESTRUCTIVE,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }

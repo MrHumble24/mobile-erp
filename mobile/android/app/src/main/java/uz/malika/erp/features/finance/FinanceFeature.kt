@@ -31,8 +31,8 @@ object FinanceFeature : FeatureModule {
 
     override fun register(builder: NavGraphBuilder, nav: NavController, container: AppContainer) {
         builder.composable("dashboard") {
-            // Quick actions may target routes other slices own; navigate safely.
-            DashboardScreen(container) { route -> runCatching { nav.navigate(route) } }
+            // Quick actions open other slices' routes through container.featureNav.
+            DashboardScreen(container)
         }
         builder.composable("expenses") {
             PermissionGate("expense.read") { ExpensesScreen(container) }

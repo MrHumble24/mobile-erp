@@ -38,3 +38,28 @@ fun startOfDay(now: Date = Date()): Date = calOf(now).time
 fun isoDate(d: Date): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(d)
 
 fun displayDate(d: Date): String = SimpleDateFormat("dd.MM.yyyy", Locale.US).format(d)
+
+/** `yyyy-MM-dd` for an epoch-millis instant (nullable → null). */
+fun isoDate(millis: Long?): String? = millis?.let { isoDate(Date(it)) }
+
+/**
+ * Trend bucket for a date range, matching the web `bucketFor`: ≤31 days → day,
+ * ≤180 → week, else month. Null bounds fall back to a day bucket.
+ */
+fun bucketForRange(fromMillis: Long?, toMillis: Long?): String {
+    if (fromMillis == null || toMillis == null) return "day"
+    val days = (toMillis - fromMillis) / 86_400_000L + 1
+    return when {
+        days <= 31 -> "day"
+        days <= 180 -> "week"
+        else -> "month"
+    }
+}
+
+/** The default report window: the last 30 days (start/end epoch millis). */
+fun defaultReportRangeMillis(now: Date = Date()): Pair<Long, Long> {
+    val cal = Calendar.getInstance().apply { time = now }
+    val end = cal.timeInMillis
+    cal.add(Calendar.DAY_OF_YEAR, -29)
+    return cal.timeInMillis to end
+}

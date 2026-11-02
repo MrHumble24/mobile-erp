@@ -8,4 +8,7 @@ package uz.malika.erp.features.finance.model
 sealed interface FinanceEvent {
     data class Message(val key: String) : FinanceEvent
     data class Failure(val text: String) : FinanceEvent
+
+    /** An i18n key with a `{count}` placeholder (e.g. `expenses.generated`). */
+    data class Count(val key: String, val count: Int) : FinanceEvent
 }

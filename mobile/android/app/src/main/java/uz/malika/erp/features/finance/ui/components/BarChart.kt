@@ -23,7 +23,6 @@ import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 import kotlin.math.abs
-import kotlin.math.roundToLong
 
 /** One labelled bar. */
 data class BarDatum(val label: String, val value: Double)
@@ -82,15 +81,5 @@ fun BarChart(
                 drawText(labLayout, topLeft = Offset(slot * i + (slot - labLayout.size.width) / 2f, topPad + chartH + 6f))
             }
         }
-    }
-}
-
-/** Compact magnitude label for a bar (e.g. 1.2M, 450K) so axis text stays short. */
-private fun shortNumber(value: Double): String {
-    val v = abs(value).roundToLong()
-    return when {
-        v >= 1_000_000 -> "${(v / 100_000) / 10.0}M"
-        v >= 1_000 -> "${(v / 100) / 10.0}K"
-        else -> v.toString()
     }
 }
