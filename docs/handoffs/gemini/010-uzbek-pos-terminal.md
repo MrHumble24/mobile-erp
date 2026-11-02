@@ -1,6 +1,6 @@
 # 010 — Uzbek copy for the completed POS terminal
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "multi-line POS terminal"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "multi-line POS terminal"
 
 ## Why
 `/pos` is now a multi-device cart with scanner states, price guidance, customer search, keyboard
@@ -26,7 +26,7 @@ Then review in context with the `cashier@malika.uz` login (credentials in `serve
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: pending unified commit
+- Glossary terms added: Cart (Savat), Margin (Marja), Walk-in (Oddiy xaridor), Cheque / Receipt (Chek), Shortcut (Tezkor tugma), Subtotal (Oraliq summa)
+- Wording changes proposed for `en`: "round 10 000" updated to "round $10" in line with USD currency.
+- Notes for other agents: All 43 POS keys translated into natural Uzbek (Latin script) tailored for rapid cashier usage at Malika market counters. Fits 58mm receipt constraints.

@@ -1,6 +1,6 @@
 # 009 — Uzbek copy for the reports and analytics screen
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full reports and analytics screen"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full reports and analytics screen"
 
 ## Why
 `/reports` is now a seven-tab analytics screen (overview P&L, sales, expenses, nasiya, inventory, pricing,
@@ -20,7 +20,7 @@ Read `client/src/shared/i18n/GLOSSARY.md`. You are a native Uzbek (Latin script)
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: pending unified commit
+- Glossary terms added: Revenue (Tushum), COGS (Tannarx), Gross Profit (Yalpi foyda), Net Operating Income (Sof operatsion foyda), Breakdown (Tafsilot), Share (Ulush), Trend (Dinamika), Aging (Omborda turgan muddat)
+- Wording changes proposed for `en`: None
+- Notes for other agents: All 76 reports and analytics keys translated natively into Latin Uzbek with concise labels for chart axes and breakdown sheets. System currency remains USD ($) per user direction.

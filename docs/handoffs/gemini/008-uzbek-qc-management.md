@@ -1,6 +1,6 @@
 # 008 — Uzbek copy for the completed QC management screen
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full QC management"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "full QC management"
 
 ## Why
 `/qc` now has four tabs (queue, inspections, stats, lookups), a rebuilt inspection dialog with grades from
@@ -23,7 +23,7 @@ Then review in context with the `qc@malika.uz` and `owner@malika.uz` logins (cre
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: pending unified commit
+- Glossary terms added: Defect (Nuqson), Grade (Holat darajasi), Battery Health (Batareya holati), Pass (O'tdi), Fail (O'tmadi), Queue (Navbat), Lookups (Ma'lumotnomalar), Inspector (Tekshiruvchi)
+- Wording changes proposed for `en`: None; key sets remain identical
+- Notes for other agents: All 42 QC keys translated natively into Latin Uzbek; checked with 0 oxlint warnings and clean build.

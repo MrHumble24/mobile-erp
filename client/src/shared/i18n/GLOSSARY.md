@@ -31,3 +31,25 @@
 | Option | Variant | Xususiyat uchun tanlov qiymati |
 | Required | Majburiy | To'ldirilishi shart bo'lgan maydon |
 | Digest | Kunlik hisobot | Kun yakuni bo'yicha Telegram xulosasi |
+| Defect | Nuqson | Qurilmadagi nosozlik yoki nuqson |
+| Grade | Holat darajasi (Grade) | Kosmetik va texnik holat darajasi (A, B, C...) |
+| Battery Health | Batareya holati | Batareya sig'imi foizda |
+| Pass | O'tdi | QC tekshiruvidan muvaffaqiyatli o'tgan |
+| Fail | O'tmadi | QC tekshiruvidan o'tolmagan |
+| Queue | Navbat | Tekshiruv kutilayotgan qurilmalar navbati |
+| Lookups | Ma'lumotnomalar | Sozlanadigan tizim ma'lumotnomalari |
+| Inspector | Tekshiruvchi | QC tekshiruvini bajargan xodim |
+| Revenue | Tushum | Sotuvlardan kelgan umumiy pul |
+| COGS | Tannarx (COGS) | Sotilgan tovarlarning to'liq tannarxi |
+| Gross Profit | Yalpi foyda | Tushumdan tovar tannarxi ayirilgan qoldiq |
+| Net Operating Income | Sof operatsion foyda | Yalpi foydadan barcha operatsion xarajatlar ayirilgan qoldiq |
+| Breakdown | Tafsilot | Ko'rsatkichning tarkibiy qismlarga ajratilishi |
+| Share | Ulush | Umumiy miqdordagi foiz ulushi |
+| Trend | Dinamika | Ko'rsatkichlarning vaqt bo'yicha o'zgarishi |
+| Aging | Omborda turgan muddat | Tovar omborda necha kundan beri turganligi |
+| Cart | Savat | Kassadagi xarid qilinayotgan tovarlar ro'yxati |
+| Margin | Marja | Sotuv narxi va tannarx orasidagi foyda foizi |
+| Walk-in | Oddiy xaridor | Ro'yxatdan o'tmagan bir martalik xaridor |
+| Cheque / Receipt | Chek | Savdo cheki / to'lov kvitansiyasi |
+| Shortcut | Tezkor tugma | Klaviatura orqali tezkor amallar |
+| Subtotal | Oraliq summa | Chegirma va soliqlargacha bo'lgan jami summa |
