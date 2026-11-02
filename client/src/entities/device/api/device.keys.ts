@@ -6,6 +6,7 @@ export const deviceKeys = {
   list: (filters?: DeviceFilters) => [...deviceKeys.lists(), filters] as const,
   details: () => [...deviceKeys.all, "detail"] as const,
   detail: (id: string) => [...deviceKeys.details(), id] as const,
-  byImei: (imei: string) => [...deviceKeys.all, "by-imei", imei] as const,
+  byImeis: () => [...deviceKeys.all, "by-imei"] as const,
+  byImei: (imei: string) => [...deviceKeys.byImeis(), imei] as const,
   history: (id: string) => [...deviceKeys.all, "history", id] as const,
 }
