@@ -11,25 +11,58 @@ model ExpenseCategory {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  expenses Expense[]
+  expenses    Expense[]
+  recurrences ExpenseRecurrence[]
 
   @@map("expense_categories")
 }
 
 model Expense {
+  id           String             @id @default(uuid())
+  categoryId   String
+  category     ExpenseCategory    @relation(fields: [categoryId], references: [id])
+  amount       Decimal            @db.Decimal(14, 2)
+  description  String?
+  // Who was paid (booth landlord, utility provider, courier). Free text, not an entity.
+  vendor       String?
+  isRecurring  Boolean            @default(false)
+  // Set when this row was spawned from a recurrence template; null for ad-hoc rows.
+  recurrenceId String?
+  recurrence   ExpenseRecurrence? @relation(fields: [recurrenceId], references: [id])
+  incurredAt   DateTime           @default(now())
+  createdById  String
+  createdBy    User               @relation(fields: [createdById], references: [id])
+  // Soft delete: history stays for reports; all reads filter deletedAt IS NULL.
+  deletedAt    DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([incurredAt])
+  @@index([categoryId])
+  @@index([deletedAt])
+  @@map("expenses")
+}
+
+// Recurring-expense template. A "generate due" action spawns real Expense rows
+// for every active template whose nextDueAt has passed, then advances nextDueAt.
+model ExpenseRecurrence {
   id          String          @id @default(uuid())
   categoryId  String
   category    ExpenseCategory @relation(fields: [categoryId], references: [id])
   amount      Decimal         @db.Decimal(14, 2)
   description String?
-  isRecurring Boolean         @default(false)
-  incurredAt  DateTime        @default(now())
+  vendor      String?
+  // 'monthly' | 'weekly' — a fixed binary cadence, validated at the DTO.
+  frequency   String
+  nextDueAt   DateTime
+  isActive    Boolean         @default(true)
+  // Author id (no relation: adding a back-reference would touch the User model).
   createdById String
-  createdBy   User            @relation(fields: [createdById], references: [id])
+  expenses    Expense[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  @@index([incurredAt])
+  @@index([nextDueAt])
   @@index([categoryId])
-  @@map("expenses")
+  @@map("expense_recurrences")
 }

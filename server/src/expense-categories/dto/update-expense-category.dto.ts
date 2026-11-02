@@ -3,6 +3,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -26,4 +27,9 @@ export class UpdateExpenseCategoryDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  /** Move this category's expenses & templates here before deactivating it. */
+  @IsOptional()
+  @IsUUID()
+  reassignToId?: string;
 }

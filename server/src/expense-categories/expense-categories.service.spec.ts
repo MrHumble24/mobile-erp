@@ -8,6 +8,8 @@ function build() {
     findById: jest.fn().mockResolvedValue({ id: 'c1', name: 'Rent' }),
     create: jest.fn().mockImplementation((dto) => Promise.resolve(dto)),
     update: jest.fn().mockResolvedValue({ id: 'c1' }),
+    countExpenses: jest.fn().mockResolvedValue(0),
+    reassign: jest.fn().mockResolvedValue(undefined),
   };
   const service = new ExpenseCategoriesService(
     repo as unknown as ExpenseCategoriesRepository,
@@ -38,5 +40,30 @@ describe('ExpenseCategoriesService', () => {
     await expect(service.update('x', { sortOrder: 1 })).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('deactivates freely when the category has no expenses', async () => {
+    const { service, repo } = build();
+    repo.countExpenses.mockResolvedValue(0);
+    await service.update('c1', { isActive: false });
+    expect(repo.reassign).not.toHaveBeenCalled();
+    expect(repo.update).toHaveBeenCalledWith('c1', { isActive: false });
+  });
+
+  it('blocks deactivating a category in use without a reassign target', async () => {
+    const { service, repo } = build();
+    repo.countExpenses.mockResolvedValue(3);
+    await expect(service.update('c1', { isActive: false })).rejects.toThrow(
+      ConflictException,
+    );
+    expect(repo.update).not.toHaveBeenCalled();
+  });
+
+  it('reassigns rows then deactivates when a target is given', async () => {
+    const { service, repo } = build();
+    repo.countExpenses.mockResolvedValue(3);
+    await service.update('c1', { isActive: false, reassignToId: 'c2' });
+    expect(repo.reassign).toHaveBeenCalledWith('c1', 'c2');
+    expect(repo.update).toHaveBeenCalledWith('c1', { isActive: false });
   });
 });
