@@ -24,6 +24,7 @@ import uz.malika.erp.features.inventory.model.DevicesViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -35,6 +36,7 @@ fun StatusChangeForm(
     device: DeviceDetail,
     devicesVm: DevicesViewModel,
     online: Boolean,
+    toaster: Toaster,
     onChanged: () -> Unit,
 ) {
     val t = LocalT.current
@@ -53,6 +55,7 @@ fun StatusChangeForm(
         scope.launch {
             try {
                 devicesVm.changeStatus(device.id, target, device.version, reason)
+                toaster.success(t("common.success", null))
                 onChanged()
             } catch (e: AppException) {
                 message = if (e.statusCode == 409) t("inventory.versionConflict", null) else e.message

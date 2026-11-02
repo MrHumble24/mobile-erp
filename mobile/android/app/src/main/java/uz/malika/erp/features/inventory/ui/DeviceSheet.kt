@@ -34,6 +34,8 @@ import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
 import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.DevicesViewModel
+import uz.malika.erp.app.FeatureNav
+import uz.malika.erp.app.Destination
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
@@ -41,6 +43,7 @@ import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.MonoFamily
 
 /**
@@ -55,6 +58,9 @@ fun DeviceSheet(
     catalogVm: CatalogViewModel,
     online: Boolean,
     canUpdate: Boolean,
+    featureNav: FeatureNav,
+    toaster: Toaster,
+    onClose: () -> Unit,
 ) {
     val t = LocalT.current
     var reload by remember { mutableIntStateOf(0) }
@@ -77,11 +83,16 @@ fun DeviceSheet(
                 catalogVm = catalogVm,
                 online = online,
                 canUpdate = canUpdate,
+                featureNav = featureNav,
+                toaster = toaster,
+                onClose = onClose,
                 onChanged = { reload++ },
             )
         }
     }
 }
+
+private val INSPECTABLE = setOf("IN_STOCK", "DEFECTIVE")
 
 @Composable
 private fun DeviceSheetBody(
@@ -90,11 +101,16 @@ private fun DeviceSheetBody(
     catalogVm: CatalogViewModel,
     online: Boolean,
     canUpdate: Boolean,
+    featureNav: FeatureNav,
+    toaster: Toaster,
+    onClose: () -> Unit,
     onChanged: () -> Unit,
 ) {
     val t = LocalT.current
     val clipboard = LocalClipboardManager.current
     val canChangeStatus = LocalCan.current("device.status.change")
+    val canSell = LocalCan.current("sale.create") && device.statusCode == "IN_STOCK"
+    val canInspect = LocalCan.current("qc.create") && device.statusCode in INSPECTABLE
     var showEdit by remember { mutableStateOf(false) }
 
     val history by produceState<List<DeviceHistoryEntry>>(emptyList(), device.id) {
@@ -113,7 +129,10 @@ private fun DeviceSheetBody(
                         "IMEI: ${device.imei}",
                         style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
                     )
-                    IconButton(onClick = { clipboard.setText(AnnotatedString(device.imei)) }) {
+                    IconButton(onClick = {
+                        clipboard.setText(AnnotatedString(device.imei))
+                        toaster.success("${t("inventory.imeiCopied", null)}: ${device.imei}")
+                    }) {
                         Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null))
                     }
                 }
@@ -124,6 +143,26 @@ private fun DeviceSheetBody(
                     onClick = { showEdit = true },
                     variant = ButtonVariant.OUTLINE,
                 )
+            }
+        }
+        if (canSell || canInspect) {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (canSell) {
+                    PillButton(
+                        text = t("inventory.sellInPos", null),
+                        onClick = { featureNav.open(Destination.Pos(device.imei)); onClose() },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (canInspect) {
+                    PillButton(
+                        text = t("qc.runInspection", null),
+                        onClick = { featureNav.open(Destination.Qc(device.imei)); onClose() },
+                        variant = ButtonVariant.OUTLINE,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -143,6 +182,7 @@ private fun DeviceSheetBody(
                 device = device,
                 devicesVm = devicesVm,
                 online = online,
+                toaster = toaster,
                 onChanged = onChanged,
             )
         }

@@ -3,9 +3,11 @@ import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import uz.malika.erp.app.FeatureNav
 import uz.malika.erp.features.inventory.data.DeviceListItem
 import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.inventory.data.DeviceModelView
@@ -38,9 +42,13 @@ import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.MonoFamily
 
-/** Offline-first device list with metrics, scan/search and model/storage filters. */
+/** At/above this width the device detail is a side pane, not a bottom sheet. */
+private const val TABLET_MIN_DP = 720
+
+/** Offline-first device list with metrics, scan/search, filters and adaptive detail. */
 @Composable
 fun DevicesTab(
     devicesVm: DevicesViewModel,
@@ -48,6 +56,8 @@ fun DevicesTab(
     alertsVm: StockAlertsViewModel,
     online: Boolean,
     canUpdate: Boolean,
+    featureNav: FeatureNav,
+    toaster: Toaster,
     onShowAlerts: () -> Unit,
 ) {
     val t = LocalT.current
@@ -58,54 +68,85 @@ fun DevicesTab(
     val models = catalogVm.models.collectAsState().value.valueOrNull ?: emptyList()
     var openImei by remember { mutableStateOf<String?>(null) }
 
-    Column(Modifier.fillMaxSize()) {
-        InventoryMetricsBar(
-            metrics = metrics,
-            lowStockCount = lowStock.size,
-            selectedStatus = filter.statusCode,
-            onSelectStatus = devicesVm::setStatus,
-            onToggleStatus = devicesVm::toggleStatus,
-            onShowAlerts = onShowAlerts,
+    // Incoming cross-feature arg (e.g. another screen opening a device) seeds the sheet.
+    LaunchedEffect(Unit) { featureNav.consumeArg("inventory")?.let { openImei = it } }
+
+    val detail: @Composable (String, () -> Unit) -> Unit = { imei, onClose ->
+        DeviceSheet(
+            imei = imei,
+            devicesVm = devicesVm,
+            catalogVm = catalogVm,
+            online = online,
+            canUpdate = canUpdate,
+            featureNav = featureNav,
+            toaster = toaster,
+            onClose = onClose,
         )
-        Spacer(Modifier.height(12.dp))
-        ScannerField(
-            onScan = devicesVm::setSearch,
-            placeholder = t("inventory.scanOrSearch", null),
-            autofocus = false,
-        )
-        Spacer(Modifier.height(8.dp))
-        FilterRow(
-            selectedModel = filter.modelId,
-            selectedStorage = filter.storage,
-            models = models,
-            isEmpty = filter.isEmpty,
-            onModel = devicesVm::setModel,
-            onStorage = devicesVm::setStorage,
-            onClear = devicesVm::clear,
-        )
-        Spacer(Modifier.height(8.dp))
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            if (list.isEmpty()) {
-                EmptyView(message = t("inventory.empty", null))
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(list, key = { it.id }) { device ->
-                        DeviceRow(device = device, onClick = { openImei = device.imei })
+    }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val wide = maxWidth >= TABLET_MIN_DP.dp
+        Column(Modifier.fillMaxSize()) {
+            InventoryMetricsBar(
+                metrics = metrics,
+                lowStockCount = lowStock.size,
+                selectedStatus = filter.statusCode,
+                onSelectStatus = devicesVm::setStatus,
+                onToggleStatus = devicesVm::toggleStatus,
+                onShowAlerts = onShowAlerts,
+            )
+            Spacer(Modifier.height(12.dp))
+            ScannerField(
+                onScan = devicesVm::setSearch,
+                placeholder = t("inventory.scanOrSearch", null),
+                autofocus = false,
+            )
+            Spacer(Modifier.height(8.dp))
+            FilterRow(
+                selectedModel = filter.modelId,
+                selectedStorage = filter.storage,
+                models = models,
+                isEmpty = filter.isEmpty,
+                onModel = devicesVm::setModel,
+                onStorage = devicesVm::setStorage,
+                onClear = devicesVm::clear,
+            )
+            Spacer(Modifier.height(8.dp))
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                if (wide) {
+                    Row(Modifier.fillMaxSize()) {
+                        Box(Modifier.weight(1f).fillMaxHeight()) {
+                            DeviceList(list, t("inventory.empty", null)) { openImei = it }
+                        }
+                        Box(Modifier.weight(1.3f).fillMaxHeight()) {
+                            val sel = openImei
+                            if (sel == null) EmptyView(message = t("inventory.selectDevice", null))
+                            else detail(sel) { openImei = null }
+                        }
                     }
+                } else {
+                    DeviceList(list, t("inventory.empty", null)) { openImei = it }
                 }
             }
         }
-    }
 
-    openImei?.let { imei ->
-        AppBottomSheet(onDismiss = { openImei = null }) {
-            DeviceSheet(
-                imei = imei,
-                devicesVm = devicesVm,
-                catalogVm = catalogVm,
-                online = online,
-                canUpdate = canUpdate,
-            )
+        if (!wide) {
+            openImei?.let { imei ->
+                AppBottomSheet(onDismiss = { openImei = null }) { detail(imei) { openImei = null } }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeviceList(list: List<DeviceListItem>, emptyMessage: String, onOpen: (String) -> Unit) {
+    if (list.isEmpty()) {
+        EmptyView(message = emptyMessage)
+        return
+    }
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(list, key = { it.id }) { device ->
+            DeviceRow(device = device, onClick = { onOpen(device.imei) })
         }
     }
 }

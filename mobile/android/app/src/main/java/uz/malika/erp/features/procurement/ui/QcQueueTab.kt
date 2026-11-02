@@ -20,20 +20,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.procurement.data.DeviceRowDto
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.PageState
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.EmptyView
+import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.ui.theme.Tokens
 
-/** Devices awaiting inspection; tap a row to grade it. */
+/** Devices awaiting inspection; tap a row to grade it. Paginated (load-more). */
 @Composable
-fun QcQueueTab(queue: List<DeviceRowDto>, modelNames: Map<String, String>, onGrade: (String) -> Unit) {
+fun QcQueueTab(
+    queue: PageState<DeviceRowDto>,
+    modelNames: Map<String, String>,
+    onLoadMore: () -> Unit,
+    onGrade: (String) -> Unit,
+) {
     val t = LocalT.current
-    if (queue.isEmpty()) {
+    if (queue.items.isEmpty() && !queue.loading) {
         EmptyView(t("qc.queueEmpty", null))
         return
     }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(queue, key = { it.id }) { d ->
+        items(queue.items, key = { it.id }) { d ->
             AppCard(onClick = { onGrade(d.imei) }) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
@@ -48,5 +55,6 @@ fun QcQueueTab(queue: List<DeviceRowDto>, modelNames: Map<String, String>, onGra
                 }
             }
         }
+        item { LoadMoreFooter(hasMore = queue.hasMore, loading = queue.loading, onLoadMore = onLoadMore) }
     }
 }

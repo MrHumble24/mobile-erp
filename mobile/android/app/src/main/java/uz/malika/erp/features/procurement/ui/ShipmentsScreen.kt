@@ -71,12 +71,17 @@ fun ShipmentsScreen(container: AppContainer) {
         )
         when (tab) {
             ShipTab.SHIPMENTS -> AsyncContent(shipments, onRetry = vm::refreshShipments) { list ->
-                ShipmentsTab(
+                ShipmentsMasterDetail(
                     shipments = list,
                     supplierNames = supplierList.associate { it.id to it.name },
+                    modelNames = modelNames,
                     canManage = canManage,
+                    canCreate = canCreate,
+                    repo = repo,
                     onNew = { sheet = Sheet.NewShipment },
-                    onOpen = { sheet = Sheet.Detail(it) },
+                    onEdit = { sheet = Sheet.EditShipment(it) },
+                    onContinueIntake = { sheet = Sheet.Intake(it) },
+                    onOpenSheet = { sheet = Sheet.Detail(it) },
                 )
             }
             ShipTab.SUPPLIERS -> AsyncContent(suppliers, onRetry = vm::refreshSuppliers) { list ->
