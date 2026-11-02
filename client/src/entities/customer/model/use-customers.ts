@@ -1,12 +1,32 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { customerRepository } from "../api/customer.repository"
 import { customerKeys } from "../api/customer.keys"
-import type { CreateCustomerDto, UpdateCustomerDto } from "./customer.types"
+import type {
+  CreateCustomerDto,
+  CustomerListFilters,
+  UpdateCustomerDto,
+} from "./customer.types"
 
+/** POS typeahead: resolves a short list of customers by name/phone. */
 export function useCustomers(query?: string) {
   return useQuery({
-    queryKey: customerKeys.list(query),
-    queryFn: () => customerRepository.list(query),
+    queryKey: customerKeys.lookup(query),
+    queryFn: () => customerRepository.lookup(query),
+  })
+}
+
+/** Paginated management list with aggregates. */
+export function useCustomerList(filters: CustomerListFilters) {
+  return useQuery({
+    queryKey: customerKeys.list(filters),
+    queryFn: () => customerRepository.page(filters),
+  })
+}
+
+export function useCustomerStats() {
+  return useQuery({
+    queryKey: customerKeys.stats(),
+    queryFn: () => customerRepository.stats(),
   })
 }
 
@@ -31,7 +51,7 @@ export function useCreateCustomer() {
   return useMutation({
     mutationFn: (dto: CreateCustomerDto) => customerRepository.create(dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customerKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: customerKeys.all })
     },
   })
 }
@@ -41,9 +61,8 @@ export function useUpdateCustomer() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateCustomerDto }) =>
       customerRepository.update(id, dto),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: customerKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: customerKeys.detail(variables.id) })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all })
     },
   })
 }

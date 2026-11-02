@@ -1,5 +1,9 @@
 export type {
   CustomerView,
+  CustomerListItem,
+  CustomerPage,
+  CustomerStats,
+  CustomerListFilters,
   CustomerSaleView,
   CreateCustomerDto,
   UpdateCustomerDto,
@@ -8,6 +12,8 @@ export { customerRepository } from "./api/customer.repository"
 export { customerKeys } from "./api/customer.keys"
 export {
   useCustomers,
+  useCustomerList,
+  useCustomerStats,
   useCustomer,
   useCustomerSales,
   useCreateCustomer,

@@ -11,6 +11,7 @@ import { RequirePermissions } from '../common/decorators/require-permissions.dec
 import { SalesService } from '../sales/sales.service.js';
 import { CustomersService } from './customers.service.js';
 import { CreateCustomerDto } from './dto/create-customer.dto.js';
+import { ListCustomersQueryDto } from './dto/list-customers.query.dto.js';
 import { UpdateCustomerDto } from './dto/update-customer.dto.js';
 
 @Controller('customers')
@@ -22,8 +23,20 @@ export class CustomersController {
 
   @Get()
   @RequirePermissions('customer.read')
-  search(@Query('q') q?: string) {
-    return this.customers.search(q);
+  list(@Query() query: ListCustomersQueryDto) {
+    return this.customers.list(query);
+  }
+
+  @Get('lookup')
+  @RequirePermissions('customer.read')
+  lookup(@Query('q') q?: string) {
+    return this.customers.lookup(q);
+  }
+
+  @Get('stats')
+  @RequirePermissions('customer.read')
+  stats() {
+    return this.customers.stats();
   }
 
   @Get(':id')

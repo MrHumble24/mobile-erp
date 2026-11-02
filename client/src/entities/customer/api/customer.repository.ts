@@ -1,20 +1,40 @@
 import { http } from "@/shared/api/http"
 import type {
   CreateCustomerDto,
+  CustomerListFilters,
+  CustomerListItem,
+  CustomerPage,
   CustomerSaleView,
+  CustomerStats,
   CustomerView,
   UpdateCustomerDto,
 } from "../model/customer.types"
 
 export const customerRepository = {
-  list: async (q?: string): Promise<CustomerView[]> => {
-    return http<CustomerView[]>("/customers", {
-      params: { q },
+  /** Lightweight typeahead for POS checkout (name/phone match, top 10). */
+  lookup: async (q?: string): Promise<CustomerView[]> => {
+    return http<CustomerView[]>("/customers/lookup", { params: { q } })
+  },
+
+  page: async (filters: CustomerListFilters): Promise<CustomerPage> => {
+    return http<CustomerPage>("/customers", {
+      params: {
+        search: filters.search,
+        hasPurchases:
+          filters.hasPurchases === undefined ? undefined : String(filters.hasPurchases),
+        sort: filters.sort,
+        page: filters.page,
+        pageSize: filters.pageSize,
+      },
     })
   },
 
-  get: async (id: string): Promise<CustomerView> => {
-    return http<CustomerView>(`/customers/${id}`)
+  stats: async (): Promise<CustomerStats> => {
+    return http<CustomerStats>("/customers/stats")
+  },
+
+  get: async (id: string): Promise<CustomerListItem> => {
+    return http<CustomerListItem>(`/customers/${id}`)
   },
 
   getSales: async (id: string): Promise<CustomerSaleView[]> => {
@@ -22,16 +42,10 @@ export const customerRepository = {
   },
 
   create: async (dto: CreateCustomerDto): Promise<CustomerView> => {
-    return http<CustomerView>("/customers", {
-      method: "POST",
-      body: dto,
-    })
+    return http<CustomerView>("/customers", { method: "POST", body: dto })
   },
 
   update: async (id: string, dto: UpdateCustomerDto): Promise<CustomerView> => {
-    return http<CustomerView>(`/customers/${id}`, {
-      method: "PATCH",
-      body: dto,
-    })
+    return http<CustomerView>(`/customers/${id}`, { method: "PATCH", body: dto })
   },
 }
