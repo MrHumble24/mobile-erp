@@ -11,8 +11,8 @@ struct QcRepository {
         try await api.postVoid("/qc/inspections", body: body)
     }
 
-    func listInspections(passed: Bool?) async throws -> PaginatedInspections {
-        var q = ["page": "1", "pageSize": "50"]
+    func listInspections(passed: Bool?, page: Int = 1, pageSize: Int = 50) async throws -> PaginatedInspections {
+        var q = ["page": "\(page)", "pageSize": "\(pageSize)"]
         if let passed { q["passed"] = passed ? "true" : "false" }
         return try await api.get("/qc/inspections", query: q)
     }

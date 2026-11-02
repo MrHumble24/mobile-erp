@@ -64,6 +64,7 @@ struct StatusChangeForm: View {
                 expectedVersion: device.version, reason: reason)
             reason = ""
             container.sync.syncNow()
+            container.toasts.success(i18n.t("common.success"))
             await onChanged()
         } catch let error as AppError {
             message = error.statusCode == 409

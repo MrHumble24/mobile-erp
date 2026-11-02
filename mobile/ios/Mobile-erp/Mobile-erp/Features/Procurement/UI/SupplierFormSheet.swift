@@ -78,6 +78,7 @@ struct SupplierFormSheet: View {
             } else {
                 _ = try await repo.create(body)
             }
+            container.toasts.success(i18n.t("common.success"))
             dismiss()
         } catch let e as AppError {
             error = e.statusCode == 409 ? i18n.t("shipments.supplierDuplicate") : e.message

@@ -43,8 +43,9 @@ struct PaginatedDevices: Decodable {
 struct DevicesRepository {
     let api: APIClient
 
-    func query(shipmentId: String? = nil, inspected: String? = nil) async throws -> PaginatedDevices {
-        var q = ["page": "1", "pageSize": "50"]
+    func query(shipmentId: String? = nil, inspected: String? = nil,
+               page: Int = 1, pageSize: Int = 50) async throws -> PaginatedDevices {
+        var q = ["page": "\(page)", "pageSize": "\(pageSize)"]
         if let shipmentId { q["shipmentId"] = shipmentId }
         if let inspected { q["inspected"] = inspected }
         return try await api.get("/devices", query: q)

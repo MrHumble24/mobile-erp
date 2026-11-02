@@ -4,6 +4,7 @@ import SwiftUI
 /// stats, lookups. Scanning an IMEI opens the grade sheet for that unit.
 /// Mounted behind `qc.read` by the shell.
 struct QcScreen: View {
+    @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @State private var tab: Tab = .queue
     @State private var scanned: ScannedImei?
@@ -35,8 +36,17 @@ struct QcScreen: View {
             ProcurementSelfCheck.runOnce()
             #endif
         }
+        .onAppear(perform: consumeRoute)
+        .onChange(of: container.router.pending) { consumeRoute() }
         .sheet(item: $scanned) { s in
             GradeDeviceSheet(imei: s.imei) { refresh = UUID() }
+        }
+    }
+
+    /// Open the grade sheet for an IMEI handed over from another feature.
+    private func consumeRoute() {
+        if case let .qc(imei)? = container.router.consume("qc"), let imei {
+            scanned = ScannedImei(imei: imei)
         }
     }
 

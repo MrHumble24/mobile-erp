@@ -90,6 +90,7 @@ struct ShipmentFormSheet: View {
         let repo = ShipmentsRepository(api: container.api)
         do {
             let saved = try await (editing ? repo.update(existing!.id, body) : repo.create(body))
+            container.toasts.success(i18n.t("common.success"))
             onSaved(saved)
             dismiss()
         } catch let e as AppError {

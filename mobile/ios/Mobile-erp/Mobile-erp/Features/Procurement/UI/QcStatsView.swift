@@ -1,15 +1,14 @@
 import SwiftUI
 
-/// QC statistics with quick date-range presets.
-///
-/// ponytail: the three presets cover daily use; an arbitrary custom range
-/// (`qc.preset_custom`) is skipped until someone needs it.
+/// QC statistics with quick date-range presets plus a custom from/to range
+/// (`KitDateRangeField`). An active custom range overrides the preset.
 struct QcStatsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
 
     let refresh: UUID
     @State private var preset = "7d"
+    @State private var range = KitDateRange.all
     @State private var store: AsyncStore<QcStats>?
 
     var body: some View {
@@ -21,6 +20,9 @@ struct QcStatsView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .disabled(range.isActive)
+
+                KitDateRangeField(range: $range)
 
                 if let store {
                     LoadableView(state: store.state, retry: reload) { stats in
@@ -34,6 +36,7 @@ struct QcStatsView: View {
         }
         .task(id: refresh) { await load() }
         .onChange(of: preset) { Task { await load(force: true) } }
+        .onChange(of: range) { Task { await load(force: true) } }
     }
 
     private func load(force: Bool = false) async {
@@ -43,8 +46,18 @@ struct QcStatsView: View {
 
     private func makeStore() -> AsyncStore<QcStats> {
         let repo = QcRepository(api: container.api)
-        let range = Self.range(for: preset)
-        return AsyncStore { try await repo.stats(from: range.from, to: range.to) }
+        let (from, to) = bounds
+        return AsyncStore { try await repo.stats(from: from, to: to) }
+    }
+
+    /// Custom range when active, otherwise the selected preset.
+    private var bounds: (from: String?, to: String?) {
+        if range.isActive {
+            let fmt = ISO8601DateFormatter()
+            return (range.from.map(fmt.string(from:)), range.to.map(fmt.string(from:)))
+        }
+        let r = Self.range(for: preset)
+        return (r.from, r.to)
     }
 
     private func reload() { Task { await store?.reload() } }

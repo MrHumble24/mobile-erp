@@ -11,8 +11,11 @@ struct IntakeSheet: View {
 
     @State private var models: AsyncStore<[DeviceModel]>?
     @State private var drafts: [IntakeDraft] = []
+    @State private var results: [RegisteredDevice] = []
     @State private var busy = false
     @State private var error: String?
+
+    private var canViewCost: Bool { container.session.can("device.cost.view") }
 
     var body: some View {
         NavigationStack {
@@ -36,6 +39,17 @@ struct IntakeSheet: View {
                     Section(i18n.t("shipments.deviceList")) {
                         ForEach(drafts) { draft in
                             DraftRow(draft: draft) { remove(draft) }
+                        }
+                    }
+                }
+                if canViewCost, !results.isEmpty {
+                    Section(i18n.t("shipments.landedCostResults")) {
+                        ForEach(results) { r in
+                            HStack {
+                                Text(r.imei).font(.mono(13))
+                                Spacer()
+                                MoneyText(value: r.landedCost ?? "0", size: 13)
+                            }
                         }
                     }
                 }
@@ -83,9 +97,10 @@ struct IntakeSheet: View {
         defer { busy = false }
         error = nil
         do {
-            try await ShipmentsRepository(api: container.api)
+            results = try await ShipmentsRepository(api: container.api)
                 .addDevices(shipment.id, drafts.map(\.dto))
-            dismiss()
+            container.toasts.success(i18n.t("common.success"))
+            drafts = []
         } catch let e as AppError {
             error = e.statusCode == 409 ? i18n.t("shipments.duplicateImei") : e.message
         } catch let other {
