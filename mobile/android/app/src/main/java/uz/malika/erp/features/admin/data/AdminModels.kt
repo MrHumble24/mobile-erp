@@ -78,10 +78,18 @@ data class EffectiveOverrideDto(
     val reason: String? = null,
 )
 
-/** `GET /users/:id/effective-permissions`. `roleGrants` is intentionally skipped. */
+/** Which roles grant a given permission (web `breakdown.roleGrants`). */
+@Serializable
+data class RoleGrantDto(
+    val permissionCode: String,
+    val roleCodes: List<String> = emptyList(),
+)
+
+/** `GET /users/:id/effective-permissions`. */
 @Serializable
 data class EffectivePermsDto(
     val roles: List<String> = emptyList(),
+    val roleGrants: List<RoleGrantDto> = emptyList(),
     val overrides: List<EffectiveOverrideDto> = emptyList(),
     val effective: List<String> = emptyList(),
 )

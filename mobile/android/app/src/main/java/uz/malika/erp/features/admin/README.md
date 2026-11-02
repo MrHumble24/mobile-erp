@@ -34,3 +34,6 @@ all three nav items and routes.
   pipeline) — no slice-local client.
 - `UsersSummary` uses the promoted `shared/ui/MetricTile`. `ui/AdminControls`
   (checkbox/switch) stays slice-local (single use).
+- Web parity: users list "load more" (kit `PageState`+`LoadMoreFooter`); override
+  source badge per permission (from `effective-permissions.roleGrants`); counted
+  `users.roleInUse` on 409 (count scraped from the message — no structured field).

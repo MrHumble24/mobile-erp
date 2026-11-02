@@ -17,6 +17,9 @@ import retrofit2.http.QueryMap
 interface NasiyaApi {
 
     // ── partners (online) ─────────────────────────────────────────────────
+    @GET("partners")
+    suspend fun listPartners(@QueryMap params: Map<String, String>): List<PartnerListDto>
+
     @GET("partners/{id}")
     suspend fun partner(@Path("id") id: String): PartnerDetailDto
 
@@ -39,8 +42,8 @@ interface NasiyaApi {
     @GET("consignments")
     suspend fun listConsignments(@QueryMap params: Map<String, String>): ConsignmentPageDto
 
-    @GET("consignments/overdue")
-    suspend fun overdue(): List<ConsignmentViewDto>
+    @GET("consignments/{id}")
+    suspend fun consignment(@Path("id") id: String): ConsignmentViewDto
 
     @GET("consignments/stats")
     suspend fun stats(@QueryMap params: Map<String, String>): ConsignmentStatsDto

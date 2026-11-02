@@ -114,7 +114,7 @@ fun ConsignDeviceSheet(
             }
             PillButton(t("consignments.addDevice", null), onClick = { rows.add(RowInput()) }, variant = ButtonVariant.OUTLINE, modifier = Modifier.fillMaxWidth())
 
-            AppFormField(t("consignments.dueDate", null), dueDate, { dueDate = it }, placeholder = "2026-12-31")
+            DueDatePicker(t("consignments.dueDate", null), dueDate, { dueDate = it })
             AppFormField(t("common.notes", null), notes, { notes = it })
             ActionError(state.error, state.offline)
 

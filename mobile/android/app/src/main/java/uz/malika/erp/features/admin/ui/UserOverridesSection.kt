@@ -38,6 +38,18 @@ import uz.malika.erp.ui.theme.Tokens
 
 private enum class Choice { INHERIT, GRANT, REVOKE }
 
+/** Human source for a permission given its override + role grants (mirrors web sourceLabel). */
+private fun sourceLabel(
+    choice: Choice,
+    roleCodes: List<String>,
+    t: (String, Map<String, Any?>?) -> String,
+): Pair<String, androidx.compose.ui.graphics.Color> = when {
+    choice == Choice.GRANT -> t("users.sourceUserGrant", null) to Tokens.success
+    choice == Choice.REVOKE -> t("users.sourceUserRevoke", null) to Tokens.slate
+    roleCodes.isNotEmpty() -> t("users.sourceRoles", mapOf("roles" to roleCodes.joinToString(", "))) to Tokens.primary
+    else -> t("users.sourceNone", null) to Tokens.slate
+}
+
 /**
  * Per-user permission overrides. Each permission starts at its current override
  * (inherit / grant / revoke), loaded from `/users/:id/effective-permissions`.
@@ -55,12 +67,16 @@ fun UserOverridesSection(
     val scope = rememberCoroutineScope()
     val permissions by accessVm.permissions.collectAsState()
     val choices = remember(user.id) { mutableStateMapOf<String, Choice>() }
+    val roleGrants = remember(user.id) { mutableStateMapOf<String, List<String>>() }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(user.id) {
-        runCatching { usersVm.effectivePermissions(user.id) }.getOrNull()?.overrides?.forEach { o ->
-            choices[o.permissionCode] = if (o.granted) Choice.GRANT else Choice.REVOKE
+        runCatching { usersVm.effectivePermissions(user.id) }.getOrNull()?.let { perms ->
+            perms.overrides.forEach { o ->
+                choices[o.permissionCode] = if (o.granted) Choice.GRANT else Choice.REVOKE
+            }
+            perms.roleGrants.forEach { g -> roleGrants[g.permissionCode] = g.roleCodes }
         }
     }
 
@@ -73,12 +89,16 @@ fun UserOverridesSection(
         Column(Modifier.heightIn(max = 340.dp).verticalScroll(rememberScrollState())) {
             perms.forEach { p ->
                 val choice = choices[p.code] ?: Choice.INHERIT
+                val source = sourceLabel(choice, roleGrants[p.code].orEmpty(), t)
                 Row(
-                    Modifier.fillMaxWidth().height(44.dp),
+                    Modifier.fillMaxWidth().padding(vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(p.code, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                    Column(Modifier.weight(1f)) {
+                        Text(p.code, style = MaterialTheme.typography.bodySmall)
+                        StatusChip(source.first, color = source.second)
+                    }
                     ChoiceChip(t("users.overrideInherit", null), choice == Choice.INHERIT, Tokens.slate, isSelf) { choices[p.code] = Choice.INHERIT }
                     ChoiceChip(t("users.overrideGrant", null), choice == Choice.GRANT, Tokens.success, isSelf) { choices[p.code] = Choice.GRANT }
                     ChoiceChip(t("users.overrideRevoke", null), choice == Choice.REVOKE, Tokens.danger, isSelf) { choices[p.code] = Choice.REVOKE }

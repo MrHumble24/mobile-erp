@@ -125,7 +125,14 @@ private fun RoleCard(
                     error = try {
                         accessVm.delete(role.code); null
                     } catch (e: AppException) {
-                        if (e.statusCode == 409) t("users.roleInUse", mapOf("count" to "")) else e.message
+                        // ponytail: scrape the count from the 409 message ("assigned to N user(s)");
+                        // upgrade to a structured error field if the envelope ever exposes one.
+                        if (e.statusCode == 409) {
+                            val count = Regex("\\d+").find(e.message)?.value ?: "0"
+                            t("users.roleInUse", mapOf("count" to count))
+                        } else {
+                            e.message
+                        }
                     }
                 }
             },

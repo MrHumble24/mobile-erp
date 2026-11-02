@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import uz.malika.erp.features.nasiya.data.ConsignmentViewDto
+import uz.malika.erp.features.nasiya.data.money
 
 /**
  * Pure, JVM-testable helpers shared by the Nasiya screens: overdue-day maths,
@@ -48,3 +50,25 @@ fun creditUsedFraction(creditLimit: String, outstanding: String): Float? {
 
 /** ISO date → display `yyyy-MM-dd` (the mobile list keeps dates compact). */
 fun displayDate(iso: String?): String = iso?.take(10) ?: "—"
+
+/** Epoch millis → UTC `yyyy-MM-dd`, the day the date-range picker selected. */
+fun isoDayUtc(millis: Long): String = dayFormat.get()!!.format(Date(millis))
+
+/**
+ * Current consignments page → CSV rows (no cost fields), mirroring the web
+ * export: partner, IMEI, agreed price, due date, status, days overdue. Headers
+ * are supplied by the caller (i18n), so this stays pure/testable.
+ */
+fun consignmentCsvRows(
+    items: List<ConsignmentViewDto>,
+    now: Long = System.currentTimeMillis(),
+): List<List<String>> = items.map { c ->
+    listOf(
+        c.partnerShopName,
+        c.imei,
+        c.agreedPrice.money(),
+        displayDate(c.dueDate),
+        c.statusCode,
+        daysOverdue(c.dueDate, c.statusCode, now).toString(),
+    )
+}

@@ -10,6 +10,18 @@ import uz.malika.erp.core.runApi
  */
 class PartnerRepository(private val api: NasiyaApi) {
 
+    /** Online directory with the `active`/`overdue` facets the mirror can't serve. */
+    suspend fun list(search: String?, active: Boolean?, overdue: Boolean): List<PartnerListDto> =
+        runApi {
+            api.listPartners(
+                buildMap {
+                    search?.trim()?.takeIf { it.isNotEmpty() }?.let { put("search", it) }
+                    active?.let { put("active", it.toString()) }
+                    if (overdue) put("overdue", "true")
+                },
+            )
+        }
+
     suspend fun get(partnerId: String): PartnerDetailDto =
         runApi { api.partner(partnerId) }
 

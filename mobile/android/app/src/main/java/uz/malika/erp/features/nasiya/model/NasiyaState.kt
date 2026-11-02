@@ -4,6 +4,7 @@ import uz.malika.erp.features.nasiya.data.AgingBucketDto
 import uz.malika.erp.features.nasiya.data.ConsignmentStatsDto
 import uz.malika.erp.features.nasiya.data.ConsignmentViewDto
 import uz.malika.erp.features.nasiya.data.LedgerEntryDto
+import uz.malika.erp.shared.lib.PageState
 
 /**
  * One-shot write outcome for the partner/consignment action sheets. [offline]
@@ -26,10 +27,10 @@ data class LedgerState(
     val aging: List<AgingBucketDto> = emptyList(),
 )
 
-/** Consignments list + summary tiles for the active tab/search. */
+/** Consignments list (paginated) + summary tiles for the active tab/search/range. */
 data class ConsignmentsState(
     val loading: Boolean = true,
     val error: String? = null,
-    val items: List<ConsignmentViewDto> = emptyList(),
+    val page: PageState<ConsignmentViewDto> = PageState(),
     val stats: ConsignmentStatsDto? = null,
 )

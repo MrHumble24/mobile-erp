@@ -34,6 +34,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
+import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
@@ -60,7 +61,12 @@ fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessV
                 )
             }
         }
-        item { AsyncContent(users, onRetry = usersVm::load) { list -> UsersList(list, onOpen = { detail = it }) } }
+        item {
+            AsyncContent(users, onRetry = usersVm::load) { page ->
+                UsersList(page.items, onOpen = { detail = it })
+                LoadMoreFooter(page.hasMore, page.loading, onLoadMore = usersVm::loadMore)
+            }
+        }
     }
 
     if (createOpen) {

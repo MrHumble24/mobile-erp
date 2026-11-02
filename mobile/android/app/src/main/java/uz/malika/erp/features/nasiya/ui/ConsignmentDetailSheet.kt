@@ -23,13 +23,19 @@ import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
-/** Read-only consignment detail (from the already-loaded row) + OUT actions. */
+/**
+ * Read-only consignment detail (from the already-loaded row) + OUT actions.
+ * [onViewDevice] opens the device in inventory; [onViewSale] (null unless the
+ * consignment resolved into a sale) opens that sale — both via cross-feature nav.
+ */
 @Composable
 fun ConsignmentDetailSheet(
     item: ConsignmentViewDto,
     onDismiss: () -> Unit,
     onSettle: () -> Unit,
     onReturn: () -> Unit,
+    onViewDevice: () -> Unit,
+    onViewSale: (() -> Unit)?,
 ) {
     val t = LocalT.current
     val overdue = daysOverdue(item.dueDate, item.statusCode)
@@ -53,6 +59,13 @@ fun ConsignmentDetailSheet(
             DetailRow(t("consignments.consignedAt", null), item.consignedAt.take(10))
             item.resolvedAt?.let { DetailRow(t("consignments.resolvedAt", null), it.take(10)) }
             item.notes?.let { DetailRow(t("common.notes", null), it) }
+
+            Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PillButton(t("consignments.openDevice", null), onClick = onViewDevice, variant = ButtonVariant.OUTLINE)
+                onViewSale?.let {
+                    PillButton(t("consignments.resultingSale", null), onClick = it, variant = ButtonVariant.OUTLINE)
+                }
+            }
 
             if (item.statusCode == "OUT") {
                 Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

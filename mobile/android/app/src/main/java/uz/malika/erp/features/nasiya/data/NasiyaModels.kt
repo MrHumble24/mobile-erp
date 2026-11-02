@@ -54,6 +54,32 @@ data class PartnerDetailDto(
     val outstanding: JsonElement? = null,
 )
 
+/**
+ * A `GET /partners` list row. The online directory carries `isActive` and
+ * `overdueCount` (the facets the local mirror lacks), but no cost fields. Maps
+ * into the mirror's [uz.malika.erp.data.local.PartnerEntity] so one card renders
+ * both sources.
+ */
+@Serializable
+data class PartnerListDto(
+    val id: String,
+    val shopName: String,
+    val phone: String? = null,
+    val creditLimit: JsonElement? = null,
+    val outstanding: JsonElement? = null,
+    val isActive: Boolean = true,
+    val overdueCount: Int = 0,
+)
+
+fun PartnerListDto.toEntity(): uz.malika.erp.data.local.PartnerEntity =
+    uz.malika.erp.data.local.PartnerEntity(
+        id = id,
+        shopName = shopName,
+        phone = phone,
+        creditLimit = creditLimit.money(),
+        outstanding = outstanding.money(),
+    )
+
 // ── partner writes (online) ───────────────────────────────────────────────
 
 @Serializable

@@ -14,8 +14,11 @@ import uz.malika.erp.features.admin.data.ProfileBody
 import uz.malika.erp.features.admin.data.UserDto
 import uz.malika.erp.features.admin.data.UserStatsDto
 import uz.malika.erp.features.admin.data.UsersRepository
+import uz.malika.erp.core.AppException
+import uz.malika.erp.shared.lib.DEFAULT_PAGE_SIZE
+import uz.malika.erp.shared.lib.PageState
 
-/** The Users tab: filtered list + stats + the write actions on a user. */
+/** The Users tab: filtered, paginated list + stats + the write actions on a user. */
 class UsersViewModel(private val repo: UsersRepository) : ViewModel() {
 
     data class Filters(val search: String = "", val role: String? = null, val active: Boolean? = null)
@@ -23,8 +26,8 @@ class UsersViewModel(private val repo: UsersRepository) : ViewModel() {
     private val _filters = MutableStateFlow(Filters())
     val filters: StateFlow<Filters> = _filters.asStateFlow()
 
-    private val _users = MutableStateFlow<Async<List<UserDto>>>(Async.Loading)
-    val users: StateFlow<Async<List<UserDto>>> = _users.asStateFlow()
+    private val _users = MutableStateFlow<Async<PageState<UserDto>>>(Async.Loading)
+    val users: StateFlow<Async<PageState<UserDto>>> = _users.asStateFlow()
 
     private val _stats = MutableStateFlow<Async<UserStatsDto>>(Async.Loading)
     val stats: StateFlow<Async<UserStatsDto>> = _stats.asStateFlow()
@@ -36,10 +39,31 @@ class UsersViewModel(private val repo: UsersRepository) : ViewModel() {
         loadStats()
     }
 
+    /** (Re)load the first page for the current filters. */
     fun load() {
         val f = _filters.value
         viewModelScope.launch {
-            _users.value = asyncOf { repo.listUsers(f.search, f.role, f.active).items }
+            _users.value = asyncOf {
+                val dto = repo.listUsers(f.search, f.role, f.active, page = 1, pageSize = DEFAULT_PAGE_SIZE)
+                PageState<UserDto>().append(dto.items, dto.total, 1)
+            }
+        }
+    }
+
+    /** Append the next page; no-op while loading, failed, or complete. */
+    fun loadMore() {
+        val current = (_users.value as? Async.Ok)?.value ?: return
+        if (!current.hasMore || current.loading) return
+        _users.value = Async.Ok(current.copy(loading = true))
+        val f = _filters.value
+        viewModelScope.launch {
+            val next = current.nextPage
+            try {
+                val dto = repo.listUsers(f.search, f.role, f.active, page = next, pageSize = DEFAULT_PAGE_SIZE)
+                _users.value = Async.Ok(current.append(dto.items, dto.total, next))
+            } catch (_: AppException) {
+                _users.value = Async.Ok(current.copy(loading = false))
+            }
         }
     }
 
