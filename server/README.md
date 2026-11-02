@@ -47,7 +47,8 @@ Global `ThrottlerGuard` → `JwtAuthGuard` → `PermissionsGuard` protect every
 route; opt out with `@Public()`. Protected routes declare
 `@RequirePermissions('<resource>.<action>')`. Permission codes live in
 `prisma/seed.sql` and the role matrix there. Requests run through `helmet` with
-a 1 MB JSON body limit. **CORS is disabled**: the client is served same-origin
+a 1 MB JSON body limit. **CORS** is driven by `CORS_ORIGINS` (comma-separated browser origins): unset means the Vite dev origins on
+port 5173 outside production and nothing in production, where the client is served same-origin
 behind the LAN proxy, so no cross-origin access is expected. See
 `src/auth/README.md`, `src/access/README.md`, `src/common/README.md`, ADR 0005.
 

@@ -11,7 +11,25 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  // CORS is left disabled: the client is served same-origin behind the LAN proxy.
+  // Production serves the client same-origin, so CORS stays off unless CORS_ORIGINS
+  // lists browser origins. Dev defaults to the Vite origins so no .env edit is needed.
+  const corsOrigins = (
+    process.env.CORS_ORIGINS ??
+    (process.env.NODE_ENV === 'production'
+      ? ''
+      : 'http://localhost:5173,http://127.0.0.1:5173')
+  )
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  if (corsOrigins.length > 0) {
+    app.enableCors({
+      origin: corsOrigins,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      allowedHeaders: ['Authorization', 'Content-Type'],
+    });
+  }
+
   app.use(helmet());
   app.use(json({ limit: '1mb' }));
   app.use(urlencoded({ extended: true, limit: '1mb' }));
