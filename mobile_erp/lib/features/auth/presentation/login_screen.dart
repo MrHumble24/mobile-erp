@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/app_exception.dart';
 import '../../../data/sync/connectivity.dart';
@@ -104,6 +105,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Text(
                       busy ? context.t('auth.loggingIn') : context.t('auth.loginButton'),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    icon: const Icon(Icons.developer_mode, size: 18),
+                    label: Text(context.t('auth.devPanel')),
+                    onPressed: () => context.push('/dev'),
                   ),
                 ],
               ),

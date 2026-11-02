@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth_events.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/dev_panel/dev_panel_module.dart';
 import '../widgets/app_shell.dart';
 import 'feature_registry.dart';
 
@@ -27,13 +28,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (session.isLoading) return null; // wait for persisted session load
       final loggedIn = session.valueOrNull != null;
       final atLogin = state.matchedLocation == '/login';
-      if (!loggedIn) return atLogin ? null : '/login';
+      // The dev panel is public: reachable signed-out (and signed-in).
+      final isPublic = atLogin || state.matchedLocation == '/dev';
+      if (!loggedIn) return isPublic ? null : '/login';
       // Dashboard is the landing page: bounce login and the bare index to it.
       if (atLogin || state.matchedLocation == '/') return '/dashboard';
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      ...devPanelRoutes,
       ShellRoute(
         builder: (_, _, child) => AppShell(child: child),
         routes: featureRoutes,
