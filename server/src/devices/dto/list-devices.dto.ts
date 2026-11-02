@@ -19,6 +19,10 @@ export class ListDevicesDto {
 
   @IsOptional()
   @IsString()
+  shipmentId?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(64)
   storage?: string;
 

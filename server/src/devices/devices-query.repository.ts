@@ -88,6 +88,7 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
   const where: Prisma.DeviceWhereInput = {};
   if (filters.imei) where.imei = filters.imei;
   if (filters.modelId) where.modelId = filters.modelId;
+  if (filters.shipmentId) where.shipmentId = filters.shipmentId;
   if (filters.statusCode) where.statusCode = filters.statusCode;
   if (filters.storage) {
     where.specs = { path: ['storage'], equals: filters.storage };
