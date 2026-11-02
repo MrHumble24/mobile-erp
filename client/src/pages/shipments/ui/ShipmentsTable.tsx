@@ -1,5 +1,6 @@
 import { Truck } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
+import { Eye, PackagePlus, Pencil } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
@@ -43,14 +44,18 @@ function RowActions({
   const { t } = useI18n()
   return (
     <div className="flex justify-end gap-1.5">
-      <Button variant="ghost" size="sm" onClick={() => onOpen(shipment)}>{t("shipments.openDetail")}</Button>
+      <Button variant="ghost" size="icon" className="size-8" onClick={() => onOpen(shipment)} aria-label={t("shipments.openDetail")} title={t("shipments.openDetail")}>
+        <Eye className="size-4" />
+      </Button>
       {canIntake && (
-        <Button size="sm" onClick={() => onIntake(shipment.id)} className="h-8 rounded-full text-xs">
-          {t("shipments.continueIntake")}
+        <Button size="icon" className="size-8" onClick={() => onIntake(shipment.id)} aria-label={t("shipments.continueIntake")} title={t("shipments.continueIntake")}>
+          <PackagePlus className="size-4" />
         </Button>
       )}
       {canManage && (
-        <Button variant="outline" size="sm" onClick={() => onEdit(shipment)}>{t("common.edit")}</Button>
+        <Button variant="outline" size="icon" className="size-8" onClick={() => onEdit(shipment)} aria-label={t("common.edit")} title={t("common.edit")}>
+          <Pencil className="size-4" />
+        </Button>
       )}
     </div>
   )
@@ -64,7 +69,7 @@ function ShipmentRow({ shipment, suppliersMap, canViewCost, ...actions }: Shipme
       <TableCell><ShipmentProgressBadge received={shipment.deviceCount} expected={shipment.expectedCount} /></TableCell>
       {canViewCost && <TableCell>{formatMoney(shipment.overheadCost)}</TableCell>}
       <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">{shipment.notes || "-"}</TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right whitespace-nowrap">
         <RowActions shipment={shipment} {...actions} />
       </TableCell>
     </TableRow>
