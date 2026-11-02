@@ -129,6 +129,10 @@ export class SalesService {
     return this.reads.list(query);
   }
 
+  stats(query: ListSalesQueryDto) {
+    return this.reads.stats(query);
+  }
+
   get(id: string): Promise<SaleView> {
     return this.require(id);
   }

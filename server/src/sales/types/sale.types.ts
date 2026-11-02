@@ -21,7 +21,22 @@ export interface SaleRow {
     profile: { firstName: string; lastName: string | null } | null;
   };
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
-  return: { saleId: string } | null;
+  return: {
+    returnedAt: Date;
+    refundAmount: Money;
+    reason: string | null;
+    processedBy: {
+      id: string;
+      profile: { firstName: string; lastName: string | null } | null;
+    };
+  } | null;
+}
+
+export interface SaleReturnView {
+  returnedAt: Date;
+  refundAmount: Money;
+  reason: string | null;
+  processedBy: { id: string; name: string };
 }
 
 export interface SaleView {
@@ -39,6 +54,32 @@ export interface SaleView {
   soldBy: { id: string; name: string };
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
   consignmentId: string | null;
+  notes: string | null;
+  return: SaleReturnView | null;
+}
+
+/** Filters shared by `GET /sales` and `GET /sales/stats`. */
+export interface SaleFilters {
+  from?: string;
+  to?: string;
+  soldById?: string;
+  customerId?: string;
+  channel?: 'retail' | 'b2b';
+  search?: string;
+  returned?: 'true' | 'false';
+  warranty?: 'active' | 'expired';
+  page: number;
+  pageSize: number;
+}
+
+/** Aggregates over the filtered sale set. `netProfit` is redacted per permission. */
+export interface SaleStatsView {
+  count: number;
+  revenue: Money;
+  avgPrice: Money;
+  returnedCount: number;
+  refundTotal: Money;
+  netProfit: Money;
 }
 
 /** Warranty lookup for a returning customer, keyed by IMEI. */

@@ -3,8 +3,10 @@ import {
   IsInt,
   IsISO8601,
   IsOptional,
+  IsString,
   IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -28,6 +30,19 @@ export class ListSalesQueryDto {
   @IsOptional()
   @IsIn(['retail', 'b2b'])
   channel?: 'retail' | 'b2b';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  search?: string;
+
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  returned?: 'true' | 'false';
+
+  @IsOptional()
+  @IsIn(['active', 'expired'])
+  warranty?: 'active' | 'expired';
 
   @IsOptional()
   @IsInt()

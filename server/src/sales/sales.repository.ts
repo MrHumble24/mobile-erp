@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '../generated/client/client.js';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { buildSaleWhere } from './lib/sale-where.js';
 import { toReceiptView, toSaleView } from './lib/sale.mapper.js';
 import { remainingWarrantyDays } from './lib/warranty.js';
 import type {
   ReceiptView,
+  SaleFilters,
   SaleRow,
+  SaleStatsView,
   SaleView,
   WarrantyLookupView,
 } from './types/sale.types.js';
@@ -32,18 +35,20 @@ const saleSelect = {
     },
   },
   warranty: { select: { days: true, startsAt: true, endsAt: true } },
-  return: { select: { saleId: true } },
+  return: {
+    select: {
+      returnedAt: true,
+      refundAmount: true,
+      reason: true,
+      processedBy: {
+        select: {
+          id: true,
+          profile: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+  },
 } as const;
-
-export interface SaleFilters {
-  from?: string;
-  to?: string;
-  soldById?: string;
-  customerId?: string;
-  channel?: 'retail' | 'b2b';
-  page: number;
-  pageSize: number;
-}
 
 /** Read-side Prisma access for sales. Transactional writes live in the checkout repository. */
 @Injectable()
@@ -89,7 +94,7 @@ export class SalesRepository {
     page: number;
     pageSize: number;
   }> {
-    const where = buildWhere(filters);
+    const where = buildSaleWhere(filters);
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.sale.findMany({
         where,
@@ -105,6 +110,34 @@ export class SalesRepository {
       total,
       page: filters.page,
       pageSize: filters.pageSize,
+    };
+  }
+
+  async stats(filters: SaleFilters): Promise<SaleStatsView> {
+    const where = buildSaleWhere(filters);
+    const zero = new Prisma.Decimal(0);
+    const [sales, returns] = await this.prisma.$transaction([
+      this.prisma.sale.aggregate({
+        where,
+        _count: { _all: true },
+        _sum: { salePrice: true, landedCostSnapshot: true },
+        _avg: { salePrice: true },
+      }),
+      this.prisma.saleReturn.aggregate({
+        where: { sale: where },
+        _count: { _all: true },
+        _sum: { refundAmount: true },
+      }),
+    ]);
+    const revenue = sales._sum.salePrice ?? zero;
+    const cost = sales._sum.landedCostSnapshot ?? zero;
+    return {
+      count: sales._count._all,
+      revenue,
+      avgPrice: sales._avg.salePrice ?? zero,
+      returnedCount: returns._count._all,
+      refundTotal: returns._sum.refundAmount ?? zero,
+      netProfit: revenue.minus(cost),
     };
   }
 
@@ -196,26 +229,4 @@ export class SalesRepository {
       alreadyReturned: sale.return !== null,
     };
   }
-}
-
-function buildWhere(filters: SaleFilters) {
-  const soldAt =
-    filters.from || filters.to
-      ? {
-          gte: filters.from ? new Date(filters.from) : undefined,
-          lte: filters.to ? new Date(filters.to) : undefined,
-        }
-      : undefined;
-  const consignmentId =
-    filters.channel === 'retail'
-      ? null
-      : filters.channel === 'b2b'
-        ? { not: null }
-        : undefined;
-  return {
-    soldById: filters.soldById,
-    customerId: filters.customerId,
-    soldAt,
-    consignmentId,
-  };
 }

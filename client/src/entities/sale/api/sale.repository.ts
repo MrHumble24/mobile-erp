@@ -5,9 +5,12 @@ import type {
   ReturnSaleDto,
   SaleFilters,
   SalePage,
+  SaleStats,
   SaleView,
   WarrantyLookupView,
 } from "../model/sale.types"
+
+type QueryParams = Record<string, string | number | boolean | undefined | null>
 
 export const saleRepository = {
   create: async (dto: CreateSaleDto): Promise<SaleView> => {
@@ -19,7 +22,13 @@ export const saleRepository = {
 
   list: async (filters?: SaleFilters): Promise<SalePage> => {
     return http<SalePage>("/sales", {
-      params: filters as Record<string, string | number | boolean | undefined | null>,
+      params: filters as QueryParams,
+    })
+  },
+
+  stats: async (filters?: SaleFilters): Promise<SaleStats> => {
+    return http<SaleStats>("/sales/stats", {
+      params: filters as QueryParams,
     })
   },
 
@@ -35,8 +44,8 @@ export const saleRepository = {
     return http<WarrantyLookupView>(`/sales/warranty/${imei}`)
   },
 
-  returnSale: async (id: string, dto: ReturnSaleDto): Promise<{ success: boolean }> => {
-    return http<{ success: boolean }>(`/sales/${id}/return`, {
+  returnSale: async (id: string, dto: ReturnSaleDto): Promise<SaleView> => {
+    return http<SaleView>(`/sales/${id}/return`, {
       method: "POST",
       body: dto,
     })

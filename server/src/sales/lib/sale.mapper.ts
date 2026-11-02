@@ -38,6 +38,18 @@ export function toSaleView(row: SaleRow): SaleView {
     soldBy: { id: row.soldBy.id, name: fullName(row.soldBy.profile) },
     warranty: row.warranty,
     consignmentId: row.consignmentId,
+    notes: row.notes,
+    return: row.return
+      ? {
+          returnedAt: row.return.returnedAt,
+          refundAmount: row.return.refundAmount,
+          reason: row.return.reason,
+          processedBy: {
+            id: row.return.processedBy.id,
+            name: fullName(row.return.processedBy.profile),
+          },
+        }
+      : null,
   };
 }
 

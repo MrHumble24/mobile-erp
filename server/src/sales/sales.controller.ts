@@ -23,6 +23,12 @@ export class SalesController {
     return this.sales.list(query);
   }
 
+  @Get('stats')
+  @RequirePermissions('sale.read')
+  stats(@Query() query: ListSalesQueryDto) {
+    return this.sales.stats(query);
+  }
+
   @Get('warranty/:imei')
   @RequirePermissions('sale.read')
   warranty(@Param('imei') imei: string) {

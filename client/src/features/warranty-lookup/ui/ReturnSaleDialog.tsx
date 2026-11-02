@@ -1,4 +1,5 @@
 import * as React from "react"
+import { AlertTriangle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useReturnSale } from "@/entities/sale"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
@@ -6,6 +7,7 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
+import { Textarea } from "@/shared/ui/textarea"
 import { toast } from "@/shared/ui/sonner"
 
 interface ReturnFieldsProps {
@@ -24,8 +26,10 @@ function ReturnFields({
   setDeviceToStatusCode,
   reason,
   setReason,
-}: ReturnFieldsProps) {
+  salePrice,
+}: ReturnFieldsProps & { salePrice: number }) {
   const { t } = useI18n()
+  const exceeds = refundAmount > salePrice
   return (
     <>
       <div className="space-y-1">
@@ -38,6 +42,12 @@ function ReturnFields({
           className="h-10 text-base font-bold"
           required
         />
+        {exceeds && (
+          <p className="flex items-center gap-1.5 text-xs text-amber-600">
+            <AlertTriangle className="size-3.5" />
+            {t("sales.refundExceedsWarning")}
+          </p>
+        )}
       </div>
 
       <div className="space-y-1">
@@ -56,11 +66,11 @@ function ReturnFields({
 
       <div className="space-y-1">
         <Label>{t("sales.returnReason")}</Label>
-        <Input
+        <Textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Qaytarish sababi..."
-          className="h-10"
+          placeholder={t("sales.returnReasonPlaceholder")}
+          rows={3}
         />
       </div>
     </>
@@ -95,8 +105,13 @@ function ReturnSaleForm({
           onCancel()
           onSuccess?.()
         },
-        onError: (err: any) => {
-          toast.error(err?.statusCode === 409 ? t("common.retry") : (err?.message || t("common.error")))
+        onError: (err: unknown) => {
+          const e = err as { statusCode?: number; message?: string }
+          if (e?.statusCode === 409) {
+            toast.error(e.message || t("sales.returnConflict"))
+          } else {
+            toast.error(e?.message || t("common.error"))
+          }
         },
       }
     )
@@ -111,6 +126,7 @@ function ReturnSaleForm({
         setDeviceToStatusCode={setDeviceToStatusCode}
         reason={reason}
         setReason={setReason}
+        salePrice={salePrice}
       />
       <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending}>
         {returnMutation.isPending ? t("common.loading") : t("sales.returnDevice")}
