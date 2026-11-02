@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import uz.malika.erp.app.FeatureNav
 import uz.malika.erp.core.AuthEvents
 import uz.malika.erp.core.DevConfigStore
 import uz.malika.erp.core.SecureStore
@@ -24,6 +25,7 @@ import uz.malika.erp.features.auth.data.AuthRepository
 import uz.malika.erp.features.auth.model.SessionViewModel
 import uz.malika.erp.i18n.I18n
 import uz.malika.erp.i18n.LocaleStore
+import uz.malika.erp.shared.ui.Toaster
 
 /**
  * Manual dependency container (no Hilt). One instance, created in the
@@ -59,6 +61,10 @@ class AppContainer(context: Context) {
 
     val i18n = I18n.load(context.assets)
     val localeStore = LocaleStore(secure)
+
+    /** Kit singletons any slice may use (FOUNDATION.md § Shared kit). */
+    val featureNav = FeatureNav()
+    val toaster = Toaster()
 
     /** Builds app-scoped ViewModels. Feature ViewModels can follow this pattern. */
     val viewModelFactory: ViewModelProvider.Factory = viewModelFactory {

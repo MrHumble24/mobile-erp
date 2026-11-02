@@ -95,6 +95,45 @@ object InventoryFeature : FeatureModule {
   `Loading`/`EmptyView`/`ErrorView`. **Use the kit — never default Material styling.**
   (`AppSelect` and `MetricTile` were promoted from slices — reuse, don't re-create.)
 
+## Shared kit (cross-cutting APIs — use these, don't re-create)
+Five pieces every feature slice shares. The two bus APIs live on `AppContainer`
+(callable from any ViewModel or screen); the rest are `shared/` code.
+
+- **Cross-feature navigation** (`app/FeatureNav.kt`, `container.featureNav`): open
+  a screen another slice owns. The shell performs the one navigation; the target
+  reads its preload once. Destinations: `Inventory(imei?)`, `Pos(imei?)`,
+  `Qc(imei?)`, `Sales(saleId?)`, `Consignments(id?)`.
+  ```kotlin
+  container.featureNav.open(Destination.Pos(imei = device.imei))   // from a VM or screen
+  // target screen, once:
+  LaunchedEffect(Unit) { container.featureNav.consumeArg("pos")?.let(vm::preload) }
+  ```
+- **Toasts** (`shared/ui/Toast.kt`, `container.toaster`): Caldera snackbar,
+  mounted once in `MalikaApp`. Pass already-translated strings.
+  ```kotlin
+  container.toaster.success(t("sales.customerSaved", null))   // success / error / info
+  ```
+- **Date-range picker** (`shared/ui/DateRangePicker.kt`): bordered field that
+  opens the Caldera-themed Material3 range picker; emits epoch-millis `DateRange`.
+  ```kotlin
+  AppDateRangeField(t("reports.dateFrom", null), range, onPick = { range = it })
+  ```
+- **Load-more pagination** (`shared/lib/Paging.kt` state + `shared/ui/LoadMoreFooter.kt`):
+  matches the server's `page`/`pageSize` lists (`{items,total,page,pageSize}`,
+  default 50). Hold a `PageState<T>` per list; `append(items, total, page)` merges.
+  ```kotlin
+  state = state.copy(loading = true)
+  val res = repo.list(filters, page = state.nextPage, pageSize = DEFAULT_PAGE_SIZE)
+  state = state.append(res.items, res.total, res.page)
+  // in LazyColumn: item { LoadMoreFooter(state.hasMore, state.loading, onLoadMore) }
+  ```
+- **CSV + share** (`shared/lib/Csv.kt` + `shared/lib/Share.kt`): RFC-4180 escaping
+  then the system share sheet (FileProvider `<appId>.fileprovider`, cache `exports/`).
+  ```kotlin
+  val csv = Csv.build(headers = listOf("imei", "price"), rows = rows)
+  shareTextFile(context, "sales.csv", csv, chooserTitle = t("sales.exportCsv", null))
+  ```
+
 ## Deliberate wave-0 stubs
 - Dev-panel / offline / forbidden i18n keys are not yet in the web JSON (Gemini
   handoff); the raw key shows until added. The loader reads the client JSON as-is.

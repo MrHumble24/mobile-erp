@@ -1,13 +1,18 @@
 package uz.malika.erp
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import uz.malika.erp.app.AppNavHost
 import uz.malika.erp.features.auth.model.SessionViewModel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.ui.ToastHost
 import uz.malika.erp.ui.theme.MalikaTheme
 
 /**
@@ -23,7 +28,10 @@ fun MalikaApp(container: AppContainer) {
             LocalT provides { key, params -> container.i18n.t(locale, key, params) },
         ) {
             val session: SessionViewModel = viewModel(factory = container.viewModelFactory)
-            AppNavHost(container, session)
+            Box(Modifier.fillMaxSize()) {
+                AppNavHost(container, session)
+                ToastHost(container.toaster.toasts, Modifier.align(Alignment.BottomCenter))
+            }
         }
     }
 }

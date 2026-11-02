@@ -2,6 +2,7 @@ package uz.malika.erp.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
@@ -57,6 +58,20 @@ private fun AuthedShell(container: AppContainer, session: SessionViewModel, onli
     val devUnlocked by DevAccess.unlocked.collectAsState()
     val navItems = FeatureRegistry.navItems.filter { it.permission == null || user.can(it.permission) } +
         if (devUnlocked) listOf(devConsoleNavItem) else emptyList()
+
+    // Cross-feature navigation: a slice calls container.featureNav.open(dest);
+    // the shell performs the single navigation here (see FeatureNav).
+    LaunchedEffect(nav) {
+        container.featureNav.destinations.collect { dest ->
+            runCatching {
+                nav.navigate(dest.route) {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(FeatureRegistry.startRoute) { saveState = true }
+                }
+            }
+        }
+    }
 
     CompositionLocalProvider(LocalCan provides { code -> user.can(code) }) {
         AppShell(
