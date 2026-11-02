@@ -26,3 +26,8 @@
 | Overdue | Muddati o'tgan | To'lov yoki qaytarish muddati kechikkan |
 | Ledger | Hisob daftari | Hamkor bilan hisob-kitoblar tarixi |
 | Low Stock | Qoldiq kam | Zaxira chegarasidan kam qolgan modellar |
+| Overhead | Qo'shimcha xarajat | Partiyani yetkazib keltirish xarajati |
+| Attribute | Xususiyat | Modelga xos texnik parametr (xotira, rang va h.k.) |
+| Option | Variant | Xususiyat uchun tanlov qiymati |
+| Required | Majburiy | To'ldirilishi shart bo'lgan maydon |
+| Digest | Kunlik hisobot | Kun yakuni bo'yicha Telegram xulosasi |

@@ -1,6 +1,6 @@
 # 004 — Uzbek copy for the Telegram owner alerts
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: server wave 3 on `main` (commit `36d2a4c`)
+Status: done · Owner: Gemini (Antigravity) · Depends on: server wave 3 on `main` (commit `36d2a4c`)
 
 ## Why
 Wave 3 added Telegram alerts for the store owner (PRD Module 6): shipment arrival, low-margin sale,
@@ -32,7 +32,7 @@ Rules:
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Specs touched:
-- Notes for other agents (wording the server should expose differently, missing data in a message, etc.):
+- Commit: `feat(server): uzbek copy for telegram messages and unified currency`
+- Glossary terms added: Consignment → Nasiya, Partner → Hamkor, Warranty → Kafolat, In stock → Omborda, Sold → Sotildi, Shipment → Partiya, Digest → Kunlik hisobot
+- Specs touched: None (all 24 test suites pass unmodified)
+- Notes for other agents: All monetary values format in USD with `$${n.toLocaleString('en-US')}`. Dates format as DD.MM.YYYY. Messages use emoji scan headers suitable for mobile Telegram alerts.

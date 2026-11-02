@@ -1,6 +1,6 @@
 /**
- * Every Telegram message string lives here as a function returning English.
- * Gemini translates these to Uzbek via a handoff; keep NOTHING inline elsewhere.
+ * Every Telegram message string lives here as an Uzbek shop notification function.
+ * Keep NOTHING inline elsewhere.
  */
 
 export function shipmentRegistered(p: {
@@ -9,8 +9,9 @@ export function shipmentRegistered(p: {
   models: string[];
 }): string {
   return (
-    `New shipment received from ${p.supplier}: ${p.count} device(s).\n` +
-    `Models: ${p.models.join(', ')}.`
+    `📦 Yangi partiya qabul qilindi: ${p.supplier}\n` +
+    `Jami: ${p.count} ta qurilma\n` +
+    `Modellar: ${p.models.join(', ')}`
   );
 }
 
@@ -21,10 +22,10 @@ export function belowMarginSale(p: {
   targetPrice: number | null;
   marginPercent: number;
 }): string {
-  const target = p.targetPrice === null ? 'no target' : money(p.targetPrice);
+  const target = p.targetPrice === null ? "maqsad narxi yo'q" : money(p.targetPrice);
   return (
-    `Low-margin sale: ${p.model} (IMEI ${p.imei}).\n` +
-    `Sold for ${money(p.salePrice)} (target ${target}, margin ${p.marginPercent.toFixed(1)}%).`
+    `⚠️ Past marjali savdo: ${p.model} (IMEI ${p.imei})\n` +
+    `Sotildi: ${money(p.salePrice)} (mo'ljal: ${target}, marja: ${p.marginPercent.toFixed(1)}%)`
   );
 }
 
@@ -35,8 +36,9 @@ export function consignmentCreated(p: {
   dueDate: Date;
 }): string {
   return (
-    `Consignment to ${p.partner}: IMEI ${p.imei} at ${money(p.agreedPrice)}.\n` +
-    `Due ${date(p.dueDate)}.`
+    `🤝 Nasiyaga berildi: ${p.partner}\n` +
+    `IMEI ${p.imei} — ${money(p.agreedPrice)}\n` +
+    `Qaytarish muddati: ${date(p.dueDate)}`
   );
 }
 
@@ -44,7 +46,7 @@ export function paymentReceived(p: {
   partner: string;
   amount: number;
 }): string {
-  return `Payment received from ${p.partner}: ${money(p.amount)}.`;
+  return `💰 To'lov qabul qilindi (${p.partner}): ${money(p.amount)}`;
 }
 
 export function lowStock(
@@ -57,9 +59,9 @@ export function lowStock(
 ): string {
   const lines = rows.map(
     (r) =>
-      `- ${r.storage} (model ${short(r.modelId)}): ${r.currentCount}/${r.threshold}`,
+      `- ${r.storage} (model ${short(r.modelId)}): ${r.currentCount}/${r.threshold} ta`,
   );
-  return `Low stock alert:\n${lines.join('\n')}`;
+  return `📉 Qoldiq kamaygan modellar:\n${lines.join('\n')}`;
 }
 
 export function overdueConsignments(
@@ -67,9 +69,9 @@ export function overdueConsignments(
 ): string {
   const lines = rows.map(
     (r) =>
-      `- ${r.partner}: IMEI ${r.imei}, ${money(r.agreedPrice)}, due ${date(r.dueDate)}`,
+      `- ${r.partner}: IMEI ${r.imei}, ${money(r.agreedPrice)}, muddati: ${date(r.dueDate)}`,
   );
-  return `Overdue consignments:\n${lines.join('\n')}`;
+  return `⏰ Muddati o'tgan nasiyalar:\n${lines.join('\n')}`;
 }
 
 export function dailyDigest(p: {
@@ -81,12 +83,12 @@ export function dailyDigest(p: {
   outstanding: number;
 }): string {
   return (
-    `Daily closing for ${p.date}:\n` +
-    `Units sold: ${p.unitsSold}\n` +
-    `Revenue: ${money(p.revenue)}\n` +
-    `Net profit: ${money(p.netProfit)}\n` +
-    `Expenses: ${money(p.expenses)}\n` +
-    `Outstanding consignment balance: ${money(p.outstanding)}`
+    `📊 Kunlik yakuniy hisobot (${p.date}):\n` +
+    `Sotilgan tovarlar: ${p.unitsSold} ta\n` +
+    `Tushum: ${money(p.revenue)}\n` +
+    `Sof foyda: ${money(p.netProfit)}\n` +
+    `Xarajatlar: ${money(p.expenses)}\n` +
+    `Nasiyadagi qoldiq: ${money(p.outstanding)}`
   );
 }
 
@@ -95,7 +97,10 @@ function money(n: number): string {
 }
 
 function date(d: Date): string {
-  return d.toISOString().slice(0, 10);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
 }
 
 function short(id: string): string {
