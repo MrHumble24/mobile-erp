@@ -25,7 +25,7 @@ struct ReturnConsignmentSheet: View {
                         Text(i18n.t("consignments.conditionInStock")).tag("IN_STOCK")
                         Text(i18n.t("consignments.conditionDefective")).tag("DEFECTIVE")
                     }
-                    LabeledField(i18n.t("consignments.returnReason"), text: $reason)
+                    CaptionedField(i18n.t("consignments.returnReason"), text: $reason)
                 }
                 if let errorMessage {
                     Text(errorMessage).font(.footnote).foregroundStyle(Tokens.danger)

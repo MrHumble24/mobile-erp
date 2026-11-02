@@ -4,12 +4,14 @@ import SwiftUI
 /// (`GET /customers/:id/sales`, online).
 struct CustomerDetailSheet: View {
     let customer: CustomerListItem
+    let model: CustomersModel
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
 
     @State private var sales: [CustomerSale]?
     @State private var error: String?
+    @State private var showEdit = false
 
     var body: some View {
         NavigationStack {
@@ -39,6 +41,14 @@ struct CustomerDetailSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(i18n.t("common.close")) { dismiss() }
                 }
+                if model.canManage {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(i18n.t("common.edit", default: "Edit")) { showEdit = true }
+                    }
+                }
+            }
+            .sheet(isPresented: $showEdit) {
+                CustomerFormSheet(model: model, editing: customer)
             }
             .task { if sales == nil { load() } }
         }

@@ -62,4 +62,19 @@ final class CustomersModel {
             return error.localizedDescription
         }
     }
+
+    /// Edit a customer, then refresh the list. Returns an error string or nil.
+    func update(id: String, name: String, phone: String?, notes: String?) async -> String? {
+        guard let container else { return "not ready" }
+        guard container.connectivity.isOnline else { return "offline" }
+        do {
+            try await repo.update(id, name: name, phone: phone, notes: notes)
+            reload()
+            return nil
+        } catch let error as AppError {
+            return error.message
+        } catch {
+            return error.localizedDescription
+        }
+    }
 }

@@ -38,7 +38,7 @@ struct CustomersView: View {
                 }
             }
         }
-        .sheet(item: $selected) { customer in CustomerDetailSheet(customer: customer) }
+        .sheet(item: $selected) { customer in CustomerDetailSheet(customer: customer, model: model) }
         .sheet(isPresented: $showCreate) { CustomerFormSheet(model: model) }
         .task {
             model.configure(container)

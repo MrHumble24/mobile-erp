@@ -86,7 +86,7 @@ struct ShipmentDetailSheet: View {
     }
 
     private func makeStore() -> AsyncStore<DeviceTableData> {
-        let api = ProcApi(container)
+        let api = container.api
         let devices = DevicesRepository(api: api)
         let models = DeviceModelsRepository(api: api)
         let id = shipment.id

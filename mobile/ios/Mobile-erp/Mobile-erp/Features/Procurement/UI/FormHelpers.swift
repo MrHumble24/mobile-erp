@@ -24,10 +24,3 @@ struct LabeledField: View {
             .font(mono ? .mono(15) : .body)
     }
 }
-
-extension String {
-    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-    var trimmedOrNil: String? { let t = trimmed; return t.isEmpty ? nil : t }
-    /// Operator-entered money → exact Decimal (nil when blank/invalid).
-    var asDecimal: Decimal? { Decimal(string: trimmed) }
-}

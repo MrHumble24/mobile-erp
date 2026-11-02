@@ -11,6 +11,7 @@ import uz.malika.erp.core.AuthEvents
 import uz.malika.erp.core.DevConfigStore
 import uz.malika.erp.core.SecureStore
 import uz.malika.erp.data.local.AppDatabase
+import uz.malika.erp.data.remote.ApiService
 import uz.malika.erp.data.remote.HttpClient
 import uz.malika.erp.data.sync.ConflictStore
 import uz.malika.erp.data.sync.Connectivity
@@ -39,7 +40,9 @@ class AppContainer(context: Context) {
     val devConfig = DevConfigStore(secure)
     val authEvents = AuthEvents()
 
-    val api = HttpClient.build(devConfig, secure, authEvents)
+    /** The one configured Retrofit; slices call `retrofit.create(FeatureApi::class.java)`. */
+    val retrofit = HttpClient.build(devConfig, secure, authEvents)
+    val api = retrofit.create(ApiService::class.java)
     val db = AppDatabase.build(context)
 
     private val terminalId = TerminalId(secure)

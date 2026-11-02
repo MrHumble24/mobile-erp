@@ -26,11 +26,7 @@ final class SettingsModel {
         #if DEBUG
         runSettingsSelfChecks()
         #endif
-        repo = SettingsRepository(
-            api: c.api,
-            mut: SettingsMutationHTTP(baseURL: { c.devConfig.baseURL },
-                              onUnauthorized: { c.session.clear() })
-        )
+        repo = SettingsRepository(api: c.api)
         isOnline = { c.connectivity.isOnline }
         offlineMessage = c.i18n.t("common.needsConnection",
                                   default: "No connection — try again when you are back online.")

@@ -110,9 +110,5 @@ final class UsersCatalog {
 /// Builds a slice repository from the container (used by every Users model).
 @MainActor
 func makeUsersRepository(_ c: AppContainer) -> UsersRepository {
-    UsersRepository(
-        api: c.api,
-        mut: UsersMutationHTTP(baseURL: { c.devConfig.baseURL },
-                               onUnauthorized: { c.session.clear() })
-    )
+    UsersRepository(api: c.api)
 }

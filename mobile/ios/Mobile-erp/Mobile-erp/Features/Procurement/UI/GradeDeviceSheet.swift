@@ -38,7 +38,7 @@ struct GradeDeviceSheet: View {
     }
 
     private func makeStore() -> AsyncStore<GradeData> {
-        let repo = QcRepository(api: ProcApi(container))
+        let repo = QcRepository(api: container.api)
         let imei = imei
         return AsyncStore {
             async let d = repo.deviceByImei(imei)
@@ -135,7 +135,7 @@ private struct GradeForm: View {
             defects: selected.map { DefectWriteDTO(defectCode: $0, notes: defectNotes[$0]?.trimmedOrNil) }
         )
         do {
-            try await QcRepository(api: ProcApi(container)).createInspection(body)
+            try await QcRepository(api: container.api).createInspection(body)
             onSaved()
             dismiss()
         } catch let e as AppError {

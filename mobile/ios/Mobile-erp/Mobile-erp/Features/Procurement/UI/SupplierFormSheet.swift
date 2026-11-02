@@ -71,7 +71,7 @@ struct SupplierFormSheet: View {
             notes: notes.trimmedOrNil,
             isActive: editing ? isActive : nil
         )
-        let repo = SuppliersRepository(api: ProcApi(container))
+        let repo = SuppliersRepository(api: container.api)
         do {
             if let existing {
                 _ = try await repo.update(existing.id, body)

@@ -43,6 +43,7 @@ import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -102,9 +103,15 @@ fun ConsignmentsScreen(container: AppContainer) {
 
         state.stats?.let { s ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), modifier = Modifier.weight(1f))
-                MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), modifier = Modifier.weight(1f))
-                MetricTile(t("consignments.statsOverdue", null), s.overdueCount.toString(), dark = s.overdueCount > 0, modifier = Modifier.weight(1f))
+                MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), money = false, modifier = Modifier.weight(1f))
+                MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), money = false, modifier = Modifier.weight(1f))
+                MetricTile(
+                    t("consignments.statsOverdue", null),
+                    s.overdueCount.toString(),
+                    money = false,
+                    emphasis = if (s.overdueCount > 0) Tokens.destructive else null,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
 

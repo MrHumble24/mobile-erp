@@ -67,7 +67,7 @@ struct IntakeDeviceForm: View {
 
 /// One spec input, chosen by attribute type (select → Picker, else text).
 private struct SpecField: View {
-    let attr: AttributeDef
+    let attr: ProcAttributeDef
     @Binding var value: String
 
     private var label: String { attr.required ? "\(attr.label) *" : attr.label }

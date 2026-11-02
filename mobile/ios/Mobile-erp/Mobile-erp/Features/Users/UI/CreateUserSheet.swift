@@ -94,7 +94,3 @@ struct CreateUserSheet: View {
         }
     }
 }
-
-extension String {
-    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}

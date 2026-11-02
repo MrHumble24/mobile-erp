@@ -15,10 +15,10 @@ Customer directory, detail, and purchase history.
   needs-connection note and create is blocked offline.
 - Import another feature slice (input helper duplicated locally).
 
-## Notes / deferred
-- Edit (`PATCH /customers/:id`) is deferred: the foundation `APIClient` exposes
-  only GET/POST, and a slice must not add its own HTTP client. Needs a
-  foundation `patch`/`PATCH` method before edit can ship. Create works today.
+## Notes
+- Create and edit (`POST` / `PATCH /customers/:id`) both run through the shared
+  `container.api` (`CustomerFormSheet` switches on `editing`; edit is gated on
+  `customer.manage` from the detail sheet). Online-only.
 - The `customers` i18n namespace is not loaded by the foundation `I18n` (its
   namespace list omits it), so labels reuse `sales.*` / `common.*` keys.
 

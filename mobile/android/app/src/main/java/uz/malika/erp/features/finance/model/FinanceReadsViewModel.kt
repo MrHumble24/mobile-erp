@@ -2,7 +2,7 @@ package uz.malika.erp.features.finance.model
 
 import androidx.lifecycle.ViewModel
 import uz.malika.erp.AppContainer
-import uz.malika.erp.features.finance.data.FinanceHttp
+import uz.malika.erp.features.finance.data.FinanceApi
 import uz.malika.erp.features.finance.data.FinanceReads
 
 /**
@@ -12,7 +12,7 @@ import uz.malika.erp.features.finance.data.FinanceReads
  */
 class FinanceReadsViewModel(container: AppContainer) : ViewModel() {
 
-    private val reads = FinanceReads(FinanceHttp.api(container))
+    private val reads = FinanceReads(container.retrofit.create(FinanceApi::class.java))
 
     suspend fun profit(from: String?, to: String?) = reads.profit(from, to)
 

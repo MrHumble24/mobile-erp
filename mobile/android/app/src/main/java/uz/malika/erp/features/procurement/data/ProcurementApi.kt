@@ -1,32 +1,17 @@
 package uz.malika.erp.features.procurement.data
 
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
-import uz.malika.erp.AppContainer
-import uz.malika.erp.core.AuthEvents
-import uz.malika.erp.core.DevConfigStore
-import uz.malika.erp.core.SecureStore
-import uz.malika.erp.data.remote.HttpClient
 
 /**
  * The procurement group's REST surface (`/suppliers`, `/shipments`,
- * `/device-models`, `/devices`, `/qc`). These endpoints are not on the
- * wave-0 [uz.malika.erp.data.remote.ApiService], which this slice may not edit.
- *
- * ponytail: [createProcurementService] replays the foundation HttpClient's
- * base-URL + auth + 401 interceptors because the configured OkHttp/Retrofit is
- * not exposed. Integrator: promote these routes onto the shared ApiService and
- * delete this file + its client. Do not add a third client elsewhere.
+ * `/device-models`, `/devices`, `/qc`). Retrofit interface only — built via
+ * `container.retrofit.create(ProcurementService::class.java)`, the one shared
+ * OkHttp/base-URL/bearer/401 pipeline.
  */
 interface ProcurementService {
 
@@ -87,43 +72,4 @@ interface ProcurementService {
 
     @PATCH("qc/{kind}/{code}")
     suspend fun updateLookup(@Path("kind") kind: String, @Path("code") code: String, @Body body: LookupBody)
-}
-
-/** Builds the procurement service on its own client (see the class note). */
-fun createProcurementService(container: AppContainer): ProcurementService {
-    val client = OkHttpClient.Builder()
-        .addInterceptor(baseUrlInterceptor(container.devConfig))
-        .addInterceptor(authInterceptor(container.secure, container.authEvents))
-        .build()
-    val contentType = "application/json".toMediaType()
-    return Retrofit.Builder()
-        .baseUrl("http://localhost/")
-        .client(client)
-        .addConverterFactory(HttpClient.json.asConverterFactory(contentType))
-        .build()
-        .create(ProcurementService::class.java)
-}
-
-private fun baseUrlInterceptor(devConfig: DevConfigStore) = Interceptor { chain ->
-    val original = chain.request()
-    val configured = devConfig.currentBaseUrl.toHttpUrlOrNull()
-        ?: return@Interceptor chain.proceed(original)
-    val url = original.url.newBuilder()
-        .scheme(configured.scheme).host(configured.host).port(configured.port).build()
-    chain.proceed(original.newBuilder().url(url).build())
-}
-
-private fun authInterceptor(secure: SecureStore, authEvents: AuthEvents) = Interceptor { chain ->
-    val token = secure.get(SecureStore.Keys.TOKEN)
-    val request = if (!token.isNullOrEmpty()) {
-        chain.request().newBuilder().header("Authorization", "Bearer $token").build()
-    } else {
-        chain.request()
-    }
-    val response = chain.proceed(request)
-    if (response.code == 401) {
-        secure.remove(SecureStore.Keys.TOKEN, SecureStore.Keys.USER)
-        authEvents.signalUnauthorized()
-    }
-    response
 }

@@ -13,12 +13,16 @@ import uz.malika.erp.core.SecureStore
 import java.util.concurrent.TimeUnit
 
 /**
- * Builds the single [ApiService]. Mirrors the web `shared/api/http.ts`:
+ * Builds the single configured [Retrofit]. Mirrors the web `shared/api/http.ts`:
  *  - rewrites each request to the currently-configured base URL (runtime switch),
  *  - attaches `Authorization: Bearer <token>` from secure storage,
  *  - on a 401 that is NOT the login call: wipes the token + user and signals
  *    [AuthEvents] (→ the app returns to login).
  * The error envelope is normalized at the repository layer by `runApi`.
+ *
+ * It returns the shared [Retrofit] (not a single interface): every slice calls
+ * `container.retrofit.create(FeatureApi::class.java)` so there is one OkHttp
+ * client, one base-URL/bearer/401 pipeline, for the whole app.
  */
 object HttpClient {
 
@@ -33,7 +37,7 @@ object HttpClient {
         devConfig: DevConfigStore,
         secure: SecureStore,
         authEvents: AuthEvents,
-    ): ApiService {
+    ): Retrofit {
         val client = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
@@ -47,7 +51,6 @@ object HttpClient {
             .client(client)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
-            .create(ApiService::class.java)
     }
 
     /** Swap scheme/host/port of every request to the live dev-config base URL. */

@@ -11,13 +11,10 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * Retrofit interface for the admin endpoints the foundation [ApiService] does
- * not declare (`/users`, `/access`, `/settings`). Built by [AdminHttp] off the
- * same configured HTTP stack, so the base-URL switch and 401→logout still apply.
- *
- * NOTE (integrator): the clean fix is to fold these routes into the single
- * foundation `ApiService`; this slice-local interface is the documented
- * work-around while that file is off-limits.
+ * Retrofit interface for the admin endpoints the foundation `ApiService` does
+ * not declare (`/users`, `/access`, `/settings`). Built via
+ * `container.retrofit.create(AdminApi::class.java)` — the one shared HTTP
+ * pipeline, so the base-URL switch and 401→logout still apply.
  */
 interface AdminApi {
 

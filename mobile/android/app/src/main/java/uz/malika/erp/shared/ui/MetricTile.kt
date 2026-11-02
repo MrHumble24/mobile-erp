@@ -1,4 +1,4 @@
-package uz.malika.erp.features.finance.ui.components
+package uz.malika.erp.shared.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,14 +13,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.shared.lib.formatMoney
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * A labelled figure card (revenue, profit, …). [emphasis] tints the value
- * (danger for expenses/refunds, success for net income). When [money] the
- * value is formatted and rendered in the mono face so amounts align.
+ * A labelled figure card (revenue, profit, counts, …). Promoted from the
+ * finance/nasiya/admin slices (DRY). [emphasis] tints the value (danger for
+ * expenses/refunds/overdue, success for net income). When [money] the value is
+ * formatted and rendered in the mono face so amounts align; pass `money = false`
+ * for counts or pre-formatted strings.
  */
 @Composable
 fun MetricTile(

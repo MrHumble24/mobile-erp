@@ -42,7 +42,7 @@ struct QcStatsView: View {
     }
 
     private func makeStore() -> AsyncStore<QcStats> {
-        let repo = QcRepository(api: ProcApi(container))
+        let repo = QcRepository(api: container.api)
         let range = Self.range(for: preset)
         return AsyncStore { try await repo.stats(from: range.from, to: range.to) }
     }

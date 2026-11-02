@@ -27,7 +27,7 @@ struct QcInspectionsView: View {
         }
         .task(id: refresh) {
             if store == nil {
-                let repo = QcRepository(api: ProcApi(container))
+                let repo = QcRepository(api: container.api)
                 store = AsyncStore { try await repo.listInspections(passed: nil).items }
             }
             await store?.reload()

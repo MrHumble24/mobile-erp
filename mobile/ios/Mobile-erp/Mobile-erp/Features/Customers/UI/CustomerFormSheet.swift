@@ -1,17 +1,26 @@
 import SwiftUI
 
-/// Create a customer (`POST /customers`, online-only; blocked offline). Editing
-/// is deferred — the foundation `APIClient` has no PATCH (see slice README).
+/// Create or edit a customer (`POST` / `PATCH /customers/:id`, online-only;
+/// blocked offline). Pass `editing` to edit an existing customer.
 struct CustomerFormSheet: View {
     let model: CustomersModel
+    var editing: CustomerListItem?
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name = ""
-    @State private var phone = ""
-    @State private var notes = ""
+    @State private var name: String
+    @State private var phone: String
+    @State private var notes: String
     @State private var busy = false
     @State private var error: String?
+
+    init(model: CustomersModel, editing: CustomerListItem? = nil) {
+        self.model = model
+        self.editing = editing
+        _name = State(initialValue: editing?.name ?? "")
+        _phone = State(initialValue: editing?.phone ?? "")
+        _notes = State(initialValue: editing?.notes ?? "")
+    }
 
     var body: some View {
         NavigationStack {
@@ -27,7 +36,9 @@ struct CustomerFormSheet: View {
                     Section { Text(error).foregroundStyle(Tokens.destructive).font(.footnote) }
                 }
             }
-            .navigationTitle(i18n.t("sales.newCustomer"))
+            .navigationTitle(editing == nil
+                ? i18n.t("sales.newCustomer")
+                : i18n.t("sales.editCustomer", default: "Edit customer"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -52,16 +63,23 @@ struct CustomerFormSheet: View {
         }
         busy = true
         error = nil
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        let phoneValue = CustomersInput.orNil(phone)
+        let notesValue = CustomersInput.orNil(notes)
         Task {
-            if let message = await model.create(name: name.trimmingCharacters(in: .whitespaces),
-                                                phone: CustomersInput.orNil(phone),
-                                                notes: CustomersInput.orNil(notes)) {
-                busy = false
+            let message: String?
+            if let editing {
+                message = await model.update(id: editing.id, name: trimmedName,
+                                             phone: phoneValue, notes: notesValue)
+            } else {
+                message = await model.create(name: trimmedName, phone: phoneValue, notes: notesValue)
+            }
+            busy = false
+            if let message {
                 error = message == "offline"
                     ? i18n.t("common.offline", default: "You are offline. This needs a connection.")
                     : message
             } else {
-                busy = false
                 dismiss()
             }
         }

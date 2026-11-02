@@ -22,9 +22,9 @@ RBAC administration — the native port of the web `pages/users` +
   blocks with a needs-connection message offline.
 - Gate on role names — only permission codes (`user.manage`, `role.manage`).
 - Self-edit roles / permissions / deactivation (locked, as on the web).
-- Talk HTTP outside `UsersRepository` / its `UsersMutationHTTP`.
+- Talk HTTP outside `UsersRepository`.
 
 ## Notes
 - Roles/Matrix tabs are hidden without `role.manage` (the `/access/*` guard).
-- `UsersMutationHTTP` duplicates the Settings copy only because Core `APIClient`
-  lacks PUT/PATCH/DELETE — fold into the foundation when it gains them.
+- All verbs go through the shared `container.api` (`patchJSON`/`putJSON`/`delete`);
+  no slice-local HTTP client.

@@ -15,7 +15,7 @@ import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.data.ExpenseFilter
 import uz.malika.erp.features.finance.data.ExpenseSummary
 import uz.malika.erp.features.finance.data.ExpensesRepository
-import uz.malika.erp.features.finance.data.FinanceHttp
+import uz.malika.erp.features.finance.data.FinanceApi
 
 data class ExpensesUiState(
     val filter: ExpenseFilter = ExpenseFilter(),
@@ -34,7 +34,7 @@ data class ExpensesUiState(
  */
 class ExpensesViewModel(private val container: AppContainer) : ViewModel() {
 
-    private val repo = ExpensesRepository(FinanceHttp.api(container))
+    private val repo = ExpensesRepository(container.retrofit.create(FinanceApi::class.java))
 
     private val _state = MutableStateFlow(ExpensesUiState())
     val state: StateFlow<ExpensesUiState> = _state.asStateFlow()

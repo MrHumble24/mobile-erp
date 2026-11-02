@@ -2,10 +2,6 @@ import Foundation
 
 /// The only place that talks to `/customers/*`. All reads and writes are online
 /// (customers have no offline feed).
-///
-/// Note: editing a customer is `PATCH /customers/:id`, but the foundation
-/// `APIClient` exposes only GET/POST — so edit is deferred (see slice README),
-/// not faked as a POST to a PATCH route.
 @MainActor
 struct CustomersRepository {
     let api: APIClient
@@ -28,6 +24,15 @@ struct CustomersRepository {
         struct Created: Decodable { let id: String }
         let _: Created = try await api.post(
             "/customers",
+            body: CustomerPayload(name: name, phone: phone, notes: notes)
+        )
+    }
+
+    /// `PATCH /customers/:id` (needs `customer.manage`). The caller refreshes
+    /// the list to pick up aggregates, so the response is not read.
+    func update(_ id: String, name: String, phone: String?, notes: String?) async throws {
+        try await api.patchVoid(
+            "/customers/\(id)",
             body: CustomerPayload(name: name, phone: phone, notes: notes)
         )
     }

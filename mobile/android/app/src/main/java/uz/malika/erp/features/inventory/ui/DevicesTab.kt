@@ -1,4 +1,5 @@
 package uz.malika.erp.features.inventory.ui
+import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

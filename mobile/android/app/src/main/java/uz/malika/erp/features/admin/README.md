@@ -5,9 +5,9 @@ pages to the native Android app. One `FeatureModule` (`AdminFeature`) contribute
 all three nav items and routes.
 
 ## Owns
-- `data/` — `AdminApi` (Retrofit for `/users`, `/access`, `/settings`), `AdminHttp`
-  (slice-local client), `UsersRepository`, `SettingsRepository`, transport models,
-  `currentUserId` (self-lock read).
+- `data/` — `AdminApi` (Retrofit interface for `/users`, `/access`, `/settings`,
+  built via `container.retrofit.create(...)`), `UsersRepository`,
+  `SettingsRepository`, transport models, `currentUserId` (self-lock read).
 - `model/` — `UsersViewModel`, `AccessViewModel`, `SettingsViewModel`, `SyncViewModel`,
   pure `validateSettings`, the `Async` load-state, and the VM factory.
 - `ui/` — `UsersScreen` (Users / Roles / Permission-matrix sections), user detail
@@ -29,10 +29,8 @@ all three nav items and routes.
   needs-connection message when offline (only sale/consignment use the outbox).
 - Model cost fields — these projections never carry money.
 
-## Work-arounds (integrator may fold in)
-- `AdminHttp` rebuilds the configured HTTP stack because the foundation
-  `ApiService` (off-limits) does not declare the admin endpoints. Cleanest fix:
-  add those routes to the one `ApiService`.
-- `ui/AdminControls` (checkbox/switch) and `UsersSummary`'s stat tile are built
-  from `Tokens` because the shared kit lacks them — candidates to promote to
-  `shared/ui`.
+## Notes
+- `AdminApi` rides the one shared `AppContainer.retrofit` (base-URL/bearer/401
+  pipeline) — no slice-local client.
+- `UsersSummary` uses the promoted `shared/ui/MetricTile`. `ui/AdminControls`
+  (checkbox/switch) stays slice-local (single use).

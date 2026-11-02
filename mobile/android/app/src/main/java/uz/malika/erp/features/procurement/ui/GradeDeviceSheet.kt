@@ -1,4 +1,5 @@
 package uz.malika.erp.features.procurement.ui
+import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

@@ -35,6 +35,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.AppTextField
+import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.PillButton
 import java.math.BigDecimal
@@ -115,7 +116,7 @@ private fun PartnersSummary(partners: List<PartnerEntity>) {
     val t = LocalT.current
     val total = partners.fold(BigDecimal.ZERO) { acc, p -> acc + parseMoney(p.outstanding) }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        MetricTile(t("partners.statsPartners", null), partners.size.toString(), modifier = Modifier.weight(1f))
-        MetricTile(t("partners.statsOutstanding", null), formatMoney(total.toPlainString()), modifier = Modifier.weight(1f))
+        MetricTile(t("partners.statsPartners", null), partners.size.toString(), money = false, modifier = Modifier.weight(1f))
+        MetricTile(t("partners.statsOutstanding", null), formatMoney(total.toPlainString()), money = false, modifier = Modifier.weight(1f))
     }
 }

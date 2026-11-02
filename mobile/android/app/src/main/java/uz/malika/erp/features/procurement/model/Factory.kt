@@ -8,12 +8,14 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.procurement.data.ProcurementRepository
-import uz.malika.erp.features.procurement.data.createProcurementService
+import uz.malika.erp.features.procurement.data.ProcurementService
 
-/** One repository per screen entry, wired to the slice's own HTTP service. */
+/** One repository per screen entry, wired to the shared Retrofit. */
 @Composable
 fun rememberProcurementRepository(container: AppContainer): ProcurementRepository =
-    remember(container) { ProcurementRepository(createProcurementService(container)) }
+    remember(container) {
+        ProcurementRepository(container.retrofit.create(ProcurementService::class.java))
+    }
 
 /** `viewModel(factory = …)` sugar so each screen builds its own ViewModel. */
 inline fun <reified VM : ViewModel> procurementVmFactory(

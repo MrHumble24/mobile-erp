@@ -1,4 +1,4 @@
-package uz.malika.erp.features.inventory.ui
+package uz.malika.erp.shared.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -24,10 +24,11 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Slice-local Caldera select — the shared UI kit ships no dropdown, so this is
- * built from a read-only [OutlinedTextField] + [ExposedDropdownMenuBox] with
- * Tokens styling (radius-9, bone border, signal-blue ring), matching
- * [uz.malika.erp.shared.ui.AppTextField]. Candidate to promote into shared/ui.
+ * Caldera single-select — the shared kit's dropdown, built from a read-only
+ * [OutlinedTextField] + [ExposedDropdownMenuBox] with Tokens styling (radius-9,
+ * bone border, signal-blue ring), matching [AppTextField]. Promoted from the
+ * inventory/procurement slices (DRY). When [nullOption] is set, a leading
+ * "clear" entry maps to null; `onSelect` therefore carries a nullable value.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

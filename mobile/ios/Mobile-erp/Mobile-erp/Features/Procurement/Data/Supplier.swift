@@ -39,14 +39,14 @@ struct SupplierWriteDTO: Encodable {
 /// writes need `shipment.manage` (enforced server-side).
 @MainActor
 struct SuppliersRepository {
-    let api: ProcApi
+    let api: APIClient
 
     func list() async throws -> [Supplier] {
-        try await api.api.get("/suppliers")
+        try await api.get("/suppliers")
     }
 
     func create(_ body: SupplierWriteDTO) async throws -> Supplier {
-        try await api.api.post("/suppliers", body: body)
+        try await api.post("/suppliers", body: body)
     }
 
     func update(_ id: String, _ body: SupplierWriteDTO) async throws -> Supplier {

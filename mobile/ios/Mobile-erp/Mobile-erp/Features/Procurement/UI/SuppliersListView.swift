@@ -24,7 +24,7 @@ struct SuppliersListView: View {
         }
         .task {
             if store == nil {
-                let repo = SuppliersRepository(api: ProcApi(container))
+                let repo = SuppliersRepository(api: container.api)
                 store = AsyncStore { try await repo.list() }
             }
             await store?.reload()

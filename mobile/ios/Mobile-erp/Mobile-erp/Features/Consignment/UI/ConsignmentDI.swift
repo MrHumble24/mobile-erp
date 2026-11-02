@@ -5,8 +5,7 @@ import SwiftUI
 /// stay declarative and nothing imports a concrete singleton.
 extension AppContainer {
     var partnerRepository: PartnerRepository {
-        PartnerRepository(api: api, context: modelContext,
-                          baseURL: { [devConfig] in devConfig.baseURL })
+        PartnerRepository(api: api, context: modelContext)
     }
     var consignmentRepository: ConsignmentRepository {
         ConsignmentRepository(api: api)

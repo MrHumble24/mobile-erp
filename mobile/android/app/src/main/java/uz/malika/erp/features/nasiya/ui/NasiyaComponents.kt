@@ -14,41 +14,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.nasiya.model.creditUsedFraction
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Small slice-local Caldera pieces the kit does not ship yet: a summary metric
- * tile and the partner credit bar. Built from [Tokens] only (no raw Material
- * styling). The integrator may promote these to `shared/ui` if reused.
+ * Small slice-local Caldera pieces: the partner credit bar, the consignment
+ * status color and the action-sheet error line. (The summary stat tile was
+ * promoted to `shared/ui/MetricTile`.)
  */
-
-/** A summary stat tile (parity with the web `MetricCard`). */
-@Composable
-fun MetricTile(label: String, value: String, dark: Boolean = false, modifier: Modifier = Modifier) {
-    AppCard(
-        modifier = modifier,
-        padding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-    ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (dark) Tokens.fog else Tokens.mutedForeground,
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            value,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = if (dark) Tokens.signalWhite else Tokens.foreground,
-        )
-    }
-}
 
 /** Outstanding-vs-limit bar; shows "unlimited" when the partner has no limit. */
 @Composable

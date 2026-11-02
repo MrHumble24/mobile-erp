@@ -1,4 +1,5 @@
 package uz.malika.erp.features.procurement.ui
+import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -100,7 +101,7 @@ private fun SpecField(attr: AttributeDefDto, value: String, onChange: (String) -
             value = attr.options.firstOrNull { it == value },
             options = attr.options,
             optionLabel = { it },
-            onSelect = onChange,
+            onSelect = { it?.let(onChange) },
         )
     } else {
         AppFormField(

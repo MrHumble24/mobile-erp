@@ -5,11 +5,9 @@ import Foundation
 @MainActor
 struct DeviceRepository {
     let api: APIClient
-    let http: InventoryHTTP
 
     init(_ container: AppContainer) {
         self.api = container.api
-        self.http = InventoryHTTP(container)
     }
 
     func detailByImei(_ imei: String) async throws -> DeviceDetail {
@@ -27,7 +25,7 @@ struct DeviceRepository {
     func update(id: String, specs: [String: Any], targetPrice: Double?) async throws {
         var body: [String: Any] = ["specs": specs]
         body["targetPrice"] = targetPrice ?? NSNull()
-        try await http.patch("/devices/\(id)", json: body)
+        try await api.patchJSONVoid("/devices/\(id)", body)
     }
 
     /// Throws `AppError` with `statusCode == 409` on a version mismatch.

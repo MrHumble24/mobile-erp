@@ -21,5 +21,5 @@ Shop expenses: summary, filtered list, log-expense and manage-categories.
   `connectivity.isOnline` first and shows `common.offline` otherwise.
 
 ## Notes
-- `AuthedHTTP` is a slice-local DELETE: `Core/APIClient` exposes only GET/POST.
-  Remove it when `APIClient` gains `delete`.
+- Delete goes through `container.api.delete` (the shared `APIClient` now ships
+  the full verb set).

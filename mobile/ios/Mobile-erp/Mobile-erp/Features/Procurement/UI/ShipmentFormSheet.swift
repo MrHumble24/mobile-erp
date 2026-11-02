@@ -68,7 +68,7 @@ struct ShipmentFormSheet: View {
 
     private func loadSuppliers() async {
         guard !editing, suppliers.isEmpty else { return }
-        suppliers = (try? await SuppliersRepository(api: ProcApi(container)).list()) ?? []
+        suppliers = (try? await SuppliersRepository(api: container.api).list()) ?? []
     }
 
     private func submit() async {
@@ -87,7 +87,7 @@ struct ShipmentFormSheet: View {
             overheadCost: overhead.asDecimal,
             notes: notes.trimmedOrNil
         )
-        let repo = ShipmentsRepository(api: ProcApi(container))
+        let repo = ShipmentsRepository(api: container.api)
         do {
             let saved = try await (editing ? repo.update(existing!.id, body) : repo.create(body))
             onSaved(saved)

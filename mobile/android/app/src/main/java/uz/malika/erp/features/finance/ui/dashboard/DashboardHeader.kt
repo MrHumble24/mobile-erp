@@ -21,8 +21,8 @@ import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.model.isoDate
 import uz.malika.erp.features.finance.model.periodStart
 import uz.malika.erp.features.finance.ui.components.AsyncContent
-import uz.malika.erp.features.finance.ui.components.MetricGrid
-import uz.malika.erp.features.finance.ui.components.MetricTile
+import uz.malika.erp.shared.ui.MetricGrid
+import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney

@@ -22,7 +22,8 @@ import uz.malika.erp.features.sales.data.SalesApi
 object SalesFeature : FeatureModule {
 
     @Volatile private var apiRef: SalesApi? = null
-    private fun api(c: AppContainer): SalesApi = apiRef ?: SalesApi.build(c).also { apiRef = it }
+    private fun api(c: AppContainer): SalesApi =
+        apiRef ?: c.retrofit.create(SalesApi::class.java).also { apiRef = it }
 
     override val navItems = listOf(
         NavItem(route = "pos", labelKey = "nav.pos", icon = Icons.Outlined.PointOfSale, permission = "sale.create"),

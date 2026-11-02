@@ -1,6 +1,11 @@
 package uz.malika.erp.app
 
-import uz.malika.erp.features.home.HomeFeature
+import uz.malika.erp.features.admin.AdminFeature
+import uz.malika.erp.features.finance.FinanceFeature
+import uz.malika.erp.features.inventory.InventoryFeature
+import uz.malika.erp.features.nasiya.NasiyaFeature
+import uz.malika.erp.features.procurement.ProcurementFeature
+import uz.malika.erp.features.sales.ui.SalesFeature
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -14,13 +19,31 @@ import uz.malika.erp.features.home.HomeFeature
  */
 object FeatureRegistry {
     val features: List<FeatureModule> = listOf(
-        HomeFeature,
-        // ← feature agents append their module here, one line each.
+        FinanceFeature,
+        SalesFeature,
+        InventoryFeature,
+        ProcurementFeature,
+        NasiyaFeature,
+        AdminFeature,
     )
 
-    /** Nav entries from every feature, in registration order. */
-    val navItems: List<NavItem> get() = features.flatMap { it.navItems }
+    /**
+     * The shell's nav order. Features contribute contiguous nav blocks, so the
+     * flat list is reordered to this single source of truth (dashboard first,
+     * sync last). A route missing here falls to the end, preserving its feature
+     * order.
+     */
+    private val navOrder: List<String> = listOf(
+        "dashboard", "pos", "sales", "inventory", "shipments", "qc",
+        "consignments", "partners", "customers", "expenses", "reports",
+        "users", "settings", "sync",
+    )
+
+    /** Nav entries from every feature, in [navOrder]. */
+    val navItems: List<NavItem>
+        get() = features.flatMap { it.navItems }
+            .sortedBy { navOrder.indexOf(it.route).let { i -> if (i < 0) navOrder.size else i } }
 
     /** The route the shell lands on first. */
-    val startRoute: String get() = navItems.firstOrNull()?.route ?: HomeFeature.route
+    val startRoute: String get() = "dashboard"
 }

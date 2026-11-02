@@ -23,7 +23,7 @@ final class ExpensesModel {
 
     func bind(_ container: AppContainer) {
         if repo == nil {
-            repo = ExpensesRepository(api: container.api, baseURL: container.devConfig.baseURL)
+            repo = ExpensesRepository(api: container.api)
         }
     }
 

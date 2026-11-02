@@ -26,6 +26,11 @@ enum DevicesModule {
 Register it with ONE line in `App/FeatureRegistry.swift` (`DevicesModule.feature`).
 Nothing else in `App/` changes. The shell hides entries the user can't `can()`
 see and wraps every root in `PermissionGate` (inline 403) as a safety net.
+The shell lands on `FeatureRegistry.all.first` — currently `DashboardModule`.
+Registered now (display order): Dashboard, Pos, Sales, Inventory, Shipments, Qc,
+Consignments, Partners, Customers, Expenses, Reports, Users, Settings, Sync.
+Slice READMEs are `README.md`; the app target excludes every `.md` from its bundle
+via a synchronized-group exception set in the pbxproj (so duplicate names are fine).
 
 ## Reading the data (from any view)
 ```swift
@@ -46,7 +51,10 @@ see and wraps every root in `PermissionGate` (inline 403) as a safety net.
   The sync controller drains them via `/sync/push`; never fake-queue anything else.
 - **Every other write is online-only**: gate on `container.connectivity.isOnline`
   and block with a "needs connection" message when offline. Call the API through
-  `container.api` (the only HTTP client). A non-login 401 clears the session.
+  `container.api` (the only HTTP client) — it ships `get`/`post`/`put`/`patch`/
+  `delete` plus `*JSON` variants for `[String: Any]` bodies (explicit `null` to
+  clear a field). A non-login 401 clears the session. Never open a second
+  `URLSession` from a slice.
 
 ## UI kit (`Shared/UI/`) — use these, prefer stock SwiftUI otherwise
 `AppCard` · `StatusBadge(deviceStatus:label:)` · `MoneyText` · `ScannerField`

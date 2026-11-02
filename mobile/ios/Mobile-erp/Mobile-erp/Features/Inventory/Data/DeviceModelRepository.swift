@@ -5,11 +5,9 @@ import Foundation
 @MainActor
 struct DeviceModelRepository {
     let api: APIClient
-    let http: InventoryHTTP
 
     init(_ container: AppContainer) {
         self.api = container.api
-        self.http = InventoryHTTP(container)
     }
 
     func list() async throws -> [DeviceModelView] {
@@ -28,9 +26,9 @@ struct DeviceModelRepository {
 
     func update(id: String, brand: String, name: String,
                 isActive: Bool, attributes: [AttributeDef]) async throws {
-        try await http.patch("/device-models/\(id)",
-                             body: UpdateBody(brand: brand, name: name,
-                                              isActive: isActive, attributes: attributes))
+        try await api.patchVoid("/device-models/\(id)",
+                                body: UpdateBody(brand: brand, name: name,
+                                                 isActive: isActive, attributes: attributes))
     }
 
     private struct CreateBody: Encodable {

@@ -31,7 +31,7 @@ Add both to `FeatureRegistry.all`. Nothing else in `App/` changes.
   `connectivity.isOnline`.
 
 ## Notes
-- PATCH is absent from the foundation `APIClient`; `PartnerRepository.update`
-  issues that one verb locally (reuses `Keychain`/`AppError`). Only gap.
+- `PartnerRepository.update` issues its PATCH through the shared `container.api`
+  (`patchVoid`); no slice-local HTTP client.
 - DEBUG self-check: `consignmentSelfCheck()` (overdue + period bounds), run
   from `ConsignmentsView.task`.

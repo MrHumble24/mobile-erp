@@ -16,7 +16,7 @@ import uz.malika.erp.features.inventory.data.StockAlertRepository
  */
 class InventoryViewModels(container: AppContainer) {
 
-    private val api = InventoryApi.create(container)
+    private val api = container.retrofit.create(InventoryApi::class.java)
     private val deviceRepo = DeviceRepository(api, container.db.deviceDao())
     private val catalogRepo = CatalogRepository(api)
     private val alertRepo = StockAlertRepository(api)

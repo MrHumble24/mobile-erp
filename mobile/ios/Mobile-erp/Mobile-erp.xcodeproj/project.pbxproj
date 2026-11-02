@@ -13,10 +13,35 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E3CADEA93098A5FC003C7EC5 /* Mobile-erp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E3CADEC13098A5FD003C7EC5 /* Exceptions for "Mobile-erp" folder in "Mobile-erp" target */,
+			);
 			path = "Mobile-erp";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E3CADEC13098A5FD003C7EC5 /* Exceptions for "Mobile-erp" folder in "Mobile-erp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				FOUNDATION.md,
+				"Features/Consignment/README.md",
+				"Features/Customers/README.md",
+				"Features/Dashboard/README.md",
+				"Features/Expenses/README.md",
+				"Features/Inventory/README.md",
+				"Features/Pos/README.md",
+				"Features/Procurement/README.md",
+				"Features/Reports/README.md",
+				"Features/Sales/README.md",
+				"Features/Settings/README.md",
+				"Features/Sync/README.md",
+				"Features/Users/README.md",
+			);
+			target = E3CADEA63098A5FC003C7EC5 /* Mobile-erp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E3CADEA43098A5FC003C7EC5 /* Frameworks */ = {

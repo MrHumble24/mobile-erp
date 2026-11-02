@@ -56,7 +56,7 @@ struct IntakeSheet: View {
             }
             .task {
                 if models == nil {
-                    let repo = DeviceModelsRepository(api: ProcApi(container))
+                    let repo = DeviceModelsRepository(api: container.api)
                     models = AsyncStore { try await repo.list() }
                 }
                 await models?.reload()
@@ -83,7 +83,7 @@ struct IntakeSheet: View {
         defer { busy = false }
         error = nil
         do {
-            try await ShipmentsRepository(api: ProcApi(container))
+            try await ShipmentsRepository(api: container.api)
                 .addDevices(shipment.id, drafts.map(\.dto))
             dismiss()
         } catch let e as AppError {

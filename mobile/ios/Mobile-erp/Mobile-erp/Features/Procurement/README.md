@@ -7,7 +7,8 @@ intake, and quality control.
 - Two shell entries (`ProcurementModules.swift`): **Shipments** (`shipment.read`,
   with a Suppliers sub-tab) and **QC** (`qc.read`).
 - `Data/` — DTOs + repositories for `/suppliers`, `/shipments`, `/device-models`,
-  `/devices`, `/qc/*`. `ProcApi` wraps the shared `APIClient` and adds PATCH.
+  `/devices`, `/qc/*`. Repositories take the shared `container.api` directly
+  (GET/POST/PATCH all on `APIClient`).
 - `Model/` — `AsyncStore`/`Loadable` (async reads), online-write guard, IMEI +
   lookup-code validation (with a `#if DEBUG` self-check), the intake draft.
 - `UI/` — one screen/sheet per file: suppliers & shipment lists, shipment/supplier

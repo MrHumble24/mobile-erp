@@ -24,11 +24,9 @@ struct LowStockView: Decodable, Identifiable {
 @MainActor
 struct StockAlertRepository {
     let api: APIClient
-    let http: InventoryHTTP
 
     init(_ container: AppContainer) {
         self.api = container.api
-        self.http = InventoryHTTP(container)
     }
 
     func lowStock() async throws -> [LowStockView] {
@@ -45,8 +43,8 @@ struct StockAlertRepository {
     }
 
     func update(id: String, storage: String, threshold: Int) async throws {
-        try await http.patch("/stock-alert-rules/\(id)",
-                             body: UpdateBody(storage: storage, threshold: threshold))
+        try await api.patchVoid("/stock-alert-rules/\(id)",
+                                body: UpdateBody(storage: storage, threshold: threshold))
     }
 
     private struct CreateBody: Encodable {

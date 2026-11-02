@@ -57,14 +57,14 @@ private struct AddDevicesBody: Encodable { let devices: [IntakeDeviceDTO] }
 /// shipment writes need `shipment.manage`, device intake needs `device.create`.
 @MainActor
 struct ShipmentsRepository {
-    let api: ProcApi
+    let api: APIClient
 
     func list() async throws -> [Shipment] {
-        try await api.api.get("/shipments")
+        try await api.get("/shipments")
     }
 
     func create(_ body: ShipmentWriteDTO) async throws -> Shipment {
-        try await api.api.post("/shipments", body: body)
+        try await api.post("/shipments", body: body)
     }
 
     func update(_ id: String, _ body: ShipmentWriteDTO) async throws -> Shipment {
@@ -74,6 +74,6 @@ struct ShipmentsRepository {
     /// Batch-register devices on a shipment. The allocated landed cost per unit
     /// shows up afterwards in the detail table, so the response is not read here.
     func addDevices(_ id: String, _ devices: [IntakeDeviceDTO]) async throws {
-        try await api.api.postVoid("/shipments/\(id)/devices", body: AddDevicesBody(devices: devices))
+        try await api.postVoid("/shipments/\(id)/devices", body: AddDevicesBody(devices: devices))
     }
 }

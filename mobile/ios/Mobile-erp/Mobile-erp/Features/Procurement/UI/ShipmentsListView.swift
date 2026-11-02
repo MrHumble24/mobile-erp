@@ -76,7 +76,7 @@ struct ShipmentsListView: View {
     }
 
     private func makeStore() -> AsyncStore<ShipmentsFeed> {
-        let api = ProcApi(container)
+        let api = container.api
         let ships = ShipmentsRepository(api: api)
         let sups = SuppliersRepository(api: api)
         return AsyncStore {

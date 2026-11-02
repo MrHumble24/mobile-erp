@@ -11,11 +11,21 @@ import SwiftUI
 /// in a permission gate (inline 403) as a safety net.
 /// ─────────────────────────────────────────────────────────────────────────
 enum FeatureRegistry {
+    /// Display order; the shell lands on the first entry (`dashboard`).
     static let all: [FeatureModule] = [
-        HomeModule.feature,
-        // ↓↓↓ Feature agents: add your module here, one line each. ↓↓↓
-        // DevicesModule.feature,
-        // PosModule.feature,
-        // ShipmentsModule.feature,
+        DashboardModule.feature,
+        PosModule.feature,
+        SalesModule.feature,
+        InventoryModule.feature,
+        ShipmentsModule.feature,
+        QcModule.feature,
+        ConsignmentsModule.feature,
+        PartnersModule.feature,
+        CustomersModule.feature,
+        ExpensesModule.feature,
+        ReportsModule.feature,
+        UsersModule.feature,
+        SettingsModule.feature,
+        SyncModule.feature,
     ]
 }

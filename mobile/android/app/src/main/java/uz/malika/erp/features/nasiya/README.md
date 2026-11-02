@@ -28,11 +28,10 @@ same partner mirror — so there is no cross-slice import to duplicate.
 - Hand-write Uzbek — i18n comes from the web JSON via `t()`.
 
 ## Notes / limits
-- `data/NasiyaApi.kt` is a slice-local Retrofit surface (the wave-0 foundation
-  `ApiService` lacks these routes). It reuses the same DevConfig/token/401
-  contract; promote onto `ApiService` to delete it.
+- `data/NasiyaApi.kt` is a Retrofit interface for routes not on `ApiService`,
+  built via `container.retrofit.create(...)` (the one shared client).
 - The partner mirror carries only shopName/phone/limit/outstanding, so the
   `active`/`overdue` list facets and open/overdue counts are deferred; edit
   fetches the full partner first to avoid blanking fields on PATCH.
-- `MetricTile`, `CreditBar`, `PartnerPicker` are slice-local kit gaps (Select /
-  date picker) — promote to `shared/ui` if reused.
+- Summary tiles use the promoted `shared/ui/MetricTile`. `CreditBar`,
+  `PartnerPicker` stay slice-local.

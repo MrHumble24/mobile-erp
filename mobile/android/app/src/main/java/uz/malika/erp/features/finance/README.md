@@ -25,8 +25,9 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   `device.cost.view`) and the cost column/row hides.
 
 ## Notes
-- `data/FinanceHttp` builds a slice Retrofit because the fixed foundation
-  `ApiService` exposes no shared client for new endpoints (see task notes).
+- `data/FinanceApi` is a Retrofit interface built via
+  `container.retrofit.create(...)` (the one shared client). Dashboard/reports
+  tiles use the promoted `shared/ui/MetricTile`.
 - Date math is Calendar-based (minSdk 24, no java.time desugaring).
 - Deferred vs. web: Overview/Sales/Inventory/Nasiya report tabs, breakdown
   drill-down sheets (ADR 0009/0015), trend/share charts, recurring-expense

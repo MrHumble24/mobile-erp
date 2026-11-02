@@ -1,13 +1,12 @@
 import Foundation
 
-/// The only place the Users & Access slice talks HTTP. Reads and POST writes go
-/// through the Core `APIClient`; PUT/PATCH/DELETE go through `UsersMutationHTTP`
-/// (the Core client has no such verbs). `/users/*` needs `user.manage`,
+/// The only place the Users & Access slice talks HTTP. All verbs go through the
+/// shared `APIClient` (its `patchJSON`/`putJSON` send `[String: Any]` bodies so
+/// an admin write can clear a field). `/users/*` needs `user.manage`,
 /// `/access/*` needs `role.manage` — the server enforces both.
 @MainActor
 struct UsersRepository {
     let api: APIClient
-    let mut: UsersMutationHTTP
 
     // MARK: Users
 
@@ -41,19 +40,19 @@ struct UsersRepository {
     }
 
     func updateProfile(_ id: String, profile: [String: Any]) async throws -> UserView {
-        try await mut.patch("/users/\(id)", ["profile": profile])
+        try await api.patchJSON("/users/\(id)", ["profile": profile])
     }
 
     func setActive(_ id: String, isActive: Bool) async throws -> UserView {
-        try await mut.patch("/users/\(id)", ["isActive": isActive])
+        try await api.patchJSON("/users/\(id)", ["isActive": isActive])
     }
 
     func setRoles(_ id: String, roleCodes: [String]) async throws -> UserView {
-        try await mut.put("/users/\(id)/roles", ["roleCodes": roleCodes])
+        try await api.putJSON("/users/\(id)/roles", ["roleCodes": roleCodes])
     }
 
     func setPermissions(_ id: String, overrides: [[String: Any]]) async throws -> UserView {
-        try await mut.put("/users/\(id)/permissions", ["overrides": overrides])
+        try await api.putJSON("/users/\(id)/permissions", ["overrides": overrides])
     }
 
     // MARK: Access (roles + permissions)
@@ -71,14 +70,14 @@ struct UsersRepository {
     }
 
     func renameRole(_ code: String, name: String, description: String) async throws -> RoleView {
-        try await mut.patch("/access/roles/\(code)", ["name": name, "description": description])
+        try await api.patchJSON("/access/roles/\(code)", ["name": name, "description": description])
     }
 
     func setRolePermissions(_ code: String, permissionCodes: [String]) async throws -> RoleView {
-        try await mut.put("/access/roles/\(code)/permissions", ["permissionCodes": permissionCodes])
+        try await api.putJSON("/access/roles/\(code)/permissions", ["permissionCodes": permissionCodes])
     }
 
     func deleteRole(_ code: String) async throws {
-        try await mut.delete("/access/roles/\(code)")
+        try await api.delete("/access/roles/\(code)")
     }
 }

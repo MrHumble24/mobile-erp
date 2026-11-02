@@ -14,8 +14,9 @@ import retrofit2.http.Query
  * body, so a non-2xx raises `HttpException` for `runApi`) except delete, which
  * is a 204 and returns a [Response] the repository inspects.
  *
- * NB: the foundation `ApiService` is fixed and carries only auth+sync routes,
- * so this feature declares its own interface (see [FinanceHttp]).
+ * NB: the foundation `ApiService` carries only auth+sync routes, so this
+ * feature declares its own interface, built via
+ * `container.retrofit.create(FinanceApi::class.java)` (the one shared pipeline).
  */
 interface FinanceApi {
 

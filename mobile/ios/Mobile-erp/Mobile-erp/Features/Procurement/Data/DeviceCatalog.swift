@@ -1,7 +1,7 @@
 import Foundation
 
-/// One spec field defined on a device model (server `AttributeDef`).
-struct AttributeDef: Decodable, Identifiable {
+/// One spec field defined on a device model (server `ProcAttributeDef`).
+struct ProcAttributeDef: Decodable, Identifiable {
     let key: String
     let label: String
     /// `text` | `number` | `select`.
@@ -30,7 +30,7 @@ struct DeviceModel: Decodable, Identifiable {
     let id: String
     let brand: String
     let name: String
-    let attributes: [AttributeDef]
+    let attributes: [ProcAttributeDef]
 
     var label: String { "\(brand) \(name)" }
 
@@ -39,7 +39,7 @@ struct DeviceModel: Decodable, Identifiable {
         id = try c.decode(String.self, forKey: .id)
         brand = try c.decode(String.self, forKey: .brand)
         name = try c.decode(String.self, forKey: .name)
-        attributes = (try? c.decodeIfPresent([AttributeDef].self, forKey: .attributes)) ?? []
+        attributes = (try? c.decodeIfPresent([ProcAttributeDef].self, forKey: .attributes)) ?? []
     }
 
     enum CodingKeys: String, CodingKey { case id, brand, name, attributes }
@@ -48,9 +48,9 @@ struct DeviceModel: Decodable, Identifiable {
 /// Read-only access to `/device-models` (perm `device.read`).
 @MainActor
 struct DeviceModelsRepository {
-    let api: ProcApi
+    let api: APIClient
 
     func list() async throws -> [DeviceModel] {
-        try await api.api.get("/device-models")
+        try await api.get("/device-models")
     }
 }

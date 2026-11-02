@@ -3,7 +3,7 @@ import SwiftUI
 /// One summary tile — label over a value, in an `AppCard`. `highlight` inverts
 /// it (ink fill) to flag a non-zero overdue count, matching the web `dark`
 /// metric-card variant. Money values are passed pre-formatted.
-struct MetricTile: View {
+struct ConsignmentMetricTile: View {
     let label: String
     let value: String
     var highlight = false

@@ -16,9 +16,9 @@ the native port of the web `pages/settings`.
 ## Must never
 - Write offline. Save is online-only (not an outbox type); it blocks with a
   needs-connection message when offline.
-- Talk HTTP anywhere but `SettingsRepository` / its `MutationHTTP`.
+- Talk HTTP anywhere but `SettingsRepository`.
 - Hand-write Uzbek or edit the shared i18n.
 
 ## Notes
-- `MutationHTTP` is duplicated from the Users slice (no cross-slice import) only
-  because Core `APIClient` lacks PUT. Remove when the foundation adds it.
+- `PUT /settings` goes through `container.api.putJSONVoid` (the shared `APIClient`
+  now ships PUT/PATCH/DELETE + `*JSON` bodies) — no slice-local client.

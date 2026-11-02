@@ -63,7 +63,7 @@ struct ConsignDeviceSheet: View {
             }
             Section {
                 DatePicker(i18n.t("consignments.dueDate"), selection: $model.dueDate, displayedComponents: .date)
-                LabeledField(i18n.t("common.notes"), text: $model.notes)
+                CaptionedField(i18n.t("common.notes"), text: $model.notes)
             }
             if let errorMessage {
                 Text(errorMessage).font(.footnote).foregroundStyle(Tokens.danger)
@@ -117,7 +117,7 @@ private struct DeviceRowEditor: View {
                         .buttonStyle(.plain).foregroundStyle(.secondary)
                 }
             }
-            LabeledField(i18n.t("consignments.agreedPrice"), text: $row.agreedPrice, mono: true, number: true)
+            CaptionedField(i18n.t("consignments.agreedPrice"), text: $row.agreedPrice, mono: true, number: true)
             if canRemove {
                 Button(role: .destructive) { onRemove() } label: {
                     Label(i18n.t("consignments.removeDevice"), systemImage: "trash")

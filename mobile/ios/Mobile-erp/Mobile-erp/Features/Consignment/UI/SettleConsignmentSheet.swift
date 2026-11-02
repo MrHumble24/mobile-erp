@@ -21,8 +21,8 @@ struct SettleConsignmentSheet: View {
             Form {
                 Section { Text("IMEI: \(consignment.imei)").font(.mono(13)).foregroundStyle(.secondary) }
                 Section {
-                    LabeledField(i18n.t("consignments.settlePrice"), text: $salePrice, mono: true, number: true)
-                    LabeledField(i18n.t("common.notes"), text: $notes)
+                    CaptionedField(i18n.t("consignments.settlePrice"), text: $salePrice, mono: true, number: true)
+                    CaptionedField(i18n.t("common.notes"), text: $notes)
                 }
                 Text(i18n.t("consignments.settleHint")).font(.footnote).foregroundStyle(.secondary)
                 if let errorMessage {

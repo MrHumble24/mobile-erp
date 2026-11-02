@@ -90,7 +90,7 @@ private struct LookupSection: View {
     private var reloadIdentity: String { "\(includeInactive)-\(reloadToken)" }
 
     private func makeStore() -> AsyncStore<[Lookup]> {
-        let repo = QcRepository(api: ProcApi(container))
+        let repo = QcRepository(api: container.api)
         let kind = kind, inactive = includeInactive
         return AsyncStore { try await repo.listLookups(kind, includeInactive: inactive) }
     }

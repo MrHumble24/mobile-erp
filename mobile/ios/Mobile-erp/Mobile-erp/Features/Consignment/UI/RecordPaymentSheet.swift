@@ -28,8 +28,8 @@ struct RecordPaymentSheet: View {
                           systemImage: "wifi.slash").foregroundStyle(Tokens.warning)
                 }
                 Section {
-                    LabeledField(i18n.t("partners.paymentAmount"), text: $amount, mono: true, number: true)
-                    LabeledField(i18n.t("common.notes"), text: $notes)
+                    CaptionedField(i18n.t("partners.paymentAmount"), text: $amount, mono: true, number: true)
+                    CaptionedField(i18n.t("common.notes"), text: $notes)
                 }
                 if let errorMessage {
                     Text(errorMessage).font(.footnote).foregroundStyle(Tokens.danger)

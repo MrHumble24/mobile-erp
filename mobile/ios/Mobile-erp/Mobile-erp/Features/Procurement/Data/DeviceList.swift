@@ -41,12 +41,12 @@ struct PaginatedDevices: Decodable {
 /// string `"false"` for the QC queue; `shipmentId` scopes the detail table.
 @MainActor
 struct DevicesRepository {
-    let api: ProcApi
+    let api: APIClient
 
     func query(shipmentId: String? = nil, inspected: String? = nil) async throws -> PaginatedDevices {
         var q = ["page": "1", "pageSize": "50"]
         if let shipmentId { q["shipmentId"] = shipmentId }
         if let inspected { q["inspected"] = inspected }
-        return try await api.api.get("/devices", query: q)
+        return try await api.get("/devices", query: q)
     }
 }

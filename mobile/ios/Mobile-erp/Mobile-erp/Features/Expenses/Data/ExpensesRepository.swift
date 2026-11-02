@@ -6,8 +6,6 @@ import Foundation
 @MainActor
 struct ExpensesRepository {
     let api: APIClient
-    /// Live base URL, for the DELETE workaround (`APIClient` has no DELETE).
-    let baseURL: URL
 
     func list(categoryId: String?, isRecurring: Bool?) async throws -> ExpensePage {
         var q = ["page": "1", "pageSize": "100"]
@@ -29,7 +27,7 @@ struct ExpensesRepository {
     }
 
     func remove(id: String) async throws {
-        try await AuthedHTTP.delete("/expenses/\(id)", baseURL: baseURL)
+        try await api.delete("/expenses/\(id)")
     }
 
     func createCategory(_ dto: CreateExpenseCategoryDto) async throws {

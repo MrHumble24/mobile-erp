@@ -11,11 +11,11 @@ struct ConsignmentsSummary: View {
     var body: some View {
         if let s = model.stats {
             LazyVGrid(columns: columns, spacing: 12) {
-                MetricTile(label: i18n.t("consignments.statsTotal"), value: "\(s.total)")
-                MetricTile(label: i18n.t("consignments.statsOpen"), value: "\(s.openCount)")
-                MetricTile(label: i18n.t("consignments.statsOutstanding"),
+                ConsignmentMetricTile(label: i18n.t("consignments.statsTotal"), value: "\(s.total)")
+                ConsignmentMetricTile(label: i18n.t("consignments.statsOpen"), value: "\(s.openCount)")
+                ConsignmentMetricTile(label: i18n.t("consignments.statsOutstanding"),
                            value: MoneyText.format(s.outstanding))
-                MetricTile(label: i18n.t("consignments.statsOverdue"),
+                ConsignmentMetricTile(label: i18n.t("consignments.statsOverdue"),
                            value: "\(s.overdueCount)", highlight: s.overdueCount > 0)
             }
         }

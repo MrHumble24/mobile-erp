@@ -14,7 +14,7 @@ object NasiyaModule {
 
     fun api(c: AppContainer): NasiyaApi =
         apiRef ?: synchronized(this) {
-            apiRef ?: NasiyaApiFactory.build(c.devConfig, c.secure, c.authEvents).also { apiRef = it }
+            apiRef ?: c.retrofit.create(NasiyaApi::class.java).also { apiRef = it }
         }
 
     fun partnerRepository(c: AppContainer) = PartnerRepository(api(c))

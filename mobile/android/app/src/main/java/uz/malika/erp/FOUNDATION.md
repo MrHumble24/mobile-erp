@@ -8,7 +8,7 @@ limit per file. State = ViewModel + StateFlow. Package root: `uz.malika.erp`.
 MainActivity / MalikaApplication / AppContainer   process entry + manual DI
 app/        navigation, adaptive AppShell, FeatureRegistry, PermissionGate
 features/<slice>/  data/ (repo + domain) · model/ (ViewModel, state) · ui/ (screens)
-data/remote/  Retrofit ApiService + DTOs + HttpClient (the only HTTP client)
+data/remote/  HttpClient → the ONE configured Retrofit; ApiService (auth+sync) + DTOs
 data/local/   Room DB + DAOs + entities (devices, partners, outbox, sync_meta)
 data/sync/    pull (/sync/changes) · push (/sync/push) · SyncManager · Connectivity · Outbox
 core/         Config · DevConfig · SecureStore · AppException + runApi · Jwt · Ids · AuthEvents
@@ -33,6 +33,9 @@ object InventoryFeature : FeatureModule {
 }
 // FeatureRegistry.features: add `InventoryFeature,`
 ```
+- **Registered now**: `FinanceFeature`, `SalesFeature`, `InventoryFeature`,
+  `ProcurementFeature`, `NasiyaFeature`, `AdminFeature`. Nav order is a single
+  list in `FeatureRegistry.navOrder` (dashboard → sync); `startRoute` is `dashboard`.
 - **Nav item** with a `permission` is hidden unless `can(code)`; the shell renders
   rail (≥600dp) / drawer (>5 items) / bottom bar automatically.
 - **Permission-gated route**: wrap the screen in `PermissionGate(code) { ... }`.
@@ -54,7 +57,10 @@ object InventoryFeature : FeatureModule {
 
 ## Server-contract gotchas
 - Base URL from the dev panel (default `http://10.0.2.2:3000`); server has NO prefix.
-  One `ApiService`; never build another client.
+  **One OkHttp/Retrofit** (`AppContainer.retrofit`, built by `HttpClient`). A slice
+  that needs routes beyond `ApiService` declares its own Retrofit interface and
+  gets it with `container.retrofit.create(FeatureApi::class.java)` — never a second
+  OkHttp client. `ApiService` itself is `retrofit.create(ApiService::class.java)`.
 - **Cost fields are redacted** for under-privileged users and are not cached — do
   not model them.
 - Errors → `AppException {statusCode, message, error}`; wrap calls in `runApi {}`.
@@ -68,7 +74,9 @@ object InventoryFeature : FeatureModule {
 - ids: `newUuidV4()`; terminal id via `TerminalId`. Sync: `container.syncManager.syncNow()`.
 - UI kit (`shared/ui`): `PillButton`, `AppTextField`/`AppFormField`, `AppCard`, `StatusChip`,
   `AppDataTable`, `AppConfirmDialog`, `AppBottomSheet`, `SegmentedControl`, `ScannerField`,
+  `AppSelect` (labelled dropdown), `MetricTile`/`MetricGrid` (stat cards),
   `Loading`/`EmptyView`/`ErrorView`. **Use the kit — never default Material styling.**
+  (`AppSelect` and `MetricTile` were promoted from slices — reuse, don't re-create.)
 
 ## Deliberate wave-0 stubs
 - Dev-panel / offline / forbidden i18n keys are not yet in the web JSON (Gemini

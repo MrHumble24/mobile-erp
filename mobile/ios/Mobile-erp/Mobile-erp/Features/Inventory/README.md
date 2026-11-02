@@ -29,7 +29,6 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
 - Model cost fields as required — they are redacted for under-privileged users.
 
 ## Note
-`InventoryHTTP` is a slice-local PATCH sender: the foundation `APIClient` only
-exposes GET/POST, and the update endpoints are PATCH. It reuses `DevConfig`'s
-base URL + the keychain token and mirrors the error envelope. Fold PATCH into
-`APIClient` when the foundation is next touched, then delete this.
+PATCH writes (`/devices/:id`, `/device-models/:id`, `/stock-alert-rules/:id`) go
+through the shared `container.api` (`patchVoid` for typed bodies, `patchJSONVoid`
+for the open-ended device-specs body) — no slice-local HTTP client.

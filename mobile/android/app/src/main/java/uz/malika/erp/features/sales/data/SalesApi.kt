@@ -1,12 +1,5 @@
 package uz.malika.erp.features.sales.data
 
-import kotlinx.serialization.json.Json
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -14,16 +7,11 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
-import uz.malika.erp.AppContainer
-import uz.malika.erp.core.AuthEvents
-import uz.malika.erp.core.DevConfigStore
-import uz.malika.erp.core.SecureStore
-import uz.malika.erp.data.remote.HttpClient
-import java.util.concurrent.TimeUnit
 
 /**
- * The POS/sales/customers endpoints the foundation `ApiService` does not carry.
- * Retrofit interface only — no logic. See [SalesApi.build] for the client note.
+ * The POS/sales/customers endpoints not carried by the foundation `ApiService`.
+ * Retrofit interface only — no logic. Built via `container.retrofit.create(...)`
+ * (the one shared OkHttp/base-URL/bearer/401 pipeline).
  */
 interface SalesApi {
     @GET("devices/by-imei/{imei}")
@@ -61,63 +49,4 @@ interface SalesApi {
 
     @PATCH("customers/{id}")
     suspend fun updateCustomer(@Path("id") id: String, @Body body: UpdateCustomerBody): CustomerDto
-
-    companion object {
-        /**
-         * ponytail / INTEGRATOR NOTE: the foundation exposes only `ApiService`
-         * (auth + sync). This slice needs the `/sales`, `/customers` and
-         * `/devices/by-imei` endpoints, which are not on it and must not be
-         * hand-edited from a feature. So we build a second Retrofit over a
-         * small OkHttp client that reuses the SAME token, base-URL and 401
-         * semantics as `HttpClient` (via the public `SecureStore`,
-         * `DevConfigStore`, `AuthEvents`). The right home is the foundation
-         * `ApiService`; promote these endpoints there and delete this builder.
-         */
-        fun build(c: AppContainer): SalesApi =
-            buildWith(c.devConfig, c.secure, c.authEvents, HttpClient.json)
-
-        private fun buildWith(
-            devConfig: DevConfigStore,
-            secure: SecureStore,
-            authEvents: AuthEvents,
-            json: Json,
-        ): SalesApi {
-            val client = OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(baseUrl(devConfig))
-                .addInterceptor(auth(secure, authEvents))
-                .build()
-            return Retrofit.Builder()
-                .baseUrl("http://localhost/")
-                .client(client)
-                .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-                .build()
-                .create(SalesApi::class.java)
-        }
-
-        private fun baseUrl(devConfig: DevConfigStore) = Interceptor { chain ->
-            val original = chain.request()
-            val configured = devConfig.currentBaseUrl.toHttpUrlOrNull()
-                ?: return@Interceptor chain.proceed(original)
-            val url = original.url.newBuilder()
-                .scheme(configured.scheme).host(configured.host).port(configured.port).build()
-            chain.proceed(original.newBuilder().url(url).build())
-        }
-
-        private fun auth(secure: SecureStore, authEvents: AuthEvents) = Interceptor { chain ->
-            val token = secure.get(SecureStore.Keys.TOKEN)
-            val request = if (!token.isNullOrEmpty()) {
-                chain.request().newBuilder().header("Authorization", "Bearer $token").build()
-            } else {
-                chain.request()
-            }
-            val response = chain.proceed(request)
-            if (response.code == 401) {
-                secure.remove(SecureStore.Keys.TOKEN, SecureStore.Keys.USER)
-                authEvents.signalUnauthorized()
-            }
-            response
-        }
-    }
 }

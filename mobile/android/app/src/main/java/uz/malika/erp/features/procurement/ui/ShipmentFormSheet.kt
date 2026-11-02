@@ -1,4 +1,5 @@
 package uz.malika.erp.features.procurement.ui
+import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -98,7 +99,7 @@ fun ShipmentFormSheet(
                     value = suppliers.firstOrNull { it.id == supplierId },
                     options = suppliers.filter { it.isActive },
                     optionLabel = { it.name },
-                    onSelect = { supplierId = it.id },
+                    onSelect = { supplierId = it?.id },
                     placeholder = t("shipments.selectSupplier", null),
                 )
                 Spacer(Modifier.height(12.dp))

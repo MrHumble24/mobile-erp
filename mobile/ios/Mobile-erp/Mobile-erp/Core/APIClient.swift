@@ -55,6 +55,45 @@ final class APIClient {
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
     }
 
+    // MARK: - PUT / PATCH / DELETE (same auth header, envelope + 401 path as above)
+
+    func patch<T: Decodable>(_ path: String, body: some Encodable) async throws -> T {
+        try decode(try await perform(path, method: "PATCH", query: [:], body: body))
+    }
+
+    func patchVoid(_ path: String, body: some Encodable) async throws {
+        _ = try await perform(path, method: "PATCH", query: [:], body: body)
+    }
+
+    func delete(_ path: String) async throws {
+        _ = try await performData(path, method: "DELETE", query: [:], bodyData: nil)
+    }
+
+    /// Open-ended JSON bodies (admin writes send an explicit JSON `null` via
+    /// `NSNull` to clear a field), mirroring `postJSON`.
+    func patchJSON<T: Decodable>(_ path: String, _ body: [String: Any]) async throws -> T {
+        try decode(try await performJSON(path, method: "PATCH", body: body))
+    }
+
+    func putJSON<T: Decodable>(_ path: String, _ body: [String: Any]) async throws -> T {
+        try decode(try await performJSON(path, method: "PUT", body: body))
+    }
+
+    func putJSONVoid(_ path: String, _ body: [String: Any]) async throws {
+        _ = try await performJSON(path, method: "PUT", body: body)
+    }
+
+    func patchJSONVoid(_ path: String, _ body: [String: Any]) async throws {
+        _ = try await performJSON(path, method: "PATCH", body: body)
+    }
+
+    private func performJSON(_ path: String, method: String, body: [String: Any]) async throws -> Data {
+        try await performData(
+            path, method: method, query: [:],
+            bodyData: try JSONSerialization.data(withJSONObject: body)
+        )
+    }
+
     private func perform(
         _ path: String,
         method: String,

@@ -65,7 +65,7 @@ struct LookupFormSheet: View {
         busy = true
         defer { busy = false }
         error = nil
-        let repo = QcRepository(api: ProcApi(container))
+        let repo = QcRepository(api: container.api)
         do {
             if let existing {
                 try await repo.updateLookup(kind, existing.code, LookupWriteDTO(

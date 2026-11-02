@@ -2,31 +2,18 @@ package uz.malika.erp.features.inventory.data
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Interceptor
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
-import uz.malika.erp.AppContainer
-import uz.malika.erp.core.AuthEvents
-import uz.malika.erp.core.DevConfigStore
-import uz.malika.erp.core.SecureStore
-import uz.malika.erp.data.remote.HttpClient
-import java.util.concurrent.TimeUnit
 
 /**
  * The inventory slice's online endpoints: device detail/history/writes, device
  * models, and stock-alert rules. None of these live on the foundation
- * `ApiService` (devices + partners are the only synced reads), so this slice
- * owns a tiny Retrofit over a second OkHttp client that reuses the foundation's
- * base-URL switch + bearer-auth behaviour. See [InventoryApi.create] and the
- * slice README — the integrator may promote these onto the shared ApiService.
+ * `ApiService` (devices + partners are the only synced reads). Retrofit
+ * interface only — built via `container.retrofit.create(InventoryApi::class.java)`,
+ * the one shared OkHttp/base-URL/bearer/401 pipeline.
  */
 interface InventoryApi {
 
@@ -62,58 +49,6 @@ interface InventoryApi {
 
     @PATCH("stock-alert-rules/{id}")
     suspend fun updateRule(@Path("id") id: String, @Body body: UpdateRuleBody)
-
-    companion object {
-        /**
-         * Builds the slice client from the foundation container's pieces. The
-         * two interceptors mirror `data.remote.HttpClient` (which keeps them
-         * private); kept here so the slice needs no foundation edit.
-         */
-        fun create(container: AppContainer): InventoryApi {
-            val client = OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(baseUrlInterceptor(container.devConfig))
-                .addInterceptor(authInterceptor(container.secure, container.authEvents))
-                .build()
-            val contentType = "application/json".toMediaType()
-            return Retrofit.Builder()
-                .baseUrl("http://localhost/") // placeholder; rewritten per request
-                .client(client)
-                .addConverterFactory(HttpClient.json.asConverterFactory(contentType))
-                .build()
-                .create(InventoryApi::class.java)
-        }
-
-        private fun baseUrlInterceptor(devConfig: DevConfigStore) = Interceptor { chain ->
-            val original = chain.request()
-            val configured = devConfig.currentBaseUrl.toHttpUrlOrNull()
-                ?: return@Interceptor chain.proceed(original)
-            val url = original.url.newBuilder()
-                .scheme(configured.scheme)
-                .host(configured.host)
-                .port(configured.port)
-                .build()
-            chain.proceed(original.newBuilder().url(url).build())
-        }
-
-        private fun authInterceptor(secure: SecureStore, authEvents: AuthEvents) =
-            Interceptor { chain ->
-                val token = secure.get(SecureStore.Keys.TOKEN)
-                val request = if (!token.isNullOrEmpty()) {
-                    chain.request().newBuilder()
-                        .header("Authorization", "Bearer $token").build()
-                } else {
-                    chain.request()
-                }
-                val response = chain.proceed(request)
-                if (response.code == 401) {
-                    secure.remove(SecureStore.Keys.TOKEN, SecureStore.Keys.USER)
-                    authEvents.signalUnauthorized()
-                }
-                response
-            }
-    }
 }
 
 // ── Response DTOs ─────────────────────────────────────────────────────────────

@@ -36,14 +36,14 @@ struct PartnerFormSheet: View {
                         .foregroundStyle(Tokens.warning)
                 }
                 Section {
-                    LabeledField(i18n.t("partners.name"), text: $shopName)
-                    LabeledField(i18n.t("partners.contactPerson"), text: $contactPerson)
-                    LabeledField(i18n.t("partners.phone"), text: $phone)
-                    LabeledField(i18n.t("partners.telegramHandle"), text: $telegramHandle)
+                    CaptionedField(i18n.t("partners.name"), text: $shopName)
+                    CaptionedField(i18n.t("partners.contactPerson"), text: $contactPerson)
+                    CaptionedField(i18n.t("partners.phone"), text: $phone)
+                    CaptionedField(i18n.t("partners.telegramHandle"), text: $telegramHandle)
                 }
                 Section {
-                    LabeledField(i18n.t("partners.creditLimit"), text: $creditLimit, mono: true, number: true)
-                    LabeledField(i18n.t("common.notes"), text: $notes)
+                    CaptionedField(i18n.t("partners.creditLimit"), text: $creditLimit, mono: true, number: true)
+                    CaptionedField(i18n.t("common.notes"), text: $notes)
                     if isEdit { Toggle(i18n.t("partners.active"), isOn: $isActive) }
                 }
                 if let errorMessage {
@@ -111,7 +111,7 @@ struct PartnerFormSheet: View {
 }
 
 /// A labelled single-line field used across this slice's forms.
-struct LabeledField: View {
+struct CaptionedField: View {
     let label: String
     @Binding var text: String
     var mono = false
