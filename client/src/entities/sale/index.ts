@@ -18,5 +18,7 @@ export {
   useCreateSale,
   useReturnSale,
 } from "./model/use-sales"
+export { useSaleReceipts } from "./model/use-sale-receipts"
 export { formatReceiptText } from "./lib/format-receipt"
+export { combineReceipts } from "./lib/combine-receipts"
 export { ReceiptPrintView, ReceiptPaper } from "./ui/ReceiptPrintView"

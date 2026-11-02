@@ -1,23 +1,97 @@
+import * as React from "react"
 import { CheckCircle2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useSaleReceipt, ReceiptPrintView } from "@/entities/sale"
+import { useSaleReceipts, ReceiptPrintView, type ReceiptView } from "@/entities/sale"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
+import { Label } from "@/shared/ui/label"
+import { Switch } from "@/shared/ui/switch"
+
+const AUTO_PRINT_KEY = "pos-auto-print"
+
+function readAutoPrint(): boolean {
+  try {
+    return localStorage.getItem(AUTO_PRINT_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+function writeAutoPrint(value: boolean) {
+  try {
+    localStorage.setItem(AUTO_PRINT_KEY, value ? "1" : "0")
+  } catch {
+    /* storage unavailable (private mode); auto-print simply won't persist */
+  }
+}
 
 export interface CheckoutReceiptModalProps {
-  saleId: string | null
+  saleIds: string[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onNewSale?: () => void
 }
 
+function AutoPrintToggle({ open, receipt }: { open: boolean; receipt: ReceiptView | null }) {
+  const { t } = useI18n()
+  const [autoPrint, setAutoPrint] = React.useState(readAutoPrint)
+  const printedRef = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!open) printedRef.current = false
+  }, [open])
+
+  React.useEffect(() => {
+    if (open && autoPrint && receipt && !printedRef.current) {
+      printedRef.current = true
+      window.print()
+    }
+  }, [open, autoPrint, receipt])
+
+  return (
+    <Label className="print:hidden flex items-center justify-center gap-2 text-xs text-muted-foreground pb-1">
+      <Switch
+        checked={autoPrint}
+        onCheckedChange={(v) => {
+          setAutoPrint(v)
+          writeAutoPrint(v)
+        }}
+      />
+      {t("pos.autoPrint")}
+    </Label>
+  )
+}
+
+function ReceiptBody({
+  receipt,
+  isLoading,
+  onNewSale,
+}: {
+  receipt: ReceiptView | null
+  isLoading: boolean
+  onNewSale: () => void
+}) {
+  const { t } = useI18n()
+  return (
+    <div className="py-2 flex justify-center w-full">
+      {isLoading ? (
+        <div className="py-12 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
+      ) : receipt ? (
+        <ReceiptPrintView receipt={receipt} onNewSale={onNewSale} />
+      ) : (
+        <div className="py-12 text-center text-sm text-muted-foreground">{t("common.notFound")}</div>
+      )}
+    </div>
+  )
+}
+
 export function CheckoutReceiptModal({
-  saleId,
+  saleIds,
   open,
   onOpenChange,
   onNewSale,
 }: CheckoutReceiptModalProps) {
   const { t } = useI18n()
-  const { data: receipt, isLoading } = useSaleReceipt(saleId)
+  const { receipt, isLoading } = useSaleReceipts(open ? saleIds : [])
 
   const handleNewSale = () => {
     onOpenChange(false)
@@ -36,20 +110,8 @@ export function CheckoutReceiptModal({
             {t("pos.chequeSubtitle")}
           </DialogDescription>
         </DialogHeader>
-
-        <div className="py-2 flex justify-center w-full">
-          {isLoading ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {t("common.loading")}
-            </div>
-          ) : receipt ? (
-            <ReceiptPrintView receipt={receipt} onNewSale={handleNewSale} />
-          ) : (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              {t("common.notFound")}
-            </div>
-          )}
-        </div>
+        <AutoPrintToggle open={open} receipt={receipt} />
+        <ReceiptBody receipt={receipt} isLoading={isLoading} onNewSale={handleNewSale} />
       </DialogPopup>
     </Dialog>
   )

@@ -1,84 +1,63 @@
-import { useI18n } from "@/shared/i18n"
-import { DeviceCard, CheckoutReceiptModal } from "@/features/checkout"
-import { BarcodeInput } from "@/shared/ui/barcode-input"
-import { CheckoutParamsForm } from "./CheckoutParamsForm"
+import {
+  CartLines,
+  CustomerPanel,
+  TotalsPanel,
+  CheckoutReceiptModal,
+} from "@/features/checkout"
+import { ModeSwitch } from "./ModeSwitch"
+import { ShortcutsHelp } from "./ShortcutsHelp"
+import { PosScanner } from "./PosScanner"
+import { SessionPanel } from "./SessionPanel"
+import { NasiyaPanel } from "./NasiyaPanel"
 import { usePosTerminal } from "../model/use-pos-terminal"
 
-function EmptyCartPlaceholder() {
-  const { t } = useI18n()
+function SaleWorkspace({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
   return (
-    <div className="py-20 text-center text-muted-foreground border-2 border-dashed rounded-xl">
-      <p className="text-lg font-medium">{t("pos.cartEmpty")}</p>
-      <p className="text-sm mt-1">{t("pos.scanPrompt")}</p>
-    </div>
-  )
-}
-
-function PosCheckoutSection({
-  cart,
-  onSubmit,
-  isPending,
-}: {
-  cart: ReturnType<typeof usePosTerminal>["cart"]
-  onSubmit: (e: React.FormEvent) => void
-  isPending: boolean
-}) {
-  if (!cart.device) return <EmptyCartPlaceholder />
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <DeviceCard device={cart.device} />
-      <div className="p-6 border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
-        <CheckoutParamsForm
-          salePrice={cart.salePrice}
-          onPriceChange={cart.setSalePrice}
-          customer={cart.customer}
-          onCustomerChange={cart.setCustomer}
-          warrantyDays={cart.warrantyDays}
-          onWarrantyChange={cart.setWarrantyDays}
-          notes={cart.notes}
-          onNotesChange={cart.setNotes}
-          onSubmit={onSubmit}
-          isPending={isPending}
-        />
+    <div className="space-y-4">
+      <CartLines canViewCost={pos.canViewCost} minMarginPercent={pos.minMargin} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+          <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
+        </div>
+        <TotalsPanel isPending={pos.isPending} disabled={pos.blocked} onCheckout={pos.handleCheckout} />
       </div>
     </div>
   )
 }
 
 export function PosTerminal() {
-  const { t } = useI18n()
-  const {
-    scannedImei,
-    setScannedImei,
-    handleScan,
-    handleSubmit,
-    handleNewSale,
-    isPending,
-    completedSaleId,
-    receiptOpen,
-    setReceiptOpen,
-    cart,
-  } = usePosTerminal()
+  const pos = usePosTerminal()
 
   return (
-    <div className="space-y-6">
-      <div className="w-full max-w-xl">
-        <BarcodeInput
-          value={scannedImei}
-          onChange={(e) => setScannedImei(e.target.value)}
-          onScan={handleScan}
-          onClear={() => setScannedImei("")}
-          placeholder={t("pos.scanPrompt")}
-          className="h-12 text-base"
-        />
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <ModeSwitch mode={pos.mode} onModeChange={pos.setMode} />
+        <ShortcutsHelp />
       </div>
-      <PosCheckoutSection cart={cart} onSubmit={handleSubmit} isPending={isPending} />
+
+      <PosScanner scanner={pos.scanner} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2">
+          {pos.mode === "sale" ? (
+            <SaleWorkspace pos={pos} />
+          ) : (
+            <NasiyaPanel
+              open={pos.consign.open}
+              onOpenChange={pos.consign.setOpen}
+              initialImei={pos.consign.imei}
+              initialAgreedPrice={pos.consign.price}
+            />
+          )}
+        </div>
+        <SessionPanel soldById={pos.me} onOpenReceipt={(id) => pos.openReceipt([id])} />
+      </div>
+
       <CheckoutReceiptModal
-        saleId={completedSaleId}
-        open={receiptOpen}
-        onOpenChange={setReceiptOpen}
-        onNewSale={handleNewSale}
+        saleIds={pos.saleIds}
+        open={pos.receiptOpen}
+        onOpenChange={pos.setReceiptOpen}
+        onNewSale={pos.handleNewSale}
       />
     </div>
   )

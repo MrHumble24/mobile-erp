@@ -41,9 +41,9 @@ function useInventoryActions(browser: Browser) {
   const navigate = useNavigate()
 
   const handleSell = (d: DeviceView) => {
-    useCartStore.getState().setDevice(d as any)
+    const added = useCartStore.getState().addLine(d as never, { warrantyDays: 14 })
     navigate("/pos")
-    toast.success(t("inventory.deviceAddedToCart"))
+    toast.success(added ? t("inventory.deviceAddedToCart") : t("pos.duplicateDevice"))
   }
 
   const handleResetFilters = () => {

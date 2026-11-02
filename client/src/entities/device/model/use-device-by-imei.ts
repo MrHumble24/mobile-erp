@@ -7,5 +7,7 @@ export function useDeviceByImei(imei?: string | null) {
     queryKey: deviceKeys.byImei(imei || ""),
     queryFn: () => deviceRepository.getByImei(imei || ""),
     enabled: Boolean(imei && imei.length === 15),
+    // A device's status changes under us (sold, consigned); the POS must never act on a stale lookup.
+    staleTime: 0,
   })
 }

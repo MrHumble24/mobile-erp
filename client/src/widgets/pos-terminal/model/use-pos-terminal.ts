@@ -1,90 +1,82 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
-import { useCartStore, type CartState } from "@/features/checkout"
-import { useCreateSale, type CreateSaleDto } from "@/entities/sale"
-import { useSettings } from "@/entities/settings"
-import { deviceRepository } from "@/entities/device"
 import { toast } from "@/shared/ui/sonner"
+import { useAuthStore } from "@/features/auth"
+import { useSettings } from "@/entities/settings"
+import type { DeviceDetailView } from "@/entities/device"
+import { useCartStore, isLineBlocked } from "@/features/checkout"
+import { usePosScanner, focusScanner } from "./use-pos-scanner"
+import { usePosShortcuts } from "./use-pos-shortcuts"
+import { usePosCheckout } from "./use-pos-checkout"
 
-function toSalePayload(cart: ReturnType<typeof useCartStore.getState>): CreateSaleDto | null {
-  if (!cart.device) return null
-  return {
-    imei: cart.device.imei,
-    salePrice: cart.salePrice,
-    customerId: cart.customer?.id,
-    customer: !cart.customer?.id && cart.customer?.name ? { name: cart.customer.name, phone: cart.customer.phone } : undefined,
-    warrantyDays: cart.warrantyDays,
-    notes: cart.notes || undefined,
-    clientMutationId: cart.clientMutationId,
-    expectedVersion: cart.device.version,
+export type PosMode = "sale" | "nasiya"
+
+function useConsignTarget() {
+  const [open, setOpen] = React.useState(false)
+  const [imei, setImei] = React.useState("")
+  const [price, setPrice] = React.useState("")
+  const openFor = (device: DeviceDetailView) => {
+    setImei(device.imei)
+    setPrice(device.targetPrice ?? "")
+    setOpen(true)
   }
-}
-
-function useScanImei(cart: CartState, defaultWarrantyDays: number) {
-  const { t } = useI18n()
-  const [scannedImei, setScannedImei] = React.useState("")
-
-  const handleScan = async (imei: string) => {
-    try {
-      const dev = await deviceRepository.getByImei(imei)
-      if (dev.statusCode !== "IN_STOCK") {
-        toast.error(`Qurilma sotuvga tayyor emas (${dev.statusCode})`)
-        return
-      }
-      cart.setDevice(dev, defaultWarrantyDays)
-      setScannedImei("")
-      toast.success("Qurilma tanlandi")
-    } catch {
-      toast.error(t("common.notFound"))
-    }
-  }
-
-  return { scannedImei, setScannedImei, handleScan }
+  return { open, setOpen, imei, price, openFor }
 }
 
 export function usePosTerminal() {
   const { t } = useI18n()
   const { data: settings } = useSettings()
-  const createSaleMutation = useCreateSale()
-  const [completedSaleId, setCompletedSaleId] = React.useState<string | null>(null)
-  const [receiptOpen, setReceiptOpen] = React.useState(false)
-  const cart = useCartStore()
-  const { scannedImei, setScannedImei, handleScan } = useScanImei(cart, settings?.defaultWarrantyDays || 14)
+  const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
+  const me = useAuthStore((s) => s.user?.id)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const payload = toSalePayload(cart)
-    if (!payload) return
-    createSaleMutation.mutate(payload, {
-      onSuccess: (res) => {
-        toast.success(t("pos.saleSuccess"))
-        setCompletedSaleId(res.id)
-        setReceiptOpen(true)
-        cart.resetCart()
-      },
-      onError: (err: any) => {
-        toast.error(err?.statusCode === 409 ? t("common.retry") : (err?.message || t("common.error")))
-      },
-    })
+  const [mode, setMode] = React.useState<PosMode>("sale")
+  const [customerOpen, setCustomerOpen] = React.useState(false)
+
+  const lines = useCartStore((s) => s.lines)
+  const addLine = useCartStore((s) => s.addLine)
+  const removeLastLine = useCartStore((s) => s.removeLastLine)
+  const clearCart = useCartStore((s) => s.clear)
+  const consign = useConsignTarget()
+
+  const defaultWarranty = settings?.defaultWarrantyDays ?? 14
+  const minMargin = Number(settings?.minMarginPercent ?? 0)
+  const blocked = lines.length === 0 || lines.some((line) => isLineBlocked(line, canViewCost))
+
+  const onInStock = (device: DeviceDetailView) => {
+    if (mode === "nasiya") return consign.openFor(device)
+    if (!addLine(device, { warrantyDays: defaultWarranty })) toast.error(t("pos.duplicateDevice"))
   }
 
-  const handleNewSale = React.useCallback(() => {
-    setReceiptOpen(false)
-    setCompletedSaleId(null)
-    setScannedImei("")
-    cart.resetCart()
-  }, [cart, setScannedImei])
+  const scanner = usePosScanner(onInStock)
+  const checkout = usePosCheckout(blocked, () => {
+    clearCart()
+    scanner.clear()
+  })
+
+  usePosShortcuts({
+    onFocusScanner: focusScanner,
+    onCheckout: checkout.handleCheckout,
+    onClearScanner: scanner.clear,
+    onRemoveLast: removeLastLine,
+    onToggleCustomer: () => setCustomerOpen((v) => !v),
+    onToggleMode: () => setMode((m) => (m === "sale" ? "nasiya" : "sale")),
+  })
+
+  React.useEffect(() => {
+    focusScanner()
+  }, [])
 
   return {
-    scannedImei,
-    setScannedImei,
-    handleScan,
-    handleSubmit,
-    handleNewSale,
-    isPending: createSaleMutation.isPending,
-    completedSaleId,
-    receiptOpen,
-    setReceiptOpen,
-    cart,
+    mode,
+    setMode,
+    scanner,
+    canViewCost,
+    minMargin,
+    me,
+    blocked,
+    customerOpen,
+    setCustomerOpen,
+    consign,
+    ...checkout,
   }
 }
