@@ -1,6 +1,6 @@
 # 012 — Uzbek copy for customers, Nasiya, expenses, users and settings
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ commit "fix(reports): exclude soft-deleted expenses"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ commit "fix(reports): exclude soft-deleted expenses"
 
 ## Why
 Four screens were rebuilt in parallel and merged: `/customers` (directory, aggregates, purchase history),
@@ -36,7 +36,7 @@ Then review in context with the `owner@malika.uz` login (credentials in `server/
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: `3d1ead9` (`feat(client): uzbek copy for crm, nasiya, expenses and admin`)
+- Glossary terms added: Credit Limit (Kredit limiti), Outstanding (Qarzdorlik), Aging (Muddat bo'yicha taqsimot), Recurring Expense (Doimiy xarajat), Vendor / Payee (Yetkazib beruvchi / Oluvchi), Override (Istisno ruxsat), Inherit (Roldan olinadi)
+- Wording changes proposed for `en`: None; key sets remain identical between `en` and `uz` across all six bundles.
+- Notes for other agents: All 224 placeholder keys translated into native Uzbek (Latin script, Malika Bazaar POS context); badges, aging buckets, and stat tiles remain concise.

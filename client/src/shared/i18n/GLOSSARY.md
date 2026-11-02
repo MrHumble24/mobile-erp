@@ -55,3 +55,10 @@
 | Subtotal | Oraliq summa | Chegirma va soliqlargacha bo'lgan jami summa |
 | Refund | Qaytarilgan pul / Qaytarilgan summa | Xaridorga qaytarib berilgan mablag' |
 | Average Price | O'rtacha narx | Birlik tovarning o'rtacha sotuv narxi |
+| Credit Limit | Kredit limiti | Hamkorga nasiyaga berish mumkin bo'lgan maksimal summa |
+| Outstanding | Qarzdorlik | Hamkorning to'lanmagan ochiq qarzi |
+| Aging (Receivables) | Muddat bo'yicha taqsimot | Nasiya qarzlarining muddati o'tish davri bo'yicha taqsimlanishi |
+| Recurring Expense | Doimiy xarajat | Belgilangan davrda takrorlanuvchi to'lovlar shabloni |
+| Vendor / Payee | Yetkazib beruvchi / Oluvchi | Xarajat to'langan shaxs yoki tashkilot |
+| Override (Permission) | Istisno ruxsat | Xodimga alohida berilgan yoki bekor qilingan shaxsiy ruxsat |
+| Inherit | Roldan olinadi | Ruxsat xodimga biriktirilgan roldan avtomatik olinadi |
