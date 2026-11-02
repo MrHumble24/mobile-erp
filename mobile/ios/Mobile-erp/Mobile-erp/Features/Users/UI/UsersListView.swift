@@ -10,25 +10,49 @@ struct UsersListView: View {
 
     @State private var model = UsersListModel()
     @State private var createOpen = false
+    @State private var filterOpen = false
     @State private var detailUser: UserView?
 
     private var currentUserId: String? { container.session.user?.id }
 
+    private var hasActiveFilters: Bool {
+        !model.roleFilter.isEmpty || !model.activeFilter.isEmpty
+    }
+
     var body: some View {
         List {
-            summarySection
-            filterSection
             listSection
             if model.hasPrev || model.hasNext { pagerSection }
         }
+        .searchable(text: $model.search, prompt: i18n.t("users.filterSearch", default: "Search name, phone, or email"))
+        .onSubmit(of: .search) { model.onFilterChange() }
+        .onChange(of: model.search) { model.onFilterChange() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { createOpen = true } label: { Image(systemName: "plus") }
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    filterOpen = true
+                } label: {
+                    Label(
+                        i18n.t("common.filter", default: "Filters"),
+                        systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"
+                    )
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    createOpen = true
+                } label: {
+                    Label(i18n.t("users.newUser"), systemImage: "plus")
+                }
             }
         }
         .task {
             model.bind(container)
             if model.data == nil { await model.load() }
+        }
+        .sheet(isPresented: $filterOpen) {
+            UsersFilterSheet(model: model, catalog: catalog)
         }
         .sheet(isPresented: $createOpen) {
             CreateUserSheet(catalog: catalog) { Task { await model.load() } }
@@ -39,47 +63,6 @@ struct UsersListView: View {
                 isSelf: user.id == currentUserId,
                 catalog: catalog
             ) { Task { await model.load() } }
-        }
-    }
-
-    @ViewBuilder private var summarySection: some View {
-        if let stats = model.stats {
-            Section {
-                HStack {
-                    stat(i18n.t("users.statTotal"), "\(stats.total)")
-                    Divider()
-                    stat(i18n.t("users.statActive"), "\(stats.active)")
-                    Divider()
-                    stat(i18n.t("users.statInactive"), "\(stats.total - stats.active)")
-                }
-            }
-        }
-    }
-
-    private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.title3.weight(.bold)).foregroundStyle(Tokens.ink)
-            Text(label).font(.caption).foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var filterSection: some View {
-        Section {
-            TextField(i18n.t("users.filterSearch"), text: $model.search)
-                .onChange(of: model.search) { model.onFilterChange() }
-            Picker(i18n.t("users.filterRole"), selection: $model.roleFilter) {
-                Text(i18n.t("common.all")).tag("")
-                ForEach(catalog.roles) { Text($0.name).tag($0.code) }
-            }
-            .onChange(of: model.roleFilter) { model.onFilterChange() }
-            Picker(i18n.t("users.filterStatus"), selection: $model.activeFilter) {
-                Text(i18n.t("common.all")).tag("")
-                Text(i18n.t("users.statusActive")).tag("active")
-                Text(i18n.t("users.statusInactive")).tag("inactive")
-            }
-            .onChange(of: model.activeFilter) { model.onFilterChange() }
-            Button(i18n.t("users.resetFilters")) { model.resetFilters() }
         }
     }
 
@@ -133,21 +116,36 @@ private struct UserRowView: View {
     let user: UserView
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(user.displayName).font(.body.weight(.semibold))
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(user.displayName)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Tokens.ink)
+                    Text(user.email)
+                        .font(.mono(13))
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 StatusBadge(
                     user.isActive ? i18n.t("users.statusActive") : i18n.t("users.statusInactive"),
                     color: user.isActive ? Tokens.success : Tokens.ash)
             }
-            Text(user.email).font(.mono(13)).foregroundStyle(.secondary)
             if !user.roles.isEmpty {
-                Text(user.roles.joined(separator: " · "))
-                    .font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    ForEach(user.roles, id: \.self) { role in
+                        Text(role)
+                            .font(.system(size: 11, weight: .medium))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 4))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.top, 2)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
         .contentShape(Rectangle())
     }
 }

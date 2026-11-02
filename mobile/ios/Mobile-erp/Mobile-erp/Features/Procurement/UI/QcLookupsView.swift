@@ -14,11 +14,6 @@ struct QcLookupsView: View {
 
     var body: some View {
         List {
-            Section {
-                Toggle(i18n.t("qc.active"), isOn: Binding(
-                    get: { !includeInactive }, set: { includeInactive = !$0 }
-                ))
-            }
             LookupSection(kind: "grades", title: i18n.t("qc.grades"),
                           includeInactive: includeInactive, canManage: canManage,
                           reloadToken: reloadToken,
@@ -31,6 +26,15 @@ struct QcLookupsView: View {
                           onEdit: { form = LookupFormTarget(kind: "defect-types", existing: $0) })
         }
         .listStyle(.insetGrouped)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Toggle(i18n.t("qc.showInactive", default: "Show Inactive"), isOn: $includeInactive)
+                } label: {
+                    Image(systemName: includeInactive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                }
+            }
+        }
         .sheet(item: $form, onDismiss: { reloadToken = UUID() }) { target in
             LookupFormSheet(kind: target.kind, existing: target.existing)
         }
@@ -106,17 +110,22 @@ private struct LookupRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(row.label)
-                Text(row.code).font(.mono(12)).foregroundStyle(.secondary)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(Tokens.ink)
+                Text(row.code)
+                    .font(.mono(12))
+                    .foregroundStyle(.secondary)
             }
             Spacer()
             if !row.isActive {
-                StatusBadge(i18n.t("common.no"), color: Tokens.ash)
+                StatusBadge(i18n.t("common.no", default: "Inactive"), color: Tokens.ash)
             } else if canManage {
                 Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
             }
         }
+        .padding(.vertical, 3)
         .contentShape(Rectangle())
         .onTapGesture { if canManage { onTap() } }
     }

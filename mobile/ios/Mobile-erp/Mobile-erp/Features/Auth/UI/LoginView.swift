@@ -20,11 +20,19 @@ struct LoginView: View {
         NavigationStack {
             Form {
                 Section {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(i18n.t("auth.loginTitle"))
-                            .font(.largeTitle.weight(.bold))
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "iphone.gen3")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(Tokens.ink)
+                            Text("MALIKA ERP")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(Tokens.ink)
+                        }
+                        Text(i18n.t("auth.loginTitle", default: "Terminal Sign In"))
+                            .font(.title2.weight(.bold))
                             .foregroundStyle(Tokens.ink)
-                        Text(i18n.t("auth.loginSubtitle"))
+                        Text(i18n.t("auth.loginSubtitle", default: "Enter your staff credentials to begin your sales shift."))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -68,14 +76,19 @@ struct LoginView: View {
 
                 Section {
                     Button(action: submit) {
-                        if session.isLoggingIn {
-                            ProgressView()
-                        } else {
+                        HStack(spacing: 8) {
+                            if session.isLoggingIn {
+                                ProgressView()
+                                    .tint(Color(.systemBackground))
+                            }
                             Text(i18n.t("auth.loginButton"))
-                                .frame(maxWidth: .infinity)
+                                .font(.headline)
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(Tokens.ink)
                     .disabled(session.isLoggingIn || email.isEmpty || password.isEmpty)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)

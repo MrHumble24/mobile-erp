@@ -74,27 +74,40 @@ struct SettingsView: View {
     @ViewBuilder private var footer: some View {
         Section {
             Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 Task { await model.save() }
             } label: {
-                HStack {
-                    if model.saving { ProgressView() }
+                HStack(spacing: 8) {
+                    if model.saving {
+                        ProgressView().tint(Color(.systemBackground))
+                    }
                     Text(model.saving ? i18n.t("settings.saving") : i18n.t("common.save"))
+                        .font(.headline)
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Tokens.ink)
             .disabled(model.saving || !model.isDirty || !model.invalidFields.isEmpty)
+            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+            .listRowBackground(Color.clear)
 
             if model.saved {
-                Label(i18n.t("settings.settingsSaved"), systemImage: "checkmark.circle")
-                    .font(.footnote).foregroundStyle(Tokens.success)
+                Label(i18n.t("settings.settingsSaved"), systemImage: "checkmark.circle.fill")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(Tokens.success)
             }
             if let err = model.saveError {
-                Label(err, systemImage: "exclamationmark.triangle")
-                    .font(.footnote).foregroundStyle(Tokens.danger)
+                Label(err, systemImage: "exclamationmark.triangle.fill")
+                    .font(.footnote)
+                    .foregroundStyle(Tokens.danger)
             }
         } footer: {
             if !model.updatedAt.isEmpty {
                 Text("\(i18n.t("settings.lastUpdated")): \(model.updatedAt)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
     }

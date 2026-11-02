@@ -8,19 +8,15 @@ struct CustomersView: View {
     @State private var model = CustomersModel()
     @State private var selected: CustomerListItem?
     @State private var showCreate = false
+    @State private var showFilters = false
+
+    private var hasActiveFilters: Bool {
+        model.sort != "recent" || model.hasPurchasesOnly
+    }
 
     var body: some View {
         @Bindable var model = model
         List {
-            Section {
-                Picker(i18n.t("common.filter"), selection: $model.sort) {
-                    Text(i18n.t("common.date")).tag("recent")
-                    Text(i18n.t("common.name")).tag("name")
-                }
-                .onChange(of: model.sort) { _, _ in model.reload() }
-                Toggle(i18n.t("sales.customerSalesHistory"), isOn: $model.hasPurchasesOnly)
-                    .onChange(of: model.hasPurchasesOnly) { _, _ in model.reload() }
-            }
             content
         }
         .searchable(text: $model.search)
@@ -28,6 +24,17 @@ struct CustomersView: View {
         .refreshable { model.reload() }
         .navigationTitle(i18n.t("sales.customersTitle"))
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showFilters = true
+                } label: {
+                    Label(
+                        i18n.t("common.filter", default: "Filters"),
+                        systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"
+                    )
+                }
+            }
             if model.canManage {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -38,6 +45,7 @@ struct CustomersView: View {
                 }
             }
         }
+        .sheet(isPresented: $showFilters) { CustomerFilterSheet(model: model) }
         .sheet(item: $selected) { customer in CustomerDetailSheet(customer: customer, model: model) }
         .sheet(isPresented: $showCreate) { CustomerFormSheet(model: model) }
         .task {
@@ -78,25 +86,33 @@ private struct CustomerRow: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(customer.name).font(.body.weight(.medium))
-                Spacer()
-                MoneyText(value: customer.totalSpentString)
-            }
-            HStack(spacing: 8) {
-                if let phone = customer.phone {
-                    Text(phone).font(.mono(12)).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(customer.name)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Tokens.ink)
+                    if let phone = customer.phone {
+                        Text(phone)
+                            .font(.mono(12))
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer()
+                MoneyText(value: customer.totalSpentString, size: 16)
+                    .foregroundStyle(Tokens.ink)
+            }
+            HStack(spacing: 8) {
                 Text(i18n.t("pos.purchaseCount", ["count": String(customer.purchaseCount)]))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
                 if customer.activeWarranties > 0 {
                     StatusBadge(i18n.t("pos.warrantyCount", ["count": String(customer.activeWarranties)]),
                                 color: Tokens.success)
                 }
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
     }
 }

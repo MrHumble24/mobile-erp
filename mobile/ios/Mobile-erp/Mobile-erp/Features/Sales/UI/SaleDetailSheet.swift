@@ -12,60 +12,122 @@ struct SaleDetailSheet: View {
 
     @State private var showReceipt = false
     @State private var showReturn = false
+    @State private var copied = false
 
     private var canReturn: Bool { container.session.can("sale.return") }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(i18n.t("sales.deviceSection")) {
-                    LabeledContent(i18n.t("pos.deviceCard"), value: sale.device.model.label)
-                    LabeledContent("IMEI") {
-                        Text(sale.device.imei).font(.mono(13))
+                // 1. Device Section
+                Section(i18n.t("sales.deviceSection", default: "Sold Device")) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(sale.device.model.label)
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(Tokens.ink)
+
+                        HStack(spacing: 8) {
+                            Text("IMEI: \(sale.device.imei)")
+                                .font(.mono(13, weight: .medium))
+                                .foregroundStyle(.secondary)
+                            Button {
+                                UIPasteboard.general.string = sale.device.imei
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                withAnimation(.snappy(duration: 0.2)) { copied = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                    withAnimation { copied = false }
+                                }
+                            } label: {
+                                Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(copied ? Tokens.success : .secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
+                    .padding(.vertical, 4)
                 }
-                Section(i18n.t("sales.moneySection")) {
-                    LabeledContent(i18n.t("sales.salePrice")) {
-                        MoneyText(value: sale.salePrice.string)
+
+                // 2. Financial & Sale Information
+                Section(i18n.t("sales.moneySection", default: "Financial Summary")) {
+                    LabeledContent(i18n.t("sales.salePrice", default: "Sale Price")) {
+                        MoneyText(value: sale.salePrice.string, size: 18)
+                            .foregroundStyle(Tokens.ink)
                     }
+
                     if let net = sale.netProfit {
-                        LabeledContent(i18n.t("sales.netProfit")) { MoneyText(value: net.string) }
+                        LabeledContent(i18n.t("sales.netProfit", default: "Net Margin")) {
+                            MoneyText(value: net.string, size: 16)
+                                .foregroundStyle(Tokens.success)
+                        }
                     }
-                    LabeledContent(i18n.t("sales.soldBy"), value: sale.soldBy.name)
-                    LabeledContent(i18n.t("sales.soldAt"), value: SaleDate.dayTime(sale.soldAt))
+
+                    LabeledContent(i18n.t("sales.soldBy", default: "Cashier"), value: sale.soldBy.name)
+                    LabeledContent(i18n.t("sales.soldAt", default: "Date/Time"), value: SaleDate.dayTime(sale.soldAt))
+
                     if let warranty = sale.warranty {
-                        LabeledContent(i18n.t("sales.warranty"),
-                                       value: i18n.t("sales.daysShort", ["count": String(warranty.days)]))
-                    }
-                }
-                if let customer = sale.customer {
-                    Section(i18n.t("sales.customerSection")) {
-                        LabeledContent(i18n.t("sales.customer"), value: customer.name)
-                        if let phone = customer.phone {
-                            LabeledContent(i18n.t("common.phone"), value: phone)
+                        HStack {
+                            Label(i18n.t("sales.warranty", default: "Warranty Coverage"), systemImage: "shield.fill")
+                                .foregroundStyle(Tokens.success)
+                            Spacer()
+                            Text(i18n.t("sales.daysShort", ["count": String(warranty.days)]))
+                                .font(.subheadline.weight(.medium))
                         }
                     }
                 }
+
+                // 3. Customer Information (if present)
+                if let customer = sale.customer {
+                    Section(i18n.t("sales.customerSection", default: "Customer")) {
+                        LabeledContent(i18n.t("sales.customer", default: "Name"), value: customer.name)
+                        if let phone = customer.phone {
+                            HStack {
+                                Text(i18n.t("common.phone", default: "Phone"))
+                                Spacer()
+                                Link(phone, destination: URL(string: "tel:\(phone)")!)
+                                    .font(.subheadline.weight(.medium))
+                            }
+                        }
+                    }
+                }
+
+                // 4. Actions
                 Section {
                     Button {
                         showReceipt = true
                     } label: {
-                        Label(i18n.t("sales.receipt"), systemImage: "receipt")
+                        Label(i18n.t("sales.receipt", default: "View & Print Receipt"), systemImage: "receipt")
+                            .font(.headline.weight(.medium))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 24)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Tokens.ink)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+
                     if canReturn {
                         Button(role: .destructive) {
                             showReturn = true
                         } label: {
-                            Label(i18n.t("sales.returnDevice"), systemImage: "arrow.uturn.backward")
+                            Label(i18n.t("sales.returnDevice", default: "Process Return / Refund"), systemImage: "arrow.uturn.backward")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 22)
                         }
+                        .buttonStyle(.bordered)
+                        .tint(Tokens.danger)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .padding(.top, 4)
                     }
                 }
             }
-            .navigationTitle(i18n.t("sales.detailTitle"))
+            .navigationTitle(i18n.t("sales.detailTitle", default: "Sale Details"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.close")) { dismiss() }
+                    Button(i18n.t("common.close", default: "Close")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id) }

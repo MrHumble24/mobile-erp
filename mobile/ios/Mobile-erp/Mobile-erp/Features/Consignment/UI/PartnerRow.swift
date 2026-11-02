@@ -8,29 +8,49 @@ struct PartnerListRow: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
+        let outstandingVal = Double(partner.outstanding) ?? 0
+        let hasOverdue = (partner.overdueCount ?? 0) > 0
+
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(partner.shopName).font(.headline)
-                if !partner.isActive {
-                    StatusBadge(i18n.t("partners.inactive"), color: Tokens.slate)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(partner.shopName)
+                            .font(.headline)
+                            .foregroundStyle(Tokens.ink)
+                        if !partner.isActive {
+                            StatusBadge(i18n.t("partners.inactive", default: "Inactive"), color: Tokens.slate)
+                        }
+                    }
+                    if let contact = contactLine {
+                        Text(contact)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer()
-                MoneyText(value: partner.outstanding, size: 15)
-                    .foregroundStyle(Tokens.warning)
+                VStack(alignment: .trailing, spacing: 2) {
+                    MoneyText(value: partner.outstanding, size: 17)
+                        .foregroundStyle(outstandingVal > 0 ? (hasOverdue ? Tokens.danger : Tokens.warning) : Tokens.ink)
+                    if outstandingVal > 0 {
+                        Text(i18n.t("partners.balanceDue", default: "Balance Due"))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(hasOverdue ? Tokens.danger : .secondary)
+                    }
+                }
             }
-            if let contact = contactLine { Text(contact).font(.caption).foregroundStyle(.secondary) }
             CreditBar(limit: partner.creditLimit, used: partner.outstanding)
             if let open = partner.openCount {
                 HStack(spacing: 8) {
-                    Text("\(open) \(i18n.t("partners.openCount"))")
+                    Text("\(open) \(i18n.t("partners.openCount", default: "devices out"))")
                         .font(.caption).foregroundStyle(.secondary)
                     if let over = partner.overdueCount, over > 0 {
-                        StatusBadge("\(over) \(i18n.t("partners.overdueCount"))", color: Tokens.danger)
+                        StatusBadge("\(over) \(i18n.t("partners.overdueCount", default: "overdue"))", color: Tokens.danger)
                     }
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
     private var contactLine: String? {

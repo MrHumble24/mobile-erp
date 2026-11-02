@@ -37,17 +37,25 @@ struct ShipmentsListView: View {
         .sheet(item: $detail, onDismiss: reload) { shipment in
             ShipmentDetailSheet(shipment: shipment)
         }
+        .toolbar {
+            if canManage {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showNew = true
+                    } label: {
+                        Label(i18n.t("shipments.newShipment"), systemImage: "plus")
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder
     private func list(_ feed: ShipmentsFeed) -> some View {
         if feed.shipments.isEmpty {
-            VStack(spacing: 16) {
-                if canManage { newButton }
-                EmptyStateView(systemImage: "shippingbox", title: i18n.t("shipments.emptyHint"))
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top)
+            EmptyStateView(systemImage: "shippingbox", title: i18n.t("shipments.emptyHint"))
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 40)
         } else {
             List {
                 ForEach(feed.shipments) { shipment in
@@ -58,20 +66,6 @@ struct ShipmentsListView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .safeAreaInset(edge: .top) {
-                if canManage { newButton.padding(.horizontal).padding(.bottom, 4) }
-            }
-        }
-    }
-
-    private var newButton: some View {
-        HStack {
-            Spacer()
-            Button { showNew = true } label: {
-                Label(i18n.t("shipments.newShipment"), systemImage: "plus")
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Tokens.ink)
         }
     }
 
@@ -112,13 +106,16 @@ private struct ShipmentRow: View {
     let supplierName: String
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(supplierName).font(.body.weight(.medium))
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(supplierName)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Tokens.ink)
                 Text("\(shipment.dateLabel) · " + i18n.t("shipments.registeredProgress", [
                     "registered": "\(shipment.deviceCount)", "expected": "\(shipment.expectedCount)",
                 ]))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
             Spacer()
             StatusBadge(
@@ -126,5 +123,6 @@ private struct ShipmentRow: View {
                 color: shipment.isComplete ? Tokens.success : Tokens.warning
             )
         }
+        .padding(.vertical, 4)
     }
 }

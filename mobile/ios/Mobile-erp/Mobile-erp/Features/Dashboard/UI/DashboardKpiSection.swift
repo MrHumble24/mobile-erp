@@ -42,13 +42,19 @@ struct DashboardKpiSection: View {
 
     private func tiles(_ p: DashProfit) -> [DashTile] {
         [
-            DashTile(label: i18n.t("dashboard.grossProfit"), value: dashMoney(p.grossProfit),
-                     subtext: "\(p.unitsSold) \(i18n.t("dashboard.unitsSold"))"),
-            DashTile(label: i18n.t("dashboard.netOperatingIncome"),
-                     value: dashMoney(p.netOperatingIncome), emphasis: Tokens.success),
-            DashTile(label: i18n.t("dashboard.revenue"), value: dashMoney(p.revenue),
-                     subtext: "\(i18n.t("dashboard.retail")): \(dashMoney(p.retail))"),
-            DashTile(label: i18n.t("dashboard.expenses"), value: dashMoney(p.expenses),
+            DashTile(label: i18n.t("dashboard.netOperatingIncome", default: "Net Operating Profit"),
+                     value: dashMoney(p.netOperatingIncome),
+                     subtext: i18n.t("dashboard.netProfitSubtitle", default: "Store profit after operating expenses"),
+                     emphasis: Tokens.success),
+            DashTile(label: i18n.t("dashboard.revenue", default: "Total Sales Revenue"),
+                     value: dashMoney(p.revenue),
+                     subtext: "\(p.unitsSold) \(i18n.t("dashboard.unitsSold", default: "units sold")) · \(dashMoney(p.retail)) \(i18n.t("dashboard.retail", default: "retail"))"),
+            DashTile(label: i18n.t("dashboard.grossProfit", default: "Gross Sales Profit"),
+                     value: dashMoney(p.grossProfit),
+                     subtext: i18n.t("dashboard.grossProfitSubtitle", default: "Revenue minus phone unit costs")),
+            DashTile(label: i18n.t("dashboard.expenses", default: "Operating Expenses"),
+                     value: dashMoney(p.expenses),
+                     subtext: i18n.t("dashboard.expensesSubtitle", default: "Rent, bills, and shop overhead"),
                      emphasis: Tokens.danger),
         ]
     }

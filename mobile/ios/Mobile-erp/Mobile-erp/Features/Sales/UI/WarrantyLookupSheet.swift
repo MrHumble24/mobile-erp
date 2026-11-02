@@ -10,30 +10,45 @@ struct WarrantyLookupSheet: View {
 
     @State private var model = WarrantyModel()
     @State private var showReturn = false
+    @State private var copied = false
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    ScannerField(placeholder: i18n.t("sales.imeiPlaceholder")) { model.lookup($0) }
-                        .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                    ScannerField(placeholder: i18n.t("sales.imeiPlaceholder", default: "Scan or enter IMEI")) { code in
+                        model.lookup(code)
+                    }
+                    .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                 }
+
                 if model.loading {
-                    Section { LoadingView().frame(height: 100) }
+                    Section {
+                        HStack(spacing: 12) {
+                            ProgressView()
+                            Text(i18n.t("common.loading", default: "Looking up warranty..."))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 20)
+                    }
                 } else if model.notFound {
                     Section {
                         EmptyStateView(systemImage: "magnifyingglass",
-                                       title: i18n.t("common.notFound"))
+                                       title: i18n.t("common.notFound", default: "No Warranty Record"),
+                                       message: i18n.t("sales.noWarrantyFound", default: "No sale found for this IMEI."))
                     }
                 } else if let result = model.result {
                     resultSection(result)
                 }
             }
-            .navigationTitle(i18n.t("sales.warrantyLookup"))
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(i18n.t("sales.warrantyLookup", default: "Warranty Lookup"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.close")) { dismiss() }
+                    Button(i18n.t("common.close", default: "Close")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showReturn) {
@@ -49,27 +64,92 @@ struct WarrantyLookupSheet: View {
     }
 
     @ViewBuilder private func resultSection(_ r: WarrantyLookup) -> some View {
+        // Status Hero Banner
         Section {
-            LabeledContent("IMEI") { Text(r.imei).font(.mono(13)) }
-            StatusBadge(
-                r.active ? i18n.t("sales.warrantyValid") : i18n.t("sales.warrantyExpired"),
-                color: r.active ? Tokens.success : Tokens.danger
-            )
-            LabeledContent(i18n.t("sales.salePrice")) { MoneyText(value: r.salePrice.string) }
-            LabeledContent(i18n.t("sales.remainingDays"), value: String(r.remainingDays))
+            HStack(spacing: 14) {
+                Image(systemName: r.active ? "checkmark.shield.fill" : "xmark.shield.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(r.active ? Tokens.success : Tokens.danger)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(r.active ? i18n.t("sales.warrantyValid", default: "Warranty Active") : i18n.t("sales.warrantyExpired", default: "Warranty Expired"))
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(r.active ? Tokens.success : Tokens.danger)
+
+                    Text(r.active
+                         ? i18n.t("sales.daysRemaining", default: "\(r.remainingDays) days remaining")
+                         : i18n.t("sales.expired", default: "Coverage period has ended"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 6)
+        }
+
+        // Details
+        Section(i18n.t("sales.deviceDetails", default: "Device & Sale")) {
+            HStack {
+                Text("IMEI")
+                Spacer()
+                HStack(spacing: 6) {
+                    Text(r.imei)
+                        .font(.mono(13))
+                        .foregroundStyle(Tokens.ink)
+                    Button {
+                        UIPasteboard.general.string = r.imei
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        withAnimation(.snappy(duration: 0.2)) { copied = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { copied = false }
+                        }
+                    } label: {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 11))
+                            .foregroundStyle(copied ? Tokens.success : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            LabeledContent(i18n.t("sales.salePrice", default: "Sale Price")) {
+                MoneyText(value: r.salePrice.string, size: 14)
+                    .foregroundStyle(Tokens.ink)
+            }
+
             if let grade = r.grade {
-                LabeledContent(i18n.t("nav.qc"), value: grade)
+                LabeledContent(i18n.t("nav.qc", default: "QC Grade")) {
+                    Text(grade)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Tokens.ink)
+                }
             }
         }
+
+        // Action
         Section {
             if r.alreadyReturned {
-                Text(i18n.t("sales.alreadyReturned")).foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(Tokens.warning)
+                    Text(i18n.t("sales.alreadyReturned", default: "Device has already been returned and refunded."))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 4)
             } else if container.session.can("sale.return") {
                 Button(role: .destructive) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     showReturn = true
                 } label: {
-                    Label(i18n.t("sales.returnDevice"), systemImage: "arrow.uturn.backward")
+                    Label(i18n.t("sales.returnDevice", default: "Process Return / Refund"), systemImage: "arrow.uturn.backward")
+                        .font(.headline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 24)
                 }
+                .buttonStyle(.borderedProminent)
+                .tint(Tokens.danger)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
         }
     }

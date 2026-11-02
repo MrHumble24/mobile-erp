@@ -35,17 +35,25 @@ struct SuppliersListView: View {
         .sheet(item: $editing, onDismiss: reload) { supplier in
             SupplierFormSheet(existing: supplier)
         }
+        .toolbar {
+            if canManage {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showNew = true
+                    } label: {
+                        Label(i18n.t("shipments.newSupplier"), systemImage: "plus")
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder
     private func list(_ suppliers: [Supplier]) -> some View {
         if suppliers.isEmpty {
-            VStack(spacing: 16) {
-                if canManage { newButton }
-                EmptyStateView(systemImage: "building.2", title: i18n.t("shipments.empty"))
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.top)
+            EmptyStateView(systemImage: "building.2", title: i18n.t("shipments.empty"))
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.top, 40)
         } else {
             List {
                 ForEach(suppliers) { supplier in
@@ -55,24 +63,6 @@ struct SuppliersListView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .safeAreaInset(edge: .top) {
-                if canManage {
-                    newButton.padding(.horizontal).padding(.bottom, 4)
-                }
-            }
-        }
-    }
-
-    private var newButton: some View {
-        HStack {
-            Spacer()
-            Button {
-                showNew = true
-            } label: {
-                Label(i18n.t("shipments.newSupplier"), systemImage: "plus")
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Tokens.ink)
         }
     }
 
@@ -86,7 +76,9 @@ private struct SupplierRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(supplier.name).font(.body.weight(.medium))
+                Text(supplier.name)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Tokens.ink)
                 let subtitle = [supplier.country, supplier.contact]
                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
                 if !subtitle.isEmpty {
@@ -99,5 +91,6 @@ private struct SupplierRow: View {
                 color: supplier.isActive ? Tokens.success : Tokens.ash
             )
         }
+        .padding(.vertical, 4)
     }
 }

@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Dashboard-local presentation pieces (the slice may not import reports): a KPI
-/// tile, a responsive grid, a card with a title, and the money helper.
+/// Dashboard presentation components: roomy, single-column KPI cards,
+/// titled sections, and monetary formatting helpers.
+/// Strictly avoids multi-column grids so executive numbers are uncompressed.
 
 func dashMoney(_ value: Double?) -> String {
     guard let value else { return "—" }
@@ -15,13 +16,19 @@ struct DashTile: View {
     var emphasis: Color?
 
     var body: some View {
-        AppCard {
+        AppCard(padding: 16) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-                Text(value).font(.title3.weight(.semibold))
-                    .foregroundStyle(emphasis ?? Tokens.ink).monospacedDigit()
+                Text(label)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(emphasis ?? Tokens.ink)
+                    .monospacedDigit()
                 if let subtext {
-                    Text(subtext).font(.caption2).foregroundStyle(.secondary)
+                    Text(subtext)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -29,15 +36,15 @@ struct DashTile: View {
     }
 }
 
+/// Single-column vertical stack of dashboard KPI cards.
 struct DashTileGrid: View {
     let tiles: [DashTile]
-    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 12),
-                            count: sizeClass == .regular ? 4 : 2)
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(Array(tiles.enumerated()), id: \.offset) { $0.element }
+        VStack(spacing: 12) {
+            ForEach(Array(tiles.enumerated()), id: \.offset) { _, tile in
+                tile
+            }
         }
     }
 }
@@ -50,13 +57,19 @@ struct DashSection<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(title).font(.subheadline.weight(.medium))
+        AppCard(padding: 16) {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(title)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(Tokens.ink)
+
                 switch state {
-                case .loading: LoadingView().frame(height: 80)
-                case .failed(let message): ErrorStateView(message: message, retry: retry)
-                case .loaded: content()
+                case .loading:
+                    LoadingView().frame(height: 80)
+                case .failed(let msg):
+                    ErrorStateView(message: msg, retry: retry)
+                case .loaded:
+                    content()
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -64,7 +77,7 @@ struct DashSection<Content: View>: View {
     }
 }
 
-enum DashLoad: Equatable {
+enum DashLoad {
     case loading
     case loaded
     case failed(String)

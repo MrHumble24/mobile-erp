@@ -118,17 +118,29 @@ private struct DeviceSheetHeader: View {
     let canEdit: Bool
     let onEdit: () -> Void
     @Environment(I18n.self) private var i18n
+    @State private var copied = false
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text("IMEI: \(device.imei)").font(.mono(12)).foregroundStyle(.secondary)
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Text("IMEI: \(device.imei)")
+                        .font(.mono(13, weight: .medium))
+                        .foregroundStyle(Tokens.ink)
                     Button {
                         UIPasteboard.general.string = device.imei
-                    } label: { Image(systemName: "doc.on.doc").font(.caption) }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(i18n.t("inventory.copyImei"))
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        withAnimation(.snappy(duration: 0.2)) { copied = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation { copied = false }
+                        }
+                    } label: {
+                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(copied ? Tokens.success : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("inventory.copyImei"))
                 }
                 StatusBadge(deviceStatus: device.statusCode,
                             label: i18n.t(DeviceStatusMeta.labelKey(device.statusCode)))
@@ -137,9 +149,11 @@ private struct DeviceSheetHeader: View {
             if canEdit {
                 Button(action: onEdit) {
                     Label(i18n.t("inventory.editDevice"), systemImage: "pencil")
+                        .font(.subheadline.weight(.medium))
                 }
                 .buttonStyle(.bordered)
             }
         }
+        .padding(.vertical, 4)
     }
 }

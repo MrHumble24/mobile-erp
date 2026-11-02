@@ -58,40 +58,70 @@ private struct PricingCard: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(name).font(.headline)
-                    if let storage = row.storage {
-                        StatusBadge(storage, color: Tokens.slate)
+        AppCard(padding: 16) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(name)
+                            .font(.headline)
+                            .foregroundStyle(Tokens.ink)
+                        if let storage = row.storage {
+                            Text(storage)
+                                .font(.mono(12))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                    HStack(spacing: 8) {
+                        stat(i18n.t("dashboard.unitsInStock", default: "In Stock"), "\(row.unitsInStock)")
+                        stat(i18n.t("dashboard.unitsSold", default: "Sold"), "\(row.unitsSold)")
                     }
                 }
-                HStack {
-                    stat(i18n.t("dashboard.unitsInStock"), "\(row.unitsInStock)")
-                    Spacer()
-                    stat(i18n.t("dashboard.unitsSold"), "\(row.unitsSold)")
-                }
+
                 Divider()
-                if canCost {
-                    priceRow(i18n.t("dashboard.avgAcquisitionCost"), row.avgAcquisitionCost)
+
+                VStack(spacing: 6) {
+                    if canCost {
+                        priceRow(i18n.t("dashboard.avgAcquisitionCost", default: "Avg Cost (Landed)"),
+                                 row.avgAcquisitionCost,
+                                 color: .secondary)
+                    }
+                    priceRow(i18n.t("dashboard.avgSellingPrice", default: "Avg Selling Price"),
+                             row.avgSellingPrice,
+                             color: Tokens.ink)
+
+                    if canCost, let selling = row.avgSellingPrice, let cost = row.avgAcquisitionCost, selling > 0 {
+                        let spread = selling - cost
+                        let marginPct = (spread / selling) * 100
+                        HStack {
+                            Text(i18n.t("dashboard.grossMargin", default: "Estimated Margin"))
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(spread >= 0 ? Tokens.success : Tokens.danger)
+                            Spacer()
+                            Text("\(reportMoney(spread)) (\(String(format: "%.1f", marginPct))%)")
+                                .font(.mono(14, weight: .bold))
+                                .foregroundStyle(spread >= 0 ? Tokens.success : Tokens.danger)
+                        }
+                        .padding(.top, 2)
+                    }
                 }
-                priceRow(i18n.t("dashboard.avgSellingPrice"), row.avgSellingPrice)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
     private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption2).foregroundStyle(.secondary)
-            Text(value).font(.subheadline.weight(.medium)).monospacedDigit()
+        VStack(alignment: .trailing, spacing: 2) {
+            Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+            Text(value).font(.subheadline.weight(.bold)).monospacedDigit().foregroundStyle(Tokens.ink)
         }
     }
-    private func priceRow(_ label: String, _ value: Double?) -> some View {
+
+    private func priceRow(_ label: String, _ value: Double?, color: Color) -> some View {
         HStack {
             Text(label).font(.subheadline).foregroundStyle(.secondary)
             Spacer()
-            Text(reportMoney(value)).font(.mono(15))
+            Text(reportMoney(value)).font(.mono(15, weight: .medium)).foregroundStyle(color)
         }
     }
 }

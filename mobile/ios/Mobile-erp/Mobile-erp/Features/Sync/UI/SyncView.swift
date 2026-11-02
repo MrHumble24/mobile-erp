@@ -29,24 +29,76 @@ struct SyncView: View {
 
     private var statusSection: some View {
         Section {
-            HStack(spacing: 12) {
-                SyncStatusChip(online: model.isOnline,
-                               label: i18n.t(model.isOnline ? "common.online" : "common.offline",
-                                             default: model.isOnline ? "Online" : "Offline"))
-                Spacer()
-                Button {
-                    Task { await model.syncNow() }
-                } label: {
-                    Label(i18n.t("common.syncNow", default: "Sync now"), systemImage: "arrow.triangle.2.circlepath")
+            AppCard(
+                padding: 18,
+                backgroundColor: (model.isOnline ? Tokens.success : Tokens.warning).opacity(0.10),
+                borderColor: (model.isOnline ? Tokens.success : Tokens.warning).opacity(0.35)
+            ) {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(spacing: 10) {
+                        Image(systemName: model.isOnline ? "checkmark.circle.fill" : "wifi.slash")
+                            .font(.title2)
+                            .foregroundStyle(model.isOnline ? Tokens.success : Tokens.warning)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(model.isOnline ? i18n.t("common.connected", default: "Connected to Server") : i18n.t("common.offlineMode", default: "Offline Outbox Mode"))
+                                .font(.headline)
+                                .foregroundStyle(Tokens.ink)
+                            Text(model.isOnline ? i18n.t("common.syncReady", default: "All operations sync directly to central ERP") : i18n.t("common.syncQueued", default: "Transactions are stored securely in local database"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+                    }
+
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(i18n.t("common.pendingSync", default: "Pending Sync"))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text("\(model.queue.count)")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(Tokens.ink)
+                                .monospacedDigit()
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(i18n.t("common.conflicts", default: "Conflicts"))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text("\(model.conflicts.count)")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(model.conflicts.isEmpty ? Tokens.ink : Tokens.danger)
+                                .monospacedDigit()
+                        }
+                    }
+                    .padding(10)
+                    .background(Color(.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs))
+
+                    Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Task { await model.syncNow() }
+                    } label: {
+                        Label(i18n.t("common.syncNow", default: "Sync Now"), systemImage: "arrow.triangle.2.circlepath")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Tokens.ink)
+                    .disabled(!model.isOnline)
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(!model.isOnline)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+
             if let err = model.actionError {
                 Label(err, systemImage: "exclamationmark.triangle")
                     .font(.footnote).foregroundStyle(Tokens.danger)
             }
         }
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
     }
 
     private var queueSection: some View {

@@ -16,44 +16,74 @@ struct ReturnSheet: View {
     @State private var busy = false
     @State private var error: String?
 
-    private var refundValid: Bool { SalesInput.money(refund) >= 0 && !refund.trimmingCharacters(in: .whitespaces).isEmpty }
+    private var refundValid: Bool {
+        SalesInput.money(refund) >= 0 && !refund.trimmingCharacters(in: .whitespaces).isEmpty
+    }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section(i18n.t("sales.refundAmount")) {
-                    TextField(i18n.t("sales.refundAmount"), text: $refund)
-                        .keyboardType(.decimalPad)
-                        .font(.mono(16))
-                }
-                Section(i18n.t("sales.returnReason")) {
-                    TextField(i18n.t("sales.returnReasonPlaceholder"), text: $reason, axis: .vertical)
-                        .lineLimit(1...3)
-                }
-                Section(i18n.t("sales.returnCondition")) {
-                    Picker(i18n.t("sales.returnCondition"), selection: $condition) {
-                        Text(i18n.t("sales.returnToStock")).tag("IN_STOCK")
-                        Text(i18n.t("sales.returnToDefective")).tag("DEFECTIVE")
+                Section(i18n.t("sales.refundAmount", default: "Refund Amount")) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("$")
+                            .font(.title3.weight(.bold))
+                            .foregroundStyle(.secondary)
+                        TextField("0", text: $refund)
+                            .font(.mono(24, weight: .bold))
+                            .keyboardType(.decimalPad)
+                            .monospacedDigit()
                     }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
+                    .padding(.vertical, 2)
                 }
+
+                Section(i18n.t("sales.returnCondition", default: "Restock Condition")) {
+                    Picker(i18n.t("sales.returnCondition", default: "Condition"), selection: $condition) {
+                        Text(i18n.t("sales.returnToStock", default: "In Stock (Resellable)")).tag("IN_STOCK")
+                        Text(i18n.t("sales.returnToDefective", default: "Defective (Needs Repair)")).tag("DEFECTIVE")
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.vertical, 2)
+                }
+
+                Section(i18n.t("sales.returnReason", default: "Return Reason")) {
+                    TextField(i18n.t("sales.returnReasonPlaceholder", default: "Reason for device return"),
+                              text: $reason, axis: .vertical)
+                        .lineLimit(2...4)
+                }
+
                 if let error {
-                    Section { Text(error).foregroundStyle(Tokens.destructive).font(.footnote) }
+                    Section {
+                        Label(error, systemImage: "exclamationmark.triangle")
+                            .font(.footnote)
+                            .foregroundStyle(Tokens.danger)
+                    }
+                }
+
+                Section {
+                    Button(action: submit) {
+                        if busy {
+                            ProgressView().frame(maxWidth: .infinity)
+                        } else {
+                            Label(i18n.t("sales.returnDevice", default: "Confirm Return & Refund"),
+                                  systemImage: "arrow.uturn.backward")
+                                .font(.headline.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 24)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Tokens.danger)
+                    .disabled(!refundValid || busy)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
             }
-            .navigationTitle(i18n.t("sales.returnDevice"))
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle(i18n.t("sales.returnDevice", default: "Return & Refund"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if busy { ProgressView() }
-                    else {
-                        Button(i18n.t("sales.returnDevice"), action: submit)
-                            .disabled(!refundValid)
-                    }
+                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
                 }
             }
         }
@@ -62,11 +92,12 @@ struct ReturnSheet: View {
     private func submit() {
         guard refundValid, !busy else { return }
         guard container.connectivity.isOnline else {
-            error = i18n.t("common.offline", default: "You are offline. This needs a connection.")
+            error = i18n.t("common.offline", default: "You are offline. This action requires an internet connection.")
             return
         }
         busy = true
         error = nil
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         let repo = SalesRepository(api: container.api, context: container.modelContext)
         Task {
             do {
@@ -82,7 +113,7 @@ struct ReturnSheet: View {
                 dismiss()
             } catch let e as AppError {
                 busy = false
-                error = e.statusCode == 409 ? i18n.t("sales.returnConflict") : e.message
+                error = e.statusCode == 409 ? i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.") : e.message
             } catch {
                 busy = false
                 self.error = error.localizedDescription

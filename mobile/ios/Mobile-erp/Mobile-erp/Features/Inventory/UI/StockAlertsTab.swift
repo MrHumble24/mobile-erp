@@ -19,14 +19,29 @@ struct StockAlertsTab: View {
             if !store.lowStock.isEmpty {
                 Section {
                     ForEach(store.lowStock) { row in
-                        LabeledContent("\(store.modelLabel(row.modelId)) · \(row.storage)") {
-                            Text("\(row.currentCount) / \(row.threshold)")
-                                .font(.mono(14))
-                                .foregroundStyle(row.isBelow ? Tokens.danger : .primary)
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("\(store.modelLabel(row.modelId)) · \(row.storage)")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(Tokens.ink)
+                                Text(i18n.t("inventory.lowStockWarning", default: "Below minimum safety threshold"))
+                                    .font(.caption)
+                                    .foregroundStyle(Tokens.danger)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text("\(row.currentCount) / \(row.threshold)")
+                                    .font(.mono(16, weight: .bold))
+                                    .foregroundStyle(Tokens.danger)
+                                Text(i18n.t("inventory.remainingUnits", default: "units left"))
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundStyle(Tokens.danger.opacity(0.85))
+                            }
                         }
+                        .padding(.vertical, 4)
                     }
                 } header: {
-                    Label(i18n.t("inventory.lowStock"), systemImage: "exclamationmark.triangle")
+                    Label(i18n.t("inventory.lowStock"), systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(Tokens.danger)
                 }
             }

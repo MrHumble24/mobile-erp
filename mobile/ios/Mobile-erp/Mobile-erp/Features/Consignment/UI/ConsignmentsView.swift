@@ -13,6 +13,12 @@ struct ConsignmentsView: View {
     @State private var settleItem: Consignment?
     @State private var returnItem: Consignment?
     @State private var showCreate = false
+    @State private var showFilters = false
+
+    private var hasActiveFilters: Bool {
+        guard let model else { return false }
+        return model.status != .all || model.preset != .all || !model.customFrom.isEmpty || !model.customTo.isEmpty
+    }
 
     var body: some View {
         content
@@ -45,20 +51,19 @@ struct ConsignmentsView: View {
 
     @ViewBuilder private var content: some View {
         if let model {
+            @Bindable var model = model
             List {
                 if model.pendingCount > 0 { pendingMarker(model.pendingCount) }
-                Section {
-                    ConsignmentsFilterBar(model: model) { Task { await model.load() } }
-                        .listRowBackground(Color.clear)
-                }
-                Section { ConsignmentsSummary(model: model) }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                    .listRowBackground(Color.clear)
                 body(model)
             }
             .listStyle(.plain)
+            .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
+            .onSubmit(of: .search) { Task { await model.load() } }
             .refreshable { await model.load() }
             .overlay { if model.isLoading && model.items.isEmpty { LoadingView() } }
+            .sheet(isPresented: $showFilters) {
+                ConsignmentsFilterSheet(model: model) { Task { await model.load() } }
+            }
         } else {
             LoadingView()
         }
@@ -83,6 +88,25 @@ struct ConsignmentsView: View {
                                        onReturn: { returnItem = item })
                     }
                     .buttonStyle(.plain)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        if item.isOut {
+                            Button {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                settleItem = item
+                            } label: {
+                                Label(i18n.t("consignments.settle", default: "Settle"), systemImage: "checkmark.circle.fill")
+                            }
+                            .tint(Tokens.success)
+
+                            Button {
+                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                returnItem = item
+                            } label: {
+                                Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")
+                            }
+                            .tint(Tokens.danger)
+                        }
+                    }
                 }
             }
             if model.totalPages > 1 { pager(model) }
@@ -111,8 +135,17 @@ struct ConsignmentsView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showFilters = true
+            } label: {
+                Label(i18n.t("common.filter", default: "Filters & Overview"),
+                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+        }
         if container.session.can("consignment.create") {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button { showCreate = true } label: {
                     Label(i18n.t("consignments.newConsignment"), systemImage: "plus")
                 }

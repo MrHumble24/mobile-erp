@@ -3,6 +3,7 @@
 Native SwiftUI port of the web ERP/POS. Offline-first, zero third-party
 packages. Porting spec + slice names: the deleted Flutter app at git `47971dd`.
 Extension contract for feature agents: `Mobile-erp/Mobile-erp/FOUNDATION.md`.
+Screen catalog & business flows: [SCREENS.md](SCREENS.md).
 
 ## Requirements
 - Xcode 16+ (iOS 17.0 deployment target; iPhone + iPad).

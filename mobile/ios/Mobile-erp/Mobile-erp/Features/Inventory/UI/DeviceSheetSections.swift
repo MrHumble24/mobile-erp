@@ -15,7 +15,7 @@ struct DeviceBarcode: View {
         VStack(spacing: 4) {
             HStack(alignment: .center, spacing: 2) {
                 ForEach(Array(bars.enumerated()), id: \.offset) { _, w in
-                    Rectangle().fill(Tokens.inkBlack)
+                    Rectangle().fill(Tokens.ink)
                         .frame(width: CGFloat(w) * 1.5, height: 36)
                 }
             }
@@ -26,36 +26,57 @@ struct DeviceBarcode: View {
     }
 }
 
-/// Specs grid plus the cost / margin row (only when the caller may view cost).
+/// Single-column, roomy specs view plus the cost / margin row.
 struct DeviceSpecsGrid: View {
     let device: DeviceDetail
     let canViewCost: Bool
     @Environment(I18n.self) private var i18n
 
-    private let columns = [GridItem(.flexible(), alignment: .topLeading),
-                           GridItem(.flexible(), alignment: .topLeading)]
-
     var body: some View {
-        VStack(spacing: 8) {
-            LazyVGrid(columns: columns, spacing: 12) {
-                cell("inventory.storage", device.specs["storage"])
-                cell("inventory.color", device.specs["color"])
-                cell("inventory.condition", device.specs["condition"])
-                cell("inventory.ram", device.specs["ram"])
-                cell("inventory.targetPrice", MoneyText.format(device.targetPrice))
-                cell("inventory.intakeDate", device.intakeDate.isEmpty ? "—" : device.intakeDate)
+        VStack(spacing: 10) {
+            VStack(spacing: 0) {
+                specRow(icon: "internaldrive", label: i18n.t("inventory.storage", default: "Storage"), value: device.specs["storage"])
+                Divider()
+                specRow(icon: "paintpalette", label: i18n.t("inventory.color", default: "Color"), value: device.specs["color"])
+                Divider()
+                specRow(icon: "sparkles", label: i18n.t("inventory.condition", default: "Condition"), value: device.specs["condition"])
+                Divider()
+                specRow(icon: "memorychip", label: i18n.t("inventory.ram", default: "RAM"), value: device.specs["ram"])
+                Divider()
+                specRow(icon: "tag", label: i18n.t("inventory.targetPrice", default: "Target Price"), value: MoneyText.format(device.targetPrice))
+                Divider()
+                specRow(icon: "calendar", label: i18n.t("inventory.intakeDate", default: "Intake Date"), value: device.intakeDate.isEmpty ? "—" : device.intakeDate)
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 4)
+            .background(Color(.secondarySystemGroupedBackground))
+            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
+                    .strokeBorder(Tokens.hairline, lineWidth: 1)
+            )
+
             if canViewCost, let landed = device.landedCost {
                 MarginRow(targetPrice: device.targetPrice, landedCost: landed)
             }
         }
     }
 
-    private func cell(_ labelKey: String, _ value: String?) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(labelKey)).font(.caption).foregroundStyle(.secondary)
-            Text(value?.isEmpty == false ? value! : "—").font(.subheadline.weight(.medium))
+    private func specRow(icon: String, label: String, value: String?) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value?.isEmpty == false ? value! : "—")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Tokens.ink)
         }
+        .padding(.vertical, 10)
     }
 }
 

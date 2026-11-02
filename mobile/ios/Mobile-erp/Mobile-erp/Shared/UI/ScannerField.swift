@@ -26,13 +26,27 @@ struct ScannerField: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "barcode.viewfinder").foregroundStyle(.secondary)
+            Image(systemName: "barcode.viewfinder")
+                .font(.system(size: 18))
+                .foregroundStyle(focused ? Tokens.ring : .secondary)
             TextField(placeholder, text: $text)
+                .font(.mono(15, weight: .medium))
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .focused($focused)
                 .submitLabel(.done)
                 .onSubmit { submit(text) }
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                    focused = true
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear text")
+            }
             if cameraSupported {
                 Button { showCamera = true } label: {
                     Image(systemName: "camera")
@@ -43,8 +57,15 @@ struct ScannerField: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color(.secondarySystemBackground),
-                    in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
+                .strokeBorder(focused ? Tokens.ring.opacity(0.6) : Tokens.hairline, lineWidth: 1)
+        )
+        .animation(.snappy(duration: 0.2), value: focused)
         .onAppear { focused = true }
         .sheet(isPresented: $showCamera) {
             CameraScanner { code in
@@ -66,6 +87,7 @@ struct ScannerField: View {
         }
         lastCode = code
         lastAt = now
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         onScan(code)
     }
 }

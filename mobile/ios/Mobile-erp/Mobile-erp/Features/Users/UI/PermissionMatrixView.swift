@@ -20,13 +20,28 @@ struct PermissionMatrixView: View {
     var body: some View {
         List {
             Section {
-                Picker(i18n.t("users.selectRole"), selection: $roleCode) {
+                Picker(i18n.t("users.selectRole", default: "Selected Role"), selection: $roleCode) {
                     ForEach(catalog.roles) { Text("\($0.name) (\($0.code))").tag($0.code) }
                 }
             }
             if let role {
                 if role.isSystem {
-                    Section { note(i18n.t("users.systemRoleMatrixLocked")) }
+                    Section {
+                        HStack(spacing: 12) {
+                            Image(systemName: "lock.shield.fill")
+                                .font(.title3)
+                                .foregroundStyle(Tokens.warning)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(i18n.t("users.systemRoleProtected", default: "System Protected Role"))
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Tokens.ink)
+                                Text(i18n.t("users.systemRoleMatrixLocked", default: "System roles have fixed standard permissions and cannot be modified."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 }
                 groups(role)
             }
@@ -44,7 +59,8 @@ struct PermissionMatrixView: View {
 
     @ViewBuilder private func groups(_ role: RoleView) -> some View {
         ForEach(groupByResource(catalog.permissions), id: \.resource) { group in
-            Section(group.resource.uppercased()) {
+            let grantedInGroup = group.items.filter { selected.contains($0.code) }.count
+            Section {
                 ForEach(group.items) { permission in
                     Toggle(isOn: Binding(
                         get: { selected.contains(permission.code) },
@@ -52,14 +68,27 @@ struct PermissionMatrixView: View {
                             if on { selected.insert(permission.code) }
                             else { selected.remove(permission.code) }
                         })) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(permission.code).font(.mono(13))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(permission.code)
+                                .font(.mono(13, weight: .medium))
+                                .foregroundStyle(Tokens.ink)
                             if let d = permission.description, !d.isEmpty {
-                                Text(d).font(.caption2).foregroundStyle(.secondary)
+                                Text(d)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
+                        .padding(.vertical, 2)
                     }
                     .disabled(role.isSystem)
+                }
+            } header: {
+                HStack {
+                    Text(group.resource.uppercased())
+                    Spacer()
+                    Text("\(grantedInGroup)/\(group.items.count)")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -67,17 +96,27 @@ struct PermissionMatrixView: View {
 
     @ViewBuilder private var saveBar: some View {
         if let role, !role.isSystem, dirty {
-            HStack {
-                Button(i18n.t("common.cancel")) { selected = baseline }
-                    .buttonStyle(.bordered)
+            HStack(spacing: 12) {
+                Button(i18n.t("common.cancel", default: "Discard")) {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    selected = baseline
+                }
+                .buttonStyle(.bordered)
+
                 Spacer()
-                Button(i18n.t("users.saveMatrix")) {
+
+                Button {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     Task {
                         let ok = await catalog.setRolePermissions(role.code, permissionCodes: Array(selected))
                         if ok { baseline = selected }
                     }
+                } label: {
+                    Label(i18n.t("users.saveMatrix", default: "Save Permissions (\(selected.count))"),
+                          systemImage: "checkmark.circle.fill")
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Tokens.ink)
             }
             .padding()
             .background(.bar)

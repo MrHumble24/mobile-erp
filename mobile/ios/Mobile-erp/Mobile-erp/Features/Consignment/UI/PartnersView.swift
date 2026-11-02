@@ -10,6 +10,12 @@ struct PartnersView: View {
     @State private var model: PartnersListModel?
     @State private var detail: Partner?
     @State private var showCreate = false
+    @State private var showFilters = false
+
+    private var hasActiveFilters: Bool {
+        guard let model else { return false }
+        return model.active != .all || model.overdueOnly
+    }
 
     var body: some View {
         content
@@ -26,12 +32,8 @@ struct PartnersView: View {
 
     @ViewBuilder private var content: some View {
         if let model {
+            @Bindable var model = model
             List {
-                Section {
-                    PartnersFilterBar(model: model)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        .listRowBackground(Color.clear)
-                }
                 if model.offline {
                     Label(i18n.t("common.offline", default: "Offline — showing cached balances"),
                           systemImage: "wifi.slash")
@@ -39,14 +41,15 @@ struct PartnersView: View {
                         .foregroundStyle(Tokens.warning)
                         .listRowBackground(Color.clear)
                 }
-                Section { PartnersSummary(model: model) }
-                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                    .listRowBackground(Color.clear)
                 listBody(model)
             }
             .listStyle(.plain)
+            .searchable(text: $model.search, prompt: i18n.t("partners.searchPlaceholder"))
             .refreshable { await model.load() }
             .overlay { if model.isLoading && model.partners.isEmpty { LoadingView() } }
+            .sheet(isPresented: $showFilters) {
+                PartnersFilterSheet(model: model)
+            }
         } else {
             LoadingView()
         }
@@ -68,8 +71,17 @@ struct PartnersView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showFilters = true
+            } label: {
+                Label(i18n.t("common.filter", default: "Filters & Overview"),
+                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+        }
         if container.session.can("partner.manage") {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button { showCreate = true } label: {
                     Label(i18n.t("partners.newPartner"), systemImage: "plus")
                 }

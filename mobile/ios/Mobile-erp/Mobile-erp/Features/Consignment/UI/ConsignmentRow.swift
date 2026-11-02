@@ -10,21 +10,41 @@ struct ConsignmentRow: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(item.partnerShopName).font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(item.partnerShopName)
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(Tokens.ink)
+
+                    HStack(spacing: 6) {
+                        Text(item.imei)
+                            .font(.mono(12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
                 statusBadge
             }
-            HStack {
-                Text(item.imei).font(.mono(13)).foregroundStyle(.secondary)
+
+            HStack(alignment: .bottom) {
+                dueLine
                 Spacer()
-                MoneyText(value: item.agreedPrice, size: 15)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(i18n.t("consignments.agreedPrice", default: "Agreed"))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    MoneyText(value: item.agreedPrice, size: 16)
+                        .foregroundStyle(Tokens.ink)
+                }
             }
-            dueLine
-            if item.isOut { actions }
+
+            if item.isOut {
+                Divider().padding(.vertical, 2)
+                actions
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
     private var overdue: Int {
@@ -33,10 +53,24 @@ struct ConsignmentRow: View {
 
     private var dueLine: some View {
         HStack(spacing: 6) {
-            Text(item.dueDate.prefix(10)).font(.caption).foregroundStyle(.secondary)
+            Image(systemName: "calendar")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(item.dueDate.prefix(10))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
             if overdue > 0 {
-                Text("\(overdue) \(i18n.t("consignments.daysOverdue"))")
-                    .font(.caption.weight(.semibold)).foregroundStyle(Tokens.danger)
+                HStack(spacing: 3) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .font(.system(size: 10))
+                    Text("\(overdue) \(i18n.t("consignments.daysOverdue", default: "d overdue"))")
+                        .font(.caption2.weight(.bold))
+                }
+                .foregroundStyle(Tokens.danger)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Tokens.danger.opacity(0.12), in: Capsule())
             }
         }
     }
@@ -54,16 +88,33 @@ struct ConsignmentRow: View {
     }
 
     private var actions: some View {
-        HStack {
-            Button { onSettle() } label: {
-                Label(i18n.t("consignments.settle"), systemImage: "checkmark.circle")
+        HStack(spacing: 10) {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onSettle()
+            } label: {
+                Label(i18n.t("consignments.settle", default: "Settle Sale"), systemImage: "checkmark.circle.fill")
+                    .font(.caption.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
             }
-            .buttonStyle(.borderedProminent).controlSize(.small)
-            Button { onReturn() } label: {
-                Label(i18n.t("consignments.return"), systemImage: "arrow.uturn.backward")
+            .buttonStyle(.borderedProminent)
+            .tint(Tokens.success)
+            .buttonBorderShape(.capsule)
+
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                onReturn()
+            } label: {
+                Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")
+                    .font(.caption.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 7)
             }
-            .buttonStyle(.bordered).controlSize(.small).tint(Tokens.danger)
+            .buttonStyle(.bordered)
+            .tint(Tokens.danger)
+            .buttonBorderShape(.capsule)
         }
-        .padding(.top, 2)
+        .buttonStyle(.borderless)
     }
 }

@@ -33,9 +33,13 @@ struct ExpenseCategoriesSheet: View {
                 }
                 if canManage {
                     Section(i18n.t("expenses.newCategory")) {
-                        TextField(i18n.t("common.name"), text: $newName)
-                        Button(i18n.t("common.add"), action: add)
-                            .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty || saving)
+                        HStack {
+                            TextField(i18n.t("common.name"), text: $newName)
+                            Button(i18n.t("common.add"), action: add)
+                                .buttonStyle(.borderedProminent)
+                                .tint(Tokens.ink)
+                                .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty || saving)
+                        }
                     }
                 }
             }
@@ -47,6 +51,8 @@ struct ExpenseCategoriesSheet: View {
                 }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private func add() {

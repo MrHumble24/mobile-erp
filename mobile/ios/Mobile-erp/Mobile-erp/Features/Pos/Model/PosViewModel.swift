@@ -105,7 +105,11 @@ final class PosViewModel {
         }
     }
 
-    private func reset() {
+    func cancelScan() {
+        reset()
+    }
+
+    func reset() {
         device = nil
         errorKey = nil
         busy = false

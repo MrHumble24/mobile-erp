@@ -5,6 +5,7 @@ import VisionKit
 /// Devices tab: offline-first list from the SwiftData cache with metrics,
 /// search (IMEI / model), model + storage filters and a camera scan. Rows open
 /// the online detail sheet.
+@MainActor
 struct DevicesTab: View {
     let store: InventoryStore
     let onShowAlerts: () -> Void
@@ -14,9 +15,14 @@ struct DevicesTab: View {
     @State private var filter = DeviceFilter()
     @State private var selected: ImeiTarget?
     @State private var showCamera = false
+    @State private var showFilters = false
 
     private var all: [DeviceListItem] { cached.map(DeviceListItem.init) }
     private var shown: [DeviceListItem] { all.filter(filter.matches) }
+
+    private var hasActiveFilters: Bool {
+        !filter.isEmpty || filter.statusCode != nil
+    }
 
     private var cameraSupported: Bool {
         DataScannerViewController.isSupported && DataScannerViewController.isAvailable
@@ -24,21 +30,6 @@ struct DevicesTab: View {
 
     var body: some View {
         List {
-            Section {
-                InventoryMetricsBar(
-                    metrics: DeviceMetrics(all),
-                    lowStockCount: store.lowStock.count,
-                    selectedStatus: filter.statusCode,
-                    onSelectStatus: { filter.statusCode = $0 },
-                    onShowAlerts: onShowAlerts
-                )
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
-            }
-            Section {
-                FilterControls(filter: $filter, models: store.deviceModels)
-                    .listRowBackground(Color.clear)
-            }
             Section {
                 if shown.isEmpty {
                     EmptyStateView(systemImage: "iphone.slash",
@@ -57,11 +48,29 @@ struct DevicesTab: View {
         .listStyle(.insetGrouped)
         .searchable(text: $filter.search, prompt: i18n.t("inventory.scanOrSearch"))
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showFilters = true
+                } label: {
+                    Label(i18n.t("common.filter", default: "Filters & Overview"),
+                          systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                }
+            }
             if cameraSupported {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showCamera = true } label: { Image(systemName: "barcode.viewfinder") }
                 }
             }
+        }
+        .sheet(isPresented: $showFilters) {
+            DeviceFilterSheet(
+                filter: $filter,
+                metrics: DeviceMetrics(all),
+                lowStockCount: store.lowStock.count,
+                models: store.deviceModels,
+                onShowAlerts: onShowAlerts
+            )
         }
         .sheet(item: $selected) { target in
             DeviceSheet(imei: target.imei, store: store)
@@ -95,59 +104,6 @@ private struct DeviceListRow: View {
                         label: i18n.t(DeviceStatusMeta.labelKey(device.statusCode)))
         }
         .padding(.vertical, 2)
-    }
-}
-
-/// Model + storage dropdowns and a clear button, over the cached list.
-private struct FilterControls: View {
-    @Binding var filter: DeviceFilter
-    let models: [DeviceModelView]
-    @Environment(I18n.self) private var i18n
-
-    private let storages = ["64GB", "128GB", "256GB", "512GB", "1TB"]
-
-    var body: some View {
-        HStack {
-            Menu {
-                Picker("", selection: $filter.modelId) {
-                    Text(i18n.t("inventory.allModels")).tag(String?.none)
-                    ForEach(models) { Text($0.label).tag(String?.some($0.id)) }
-                }
-            } label: {
-                FilterLabel(text: filter.modelId.map(labelFor) ?? i18n.t("inventory.filterModel"))
-            }
-            Menu {
-                Picker("", selection: $filter.storage) {
-                    Text(i18n.t("inventory.allStorages")).tag(String?.none)
-                    ForEach(storages, id: \.self) { Text($0).tag(String?.some($0)) }
-                }
-            } label: {
-                FilterLabel(text: filter.storage ?? i18n.t("inventory.filterStorage"))
-            }
-            Spacer()
-            if !filter.isEmpty {
-                Button { filter = DeviceFilter() } label: {
-                    Label(i18n.t("inventory.clearFilters"), systemImage: "arrow.counterclockwise")
-                        .labelStyle(.iconOnly)
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-    }
-
-    private func labelFor(_ id: String) -> String {
-        models.first { $0.id == id }?.label ?? i18n.t("inventory.filterModel")
-    }
-}
-
-private struct FilterLabel: View {
-    let text: String
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(text).lineLimit(1)
-            Image(systemName: "chevron.down").font(.caption2)
-        }
-        .font(.subheadline)
     }
 }
 

@@ -10,6 +10,28 @@
 		E3CADEA73098A5FC003C7EC5 /* Mobile-erp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Mobile-erp.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E3CADEC13098A5FD003C7EC5 /* Exceptions for "Mobile-erp" folder in "Mobile-erp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Features/Consignment/README.md,
+				Features/Customers/README.md,
+				Features/Dashboard/README.md,
+				Features/Expenses/README.md,
+				Features/Inventory/README.md,
+				Features/Pos/README.md,
+				Features/Procurement/README.md,
+				Features/Reports/README.md,
+				Features/Sales/README.md,
+				Features/Settings/README.md,
+				Features/Sync/README.md,
+				Features/Users/README.md,
+				FOUNDATION.md,
+			);
+			target = E3CADEA63098A5FC003C7EC5 /* Mobile-erp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E3CADEA93098A5FC003C7EC5 /* Mobile-erp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -20,28 +42,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E3CADEC13098A5FD003C7EC5 /* Exceptions for "Mobile-erp" folder in "Mobile-erp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				FOUNDATION.md,
-				"Features/Consignment/README.md",
-				"Features/Customers/README.md",
-				"Features/Dashboard/README.md",
-				"Features/Expenses/README.md",
-				"Features/Inventory/README.md",
-				"Features/Pos/README.md",
-				"Features/Procurement/README.md",
-				"Features/Reports/README.md",
-				"Features/Sales/README.md",
-				"Features/Settings/README.md",
-				"Features/Sync/README.md",
-				"Features/Users/README.md",
-			);
-			target = E3CADEA63098A5FC003C7EC5 /* Mobile-erp */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E3CADEA43098A5FC003C7EC5 /* Frameworks */ = {
@@ -137,23 +137,23 @@
 		E3CADEC03098A5FD003C7EC5 /* Bundle i18n (web single source) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
 			name = "Bundle i18n (web single source)";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"$SRCROOT/../../../client/src/shared/i18n\"\nDEST=\"$BUILT_PRODUCTS_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/i18n\"\nif [ ! -d \"$SRC\" ]; then echo \"warning: i18n source not found at $SRC\"; exit 0; fi\nrm -rf \"$DEST\"\nfor loc in uz en; do\n  mkdir -p \"$DEST/$loc\"\n  cp \"$SRC/$loc/\"*.json \"$DEST/$loc/\"\ndone\n";
+			shellScript = (
+				"set -e",
+				"SRC=\"$SRCROOT/../../../client/src/shared/i18n\"",
+				"DEST=\"$BUILT_PRODUCTS_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/i18n\"",
+				"if [ ! -d \"$SRC\" ]; then echo \"warning: i18n source not found at $SRC\"; exit 0; fi",
+				"rm -rf \"$DEST\"",
+				"for loc in uz en; do",
+				"  mkdir -p \"$DEST/$loc\"",
+				"  cp \"$SRC/$loc/\"*.json \"$DEST/$loc/\"",
+				"done",
+				"",
+			);
 		};
 		E3CADEC23098A5FD003C7EC5 /* Embed dev host (LAN IP) */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
 			inputPaths = (
 				"$(TARGET_BUILD_DIR)/$(INFOPLIST_PATH)",
 			);
@@ -161,9 +161,26 @@
 			outputPaths = (
 				"$(DERIVED_FILE_DIR)/dev-host.stamp",
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Write the build Mac's LAN IPv4 into the BUILT Info.plist as DevHost so a\n# device build reaches the dev server without the user typing an IP. Never\n# touches the source plist. The built plist is declared as an input so this\n# phase is ordered AFTER ProcessInfoPlistFile. Omits the key (not an error)\n# if no IP is found.\nset -e\nSTAMP=\"$DERIVED_FILE_DIR/dev-host.stamp\"\nmkdir -p \"$DERIVED_FILE_DIR\"; : > \"$STAMP\"\nPLIST=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"\nif [ ! -f \"$PLIST\" ]; then echo \"note: built Info.plist not found; skipping DevHost\"; exit 0; fi\nIP=$(ipconfig getifaddr en0 2>/dev/null || true)\n[ -z \"$IP\" ] && IP=$(ipconfig getifaddr en1 2>/dev/null || true)\n[ -z \"$IP\" ] && IP=$(ifconfig 2>/dev/null | awk '/inet /{if($2!=\"127.0.0.1\"){print $2; exit}}' || true)\nif [ -z \"$IP\" ]; then echo \"note: no LAN IPv4 found; DevHost omitted\"; exit 0; fi\n/usr/libexec/PlistBuddy -c \"Set :DevHost $IP\" \"$PLIST\" 2>/dev/null || /usr/libexec/PlistBuddy -c \"Add :DevHost string $IP\" \"$PLIST\"\necho \"DevHost=$IP\"\n";
+			shellScript = (
+				"# Write the build Mac's LAN IPv4 into the BUILT Info.plist as DevHost so a",
+				"# device build reaches the dev server without the user typing an IP. Never",
+				"# touches the source plist. The built plist is declared as an input so this",
+				"# phase is ordered AFTER ProcessInfoPlistFile. Omits the key (not an error)",
+				"# if no IP is found.",
+				"set -e",
+				"STAMP=\"$DERIVED_FILE_DIR/dev-host.stamp\"",
+				"mkdir -p \"$DERIVED_FILE_DIR\"; : > \"$STAMP\"",
+				"PLIST=\"$TARGET_BUILD_DIR/$INFOPLIST_PATH\"",
+				"if [ ! -f \"$PLIST\" ]; then echo \"note: built Info.plist not found; skipping DevHost\"; exit 0; fi",
+				"IP=$(ipconfig getifaddr en0 2>/dev/null || true)",
+				"[ -z \"$IP\" ] && IP=$(ipconfig getifaddr en1 2>/dev/null || true)",
+				"[ -z \"$IP\" ] && IP=$(ifconfig 2>/dev/null | awk '/inet /{if($2!=\"127.0.0.1\"){print $2; exit}}' || true)",
+				"if [ -z \"$IP\" ]; then echo \"note: no LAN IPv4 found; DevHost omitted\"; exit 0; fi",
+				"/usr/libexec/PlistBuddy -c \"Set :DevHost $IP\" \"$PLIST\" 2>/dev/null || /usr/libexec/PlistBuddy -c \"Add :DevHost string $IP\" \"$PLIST\"",
+				"echo \"DevHost=$IP\"",
+				"",
+			);
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -303,10 +320,11 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Info.plist";
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan device IMEI barcodes";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -333,7 +351,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Scan device IMEI barcodes";
 			};
 			name = Debug;
 		};
@@ -348,10 +365,11 @@
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Info.plist";
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Scan device IMEI barcodes";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -378,7 +396,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Scan device IMEI barcodes";
 			};
 			name = Release;
 		};

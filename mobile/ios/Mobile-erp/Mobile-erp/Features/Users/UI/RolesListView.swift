@@ -61,22 +61,32 @@ private struct RoleRow: View {
     let role: RoleView
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(role.code).font(.mono(13, weight: .bold))
+                Text(role.name)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Tokens.ink)
                 Spacer()
                 StatusBadge(
                     role.isSystem ? i18n.t("users.systemRole") : i18n.t("users.customRole"),
                     color: role.isSystem ? Tokens.slate : Tokens.signalBlue)
             }
-            Text(role.name).font(.body.weight(.semibold))
+            Text(role.code)
+                .font(.mono(12))
+                .foregroundStyle(.secondary)
             if let description = role.description, !description.isEmpty {
-                Text(description).font(.caption).foregroundStyle(.secondary)
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            Text(i18n.t("users.permissionsCount") + ": \(role.permissionCodes.count)")
-                .font(.caption2).foregroundStyle(.secondary)
+            HStack {
+                Label("\(role.permissionCodes.count) \(i18n.t("users.permissionsCount", default: "permissions"))",
+                      systemImage: "lock.shield")
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 4)
         .contentShape(Rectangle())
     }
 }

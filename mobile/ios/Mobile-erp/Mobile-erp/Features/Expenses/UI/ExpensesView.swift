@@ -10,15 +10,18 @@ struct ExpensesView: View {
     @State private var model = ExpensesModel()
     @State private var showLog = false
     @State private var showCategories = false
+    @State private var showFilters = false
     @State private var pendingDelete: Expense?
     @State private var toast: String?
 
     private var canManage: Bool { container.session.can("expense.manage") }
 
+    private var hasActiveFilters: Bool {
+        model.categoryId != nil || model.isRecurring != nil
+    }
+
     var body: some View {
         List {
-            summarySection
-            filtersSection
             expensesSection
         }
         .navigationTitle(i18n.t("expenses.title"))
@@ -27,6 +30,9 @@ struct ExpensesView: View {
         .task {
             model.bind(container)
             if model.summary == nil { await model.load() }
+        }
+        .sheet(isPresented: $showFilters) {
+            ExpensesFilterSheet(model: model)
         }
         .sheet(isPresented: $showLog) {
             LogExpenseSheet(model: model) { toast = $0 }
@@ -43,51 +49,6 @@ struct ExpensesView: View {
             Button(i18n.t("common.delete"), role: .destructive) { delete(expense) }
         }
         .overlay(alignment: .bottom) { ToastView(message: $toast) }
-    }
-
-    // MARK: sections
-
-    @ViewBuilder private var summarySection: some View {
-        if let summary = model.summary {
-            Section {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(i18n.t("expenses.summaryTitle"))
-                        .font(.subheadline).foregroundStyle(.secondary)
-                    MoneyText(value: String(summary.total), size: 28)
-                        .foregroundStyle(Tokens.ink)
-                    ForEach(summary.byCategory) { row in
-                        HStack {
-                            Text(row.name)
-                            Spacer()
-                            MoneyText(value: String(row.total), size: 15)
-                                .foregroundStyle(.secondary)
-                        }
-                        .font(.subheadline)
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-        }
-    }
-
-    private var filtersSection: some View {
-        Section(i18n.t("common.filter")) {
-            Picker(i18n.t("expenses.category"), selection: Binding(
-                get: { model.categoryId },
-                set: { value in Task { await model.setCategory(value) } })) {
-                Text(i18n.t("common.all")).tag(String?.none)
-                ForEach(model.categories) { c in
-                    Text(c.name).tag(String?.some(c.id))
-                }
-            }
-            Picker(i18n.t("expenses.filterRecurring"), selection: Binding(
-                get: { model.isRecurring },
-                set: { value in Task { await model.setRecurring(value) } })) {
-                Text(i18n.t("common.all")).tag(Bool?.none)
-                Text(i18n.t("common.yes")).tag(Bool?.some(true))
-                Text(i18n.t("common.no")).tag(Bool?.some(false))
-            }
-        }
     }
 
     @ViewBuilder private var expensesSection: some View {
@@ -117,12 +78,21 @@ struct ExpensesView: View {
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showFilters = true
+            } label: {
+                Label(i18n.t("common.filter", default: "Filters & Overview"),
+                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
                 showCategories = true
             } label: { Image(systemName: "folder") }
             .accessibilityLabel(i18n.t("expenses.categories"))
         }
         if canManage {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     showLog = true
                 } label: { Image(systemName: "plus") }
@@ -151,22 +121,29 @@ private struct ExpenseRow: View {
     let i18n: I18n
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text(expense.categoryName).font(.body)
+                    Text(expense.categoryName)
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(Tokens.ink)
                     if expense.isRecurring {
-                        StatusBadge(i18n.t("expenses.isRecurring"), color: Tokens.signalBlue)
+                        StatusBadge(i18n.t("expenses.isRecurring", default: "Recurring"), color: Tokens.signalBlue)
                     }
                 }
                 Text(ExpenseDate.display(expense.incurredAt))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 if let d = expense.description, !d.isEmpty {
-                    Text(d).font(.caption).foregroundStyle(.secondary)
+                    Text(d)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
             Spacer()
             MoneyText(value: expense.amount, size: 16)
+                .foregroundStyle(Tokens.ink)
         }
+        .padding(.vertical, 4)
     }
 }
