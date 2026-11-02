@@ -129,16 +129,32 @@ final class APIClient {
         }
         req.httpBody = bodyData
 
+        let logId = NetLogStore.shared.begin(
+            method: method, url: url.absoluteString,
+            headers: req.allHTTPHeaderFields ?? [:], body: bodyData
+        )
+
         let data: Data, response: URLResponse
         do {
             (data, response) = try await session.data(for: req)
         } catch {
+            NetLogStore.shared.finish(logId, status: nil, body: nil,
+                                      error: error.localizedDescription)
+            AppLog.error("net", "\(method) \(path) failed: \(error.localizedDescription)")
             throw AppError.network
         }
 
-        let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+        let http = response as? HTTPURLResponse
+        let status = http?.statusCode ?? 0
+        NetLogStore.shared.finish(
+            logId, status: status,
+            headers: (http?.allHeaderFields as? [String: String]) ?? [:], body: data
+        )
         guard (200..<300).contains(status) else {
-            if status == 401 && !path.hasSuffix("/auth/login") { onUnauthorized?() }
+            if status == 401 && !path.hasSuffix("/auth/login") {
+                AppLog.warn("auth", "401 on \(path) — clearing session")
+                onUnauthorized?()
+            }
             throw AppError(statusCode: status, body: data)
         }
         return data

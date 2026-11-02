@@ -11,6 +11,7 @@ Features/<Slice>/  Data/ (repo + Codable DTOs) · Model/ (@Observable) · UI/ (v
 Data/Local/  SwiftData models + Outbox        (schema owned by the integrator)
 Data/Sync/   pull (/sync/changes) · push drain (/sync/push) · conflicts · connectivity
 Core/        AppConfig · DevConfig · APIClient · AppError · Keychain · JWT · IDs
+Core/Logging/  AppLog (events) · NetLogStore (HTTP) — in-memory ring buffers
 I18n/ Theme/ Shared/UI/   stack-level, no business words
 ```
 
@@ -77,6 +78,26 @@ floating actions / scanner overlay, not everywhere.
   DTOs only (`forbidNonWhitelisted` — no unknown/nil keys).
 - Sync pull pages `/sync/changes?since=` until `nextSince` is null; push results
   are `applied|duplicate|conflict|rejected` — never silently dropped.
+
+## Logging & the Developer Console
+- **Log an event** with a one-liner at the call site:
+  `AppLog.info("sync", "pull page: …")` (`debug/info/warn/error(tag:_:)`).
+  Lines go to a 500-entry ring buffer + `os.Logger`. No persistence.
+- **Network** calls are captured automatically by `APIClient` into
+  `NetLogStore` (300-entry ring). `Authorization` and JSON `password` are
+  masked; bodies truncate at 64 KB. Don't log requests by hand.
+- **Developer console** (`Features/DevConsole/`) is reached from the login
+  screen (code `153535`) and, after sign-in, from a **Developer** tab (DEBUG
+  always; release only after the code this session — `DevConsoleAccess`). It is
+  appended by the shell, not in `FeatureRegistry`.
+- **Add a console section** = one view + one line: append a
+  `DevConsoleSection(id:title:systemImage:view:)` to `DevConsoleSections.all`.
+  Nothing else changes.
+- **Environments** are Production / Staging / Development (`AppEnv`). Defaults
+  live once in `AppConfig`; the Development URL is auto-detected (`DevHost`:
+  simulator localhost, device build-Mac LAN IP via the `DevHost` Info.plist
+  key). Per-env URL overrides persist in `DevConfig`; switching env clears the
+  session (token is per-env).
 
 ## Deliberate wave-0 notes
 - `common.forbidden`/`common.offline`/dev-panel copy aren't in the web i18n yet

@@ -21,14 +21,40 @@ xcodebuild -scheme Mobile-erp -destination 'generic/platform=iOS Simulator' buil
 New `.swift` files under `Mobile-erp/Mobile-erp/` compile automatically
 (file-system synchronized group) — do not hand-edit the `.pbxproj` to add files.
 
-## Set the API URL
-The app talks to the server base URL with no path prefix (default
-`http://localhost:3000`). To point at a LAN server:
-1. On the login screen tap **Developer settings**.
-2. Enter access code **153535** (a convenience gate, not security).
-3. Pick **Development**, set the URL to `http://<your-lan-ip>:3000`, Save.
-   It applies immediately — no relaunch. Plain-HTTP LAN works via the ATS
-   exception in `Info.plist` (`NSAllowsArbitraryLoads`).
+## Environments & the Developer Console
+Three environments, switched from the in-app developer console:
+
+| Env         | Default URL                           | Notes                                   |
+|-------------|---------------------------------------|-----------------------------------------|
+| Production  | `https://mobile-api.abdulboriy.dev`   | Defined once in `Core/AppConfig.swift`. |
+| Staging     | *(none yet)*                          | No server yet — shows "Not configured"; selecting/testing is blocked until a URL is entered. |
+| Development | **auto** `http://<host>:3000`         | Host detected automatically (below).    |
+
+`mobile.abdulboriy.dev` is the **web** app and is not used by the iOS app.
+
+**You never type the dev IP.** The Development host is resolved at runtime:
+- **Simulator** → `localhost` (source "simulator").
+- **Device** → the build Mac's LAN IPv4, injected into the built `Info.plist`
+  as `DevHost` by the *Embed dev host (LAN IP)* build phase (source
+  "auto (build Mac)"). The phase declares the built plist as an input so it
+  runs **after** Info.plist processing; it writes only the built plist, never
+  the source (git stays clean) and omits the key if no LAN IP is found.
+- Neither → `localhost`.
+
+Open the console two ways:
+1. **Login screen → Developer settings**, enter access code **153535**
+   (a convenience gate, not security).
+2. **After sign-in**: in DEBUG builds a **Developer** tab is always shown; in
+   release builds it appears only once the code was entered this session.
+
+In the **Environment** section you can edit any environment's URL (applies
+immediately — no relaunch), **Reset to auto/default**, and **Test connection**
+(hits the public `GET /health`; any HTTP response, including 401, counts as
+reachable). Switching the active environment confirms, clears the session
+(the token is per-environment), and returns to login. Plain-HTTP LAN works via
+the ATS exception in `Info.plist` (`NSAllowsArbitraryLoads`). The console also
+has **Network** (live request log) and **Logs** (app event log) sections — both
+in-memory ring buffers, no persistence.
 
 Dev accounts: `owner@malika.uz` / `cashier@malika.uz` / `qc@malika.uz`
 (passwords in `server/.env`).

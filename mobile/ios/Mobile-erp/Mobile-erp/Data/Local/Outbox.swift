@@ -29,6 +29,7 @@ struct Outbox {
         )
         context.insert(entry)
         try context.save()
+        AppLog.info("outbox", "enqueue \(type.rawValue) \(entry.id)")
         return entry.id
     }
 

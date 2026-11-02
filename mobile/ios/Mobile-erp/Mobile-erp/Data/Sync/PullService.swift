@@ -16,6 +16,7 @@ struct PullService {
                 "/sync/changes", query: since.map { ["since": $0] } ?? [:]
             )
             let page = ChangesPage(json: json)
+            AppLog.info("sync", "pull page: \(page.devices.count) devices, \(page.partners.count) partners")
             for d in page.devices { upsertDevice(d) }
             for p in page.partners { upsertPartner(p) }
             if let next = page.nextSince { setCursor(next) }
