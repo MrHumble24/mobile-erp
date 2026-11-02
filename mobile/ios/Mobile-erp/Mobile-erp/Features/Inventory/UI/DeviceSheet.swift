@@ -6,6 +6,8 @@ import SwiftUI
 struct DeviceSheet: View {
     let imei: String
     let store: InventoryStore
+    /// Hidden when embedded as the detail column of the iPad split view.
+    var showsClose = true
 
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -46,8 +48,10 @@ struct DeviceSheet: View {
                              ? detail!.modelLabel : i18n.t("inventory.imeiDetails"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.close")) { dismiss() }
+                if showsClose {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(i18n.t("common.close")) { dismiss() }
+                    }
                 }
             }
         }
@@ -85,7 +89,16 @@ private struct DeviceSheetBody: View {
     let onEdit: () -> Void
     let onChanged: () async -> Void
 
+    @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
+    @Environment(\.dismiss) private var dismiss
+
+    private var canSell: Bool {
+        device.statusCode == "IN_STOCK" && container.session.can("sale.create")
+    }
+    private var canInspect: Bool {
+        ["IN_STOCK", "DEFECTIVE"].contains(device.statusCode) && container.session.can("qc.create")
+    }
 
     var body: some View {
         List {
@@ -94,6 +107,27 @@ private struct DeviceSheetBody: View {
                     .listRowBackground(Color.clear)
                 DeviceBarcode(imei: device.imei)
                     .listRowBackground(Color.clear)
+            }
+            if canSell || canInspect {
+                Section {
+                    if canSell {
+                        Button {
+                            container.router.open(.pos(imei: device.imei))
+                            dismiss()
+                        } label: {
+                            Label(i18n.t("inventory.sellInPos"), systemImage: "cart")
+                        }
+                        .tint(Tokens.success)
+                    }
+                    if canInspect {
+                        Button {
+                            container.router.open(.qc(imei: device.imei))
+                            dismiss()
+                        } label: {
+                            Label(i18n.t("qc.runInspection"), systemImage: "checkmark.seal")
+                        }
+                    }
+                }
             }
             Section(i18n.t("inventory.storage")) {
                 DeviceSpecsGrid(device: device, canViewCost: canViewCost)

@@ -136,6 +136,7 @@ private struct GradeForm: View {
         )
         do {
             try await QcRepository(api: container.api).createInspection(body)
+            container.toasts.success(i18n.t("common.success"))
             onSaved()
             dismiss()
         } catch let e as AppError {

@@ -15,6 +15,14 @@ intake, and quality control.
   forms, shipment detail, device intake (ScannerField loop), QC queue, inspections,
   stats, lookups, grade-device + defects checklist, lookup form.
 
+## Cross-feature kit integration
+- Load-more paging (`KitPaginator`) on the QC queue, inspections, and the
+  shipment-detail device list.
+- Inspections pass/fail filter; QC stats custom range (`KitDateRangeField`,
+  overrides the presets); post-intake landed-cost summary (cost-gated).
+- QC consumes an incoming `.qc(imei:)` route → opens the grade sheet.
+- iPad master-detail (`NavigationSplitView`) for shipments; writes toast on success.
+
 ## Public API
 `ShipmentsModule.feature` and `QcModule.feature` — the integrator adds both to
 `App/FeatureRegistry.swift`. Nothing else here is imported from outside the slice.
@@ -29,5 +37,4 @@ intake, and quality control.
   input appear only when the server returns the value / the user `can` see it.
 
 ## Open questions
-- Post-intake landed-cost results summary is deferred (costs are visible in the
-  shipment detail table). Custom QC stats date range deferred (three presets ship).
+- None outstanding for the stock wave.

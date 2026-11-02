@@ -51,6 +51,25 @@ struct IntakeDeviceDTO: Encodable {
     let targetPrice: Decimal?
 }
 
+/// One device as returned by batch intake (`POST /shipments/:id/devices` →
+/// server `RegisteredDeviceView`), carrying the allocated landed cost so the
+/// intake sheet can show the per-unit summary. `landedCost` is cost-redacted →
+/// absent (nil) for under-privileged users.
+struct RegisteredDevice: Decodable, Identifiable {
+    let id: String
+    let imei: String
+    let landedCost: String?
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        imei = try c.decode(String.self, forKey: .imei)
+        landedCost = c.decimalString(.landedCost)
+    }
+
+    enum CodingKeys: String, CodingKey { case id, imei, landedCost }
+}
+
 private struct AddDevicesBody: Encodable { let devices: [IntakeDeviceDTO] }
 
 /// The only place that talks to `/shipments`. Reads need `shipment.read`,
@@ -71,9 +90,9 @@ struct ShipmentsRepository {
         try await api.patch("/shipments/\(id)", body: body)
     }
 
-    /// Batch-register devices on a shipment. The allocated landed cost per unit
-    /// shows up afterwards in the detail table, so the response is not read here.
-    func addDevices(_ id: String, _ devices: [IntakeDeviceDTO]) async throws {
-        try await api.postVoid("/shipments/\(id)/devices", body: AddDevicesBody(devices: devices))
+    /// Batch-register devices on a shipment, returning each unit with its
+    /// allocated landed cost (for the post-intake summary).
+    func addDevices(_ id: String, _ devices: [IntakeDeviceDTO]) async throws -> [RegisteredDevice] {
+        try await api.post("/shipments/\(id)/devices", body: AddDevicesBody(devices: devices))
     }
 }
