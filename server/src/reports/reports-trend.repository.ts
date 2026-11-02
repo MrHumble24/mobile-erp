@@ -29,7 +29,7 @@ export class ReportsTrendRepository {
       e AS (
         SELECT date_trunc(${bucket}, "incurredAt") AS bucket,
                sum(amount)::float8 AS expenses
-        FROM expenses WHERE "incurredAt" >= ${from} AND "incurredAt" <= ${to}
+        FROM expenses WHERE "deletedAt" IS NULL AND "incurredAt" >= ${from} AND "incurredAt" <= ${to}
         GROUP BY 1
       ),
       r AS (

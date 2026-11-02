@@ -50,3 +50,5 @@ permission guards the whole controller. Never add report fields to those lists.
 ## Must never
 
 - Load whole tables into JS or run per-row queries; each endpoint is aggregates.
+
+Expense reads (profit, trend, daily closing, expenses report) exclude soft-deleted rows (`deletedAt IS NULL`, ADR 0017); any new expense query here must do the same.

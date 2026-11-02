@@ -39,7 +39,10 @@ export class ReportsProfitRepository {
 
   expensesTotal(from?: Date, to?: Date) {
     return this.prisma.expense.aggregate({
-      where: from || to ? { incurredAt: { gte: from, lte: to } } : {},
+      where: {
+        deletedAt: null,
+        incurredAt: from || to ? { gte: from, lte: to } : undefined,
+      },
       _sum: { amount: true },
     });
   }

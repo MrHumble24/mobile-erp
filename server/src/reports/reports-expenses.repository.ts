@@ -20,6 +20,7 @@ export class ReportsExpensesRepository {
   ): Prisma.ExpenseWhereInput {
     return {
       categoryId,
+      deletedAt: null,
       incurredAt: from || to ? { gte: from, lte: to } : undefined,
     };
   }
@@ -30,7 +31,7 @@ export class ReportsExpensesRepository {
     const cat = categoryId
       ? Prisma.sql`AND "categoryId" = ${categoryId}::uuid`
       : Prisma.empty;
-    return Prisma.sql`"incurredAt" >= ${lower} AND "incurredAt" <= ${upper} ${cat}`;
+    return Prisma.sql`"deletedAt" IS NULL AND "incurredAt" >= ${lower} AND "incurredAt" <= ${upper} ${cat}`;
   }
 
   async byCategory(

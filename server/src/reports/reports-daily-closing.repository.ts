@@ -29,7 +29,7 @@ export class ReportsDailyClosingRepository {
       ),
       e AS (
         SELECT date_trunc('day', "incurredAt") AS bucket, sum(amount)::float8 AS expenses
-        FROM expenses WHERE "incurredAt" >= ${from} AND "incurredAt" <= ${to} GROUP BY 1
+        FROM expenses WHERE "deletedAt" IS NULL AND "incurredAt" >= ${from} AND "incurredAt" <= ${to} GROUP BY 1
       ),
       nc AS (
         SELECT date_trunc('day', "consignedAt") AS bucket, count(*)::int AS n
@@ -71,7 +71,7 @@ export class ReportsDailyClosingRepository {
 
   expensesForDay(from: Date, to: Date) {
     return this.prisma.expense.aggregate({
-      where: { incurredAt: { gte: from, lt: to } },
+      where: { deletedAt: null, incurredAt: { gte: from, lt: to } },
       _sum: { amount: true },
     });
   }
