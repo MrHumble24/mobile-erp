@@ -19,6 +19,8 @@ class AppShell extends ConsumerWidget {
   const AppShell({required this.child, super.key});
 
   static const double _wideBreakpoint = 800;
+  // A bottom bar fits only a handful of destinations; beyond this, use a drawer.
+  static const int _maxBottomBarItems = 5;
 
   final Widget child;
 
@@ -74,6 +76,14 @@ class AppShell extends ConsumerWidget {
       );
     }
 
+    if (items.length > _maxBottomBarItems) {
+      return Scaffold(
+        appBar: _AppBar(ref: ref),
+        drawer: _NavDrawer(items: items, selected: selected, onSelect: go),
+        body: child,
+      );
+    }
+
     return Scaffold(
       appBar: _AppBar(ref: ref),
       body: child,
@@ -94,6 +104,37 @@ class AppShell extends ConsumerWidget {
   int _selectedIndex(List<NavItem> items, String location) {
     final i = items.indexWhere((e) => location.startsWith(e.route));
     return i < 0 ? 0 : i;
+  }
+}
+
+class _NavDrawer extends StatelessWidget {
+  const _NavDrawer({
+    required this.items,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final List<NavItem> items;
+  final int selected;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return NavigationDrawer(
+      selectedIndex: selected,
+      onDestinationSelected: (i) {
+        Navigator.of(context).pop(); // close the drawer
+        onSelect(i);
+      },
+      children: [
+        const SizedBox(height: 12),
+        for (final item in items)
+          NavigationDrawerDestination(
+            icon: Icon(item.icon),
+            label: Text(context.t(item.labelKey)),
+          ),
+      ],
+    );
   }
 }
 

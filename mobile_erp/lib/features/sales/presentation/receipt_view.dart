@@ -4,14 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/i18n.dart';
 import 'package:mobile_erp/shared/lib/money.dart';
+import '../../../shared/printing/receipt_printer.dart';
 import '../../../shared/ui/ui.dart';
 import '../application/sales_providers.dart';
 import '../data/sales_views.dart';
 
 /// 58mm thermal-style printable receipt for one sale. Fetches the server
 /// [ReceiptView] (no cost/profit, ever) and renders it monospaced inside a
-/// narrow paper column. Copy-to-clipboard works everywhere; the Print action is
-/// stubbed until wave 8 wires ESC-POS / system printing.
+/// narrow paper column. Copy-to-clipboard and Print (58mm system print via
+/// `printReceiptView`) both work on mobile and desktop.
 class ReceiptViewPanel extends ConsumerWidget {
   const ReceiptViewPanel({required this.saleId, super.key});
 
@@ -49,6 +50,30 @@ String buildReceiptText(BuildContext context, ReceiptView r) {
     context.t('pos.thankYou'),
   ];
   return lines.join('\n');
+}
+
+Future<void> printReceiptView(BuildContext context, ReceiptView r) {
+  return printReceipt(
+    title: context.t('pos.storeName'),
+    headerLines: [
+      context.t('pos.storeLocation'),
+      '${context.t('pos.receiptNumber')}: ${r.saleId}',
+      if (r.soldAt != null) '${context.t('pos.soldAt')}: ${_fmt(r.soldAt!)}',
+      '${context.t('pos.cashier')}: ${r.cashier}',
+    ],
+    rows: [
+      if (r.customerName != null)
+        ReceiptRow('${context.t('sales.customer')}:', r.customerName!),
+      for (final it in r.items) ...[
+        ReceiptRow(it.model),
+        ReceiptRow(it.imei, formatMoney(it.price)),
+      ],
+      ReceiptRow('${context.t('pos.totalDue')}:', formatMoney(r.total), true),
+      if (r.warrantyEndsAt != null)
+        ReceiptRow('${context.t('pos.warrantyUntil')}:', _fmt(r.warrantyEndsAt!)),
+    ],
+    footerLines: [context.t('pos.thankYou'), context.t('pos.warrantyNotice')],
+  );
 }
 
 String _fmt(DateTime d) =>
@@ -98,7 +123,10 @@ class _Paper extends StatelessWidget {
                   Text(context.t('pos.warrantyNotice'),
                       style: mono.copyWith(fontSize: 10)),
                   const SizedBox(height: 16),
-                  _Actions(text: () => buildReceiptText(context, r)),
+                  _Actions(
+                    text: () => buildReceiptText(context, r),
+                    onPrint: () => printReceiptView(context, r),
+                  ),
                 ],
               ),
             ),
@@ -159,8 +187,9 @@ class _Rule extends StatelessWidget {
 }
 
 class _Actions extends StatelessWidget {
-  const _Actions({required this.text});
+  const _Actions({required this.text, required this.onPrint});
   final String Function() text;
+  final VoidCallback onPrint;
 
   @override
   Widget build(BuildContext context) {
@@ -180,11 +209,7 @@ class _Actions extends StatelessWidget {
         FilledButton.icon(
           icon: const Icon(Icons.print),
           label: Text(context.t('sales.printReceipt')),
-          // TODO(wave8): wire ESC-POS (mobile BT) / system print (desktop)
-          // behind a ReceiptPrinter interface. No printing dependency yet.
-          onPressed: () => messenger.showSnackBar(
-            SnackBar(content: Text(context.t('sales.printReceipt'))),
-          ),
+          onPressed: onPrint,
         ),
       ],
     );

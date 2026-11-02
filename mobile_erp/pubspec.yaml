@@ -34,6 +34,8 @@ dependencies:
   # Scanning (HID handled via a focused field; camera via this)
   mobile_scanner: ^6.0.7
   fl_chart: ^1.3.0
+  printing: ^5.15.1
+  pdf: ^3.13.1
 
 dev_dependencies:
   flutter_test:

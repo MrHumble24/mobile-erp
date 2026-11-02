@@ -29,6 +29,12 @@ class _ScannerFieldState extends State<ScannerField> {
   final _controller = TextEditingController();
   final _focus = FocusNode();
 
+  // Debounce: HID wedges and camera detections can fire the same code twice in
+  // quick succession. Drop a repeat of the last code within this window.
+  static const _dedupeWindow = Duration(milliseconds: 1200);
+  String? _lastCode;
+  DateTime? _lastAt;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -40,7 +46,16 @@ class _ScannerFieldState extends State<ScannerField> {
     final code = raw.trim();
     _controller.clear();
     if (widget.autofocus) _focus.requestFocus();
-    if (code.isNotEmpty) widget.onScan(code);
+    if (code.isEmpty) return;
+    final now = DateTime.now();
+    if (code == _lastCode &&
+        _lastAt != null &&
+        now.difference(_lastAt!) < _dedupeWindow) {
+      return; // duplicate scan, ignore
+    }
+    _lastCode = code;
+    _lastAt = now;
+    widget.onScan(code);
   }
 
   Future<void> _openCamera() async {
@@ -89,6 +104,19 @@ class _CameraScanSheet extends StatelessWidget {
               .firstWhere((v) => v != null && v.isNotEmpty, orElse: () => null);
           if (value != null) Navigator.of(context).pop(value);
         },
+        errorBuilder: (context, error, child) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.no_photography_outlined, size: 44),
+                const SizedBox(height: 12),
+                Text('${error.errorCode}', textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

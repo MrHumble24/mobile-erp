@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/i18n.dart';
 import 'package:mobile_erp/shared/lib/money.dart';
+import '../../../shared/printing/receipt_printer.dart';
 import '../../../shared/ui/ui.dart';
 import '../../../theme/tokens.dart';
 import '../application/pos_controller.dart';
@@ -11,7 +12,7 @@ import '../data/pos_models.dart';
 
 /// Post-checkout receipt. Built from the local [CompletedSale] so it renders
 /// identically online and offline; a queued sale shows a "pending sync" badge.
-/// Copy-to-clipboard works now; Print is stubbed until wave 8.
+/// Copy-to-clipboard and Print (58mm system print via `printReceipt`) both work.
 ///
 /// ponytail: this 58mm layout mirrors sales/receipt_view; kept local so POS
 /// stays offline-capable (no server ReceiptView when queued) and independent of
@@ -85,10 +86,27 @@ class PosReceiptModal extends ConsumerWidget {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             icon: const Icon(Icons.print),
-            // TODO(wave8): ESC-POS / system print behind a ReceiptPrinter.
             label: Text(context.t('pos.printCheque')),
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.t('pos.printCheque'))),
+            onPressed: () => printReceipt(
+              title: context.t('pos.storeName'),
+              headerLines: [
+                context.t('pos.storeLocation'),
+                '${context.t('pos.receiptNumber')}: ${sale.receiptId}',
+                '${context.t('pos.soldAt')}: ${_fmt(sale.soldAt)}',
+              ],
+              rows: [
+                ReceiptRow('${context.t('pos.cashier')}:', sale.cashier),
+                if (sale.customerName != null)
+                  ReceiptRow('${context.t('sales.customer')}:', sale.customerName!),
+                ReceiptRow(sale.modelLabel),
+                ReceiptRow(sale.imei),
+                ReceiptRow('${context.t('pos.totalDue')}:',
+                    formatMoney(sale.salePrice), true),
+                if (sale.warrantyEndsAt != null)
+                  ReceiptRow('${context.t('pos.warrantyUntil')}:',
+                      _fmt(sale.warrantyEndsAt!)),
+              ],
+              footerLines: [context.t('pos.thankYou')],
             ),
           ),
           const SizedBox(height: 8),
