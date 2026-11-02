@@ -23,6 +23,11 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
   passed in as props from the widget.
 - Hold server lists in Zustand — only the cart draft lives here.
 
+## Offline
+On a transport failure (not a 4xx/5xx), `use-checkout` enqueues the line via
+`entities/sync` (same `clientMutationId`, device `version` → `baseVersion`),
+clears the line, and returns `queuedCount`; the POS shows a "queued" toast.
+
 ## Open questions
 - No payment method / split tender (server contract has none).
 - Below-cost confirm only fires when the user can see cost (`device.cost.view`).

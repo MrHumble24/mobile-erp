@@ -18,6 +18,12 @@ One action: hand one or more in-stock devices to a partner on consignment.
 - `ui/ConsignDeviceForm.tsx` — partner select + device rows + shared fields.
 - `ui/ConsignDeviceRow.tsx` — one scannable device row.
 
+## Offline
+
+On a transport failure, `use-consign-form` enqueues each transfer via
+`entities/sync` (no `baseVersion`; the server resolves by device) and reports a
+`queued` count for the "queued" toast.
+
 ## Never
 
 Call `useQuery`/`useMutation` directly (uses `entities/consignment` hooks).
