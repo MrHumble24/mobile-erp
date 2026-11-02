@@ -69,7 +69,14 @@ export function useSalesFilters(): SalesFiltersState {
   const urlFrom = params.get("from") ?? ""
   const urlTo = params.get("to") ?? ""
   const { fromDate, toDate } = presetDates(preset, urlFrom, urlTo)
-  const search = params.get("q") ?? ""
+  const urlSearch = params.get("q") ?? ""
+  // Typed text lives in local state: writing every keystroke to the URL drops
+  // characters (setSearchParams' updater sees a stale snapshot between renders).
+  const [search, setSearch] = React.useState(urlSearch)
+  const debouncedSearch = useDebounce(search, 300)
+  React.useEffect(() => {
+    if (debouncedSearch !== urlSearch) patch({ q: debouncedSearch || null })
+  }, [debouncedSearch, urlSearch, patch])
   const channel = (params.get("channel") as ChannelFilter) ?? undefined
   const status = (params.get("status") as SaleStatus | null) ?? "all"
   const warranty = (params.get("warranty") as WarrantyFilter | null) ?? "all"
@@ -77,12 +84,10 @@ export function useSalesFilters(): SalesFiltersState {
   const page = Number(params.get("page") ?? "1")
   const pageSize = Number(params.get("size") ?? String(DEFAULT_PAGE_SIZE))
 
-  const debouncedSearch = useDebounce(search, 300)
-
   const queryFilters: SaleFilters = {
     from: fromDate ? `${fromDate}T00:00:00.000Z` : undefined,
     to: toDate ? `${toDate}T23:59:59.999Z` : undefined,
-    search: debouncedSearch || undefined,
+    search: urlSearch || undefined,
     channel,
     returned: statusToReturned(status),
     warranty: warranty === "all" ? undefined : warranty,
@@ -106,14 +111,17 @@ export function useSalesFilters(): SalesFiltersState {
       patch(p === "custom" ? { preset: p } : { preset: p, from: null, to: null }),
     setFromDate: (d) => patch({ preset: "custom", from: d }),
     setToDate: (d) => patch({ preset: "custom", to: d }),
-    setSearch: (v) => patch({ q: v || null }),
+    setSearch,
     setChannel: (c) => patch({ channel: c ?? null }),
     setStatus: (s) => patch({ status: s === "all" ? null : s }),
     setWarranty: (w) => patch({ warranty: w === "all" ? null : w }),
     setSoldById: (id) => patch({ soldById: id ?? null }),
     setPage: (p) => patch({ page: String(p) }, false),
     setPageSize: (n) => patch({ size: String(n) }),
-    reset: () => setParams({}, { replace: true }),
+    reset: () => {
+      setSearch("")
+      setParams({}, { replace: true })
+    },
     queryFilters,
   }
 }
