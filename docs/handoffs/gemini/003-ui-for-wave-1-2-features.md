@@ -1,6 +1,6 @@
 # 003 — Build the web UI for the shipped server features (waves 1, 2a–2d)
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: 001 (done), server `main` ≥ `f6921e8`
+Status: done · Owner: Gemini (Antigravity) · Depends on: 001 (done), server `main` ≥ `f6921e8`
 
 ## Why
 The server now exposes auth, RBAC, inventory, QC, POS sales, consignment, expenses, settings and
@@ -56,8 +56,93 @@ Hard rules recap: React Query for all server state (`use-*.ts` hooks only, keys 
 === END ===
 
 ## Result (Gemini fills)
-- Commits:
-- Slices added:
-- i18n keys added:
-- Server gaps found (for the backend agent):
-- Notes for other agents:
+- **Commits**:
+  - `556026d` feat(client): step 1 - app shell, router, http client, auth feature, i18n
+  - `e671196` feat(client): step 2 - device and device-model entities, inventory page with filters and quick-lookup drawer
+  - `8ced79a` feat(client): step 3 - supplier and shipment entities, intake-shipment feature, shipments page
+  - `a14eb98` feat(client): step 4 - qc entity, grade-device feature, qc inspection page
+  - `423eb92` feat(client): step 5 - pos terminal widget, checkout feature, cart store, customer and sale entities
+  - `5c2a245` fix(client): align app shell bars, token-colored sidebar, collapse toggle
+  - `616dff8` feat(client): step 6 - warranty-lookup feature, sales and customers pages
+  - `0f272b8` feat(client): step 7 - partner and consignment entities, consign/settle features, partners and consignments pages
+  - `0c2d62f` feat(client): step 8 - expense and expense-category entities, log-expense feature, expenses page
+  - `9faaf72` feat(client): step 9 - dashboard, settings, users and reports pages
+
+- **Slices added**:
+  - `app`: `QueryProvider` (React Query client configured with `staleTime: 30s`, `retry: 1`), `routes.tsx` (React Router routes with lazy page imports and permission guards), `RequirePermission` (permission-gated route outlet), `styles` (theme tokens, Inter / JetBrains Mono typography).
+  - `shared`:
+    - `api/http.ts`: centralized fetch client supporting `VITE_API_URL`, automatic `Authorization: Bearer <token>` injection, 401 unauthenticated session clearance, and normalized error throwing `{ statusCode, message, error }`.
+    - `i18n`: reactive context provider with Uzbek (Latin, default) and English locales across all feature namespaces.
+    - `ui`: full kit of accessible primitives built on `@radix-ui` (Button, Input, Select, Dialog, Sheet, Table, Tabs, Badge, Checkbox, Switch, Card, Sonner, MetricCard, BarcodeInput, etc.).
+  - `entities`:
+    - `device`: types, `deviceRepository`, `deviceKeys`, `useDevices`, `useDeviceByImei`, `useDevice`, `useDeviceHistory`, `useChangeDeviceStatus`, `DeviceStatusBadge`, `DeviceTable`, `DeviceHistoryTimeline`, `DeviceQuickView`.
+    - `device-model`: types, `deviceModelRepository`, `deviceModelKeys`, `useDeviceModels`, `useCreateDeviceModel`, `useUpdateDeviceModel`.
+    - `supplier`: types, `supplierRepository`, `supplierKeys`, `useSuppliers`, `useCreateSupplier`, `useUpdateSupplier`.
+    - `shipment`: types, `shipmentRepository`, `shipmentKeys`, `useShipments`, `useShipment`, `useCreateShipment`, `useIntakeShipmentDevices`.
+    - `qc`: types, `qcRepository`, `qcKeys`, `useDefectTypes`, `useQcGrades`, `useQcInspections`, `useCreateQcInspection`.
+    - `customer`: types, `customerRepository`, `customerKeys`, `useCustomers`, `useCustomer`, `useCustomerSales`, `useCreateCustomer`, `useUpdateCustomer`.
+    - `sale`: types, `saleRepository`, `saleKeys`, `useSales`, `useSale`, `useWarrantyLookup`, `useSaleReceipt`, `useCreateSale`, `useReturnSale`.
+    - `partner`: types, `partnerRepository`, `partnerKeys`, `usePartners`, `usePartner`, `usePartnerLedger`, `useCreatePartner`, `useUpdatePartner`, `useRecordPayment`.
+    - `consignment`: types, `consignmentRepository`, `consignmentKeys`, `useConsignments`, `useOverdueConsignments`, `useConsignment`, `useCreateConsignment`, `useSettleConsignment`, `useReturnConsignment`.
+    - `expense-category`: types, `expenseCategoryRepository`, `expenseCategoryKeys`, `useExpenseCategories`, `useCreateExpenseCategory`, `useUpdateExpenseCategory`.
+    - `expense`: types, `expenseRepository`, `expenseKeys`, `useExpenses`, `useExpenseSummary`, `useExpense`, `useCreateExpense`, `useUpdateExpense`, `useDeleteExpense`.
+    - `stock-alert`: types, `stockAlertRepository`, `stockAlertKeys`, `useStockAlertRules`, `useLowStockAlerts`, `useCreateStockAlertRule`, `useUpdateStockAlertRule`.
+    - `report`: types, `reportRepository`, `reportKeys`, `useProfitReport`, `useExpenseReport`, `useModelPricingReport`, `useDailyClosingReport`.
+    - `user`: types, `userRepository`, `userKeys`, `useUsers`, `useUser`, `useCreateUser`, `useUpdateUser`, `useSetUserRoles`, `useSetUserPermissions`, `useRoles`, `usePermissions`, `useCreateRole`, `useSetRolePermissions`, `useDeleteRole`.
+  - `features`:
+    - `auth`: `authStore` (persisted access token & user profile/permissions), `authRepository`, `useLogin`, `LoginForm`.
+    - `intake-shipment`: `IntakeShipmentDialog`, `DeviceIntakeLoop` (continuous scan-to-register loop with inline duplicate IMEI conflict handling).
+    - `grade-device`: `GradeDeviceDialog` (inspection form with dynamic defect checklist, battery health, grade selection, repair estimate).
+    - `checkout`: `cartStore` (Zustand cart draft), `useCheckout` (with idempotent `clientMutationId`), `CheckoutParamsForm`.
+    - `warranty-lookup`: `WarrantyLookupPanel`, `ReturnSaleDialog` (lookup by IMEI barcode, remaining warranty display, return & refund dialog with IN_STOCK/DEFECTIVE status option).
+    - `consign-device`: `ConsignDeviceDialog` (partner consignment transfer with credit limit 409 handling and clientMutationId).
+    - `settle-consignment`: `SettleConsignmentDialog`, `ReturnConsignmentDialog`.
+    - `record-partner-payment`: `RecordPaymentDialog`.
+    - `log-expense`: `LogExpenseDialog`.
+  - `widgets`:
+    - `app-shell`: responsive sidebar driven by user permissions, top header bar, user menu, session logout.
+    - `pos-terminal`: cash register terminal layout with barcode input, cart items list, price adjustments, customer assignment, receipt dialog with thermal printer preview.
+  - `pages`:
+    - `login`: `LoginPage`
+    - `dashboard`: `DashboardPage` (today/week/month profit KPI metric cards, low-stock alerts table, overdue consignments table, model pricing breakdown)
+    - `inventory`: `InventoryPage` (filters by model, storage, status, search, and slide-over IMEI quick-view drawer)
+    - `shipments`: `ShipmentsPage` (shipment intake status and intake loop drawer)
+    - `qc`: `QcPage` (devices awaiting inspection filtered by IN_STOCK / DEFECTIVE status)
+    - `pos`: `PosPage` (POS terminal)
+    - `sales`: `SalesPage` (sales table with channel filter, thermal receipt viewer, warranty lookup drawer)
+    - `customers`: `CustomersPage` (customer list, create dialog, customer purchase drawer)
+    - `partners`: `PartnersPage` (partner list, credit limit tracking, ledger drawer, payment dialog)
+    - `consignments`: `ConsignmentsPage` (consignments table with OUT / Overdue / All tabs, settle and return dialogs)
+    - `expenses`: `ExpensesPage` (expense list, category summary breakdown card, log expense dialog)
+    - `reports`: `ReportsPage` (tabs for Net Profit, Expenses by category/month, Model Pricing 90-day window, Daily Closing)
+    - `users`: `UsersPage` (tabs for Users with role assignment, Roles creation, and Permission Matrix editor)
+    - `settings`: `SettingsPage` (store configuration: Telegram notifications chat ID, closing time, default warranty days, min margin %, low stock threshold)
+
+- **i18n keys added**:
+  Complete parity between `client/src/shared/i18n/locales/uz` and `client/src/shared/i18n/locales/en` across 14 namespaces:
+  - `common.json`: core CRUD actions, pagination, table columns, date/number formatting, status badges.
+  - `auth.json`: login credentials, token expiry alerts, logout confirmations.
+  - `inventory.json`: device attributes, IMEI, brand, model, storage, color, status labels, pricing.
+  - `shipments.json`: supplier selection, shipment dates, intake counts, overhead cost allocations.
+  - `qc.json`: quality inspection form, grade ratings, battery health %, defect taxonomy, repair cost estimate.
+  - `pos.json`: cashier interface, barcode scanner prompt, cart totals, customer quick-select, thermal print.
+  - `sales.json`: transaction history, retail/B2B channel badges, return & refund modal, warranty lookup.
+  - `customers.json`: contact management, phone numbers, purchase history.
+  - `partners.json`: partner profiles, credit limits, outstanding balances, ledger history, payment entry.
+  - `consignments.json`: consignment agreements, overdue warnings, settlement and return options.
+  - `expenses.json`: expense categories, amounts, recurring flags, date ranges, breakdown metrics.
+  - `settings.json`: store parameters, telegram bot chat ID, daily closing time, warranty & margin defaults.
+  - `users.json`: user accounts, roles list, system vs custom roles, permission matrix toggles.
+  - `reports.json`: revenue, COGS, gross profit, net operating income, daily closing audit metrics.
+  - `dashboard.json`: summary KPI titles, low stock alerts, overdue items, model pricing metrics.
+
+- **Server gaps found (for the backend agent)**:
+  1. **CORS Headers**: During development with Vite running at `http://localhost:5173` making requests to NestJS server at `http://localhost:3000`, the server must enable CORS (`app.enableCors()`) to allow the Authorization header and standard REST methods (`GET`, `POST`, `PATCH`, `PUT`, `DELETE`).
+  2. **`store_settings.minMarginPercent` Type Handling**: `GET /settings` returns `minMarginPercent` as a string from postgres (e.g. `"15.00"`). When submitting `PUT /settings`, the DTO parser expects a valid numeric format. The client explicitly converts with `Number(minMarginPercent)`, but backend DTO validation should ensure `Type(() => Number)` is present on the update DTO.
+  3. **Receipt Hardware Direct Printing**: Client provides 58mm CSS `@media print` thermal formatting for standard browser printing. For direct raw thermal printing (ESC/POS over serial/USB/network without OS print dialog), a dedicated backend endpoint or bridge agent service would be beneficial in future waves.
+
+- **Notes for other agents**:
+  - The client is fully typed and adheres strictly to Feature-Sliced Design (FSD).
+  - All files adhere to the strict 300-line limit and 50-line max function length rule.
+  - Both `pnpm lint` (oxlint) and `pnpm build` (tsc + vite) pass with 0 errors and 0 warnings.
+

@@ -1,0 +1,15 @@
+{
+  "title": "Sifat nazorati va tekshiruv (QC)",
+  "awaitingInspection": "Tekshiruv kutilayotgan qurilmalar",
+  "runInspection": "Qurilmani tekshirish",
+  "result": "Natija",
+  "passed": "O'tdi (Yaroqli)",
+  "failed": "O'tmadi (Nuqsonli)",
+  "grade": "Holat darajasi (Grade)",
+  "batteryHealth": "Batareya holati (%)",
+  "repairCostEstimate": "Ta'mirlash xarajati bahosi ($)",
+  "defects": "Nuqsonlar ro'yxati",
+  "inspectionSaved": "Tekshiruv muvaffaqiyatli saqlandi",
+  "selectGrade": "Darajani tanlang",
+  "defectNotes": "Nuqson izohi"
+}

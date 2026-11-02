@@ -1,0 +1,15 @@
+{
+  "dashboard": "Bosh sahifa",
+  "pos": "Kassa (POS)",
+  "inventory": "Ombor (Qurilmalar)",
+  "shipments": "Partiyalar",
+  "qc": "Tekshiruv (QC)",
+  "sales": "Savdolar",
+  "consignments": "Nasiyalar",
+  "partners": "Hamkorlar",
+  "expenses": "Xarajatlar",
+  "reports": "Hisobotlar",
+  "settings": "Sozlamalar",
+  "users": "Foydalanuvchilar",
+  "toggle": "Menu"
+}

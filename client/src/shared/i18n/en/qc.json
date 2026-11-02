@@ -1,0 +1,15 @@
+{
+  "title": "Quality Control & Inspection (QC)",
+  "awaitingInspection": "Devices Awaiting Inspection",
+  "runInspection": "Inspect Device",
+  "result": "Result",
+  "passed": "Passed",
+  "failed": "Failed (Defective)",
+  "grade": "Grade",
+  "batteryHealth": "Battery Health (%)",
+  "repairCostEstimate": "Repair Cost Estimate ($)",
+  "defects": "Defects Checklist",
+  "inspectionSaved": "Inspection saved successfully",
+  "selectGrade": "Select grade",
+  "defectNotes": "Defect notes"
+}
