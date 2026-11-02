@@ -1,5 +1,6 @@
 import { TrendingUp } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
 import { useModelPricingReport, type ModelPricingRow } from "@/entities/report"
 import { useDeviceModels } from "@/entities/device-model"
@@ -28,11 +29,11 @@ function DashboardPricingRow({
       <TableCell className="text-sm">{row.storage || "—"}</TableCell>
       {hasCostView && (
         <TableCell className="font-mono text-sm text-muted-foreground">
-          {row.avgAcquisitionCost ? `$${Math.round(row.avgAcquisitionCost)}` : "—"}
+          {row.avgAcquisitionCost ? formatMoney(row.avgAcquisitionCost) : "—"}
         </TableCell>
       )}
       <TableCell className="font-mono text-sm font-semibold text-emerald-600">
-        {row.avgSellingPrice ? `$${Math.round(row.avgSellingPrice)}` : "—"}
+        {row.avgSellingPrice ? formatMoney(row.avgSellingPrice) : "—"}
       </TableCell>
       <TableCell className="text-sm">{row.unitsInStock}</TableCell>
       <TableCell className="text-sm font-medium">{row.unitsSold}</TableCell>

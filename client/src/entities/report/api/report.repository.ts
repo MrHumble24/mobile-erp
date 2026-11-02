@@ -1,40 +1,67 @@
 import { http } from "@/shared/api/http"
 import type {
+  BreakdownGroupBy,
+  BreakdownRow,
+  ConsignmentsReport,
   DailyClosingReport,
+  ExpenseGroupBy,
   ExpenseReportRow,
+  InventoryReport,
   ModelPricingRow,
   ProfitReport,
+  ReturnsPage,
+  TrendBucket,
+  TrendPoint,
 } from "../model/report.types"
 
 export const reportRepository = {
-  profit: async (from?: string, to?: string): Promise<ProfitReport> => {
-    return http<ProfitReport>("/reports/profit", {
-      params: { from, to },
-    })
-  },
+  profit: (from?: string, to?: string) =>
+    http<ProfitReport>("/reports/profit", { params: { from, to } }),
 
-  expenses: async (
+  trend: (from?: string, to?: string, bucket: TrendBucket = "day") =>
+    http<TrendPoint[]>("/reports/trend", { params: { from, to, bucket } }),
+
+  profitBreakdown: (
+    groupBy: BreakdownGroupBy,
+    from?: string,
+    to?: string
+  ) =>
+    http<BreakdownRow[]>("/reports/profit/breakdown", {
+      params: { from, to, groupBy },
+    }),
+
+  returns: (from?: string, to?: string, page = 1, pageSize = 50) =>
+    http<ReturnsPage>("/reports/returns", {
+      params: { from, to, page, pageSize },
+    }),
+
+  expenses: (
     from?: string,
     to?: string,
-    groupBy: "category" | "month" = "category"
-  ): Promise<ExpenseReportRow[]> => {
-    return http<ExpenseReportRow[]>("/reports/expenses", {
-      params: { from, to, groupBy },
-    })
-  },
+    groupBy: ExpenseGroupBy = "category",
+    categoryId?: string
+  ) =>
+    http<ExpenseReportRow[]>("/reports/expenses", {
+      params: { from, to, groupBy, categoryId },
+    }),
 
-  modelPricing: async (
-    modelId?: string,
-    windowDays: number = 90
-  ): Promise<ModelPricingRow[]> => {
-    return http<ModelPricingRow[]>("/reports/model-pricing", {
+  consignments: (from?: string, to?: string) =>
+    http<ConsignmentsReport>("/reports/consignments", {
+      params: { from, to },
+    }),
+
+  inventory: () => http<InventoryReport>("/reports/inventory"),
+
+  modelPricing: (modelId?: string, windowDays = 90) =>
+    http<ModelPricingRow[]>("/reports/model-pricing", {
       params: { modelId, windowDays },
-    })
-  },
+    }),
 
-  dailyClosing: async (date?: string): Promise<DailyClosingReport> => {
-    return http<DailyClosingReport>("/reports/daily-closing", {
-      params: { date },
-    })
-  },
+  dailyClosing: (date?: string) =>
+    http<DailyClosingReport>("/reports/daily-closing", { params: { date } }),
+
+  dailyClosingRange: (from?: string, to?: string) =>
+    http<DailyClosingReport[]>("/reports/daily-closing/range", {
+      params: { from, to },
+    }),
 }

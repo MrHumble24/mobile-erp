@@ -1,26 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { ExpenseReportRow } from './types/reports.types.js';
 
-interface MonthRow {
-  month: string;
+interface PeriodRow {
+  key: string;
   total: number;
 }
 
-/** Read-only aggregates for the expenses report (by category or by month). */
+/** Read-only aggregates for the expenses report (category, month or day). */
 @Injectable()
 export class ReportsExpensesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private range(from?: Date, to?: Date): Prisma.ExpenseWhereInput {
-    return from || to ? { incurredAt: { gte: from, lte: to } } : {};
+  private where(
+    from?: Date,
+    to?: Date,
+    categoryId?: string,
+  ): Prisma.ExpenseWhereInput {
+    return {
+      categoryId,
+      incurredAt: from || to ? { gte: from, lte: to } : undefined,
+    };
   }
 
-  async byCategory(from?: Date, to?: Date) {
+  private rangeSql(from?: Date, to?: Date, categoryId?: string): Prisma.Sql {
+    const lower = from ?? new Date(0);
+    const upper = to ?? new Date();
+    const cat = categoryId
+      ? Prisma.sql`AND "categoryId" = ${categoryId}::uuid`
+      : Prisma.empty;
+    return Prisma.sql`"incurredAt" >= ${lower} AND "incurredAt" <= ${upper} ${cat}`;
+  }
+
+  async byCategory(
+    from?: Date,
+    to?: Date,
+    categoryId?: string,
+  ): Promise<ExpenseReportRow[]> {
     const [grouped, categories] = await Promise.all([
       this.prisma.expense.groupBy({
         by: ['categoryId'],
-        where: this.range(from, to),
+        where: this.where(from, to, categoryId),
         _sum: { amount: true },
       }),
       this.prisma.expenseCategory.findMany({
@@ -35,17 +56,37 @@ export class ReportsExpensesRepository {
     }));
   }
 
-  async byMonth(from?: Date, to?: Date) {
-    const lower = from ?? new Date(0);
-    const upper = to ?? new Date();
-    const rows = await this.prisma.$queryRaw<MonthRow[]>(Prisma.sql`
-      SELECT to_char(date_trunc('month', "incurredAt"), 'YYYY-MM') AS month,
+  async byMonth(
+    from?: Date,
+    to?: Date,
+    categoryId?: string,
+  ): Promise<ExpenseReportRow[]> {
+    return this.byPeriod('month', 'YYYY-MM', from, to, categoryId);
+  }
+
+  async byDay(
+    from?: Date,
+    to?: Date,
+    categoryId?: string,
+  ): Promise<ExpenseReportRow[]> {
+    return this.byPeriod('day', 'YYYY-MM-DD', from, to, categoryId);
+  }
+
+  private async byPeriod(
+    unit: 'month' | 'day',
+    fmt: string,
+    from?: Date,
+    to?: Date,
+    categoryId?: string,
+  ): Promise<ExpenseReportRow[]> {
+    const rows = await this.prisma.$queryRaw<PeriodRow[]>(Prisma.sql`
+      SELECT to_char(date_trunc(${unit}, "incurredAt"), ${fmt}) AS key,
              sum("amount")::float8 AS total
       FROM expenses
-      WHERE "incurredAt" >= ${lower} AND "incurredAt" <= ${upper}
+      WHERE ${this.rangeSql(from, to, categoryId)}
       GROUP BY 1
       ORDER BY 1
     `);
-    return rows.map((r) => ({ key: r.month, label: r.month, total: r.total }));
+    return rows.map((r) => ({ key: r.key, label: r.key, total: r.total }));
   }
 }

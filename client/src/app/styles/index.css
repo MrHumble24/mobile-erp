@@ -100,6 +100,25 @@
 }
 
 :root {
+  /* Categorical chart palette — fixed role order, never cycled (see widgets/report-charts). */
+  --chart-1: #2a78d6; /* blue */
+  --chart-2: #eb6834; /* orange */
+  --chart-3: #1baf7a; /* aqua */
+  --chart-4: #eda100; /* yellow */
+  --chart-5: #e87ba4; /* magenta */
+  --chart-6: #008300; /* green */
+  --chart-7: #6250d6; /* violet */
+  --chart-8: #e34948; /* red */
+  /* Sequential single-hue ramp for magnitude series (aging). */
+  --chart-seq-1: #cfe0f5;
+  --chart-seq-2: #93bdec;
+  --chart-seq-3: #4e8fd9;
+  --chart-seq-4: #1f5fa8;
+  /* Status (good/warning/critical) — never reused for a categorical series. */
+  --chart-good: #1baf7a;
+  --chart-warning: #eda100;
+  --chart-critical: #e34948;
+
   --gradient-rainbow-conic: conic-gradient(from 90deg, rgb(125, 91, 231) 19%, rgb(188, 63, 218) 28%, rgb(250, 36, 206) 37%, rgb(251, 73, 165) 45%, rgb(252, 109, 123) 52%, rgb(253, 132, 97) 55%, rgb(253, 154, 70) 58%, rgb(246, 135, 198) 65%, rgb(163, 160, 224) 80%, rgb(79, 185, 250) 95%, rgb(0, 145, 255) 100%);
   --gradient-primary-gradient: linear-gradient(83deg,rgba(64,221,255) -5%,rgba(118,18,250) 51%,rgba(250,18,227) 125%);
   --gradient-dark-fade: linear-gradient(rgb(17, 17, 17) 24%, rgb(0, 0, 0));
