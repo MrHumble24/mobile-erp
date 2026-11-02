@@ -23,10 +23,10 @@ export function ExpensesSummaryCard({
       <MetricCard
         label={t("expenses.totalExpenses")}
         value={`$${Number(summary.total).toLocaleString()}`}
-        variant="ember"
+        variant="white"
       />
 
-      <div className="md:col-span-2 rounded-[40px] p-6 bg-card border border-border flex flex-col justify-between">
+      <div className="md:col-span-2 rounded-[12px] p-6 bg-card border border-border flex flex-col justify-between">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           {t("expenses.summaryTitle")}
         </span>
@@ -44,3 +44,4 @@ export function ExpensesSummaryCard({
     </div>
   )
 }
+

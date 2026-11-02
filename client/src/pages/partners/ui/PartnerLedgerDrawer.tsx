@@ -11,7 +11,7 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
   return (
     <div className="p-3 border border-border rounded-lg bg-card/60 space-y-1 text-sm">
       <div className="flex justify-between items-center">
-        <Badge variant={isConsignment ? "plasma" : "sulfur"}>
+        <Badge variant={isConsignment ? "violet" : "mint"}>
           {isConsignment ? t("partners.kindConsignment") : t("partners.kindPayment")}
         </Badge>
         <span
@@ -87,3 +87,4 @@ export function PartnerLedgerDrawer({
     </Sheet>
   )
 }
+

@@ -75,7 +75,7 @@ function PartnerTableRow({
         <div className="flex items-center gap-1.5 text-xs">
           <span>{partner.openCount} {t("partners.openCount")}</span>
           {partner.overdueCount > 0 && (
-            <Badge variant="ember">{partner.overdueCount} {t("partners.overdueCount")}</Badge>
+            <Badge variant="destructive">{partner.overdueCount} {t("partners.overdueCount")}</Badge>
           )}
         </div>
       </TableCell>

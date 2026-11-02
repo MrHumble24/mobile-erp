@@ -62,7 +62,7 @@ function ExpenseTableRow({
       </TableCell>
       <TableCell>
         {expense.isRecurring ? (
-          <Badge variant="plasma">{t("expenses.isRecurring")}</Badge>
+          <Badge variant="violet">{t("expenses.isRecurring")}</Badge>
         ) : (
           <Badge variant="outline">—</Badge>
         )}

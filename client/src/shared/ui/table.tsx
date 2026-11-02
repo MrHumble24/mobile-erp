@@ -5,11 +5,11 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto py-2"
+      className="relative w-full overflow-x-auto"
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-base font-body", className)}
+        className={cn("w-full caption-bottom text-sm font-body", className)}
         {...props}
       />
     </div>
@@ -20,7 +20,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b [&_tr]:border-dotted [&_tr]:border-obsidian/40", className)}
+      className={cn("[&_tr]:border-b [&_tr]:border-[#e8e8e8] bg-[#f8f9fa]", className)}
       {...props}
     />
   )
@@ -41,7 +41,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t border-dotted border-obsidian/40 bg-muted/40 font-medium [&>tr]:last:border-b-0",
+        "border-t border-[#e8e8e8] bg-[#f8f9fa] font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-dotted border-obsidian/25 transition-colors hover:bg-pumice/50",
+        "border-b border-[#e8e8e8] transition-colors hover:bg-[#f8f9fa]",
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-16 px-8 text-left align-middle font-medium whitespace-nowrap text-obsidian/60 uppercase tracking-widest text-xs",
+        "h-9 px-4 text-left align-middle font-semibold whitespace-nowrap text-[#838383] uppercase tracking-wider text-[11px]",
         className
       )}
       {...props}
@@ -79,7 +79,10 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
-      className={cn("py-6 px-8 align-middle whitespace-nowrap font-medium text-obsidian text-base", className)}
+      className={cn(
+        "py-2.5 px-4 align-middle whitespace-nowrap font-medium text-[#202020] text-sm",
+        className
+      )}
       {...props}
     />
   )
@@ -92,7 +95,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-6 text-sm font-body text-obsidian/60", className)}
+      className={cn("mt-4 text-xs font-body text-[#838383]", className)}
       {...props}
     />
   )

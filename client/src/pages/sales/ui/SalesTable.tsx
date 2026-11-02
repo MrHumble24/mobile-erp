@@ -26,7 +26,7 @@ function SaleInfoCells({ sale }: { sale: SaleView }) {
         <div className="font-mono text-xs text-muted-foreground">{sale.device.imei}</div>
       </TableCell>
       <TableCell>
-        <Badge variant={isB2B ? "plasma" : "limestone"}>
+        <Badge variant={isB2B ? "violet" : "default"}>
           {isB2B ? t("sales.channelB2B") : t("sales.channelRetail")}
         </Badge>
       </TableCell>

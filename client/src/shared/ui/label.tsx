@@ -10,14 +10,14 @@ function Label({ className, optional, children, ...props }: LabelProps) {
     <label
       data-slot="label"
       className={cn(
-        "text-xs font-body font-medium uppercase tracking-wider text-obsidian/75 select-none flex items-center justify-between",
+        "text-xs font-body font-semibold text-[#646464] select-none flex items-center justify-between",
         className
       )}
       {...props}
     >
       <span>{children}</span>
       {optional && (
-        <span className="text-[11px] normal-case tracking-normal opacity-50 font-normal">
+        <span className="text-[11px] font-normal text-[#838383]">
           (ixtiyoriy)
         </span>
       )}

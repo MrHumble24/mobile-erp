@@ -15,14 +15,14 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-14 w-full items-center justify-between rounded-[100px] bg-limestone px-8 text-base font-body font-medium text-obsidian border-[1.5px] border-obsidian/30 outline-none transition-all focus:border-obsidian focus:ring-4 focus:ring-ember/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
+        "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm font-body text-[#202020] border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
         className
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon>
-        <ChevronDown className="size-5 stroke-[2] opacity-60" />
+        <ChevronDown className="size-4 stroke-[2] text-[#838383]" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -31,7 +31,7 @@ function SelectTrigger({
 function SelectContent({
   className,
   children,
-  sideOffset = 6,
+  sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Positioner>) {
   return (
@@ -39,11 +39,11 @@ function SelectContent({
       <SelectPrimitive.Positioner sideOffset={sideOffset} {...props}>
         <SelectPrimitive.Popup
           className={cn(
-            "z-50 min-w-48 overflow-hidden rounded-[24px] bg-limestone text-obsidian p-2 border-[1.5px] border-obsidian/20 outline-none shadow-none flex flex-col gap-1 transition-all",
+            "z-50 min-w-44 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 border border-[#e8e8e8] outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
             className
           )}
         >
-          <SelectPrimitive.List className="outline-none flex flex-col gap-1">
+          <SelectPrimitive.List className="outline-none flex flex-col gap-0.5">
             {children}
           </SelectPrimitive.List>
         </SelectPrimitive.Popup>
@@ -60,14 +60,14 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center justify-between rounded-[16px] px-4 py-3 text-sm font-body font-medium text-obsidian outline-none transition-colors hover:bg-pumice focus:bg-pumice data-[selected]:bg-ember/15 data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
+        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-[#202020] outline-none transition-colors hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] data-[selected]:bg-[#0091ff]/10 data-[selected]:text-[#0091ff] data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
         className
       )}
       {...props}
     >
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator>
-        <Check className="size-4 stroke-[2.5] text-ember" />
+        <Check className="size-4 stroke-[2.5] text-[#0091ff]" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -80,7 +80,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.GroupLabel
       className={cn(
-        "px-4 py-2 text-xs font-body font-medium uppercase tracking-wider text-obsidian/60",
+        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-[#838383]",
         className
       )}
       {...props}
@@ -94,7 +94,7 @@ function SelectSeparator({
 }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
-      className={cn("my-1 h-[1.5px] bg-obsidian/15", className)}
+      className={cn("my-1 h-[1px] bg-[#e8e8e8]", className)}
       {...props}
     />
   )

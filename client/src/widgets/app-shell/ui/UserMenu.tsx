@@ -14,13 +14,13 @@ import { Badge } from "@/shared/ui/badge"
 
 function UserTriggerButton({ name, email }: { name: string; email: string }) {
   return (
-    <Button variant="ghost" className="flex items-center gap-2 h-10 px-3">
-      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
-        {name ? name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+    <Button variant="ghost" className="flex items-center gap-2 h-8 px-2 rounded-full">
+      <div className="w-6 h-6 rounded-full bg-[#6647f0]/10 flex items-center justify-center text-[#6647f0] font-bold text-xs">
+        {name ? name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
       </div>
       <div className="text-left hidden md:block">
-        <p className="text-sm font-medium leading-none">{name || email}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{email}</p>
+        <p className="text-xs font-semibold leading-none text-[#202020]">{name || email}</p>
+        <p className="text-[10px] text-[#838383] mt-0.5">{email}</p>
       </div>
     </Button>
   )
@@ -41,11 +41,11 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.profile.fullName || "User"}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="text-xs font-bold leading-none text-[#090c1d]">{user.profile.fullName || "User"}</p>
+            <p className="text-[11px] text-[#838383]">{user.email}</p>
             <div className="flex flex-wrap gap-1 mt-1 pt-1">
               {user.roles.map((r) => (
-                <Badge key={r} variant="outline" className="text-[10px] uppercase">
+                <Badge key={r} variant="outline" className="text-[10px]">
                   {r}
                 </Badge>
               ))}

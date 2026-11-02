@@ -12,16 +12,16 @@ function Textarea({
 }: TextareaProps) {
   const variantStyles = {
     light:
-      "bg-limestone text-obsidian border-[1.5px] border-obsidian/30 placeholder:text-obsidian/40 focus:border-obsidian focus:ring-4 focus:ring-ember/20",
+      "bg-white text-[#202020] border border-[#d4d4d4] placeholder:text-[#838383] focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20",
     dark:
-      "bg-transparent text-chalk border-[1.5px] border-chalk/80 placeholder:text-chalk/40 focus:border-ember focus:ring-4 focus:ring-ember/30",
+      "bg-[#111111] text-white border border-[#2a2a2a] placeholder:text-[#838383] focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/30",
   }[variant]
 
   return (
     <textarea
       data-slot="textarea"
       className={cn(
-        "min-h-32 w-full rounded-[24px] p-6 text-base font-body font-medium outline-none transition-all disabled:pointer-events-none disabled:opacity-40 shadow-none resize-y",
+        "min-h-24 w-full rounded-[9px] p-3 text-sm font-body outline-none transition-all disabled:pointer-events-none disabled:opacity-40 shadow-none resize-y",
         variantStyles,
         className
       )}

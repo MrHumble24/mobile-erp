@@ -7,9 +7,9 @@ export interface SkeletonProps extends React.ComponentProps<"div"> {
 
 function Skeleton({ className, shape = "default", ...props }: SkeletonProps) {
   const shapeClass = {
-    default: "rounded-[16px]",
-    pill: "rounded-[800px]",
-    card: "rounded-[40px]",
+    default: "rounded-[8px]",
+    pill: "rounded-full",
+    card: "rounded-[12px]",
     circle: "rounded-full aspect-square",
   }[shape]
 
@@ -17,7 +17,7 @@ function Skeleton({ className, shape = "default", ...props }: SkeletonProps) {
     <div
       data-slot="skeleton"
       className={cn(
-        "animate-pulse bg-obsidian/10",
+        "animate-pulse bg-[#eeeeee]",
         shapeClass,
         className
       )}

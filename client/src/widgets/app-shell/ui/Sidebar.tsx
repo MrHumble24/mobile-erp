@@ -40,8 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
 ]
 
-/** Shared with the header so the brand row and the top bar sit on one baseline. */
-export const SHELL_BAR_HEIGHT = "h-16"
+export const SHELL_BAR_HEIGHT = "h-14"
 
 interface SidebarProps {
   collapsed: boolean
@@ -57,14 +56,14 @@ function SidebarItem({ item, collapsed, isActive }: { item: NavItem; collapsed: 
       title={collapsed ? label : undefined}
       aria-label={label}
       className={cn(
-        "flex items-center gap-3 h-11 rounded-[800px] text-sm font-medium transition-colors no-underline hover:no-underline",
-        collapsed ? "justify-center px-0" : "px-4",
+        "flex items-center gap-2.5 h-9 rounded-full text-xs font-display font-semibold transition-colors no-underline hover:no-underline",
+        collapsed ? "justify-center px-0" : "px-3.5",
         isActive
-          ? "bg-ember text-obsidian hover:brightness-105"
-          : "text-limestone/70 hover:bg-limestone/10 hover:text-limestone"
+          ? "bg-[#202020] text-white"
+          : "text-[#646464] hover:bg-black/[0.04] hover:text-[#202020]"
       )}
     >
-      <Icon className="w-5 h-5 shrink-0" />
+      <Icon className="w-4 h-4 shrink-0" />
       {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   )
@@ -79,23 +78,23 @@ export function Sidebar({ collapsed }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-obsidian text-limestone flex flex-col h-screen sticky top-0 shrink-0 transition-[width] duration-200",
-        collapsed ? "w-[72px]" : "w-64"
+        "bg-white text-[#202020] border-r border-[#e8e8e8] flex flex-col h-screen sticky top-0 shrink-0 transition-[width] duration-200 z-30",
+        collapsed ? "w-[64px]" : "w-60"
       )}
     >
-      <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-limestone/15 flex items-center gap-3 shrink-0")}>
-        <div className="w-10 h-10 rounded-[800px] bg-ember flex items-center justify-center font-display text-xl text-obsidian shrink-0">
+      <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-[#e8e8e8] flex items-center gap-2.5 shrink-0")}>
+        <div className="w-8 h-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs">
           M
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <h1 className="font-display text-xl leading-none tracking-wide text-limestone">Malika ERP</h1>
-            <p className="text-[11px] text-limestone/60 mt-0.5 truncate">POS & Inventory</p>
+            <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-[#090c1d]">Malika ERP</h1>
+            <p className="text-[10px] text-[#838383] truncate">Productivity POS</p>
           </div>
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-0.5">
         {visibleItems.map((item) => (
           <SidebarItem
             key={item.to}

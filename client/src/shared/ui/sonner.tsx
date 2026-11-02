@@ -10,12 +10,12 @@ function Toaster({ ...props }: ToasterProps) {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-limestone group-[.toaster]:text-obsidian group-[.toaster]:border-[1.5px] group-[.toaster]:border-obsidian/20 group-[.toaster]:shadow-none group-[.toaster]:rounded-[24px] group-[.toaster]:p-5 group-[.toaster]:font-body group-[.toaster]:font-medium",
-          description: "group-[.toast]:text-obsidian/70 group-[.toast]:text-sm",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-[#202020] group-[.toaster]:border group-[.toaster]:border-[#e8e8e8] group-[.toaster]:shadow-[var(--shadow-subtle-2)] group-[.toaster]:rounded-[12px] group-[.toaster]:p-4 group-[.toaster]:font-body group-[.toaster]:font-medium",
+          description: "group-[.toast]:text-[#646464] group-[.toast]:text-xs",
           actionButton:
-            "group-[.toast]:bg-ember group-[.toast]:text-obsidian group-[.toast]:rounded-[800px] group-[.toast]:font-medium group-[.toast]:px-4 group-[.toast]:py-2",
+            "group-[.toast]:bg-[#202020] group-[.toast]:text-white group-[.toast]:rounded-full group-[.toast]:font-semibold group-[.toast]:px-3.5 group-[.toast]:py-1.5",
           cancelButton:
-            "group-[.toast]:bg-pumice group-[.toast]:text-obsidian group-[.toast]:rounded-[800px] group-[.toast]:font-medium group-[.toast]:px-4 group-[.toast]:py-2",
+            "group-[.toast]:bg-[#f8f9fa] group-[.toast]:text-[#202020] group-[.toast]:rounded-full group-[.toast]:font-semibold group-[.toast]:px-3.5 group-[.toast]:py-1.5",
         },
       }}
       {...props}

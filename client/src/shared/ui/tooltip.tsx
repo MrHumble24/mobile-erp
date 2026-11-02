@@ -8,7 +8,7 @@ const TooltipTrigger = TooltipPrimitive.Trigger
 
 function TooltipContent({
   className,
-  sideOffset = 6,
+  sideOffset = 4,
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Positioner>) {
@@ -17,7 +17,7 @@ function TooltipContent({
       <TooltipPrimitive.Positioner sideOffset={sideOffset} {...props}>
         <TooltipPrimitive.Popup
           className={cn(
-            "z-50 overflow-hidden rounded-[800px] bg-obsidian px-4 py-2 text-xs font-body font-medium text-chalk shadow-none animate-in fade-in-0 zoom-in-95",
+            "z-50 overflow-hidden rounded-full bg-[#202020] px-3 py-1.5 text-xs font-body font-medium text-white shadow-[var(--shadow-subtle)] animate-in fade-in-0 zoom-in-95",
             className
           )}
         >

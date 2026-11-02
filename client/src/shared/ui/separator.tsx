@@ -10,7 +10,7 @@ export interface SeparatorProps
 function Separator({
   className,
   orientation = "horizontal",
-  variant = "dotted",
+  variant: _variant,
   ...props
 }: SeparatorProps) {
   const isHorizontal = orientation === "horizontal"
@@ -20,15 +20,8 @@ function Separator({
       data-slot="separator"
       orientation={orientation}
       className={cn(
-        "shrink-0",
-        isHorizontal ? "w-full" : "h-full",
-        variant === "dotted"
-          ? isHorizontal
-            ? "divider-dotted-h"
-            : "divider-dotted-v"
-          : isHorizontal
-            ? "h-[1.5px] bg-obsidian/20"
-            : "w-[1.5px] bg-obsidian/20",
+        "shrink-0 bg-[#e8e8e8]",
+        isHorizontal ? "h-[1px] w-full" : "w-[1px] h-full",
         className
       )}
       {...props}

@@ -76,7 +76,7 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
     <FormItemContext.Provider value={{ id }}>
       <div
         data-slot="form-item"
-        className={cn("space-y-2.5", className)}
+        className={cn("space-y-1.5", className)}
         {...props}
       />
     </FormItemContext.Provider>
@@ -92,7 +92,7 @@ function FormLabel({
   return (
     <Label
       data-slot="form-label"
-      className={cn(error && "text-ember", className)}
+      className={cn(error && "text-[#e53935]", className)}
       htmlFor={formItemId}
       {...props}
     />
@@ -124,7 +124,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn("text-xs font-body text-obsidian/60", className)}
+      className={cn("text-xs font-body text-[#838383]", className)}
       {...props}
     />
   )
@@ -142,7 +142,7 @@ function FormMessage({ className, children, ...props }: React.ComponentProps<"p"
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-xs font-body font-medium text-ember", className)}
+      className={cn("text-xs font-body font-medium text-[#e53935]", className)}
       {...props}
     >
       {body}

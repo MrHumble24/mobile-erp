@@ -5,45 +5,71 @@ export interface MetricCardProps extends React.ComponentProps<"div"> {
   value: React.ReactNode
   label: React.ReactNode
   subtext?: React.ReactNode
-  variant?: "ember" | "limestone" | "plasma" | "dark"
+  variant?: "ember" | "limestone" | "plasma" | "dark" | "white"
+}
+
+function MetricCardHeader({
+  label,
+  subtext,
+  isDark,
+}: {
+  label: React.ReactNode
+  subtext?: React.ReactNode
+  isDark: boolean
+}) {
+  return (
+    <div className="space-y-1">
+      <span
+        className={cn(
+          "font-body text-xs font-semibold uppercase tracking-wider block",
+          isDark ? "text-[#b3b3b3]" : "text-[#838383]"
+        )}
+      >
+        {label}
+      </span>
+      {subtext && (
+        <span
+          className={cn(
+            "font-body text-xs block",
+            isDark ? "text-[#838383]" : "text-[#646464]"
+          )}
+        >
+          {subtext}
+        </span>
+      )}
+    </div>
+  )
 }
 
 function MetricCard({
   value,
   label,
   subtext,
-  variant = "ember",
+  variant = "white",
   className,
   ...props
 }: MetricCardProps) {
-  const variantStyles = {
-    ember: "bg-ember text-chalk",
-    limestone: "bg-limestone text-obsidian",
-    plasma: "caldera-halftone text-chalk",
-    dark: "bg-obsidian text-chalk",
-  }[variant]
+  const isDark = variant === "dark"
 
   return (
     <div
       data-slot="metric-card"
       className={cn(
-        "rounded-[40px] p-8 md:p-10 flex flex-col justify-between min-h-[200px] shadow-none transition-all",
-        variantStyles,
+        "rounded-[12px] p-6 flex flex-col justify-between min-h-[140px] shadow-none transition-all",
+        isDark
+          ? "bg-[#111111] text-white border border-[#2a2a2a]"
+          : "bg-white text-[#202020] border border-[#e8e8e8]",
         className
       )}
       {...props}
     >
-      <div className="space-y-1">
-        <span className="font-body text-xs md:text-sm font-medium opacity-90 uppercase tracking-widest block">
-          {label}
-        </span>
-        {subtext && (
-          <span className="font-body text-xs opacity-60 block">
-            {subtext}
-          </span>
+      <MetricCardHeader label={label} subtext={subtext} isDark={isDark} />
+      <div
+        className={cn(
+          "font-display text-3xl sm:text-4xl font-bold leading-tight tracking-tight pt-3",
+          isDark ? "text-white" : "text-[#090c1d]"
         )}
-      </div>
-      <div className="font-display text-5xl md:text-6xl lg:text-7xl leading-none tracking-[0.02em] pt-4">
+      >
         {value}
       </div>
     </div>

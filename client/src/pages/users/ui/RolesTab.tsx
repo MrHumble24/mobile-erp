@@ -21,7 +21,7 @@ function RoleTableRow({ role }: { role: RoleView }) {
       <TableCell className="font-semibold text-sm">{role.name}</TableCell>
       <TableCell className="text-sm text-muted-foreground">{role.description || "—"}</TableCell>
       <TableCell>
-        <Badge variant={role.isSystem ? "plasma" : "limestone"}>
+        <Badge variant={role.isSystem ? "violet" : "default"}>
           {role.isSystem ? "Tizim roli" : "Maxsus rol"}
         </Badge>
       </TableCell>
@@ -69,3 +69,4 @@ export function RolesTab() {
     </div>
   )
 }
+

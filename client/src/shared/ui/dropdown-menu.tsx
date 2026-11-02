@@ -12,7 +12,7 @@ const DropdownMenuSubTrigger = MenuPrimitive.SubmenuTrigger
 function DropdownMenuContent({
   className,
   children,
-  sideOffset = 6,
+  sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof MenuPrimitive.Positioner>) {
   return (
@@ -20,7 +20,7 @@ function DropdownMenuContent({
       <MenuPrimitive.Positioner sideOffset={sideOffset} {...props}>
         <MenuPrimitive.Popup
           className={cn(
-            "z-50 min-w-56 overflow-hidden rounded-[24px] bg-limestone text-obsidian p-2 shadow-none border-[1.5px] border-obsidian/20 outline-none flex flex-col gap-1 transition-all",
+            "z-50 min-w-52 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-0.5 transition-all",
             className
           )}
         >
@@ -41,10 +41,10 @@ function DropdownMenuItem({
   return (
     <MenuPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-3 rounded-[16px] px-4 py-2.5 text-sm font-body font-medium outline-none transition-colors",
+        "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors",
         variant === "destructive"
-          ? "text-ember hover:bg-ember/15"
-          : "text-obsidian hover:bg-pumice focus:bg-pumice",
+          ? "text-[#e53935] hover:bg-rose-50 focus:bg-rose-50"
+          : "text-[#202020] hover:bg-[#f8f9fa] focus:bg-[#f8f9fa]",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ function DropdownMenuLabel({
   return (
     <MenuPrimitive.GroupLabel
       className={cn(
-        "px-4 py-2 text-xs font-body font-medium uppercase tracking-wider text-obsidian/60",
+        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-[#838383]",
         className
       )}
       {...props}
@@ -73,7 +73,7 @@ function DropdownMenuSeparator({
 }: React.ComponentProps<typeof MenuPrimitive.Separator>) {
   return (
     <MenuPrimitive.Separator
-      className={cn("my-1 h-[1.5px] bg-obsidian/15", className)}
+      className={cn("my-1 h-[1px] bg-[#e8e8e8]", className)}
       {...props}
     />
   )

@@ -13,10 +13,10 @@ import {
 } from "@/shared/ui/table"
 
 function ConsignmentStatusBadge({ statusCode }: { statusCode: string }) {
-  if (statusCode === "OUT") return <Badge variant="plasma">Nasiyada</Badge>
-  if (statusCode === "SETTLED") return <Badge variant="sulfur">Yopilgan</Badge>
+  if (statusCode === "OUT") return <Badge variant="blue">Nasiyada</Badge>
+  if (statusCode === "SETTLED") return <Badge variant="mint">Yopilgan</Badge>
   if (statusCode === "RETURNED") return <Badge variant="outline">Qaytarilgan</Badge>
-  return <Badge variant="limestone">{statusCode}</Badge>
+  return <Badge variant="default">{statusCode}</Badge>
 }
 
 function ConsignmentActions({

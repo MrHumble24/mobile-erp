@@ -15,7 +15,7 @@ function SheetBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-obsidian/60 backdrop-blur-sm transition-opacity",
+        "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity",
         className
       )}
       {...props}
@@ -35,9 +35,9 @@ function SheetPopup({
   ...props
 }: SheetPopupProps) {
   const sideClasses = {
-    right: "inset-y-0 right-0 h-full w-full max-w-lg rounded-l-[40px]",
-    left: "inset-y-0 left-0 h-full w-full max-w-lg rounded-r-[40px]",
-    bottom: "inset-x-0 bottom-0 max-h-[85vh] w-full rounded-t-[40px]",
+    right: "inset-y-0 right-0 h-full w-full max-w-lg border-l border-[#e8e8e8]",
+    left: "inset-y-0 left-0 h-full w-full max-w-lg border-r border-[#e8e8e8]",
+    bottom: "inset-x-0 bottom-0 max-h-[85vh] w-full border-t border-[#e8e8e8] rounded-t-[16px]",
   }[side]
 
   return (
@@ -45,20 +45,20 @@ function SheetPopup({
       <SheetBackdrop />
       <DrawerPrimitive.Popup
         className={cn(
-          "fixed z-50 bg-limestone text-obsidian p-8 sm:p-10 shadow-none border-none outline-none overflow-y-auto flex flex-col justify-between transition-transform duration-300",
+          "fixed z-50 bg-white text-[#202020] p-6 sm:p-7 shadow-[var(--shadow-xl)] outline-none overflow-y-auto flex flex-col justify-between transition-transform duration-300",
           sideClasses,
           className
         )}
         {...props}
       >
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-1.5 rounded-[800px] bg-obsidian/20 mx-auto sm:hidden" />
+            <div className="w-10 h-1 rounded-full bg-[#d4d4d4] mx-auto sm:hidden" />
           </div>
           {children}
         </div>
-        <DrawerPrimitive.Close className="absolute top-8 right-8 size-10 rounded-[800px] bg-pumice flex items-center justify-center text-obsidian hover:bg-ember hover:text-obsidian transition-colors outline-none cursor-pointer">
-          <X className="size-5 stroke-[2.5]" />
+        <DrawerPrimitive.Close className="absolute top-5 right-5 size-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#646464] hover:bg-[#eeeeee] hover:text-[#202020] transition-colors outline-none cursor-pointer">
+          <X className="size-4 stroke-[2.2]" />
           <span className="sr-only">Yopish</span>
         </DrawerPrimitive.Close>
       </DrawerPrimitive.Popup>
@@ -69,7 +69,7 @@ function SheetPopup({
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col gap-2 pb-6 border-b border-dotted border-obsidian/25", className)}
+      className={cn("flex flex-col gap-1 pb-4 border-b border-[#e8e8e8]", className)}
       {...props}
     />
   )
@@ -78,7 +78,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-dotted border-obsidian/25 mt-6", className)}
+      className={cn("flex flex-col sm:flex-row justify-end gap-2.5 pt-4 border-t border-[#e8e8e8] mt-6", className)}
       {...props}
     />
   )
@@ -91,7 +91,7 @@ function SheetTitle({
   return (
     <DrawerPrimitive.Title
       className={cn(
-        "font-display text-2xl sm:text-3xl text-obsidian tracking-[0.02em] uppercase leading-none",
+        "font-display text-lg sm:text-xl font-bold text-[#090c1d] tracking-tight leading-snug",
         className
       )}
       {...props}
@@ -106,7 +106,7 @@ function SheetDescription({
   return (
     <DrawerPrimitive.Description
       className={cn(
-        "font-body text-sm font-medium text-obsidian/75 leading-relaxed",
+        "font-body text-sm font-normal text-[#646464] leading-normal",
         className
       )}
       {...props}

@@ -13,19 +13,19 @@ export function DeviceStatusBadge({ status, className }: DeviceStatusBadgeProps)
   switch (status) {
     case "IN_STOCK":
       return (
-        <Badge variant="sulfur" size="sm" className={className}>
+        <Badge variant="mint" size="sm" className={className}>
           {t("inventory.statusInStock")}
         </Badge>
       )
     case "DEFECTIVE":
       return (
-        <Badge variant="ember" size="sm" className={className}>
+        <Badge variant="destructive" size="sm" className={className}>
           {t("inventory.statusDefective")}
         </Badge>
       )
     case "CONSIGNED":
       return (
-        <Badge variant="plasma" size="sm" className={className}>
+        <Badge variant="blue" size="sm" className={className}>
           {t("inventory.statusConsigned")}
         </Badge>
       )
@@ -37,7 +37,7 @@ export function DeviceStatusBadge({ status, className }: DeviceStatusBadgeProps)
       )
     default:
       return (
-        <Badge variant="limestone" size="sm" className={className}>
+        <Badge variant="default" size="sm" className={className}>
           {status}
         </Badge>
       )

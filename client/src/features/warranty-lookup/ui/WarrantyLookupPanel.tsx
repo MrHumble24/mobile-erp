@@ -11,7 +11,7 @@ import { ReturnSaleDialog } from "./ReturnSaleDialog"
 function WarrantyStatusBadge({ data }: { data: WarrantyLookupView }) {
   const { t } = useI18n()
   if (data.alreadyReturned) {
-    return <Badge variant="ember">{t("sales.alreadyReturned")}</Badge>
+    return <Badge variant="destructive">{t("sales.alreadyReturned")}</Badge>
   }
   if (data.remainingDays <= 0) {
     return (
@@ -21,7 +21,7 @@ function WarrantyStatusBadge({ data }: { data: WarrantyLookupView }) {
     )
   }
   return (
-    <Badge variant="sulfur" className="gap-1">
+    <Badge variant="mint" className="gap-1">
       <ShieldCheck className="size-3" />
       {data.remainingDays} {t("sales.remainingDays")}
     </Badge>

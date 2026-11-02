@@ -19,31 +19,31 @@ export function AppShell() {
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-[#f8f9fa] text-[#202020]">
       <Sidebar collapsed={collapsed} />
       <div className="flex-1 flex flex-col min-w-0">
         <header
           className={cn(
             SHELL_BAR_HEIGHT,
-            "border-b border-obsidian/15 bg-limestone px-4 flex items-center justify-between sticky top-0 z-20"
+            "border-b border-[#e8e8e8] bg-white px-4 flex items-center justify-between sticky top-0 z-20"
           )}
         >
           <Button
             variant="ghost"
             size="icon"
-            className="size-10"
+            className="size-8 rounded-full"
             onClick={() => setCollapsed((c) => !c)}
             aria-label={t("nav.toggle")}
             aria-expanded={!collapsed}
           >
-            <ToggleIcon className="w-5 h-5" />
+            <ToggleIcon className="w-4 h-4 text-[#646464]" />
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={toggleLocale}
-              className="text-xs font-semibold uppercase px-3 h-9"
+              className="text-xs font-bold uppercase px-3 h-8 rounded-full"
             >
               {locale}
             </Button>
@@ -51,7 +51,7 @@ export function AppShell() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-5 md:p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>
