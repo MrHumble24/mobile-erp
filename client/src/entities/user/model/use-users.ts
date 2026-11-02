@@ -4,15 +4,32 @@ import { userKeys } from "../api/user.keys"
 import type {
   CreateRoleDto,
   CreateUserDto,
+  ResetPasswordDto,
   SetPermissionsDto,
   SetRolesDto,
+  UpdateRoleDto,
   UpdateUserDto,
+  UserListFilters,
 } from "./user.types"
 
 export function useUsers() {
   return useQuery({
-    queryKey: userKeys.list(),
+    queryKey: userKeys.flat(),
     queryFn: () => userRepository.list(),
+  })
+}
+
+export function useUsersPage(filters: UserListFilters) {
+  return useQuery({
+    queryKey: userKeys.list(filters),
+    queryFn: () => userRepository.listPage(filters),
+  })
+}
+
+export function useUserStats() {
+  return useQuery({
+    queryKey: userKeys.stats(),
+    queryFn: () => userRepository.stats(),
   })
 }
 
@@ -24,12 +41,29 @@ export function useUser(id: string) {
   })
 }
 
+export function useUserEffectivePermissions(id: string) {
+  return useQuery({
+    queryKey: userKeys.effective(id),
+    queryFn: () => userRepository.effectivePermissions(id),
+    enabled: Boolean(id),
+  })
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: ResetPasswordDto }) =>
+      userRepository.resetPassword(id, dto),
+  })
+}
+
 export function useCreateUser() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (dto: CreateUserDto) => userRepository.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: userKeys.flat() })
+      queryClient.invalidateQueries({ queryKey: userKeys.stats() })
     },
   })
 }
@@ -41,7 +75,9 @@ export function useUpdateUser() {
       userRepository.update(id, dto),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: userKeys.flat() })
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.stats() })
     },
   })
 }
@@ -54,6 +90,8 @@ export function useSetUserRoles() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.effective(variables.id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.stats() })
     },
   })
 }
@@ -66,6 +104,7 @@ export function useSetUserPermissions() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
       queryClient.invalidateQueries({ queryKey: userKeys.detail(variables.id) })
+      queryClient.invalidateQueries({ queryKey: userKeys.effective(variables.id) })
     },
   })
 }
@@ -107,6 +146,17 @@ export function useSetRolePermissions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.roles() })
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
+    },
+  })
+}
+
+export function useRenameRole() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ code, dto }: { code: string; dto: UpdateRoleDto }) =>
+      userRepository.renameRole(code, dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.roles() })
     },
   })
 }

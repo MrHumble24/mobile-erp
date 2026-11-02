@@ -4,8 +4,13 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 
 ## Owns
 
+- Store identity: storeName, storeAddress, storePhone, receiptFooter (all nullable).
 - telegramChatId, closingTime ("HH:mm"), defaultWarrantyDays, minMarginPercent
   (0–100), lowStockThreshold. The bot token lives in env, not here.
+- Nasiya defaults: defaultNasiyaDueDays (30), overdueReminderDays (3). Config only —
+  the nasiya ledger itself is owned by partners/consignments.
+- `UpdateSettingsDto` coerces numeric body fields with `@Type(() => Number)` and
+  range-validates them; the client mirrors the same ranges in its zod schema.
 - `digestSentOn` (`@db.Date`, nullable) — the day the Telegram closing digest
   last went out, so the minute-cron fires it once per day. Written only by
   `SettingsService.markDigestSent(date)`; not exposed on the write DTO.

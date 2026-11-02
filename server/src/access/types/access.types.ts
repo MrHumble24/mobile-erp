@@ -27,3 +27,22 @@ export interface EffectiveAccess {
   isActive: boolean;
   permissions: Set<string>;
 }
+
+/** Which roles grant a given permission to a user (for the override UI source). */
+export interface RoleGrant {
+  permissionCode: string;
+  roleCodes: string[];
+}
+
+/** Full picture of one user's permissions: roles, role grants, overrides, net. */
+export interface UserPermissionBreakdown {
+  roles: string[];
+  roleGrants: RoleGrant[];
+  overrides: {
+    permissionCode: string;
+    granted: boolean;
+    reason: string | null;
+  }[];
+  /** (union of role grants ∪ user grants) − user revokes. */
+  effective: string[];
+}

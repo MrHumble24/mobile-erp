@@ -6,11 +6,17 @@ import { SettingsRepository } from './settings.repository.js';
 /** Schema defaults, returned when the singleton row has not been seeded yet. */
 const DEFAULTS: StoreSettings = {
   id: 1,
+  storeName: null,
+  storeAddress: null,
+  storePhone: null,
+  receiptFooter: null,
   telegramChatId: null,
   closingTime: '20:00',
   defaultWarrantyDays: 14,
   minMarginPercent: new Prisma.Decimal(0),
   lowStockThreshold: 2,
+  defaultNasiyaDueDays: 30,
+  overdueReminderDays: 3,
   digestSentOn: null,
   updatedAt: new Date(0),
 };

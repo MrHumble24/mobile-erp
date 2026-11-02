@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import {
   PermissionSources,
   PermissionView,
+  RoleGrant,
   RoleView,
 } from './types/access.types.js';
 
@@ -54,6 +55,52 @@ export class AccessRepository {
     return this.prisma.userRole.count({ where: { roleCode: code } });
   }
 
+  /** Roles, their grants (attributed per role) and per-user overrides. */
+  async getUserAccessDetail(userId: string): Promise<{
+    roles: string[];
+    roleGrants: RoleGrant[];
+    overrides: {
+      permissionCode: string;
+      granted: boolean;
+      reason: string | null;
+    }[];
+  }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        roles: {
+          select: {
+            roleCode: true,
+            role: {
+              select: { permissions: { select: { permissionCode: true } } },
+            },
+          },
+        },
+        permissions: {
+          select: { permissionCode: true, granted: true, reason: true },
+        },
+      },
+    });
+    if (!user) return { roles: [], roleGrants: [], overrides: [] };
+
+    const byPermission = new Map<string, Set<string>>();
+    for (const ur of user.roles) {
+      for (const p of ur.role.permissions) {
+        const set = byPermission.get(p.permissionCode) ?? new Set<string>();
+        set.add(ur.roleCode);
+        byPermission.set(p.permissionCode, set);
+      }
+    }
+    return {
+      roles: user.roles.map((r) => r.roleCode),
+      roleGrants: [...byPermission].map(([permissionCode, roleCodes]) => ({
+        permissionCode,
+        roleCodes: [...roleCodes],
+      })),
+      overrides: user.permissions,
+    };
+  }
+
   async listRoles(): Promise<RoleView[]> {
     const rows = await this.prisma.role.findMany({
       orderBy: { code: 'asc' },
@@ -103,6 +150,14 @@ export class AccessRepository {
       isSystem: r.isSystem,
       permissionCodes: [],
     };
+  }
+
+  async renameRole(
+    code: string,
+    data: { name?: string; description?: string },
+  ): Promise<RoleView> {
+    await this.prisma.role.update({ where: { code }, data });
+    return (await this.listRoles()).find((r) => r.code === code)!;
   }
 
   async replaceRolePermissions(

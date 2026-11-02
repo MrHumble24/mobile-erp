@@ -4,10 +4,16 @@ User accounts, profiles, and their role/permission assignments.
 
 ## HTTP (all require `user.manage`)
 
-- `GET /users` → `UserView[]`
+- `GET /users?search=&role=&active=&page=&pageSize=` → `{ items: UserView[], total, page, pageSize }`
+  (search = email/first/last name, `active` = `"true"|"false"`, numbers coerced via `@Type`)
+- `GET /users/stats` → `{ total, active, byRole: Record<roleCode, count> }` (summary tiles)
 - `GET /users/:id` → `UserView` (404 if missing)
+- `GET /users/:id/effective-permissions` → `UserPermissionBreakdown`
+  `{ roles, roleGrants: [{ permissionCode, roleCodes }], overrides: [{ permissionCode, granted, reason }], effective }`
+  (computed by `AccessService.describeUser`; the override UI shows the source of each code)
 - `POST /users` `{ email, password, profile{ firstName, lastName?, phone?, telegramHandle?, avatarUrl?, locale? }, roleCodes[] }` → `UserView`
 - `PATCH /users/:id` `{ profile?, isActive? }` → `UserView`
+- `POST /users/:id/password` `{ password }` (min 8) → 204 — admin reset, hashed with argon2, never returned
 - `PUT /users/:id/roles` `{ roleCodes[] }` → `UserView` (replaces the set)
 - `PUT /users/:id/permissions` `{ overrides: [{ permissionCode, granted, reason? }] }` → `UserView`
   (replaces all per-user overrides)
@@ -28,6 +34,8 @@ User accounts, profiles, and their role/permission assignments.
     the caller's effective set (403 otherwise). Applies to `POST /users` too.
   - A caller may `granted:true` a permission only if they hold it themselves;
     revokes (`granted:false`) are always allowed.
+  - A caller cannot deactivate their **own** account (`PATCH isActive:false` on self → 403).
+- `GET /users/:id/effective-permissions` is read-only; it never exposes `passwordHash`.
 
 ## Must never
 

@@ -78,4 +78,11 @@ describe('UsersService privilege escalation', () => {
     });
     expect(repo.setPermissions).toHaveBeenCalled();
   });
+
+  it('rejects deactivating your own account', async () => {
+    const { service, caller } = build(['user.manage']);
+    await expect(
+      service.update(caller, 'caller', { isActive: false }),
+    ).rejects.toThrow(ForbiddenException);
+  });
 });

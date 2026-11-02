@@ -30,3 +30,19 @@ export interface PermissionOverride {
   granted: boolean;
   reason?: string;
 }
+
+export interface UserListFilters {
+  search?: string;
+  role?: string;
+  /** undefined = all; true/false filter account state. */
+  active?: boolean;
+  page: number;
+  pageSize: number;
+}
+
+export interface PaginatedUsers {
+  items: UserView[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

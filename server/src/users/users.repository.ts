@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ProfileDto } from './dto/profile.dto.js';
 import {
   CreateUserInput,
+  PaginatedUsers,
   PermissionOverride,
+  UserListFilters,
   UserView,
 } from './types/user.types.js';
 
@@ -41,12 +44,41 @@ type UserRow = {
 export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<UserView[]> {
-    const rows = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'asc' },
-      select: userSelect,
+  async findPage(filters: UserListFilters): Promise<PaginatedUsers> {
+    const where = buildWhere(filters);
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'asc' },
+        skip: (filters.page - 1) * filters.pageSize,
+        take: filters.pageSize,
+        select: userSelect,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return {
+      items: rows.map(toView),
+      total,
+      page: filters.page,
+      pageSize: filters.pageSize,
+    };
+  }
+
+  /** Counts per role code across all users, for the summary tiles. */
+  async countByRole(): Promise<Record<string, number>> {
+    const rows = await this.prisma.userRole.groupBy({
+      by: ['roleCode'],
+      _count: { roleCode: true },
     });
-    return rows.map(toView);
+    return Object.fromEntries(rows.map((r) => [r.roleCode, r._count.roleCode]));
+  }
+
+  async countActive(): Promise<{ total: number; active: number }> {
+    const [total, active] = await this.prisma.$transaction([
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { isActive: true } }),
+    ]);
+    return { total, active };
   }
 
   async findById(id: string): Promise<UserView | null> {
@@ -85,6 +117,10 @@ export class UsersRepository {
     return toView(row);
   }
 
+  async setPassword(id: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id }, data: { passwordHash } });
+  }
+
   async setRoles(id: string, roleCodes: string[]): Promise<UserView> {
     await this.prisma.$transaction([
       this.prisma.userRole.deleteMany({ where: { userId: id } }),
@@ -113,6 +149,21 @@ export class UsersRepository {
       }),
     ]);
   }
+}
+
+function buildWhere(filters: UserListFilters): Prisma.UserWhereInput {
+  const where: Prisma.UserWhereInput = {};
+  if (filters.active !== undefined) where.isActive = filters.active;
+  if (filters.role) where.roles = { some: { roleCode: filters.role } };
+  if (filters.search) {
+    const q = filters.search.trim();
+    where.OR = [
+      { email: { contains: q, mode: 'insensitive' } },
+      { profile: { firstName: { contains: q, mode: 'insensitive' } } },
+      { profile: { lastName: { contains: q, mode: 'insensitive' } } },
+    ];
+  }
+  return where;
 }
 
 function toView(row: UserRow): UserView {
