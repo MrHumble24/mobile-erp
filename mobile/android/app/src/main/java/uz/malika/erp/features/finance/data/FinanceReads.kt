@@ -14,6 +14,17 @@ class FinanceReads(private val api: FinanceApi) {
 
     suspend fun profit(from: String?, to: String?): ProfitReport = runApi { api.profit(from, to) }
 
+    suspend fun trend(from: String?, to: String?, bucket: String): List<TrendPoint> =
+        runApi { api.trend(from, to, bucket) }
+
+    suspend fun profitBreakdown(from: String?, to: String?, groupBy: String): List<BreakdownRow> =
+        runApi { api.profitBreakdown(from, to, groupBy) }
+
+    suspend fun consignmentsReport(from: String?, to: String?): ConsignmentsReport =
+        runApi { api.consignmentsReport(from, to) }
+
+    suspend fun inventoryReport(): InventoryReport = runApi { api.inventoryReport() }
+
     suspend fun expenseReport(from: String?, to: String?, groupBy: String): List<ExpenseReportRow> =
         runApi { api.expenseReport(from, to, groupBy) }
 

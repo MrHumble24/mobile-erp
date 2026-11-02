@@ -2,6 +2,7 @@ package uz.malika.erp.features.finance.data
 
 import uz.malika.erp.core.AppException
 import uz.malika.erp.core.runApi
+import uz.malika.erp.shared.lib.DEFAULT_PAGE_SIZE
 
 /**
  * The only place this slice talks to `/expenses` and `/expense-categories`.
@@ -10,35 +11,44 @@ import uz.malika.erp.core.runApi
  */
 class ExpensesRepository(private val api: FinanceApi) {
 
-    suspend fun list(filter: ExpenseFilter): ExpensePage = runApi {
-        api.expenses(filter.categoryId, filter.isRecurring, page = 1, pageSize = 100)
+    suspend fun list(filter: ExpenseFilter, page: Int): ExpensePage = runApi {
+        api.expenses(
+            categoryId = filter.categoryId,
+            isRecurring = filter.isRecurring,
+            search = filter.search?.ifBlank { null },
+            minAmount = filter.minAmount,
+            maxAmount = filter.maxAmount,
+            from = filter.fromIso,
+            to = filter.toIso,
+            sort = filter.sort.field,
+            dir = filter.sort.dir,
+            page = page,
+            pageSize = DEFAULT_PAGE_SIZE,
+        )
     }
 
-    suspend fun summary(): ExpenseSummary = runApi { api.expenseSummary(from = null, to = null) }
+    suspend fun summary(filter: ExpenseFilter): ExpenseSummary =
+        runApi { api.expenseSummary(filter.fromIso, filter.toIso) }
 
     suspend fun categories(): List<ExpenseCategory> = runApi { api.expenseCategories() }
 
-    suspend fun create(
-        categoryId: String,
-        amount: Double,
-        description: String?,
-        isRecurring: Boolean,
-        incurredAt: String?,
-    ) = runApi {
-        api.createExpense(
-            CreateExpenseBody(
-                categoryId = categoryId,
-                amount = amount,
-                description = description?.ifBlank { null },
-                isRecurring = isRecurring,
-                incurredAt = incurredAt,
-            ),
-        )
+    suspend fun create(body: CreateExpenseBody) = runApi {
+        api.createExpense(body)
+        Unit
+    }
+
+    suspend fun update(id: String, body: CreateExpenseBody) = runApi {
+        api.updateExpense(id, body)
         Unit
     }
 
     suspend fun addCategory(name: String) = runApi {
         api.createCategory(CreateCategoryBody(name))
+        Unit
+    }
+
+    suspend fun updateCategory(id: String, body: UpdateCategoryBody) = runApi {
+        api.updateCategory(id, body)
         Unit
     }
 

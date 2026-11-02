@@ -16,9 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.features.finance.data.CreateExpenseBody
+import uz.malika.erp.features.finance.data.Expense
 import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.features.finance.model.isoDate
@@ -32,24 +35,33 @@ import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.ui.theme.Tokens
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
+
+private fun parseIsoDay(iso: String?): Date =
+    iso?.take(10)?.let { runCatching { SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(it) }.getOrNull() } ?: Date()
 
 /**
- * Online-only "Log expense" form. The ViewModel refuses the write when offline
- * (expenses are not in the outbox) and closes the sheet on success.
+ * Online-only expense form — create or, when [editing] is set, edit. The
+ * ViewModel refuses the write when offline (expenses are not in the outbox) and
+ * closes the sheet on success.
  */
 @Composable
 fun LogExpenseSheet(
     vm: ExpensesViewModel,
     categories: List<ExpenseCategory>,
+    editing: Expense?,
     onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
-    var categoryId by remember { mutableStateOf<String?>(null) }
-    var amount by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var recurring by remember { mutableStateOf(false) }
-    var incurredAt by remember { mutableStateOf(Date()) }
+    var categoryId by remember { mutableStateOf(editing?.categoryId) }
+    var amount by remember { mutableStateOf(editing?.amount?.takeIf { it != "0" } ?: "") }
+    var description by remember { mutableStateOf(editing?.description ?: "") }
+    var vendor by remember { mutableStateOf(editing?.vendor ?: "") }
+    var recurring by remember { mutableStateOf(editing?.isRecurring ?: false) }
+    var incurredAt by remember { mutableStateOf(parseIsoDay(editing?.incurredAt)) }
     var amountError by remember { mutableStateOf<String?>(null) }
     var categoryError by remember { mutableStateOf(false) }
 
@@ -58,7 +70,15 @@ fun LogExpenseSheet(
         categoryError = categoryId == null
         amountError = if (amt == null || amt <= 0) t("expenses.amountPositive", null) else null
         if (categoryError || amountError != null) return
-        vm.createExpense(categoryId!!, amt!!, description.trim(), recurring, isoDate(incurredAt), onSuccess = onDismiss)
+        val body = CreateExpenseBody(
+            categoryId = categoryId!!,
+            amount = amt!!,
+            description = description.trim().ifBlank { null },
+            vendor = vendor.trim().ifBlank { null },
+            isRecurring = recurring,
+            incurredAt = isoDate(incurredAt),
+        )
+        vm.saveExpense(editing?.id, body, onSuccess = onDismiss)
     }
 
     AppBottomSheet(onDismiss = onDismiss) {
@@ -66,7 +86,10 @@ fun LogExpenseSheet(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(t("expenses.newExpense", null), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                t(if (editing == null) "expenses.newExpense" else "expenses.editExpense", null),
+                style = MaterialTheme.typography.headlineSmall,
+            )
             AppSelectField(
                 label = t("expenses.category", null),
                 options = categories.map { SelectOption<String?>(it.id, it.name) },
@@ -74,7 +97,7 @@ fun LogExpenseSheet(
                 onSelect = { categoryId = it; categoryError = false },
             )
             if (categoryError) {
-                Text(t("expenses.categoryRequired", null), style = MaterialTheme.typography.bodySmall, color = uz.malika.erp.ui.theme.Tokens.destructive)
+                Text(t("expenses.categoryRequired", null), style = MaterialTheme.typography.bodySmall, color = Tokens.destructive)
             }
             AppFormField(
                 label = t("expenses.amount", null),
@@ -83,11 +106,8 @@ fun LogExpenseSheet(
                 keyboardType = KeyboardType.Decimal,
                 error = amountError,
             )
-            AppFormField(
-                label = t("expenses.description", null),
-                value = description,
-                onValueChange = { description = it },
-            )
+            AppFormField(label = t("expenses.vendor", null), value = vendor, onValueChange = { vendor = it })
+            AppFormField(label = t("expenses.description", null), value = description, onValueChange = { description = it })
             Column {
                 Text(t("expenses.isRecurring", null), style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(6.dp))
@@ -102,7 +122,7 @@ fun LogExpenseSheet(
             }
             DateField(t("expenses.incurredAt", null), incurredAt, onChanged = { incurredAt = it })
             Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, androidx.compose.ui.Alignment.End)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
                 PillButton(t("common.cancel", null), onClick = onDismiss, variant = ButtonVariant.OUTLINE)
                 PillButton(t("common.save", null), onClick = ::submit)
             }

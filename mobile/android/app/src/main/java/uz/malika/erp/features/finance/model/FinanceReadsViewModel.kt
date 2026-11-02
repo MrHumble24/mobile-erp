@@ -16,6 +16,15 @@ class FinanceReadsViewModel(container: AppContainer) : ViewModel() {
 
     suspend fun profit(from: String?, to: String?) = reads.profit(from, to)
 
+    suspend fun trend(from: String?, to: String?, bucket: String) = reads.trend(from, to, bucket)
+
+    suspend fun profitBreakdown(from: String?, to: String?, groupBy: String) =
+        reads.profitBreakdown(from, to, groupBy)
+
+    suspend fun consignmentsReport(from: String?, to: String?) = reads.consignmentsReport(from, to)
+
+    suspend fun inventoryReport() = reads.inventoryReport()
+
     suspend fun expenseReport(from: String?, to: String?, groupBy: String) =
         reads.expenseReport(from, to, groupBy)
 

@@ -28,7 +28,7 @@ import uz.malika.erp.i18n.LocalT
  * not the finance KPIs. Tables sit side-by-side on tablet widths.
  */
 @Composable
-fun DashboardScreen(container: AppContainer, onNavigate: (String) -> Unit) {
+fun DashboardScreen(container: AppContainer) {
     val t = LocalT.current
     val can = LocalCan.current
     val vm = financeViewModel(container) { FinanceReadsViewModel(it) }
@@ -46,7 +46,7 @@ fun DashboardScreen(container: AppContainer, onNavigate: (String) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(t("dashboard.title", null), style = MaterialTheme.typography.headlineSmall)
-            QuickActions(onNavigate)
+            QuickActions(container.featureNav::open)
             if (can("report.finance")) KpiSection(vm)
 
             val tables = buildList<@Composable () -> Unit> {

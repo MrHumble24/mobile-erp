@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.app.Destination
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.features.finance.data.ProfitReport
 import uz.malika.erp.features.finance.model.DashPeriod
@@ -33,18 +34,27 @@ import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.ui.theme.Tokens
 import java.util.Date
 
-/** Cross-feature quick actions; routes are navigated safely (no-op if absent). */
+/** Cross-feature quick actions opened through the shared [FeatureNav] bus. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun QuickActions(onNavigate: (String) -> Unit) {
+fun QuickActions(onOpen: (Destination) -> Unit) {
     val t = LocalT.current
     val can = LocalCan.current
     FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (can("sale.create")) {
-            PillButton(t("nav.pos", null), onClick = { onNavigate("pos") })
+            PillButton(t("nav.pos", null), onClick = { onOpen(Destination.Pos()) })
         }
-        if (can("expense.read")) {
-            PillButton(t("nav.expenses", null), onClick = { onNavigate("expenses") }, variant = ButtonVariant.OUTLINE)
+        if (can("device.read")) {
+            PillButton(t("nav.inventory", null), onClick = { onOpen(Destination.Inventory()) }, variant = ButtonVariant.OUTLINE)
+        }
+        if (can("qc.read")) {
+            PillButton(t("nav.qc", null), onClick = { onOpen(Destination.Qc()) }, variant = ButtonVariant.OUTLINE)
+        }
+        if (can("sale.read")) {
+            PillButton(t("nav.sales", null), onClick = { onOpen(Destination.Sales()) }, variant = ButtonVariant.OUTLINE)
+        }
+        if (can("consignment.read")) {
+            PillButton(t("nav.consignments", null), onClick = { onOpen(Destination.Consignments()) }, variant = ButtonVariant.OUTLINE)
         }
     }
 }

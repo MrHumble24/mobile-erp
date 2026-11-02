@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,12 +25,15 @@ import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Manage expense categories: list existing + add a new one (online-only). The
- * add field shows only to users with `expense.category.manage` ([canManage]).
+ * Manage expense categories: list existing (with an inactive chip), add a new
+ * one, and edit / deactivate / reassign each (all online-only, `canManage` =
+ * `expense.category.manage`).
  */
 @Composable
 fun ExpenseCategoriesSheet(
@@ -39,16 +44,34 @@ fun ExpenseCategoriesSheet(
 ) {
     val t = LocalT.current
     var name by remember { mutableStateOf("") }
+    var editing by remember { mutableStateOf<ExpenseCategory?>(null) }
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Text(t("expenses.categories", null), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(4.dp))
             categories.forEach { category ->
-                Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                    Text(category.name, style = MaterialTheme.typography.bodyLarge)
-                    if (!category.description.isNullOrBlank()) {
-                        Text(category.description, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(category.name, style = MaterialTheme.typography.bodyLarge)
+                            if (!category.isActive) {
+                                StatusChip(t("common.no", null), color = Tokens.slate)
+                            }
+                        }
+                        if (!category.description.isNullOrBlank()) {
+                            Text(category.description, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                        }
+                    }
+                    if (canManage) {
+                        PillButton(t("common.edit", null), onClick = { editing = category }, variant = ButtonVariant.GHOST)
                     }
                 }
                 HorizontalDivider(color = Tokens.border)
@@ -62,14 +85,20 @@ fun ExpenseCategoriesSheet(
                         onValueChange = { name = it },
                         modifier = Modifier.weight(1f),
                     )
-                    PillButton(
-                        t("common.add", null),
-                        onClick = { if (name.isNotBlank()) vm.addCategory(name.trim()) { name = "" } },
-                    )
+                    PillButton(t("common.add", null), onClick = { if (name.isNotBlank()) vm.addCategory(name.trim()) { name = "" } })
                 }
             }
             Spacer(Modifier.height(8.dp))
-            PillButton(t("common.close", null), onClick = onDismiss, variant = uz.malika.erp.shared.ui.ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
+            PillButton(t("common.close", null), onClick = onDismiss, variant = ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
         }
+    }
+
+    editing?.let { category ->
+        EditCategorySheet(
+            vm = vm,
+            category = category,
+            others = categories.filter { it.isActive && it.id != category.id },
+            onDismiss = { editing = null },
+        )
     }
 }
