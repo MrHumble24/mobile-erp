@@ -77,7 +77,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
   const onSubmit = (values: DeviceModelFormValues) => {
     const opts = { onSuccess: () => { toast.success(t("common.success")); onDone() }, onError: handleError }
     if (model) updateMutation.mutate({ id: model.id, dto: values }, opts)
-    else createMutation.mutate(values, opts)
+    else createMutation.mutate({ brand: values.brand, name: values.name }, opts)
   }
 
   return (
