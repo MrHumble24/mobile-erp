@@ -169,3 +169,4 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
     </CommandDialog>
   )
 }
+
