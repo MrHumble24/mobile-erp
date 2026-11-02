@@ -48,10 +48,19 @@ struct PosView: View {
         }
         .task {
             model.configure(container)
+            consumeRoute()
             #if DEBUG
             _ = PosSelfCheck.ran
             #endif
         }
+        .onChange(of: container.router.pending) { _, _ in consumeRoute() }
+    }
+
+    /// Pick up a cross-feature `.pos(imei:)` route (e.g. inventory's "Sell in
+    /// POS") and add the device to the cart exactly like a scan.
+    private func consumeRoute() {
+        guard case let .pos(imei) = container.router.consume("pos"), let imei else { return }
+        model.scan(imei)
     }
 
     private func errorText(_ key: String) -> String {
