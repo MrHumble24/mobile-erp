@@ -1,4 +1,6 @@
 import * as React from "react"
+import { isNetworkError } from "@/shared/api/http"
+import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCreateConsignment, type ConsignmentView } from "@/entities/consignment"
 
 export interface DeviceRow {
@@ -36,7 +38,7 @@ export function useConsignForm(opts: {
   initialAgreedPrice?: string
   initialPartnerId?: string
 }): ConsignFormState & {
-  submit: () => Promise<{ created: ConsignmentView[]; error: unknown }>
+  submit: () => Promise<{ created: ConsignmentView[]; queued: number; error: unknown }>
 } {
   const createMutation = useCreateConsignment()
   const [partnerId, setPartnerId] = React.useState(opts.initialPartnerId ?? "")
@@ -60,24 +62,36 @@ export function useConsignForm(opts: {
   const submit = React.useCallback(async () => {
     const valid = rows.filter((r) => r.imei.trim() && r.agreedPrice)
     const created: ConsignmentView[] = []
+    let queued = 0
     const iso = new Date(dueDate).toISOString()
     for (const row of valid) {
+      const clientMutationId = crypto.randomUUID()
+      const dto = {
+        partnerId,
+        imei: row.imei.trim(),
+        agreedPrice: Number(row.agreedPrice),
+        dueDate: iso,
+        notes: notes.trim() || undefined,
+        clientMutationId,
+      }
       try {
-        created.push(
-          await createMutation.mutateAsync({
-            partnerId,
-            imei: row.imei.trim(),
-            agreedPrice: Number(row.agreedPrice),
-            dueDate: iso,
-            notes: notes.trim() || undefined,
-            clientMutationId: crypto.randomUUID(),
-          })
-        )
+        created.push(await createMutation.mutateAsync(dto))
       } catch (error) {
-        return { created, error }
+        // Offline: queue the transfer; device version is unknown here so no
+        // optimistic baseVersion is sent (the server resolves by imei).
+        if (isNetworkError(error)) {
+          await enqueueMutation({
+            id: clientMutationId,
+            type: MUTATION_TYPES.consignmentCreate,
+            payload: dto as unknown as Record<string, unknown>,
+          })
+          queued += 1
+          continue
+        }
+        return { created, queued, error }
       }
     }
-    return { created, error: null }
+    return { created, queued, error: null }
   }, [rows, dueDate, partnerId, notes, createMutation])
 
   return {

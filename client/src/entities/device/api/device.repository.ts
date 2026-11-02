@@ -1,4 +1,5 @@
-import { http } from "@/shared/api/http"
+import { http, isNetworkError } from "@/shared/api/http"
+import { getCachedDeviceByImei } from "../lib/cached-device"
 import type {
   ChangeStatusDto,
   DeviceDetailView,
@@ -17,7 +18,16 @@ export const deviceRepository = {
   },
 
   getByImei: async (imei: string): Promise<DeviceDetailView> => {
-    return http<DeviceDetailView>(`/devices/by-imei/${imei}`)
+    try {
+      return await http<DeviceDetailView>(`/devices/by-imei/${imei}`)
+    } catch (err) {
+      // Offline/transport failure: fall back to the synced device cache.
+      if (isNetworkError(err)) {
+        const cached = await getCachedDeviceByImei(imei)
+        if (cached) return cached
+      }
+      throw err
+    }
   },
 
   getById: async (id: string): Promise<DeviceView> => {

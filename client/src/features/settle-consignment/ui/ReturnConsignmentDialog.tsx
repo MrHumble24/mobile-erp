@@ -1,5 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { isNetworkError } from "@/shared/api/http"
+import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useReturnConsignment, type ConsignmentView } from "@/entities/consignment"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
@@ -26,11 +28,9 @@ function ReturnForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const dto = { reason: reason.trim() || undefined, condition }
     returnMutation.mutate(
-      {
-        id: consignment.id,
-        dto: { reason: reason.trim() || undefined, condition },
-      },
+      { id: consignment.id, dto },
       {
         onSuccess: () => {
           toast.success(t("consignments.returnSuccess"))
@@ -38,6 +38,18 @@ function ReturnForm({
           onSuccess?.()
         },
         onError: (err: any) => {
+          if (isNetworkError(err)) {
+            void enqueueMutation({
+              id: crypto.randomUUID(),
+              type: MUTATION_TYPES.consignmentReturn,
+              payload: { consignmentId: consignment.id, ...dto },
+            }).then(() => {
+              toast.success(t("sync.queuedReturn"))
+              onCancel()
+              onSuccess?.()
+            })
+            return
+          }
           toast.error(err?.statusCode === 409 ? t("common.retry") : (err?.message || t("common.error")))
         },
       }

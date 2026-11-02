@@ -5,6 +5,7 @@ import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
 import { UserMenu } from "./UserMenu"
+import { SyncStatusIndicator } from "./SyncStatusIndicator"
 import { SHELL_BAR_HEIGHT, ALL_NAV_ITEMS } from "../model/navigation"
 import { cn } from "@/shared/lib/utils"
 
@@ -91,10 +92,7 @@ function HeaderRightActions({
         </Link>
       )}
 
-      <div className="hidden xl:flex items-center gap-1.5 px-3 h-8 rounded-full bg-[#6ee7b7]/15 text-[#00a86b] text-[11px] font-medium border border-[#6ee7b7]/30 shrink-0">
-        <span className="size-1.5 rounded-full bg-[#00c07a] animate-pulse shrink-0" />
-        <span>{t("nav.statusOnline")}</span>
-      </div>
+      <SyncStatusIndicator />
 
       <Button
         variant="outline"

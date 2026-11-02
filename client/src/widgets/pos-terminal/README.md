@@ -21,6 +21,11 @@ last line · `F4` customer search · `F8` switch Sale/Nasiya.
 - Put business rules in `ui/` — those live in the features/entities it composes.
 - Let features reach each other; the widget is the only composition point.
 
+## Offline
+The scanner's `useDeviceByImei` falls back to the synced device cache when
+offline, so the cart line carries the cached `version`. `use-pos-checkout`
+shows a "queued" toast when checkout enqueues lines instead of selling.
+
 ## Open questions
 - SOLD scan links to `/sales` (list), not the exact sale — device lookup has no sale id.
 - Session revenue sums the first 100 sales of the day only.

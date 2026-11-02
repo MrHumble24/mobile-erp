@@ -22,5 +22,6 @@
   "quickPos": "POS",
   "statusOnline": "Online",
   "collapseSidebar": "Collapse sidebar",
-  "expandSidebar": "Expand sidebar"
+  "expandSidebar": "Expand sidebar",
+  "sync": "Sync"
 }

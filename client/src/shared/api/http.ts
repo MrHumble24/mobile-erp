@@ -12,6 +12,24 @@ export class HttpError extends Error {
   }
 }
 
+/**
+ * The request never reached a reply: offline, DNS failure, connection reset.
+ * Callers treat this as "queue for later", unlike an HttpError (4xx/5xx) which
+ * is a real server verdict and must not be retried blindly.
+ */
+export class NetworkError extends Error {
+  constructor(cause: unknown) {
+    super(cause instanceof Error ? cause.message : "network request failed")
+    this.name = "NetworkError"
+    this.cause = cause
+  }
+}
+
+/** True when the failure was transport-level (no HTTP response), not a 4xx/5xx. */
+export function isNetworkError(err: unknown): err is NetworkError {
+  return err instanceof NetworkError
+}
+
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
 interface RequestOptions {
@@ -64,11 +82,17 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(url, {
-    method: options.method || "GET",
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  })
+  let response: Response
+  try {
+    response = await fetch(url, {
+      method: options.method || "GET",
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    })
+  } catch (err) {
+    // fetch only rejects on transport failure; a 4xx/5xx still resolves.
+    throw new NetworkError(err)
+  }
 
   if (!response.ok) {
     let errorBody: { statusCode?: number; message?: string | string[]; error?: string; [key: string]: unknown } = {}
