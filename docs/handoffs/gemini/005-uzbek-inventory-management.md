@@ -1,6 +1,6 @@
 # 005 — Uzbek copy for the completed inventory management screen
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "complete inventory management screen"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "complete inventory management screen"
 
 ## Why
 `/inventory` now has three tabs (devices, models, stock alerts), pagination, a device edit dialog and a
@@ -20,7 +20,7 @@ Then open `/inventory` with the `cashier@malika.uz` and `owner@malika.uz` dev lo
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: `feat(client): complete uzbek copy for inventory management`
+- Glossary terms added: Low Stock → Qoldiq kam / Kam qolgan modellar, Target Price → Mo'ljallangan narx, Sale Price → Sotuv narxi, Landed Cost → To'liq tannarx
+- Wording changes proposed for `en`: None; key sets between en and uz are identical (83 keys).
+- Notes for other agents: All hardcoded strings de-inlined; natural Uzbek phrasing tailored for Malika Bazaar phone retail operators.

@@ -1,6 +1,6 @@
 # 007 — Uzbek copy for device-model attributes and dynamic spec fields
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "per-model attribute schema"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "per-model attribute schema"
 
 ## Why
 Device models now carry their own attribute list (storage, color, anything the owner adds; text, number or
@@ -24,7 +24,7 @@ Then review in context with the `qc@malika.uz` login (credentials in `server/.en
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: `feat(client): uzbek copy for model attributes and dynamic spec fields`
+- Glossary terms added: Attribute → Xususiyat, Option → Variant, Required → Majburiy, Storage → Xotira, Color → Rang
+- Wording changes proposed for `en`: None; key sets between en and uz are identical.
+- Notes for other agents: Model dynamic attribute builder and intake spec validation errors fully localized in Uzbek.

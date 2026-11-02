@@ -1,3 +1,4 @@
+import { PackageSearch, RotateCcw } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -5,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table"
+import { Button } from "@/shared/ui/button"
 import { useI18n } from "@/shared/i18n"
 import { DeviceTableRow } from "./DeviceTableRow"
 import type { DeviceView } from "../model/device.types"
@@ -16,6 +18,8 @@ interface DeviceTableProps {
   canEdit?: boolean
   onSelect?: (device: DeviceView) => void
   onEdit?: (device: DeviceView) => void
+  onSell?: (device: DeviceView) => void
+  onResetFilters?: () => void
 }
 
 function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
@@ -23,7 +27,7 @@ function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead>IMEI</TableHead>
+        <TableHead className="w-[180px]">IMEI</TableHead>
         <TableHead>{t("inventory.model")}</TableHead>
         <TableHead>{t("inventory.storage")}</TableHead>
         <TableHead>{t("inventory.color")}</TableHead>
@@ -42,6 +46,25 @@ function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
   )
 }
 
+function EmptyState({ onResetFilters }: { onResetFilters?: () => void }) {
+  const { t } = useI18n()
+  return (
+    <div className="py-14 text-center border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
+      <PackageSearch className="mx-auto size-10 text-[#a0a0a0] stroke-[1.5]" />
+      <div className="space-y-1">
+        <p className="font-medium text-sm text-[#202020]">{t("inventory.empty")}</p>
+        <p className="text-xs text-[#838383]">{t("inventory.searchPlaceholder")}</p>
+      </div>
+      {onResetFilters && (
+        <Button variant="outline" size="sm" onClick={onResetFilters} className="text-xs gap-1.5 mt-1">
+          <RotateCcw className="size-3.5" />
+          {t("inventory.clearFilters")}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export function DeviceTable({
   devices,
   modelsMap = {},
@@ -49,15 +72,11 @@ export function DeviceTable({
   canEdit,
   onSelect,
   onEdit,
+  onSell,
+  onResetFilters,
 }: DeviceTableProps) {
-  const { t } = useI18n()
-
   if (devices.length === 0) {
-    return (
-      <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
-        {t("inventory.empty")}
-      </div>
-    )
+    return <EmptyState onResetFilters={onResetFilters} />
   }
 
   return (
@@ -74,6 +93,7 @@ export function DeviceTable({
               canEdit={canEdit}
               onSelect={onSelect}
               onEdit={onEdit}
+              onSell={onSell}
             />
           ))}
         </TableBody>

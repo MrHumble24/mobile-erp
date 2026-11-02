@@ -10,6 +10,7 @@ const InventoryPage = lazy(() => import("@/pages/inventory"))
 const ShipmentsPage = lazy(() => import("@/pages/shipments"))
 const QcPage = lazy(() => import("@/pages/qc"))
 const SalesPage = lazy(() => import("@/pages/sales"))
+const SaleReceiptPage = lazy(() => import("@/pages/sales/ui/SaleReceiptPage"))
 const CustomersPage = lazy(() => import("@/pages/customers"))
 const ConsignmentsPage = lazy(() => import("@/pages/consignments"))
 const PartnersPage = lazy(() => import("@/pages/partners"))
@@ -45,6 +46,7 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="sale.read" />}>
           <Route path="/sales" element={<SalesPage />} />
+          <Route path="/sales/:id/receipt" element={<SaleReceiptPage />} />
         </Route>
         <Route element={<RequirePermission permission="customer.read" />}>
           <Route path="/customers" element={<CustomersPage />} />

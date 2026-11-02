@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
-import { useCartStore } from "@/features/checkout"
+import { useCartStore, type CartState } from "@/features/checkout"
 import { useCreateSale, type CreateSaleDto } from "@/entities/sale"
 import { useSettings } from "@/entities/settings"
 import { deviceRepository } from "@/entities/device"
@@ -20,14 +20,9 @@ function toSalePayload(cart: ReturnType<typeof useCartStore.getState>): CreateSa
   }
 }
 
-export function usePosTerminal() {
+function useScanImei(cart: CartState, defaultWarrantyDays: number) {
   const { t } = useI18n()
-  const { data: settings } = useSettings()
-  const createSaleMutation = useCreateSale()
   const [scannedImei, setScannedImei] = React.useState("")
-  const [completedSaleId, setCompletedSaleId] = React.useState<string | null>(null)
-  const [receiptOpen, setReceiptOpen] = React.useState(false)
-  const cart = useCartStore()
 
   const handleScan = async (imei: string) => {
     try {
@@ -36,13 +31,25 @@ export function usePosTerminal() {
         toast.error(`Qurilma sotuvga tayyor emas (${dev.statusCode})`)
         return
       }
-      cart.setDevice(dev, settings?.defaultWarrantyDays || 14)
+      cart.setDevice(dev, defaultWarrantyDays)
       setScannedImei("")
       toast.success("Qurilma tanlandi")
     } catch {
       toast.error(t("common.notFound"))
     }
   }
+
+  return { scannedImei, setScannedImei, handleScan }
+}
+
+export function usePosTerminal() {
+  const { t } = useI18n()
+  const { data: settings } = useSettings()
+  const createSaleMutation = useCreateSale()
+  const [completedSaleId, setCompletedSaleId] = React.useState<string | null>(null)
+  const [receiptOpen, setReceiptOpen] = React.useState(false)
+  const cart = useCartStore()
+  const { scannedImei, setScannedImei, handleScan } = useScanImei(cart, settings?.defaultWarrantyDays || 14)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,11 +68,19 @@ export function usePosTerminal() {
     })
   }
 
+  const handleNewSale = React.useCallback(() => {
+    setReceiptOpen(false)
+    setCompletedSaleId(null)
+    setScannedImei("")
+    cart.resetCart()
+  }, [cart, setScannedImei])
+
   return {
     scannedImei,
     setScannedImei,
     handleScan,
     handleSubmit,
+    handleNewSale,
     isPending: createSaleMutation.isPending,
     completedSaleId,
     receiptOpen,

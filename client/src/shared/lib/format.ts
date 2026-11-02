@@ -1,13 +1,13 @@
-const moneyFormatter = new Intl.NumberFormat("uz-UZ", {
-  maximumFractionDigits: 0,
+const moneyFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 2,
 })
 
-/** Formats a som amount: `1 250 000 so'm`. Accepts string or number; nullish → "-". */
+/** Formats a USD amount: `$1,250`. Accepts string or number; nullish → "-". */
 export function formatMoney(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "-"
   const num = typeof value === "string" ? Number(value) : value
   if (Number.isNaN(num)) return "-"
-  return `${moneyFormatter.format(num)} so'm`
+  return `$${moneyFormatter.format(num)}`
 }
 
 /** Formats an ISO date as a local `dd.mm.yyyy` string; nullish → "-". */

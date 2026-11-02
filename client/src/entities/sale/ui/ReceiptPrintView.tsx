@@ -1,66 +1,183 @@
-import { Printer } from "lucide-react"
+import * as React from "react"
+import { Printer, Copy, Check } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
-import type { ReceiptView } from "../model/sale.types"
+import { toast } from "@/shared/ui/sonner"
+import type { ReceiptView, ReceiptItem } from "../model/sale.types"
+import { formatReceiptText } from "../lib/format-receipt"
 
-function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
-  const { t } = useI18n()
+function BarcodeVisual({ value }: { value: string }) {
   return (
-    <div className="w-[58mm] border border-dashed border-[#d4d4d4] bg-white text-black p-3 font-mono text-[11px] leading-tight rounded shadow-sm print:border-none print:shadow-none print:m-0 print:p-0">
-      <div className="text-center pb-2 border-b border-black/20 space-y-0.5">
-        <p className="font-bold text-xs uppercase tracking-wider">Malika ERP / POS</p>
-        <p className="text-[10px] text-black/70">Malika Bozor, Toshkent</p>
-        <p className="text-[10px]">{new Date(receipt.soldAt).toLocaleString()}</p>
+    <div className="flex flex-col items-center gap-1 my-2 select-none" aria-hidden="true">
+      <div className="h-8 flex items-center justify-center gap-[2px] overflow-hidden px-2">
+        {Array.from({ length: 42 }).map((_, i) => {
+          const charCode = value.charCodeAt(i % value.length) || 48
+          const isThick = ((charCode + i * 7) % 3) === 0
+          const isMedium = ((charCode + i * 5) % 2) === 0
+          const widthClass = isThick ? "w-[3px]" : isMedium ? "w-[2px]" : "w-[1px]"
+          const isHidden = (i * 13) % 9 === 0 && i > 3 && i < 38
+          return (
+            <div
+              key={i}
+              className={`h-full bg-black ${isHidden ? "opacity-0" : "opacity-100"} ${widthClass}`}
+            />
+          )
+        })}
       </div>
-
-      <div className="py-2 border-b border-black/20 space-y-0.5 text-[10px]">
-        <div><span className="font-semibold">{t("pos.cashier")}:</span> {receipt.cashier}</div>
-        <div><span className="font-semibold">ID:</span> {receipt.saleId.slice(0, 8)}</div>
-        {receipt.customer && <div><span className="font-semibold">{t("pos.customer")}:</span> {receipt.customer.name}</div>}
-      </div>
-
-      <div className="py-2 border-b border-black/20 space-y-2">
-        {receipt.items.map((item) => (
-          <div key={item.imei} className="space-y-0.5">
-            <div className="flex justify-between font-semibold">
-              <span>{item.model}</span>
-              <span>${item.price}</span>
-            </div>
-            <div className="text-[9px] text-black/70 flex justify-between">
-              <span>{item.storage || ""} {item.color || ""}</span>
-              <span className="font-mono">{item.imei}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="py-2 border-b border-black/20 flex justify-between text-xs font-bold">
-        <span>{t("pos.totalDue")}:</span>
-        <span>${receipt.total}</span>
-      </div>
-
-      {receipt.warranty && (
-        <div className="py-2 text-center text-[10px] border-b border-black/20">
-          <p className="font-semibold">{t("pos.warrantyUntil")}:</p>
-          <p>{new Date(receipt.warranty.endsAt).toLocaleDateString()} ({receipt.warranty.days} kun)</p>
-        </div>
-      )}
-
-      <div className="pt-2 text-center text-[9px] text-black/60">Xaridingiz uchun rahmat!</div>
+      <span className="font-mono text-[9px] tracking-[0.2em] font-semibold text-black/80">{value}</span>
     </div>
   )
 }
 
-export function ReceiptPrintView({ receipt }: { receipt: ReceiptView }) {
+function ChequeHeader({ soldAt }: { soldAt: string }) {
   const { t } = useI18n()
+  return (
+    <div className="text-center pb-2.5 border-b-2 border-dashed border-black/30 space-y-0.5">
+      <p className="font-black text-sm uppercase tracking-wider">{t("pos.storeName")}</p>
+      <p className="text-[10px] text-black/75 font-medium">{t("pos.storeLocation")}</p>
+      <p className="text-[10px] text-black/60">{new Date(soldAt).toLocaleString()}</p>
+    </div>
+  )
+}
+
+function ChequeMeta({ receipt }: { receipt: ReceiptView }) {
+  const { t } = useI18n()
+  return (
+    <div className="py-2 border-b border-dashed border-black/30 space-y-0.5 text-[10px]">
+      <div className="flex justify-between">
+        <span className="font-semibold">{t("pos.cashier")}:</span>
+        <span>{receipt.cashier}</span>
+      </div>
+      <div className="flex justify-between">
+        <span className="font-semibold">{t("pos.receiptNumber")}:</span>
+        <span className="font-mono font-bold">#{receipt.saleId.slice(0, 8).toUpperCase()}</span>
+      </div>
+      {receipt.customer && (
+        <div className="flex justify-between">
+          <span className="font-semibold">{t("pos.customer")}:</span>
+          <span>{receipt.customer.name} {receipt.customer.phone ? `(${receipt.customer.phone})` : ""}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) {
+  const { t } = useI18n()
+  return (
+    <>
+      <div className="py-2.5 border-b-2 border-dashed border-black/30 space-y-2">
+        {items.map((item) => (
+          <div key={item.imei} className="space-y-0.5">
+            <div className="flex justify-between font-bold text-[11px]">
+              <span className="line-clamp-1">{item.model}</span>
+              <span className="shrink-0 font-mono">${Number(item.price).toLocaleString()}</span>
+            </div>
+            <div className="text-[9px] text-black/75 flex justify-between">
+              <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
+            </div>
+            <div className="text-[9px] text-black/90 font-mono tracking-wider">
+              IMEI: {item.imei}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="py-2.5 border-b-2 border-dashed border-black/30 flex justify-between items-center text-xs font-black">
+        <span className="uppercase tracking-wider">{t("pos.totalDue")}:</span>
+        <span className="font-mono text-base font-bold">${Number(total).toLocaleString()}</span>
+      </div>
+    </>
+  )
+}
+
+function ChequeWarranty({ warranty }: { warranty: ReceiptView["warranty"] }) {
+  const { t } = useI18n()
+  if (!warranty) return null
+  return (
+    <div className="my-2 p-2 border border-black/40 rounded bg-black/[0.02] text-center space-y-0.5">
+      <p className="font-bold text-[10px] uppercase tracking-wider">{t("pos.officialWarranty")}</p>
+      <p className="font-semibold text-[10px] text-black/90">
+        {warranty.days} kun ({new Date(warranty.endsAt).toLocaleDateString()} gacha)
+      </p>
+      <p className="text-[8px] text-black/60 italic">{t("pos.warrantyNotice")}</p>
+    </div>
+  )
+}
+
+export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
+  const { t } = useI18n()
+  const primaryImei = receipt.items[0]?.imei || receipt.saleId.slice(0, 15)
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <ReceiptPaper receipt={receipt} />
-      <Button onClick={() => window.print()} className="print:hidden flex items-center gap-2">
-        <Printer className="w-4 h-4" />
-        <span>{t("pos.printReceipt")}</span>
+    <div className="printable-cheque w-full max-w-[320px] sm:w-[58mm] bg-white text-black p-4 font-mono text-[11px] leading-snug rounded-[8px] border border-[#d4d4d4] shadow-[var(--shadow-md)] print:shadow-none print:border-none print:p-0">
+      <ChequeHeader soldAt={receipt.soldAt} />
+      <ChequeMeta receipt={receipt} />
+      <ChequeItems items={receipt.items} total={receipt.total} />
+      <ChequeWarranty warranty={receipt.warranty} />
+      <BarcodeVisual value={primaryImei} />
+      <div className="pt-1 text-center text-[9px] text-black/70 space-y-0.5">
+        <p className="font-medium">{t("pos.thankYou")}</p>
+        <p className="text-[8px] text-black/50">www.malika-erp.uz</p>
+      </div>
+    </div>
+  )
+}
+
+function ChequeActions({
+  receipt,
+  onNewSale,
+}: {
+  receipt: ReceiptView
+  onNewSale?: () => void
+}) {
+  const { t } = useI18n()
+  const [copied, setCopied] = React.useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(formatReceiptText(receipt, t))
+      setCopied(true)
+      toast.success(t("pos.chequeCopied"))
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error(t("common.error"))
+    }
+  }
+
+  return (
+    <div className="print:hidden flex flex-wrap items-center justify-center gap-2 w-full max-w-[320px]">
+      <Button onClick={() => window.print()} className="flex-1 min-w-[130px] h-9 gap-1.5 text-xs font-semibold rounded-full">
+        <Printer className="size-4" />
+        <span>{t("pos.printCheque")}</span>
       </Button>
+      <Button variant="outline" onClick={handleCopy} className="flex-1 min-w-[130px] h-9 gap-1.5 text-xs font-semibold rounded-full">
+        {copied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
+        <span>{copied ? t("common.yes") : t("pos.copyCheque")}</span>
+      </Button>
+      {onNewSale && (
+        <Button
+          variant="secondary"
+          onClick={onNewSale}
+          className="w-full h-9 text-xs font-semibold rounded-full mt-1 bg-[#f8f9fa] border border-[#e8e8e8] hover:bg-[#eeeeee]"
+        >
+          {t("pos.newSale")}
+        </Button>
+      )}
+    </div>
+  )
+}
+
+export function ReceiptPrintView({
+  receipt,
+  onNewSale,
+}: {
+  receipt: ReceiptView
+  onNewSale?: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-4 w-full">
+      <ReceiptPaper receipt={receipt} />
+      <ChequeActions receipt={receipt} onNewSale={onNewSale} />
     </div>
   )
 }

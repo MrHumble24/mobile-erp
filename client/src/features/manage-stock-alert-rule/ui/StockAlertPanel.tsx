@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Plus, TriangleAlert } from "lucide-react"
+import { Plus, TriangleAlert, Truck } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { cn } from "@/shared/lib/utils"
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/entities/stock-alert"
 import { useDeviceModels } from "@/entities/device-model"
 import { Button } from "@/shared/ui/button"
+import { Link } from "@/shared/ui/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { StockAlertRuleDialog } from "./StockAlertRuleDialog"
 
@@ -21,7 +22,16 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
   if (rows.length === 0) return null
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-muted-foreground">{t("inventory.lowStock")}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[#e53935] flex items-center gap-1.5">
+          <TriangleAlert className="size-4" />
+          {t("inventory.lowStock")}
+        </h3>
+        <Link to="/shipments" className="text-xs text-[#646464] hover:text-[#090c1d] flex items-center gap-1">
+          <Truck className="size-3.5" />
+          {t("nav.shipments")}
+        </Link>
+      </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {rows.map((r) => {
           const below = r.currentCount < r.threshold
@@ -33,11 +43,11 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
                 below ? "border-[#e53935]/40 bg-[#e53935]/5" : "border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]"
               )}
             >
-              <span className="font-medium">
+              <span className="font-medium text-[#202020]">
                 {nameOf(r.modelId)} · {r.storage}
               </span>
               <span className={`font-semibold flex items-center gap-1 ${below ? "text-[#e53935]" : ""}`}>
-                {below && <TriangleAlert className="size-4" />}
+                {below && <TriangleAlert className="size-3.5" />}
                 {r.currentCount} / {r.threshold}
               </span>
             </div>
@@ -73,13 +83,13 @@ function RulesTable({
         </TableHeader>
         <TableBody>
           {rules.map((r) => (
-            <TableRow key={r.id}>
-              <TableCell className="font-medium">{nameOf(r.modelId)}</TableCell>
-              <TableCell>{r.storage}</TableCell>
-              <TableCell>{r.threshold}</TableCell>
+            <TableRow key={r.id} className="hover:bg-[#f8f9fa] transition-colors">
+              <TableCell className="font-medium text-[#202020]">{nameOf(r.modelId)}</TableCell>
+              <TableCell className="text-xs text-[#646464]">{r.storage}</TableCell>
+              <TableCell className="font-mono text-xs font-semibold">{r.threshold}</TableCell>
               {canManage && (
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => onEdit(r)}>
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(r)} className="h-7 text-xs">
                     {t("common.edit")}
                   </Button>
                 </TableCell>
@@ -110,7 +120,7 @@ export function StockAlertPanel({ canManage }: { canManage: boolean }) {
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-foreground">{t("inventory.rulesTitle")}</h3>
         {canManage && (
-          <Button size="sm" onClick={() => setDialog({ open: true, rule: null })}>
+          <Button size="sm" onClick={() => setDialog({ open: true, rule: null })} className="gap-1.5">
             <Plus className="size-4" />
             {t("inventory.newRule")}
           </Button>

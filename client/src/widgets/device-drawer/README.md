@@ -6,11 +6,14 @@ and renders status, specs, latest QC summary, status history and the
 status-change form. Used by `pages/inventory` and `pages/qc`.
 
 ## Public API
-`DeviceDrawer({ imei, open, onClose, onEdit?, onInspect? })`.
+`DeviceDrawer({ imei, open, onClose, onEdit?, onInspect?, onSell? })`.
 - `onEdit` — shown (with `device.update`) as the Edit button; the page owns the
   edit dialog.
 - `onInspect` — shown when the device is `IN_STOCK`/`DEFECTIVE`; the page owns
-  the inspection dialog.
+  the inspection dialog (QC page).
+- `onSell` — shown when the device is `IN_STOCK`; the page owns the handler
+  (inventory page pushes to the cart and navigates to POS). The QC page omits it.
+Also renders a barcode strip, a copy-IMEI header and a margin card.
 
 Permissions (`device.cost.view`, `device.status.change`, `device.update`) are
 read from the auth store inside the widget.

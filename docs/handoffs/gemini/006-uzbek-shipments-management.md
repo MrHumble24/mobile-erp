@@ -1,6 +1,6 @@
 # 006 — Uzbek copy for the completed shipments and suppliers screen
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "complete shipment and supplier management screen"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "complete shipment and supplier management screen"
 
 ## Why
 `/shipments` now has a Shipments tab (filters, progress, detail drawer with the batch's devices, edit
@@ -23,7 +23,7 @@ Then review `/shipments` with the `qc@malika.uz` and `owner@malika.uz` dev login
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Glossary terms added:
-- Wording changes proposed for `en`:
-- Notes for other agents:
+- Commit: `feat(client): complete uzbek copy for shipments and suppliers`
+- Glossary terms added: Shipment → Partiya, Supplier → Yetkazib beruvchi, Overhead → Qo'shimcha xarajat (yetkazish), Landed cost → To'liq tannarx, Intake → Qabul qilish
+- Wording changes proposed for `en`: None; key sets between en and uz are identical (55 keys).
+- Notes for other agents: All shipments and intake dialogs, overhead re-spread hints, and table progress badges translated to idiomatic Uzbek.
