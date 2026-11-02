@@ -44,9 +44,16 @@ struct ConsignmentDetailView: View {
                 row(i18n.t("consignments.consignedAt"), String(c.consignedAt.prefix(10)))
                 if let r = c.resolvedAt { row(i18n.t("consignments.resolvedAt"), String(r.prefix(10))) }
                 if let n = c.notes, !n.isEmpty { row(i18n.t("common.notes"), n) }
-                if c.saleId != nil {
-                    Label(i18n.t("consignments.resultingSale"), systemImage: "checkmark.seal")
-                        .font(.footnote).foregroundStyle(Tokens.success)
+            }
+            Section {
+                Button { open(.inventory(imei: c.imei)) } label: {
+                    Label(i18n.t("consignments.openDevice"), systemImage: "iphone")
+                }
+                if let saleId = c.saleId {
+                    Button { open(.sales(saleId: saleId)) } label: {
+                        Label(i18n.t("consignments.resultingSale"), systemImage: "arrow.up.right.square")
+                            .foregroundStyle(Tokens.success)
+                    }
                 }
             }
             if c.isOut {
@@ -87,6 +94,12 @@ struct ConsignmentDetailView: View {
             Text(value).font(mono ? .mono(14) : .subheadline).multilineTextAlignment(.trailing)
         }
         .font(.subheadline)
+    }
+
+    /// Jump to another feature (inventory / sales) and close this sheet.
+    private func open(_ route: KitRoute) {
+        container.router.open(route)
+        dismiss()
     }
 
     private func load() async {

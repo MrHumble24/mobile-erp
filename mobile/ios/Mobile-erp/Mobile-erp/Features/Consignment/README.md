@@ -18,8 +18,11 @@ Add both to `FeatureRegistry.all`. Nothing else in `App/` changes.
   record payment (`partner.payment`), edit (`partner.manage`), new
   consignment (`consignment.create`).
 - Partner create/edit + record payment: **online-only**, blocked offline.
-- Consignments list/stats (online), detail, pagination, period/status/search
-  filters, pending-sync marker.
+- Consignments list/stats (online), detail, load-more pagination
+  (`KitPaginator`), period/status/search filters, CSV export
+  (`KitCSVShareButton`), pending-sync marker. The detail links to the device
+  (`.inventory(imei:)`) and resulting sale (`.sales(saleId:)`) via `KitRouter`,
+  and the list consumes `.consignments(id:)` to open a routed detail.
 - Consign / settle / return: **offline-capable** via `ConsignmentWriter`
   (outbox types `consignment.create|settle|return`, optimistic device-status
   update, device-version base lock). Online-first, queues on network loss.

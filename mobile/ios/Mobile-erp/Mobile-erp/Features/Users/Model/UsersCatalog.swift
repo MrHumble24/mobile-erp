@@ -16,6 +16,7 @@ final class UsersCatalog {
     @ObservationIgnored private var isOnline: (() -> Bool)?
     @ObservationIgnored private var offlineMessage = "needs connection"
     @ObservationIgnored private var canRoleManage = false
+    @ObservationIgnored private var i18n: I18n?
 
     func bind(_ c: AppContainer) {
         guard repo == nil else { return }
@@ -27,6 +28,7 @@ final class UsersCatalog {
         offlineMessage = c.i18n.t("common.needsConnection",
                                   default: "No connection — try again when you are back online.")
         canRoleManage = c.session.can("role.manage")
+        i18n = c.i18n
     }
 
     /// Roles and permissions are only reachable with `role.manage`; without it
@@ -99,11 +101,23 @@ final class UsersCatalog {
             try await repo.deleteRole(code)
             await reload()
             return true
-        } catch { actionError = message(error); return false }
+        } catch { actionError = deleteMessage(error); return false }
     }
 
     private func message(_ error: Error) -> String {
         (error as? AppError)?.message ?? error.localizedDescription
+    }
+
+    /// A 409 means the role is still assigned; show the counted message the web
+    /// shows (`users.roleInUse`), not the raw server sentence.
+    private func deleteMessage(_ error: Error) -> String {
+        guard let e = error as? AppError, e.statusCode == 409, let i18n else {
+            return message(error)
+        }
+        // ponytail: count parsed from the server message ("assigned to N user(s)");
+        // read a structured `assignedUsers` field instead if that text ever changes.
+        let count = e.message.firstInteger ?? 0
+        return i18n.t("users.roleInUse", ["count": String(count)])
     }
 }
 
@@ -111,4 +125,13 @@ final class UsersCatalog {
 @MainActor
 func makeUsersRepository(_ c: AppContainer) -> UsersRepository {
     UsersRepository(api: c.api)
+}
+
+private extension String {
+    /// First run of digits in the string as an Int, or nil. Used to pull the
+    /// assigned-user count out of the role-in-use conflict message.
+    var firstInteger: Int? {
+        let digits = drop { !$0.isNumber }.prefix { $0.isNumber }
+        return Int(digits)
+    }
 }
