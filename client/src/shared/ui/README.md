@@ -3,7 +3,8 @@
 Caldera design system primitives for the mobile retail ERP client.
 
 ## What it owns
-- Generic, business-agnostic UI primitives: Button, Input, BarcodeInput, Select, Textarea, Checkbox, Switch, Dialog, Sheet, DropdownMenu, Table, Badge, Card, MetricCard, Tabs, Form, Sonner (Toast), Skeleton, Separator, Tooltip, Command, Popover, ScrollArea.
+- Generic, business-agnostic UI primitives: Button, Input, BarcodeInput, Select, Combobox, Textarea, Checkbox, Switch, Dialog, Sheet, DropdownMenu, Table, Badge, Card, MetricCard, Tabs, Form, Sonner (Toast), Skeleton, Separator, Tooltip, Command, Popover, ScrollArea.
+- `Combobox`: single-value searchable select (Popover + cmdk). Props `{ value, onChange, options, placeholder, searchPlaceholder, emptyText, disabled, className, allowCreate?, onCreate? }`. Trigger mirrors `SelectTrigger`; closes on select, clears the query on Escape/close.
 - Caldera theme styles: Ember (#fc5000), Limestone (#f7f6f2), Pumice (#e2e2df), Obsidian (#070607), Chalk (#ffffff), Sulfur (#f5f28e), Plasma Violet (#524ae9).
 - Pill controls (`rounded-[800px]`), 40px cards, 100px inputs, and roomy spacing.
 

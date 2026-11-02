@@ -20,6 +20,12 @@ export class DeviceModelsController {
     return this.models.get(id);
   }
 
+  @Get(':id/attributes')
+  @RequirePermissions('device.read')
+  getAttributes(@Param('id') id: string) {
+    return this.models.getAttributes(id);
+  }
+
   @Post()
   @RequirePermissions('device.update')
   create(@Body() dto: CreateDeviceModelDto) {

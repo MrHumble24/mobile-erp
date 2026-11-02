@@ -8,6 +8,17 @@ model DeviceModel {
   brand     String
   name      String
   isActive  Boolean  @default(true)
+  /// Per-model spec schema driving device intake/edit forms. Array of:
+  /// [{ key: "storage", label: "Storage", type: "select",
+  ///    options: ["128GB","256GB"], required: true, sortOrder: 10 },
+  ///  { key: "color", label: "Color", type: "select",
+  ///    options: ["Black","Natural Titanium"], required: false, sortOrder: 20 },
+  ///  { key: "batteryCycles", label: "Battery cycles", type: "number",
+  ///    required: false, sortOrder: 30 }]
+  /// type ∈ text|number|select. The reserved `storage` key is always a select
+  /// (reports + stock alerts group on specs->>'storage'). Empty array = legacy
+  /// model: device specs accept anything. See device-models/lib/attribute-schema.
+  attributes Json    @default("[]") @db.JsonB
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

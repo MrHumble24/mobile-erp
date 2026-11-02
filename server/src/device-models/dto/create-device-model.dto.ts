@@ -1,4 +1,13 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { AttributeDefDto } from './attribute-def.dto.js';
 
 export class CreateDeviceModelDto {
   @IsString()
@@ -10,4 +19,11 @@ export class CreateDeviceModelDto {
   @MinLength(1)
   @MaxLength(255)
   name!: string;
+
+  /** Omit → model is seeded with a default storage+color schema. */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AttributeDefDto)
+  attributes?: AttributeDefDto[];
 }

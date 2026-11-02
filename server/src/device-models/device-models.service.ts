@@ -7,6 +7,11 @@ import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { DeviceModelsRepository } from './device-models.repository.js';
 import { CreateDeviceModelDto } from './dto/create-device-model.dto.js';
 import { UpdateDeviceModelDto } from './dto/update-device-model.dto.js';
+import {
+  AttributeDef,
+  defaultAttributes,
+  normalizeAttributes,
+} from './lib/attribute-schema.js';
 import { DeviceModelView } from './types/device-model.types.js';
 
 @Injectable()
@@ -21,9 +26,21 @@ export class DeviceModelsService {
     return this.require(id);
   }
 
+  /** Effective spec schema for a model; consumed by intake/edit validation. */
+  async getAttributes(id: string): Promise<AttributeDef[]> {
+    return (await this.require(id)).attributes;
+  }
+
   async create(dto: CreateDeviceModelDto): Promise<DeviceModelView> {
+    const attributes = dto.attributes
+      ? normalizeAttributes(dto.attributes)
+      : defaultAttributes();
     try {
-      return await this.repo.create(dto);
+      return await this.repo.create({
+        brand: dto.brand,
+        name: dto.name,
+        attributes,
+      });
     } catch (error) {
       throw this.mapConflict(error, dto.brand, dto.name);
     }
@@ -34,8 +51,16 @@ export class DeviceModelsService {
     dto: UpdateDeviceModelDto,
   ): Promise<DeviceModelView> {
     await this.require(id);
+    const attributes = dto.attributes
+      ? normalizeAttributes(dto.attributes)
+      : undefined;
     try {
-      return await this.repo.update(id, dto);
+      return await this.repo.update(id, {
+        brand: dto.brand,
+        name: dto.name,
+        isActive: dto.isActive,
+        attributes,
+      });
     } catch (error) {
       throw this.mapConflict(error, dto.brand, dto.name);
     }

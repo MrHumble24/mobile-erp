@@ -11,7 +11,10 @@ transitions and status history. Intake (creation + landed cost) belongs to
 - `GET /by-imei/:imei` — POS lookup: device + model + status + latest QC
   summary (`device.read`).
 - `GET /:id`, `GET /:id/history` (`device.read`).
-- `PATCH /:id` — `{ specs?, targetPrice? }` (`device.update`).
+- `PATCH /:id` — `{ specs?, targetPrice? }` (`device.update`). When `specs` is
+  present it is validated against the device model's attribute schema
+  (`DeviceModelsService.getAttributes` + `validateSpecs`); failures → 400
+  `{ message: 'Invalid specs', problems: [{ key, message }] }`.
 - `POST /:id/status` — `{ toStatusCode, reason?, expectedVersion }`
   (`device.status.change`). 409 on version mismatch (offline lock).
 

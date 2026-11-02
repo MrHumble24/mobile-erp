@@ -9,11 +9,14 @@ Create a shipment, then scan devices into it in a running batch.
 - `SupplierCreateDialog` — composes `entities/supplier` `SupplierFormFields`
   (FSD forbids importing `manage-supplier`; the fields/schema are shared via the
   entity).
-- `DeviceIntakeForm` — the scan + model/storage(STORAGE_OPTIONS)/pricing row editor.
+- `DeviceIntakeForm` — scan + searchable model `Combobox` + `DynamicSpecFields`
+  (the chosen model's attribute schema) + cost/target-price. Adding a unit keeps
+  the model and its spec values for the next scan; only IMEI and cost reset.
 - `DeviceBatchList` — batch table, running "n registered / expected m" total,
-  per-device landed cost after submit (cost-gated), submit button.
+  per-device landed cost after submit (cost-gated), submit button. Server 400
+  `problems` (keyed by IMEI) highlight and annotate the offending rows.
 - `use-intake-batch.ts` — batch state, 15-digit + duplicate validation, the
-  add-devices mutation; a 409 highlights the offending row.
+  add-devices mutation; maps `problems` to `problemsByImei`.
 
 ## Public API
 - `IntakeShipmentDialog` ({ open, onOpenChange, existingShipmentId }).
@@ -21,7 +24,8 @@ Create a shipment, then scan devices into it in a running batch.
 ## Uses
 - `entities/shipment`: `useCreateShipment`, `useAddShipmentDevices`, `useShipment`.
 - `entities/supplier`: `useCreateSupplier`, `SupplierFormFields`, schema + mappers.
-- `entities/device`: `STORAGE_OPTIONS`. `entities/device-model`: `useDeviceModels`.
+- `entities/device-model`: `useDeviceModels`, `useDeviceModelAttributes`,
+  `DynamicSpecFields`. `shared/ui`: `Combobox`.
 
 ## Must never
 - Call HTTP directly or import another feature.

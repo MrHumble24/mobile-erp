@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,6 +7,8 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
+import { validateSpecs } from '../device-models/lib/attribute-schema.js';
+import type { DeviceModelView } from '../device-models/types/device-model.types.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
 import {
   ShipmentDevicesRegisteredEvent,
@@ -66,6 +69,7 @@ export class ShipmentsService {
   ): Promise<RegisteredDeviceView[]> {
     const shipment = await this.require(id);
     const models = await this.loadModels(dto.devices);
+    this.assertSpecs(dto.devices, models);
     const registered = await this.register(id, dto.devices, userId);
     // Best-effort notification; must never fail an intake.
     void this.announce(
@@ -111,11 +115,26 @@ export class ShipmentsService {
     );
   }
 
-  private loadModels(
-    devices: RegisterDeviceDto[],
-  ): Promise<{ brand: string; name: string }[]> {
+  private loadModels(devices: RegisterDeviceDto[]): Promise<DeviceModelView[]> {
     const ids = [...new Set(devices.map((d) => d.modelId))];
     return Promise.all(ids.map((id) => this.models.get(id)));
+  }
+
+  /** Strict per-unit spec validation against each model's attribute schema. */
+  private assertSpecs(
+    devices: RegisterDeviceDto[],
+    models: DeviceModelView[],
+  ): void {
+    const attrsById = new Map(models.map((m) => [m.id, m.attributes]));
+    const problems = devices.flatMap((d) =>
+      validateSpecs(attrsById.get(d.modelId) ?? [], d.specs).map((p) => ({
+        imei: d.imei,
+        ...p,
+      })),
+    );
+    if (problems.length > 0) {
+      throw new BadRequestException({ message: 'Invalid specs', problems });
+    }
   }
 
   private async require(id: string): Promise<ShipmentView> {

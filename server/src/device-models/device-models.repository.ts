@@ -1,31 +1,76 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateDeviceModelDto } from './dto/create-device-model.dto.js';
+import type { AttributeDef } from './lib/attribute-schema.js';
 import {
+  DeviceModelInput,
   DeviceModelPatch,
   DeviceModelView,
 } from './types/device-model.types.js';
+
+interface ModelRow {
+  id: string;
+  brand: string;
+  name: string;
+  isActive: boolean;
+  attributes: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function toView(row: ModelRow): DeviceModelView {
+  return {
+    id: row.id,
+    brand: row.brand,
+    name: row.name,
+    isActive: row.isActive,
+    attributes: (row.attributes ?? []) as AttributeDef[],
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
 
 /** All Prisma access for the device-model catalog. */
 @Injectable()
 export class DeviceModelsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(): Promise<DeviceModelView[]> {
-    return this.prisma.deviceModel.findMany({
+  async findAll(): Promise<DeviceModelView[]> {
+    const rows = await this.prisma.deviceModel.findMany({
       orderBy: [{ brand: 'asc' }, { name: 'asc' }],
     });
+    return rows.map(toView);
   }
 
-  findById(id: string): Promise<DeviceModelView | null> {
-    return this.prisma.deviceModel.findUnique({ where: { id } });
+  async findById(id: string): Promise<DeviceModelView | null> {
+    const row = await this.prisma.deviceModel.findUnique({ where: { id } });
+    return row ? toView(row) : null;
   }
 
-  create(input: CreateDeviceModelDto): Promise<DeviceModelView> {
-    return this.prisma.deviceModel.create({ data: input });
+  async create(input: DeviceModelInput): Promise<DeviceModelView> {
+    const row = await this.prisma.deviceModel.create({
+      data: {
+        brand: input.brand,
+        name: input.name,
+        attributes: input.attributes as unknown as Prisma.InputJsonValue,
+      },
+    });
+    return toView(row);
   }
 
-  update(id: string, data: DeviceModelPatch): Promise<DeviceModelView> {
-    return this.prisma.deviceModel.update({ where: { id }, data });
+  async update(id: string, patch: DeviceModelPatch): Promise<DeviceModelView> {
+    const row = await this.prisma.deviceModel.update({
+      where: { id },
+      data: {
+        brand: patch.brand,
+        name: patch.name,
+        isActive: patch.isActive,
+        attributes:
+          patch.attributes === undefined
+            ? undefined
+            : (patch.attributes as unknown as Prisma.InputJsonValue),
+      },
+    });
+    return toView(row);
   }
 }

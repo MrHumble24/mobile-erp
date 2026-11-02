@@ -1,65 +1,119 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { useAddShipmentDevices, type RegisterDeviceItem, type RegisteredDeviceView } from "@/entities/shipment"
-import type { IntakeDraft } from "../ui/DeviceIntakeForm"
+import type { SpecFieldProblem } from "@/entities/device-model"
 
-const EMPTY_DRAFT: IntakeDraft = { imei: "", modelId: "", storage: "128GB", color: "", cost: 0, targetPrice: 0 }
+export interface IntakeDraftValues {
+  imei: string
+  modelId: string
+  specs: Record<string, string>
+  cost: number
+  targetPrice: number
+}
+
+interface ServerProblem {
+  imei?: string
+  key: string
+  message: string
+}
+
+type ProblemMap = Record<string, SpecFieldProblem[]>
 
 function findImeiInMessage(message: string | undefined): string | null {
-  const match = message?.match(/\d{15}/)
-  return match ? match[0] : null
+  return message?.match(/\d{15}/)?.[0] ?? null
+}
+
+/** Groups a 400 error's `problems` by IMEI; falls back to a duplicate-IMEI hint. */
+function mapProblems(err: { message?: string; data?: unknown }): ProblemMap {
+  const problems = (err?.data as { problems?: ServerProblem[] })?.problems
+  if (problems?.length) {
+    const map: ProblemMap = {}
+    for (const p of problems) {
+      ;(map[p.imei ?? ""] ??= []).push({ key: p.key, message: p.message })
+    }
+    return map
+  }
+  const imei = findImeiInMessage(err?.message)
+  return imei ? { [imei]: [] } : {}
+}
+
+interface SubmitBag {
+  t: (key: string) => string
+  setResults: (r: RegisteredDeviceView[]) => void
+  setBatch: (b: RegisterDeviceItem[]) => void
+  setErrorMsg: (m: string) => void
+  setProblemsByImei: (p: ProblemMap) => void
+}
+
+function submitHandlers(bag: SubmitBag) {
+  return {
+    onSuccess: (res: RegisteredDeviceView[]) => {
+      bag.setResults(res)
+      bag.setBatch([])
+      bag.setErrorMsg("")
+    },
+    onError: (err: { message?: string; data?: unknown }) => {
+      const map = mapProblems(err)
+      const hasSpecProblems = Object.values(map).some((v) => v.length > 0)
+      bag.setErrorMsg(hasSpecProblems ? bag.t("shipments.invalidSpecs") : err?.message || bag.t("common.error"))
+      bag.setProblemsByImei(map)
+    },
+  }
+}
+
+function draftError(
+  values: IntakeDraftValues,
+  imei: string,
+  batch: RegisterDeviceItem[],
+  t: (key: string) => string,
+): string | null {
+  if (!/^\d{15}$/.test(imei)) return t("shipments.imeiLength")
+  if (batch.some((b) => b.imei === imei)) return t("shipments.duplicateImei")
+  if (!values.modelId) return t("shipments.selectModel")
+  return null
 }
 
 /** Owns the scan-and-add batch, its validation and the add-devices mutation. */
 export function useIntakeBatch(shipmentId: string) {
   const { t } = useI18n()
   const addDevices = useAddShipmentDevices()
-  const [draft, setDraft] = React.useState<IntakeDraft>(EMPTY_DRAFT)
   const [batch, setBatch] = React.useState<RegisterDeviceItem[]>([])
   const [errorMsg, setErrorMsg] = React.useState("")
-  const [errorImei, setErrorImei] = React.useState<string | null>(null)
+  const [problemsByImei, setProblemsByImei] = React.useState<ProblemMap>({})
   const [results, setResults] = React.useState<RegisteredDeviceView[]>([])
 
-  const setField: <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => void = (key, value) => {
-    setDraft((d) => ({ ...d, [key]: value }))
-    setErrorMsg("")
-  }
-
-  const addDraft = () => {
-    const imei = draft.imei.trim()
-    if (!/^\d{15}$/.test(imei)) return setErrorMsg(t("shipments.imeiLength"))
-    if (batch.some((b) => b.imei === imei)) return setErrorMsg(t("shipments.duplicateImei"))
-    if (!draft.modelId) return setErrorMsg(t("shipments.selectModel"))
+  const addItem = (values: IntakeDraftValues): boolean => {
+    const imei = values.imei.trim()
+    const error = draftError(values, imei, batch, t)
+    if (error) {
+      setErrorMsg(error)
+      return false
+    }
     setErrorMsg("")
     setBatch((p) => [
       ...p,
-      {
-        imei,
-        modelId: draft.modelId,
-        specs: { storage: draft.storage, color: draft.color },
-        acquisitionCost: draft.cost,
-        targetPrice: draft.targetPrice,
-      },
+      { imei, modelId: values.modelId, specs: values.specs, acquisitionCost: values.cost, targetPrice: values.targetPrice },
     ])
-    setDraft((d) => ({ ...d, imei: "" }))
+    return true
   }
-
-  const removeAt = (index: number) => setBatch((p) => p.filter((_, i) => i !== index))
 
   const submit = () => {
     if (batch.length === 0) return
-    setErrorImei(null)
+    setProblemsByImei({})
     addDevices.mutate(
       { id: shipmentId, dto: { devices: batch } },
-      {
-        onSuccess: (res) => { setResults(res); setBatch([]); setErrorMsg("") },
-        onError: (err: { message?: string }) => {
-          setErrorMsg(err?.message || t("common.error"))
-          setErrorImei(findImeiInMessage(err?.message))
-        },
-      }
+      submitHandlers({ t, setResults, setBatch, setErrorMsg, setProblemsByImei }),
     )
   }
 
-  return { draft, setField, batch, removeAt, errorMsg, errorImei, results, addDraft, submit, isSubmitting: addDevices.isPending }
+  return {
+    batch,
+    addItem,
+    removeAt: (index: number) => setBatch((p) => p.filter((_, i) => i !== index)),
+    errorMsg,
+    problemsByImei,
+    results,
+    submit,
+    isSubmitting: addDevices.isPending,
+  }
 }

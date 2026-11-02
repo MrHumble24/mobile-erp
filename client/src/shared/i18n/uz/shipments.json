@@ -47,6 +47,8 @@
   "addDevice": "Qurilmani ro'yxatga qo'shish",
   "deviceList": "Kiritilgan qurilmalar",
   "submitBatch": "Partiya qurilmalarini bazaga yuklash",
+  "specs": "Specs",
+  "invalidSpecs": "Some device specs are invalid. Fix the highlighted rows.",
   "supplierName": "Yetkazib beruvchi nomi",
   "supplierCountry": "Davlat",
   "supplierContact": "Aloqa / Telefon"

@@ -126,7 +126,7 @@ export function DeviceDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
-      <SheetPopup className="w-full sm:max-w-lg">
+      <SheetPopup className="w-full sm:max-w-3xl lg:max-w-5xl">
         <SheetHeader>
           <SheetTitle>{t("inventory.imeiDetails")}</SheetTitle>
           <SheetDescription className="font-mono text-sm">{target?.imei}</SheetDescription>
