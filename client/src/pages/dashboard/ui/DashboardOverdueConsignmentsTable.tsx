@@ -51,7 +51,7 @@ export function DashboardOverdueConsignmentsTable() {
                     ${Number(item.agreedPrice).toLocaleString()}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="ember">{new Date(item.dueDate).toLocaleDateString()}</Badge>
+                    <Badge variant="destructive">{new Date(item.dueDate).toLocaleDateString()}</Badge>
                   </TableCell>
                 </TableRow>
               ))}
@@ -62,3 +62,4 @@ export function DashboardOverdueConsignmentsTable() {
     </Card>
   )
 }
+

@@ -49,7 +49,7 @@ export function DashboardLowStockTable() {
                   </TableCell>
                   <TableCell className="text-sm">{item.storage}</TableCell>
                   <TableCell>
-                    <Badge variant="ember">{item.currentCount} dona</Badge>
+                    <Badge variant="destructive">{item.currentCount} dona</Badge>
                   </TableCell>
                   <TableCell className="text-sm font-mono">{item.threshold} dona</TableCell>
                 </TableRow>
@@ -61,3 +61,4 @@ export function DashboardLowStockTable() {
     </Card>
   )
 }
+

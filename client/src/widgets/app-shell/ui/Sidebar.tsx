@@ -1,110 +1,186 @@
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Smartphone,
-  Truck,
-  CheckCircle2,
-  Receipt,
-  ArrowLeftRight,
-  Users,
-  DollarSign,
-  BarChart3,
-  Settings,
-  ShieldCheck,
-} from "lucide-react"
 import { useLocation } from "react-router"
 import { useAuthStore } from "@/features/auth"
 import { useI18n } from "@/shared/i18n"
 import { Link } from "@/shared/ui/link"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/ui/tooltip"
 import { cn } from "@/shared/lib/utils"
+import {
+  SHELL_BAR_HEIGHT,
+  NAV_SECTIONS,
+  type NavItemDef,
+  type NavSection,
+} from "../model/navigation"
 
-interface NavItem {
-  to: string
-  labelKey: string
-  permission: string
-  icon: React.ComponentType<{ className?: string }>
+function SidebarBrand({ collapsed }: { collapsed: boolean }) {
+  return (
+    <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-[#e8e8e8] flex items-center gap-2.5 shrink-0")}>
+      <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs">
+        M
+      </div>
+      {!collapsed && (
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-[#090c1d] truncate">
+              Malika ERP
+            </h1>
+            <span className="size-1.5 rounded-full bg-[#00c07a]" />
+          </div>
+          <p className="text-[10px] text-[#838383] truncate font-medium">Boshqaruv paneli</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: "/", labelKey: "nav.dashboard", permission: "report.finance", icon: LayoutDashboard },
-  { to: "/pos", labelKey: "nav.pos", permission: "sale.create", icon: ShoppingCart },
-  { to: "/inventory", labelKey: "nav.inventory", permission: "device.read", icon: Smartphone },
-  { to: "/shipments", labelKey: "nav.shipments", permission: "shipment.read", icon: Truck },
-  { to: "/qc", labelKey: "nav.qc", permission: "qc.read", icon: CheckCircle2 },
-  { to: "/sales", labelKey: "nav.sales", permission: "sale.read", icon: Receipt },
-  { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },
-  { to: "/partners", labelKey: "nav.partners", permission: "partner.read", icon: Users },
-  { to: "/expenses", labelKey: "nav.expenses", permission: "expense.read", icon: DollarSign },
-  { to: "/reports", labelKey: "nav.reports", permission: "report.finance", icon: BarChart3 },
-  { to: "/users", labelKey: "nav.users", permission: "user.manage", icon: ShieldCheck },
-  { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
-]
-
-/** Shared with the header so the brand row and the top bar sit on one baseline. */
-export const SHELL_BAR_HEIGHT = "h-16"
-
-interface SidebarProps {
+function SidebarLinkElement({
+  item,
+  collapsed,
+  isActive,
+  onItemClick,
+}: {
+  item: NavItemDef
   collapsed: boolean
-}
-
-function SidebarItem({ item, collapsed, isActive }: { item: NavItem; collapsed: boolean; isActive: boolean }) {
+  isActive: boolean
+  onItemClick?: () => void
+}) {
   const { t } = useI18n()
   const Icon = item.icon
   const label = t(item.labelKey)
+
   return (
     <Link
       to={item.to}
-      title={collapsed ? label : undefined}
+      onClick={onItemClick}
       aria-label={label}
       className={cn(
-        "flex items-center gap-3 h-11 rounded-[800px] text-sm font-medium transition-colors no-underline hover:no-underline",
-        collapsed ? "justify-center px-0" : "px-4",
+        "flex items-center gap-3 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline",
+        collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
-          ? "bg-ember text-obsidian hover:brightness-105"
-          : "text-limestone/70 hover:bg-limestone/10 hover:text-limestone"
+          ? "bg-[#202020] text-white shadow-xs"
+          : "text-[#646464] hover:bg-black/[0.04] hover:text-[#202020]"
       )}
     >
-      <Icon className="w-5 h-5 shrink-0" />
+      <Icon className="size-4 shrink-0 stroke-[2.2]" />
       {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   )
 }
 
-export function Sidebar({ collapsed }: SidebarProps) {
+function SidebarLinkItem({
+  item,
+  collapsed,
+  isActive,
+  onItemClick,
+}: {
+  item: NavItemDef
+  collapsed: boolean
+  isActive: boolean
+  onItemClick?: () => void
+}) {
+  const { t } = useI18n()
+  const label = t(item.labelKey)
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={<SidebarLinkElement item={item} collapsed={collapsed} isActive={isActive} onItemClick={onItemClick} />}
+        />
+        <TooltipContent side="right" sideOffset={8}>
+          {label}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return (
+    <SidebarLinkElement
+      item={item}
+      collapsed={collapsed}
+      isActive={isActive}
+      onItemClick={onItemClick}
+    />
+  )
+}
+
+function SidebarSectionGroup({
+  section,
+  collapsed,
+  onItemClick,
+}: {
+  section: NavSection
+  collapsed: boolean
+  onItemClick?: () => void
+}) {
+  const { t } = useI18n()
   const location = useLocation()
   const hasPermission = useAuthStore((s) => s.hasPermission)
 
-  const visibleItems = NAV_ITEMS.filter((item) => hasPermission(item.permission))
+  const visibleItems = section.items.filter((item) => hasPermission(item.permission))
+  if (visibleItems.length === 0) return null
 
   return (
-    <aside
-      className={cn(
-        "bg-obsidian text-limestone flex flex-col h-screen sticky top-0 shrink-0 transition-[width] duration-200",
-        collapsed ? "w-[72px]" : "w-64"
-      )}
-    >
-      <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-limestone/15 flex items-center gap-3 shrink-0")}>
-        <div className="w-10 h-10 rounded-[800px] bg-ember flex items-center justify-center font-display text-xl text-obsidian shrink-0">
-          M
+    <div className="space-y-0.5">
+      {!collapsed ? (
+        <div className="text-[10px] tracking-wider text-[#838383] font-mono font-bold uppercase px-3 pt-3 pb-1">
+          {t(section.groupKey)}
         </div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <h1 className="font-display text-xl leading-none tracking-wide text-limestone">Malika ERP</h1>
-            <p className="text-[11px] text-limestone/60 mt-0.5 truncate">POS & Inventory</p>
-          </div>
-        )}
-      </div>
-
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1">
-        {visibleItems.map((item) => (
-          <SidebarItem
+      ) : (
+        <div className="my-2 border-t border-[#e8e8e8] mx-2" />
+      )}
+      {visibleItems.map((item) => {
+        const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))
+        return (
+          <SidebarLinkItem
             key={item.to}
             item={item}
             collapsed={collapsed}
-            isActive={location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))}
+            isActive={isActive}
+            onItemClick={onItemClick}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+function SidebarFooter({ collapsed }: { collapsed: boolean }) {
+  if (collapsed) return null
+  return (
+    <div className="p-3 border-t border-[#e8e8e8] bg-[#f8f9fa] shrink-0 text-[10px] text-[#838383] flex items-center justify-between">
+      <span>Malika v1.2</span>
+      <span className="font-mono bg-white border border-[#d4d4d4] px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
+    </div>
+  )
+}
+
+export interface SidebarProps {
+  collapsed: boolean
+  onItemClick?: () => void
+  className?: string
+}
+
+export function Sidebar({ collapsed, onItemClick, className }: SidebarProps) {
+  return (
+    <aside
+      className={cn(
+        "bg-white text-[#202020] border-r border-[#e8e8e8] flex flex-col h-full shrink-0 transition-[width] duration-200 z-30 select-none",
+        collapsed ? "w-[68px]" : "w-60",
+        className
+      )}
+    >
+      <SidebarBrand collapsed={collapsed} />
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-1">
+        {NAV_SECTIONS.map((section) => (
+          <SidebarSectionGroup
+            key={section.groupKey}
+            section={section}
+            collapsed={collapsed}
+            onItemClick={onItemClick}
           />
         ))}
       </nav>
+      <SidebarFooter collapsed={collapsed} />
     </aside>
   )
 }

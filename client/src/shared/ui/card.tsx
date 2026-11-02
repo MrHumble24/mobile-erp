@@ -2,27 +2,29 @@ import * as React from "react"
 import { cn } from "@/shared/lib/utils"
 
 export interface CardProps extends React.ComponentProps<"div"> {
-  variant?: "limestone" | "ember" | "plasma" | "dark" | "pumice"
+  variant?: "limestone" | "ember" | "plasma" | "dark" | "pumice" | "white" | "mist"
 }
 
 function Card({
   className,
-  variant = "limestone",
+  variant = "white",
   ...props
 }: CardProps) {
   const variantStyles = {
-    limestone: "bg-limestone text-obsidian border-none",
-    ember: "bg-ember text-chalk border-none",
-    plasma: "caldera-halftone text-chalk border-none",
-    dark: "bg-obsidian text-chalk border-none",
-    pumice: "bg-pumice text-obsidian border-[1.5px] border-obsidian/15",
+    white: "bg-white text-[#202020] border border-[#e8e8e8]",
+    limestone: "bg-[#f8f9fa] text-[#202020] border border-[#e8e8e8]",
+    mist: "bg-[#f8f9fa] text-[#202020] border border-[#e8e8e8]",
+    pumice: "bg-[#e9ebf0] text-[#202020] border border-[#d4d4d4]",
+    ember: "bg-white text-[#202020] border border-[#e8e8e8]",
+    plasma: "bg-[#6647f0]/5 text-[#090c1d] border border-[#6647f0]/20",
+    dark: "bg-[#111111] text-white border border-[#2a2a2a]",
   }[variant]
 
   return (
     <div
       data-slot="card"
       className={cn(
-        "rounded-[40px] p-8 md:p-10 lg:p-12 shadow-none transition-colors",
+        "rounded-[12px] p-6 shadow-none transition-colors",
         variantStyles,
         className
       )}
@@ -35,7 +37,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-header"
-      className={cn("flex flex-col gap-3 pb-8", className)}
+      className={cn("flex flex-col gap-1.5 pb-4", className)}
       {...props}
     />
   )
@@ -46,7 +48,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
     <h3
       data-slot="card-title"
       className={cn(
-        "font-display text-3xl md:text-4xl lg:text-5xl tracking-[0.02em] uppercase leading-[0.98]",
+        "font-display text-lg sm:text-xl font-bold tracking-tight text-[#090c1d]",
         className
       )}
       {...props}
@@ -59,7 +61,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="card-description"
       className={cn(
-        "font-body text-base font-medium opacity-80 leading-relaxed max-w-xl",
+        "font-body text-sm font-normal text-[#646464] leading-normal",
         className
       )}
       {...props}
@@ -71,7 +73,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("space-y-6 md:space-y-8", className)}
+      className={cn("space-y-4", className)}
       {...props}
     />
   )
@@ -82,7 +84,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center pt-8 font-body text-sm font-medium opacity-70",
+        "flex items-center pt-4 font-body text-xs font-medium text-[#838383]",
         className
       )}
       {...props}

@@ -11,5 +11,15 @@
   "reports": "Hisobotlar",
   "settings": "Sozlamalar",
   "users": "Foydalanuvchilar",
-  "toggle": "Menu"
+  "toggle": "Menyu",
+  "groupOperations": "Operatsiyalar",
+  "groupFinance": "Moliya & Hamkorlar",
+  "groupAdmin": "Boshqaruv & Tizim",
+  "searchPlaceholder": "Qidirish... (⌘K)",
+  "searchCommandTitle": "Tezkor o'tish va amallar",
+  "searchNoResults": "Hech narsa topilmadi",
+  "quickPos": "Kassa",
+  "statusOnline": "Onlayn",
+  "collapseSidebar": "Menyuni yig'ish",
+  "expandSidebar": "Menyuni ochish"
 }

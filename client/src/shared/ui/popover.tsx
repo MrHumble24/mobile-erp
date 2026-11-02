@@ -9,7 +9,7 @@ const PopoverClose = PopoverPrimitive.Close
 function PopoverContent({
   className,
   children,
-  sideOffset = 6,
+  sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Positioner>) {
   return (
@@ -17,7 +17,7 @@ function PopoverContent({
       <PopoverPrimitive.Positioner sideOffset={sideOffset} {...props}>
         <PopoverPrimitive.Popup
           className={cn(
-            "z-50 w-72 rounded-[24px] bg-limestone p-6 text-obsidian shadow-none border-[1.5px] border-obsidian/20 outline-none flex flex-col gap-3 transition-all",
+            "z-50 w-72 rounded-[12px] bg-white p-4 text-[#202020] shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-2.5 transition-all",
             className
           )}
         >

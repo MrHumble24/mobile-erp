@@ -11,6 +11,7 @@ import {
   ReturnConsignmentDialog,
   SettleConsignmentDialog,
 } from "@/features/settle-consignment"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { ConsignmentsTable } from "./ConsignmentsTable"
@@ -28,17 +29,17 @@ function ConsignmentTabPanels({ onSettle, onReturn }: TabContentProps) {
 
   return (
     <>
-      <TabsContent value="out">
+      <TabsContent value="out" className="mt-5">
         {outLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
         {outPage && <ConsignmentsTable items={outPage.items} onSettle={onSettle} onReturn={onReturn} />}
       </TabsContent>
 
-      <TabsContent value="overdue">
+      <TabsContent value="overdue" className="mt-5">
         {overdueLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
         {overdueItems && <ConsignmentsTable items={overdueItems} onSettle={onSettle} onReturn={onReturn} />}
       </TabsContent>
 
-      <TabsContent value="all">
+      <TabsContent value="all" className="mt-5">
         {allLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
         {allPage && <ConsignmentsTable items={allPage.items} onSettle={onSettle} onReturn={onReturn} />}
       </TabsContent>
@@ -55,20 +56,25 @@ export function ConsignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">{t("consignments.title")}</h1>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="size-4" />
-          {t("consignments.newConsignment")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("consignments.title")}
+        description="Hamkorlarga nasiyaga berilgan qurilmalar, to'lov muddatlari va hisob-kitoblar"
+        actions={
+          <Button onClick={() => setCreateOpen(true)} className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs">
+            <Plus className="size-4" />
+            {t("consignments.newConsignment")}
+          </Button>
+        }
+      />
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="out">{t("consignments.tabOut")}</TabsTrigger>
-          <TabsTrigger value="overdue">{t("consignments.tabOverdue")}</TabsTrigger>
-          <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="w-auto inline-flex">
+            <TabsTrigger value="out">{t("consignments.tabOut")}</TabsTrigger>
+            <TabsTrigger value="overdue">{t("consignments.tabOverdue")}</TabsTrigger>
+            <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
+          </TabsList>
+        </div>
         <ConsignmentTabPanels onSettle={setSettleItem} onReturn={setReturnItem} />
       </Tabs>
 

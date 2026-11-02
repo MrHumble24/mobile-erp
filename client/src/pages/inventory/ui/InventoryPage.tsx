@@ -3,6 +3,8 @@ import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { useDevices, DeviceTable, type DeviceView } from "@/entities/device"
 import { useDeviceModels } from "@/entities/device-model"
+import { PageHeader } from "@/shared/ui/page-header"
+import { Badge } from "@/shared/ui/badge"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
 import { InventoryFilters } from "./InventoryFilters"
 import { DeviceDetailDrawer } from "./DeviceDetailDrawer"
@@ -10,12 +12,17 @@ import { DeviceDetailDrawer } from "./DeviceDetailDrawer"
 function InventoryHeader({ total }: { total?: number }) {
   const { t } = useI18n()
   return (
-    <div>
-      <h2 className="text-2xl font-bold tracking-tight">{t("inventory.title")}</h2>
-      <p className="text-sm text-muted-foreground mt-1">
-        {total != null ? `${total} qurilma` : t("common.loading")}
-      </p>
-    </div>
+    <PageHeader
+      title={t("inventory.title")}
+      description="Ombordagi barcha qurilmalar ro'yxati, IMEI kodlar va texnik holatlar nazorati"
+      badge={
+        total != null ? (
+          <Badge variant="outline" className="text-xs">
+            {total} ta qurilma
+          </Badge>
+        ) : undefined
+      }
+    />
   )
 }
 

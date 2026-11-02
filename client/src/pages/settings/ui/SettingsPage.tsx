@@ -2,6 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { useSettings, useUpdateSettings, type StoreSettings, type UpdateSettingsDto } from "@/entities/settings"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -22,12 +23,12 @@ function StoreTimeFields({
   const { t } = useI18n()
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1">
-        <Label>{t("settings.closingTime")}</Label>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-[#202020]">{t("settings.closingTime")}</Label>
         <Input type="time" value={closingTime} onChange={(e) => setClosingTime(e.target.value)} required />
       </div>
-      <div className="space-y-1">
-        <Label>{t("settings.defaultWarrantyDays")}</Label>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-[#202020]">{t("settings.defaultWarrantyDays")}</Label>
         <Input
           type="number"
           min={0}
@@ -54,8 +55,8 @@ function StoreThresholdFields({
   const { t } = useI18n()
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div className="space-y-1">
-        <Label>{t("settings.minMarginPercent")}</Label>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-[#202020]">{t("settings.minMarginPercent")}</Label>
         <Input
           type="number"
           min={0}
@@ -65,8 +66,8 @@ function StoreThresholdFields({
           required
         />
       </div>
-      <div className="space-y-1">
-        <Label>{t("settings.lowStockThreshold")}</Label>
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-[#202020]">{t("settings.lowStockThreshold")}</Label>
         <Input
           type="number"
           min={0}
@@ -88,13 +89,13 @@ function TelegramChatField({
 }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-1">
-      <Label>{t("settings.telegramChatId")}</Label>
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold text-[#202020]">{t("settings.telegramChatId")}</Label>
       <Input
         value={value || ""}
         onChange={(e) => onChange(e.target.value || null)}
         placeholder="-1001234567890"
-        className="font-mono"
+        className="font-mono text-xs"
       />
     </div>
   )
@@ -160,7 +161,7 @@ function SettingsForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <SettingsFields form={form} setForm={setForm} />
       {canManage && (
-        <Button type="submit" disabled={updateMutation.isPending} className="w-full sm:w-auto">
+        <Button type="submit" disabled={updateMutation.isPending} className="w-full sm:w-auto h-9 px-5 rounded-full text-xs font-semibold shadow-xs">
           {updateMutation.isPending ? t("settings.saving") : t("common.save")}
         </Button>
       )}
@@ -176,15 +177,16 @@ export function SettingsPage() {
   const { data: settings, isLoading } = useSettings()
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("settings.title")}</h1>
-      </div>
+    <div className="space-y-6 max-w-3xl">
+      <PageHeader
+        title={t("settings.title")}
+        description="Do'konning operatsion parametrlari, ish vaqti, kafolat va xabarnoma sozlamalari"
+      />
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">{t("settings.storeSettings")}</CardTitle>
-          <CardDescription>Malika ERP do'kon konfiguratsiyasi</CardDescription>
+          <CardDescription>Malika ERP do'kon konfiguratsiyasi va chegara ko'rsatkichlari</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}

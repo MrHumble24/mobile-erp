@@ -12,13 +12,13 @@ function ClosingCards({ report }: { report: DailyClosingReport }) {
       <MetricCard
         label={t("dashboard.revenue")}
         value={`$${Math.round(report.revenue).toLocaleString()}`}
-        variant="plasma"
+        variant="white"
         subtext={`${report.unitsSold} ${t("dashboard.unitsSold")}`}
       />
       <MetricCard
         label={t("dashboard.grossProfit")}
         value={`$${Math.round(report.grossProfit).toLocaleString()}`}
-        variant="ember"
+        variant="white"
       />
       <MetricCard
         label={t("dashboard.expenses")}
@@ -28,12 +28,12 @@ function ClosingCards({ report }: { report: DailyClosingReport }) {
       <MetricCard
         label="Yangi nasiyalar"
         value={`${report.newConsignments} ta`}
-        variant="limestone"
+        variant="white"
       />
       <MetricCard
         label="Yopilgan nasiyalar"
         value={`${report.settledConsignments} ta`}
-        variant="limestone"
+        variant="white"
       />
     </div>
   )
@@ -56,3 +56,4 @@ export function DailyClosingReportTab() {
     </div>
   )
 }
+

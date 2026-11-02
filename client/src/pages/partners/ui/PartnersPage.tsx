@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { usePartners, type PartnerView } from "@/entities/partner"
 import { RecordPaymentDialog } from "@/features/record-partner-payment"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { CreatePartnerDialog } from "./CreatePartnerDialog"
 import { PartnerLedgerDrawer } from "./PartnerLedgerDrawer"
@@ -18,13 +19,16 @@ export function PartnersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">{t("partners.title")}</h1>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="size-4" />
-          {t("partners.newPartner")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("partners.title")}
+        description="Yetkazib beruvchilar va savdo hamkorlari, o'zaro hisob-kitoblar va qoldiq balansi"
+        actions={
+          <Button onClick={() => setCreateOpen(true)} className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs">
+            <Plus className="size-4" />
+            {t("partners.newPartner")}
+          </Button>
+        }
+      />
 
       {isLoading && (
         <div className="p-8 text-center text-sm text-muted-foreground">{t("common.loading")}</div>

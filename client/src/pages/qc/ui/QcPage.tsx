@@ -3,6 +3,8 @@ import { useI18n } from "@/shared/i18n"
 import { useDevices, type DeviceView } from "@/entities/device"
 import { useDeviceModels } from "@/entities/device-model"
 import { GradeDeviceDialog } from "@/features/grade-device"
+import { PageHeader } from "@/shared/ui/page-header"
+import { Badge } from "@/shared/ui/badge"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { QcDeviceTable } from "./QcDeviceTable"
@@ -10,10 +12,15 @@ import { QcDeviceTable } from "./QcDeviceTable"
 function QcHeader({ count }: { count: number }) {
   const { t } = useI18n()
   return (
-    <div>
-      <h2 className="text-2xl font-bold tracking-tight">{t("qc.title")}</h2>
-      <p className="text-sm text-muted-foreground mt-1">{t("qc.awaitingInspection")}: {count} qurilma</p>
-    </div>
+    <PageHeader
+      title={t("qc.title")}
+      description="Qurilmalarni texnik diagnostika qilish, nuqsonlarni aniqlash va sifat bahosini belgilash"
+      badge={
+        <Badge variant="outline" className="text-xs">
+          {count} ta qurilma
+        </Badge>
+      }
+    />
   )
 }
 
@@ -31,7 +38,6 @@ function QcTabs({ activeTab, onChange }: { activeTab: string; onChange: (v: stri
 }
 
 export function QcPage() {
-  const { t } = useI18n()
   const [activeTab, setActiveTab] = React.useState<string>("all")
   const [selectedDevice, setSelectedDevice] = React.useState<DeviceView | null>(null)
   const [dialogOpen, setDialogOpen] = React.useState(false)
@@ -59,24 +65,32 @@ export function QcPage() {
   return (
     <div className="space-y-6">
       <QcHeader count={qcDevices.length} />
-      <div className="w-full max-w-xl">
-        <BarcodeInput
-          placeholder="IMEI skanerlang..."
-          onScan={(imei) => {
-            const found = qcDevices.find((d) => d.imei === imei)
-            if (found) openInspect(found)
-          }}
-        />
+
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="w-full max-w-md">
+          <BarcodeInput
+            placeholder="IMEI skanerlang va tekshiring..."
+            onScan={(imei) => {
+              const dev = qcDevices.find((d) => d.imei === imei)
+              if (dev) openInspect(dev)
+            }}
+          />
+        </div>
+        <QcTabs activeTab={activeTab} onChange={setActiveTab} />
       </div>
-      <QcTabs activeTab={activeTab} onChange={setActiveTab} />
+
       {isLoading ? (
-        <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
+        <div className="py-12 text-center text-muted-foreground">Yuklanmoqda...</div>
       ) : (
         <QcDeviceTable devices={qcDevices} modelsMap={modelsMap} onInspect={openInspect} />
       )}
-      {selectedDevice && (
-        <GradeDeviceDialog deviceId={selectedDevice.id} imei={selectedDevice.imei} open={dialogOpen} onOpenChange={setDialogOpen} />
-      )}
+
+      <GradeDeviceDialog
+        deviceId={selectedDevice?.id || ""}
+        imei={selectedDevice?.imei || ""}
+        open={dialogOpen && Boolean(selectedDevice)}
+        onOpenChange={(open) => !open && setDialogOpen(false)}
+      />
     </div>
   )
 }

@@ -10,13 +10,13 @@ function Checkbox({ className, ...props }: CheckboxProps) {
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "peer size-6 shrink-0 rounded-[8px] border-[1.5px] border-obsidian/40 bg-limestone transition-all outline-none focus-visible:ring-4 focus-visible:ring-ember/20 disabled:cursor-not-allowed disabled:opacity-40 data-[checked]:bg-ember data-[checked]:border-ember data-[checked]:text-obsidian flex items-center justify-center cursor-pointer",
+        "peer size-4 shrink-0 rounded-[4px] border border-[#d4d4d4] bg-white transition-all outline-none focus-visible:ring-2 focus-visible:ring-[#0091ff]/30 disabled:cursor-not-allowed disabled:opacity-40 data-[checked]:bg-[#202020] data-[checked]:border-[#202020] data-[checked]:text-white flex items-center justify-center cursor-pointer",
         className
       )}
       {...props}
     >
-      <CheckboxPrimitive.Indicator className="flex items-center justify-center text-obsidian">
-        <Check className="size-4 stroke-[3]" />
+      <CheckboxPrimitive.Indicator className="flex items-center justify-center text-white">
+        <Check className="size-3 stroke-[3]" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

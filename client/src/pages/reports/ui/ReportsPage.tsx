@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 import { ProfitReportTab } from "./ProfitReportTab"
 import { ExpenseReportTab } from "./ExpenseReportTab"
@@ -12,31 +13,34 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("reports.title")}</h1>
-      </div>
+      <PageHeader
+        title={t("reports.title")}
+        description="Foyda va zararlar, umumiy xarajatlar tahlili, modellarning o'rtacha narxlari va kunlik kassa yopilishi"
+      />
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList>
-          <TabsTrigger value="profit">{t("reports.tabProfit")}</TabsTrigger>
-          <TabsTrigger value="expenses">{t("reports.tabExpenses")}</TabsTrigger>
-          <TabsTrigger value="pricing">{t("reports.tabModelPricing")}</TabsTrigger>
-          <TabsTrigger value="closing">{t("reports.tabDailyClosing")}</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="w-auto inline-flex">
+            <TabsTrigger value="profit">{t("reports.tabProfit")}</TabsTrigger>
+            <TabsTrigger value="expenses">{t("reports.tabExpenses")}</TabsTrigger>
+            <TabsTrigger value="pricing">{t("reports.tabModelPricing")}</TabsTrigger>
+            <TabsTrigger value="closing">{t("reports.tabDailyClosing")}</TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="profit">
+        <TabsContent value="profit" className="mt-5">
           <ProfitReportTab />
         </TabsContent>
 
-        <TabsContent value="expenses">
+        <TabsContent value="expenses" className="mt-5">
           <ExpenseReportTab />
         </TabsContent>
 
-        <TabsContent value="pricing">
+        <TabsContent value="pricing" className="mt-5">
           <ModelPricingReportTab />
         </TabsContent>
 
-        <TabsContent value="closing">
+        <TabsContent value="closing" className="mt-5">
           <DailyClosingReportTab />
         </TabsContent>
       </Tabs>

@@ -15,7 +15,7 @@ function DialogBackdrop({
   return (
     <DialogPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-obsidian/60 backdrop-blur-sm transition-opacity",
+        "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity",
         className
       )}
       {...props}
@@ -34,14 +34,14 @@ function DialogPopup({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <DialogPrimitive.Popup
           className={cn(
-            "relative w-full max-w-xl rounded-[40px] bg-limestone text-obsidian p-8 sm:p-10 shadow-none border-none transition-all outline-none my-auto",
+            "relative w-full max-w-lg rounded-[16px] bg-white text-[#202020] p-6 sm:p-7 shadow-[var(--shadow-xl)] border border-[#e8e8e8] transition-all outline-none my-auto",
             className
           )}
           {...props}
         >
           {children}
-          <DialogPrimitive.Close className="absolute top-8 right-8 size-10 rounded-[800px] bg-pumice flex items-center justify-center text-obsidian hover:bg-ember hover:text-obsidian transition-colors outline-none cursor-pointer">
-            <X className="size-5 stroke-[2.5]" />
+          <DialogPrimitive.Close className="absolute top-5 right-5 size-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#646464] hover:bg-[#eeeeee] hover:text-[#202020] transition-colors outline-none cursor-pointer">
+            <X className="size-4 stroke-[2.2]" />
             <span className="sr-only">Yopish</span>
           </DialogPrimitive.Close>
         </DialogPrimitive.Popup>
@@ -56,7 +56,7 @@ function DialogHeader({
 }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col gap-2.5 pb-6 text-left", className)}
+      className={cn("flex flex-col gap-1.5 pb-4 text-left", className)}
       {...props}
     />
   )
@@ -69,7 +69,7 @@ function DialogFooter({
   return (
     <div
       className={cn(
-        "flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-dotted border-obsidian/25",
+        "flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 pt-4 border-t border-[#e8e8e8]",
         className
       )}
       {...props}
@@ -84,7 +84,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       className={cn(
-        "font-display text-2xl sm:text-3xl text-obsidian tracking-[0.02em] uppercase leading-none",
+        "font-display text-lg sm:text-xl font-bold text-[#090c1d] tracking-tight leading-snug",
         className
       )}
       {...props}
@@ -99,7 +99,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       className={cn(
-        "font-body text-sm font-medium text-obsidian/75 leading-relaxed",
+        "font-body text-sm font-normal text-[#646464] leading-normal",
         className
       )}
       {...props}

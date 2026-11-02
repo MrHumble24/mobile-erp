@@ -33,12 +33,12 @@ function UserTableRow({
       <TableCell>
         <div className="flex flex-wrap gap-1">
           {user.roles.map((r) => (
-            <Badge key={r} variant="limestone" className="text-xs">{r}</Badge>
+            <Badge key={r} variant="default" className="text-xs">{r}</Badge>
           ))}
         </div>
       </TableCell>
       <TableCell>
-        <Badge variant={user.isActive ? "sulfur" : "outline"}>
+        <Badge variant={user.isActive ? "mint" : "outline"}>
           {user.isActive ? t("common.yes") : t("common.no")}
         </Badge>
       </TableCell>
@@ -106,3 +106,4 @@ export function UsersTab() {
     </div>
   )
 }
+

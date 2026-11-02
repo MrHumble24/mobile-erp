@@ -33,18 +33,18 @@ function ProfitMetricCards({ report }: { report: ProfitReport }) {
       <MetricCard
         label={t("dashboard.grossProfit")}
         value={`$${Math.round(report.grossProfit).toLocaleString()}`}
-        variant="ember"
+        variant="white"
         subtext={`${report.unitsSold} ${t("dashboard.unitsSold")}`}
       />
       <MetricCard
         label={t("dashboard.netOperatingIncome")}
         value={`$${Math.round(report.netOperatingIncome).toLocaleString()}`}
-        variant="limestone"
+        variant="white"
       />
       <MetricCard
         label={t("dashboard.revenue")}
         value={`$${Math.round(report.revenue).toLocaleString()}`}
-        variant="plasma"
+        variant="white"
         subtext={`Chakana: $${Math.round(report.byChannel.retail).toLocaleString()} · B2B: $${Math.round(report.byChannel.b2b).toLocaleString()}`}
       />
       <MetricCard
@@ -80,3 +80,4 @@ export function DashboardMetrics() {
     </div>
   )
 }
+

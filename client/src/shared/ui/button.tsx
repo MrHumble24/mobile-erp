@@ -3,30 +3,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/shared/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2.5 font-body font-medium transition-all select-none outline-none whitespace-nowrap leading-none disabled:pointer-events-none disabled:opacity-40 cursor-pointer shadow-none tracking-wide",
+  "inline-flex shrink-0 items-center justify-center gap-2 font-display font-bold transition-all select-none outline-none whitespace-nowrap leading-none disabled:pointer-events-none disabled:opacity-40 cursor-pointer shadow-none tracking-tight",
   {
     variants: {
       variant: {
         default:
-          "bg-ember text-obsidian rounded-[800px] hover:brightness-105 active:scale-[0.99] border-none shadow-none",
+          "bg-[#202020] text-white rounded-full hover:bg-[#2a2a2a] active:scale-[0.99] border-none shadow-none",
         secondary:
-          "bg-limestone text-obsidian rounded-[800px] border-[1.5px] border-obsidian/20 hover:border-obsidian active:scale-[0.99] shadow-none",
+          "bg-[#f8f9fa] text-[#202020] rounded-full border border-[#e8e8e8] hover:bg-[#eeeeee] active:scale-[0.99] shadow-none",
         outline:
-          "bg-transparent text-obsidian border-[1.5px] border-obsidian rounded-[800px] hover:bg-limestone active:scale-[0.99] shadow-none",
+          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] hover:border-[#b3b3b3] active:scale-[0.99] shadow-none",
         pillOutline:
-          "bg-transparent text-obsidian border-[1.5px] border-obsidian rounded-[800px] hover:bg-limestone active:scale-[0.99] shadow-none",
+          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] active:scale-[0.99] shadow-none",
         ghost:
-          "bg-transparent text-obsidian rounded-[800px] hover:bg-limestone active:scale-[0.99] border-none shadow-none",
+          "bg-transparent text-[#2a2a2a] rounded-full font-medium hover:bg-black/[0.04] active:scale-[0.99] border-none shadow-none",
         destructive:
-          "bg-ember text-chalk rounded-[800px] hover:brightness-110 active:scale-[0.99] border-none shadow-none",
+          "bg-[#e53935] text-white rounded-full hover:bg-[#d32f2f] active:scale-[0.99] border-none shadow-none",
         link:
-          "text-obsidian underline-offset-4 hover:underline p-0 h-auto rounded-none border-none",
+          "text-[#0091ff] underline-offset-4 hover:underline p-0 h-auto rounded-none border-none font-medium",
       },
       size: {
-        default: "h-14 px-8 text-base",
-        sm: "h-12 px-6 text-sm",
-        lg: "h-16 px-10 text-lg",
-        icon: "size-14 rounded-[800px] p-0",
+        default: "h-9 px-5 text-sm",
+        sm: "h-8 px-3.5 text-xs",
+        lg: "h-11 px-6 text-sm",
+        icon: "size-9 rounded-full p-0",
       },
     },
     defaultVariants: {
