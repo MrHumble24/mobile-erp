@@ -17,14 +17,13 @@ struct ExpensesListTab: View {
 
     private var canManage: Bool { container.session.can("expense.manage") }
     private var items: [Expense] { model.pager?.items ?? [] }
+    private var hasActiveFilters: Bool {
+        !model.search.isEmpty || model.categoryId != nil || model.isRecurring != nil ||
+        !model.minAmount.isEmpty || !model.maxAmount.isEmpty || model.range != .all || model.sort != .newest
+    }
 
     var body: some View {
         List {
-            if let summary = model.summary {
-                Section { ExpensesSummaryCard(summary: summary) }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-            }
             listBody
         }
         .listStyle(.insetGrouped)
@@ -78,8 +77,13 @@ struct ExpensesListTab: View {
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button { showFilters = true } label: { Image(systemName: "line.3.horizontal.decrease.circle") }
-                .accessibilityLabel(i18n.t("common.filter"))
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showFilters = true
+            } label: {
+                Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+            .accessibilityLabel(i18n.t("common.filter"))
         }
         ToolbarItem(placement: .topBarTrailing) {
             KitCSVShareButton(filename: "expenses.csv",

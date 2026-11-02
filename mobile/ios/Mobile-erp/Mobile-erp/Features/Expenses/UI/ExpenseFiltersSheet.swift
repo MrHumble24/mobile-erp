@@ -11,6 +11,14 @@ struct ExpenseFiltersSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let summary = model.summary {
+                    Section(i18n.t("common.summary", default: "Summary")) {
+                        ExpensesSummaryCard(summary: summary)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
+                            .listRowBackground(Color.clear)
+                    }
+                }
+
                 Section {
                     TextField(i18n.t("common.search"), text: $model.search)
                 }
@@ -54,6 +62,8 @@ struct ExpenseFiltersSheet: View {
                 }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private func reset() {

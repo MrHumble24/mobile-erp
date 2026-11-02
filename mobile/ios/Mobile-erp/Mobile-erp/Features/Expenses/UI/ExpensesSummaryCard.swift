@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Period summary tiles for the expense list: total, change vs the previous
-/// period, top category and entry count (web `ExpensesSummary`).
+/// Period summary card for expenses: total with period delta, top category,
+/// and transaction count. Designed with single-column layout so big numbers
+/// never get squished or truncated.
 struct ExpensesSummaryCard: View {
     let summary: ExpenseSummary
     @Environment(I18n.self) private var i18n
@@ -12,30 +13,83 @@ struct ExpensesSummaryCard: View {
         return "\(pct > 0 ? "+" : "")\(String(format: "%.1f", pct))%"
     }
 
-    var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 2)
-        LazyVGrid(columns: columns, spacing: 12) {
-            tile(i18n.t("expenses.metricTotal"), MoneyText.format(String(summary.total)), emphasis: Tokens.ink)
-            tile(i18n.t("expenses.metricVsPrevious"), delta,
-                 subtext: MoneyText.format(String(summary.previousTotal)))
-            tile(i18n.t("expenses.metricTopCategory"), summary.topCategory?.name ?? "—",
-                 subtext: summary.topCategory.map { MoneyText.format(String($0.total)) })
-            tile(i18n.t("expenses.metricCount"), "\(summary.count)")
-        }
+    private var deltaColor: Color {
+        guard summary.previousTotal > 0 else { return .secondary }
+        let diff = summary.total - summary.previousTotal
+        return diff > 0 ? Tokens.danger : Tokens.success
     }
 
-    private func tile(_ label: String, _ value: String, subtext: String? = nil,
-                      emphasis: Color? = nil) -> some View {
-        AppCard {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
-                Text(value).font(.title3.weight(.semibold))
-                    .foregroundStyle(emphasis ?? Tokens.ink).monospacedDigit().lineLimit(1)
-                if let subtext {
-                    Text(subtext).font(.caption2).foregroundStyle(.secondary)
+    var body: some View {
+        VStack(spacing: 12) {
+            // Hero Total Expense Card
+            AppCard {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(i18n.t("expenses.metricTotal"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if summary.previousTotal > 0 {
+                            Text(delta)
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(deltaColor)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(deltaColor.opacity(0.12), in: Capsule())
+                        }
+                    }
+
+                    Text(MoneyText.format(String(summary.total)))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(Tokens.ink)
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.8)
+                        .lineLimit(1)
+
+                    if summary.previousTotal > 0 {
+                        Text("\(i18n.t("expenses.metricVsPrevious")): \(MoneyText.format(String(summary.previousTotal)))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            // Supporting Metrics
+            AppCard {
+                VStack(spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(i18n.t("expenses.metricTopCategory"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(summary.topCategory?.name ?? "—")
+                                .font(.headline)
+                                .foregroundStyle(Tokens.ink)
+                        }
+                        Spacer()
+                        if let top = summary.topCategory {
+                            Text(MoneyText.format(String(top.total)))
+                                .font(.subheadline.weight(.semibold))
+                                .monospacedDigit()
+                                .foregroundStyle(Tokens.ink)
+                        }
+                    }
+
+                    Divider()
+
+                    HStack {
+                        Text(i18n.t("expenses.metricCount"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(summary.count)")
+                            .font(.subheadline.weight(.semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(Tokens.ink)
+                    }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

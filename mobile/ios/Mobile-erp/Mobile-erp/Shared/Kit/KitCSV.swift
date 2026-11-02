@@ -8,7 +8,7 @@ import SwiftUI
 ///       KitCSV.build(headers: ["IMEI", "Price"],
 ///                    rows: sales.map { [$0.imei, $0.price] })
 ///   }
-enum KitCSV {
+nonisolated enum KitCSV {
     /// Join headers + rows into one escaped CSV document (CRLF line endings).
     static func build(headers: [String], rows: [[String]]) -> String {
         ([headers] + rows)

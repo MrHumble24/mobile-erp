@@ -3,7 +3,7 @@ import Foundation
 /// Parses the `/sync/changes` payload. Kept here so the pull service stays
 /// about paging, not field-plucking. The feed's `specs` and `latestSale` are
 /// open-ended JSON, so they are carried as raw JSON strings into the cache.
-struct ChangesPage {
+nonisolated struct ChangesPage {
     let nextSince: String?
     let devices: [DeviceRow]
     let partners: [PartnerRow]
@@ -15,7 +15,7 @@ struct ChangesPage {
     }
 }
 
-struct DeviceRow {
+nonisolated struct DeviceRow {
     let id, imei, statusCode, updatedAt: String
     let version: Int
     let targetPrice: String?
@@ -56,7 +56,7 @@ struct DeviceRow {
     }
 }
 
-struct PartnerRow {
+nonisolated struct PartnerRow {
     let id, shopName, creditLimit, outstanding: String
     let phone: String?
 

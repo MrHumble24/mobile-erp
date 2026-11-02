@@ -59,7 +59,7 @@ struct PosCustomerHit: Decodable, Identifiable {
 }
 
 /// Inline new customer (mutually exclusive with an existing `customerId`).
-struct InlineCustomerPayload: Encodable {
+nonisolated struct InlineCustomerPayload: Encodable {
     let name: String
     let phone: String?
 }
@@ -68,7 +68,7 @@ struct InlineCustomerPayload: Encodable {
 /// (`encodeIfPresent`), so no stray keys reach the server's `forbidNonWhitelisted`.
 /// `clientMutationId`/`expectedVersion` make an online retry idempotent; for an
 /// offline enqueue the sync handler overrides them from the outbox entry.
-struct SaleCreatePayload: Encodable {
+nonisolated struct SaleCreatePayload: Encodable {
     let imei: String
     let salePrice: Double
     let clientMutationId: String
