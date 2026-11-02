@@ -99,4 +99,7 @@ object InventoryFeature : FeatureModule {
 - Dev-panel / offline / forbidden i18n keys are not yet in the web JSON (Gemini
   handoff); the raw key shows until added. The loader reads the client JSON as-is.
 - Camera scanning needs a device (emulator: use the HID text field / a USB wedge).
+- `ScannerField` camera = `CameraScanSheet` + `CodeAnalyzer`: every barcode/QR format (ML Kit),
+  then on-device OCR for a printed IMEI (`shared/lib/ImeiText` — 15 digits, Luhn check, grouping
+  spaces/dashes allowed). All offline. Barcode wins when a frame has both.
 - Conflict inbox UI is wave 1; wave 0 ships `ConflictStore` (fetch + resolve) only.

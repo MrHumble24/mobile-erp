@@ -59,7 +59,7 @@ via a synchronized-group exception set in the pbxproj (so duplicate names are fi
 
 ## UI kit (`Shared/UI/`) — use these, prefer stock SwiftUI otherwise
 `AppCard` · `StatusBadge(deviceStatus:label:)` · `MoneyText` · `ScannerField`
-(HID + camera) · `LoadingView` / `EmptyStateView` / `ErrorStateView` ·
+(HID + camera: VisionKit barcodes/QR + OCR of a printed IMEI via `ImeiText`, Luhn-checked) · `LoadingView` / `EmptyStateView` / `ErrorStateView` ·
 `ForbiddenPanel`. Use stock `List`/`Form`/`NavigationStack`/`Picker`/`Menu`/
 `Button(.borderedProminent/.bordered)` so iOS 26 Liquid Glass applies to chrome.
 

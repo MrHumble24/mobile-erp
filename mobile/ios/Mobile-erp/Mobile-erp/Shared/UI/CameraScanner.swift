@@ -1,9 +1,10 @@
 import SwiftUI
 import VisionKit
 
-/// VisionKit camera barcode scanner, bridged for SwiftUI. Presented in a sheet
-/// by `ScannerField`. Recognizes 1D/2D barcodes and reports the first value via
-/// `onScan`. Caller guards `DataScannerViewController.isSupported` before use.
+/// VisionKit camera scanner, bridged for SwiftUI. Presented in a sheet by
+/// `ScannerField`. Recognizes 1D barcodes, QR/2D codes and printed IMEI numbers
+/// (on-device OCR filtered by `ImeiText`), reporting the first hit via `onScan`.
+/// Caller guards `DataScannerViewController.isSupported` before use.
 struct CameraScanner: UIViewControllerRepresentable {
     let onScan: (String) -> Void
 
@@ -11,7 +12,7 @@ struct CameraScanner: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> DataScannerViewController {
         let scanner = DataScannerViewController(
-            recognizedDataTypes: [.barcode()],
+            recognizedDataTypes: [.barcode(), .text()],
             qualityLevel: .balanced,
             isHighFrameRateTrackingEnabled: false,
             isPinchToZoomEnabled: true,
@@ -40,15 +41,28 @@ struct CameraScanner: UIViewControllerRepresentable {
             handle(items)
         }
 
+        /// OCR text refines across frames, so a number may only become readable on update.
+        func dataScanner(_ scanner: DataScannerViewController, didUpdate items: [RecognizedItem], allItems: [RecognizedItem]) {
+            handle(items)
+        }
+
         private func handle(_ items: [RecognizedItem]) {
             guard !fired else { return }
-            for case let .barcode(barcode) in items {
-                if let value = barcode.payloadStringValue, !value.isEmpty {
-                    fired = true
-                    onScan(value)
-                    return
-                }
-            }
+            guard let value = items.lazy.compactMap(Self.barcode).first
+                ?? items.lazy.compactMap(Self.imei).first else { return }
+            fired = true
+            onScan(value)
+        }
+
+        private static func barcode(_ item: RecognizedItem) -> String? {
+            guard case let .barcode(code) = item, let value = code.payloadStringValue,
+                  !value.isEmpty else { return nil }
+            return value
+        }
+
+        private static func imei(_ item: RecognizedItem) -> String? {
+            guard case let .text(text) = item else { return nil }
+            return ImeiText.find(in: text.transcript)
         }
     }
 }
