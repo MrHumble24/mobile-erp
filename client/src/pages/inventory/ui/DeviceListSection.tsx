@@ -14,6 +14,8 @@ interface DeviceListSectionProps {
   onPageSizeChange: (size: number) => void
   onSelect: (d: DeviceView) => void
   onEdit: (d: DeviceView) => void
+  onSell?: (d: DeviceView) => void
+  onResetFilters?: () => void
 }
 
 export function DeviceListSection({
@@ -28,6 +30,8 @@ export function DeviceListSection({
   onPageSizeChange,
   onSelect,
   onEdit,
+  onSell,
+  onResetFilters,
 }: DeviceListSectionProps) {
   const { t } = useI18n()
 
@@ -44,6 +48,8 @@ export function DeviceListSection({
         canEdit={canEdit}
         onSelect={onSelect}
         onEdit={onEdit}
+        onSell={onSell}
+        onResetFilters={onResetFilters}
       />
       {data && data.total > 0 && (
         <Pagination

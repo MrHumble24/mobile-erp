@@ -64,5 +64,20 @@
   "newRule": "New rule",
   "editRule": "Edit rule",
   "threshold": "Threshold",
-  "lowStock": "Low stock"
+  "lowStock": "Kam qolgan modellar",
+  "copyImei": "IMEI nusxalash",
+  "imeiCopied": "IMEI buferga nusxalandi",
+  "clearFilters": "Filtrlarni tozalash",
+  "sellInPos": "Kassada sotish",
+  "deviceAddedToCart": "Qurilma kassaga biriktirildi",
+  "metricsTotal": "Jami qurilmalar",
+  "metricsInStock": "Sotuvda",
+  "metricsDefective": "Nuqsonli (QC)",
+  "metricsConsigned": "Konsignatsiyada",
+  "metricsLowStock": "Kam qolgan",
+  "expectedProfit": "Kutilayotgan foyda",
+  "margin": "Marja",
+  "filterActiveCount": "{count} ta faol filtr",
+  "allFilters": "Barchasi",
+  "scanOrSearch": "IMEI skanerlang yoki qidiring..."
 }

@@ -94,12 +94,11 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
     where.specs = { path: ['storage'], equals: filters.storage };
   }
   if (filters.search) {
-    where.model = {
-      OR: [
-        { brand: { contains: filters.search, mode: 'insensitive' } },
-        { name: { contains: filters.search, mode: 'insensitive' } },
-      ],
-    };
+    where.OR = [
+      { imei: { contains: filters.search, mode: 'insensitive' } },
+      { model: { brand: { contains: filters.search, mode: 'insensitive' } } },
+      { model: { name: { contains: filters.search, mode: 'insensitive' } } },
+    ];
   }
   return where;
 }
