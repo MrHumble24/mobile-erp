@@ -4,11 +4,8 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -27,13 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
 /**
- * Live camera barcode/IMEI scanner (CameraX preview + ML Kit analysis). Fires
- * [onDetect] with the first non-empty code; the caller dismisses the sheet.
+ * Live camera scanner (CameraX preview + [CodeAnalyzer]): barcodes, QR codes and
+ * printed IMEI numbers. Fires [onDetect] with the first hit; the caller dismisses the sheet.
  * Requests CAMERA at first mount; without it, shows an inline message.
  */
 @Composable
@@ -58,11 +53,11 @@ fun CameraScanSheet(onDetect: (String) -> Unit, permissionMessage: String) {
     }
 
     val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
-    val scanner = remember { BarcodeScanning.getClient() }
+    val analyzer = remember { CodeAnalyzer(onDetect) }
     DisposableEffect(Unit) {
         onDispose {
             analysisExecutor.shutdown()
-            scanner.close()
+            analyzer.close()
         }
     }
 
@@ -79,9 +74,7 @@ fun CameraScanSheet(onDetect: (String) -> Unit, permissionMessage: String) {
                 val analysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
-                analysis.setAnalyzer(analysisExecutor) { proxy ->
-                    analyze(proxy, scanner, onDetect)
-                }
+                analysis.setAnalyzer(analysisExecutor, analyzer)
                 provider.unbindAll()
                 provider.bindToLifecycle(
                     lifecycleOwner,
@@ -93,24 +86,4 @@ fun CameraScanSheet(onDetect: (String) -> Unit, permissionMessage: String) {
             previewView
         },
     )
-}
-
-@OptIn(ExperimentalGetImage::class)
-private fun analyze(
-    proxy: ImageProxy,
-    scanner: com.google.mlkit.vision.barcode.BarcodeScanner,
-    onDetect: (String) -> Unit,
-) {
-    val media = proxy.image
-    if (media == null) {
-        proxy.close()
-        return
-    }
-    val input = InputImage.fromMediaImage(media, proxy.imageInfo.rotationDegrees)
-    scanner.process(input)
-        .addOnSuccessListener { barcodes ->
-            barcodes.firstNotNullOfOrNull { it.rawValue?.takeIf(String::isNotEmpty) }
-                ?.let(onDetect)
-        }
-        .addOnCompleteListener { proxy.close() }
 }

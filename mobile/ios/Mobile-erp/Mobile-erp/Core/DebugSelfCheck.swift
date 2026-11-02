@@ -22,6 +22,7 @@ func runDebugSelfChecks() {
     assert(isJWTExpired("not-a-jwt"))
 
     runLoggingSelfChecks()
+    runImeiTextSelfChecks()
 }
 
 /// Ring-buffer cap/order and secret masking for the dev-console logging.
