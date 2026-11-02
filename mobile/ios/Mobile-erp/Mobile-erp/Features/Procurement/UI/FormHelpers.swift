@@ -1,0 +1,33 @@
+import SwiftUI
+
+/// A labelled text row for use inside a stock `Form`. The label doubles as the
+/// placeholder — the standard iOS grouped-form look, so system chrome/glass
+/// applies for free.
+struct LabeledField: View {
+    let label: String
+    @Binding var text: String
+    var keyboard: UIKeyboardType = .default
+    var mono = false
+
+    init(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default, mono: Bool = false) {
+        self.label = label
+        self._text = text
+        self.keyboard = keyboard
+        self.mono = mono
+    }
+
+    var body: some View {
+        TextField(label, text: $text)
+            .keyboardType(keyboard)
+            .autocorrectionDisabled(mono)
+            .textInputAutocapitalization(mono ? .characters : .sentences)
+            .font(mono ? .mono(15) : .body)
+    }
+}
+
+extension String {
+    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+    var trimmedOrNil: String? { let t = trimmed; return t.isEmpty ? nil : t }
+    /// Operator-entered money → exact Decimal (nil when blank/invalid).
+    var asDecimal: Decimal? { Decimal(string: trimmed) }
+}

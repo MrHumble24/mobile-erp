@@ -1,0 +1,103 @@
+import SwiftUI
+
+/// Consignment detail sheet: partner, device IMEI, terms, timestamps and —
+/// for an OUT item — settle / return. Loads the single record online (not in
+/// the sync cache); offline it shows a needs-connection notice.
+struct ConsignmentDetailView: View {
+    let consignmentId: String
+    var onSettle: (Consignment) -> Void
+    var onReturn: (Consignment) -> Void
+
+    @Environment(AppContainer.self) private var container
+    @Environment(I18n.self) private var i18n
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var item: Consignment?
+    @State private var loading = false
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if let item { detail(item) }
+                else if loading { LoadingView() }
+                else { ErrorStateView(message: errorMessage ?? i18n.t("common.error")) }
+            }
+            .navigationTitle(i18n.t("consignments.detailTitle"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(i18n.t("common.close")) { dismiss() }
+                }
+            }
+            .task { await load() }
+        }
+    }
+
+    private func detail(_ c: Consignment) -> some View {
+        List {
+            Section {
+                row(i18n.t("consignments.partner"), c.partnerShopName)
+                row(i18n.t("consignments.device"), c.imei, mono: true)
+                row(i18n.t("consignments.agreedPrice"), MoneyText.format(c.agreedPrice), mono: true)
+                dueRow(c)
+                row(i18n.t("consignments.consignedAt"), String(c.consignedAt.prefix(10)))
+                if let r = c.resolvedAt { row(i18n.t("consignments.resolvedAt"), String(r.prefix(10))) }
+                if let n = c.notes, !n.isEmpty { row(i18n.t("common.notes"), n) }
+                if c.saleId != nil {
+                    Label(i18n.t("consignments.resultingSale"), systemImage: "checkmark.seal")
+                        .font(.footnote).foregroundStyle(Tokens.success)
+                }
+            }
+            if c.isOut {
+                Section {
+                    Button { onSettle(c) } label: {
+                        Label(i18n.t("consignments.settle"), systemImage: "checkmark.circle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Button(role: .destructive) { onReturn(c) } label: {
+                        Label(i18n.t("consignments.return"), systemImage: "arrow.uturn.backward")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+    }
+
+    private func dueRow(_ c: Consignment) -> some View {
+        let overdue = ConsignmentLogic.daysOverdue(dueDate: c.dueDate, statusCode: c.statusCode)
+        let text = overdue > 0
+            ? "\(c.dueDate.prefix(10)) · \(overdue) \(i18n.t("consignments.daysOverdue"))"
+            : String(c.dueDate.prefix(10))
+        return HStack {
+            Text(i18n.t("consignments.dueDate")).foregroundStyle(.secondary)
+            Spacer()
+            Text(text).foregroundStyle(overdue > 0 ? Tokens.danger : .primary)
+        }
+        .font(.subheadline)
+    }
+
+    private func row(_ label: String, _ value: String, mono: Bool = false) -> some View {
+        HStack {
+            Text(label).foregroundStyle(.secondary)
+            Spacer()
+            Text(value).font(mono ? .mono(14) : .subheadline).multilineTextAlignment(.trailing)
+        }
+        .font(.subheadline)
+    }
+
+    private func load() async {
+        guard item == nil else { return }
+        guard container.connectivity.isOnline else {
+            errorMessage = i18n.t("common.offline", default: "Connect to view this consignment.")
+            return
+        }
+        loading = true
+        defer { loading = false }
+        do { item = try await container.consignmentRepository.get(consignmentId) }
+        catch { errorMessage = (error as? AppError)?.message }
+    }
+}
