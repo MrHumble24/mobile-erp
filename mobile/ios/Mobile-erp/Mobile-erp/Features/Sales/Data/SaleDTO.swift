@@ -64,19 +64,45 @@ struct SalesPage: Decodable {
     let total: Int
 }
 
+/// Aggregates over the filtered sale set (`GET /sales/stats`). `netProfit` is
+/// redacted (omitted) for users without cost visibility — optional here.
+struct SaleStatsView: Decodable {
+    let count: Int
+    let revenue: MoneyValue
+    let avgPrice: MoneyValue
+    let returnedCount: Int
+    let refundTotal: MoneyValue
+    let netProfit: MoneyValue?
+}
+
+/// A cashier option for the sold-by filter (`GET /users`, gated on `user.read`).
+struct SalesCashier: Decodable, Identifiable {
+    let id: String
+    let name: String
+}
+
 /// Client-only filter state for the sales list (sent to the server, which
 /// derives `channel` from `consignmentId`).
-struct SaleFilters {
+struct SaleFilters: Equatable {
     var channel: String?        // "retail" | "b2b"
     var returned: String?       // "true" | "false"
+    var warranty: String?       // "active" | "expired"
+    var soldById: String?
     var search: String = ""
     var from: Date?
     var to: Date?
+
+    /// Any sheet filter set (search lives in the search bar, so it's not counted).
+    var isActive: Bool {
+        channel != nil || returned != nil || warranty != nil || soldById != nil || from != nil || to != nil
+    }
 
     var query: [String: String] {
         var q: [String: String] = [:]
         if let channel { q["channel"] = channel }
         if let returned { q["returned"] = returned }
+        if let warranty { q["warranty"] = warranty }
+        if let soldById { q["soldById"] = soldById }
         let trimmed = search.trimmingCharacters(in: .whitespaces)
         if !trimmed.isEmpty { q["search"] = trimmed }
         if let from { q["from"] = ISO8601DateFormatter().string(from: from) }

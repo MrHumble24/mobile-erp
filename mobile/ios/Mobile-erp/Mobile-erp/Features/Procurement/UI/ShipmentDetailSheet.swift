@@ -1,15 +1,18 @@
 import SwiftUI
 
-/// Shipment summary + its registered devices, with edit and continue-intake
-/// actions. Shows the first page of devices (batches rarely exceed 50).
+/// Shipment summary + its registered devices (paged with load-more), with edit
+/// and continue-intake actions.
 struct ShipmentDetailSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
 
     let shipment: Shipment
+    /// Hidden when embedded as the detail column of the iPad split view.
+    var showsClose = true
 
-    @State private var store: AsyncStore<DeviceTableData>?
+    @State private var pager: KitPaginator<ProcDevice>?
+    @State private var modelNames: [String: String] = [:]
     @State private var editShipment: Shipment?
     @State private var intake: Shipment?
 
@@ -34,13 +37,16 @@ struct ShipmentDetailSheet: View {
             .navigationTitle(i18n.t("shipments.detailTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.cancel", default: "Done")) { dismiss() }
+                if showsClose {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(i18n.t("common.cancel", default: "Done")) { dismiss() }
+                    }
                 }
             }
             .task {
-                if store == nil { store = makeStore() }
-                await store?.reload()
+                if pager == nil { pager = makePager() }
+                await loadModels()
+                await pager?.first()
             }
             .sheet(item: $editShipment, onDismiss: reload) { s in
                 ShipmentFormSheet(existing: s)
@@ -67,44 +73,41 @@ struct ShipmentDetailSheet: View {
 
     @ViewBuilder
     private var devices: some View {
-        if let store {
-            LoadableView(state: store.state, retry: reload) { data in
-                if data.page.items.isEmpty {
-                    Text(i18n.t("shipments.noDevices")).foregroundStyle(.secondary)
-                } else {
-                    let showCost = data.page.items.contains { $0.landedCost != nil }
-                    ForEach(data.page.items) { d in
-                        DeviceTableRow(device: d,
-                                       modelName: data.modelNames[d.modelId] ?? d.modelId,
-                                       showCost: showCost)
-                    }
+        if let pager {
+            if let error = pager.error, pager.items.isEmpty {
+                ErrorStateView(message: error, retry: reload)
+            } else if pager.items.isEmpty, !pager.isLoading {
+                Text(i18n.t("shipments.noDevices")).foregroundStyle(.secondary)
+            } else {
+                let showCost = pager.items.contains { $0.landedCost != nil }
+                ForEach(pager.items) { d in
+                    DeviceTableRow(device: d,
+                                   modelName: modelNames[d.modelId] ?? d.modelId,
+                                   showCost: showCost)
                 }
+                KitLoadMoreFooter(pager: pager)
             }
         } else {
             LoadingView()
         }
     }
 
-    private func makeStore() -> AsyncStore<DeviceTableData> {
-        let api = container.api
-        let devices = DevicesRepository(api: api)
-        let models = DeviceModelsRepository(api: api)
+    private func makePager() -> KitPaginator<ProcDevice> {
+        let repo = DevicesRepository(api: container.api)
         let id = shipment.id
-        return AsyncStore {
-            async let a = devices.query(shipmentId: id)
-            async let b = models.list()
-            let (page, modelList) = try await (a, b)
-            let names = Dictionary(modelList.map { ($0.id, $0.label) }, uniquingKeysWith: { l, _ in l })
-            return DeviceTableData(page: page, modelNames: names)
+        return KitPaginator { page, size in
+            let r = try await repo.query(shipmentId: id, page: page, pageSize: size)
+            return (r.items, r.total)
         }
     }
 
-    private func reload() { Task { await store?.reload() } }
-}
+    private func loadModels() async {
+        guard modelNames.isEmpty else { return }
+        let models = (try? await DeviceModelsRepository(api: container.api).list()) ?? []
+        modelNames = Dictionary(models.map { ($0.id, $0.label) }, uniquingKeysWith: { l, _ in l })
+    }
 
-struct DeviceTableData {
-    let page: PaginatedDevices
-    let modelNames: [String: String]
+    private func reload() { Task { await pager?.first() } }
 }
 
 private struct DeviceTableRow: View {

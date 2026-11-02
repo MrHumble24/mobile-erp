@@ -72,7 +72,6 @@ struct ConsignmentsFilterSheet: View {
                                 model.preset = .all
                                 model.customFrom = ""
                                 model.customTo = ""
-                                model.pageIndex = 1
                                 onApply()
                                 dismiss()
                             } label: {
@@ -99,7 +98,6 @@ struct ConsignmentsFilterSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.done", default: "Done")) {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        model.pageIndex = 1
                         onApply()
                         dismiss()
                     }

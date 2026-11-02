@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Online-only "Log expense" form. When offline it refuses (expenses are not in
-/// the offline outbox) and tells the user to reconnect.
+/// Online-only log / edit expense form. When offline it refuses (expenses are
+/// not in the offline outbox) and tells the user to reconnect.
 /// Roomy, clear single-column input flow.
 struct LogExpenseSheet: View {
     let model: ExpensesModel
+    var expense: Expense?
     var onResult: (String) -> Void
 
     @Environment(AppContainer.self) private var container
@@ -12,11 +13,24 @@ struct LogExpenseSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var categoryId: String?
-    @State private var amount = ""
-    @State private var description = ""
-    @State private var isRecurring = false
-    @State private var incurredAt = Date()
+    @State private var amount: String
+    @State private var description: String
+    @State private var vendor: String
+    @State private var isRecurring: Bool
+    @State private var incurredAt: Date
     @State private var saving = false
+
+    init(model: ExpensesModel, expense: Expense?, onResult: @escaping (String) -> Void) {
+        self.model = model
+        self.expense = expense
+        self.onResult = onResult
+        _categoryId = State(initialValue: expense?.categoryId)
+        _amount = State(initialValue: expense?.amount ?? "")
+        _description = State(initialValue: expense?.description ?? "")
+        _vendor = State(initialValue: expense?.vendor ?? "")
+        _isRecurring = State(initialValue: expense?.isRecurring ?? false)
+        _incurredAt = State(initialValue: expense.flatMap { ISO8601DateFormatter().date(from: $0.incurredAt) } ?? Date())
+    }
 
     private var amountValue: Double? {
         let v = Double(amount.replacingOccurrences(of: ",", with: "."))
@@ -48,6 +62,7 @@ struct LogExpenseSheet: View {
                     }
                     .padding(.vertical, 2)
 
+                    TextField(i18n.t("expenses.vendor"), text: $vendor)
                     TextField(i18n.t("expenses.description", default: "Description (what was purchased)"),
                               text: $description)
                 }
@@ -78,7 +93,7 @@ struct LogExpenseSheet: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
-            .navigationTitle(i18n.t("expenses.newExpense", default: "Log Shop Expense"))
+            .navigationTitle(i18n.t(expense == nil ? "expenses.newExpense" : "expenses.editExpense"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -96,16 +111,21 @@ struct LogExpenseSheet: View {
         }
         saving = true
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        let dto = CreateExpenseDto(
-            categoryId: categoryId, amount: amountValue,
-            description: description.isEmpty ? nil : description,
-            isRecurring: isRecurring,
-            incurredAt: ISO8601DateFormatter().string(from: incurredAt)
-        )
+        let desc = description.isEmpty ? nil : description
+        let payeeVendor = vendor.isEmpty ? nil : vendor
+        let iso = ISO8601DateFormatter().string(from: incurredAt)
         Task {
             do {
-                try await model.create(dto)
-                onResult(i18n.t("expenses.expenseSaved", default: "Expense saved successfully."))
+                if let expense {
+                    try await model.update(id: expense.id, UpdateExpenseDto(
+                        categoryId: categoryId, amount: amountValue, description: desc,
+                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso))
+                } else {
+                    try await model.create(CreateExpenseDto(
+                        categoryId: categoryId, amount: amountValue, description: desc,
+                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso))
+                }
+                onResult(i18n.t("expenses.expenseSaved"))
                 dismiss()
             } catch let e as AppError {
                 saving = false; onResult(e.message)

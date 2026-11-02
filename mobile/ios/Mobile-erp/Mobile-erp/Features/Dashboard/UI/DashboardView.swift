@@ -14,6 +14,7 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                DashboardQuickActions()
                 if can("report.finance") { DashboardKpiSection() }
                 if can("device.read") { LowStockCard(labels: labels) }
                 if can("consignment.read") { OverdueCard() }
@@ -36,6 +37,7 @@ struct DashboardView: View {
     }
 
     private var canSeeAnything: Bool {
-        can("report.finance") || can("device.read") || can("consignment.read")
+        ["report.finance", "device.read", "consignment.read",
+         "sale.create", "sale.read", "qc.read"].contains(where: can)
     }
 }

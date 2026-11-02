@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Customer directory: searchable list with sort + "has purchases" filter and a
-/// create action (gated on `customer.manage`). Rows open a detail sheet.
+/// Customer directory: searchable, paginated list with sort + "has purchases"
+/// filter, summary tiles, CSV export and a create action (gated on
+/// `customer.manage`). Rows open a detail sheet.
 struct CustomersView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -17,7 +18,13 @@ struct CustomersView: View {
     var body: some View {
         @Bindable var model = model
         List {
-            content
+            if model.pager != nil {
+                if let stats = model.stats {
+                    Section { CustomersSummary(stats: stats) }
+                        .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                }
+                content
+            }
         }
         .searchable(text: $model.search)
         .onSubmit(of: .search) { model.reload() }
@@ -44,38 +51,47 @@ struct CustomersView: View {
                     }
                 }
             }
+            if let items = model.pager?.items, !items.isEmpty {
+                ToolbarItem(placement: .secondaryAction) {
+                    KitCSVShareButton(filename: "customers.csv", label: i18n.t("customers.exportCsv")) {
+                        KitCSV.build(headers: CustomersCsv.headers, rows: CustomersCsv.rows(items))
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showFilters) { CustomerFilterSheet(model: model) }
         .sheet(item: $selected) { customer in CustomerDetailSheet(customer: customer, model: model) }
         .sheet(isPresented: $showCreate) { CustomerFormSheet(model: model) }
         .task {
             model.configure(container)
-            if model.page == nil { model.reload() }
+            if model.pager.items.isEmpty { model.reload() }
         }
     }
 
     @ViewBuilder private var content: some View {
+        let pager = model.pager!
         if model.offline {
             Section {
                 Label(i18n.t("common.offline", default: "Offline — customers need a connection."),
                       systemImage: "wifi.slash")
                     .foregroundStyle(Tokens.warning)
             }
-        } else if model.loading && model.page == nil {
+        } else if pager.isLoading && pager.items.isEmpty {
             Section { LoadingView().frame(height: 120) }
-        } else if let message = model.errorMessage {
+        } else if let message = pager.error, pager.items.isEmpty {
             Section { ErrorStateView(message: message) { model.reload() } }
-        } else if let page = model.page, page.items.isEmpty {
+        } else if pager.items.isEmpty {
             Section {
                 EmptyStateView(systemImage: "person.2",
                                title: i18n.t("sales.noCustomersFound"))
             }
-        } else if let page = model.page {
+        } else {
             Section {
-                ForEach(page.items) { customer in
+                ForEach(pager.items) { customer in
                     Button { selected = customer } label: { CustomerRow(customer: customer) }
                         .buttonStyle(.plain)
                 }
+                KitLoadMoreFooter(pager: pager)
             }
         }
     }

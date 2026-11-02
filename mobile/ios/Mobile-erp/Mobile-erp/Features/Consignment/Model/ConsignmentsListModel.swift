@@ -1,10 +1,10 @@
 import Foundation
 import SwiftData
 
-/// Drives the consignments list: filters + pagination, the online list/stats
-/// fetch (consignments are not cached, so offline shows a needs-connection
-/// state), and the count of queued-but-unsynced lifecycle writes for the
-/// pending-sync marker.
+/// Drives the consignments list: filters + load-more pagination (`KitPaginator`),
+/// the online list/stats fetch (consignments are not cached, so offline shows a
+/// needs-connection state), and the count of queued-but-unsynced lifecycle
+/// writes for the pending-sync marker.
 @MainActor
 @Observable
 final class ConsignmentsListModel {
@@ -12,9 +12,7 @@ final class ConsignmentsListModel {
     @ObservationIgnored private let isOnline: () -> Bool
     @ObservationIgnored private let context: ModelContext
 
-    private(set) var page: ConsignmentPage?
     private(set) var stats: ConsignmentStats?
-    private(set) var isLoading = false
     private(set) var offline = false
     var error: String?
 
@@ -23,7 +21,6 @@ final class ConsignmentsListModel {
     var preset: RangePreset = .all
     var customFrom = ""
     var customTo = ""
-    var pageIndex = 1
     let pageSize = 25
 
     init(repo: ConsignmentRepository, context: ModelContext, isOnline: @escaping () -> Bool) {
@@ -32,6 +29,8 @@ final class ConsignmentsListModel {
         self.isOnline = isOnline
     }
 
+    /// Server query from the current filters; `page`/`pageSize` are set per page
+    /// by the paginator.
     private var query: ConsignmentQuery {
         let b = ConsignmentLogic.bounds(preset, from: customFrom, to: customTo)
         var q = ConsignmentQuery()
@@ -39,31 +38,31 @@ final class ConsignmentsListModel {
         q.search = search
         q.fromDate = b.from
         q.toDate = b.to
-        q.page = pageIndex
-        q.pageSize = pageSize
         return q
     }
 
+    @ObservationIgnored lazy var pager = KitPaginator<Consignment>(pageSize: pageSize) {
+        [weak self] page, size in
+        guard let self, self.isOnline() else { return ([], 0) }
+        var q = self.query
+        q.page = page
+        q.pageSize = size
+        let result = try await self.repo.list(q)
+        return (result.items, result.total)
+    }
+
     func load() async {
+        error = nil
         guard isOnline() else {
             offline = true
-            page = nil
             stats = nil
+            await pager.first()   // fetch returns empty while offline
             return
         }
         offline = false
-        isLoading = true
-        error = nil
-        let q = query
-        do {
-            async let list = repo.list(q)
-            async let st = repo.stats(q)
-            page = try await list
-            stats = try await st
-        } catch {
-            self.error = (error as? AppError)?.message ?? "error"
-        }
-        isLoading = false
+        await pager.first()
+        if let message = pager.error { error = message }
+        stats = try? await repo.stats(query)
     }
 
     func reset() {
@@ -72,17 +71,9 @@ final class ConsignmentsListModel {
         preset = .all
         customFrom = ""
         customTo = ""
-        pageIndex = 1
     }
 
-    var items: [Consignment] { page?.items ?? [] }
-    var total: Int { page?.total ?? 0 }
-    var totalPages: Int { max(1, Int(ceil(Double(total) / Double(pageSize)))) }
-
-    func setPage(_ p: Int) async {
-        pageIndex = min(max(1, p), totalPages)
-        await load()
-    }
+    var items: [Consignment] { pager.items }
 
     /// Queued consignment writes not yet confirmed by the server.
     var pendingCount: Int {

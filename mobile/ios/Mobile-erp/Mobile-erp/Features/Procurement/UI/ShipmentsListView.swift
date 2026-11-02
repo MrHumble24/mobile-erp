@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// Shipment batches, newest-first. "New shipment" chains into device intake
-/// once the batch is created. Tapping a row opens its detail sheet.
+/// once the batch is created. iPhone opens a detail sheet; iPad shows a
+/// master-detail split.
 struct ShipmentsListView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -10,15 +11,17 @@ struct ShipmentsListView: View {
     @State private var showNew = false
     @State private var pendingIntake: Shipment?
     @State private var intakeShipment: Shipment?
-    @State private var detail: Shipment?
+    @State private var detail: Shipment?       // iPhone detail sheet
+    @State private var selectedId: String?     // iPad split selection
 
     private var canManage: Bool { container.session.can("shipment.manage") }
+    private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
     var body: some View {
         Group {
             if let store {
                 LoadableView(state: store.state, retry: reload) { feed in
-                    list(feed)
+                    if isPad { split(feed) } else { compact(feed) }
                 }
             } else {
                 LoadingView()
@@ -38,7 +41,7 @@ struct ShipmentsListView: View {
             ShipmentDetailSheet(shipment: shipment)
         }
         .toolbar {
-            if canManage {
+            if canManage && !isPad {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showNew = true
@@ -50,12 +53,12 @@ struct ShipmentsListView: View {
         }
     }
 
+    // MARK: iPhone
+
     @ViewBuilder
-    private func list(_ feed: ShipmentsFeed) -> some View {
+    private func compact(_ feed: ShipmentsFeed) -> some View {
         if feed.shipments.isEmpty {
-            EmptyStateView(systemImage: "shippingbox", title: i18n.t("shipments.emptyHint"))
-                .frame(maxHeight: .infinity, alignment: .top)
-                .padding(.top, 40)
+            emptyState
         } else {
             List {
                 ForEach(feed.shipments) { shipment in
@@ -67,6 +70,48 @@ struct ShipmentsListView: View {
             }
             .listStyle(.insetGrouped)
         }
+    }
+
+    // MARK: iPad
+
+    private func split(_ feed: ShipmentsFeed) -> some View {
+        NavigationSplitView {
+            Group {
+                if feed.shipments.isEmpty {
+                    emptyState
+                } else {
+                    List(selection: $selectedId) {
+                        ForEach(feed.shipments) { shipment in
+                            ShipmentRow(shipment: shipment,
+                                        supplierName: feed.supplierNames[shipment.supplierId] ?? shipment.supplierId)
+                                .tag(shipment.id)
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
+            }
+            .navigationTitle(i18n.t("shipments.title"))
+            .toolbar {
+                if canManage {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button { showNew = true } label: { Image(systemName: "plus") }
+                    }
+                }
+            }
+        } detail: {
+            if let selected = feed.shipments.first(where: { $0.id == selectedId }) {
+                ShipmentDetailSheet(shipment: selected, showsClose: false)
+                    .id(selected.id)
+            } else {
+                ContentUnavailableView(i18n.t("shipments.detailTitle"), systemImage: "shippingbox")
+            }
+        }
+    }
+
+    private var emptyState: some View {
+        EmptyStateView(systemImage: "shippingbox", title: i18n.t("shipments.emptyHint"))
+            .frame(maxHeight: .infinity, alignment: .top)
+            .padding(.top, 40)
     }
 
     private func makeStore() -> AsyncStore<ShipmentsFeed> {

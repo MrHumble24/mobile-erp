@@ -1,25 +1,32 @@
 # Reports slice
 
-Financial reports: Profit / Expenses / Model pricing / Daily closing, switched
-from the navigation-title menu. Each tab fetches on its own.
+Financial reports matching the web tab set: **Overview · Sales · Expenses ·
+Nasiya · Inventory · Pricing · Closing** (`FinTabBar`). A shared date-range bar
+(`FinRangeBar`, presets + `KitDateRangeField` for custom) drives the first four;
+inventory is a live snapshot, pricing a rolling window, closing a single day.
 
 ## Owns
-- `/reports/*` reads (perm `report.finance`) + best-effort `/device-models`
-  labels. Breakdown charts drawn with **Swift Charts** (`BarChartCard`).
+- All `/reports/*` reads (perm `report.finance`) + best-effort `/device-models`
+  labels. Charts are **Swift Charts**: `FinTrendChart` (revenue/profit/expense
+  lines) and `BarChartCard` breakdowns, with tappable `FinShareList` rows.
+- Drill-downs (`FinBreakdownSheet`): NOI waterfall, paginated returns
+  (`KitPaginator`), by-model gross-profit/units, and zero-fetch detail for a
+  sales-model / partner / inventory-model row.
 
 ## Public API
-- `ReportsModule.feature` — register with one line in `FeatureRegistry`.
-  Nav `nav.reports`, permission `report.finance`.
+- `ReportsModule.feature` — one line in `FeatureRegistry`. Nav `nav.reports`.
 
 ## Permissions
-- `report.finance` — see the section and all tabs.
-- `device.cost.view` — the acquisition-cost figure in model pricing (hidden
-  and modelled optional otherwise — the server redacts it).
+- `report.finance` — the section and every tab/endpoint.
+- `device.cost.view` — cost figures (COGS, landed value, acquisition cost).
+  The server strips these otherwise, so DTO decoders tolerate their absence.
 
 ## Must never
-- Import another feature slice (DTOs are duplicated by design).
-- Edit foundation. Write data — all reads, online only.
+- Import another feature slice (DTOs are duplicated by design). All reads,
+  online only; the slice performs no writes.
 
-## Notes
-- Scope matches the ported Flutter spec (profit/expenses/pricing/closing);
-  breakdowns are the in-tab charts, not the web's drill-down sheets.
+## Notes / deferred
+- Web's cross-entity line-item breakdowns (raw sales lines, device lists,
+  partner ledger) need other slices' endpoints → out of scope here; the
+  reports-owned drill-downs above stand in.
+- Slice-local types are `Fin…`-prefixed (one Swift module).

@@ -74,6 +74,7 @@ struct LookupFormSheet: View {
                 try await repo.createLookup(kind, LookupWriteDTO(
                     code: code.trimmed, label: label.trimmed, sortOrder: Int(sortOrder.trimmed), isActive: nil))
             }
+            container.toasts.success(i18n.t("common.success"))
             dismiss()
         } catch let e as AppError {
             error = e.statusCode == 409 ? i18n.t("qc.codeDuplicate") : e.message

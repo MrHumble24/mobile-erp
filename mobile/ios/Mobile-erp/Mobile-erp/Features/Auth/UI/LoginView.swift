@@ -50,6 +50,53 @@ struct LoginView: View {
                     }
                 }
 
+                if container.devAccess.quickLoginEnabled {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Label("Quick Fill (Dev)", systemImage: "sparkles")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button {
+                                    showDevConsole = true
+                                } label: {
+                                    Text("Dev Panel")
+                                        .font(.caption2)
+                                }
+                            }
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(DevAccounts.all) { acc in
+                                        Button {
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            email = acc.email
+                                            password = acc.password
+                                        } label: {
+                                            HStack(spacing: 5) {
+                                                Image(systemName: acc.icon)
+                                                    .font(.system(size: 10, weight: .bold))
+                                                Text(acc.label)
+                                                    .font(.caption.weight(.semibold))
+                                            }
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 6)
+                                            .background(acc.badgeColor.opacity(0.12), in: Capsule())
+                                            .overlay(Capsule().strokeBorder(acc.badgeColor.opacity(0.3), lineWidth: 1))
+                                            .foregroundStyle(acc.badgeColor)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.vertical, 2)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                    }
+                }
+
                 Section {
                     TextField(i18n.t("auth.emailPlaceholder"), text: $email)
                         .textContentType(.username)

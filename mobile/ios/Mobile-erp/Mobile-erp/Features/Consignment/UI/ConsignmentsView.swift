@@ -26,10 +26,12 @@ struct ConsignmentsView: View {
             .toolbar { toolbar }
             .task {
                 if model == nil { let m = container.makeConsignmentsListModel(); model = m; await m.load() }
+                consumeRoute()
                 #if DEBUG
                 consignmentSelfCheck()
                 #endif
             }
+            .onChange(of: container.router.pending) { consumeRoute() }
             .sheet(isPresented: $showCreate) {
                 ConsignDeviceSheet(partnerId: nil, lockPartner: false) { Task { await model?.load() } }
             }
@@ -60,12 +62,20 @@ struct ConsignmentsView: View {
             .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
             .onSubmit(of: .search) { Task { await model.load() } }
             .refreshable { await model.load() }
-            .overlay { if model.isLoading && model.items.isEmpty { LoadingView() } }
+            .overlay { if model.pager.isLoading && model.items.isEmpty { LoadingView() } }
             .sheet(isPresented: $showFilters) {
                 ConsignmentsFilterSheet(model: model) { Task { await model.load() } }
             }
         } else {
             LoadingView()
+        }
+    }
+
+    /// Open the detail sheet when another feature routed here with an id.
+    private func consumeRoute() {
+        if let route = container.router.consume("consignments"),
+           case let .consignments(id) = route, let id {
+            detailId = id
         }
     }
 
@@ -75,7 +85,7 @@ struct ConsignmentsView: View {
                            title: i18n.t("common.offline", default: "Offline"),
                            message: i18n.t("consignments.noConsignmentsFound"))
                 .listRowBackground(Color.clear)
-        } else if model.items.isEmpty && !model.isLoading {
+        } else if model.items.isEmpty && !model.pager.isLoading {
             EmptyStateView(systemImage: "arrow.left.arrow.right",
                            title: i18n.t("consignments.noConsignmentsFound"))
                 .listRowBackground(Color.clear)
@@ -108,8 +118,8 @@ struct ConsignmentsView: View {
                         }
                     }
                 }
+                KitLoadMoreFooter(pager: model.pager)
             }
-            if model.totalPages > 1 { pager(model) }
         }
     }
 
@@ -120,20 +130,6 @@ struct ConsignmentsView: View {
             .listRowBackground(Color.clear)
     }
 
-    private func pager(_ model: ConsignmentsListModel) -> some View {
-        HStack {
-            Button { Task { await model.setPage(model.pageIndex - 1) } } label: { Image(systemName: "chevron.left") }
-                .disabled(model.pageIndex <= 1)
-            Spacer()
-            Text("\(model.pageIndex) / \(model.totalPages)").font(.footnote).monospacedDigit()
-            Spacer()
-            Button { Task { await model.setPage(model.pageIndex + 1) } } label: { Image(systemName: "chevron.right") }
-                .disabled(model.pageIndex >= model.totalPages)
-        }
-        .buttonStyle(.bordered)
-        .listRowBackground(Color.clear)
-    }
-
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
@@ -142,6 +138,14 @@ struct ConsignmentsView: View {
             } label: {
                 Label(i18n.t("common.filter", default: "Filters & Overview"),
                       systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+            }
+        }
+        if let model, !model.items.isEmpty {
+            ToolbarItem(placement: .topBarTrailing) {
+                KitCSVShareButton(filename: "consignments.csv",
+                                  label: i18n.t("consignments.exportCsv")) {
+                    ConsignmentLogic.csv(model.items) { i18n.t($0) }
+                }
             }
         }
         if container.session.can("consignment.create") {

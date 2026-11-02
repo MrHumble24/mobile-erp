@@ -94,6 +94,20 @@ struct SaleDetailSheet: View {
                 // 4. Actions
                 Section {
                     Button {
+                        container.router.open(.inventory(imei: sale.device.imei))
+                        dismiss()
+                    } label: {
+                        Label(i18n.t("sales.openDevice"), systemImage: "externaldrive")
+                    }
+                    if let consignmentId = sale.consignmentId {
+                        Button {
+                            container.router.open(.consignments(id: consignmentId))
+                            dismiss()
+                        } label: {
+                            Label(i18n.t("sales.viewConsignment"), systemImage: "arrow.left.arrow.right")
+                        }
+                    }
+                    Button {
                         showReceipt = true
                     } label: {
                         Label(i18n.t("sales.receipt", default: "View & Print Receipt"), systemImage: "receipt")
@@ -133,6 +147,7 @@ struct SaleDetailSheet: View {
             .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id) }
             .sheet(isPresented: $showReturn) {
                 ReturnSheet(saleId: sale.id) {
+                    container.toasts.success(i18n.t("sales.returnSuccess"))
                     onChanged()
                     dismiss()
                 }

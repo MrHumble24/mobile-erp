@@ -50,7 +50,6 @@ struct ConsignmentsFilterBar: View {
     }
 
     private func resetAndReload() {
-        model.pageIndex = 1
         onChange()
     }
 }

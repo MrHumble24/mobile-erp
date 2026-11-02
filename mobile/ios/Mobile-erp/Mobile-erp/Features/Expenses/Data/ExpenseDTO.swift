@@ -11,14 +11,30 @@ struct ExpenseCategory: Decodable, Identifiable, Hashable {
     let isActive: Bool
 }
 
+struct ExpenseUserRef: Decodable {
+    let email: String
+    let profile: Profile?
+    struct Profile: Decodable { let firstName: String; let lastName: String? }
+
+    var displayName: String {
+        guard let profile else { return email }
+        let full = [profile.firstName, profile.lastName].compactMap { $0 }
+            .joined(separator: " ").trimmingCharacters(in: .whitespaces)
+        return full.isEmpty ? email : full
+    }
+}
+
 struct Expense: Decodable, Identifiable {
     let id: String
     let categoryId: String
     let category: Ref?
     let amount: String
     let description: String?
+    let vendor: String?
     let isRecurring: Bool
+    let recurrenceId: String?
     let incurredAt: String
+    let createdBy: ExpenseUserRef?
 
     struct Ref: Decodable { let name: String }
 
@@ -34,14 +50,22 @@ struct ExpenseSummaryRow: Decodable, Identifiable {
 
 struct ExpenseSummary: Decodable {
     let total: Double
+    let previousTotal: Double
+    let count: Int
     let byCategory: [ExpenseSummaryRow]
+    let topCategory: ExpenseSummaryRow?
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         total = (try? c.decode(Double.self, forKey: .total)) ?? 0
+        previousTotal = (try? c.decode(Double.self, forKey: .previousTotal)) ?? 0
+        count = (try? c.decode(Int.self, forKey: .count)) ?? 0
         byCategory = (try? c.decode([ExpenseSummaryRow].self, forKey: .byCategory)) ?? []
+        topCategory = try? c.decode(ExpenseSummaryRow.self, forKey: .topCategory)
     }
-    private enum CodingKeys: String, CodingKey { case total, byCategory }
+    private enum CodingKeys: String, CodingKey {
+        case total, previousTotal, count, byCategory, topCategory
+    }
 }
 
 struct ExpensePage: Decodable {
@@ -49,12 +73,22 @@ struct ExpensePage: Decodable {
     let total: Int
 }
 
-/// Create payload — synthesized `Encodable` omits nil optionals, satisfying the
-/// server's `forbidNonWhitelisted`.
+/// Create/update payloads — synthesized `Encodable` omits nil optionals,
+/// satisfying the server's `forbidNonWhitelisted`.
 struct CreateExpenseDto: Encodable {
     let categoryId: String
     let amount: Double
     let description: String?
+    let vendor: String?
+    let isRecurring: Bool
+    let incurredAt: String?
+}
+
+struct UpdateExpenseDto: Encodable {
+    let categoryId: String
+    let amount: Double
+    let description: String?
+    let vendor: String?
     let isRecurring: Bool
     let incurredAt: String?
 }
@@ -62,6 +96,16 @@ struct CreateExpenseDto: Encodable {
 struct CreateExpenseCategoryDto: Encodable {
     let name: String
     let description: String?
+}
+
+/// Category edit: rename, reorder, (de)activate and — when deactivating a
+/// category that still has expenses — reassign them via `reassignToId`.
+struct UpdateExpenseCategoryDto: Encodable {
+    let name: String?
+    let description: String?
+    let sortOrder: Int?
+    let isActive: Bool?
+    let reassignToId: String?
 }
 
 /// `dd.MM.yyyy` for an ISO timestamp string; echoes the raw input on failure.

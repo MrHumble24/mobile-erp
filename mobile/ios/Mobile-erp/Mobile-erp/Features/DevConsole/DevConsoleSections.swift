@@ -14,6 +14,8 @@ enum DevConsoleSections {
     static let all: [DevConsoleSection] = [
         DevConsoleSection(id: "environment", title: "Environment", systemImage: "server.rack",
                           view: { AnyView(DevEnvironmentView()) }),
+        DevConsoleSection(id: "quicklogin", title: "Quick Login Fillers", systemImage: "person.badge.key.fill",
+                          view: { AnyView(DevQuickLoginView()) }),
         DevConsoleSection(id: "network", title: "Network", systemImage: "network",
                           view: { AnyView(DevNetworkView()) }),
         DevConsoleSection(id: "logs", title: "Logs", systemImage: "doc.text.magnifyingglass",

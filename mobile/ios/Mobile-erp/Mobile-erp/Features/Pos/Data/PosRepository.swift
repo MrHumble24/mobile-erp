@@ -35,6 +35,13 @@ struct PosRepository {
         return Set(entries.compactMap { Self.imei(of: $0.payloadJSON) })
     }
 
+    /// Typeahead search for attaching an existing customer (`GET /customers/lookup`,
+    /// top 10 by name/phone). Online-only; nil query returns recent customers.
+    func lookupCustomers(_ query: String) async throws -> [PosCustomerHit] {
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        return try await api.get("/customers/lookup", query: trimmed.isEmpty ? [:] : ["q": trimmed])
+    }
+
     /// Online checkout → `POST /sales`. Returns the created sale id for the receipt.
     func postSale(_ payload: SaleCreatePayload) async throws -> String {
         struct Created: Decodable { let id: String }

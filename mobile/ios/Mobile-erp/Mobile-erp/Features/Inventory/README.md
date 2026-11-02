@@ -7,7 +7,13 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
 - `InventoryModule` — the single `FeatureModule` (nav: `nav.inventory`).
 - Devices: offline list (SwiftData cache via `@Query`) with search / model /
   storage / status filters; online detail sheet, edit, and manual status
-  transitions (ADR 0012).
+  transitions (ADR 0012). iPad shows a `NavigationSplitView` master-detail;
+  iPhone opens the detail as a sheet.
+- Device-sheet cross-feature actions: **Sell in POS** (`.pos(imei:)`, IN_STOCK +
+  `sale.create`) and **Run QC** (`.qc(imei:)`, IN_STOCK/DEFECTIVE + `qc.create`)
+  via `container.router`. The devices tab also *consumes* an incoming
+  `.inventory(imei:)` route and opens that device. Write results toast via
+  `container.toasts`.
 - Device models + dynamic attribute schema editor (ADR 0013).
 - Stock-alert rules + low-stock list.
 

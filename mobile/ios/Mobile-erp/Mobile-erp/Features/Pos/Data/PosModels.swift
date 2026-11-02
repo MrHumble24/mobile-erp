@@ -30,6 +30,34 @@ struct CompletedSale: Identifiable {
     let pending: Bool
 }
 
+/// One device queued in the POS cart with its editable sale terms. Price and
+/// warranty are strings (bound to text fields); `clientMutationId` is stable so
+/// a retry or an offline enqueue is idempotent for this line.
+struct PosCartLine: Identifiable {
+    let id: String
+    let device: ScannedDevice
+    var price: String
+    var warrantyDays: String
+    var notes: String
+    let clientMutationId: String
+}
+
+/// The cart's shared customer: an existing one (`id` set, from typeahead) or an
+/// inline new one (`id` nil, `name` set). Mutually exclusive, enforced by
+/// `buildSalePayload`.
+struct PosCartCustomer: Equatable {
+    var id: String?
+    var name: String
+    var phone: String?
+}
+
+/// A typeahead hit from `/customers/lookup` for attaching an existing customer.
+struct PosCustomerHit: Decodable, Identifiable {
+    let id: String
+    let name: String
+    let phone: String?
+}
+
 /// Inline new customer (mutually exclusive with an existing `customerId`).
 struct InlineCustomerPayload: Encodable {
     let name: String

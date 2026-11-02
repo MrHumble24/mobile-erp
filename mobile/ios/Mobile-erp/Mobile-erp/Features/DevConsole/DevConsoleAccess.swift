@@ -10,8 +10,27 @@ import Observation
 @MainActor
 final class DevConsoleAccess {
     static let code = "153535"
+    private static let quickLoginKey = "dev_quick_login_enabled"
 
     private(set) var unlocked = false
+    var quickLoginEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(quickLoginEnabled, forKey: Self.quickLoginKey)
+        }
+    }
+
+    init() {
+        let defaults = UserDefaults.standard
+        #if DEBUG
+        if defaults.object(forKey: Self.quickLoginKey) == nil {
+            self.quickLoginEnabled = true
+        } else {
+            self.quickLoginEnabled = defaults.bool(forKey: Self.quickLoginKey)
+        }
+        #else
+        self.quickLoginEnabled = defaults.bool(forKey: Self.quickLoginKey)
+        #endif
+    }
 
     /// Returns true and unlocks when the entered code matches.
     @discardableResult

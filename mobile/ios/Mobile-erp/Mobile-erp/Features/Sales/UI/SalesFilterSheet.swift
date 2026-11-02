@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Bottom sheet for sales list filtering (channel, status, date range).
+/// Bottom sheet for sales list filtering (channel, status, warranty, cashier, date range).
 /// Completely removes filter clutter from the main sales screen.
 struct SalesFilterSheet: View {
     @Bindable var model: SalesListModel
@@ -32,6 +32,27 @@ struct SalesFilterSheet: View {
                     .labelsHidden()
                 }
 
+                Section(i18n.t("sales.filterWarranty")) {
+                    Picker(i18n.t("sales.filterWarranty"), selection: warrantyBinding) {
+                        Text(i18n.t("common.all")).tag(String?.none)
+                        Text(i18n.t("sales.warrantyValid")).tag(String?.some("active"))
+                        Text(i18n.t("sales.warrantyExpired")).tag(String?.some("expired"))
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+
+                if model.canReadUsers && !model.cashiers.isEmpty {
+                    Section(i18n.t("sales.soldBy")) {
+                        Picker(i18n.t("sales.soldBy"), selection: soldByBinding) {
+                            Text(i18n.t("common.all")).tag(String?.none)
+                            ForEach(model.cashiers) { c in
+                                Text(c.name).tag(String?.some(c.id))
+                            }
+                        }
+                    }
+                }
+
                 Section(i18n.t("common.date", default: "Date Filter")) {
                     Toggle(i18n.t("sales.filterByDate", default: "Filter by Date Range"), isOn: $useRange.animation())
                         .onChange(of: useRange) { _, on in
@@ -55,10 +76,7 @@ struct SalesFilterSheet: View {
                     Section {
                         Button(role: .destructive) {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            model.filters.channel = nil
-                            model.filters.returned = nil
-                            model.filters.from = nil
-                            model.filters.to = nil
+                            model.filters = SaleFilters()
                             useRange = false
                             model.reload()
                             dismiss()
@@ -89,9 +107,7 @@ struct SalesFilterSheet: View {
         .presentationDragIndicator(.visible)
     }
 
-    private var hasFilters: Bool {
-        model.filters.channel != nil || model.filters.returned != nil || model.filters.from != nil || model.filters.to != nil
-    }
+    private var hasFilters: Bool { model.filters.isActive }
 
     private var channelBinding: Binding<String?> {
         Binding(get: { model.filters.channel }, set: { model.filters.channel = $0 })
@@ -99,6 +115,14 @@ struct SalesFilterSheet: View {
 
     private var statusBinding: Binding<String?> {
         Binding(get: { model.filters.returned }, set: { model.filters.returned = $0 })
+    }
+
+    private var warrantyBinding: Binding<String?> {
+        Binding(get: { model.filters.warranty }, set: { model.filters.warranty = $0 })
+    }
+
+    private var soldByBinding: Binding<String?> {
+        Binding(get: { model.filters.soldById }, set: { model.filters.soldById = $0 })
     }
 
     private var fromBinding: Binding<Date> {

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Quality control stats tab: pass rate, queue metrics, grade distribution,
-/// and top defect breakdown across selected time presets (today / 7d / 30d).
+/// QC statistics with quick date-range presets plus a custom from/to range
+/// (`KitDateRangeField`). An active custom range overrides the preset.
 /// Strictly avoids multi-column grids for crystal-clear readability.
 struct QcStatsView: View {
     @Environment(AppContainer.self) private var container
@@ -9,6 +9,7 @@ struct QcStatsView: View {
 
     let refresh: UUID
     @State private var preset = "7d"
+    @State private var range = KitDateRange.all
     @State private var store: AsyncStore<QcStats>?
 
     var body: some View {
@@ -20,7 +21,9 @@ struct QcStatsView: View {
                     Text("30 \(i18n.t("reports.days", default: "Days"))").tag("30d")
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: preset) { _, _ in reload() }
+                .disabled(range.isActive)
+
+                KitDateRangeField(range: $range)
 
                 if let store {
                     LoadableView(state: store.state, retry: reload) { stats in
@@ -32,21 +35,33 @@ struct QcStatsView: View {
             }
             .padding()
         }
-        .task(id: refresh) {
-            if store == nil {
-                let repo = QcRepository(api: container.api)
-                store = AsyncStore {
-                    let (f, t) = Self.range(for: preset)
-                    return try await repo.stats(from: f, to: t)
-                }
-            }
-            await store?.reload()
-        }
+        .task(id: refresh) { await load() }
+        .onChange(of: preset) { Task { await load(force: true) } }
+        .onChange(of: range) { Task { await load(force: true) } }
     }
 
-    private func reload() {
-        Task { await store?.reload() }
+    private func load(force: Bool = false) async {
+        if store == nil || force { store = makeStore() }
+        await store?.reload()
     }
+
+    private func makeStore() -> AsyncStore<QcStats> {
+        let repo = QcRepository(api: container.api)
+        let (from, to) = bounds
+        return AsyncStore { try await repo.stats(from: from, to: to) }
+    }
+
+    /// Custom range when active, otherwise the selected preset.
+    private var bounds: (from: String?, to: String?) {
+        if range.isActive {
+            let fmt = ISO8601DateFormatter()
+            return (range.from.map(fmt.string(from:)), range.to.map(fmt.string(from:)))
+        }
+        let r = Self.range(for: preset)
+        return (r.from, r.to)
+    }
+
+    private func reload() { Task { await store?.reload() } }
 
     static func range(for preset: String) -> (from: String, to: String) {
         let now = Date()
