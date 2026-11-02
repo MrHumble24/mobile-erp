@@ -41,7 +41,7 @@ export function SalesPage() {
   const [selectedReceiptId, setSelectedReceiptId] = React.useState<string | null>(null)
 
   const filters: SaleFilters = React.useMemo(() => ({ channel }), [channel])
-  const { data: sales, isLoading } = useSales(filters)
+  const { data: salePage, isLoading } = useSales(filters)
 
   return (
     <div className="space-y-6">
@@ -56,9 +56,9 @@ export function SalesPage() {
           {isLoading && (
             <div className="p-8 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
           )}
-          {sales && (
+          {salePage && (
             <SalesTable
-              sales={sales}
+              sales={salePage.items}
               onOpenReceipt={(id) => setSelectedReceiptId(id)}
             />
           )}

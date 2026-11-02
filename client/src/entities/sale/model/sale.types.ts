@@ -76,6 +76,13 @@ export interface ReturnSaleDto {
   expectedVersion?: number
 }
 
+export interface SalePage {
+  items: SaleView[]
+  total: number
+  page: number
+  pageSize: number
+}
+
 export interface SaleFilters {
   from?: string
   to?: string

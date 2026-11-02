@@ -4,6 +4,7 @@ import type {
   ReceiptView,
   ReturnSaleDto,
   SaleFilters,
+  SalePage,
   SaleView,
   WarrantyLookupView,
 } from "../model/sale.types"
@@ -16,8 +17,8 @@ export const saleRepository = {
     })
   },
 
-  list: async (filters?: SaleFilters): Promise<SaleView[]> => {
-    return http<SaleView[]>("/sales", {
+  list: async (filters?: SaleFilters): Promise<SalePage> => {
+    return http<SalePage>("/sales", {
       params: filters as Record<string, string | number | boolean | undefined | null>,
     })
   },

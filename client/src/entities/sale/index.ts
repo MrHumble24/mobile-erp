@@ -6,6 +6,7 @@ export type {
   CreateSaleDto,
   ReturnSaleDto,
   SaleFilters,
+  SalePage,
 } from "./model/sale.types"
 export { saleRepository } from "./api/sale.repository"
 export { saleKeys } from "./api/sale.keys"
