@@ -8,7 +8,10 @@ export function downloadCsv(
   rows: Array<Array<string | number>>
 ): void {
   const escape = (cell: string | number): string => {
-    const s = String(cell ?? "")
+    // Text starting with = + - @ tab or CR runs as a formula in Excel/Sheets; a leading
+    // apostrophe neutralises it. Numbers are left alone so negatives stay numeric.
+    const raw = String(cell ?? "")
+    const s = typeof cell === "string" && /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw
     return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
   }
   const lines = [headers, ...rows].map((r) => r.map(escape).join(";"))
