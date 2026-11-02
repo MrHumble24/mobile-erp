@@ -30,23 +30,32 @@ struct DashboardQuickActions: View {
         if !visible.isEmpty {
             AppCard {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(i18n.t("dashboard.quickActions", default: "Quick actions"))
-                        .font(.subheadline.weight(.medium))
-                    let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
-                    LazyVGrid(columns: columns, spacing: 10) {
-                        ForEach(visible) { action in
-                            Button { container.router.open(action.route) } label: {
-                                VStack(spacing: 6) {
-                                    Image(systemName: action.icon).font(.title3)
-                                    Text(i18n.t(action.labelKey)).font(.caption).lineLimit(1)
+                    Text(i18n.t("dashboard.quickActions", default: "Quick Actions"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(visible) { action in
+                                Button {
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    container.router.open(action.route)
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: action.icon)
+                                            .font(.body.weight(.semibold))
+                                        Text(i18n.t(action.labelKey))
+                                            .font(.subheadline.weight(.medium))
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(Tokens.mist, in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
+                                    .foregroundStyle(Tokens.ink)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Tokens.mist, in: RoundedRectangle(cornerRadius: Tokens.Radius.cards))
-                                .foregroundStyle(Tokens.ink)
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                        .padding(.vertical, 2)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

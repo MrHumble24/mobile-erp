@@ -17,17 +17,23 @@ struct PosCheckoutBar: View {
             LabeledContent(i18n.t("pos.subtotal")) {
                 MoneyText(value: NSDecimalNumber(decimal: cart.subtotal).stringValue)
             }
-            Button(action: { model.checkout() }) {
+            Button(action: {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                model.checkout()
+            }) {
                 if model.busy {
-                    ProgressView().frame(maxWidth: .infinity)
+                    ProgressView().frame(maxWidth: .infinity).frame(height: 24)
                 } else {
-                    Label(i18n.t("pos.checkoutButton"), systemImage: "checkmark.circle")
+                    Label(i18n.t("pos.checkoutButton"), systemImage: "checkmark.circle.fill")
+                        .font(.headline.weight(.semibold))
                         .frame(maxWidth: .infinity)
+                        .frame(height: 24)
                 }
             }
             .buttonStyle(.borderedProminent)
+            .tint(Tokens.ink)
             .disabled(model.busy || !allPriced)
-            .listRowInsets(EdgeInsets())
+            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             .listRowBackground(Color.clear)
         }
     }
