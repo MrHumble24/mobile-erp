@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// Expense analysis: date range + group-by (category / month) → bar chart,
-/// table and a period total.
+/// Expense analysis for the shared report range: group-by (category / month)
+/// bar chart, a per-row table and a period total.
 struct ExpensesReportTab: View {
+    let from: Date?
+    let to: Date?
+
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
 
-    @State private var from = Calendar.current.date(
-        from: Calendar.current.dateComponents([.year, .month], from: Date()))!
-    @State private var to = Date()
     @State private var groupBy = "category"
     @State private var rows: [ExpenseReportRow]?
     @State private var error: String?
@@ -16,7 +16,6 @@ struct ExpensesReportTab: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                DateRangeRow(from: $from, to: $to)
                 Picker(i18n.t("reports.groupBy"), selection: $groupBy) {
                     Text(i18n.t("reports.groupByCategory")).tag("category")
                     Text(i18n.t("reports.groupByMonth")).tag("month")
@@ -37,7 +36,7 @@ struct ExpensesReportTab: View {
         .task(id: key) { await load() }
     }
 
-    private var key: String { "\(from.timeIntervalSince1970)-\(to.timeIntervalSince1970)-\(groupBy)" }
+    private var key: String { "\(from?.timeIntervalSince1970 ?? 0)-\(to?.timeIntervalSince1970 ?? 0)-\(groupBy)" }
 
     @ViewBuilder private func body(_ rows: [ExpenseReportRow]) -> some View {
         if rows.isEmpty {

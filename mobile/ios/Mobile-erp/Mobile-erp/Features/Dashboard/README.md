@@ -21,5 +21,6 @@ endpoint's permission, so a cashier sees nothing finance-related.
 - Edit the shell / home / foundation.
 
 ## Notes
-- Quick actions (jump to POS / Expenses) are deferred: cross-tab navigation is a
-  shell concern with no feature-facing API yet. Integrator wiring needed.
+- Quick actions (`DashboardQuickActions`) jump to POS / inventory / QC / sales /
+  nasiya via the kit's `KitRouter`; each shows only with its destination's
+  permission. (Earlier deferral resolved now the kit ships cross-tab nav.)
