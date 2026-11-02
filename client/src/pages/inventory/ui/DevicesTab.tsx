@@ -3,10 +3,10 @@ import { useSearchParams } from "react-router"
 import { useAuthStore } from "@/features/auth"
 import { useDeviceModels } from "@/entities/device-model"
 import { EditDeviceDialog } from "@/features/edit-device"
+import { DeviceDrawer } from "@/widgets/device-drawer"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
 import { InventoryFilters } from "./InventoryFilters"
 import { DeviceListSection } from "./DeviceListSection"
-import { DeviceDetailDrawer } from "./DeviceDetailDrawer"
 import type { useDeviceBrowser } from "../model/use-device-browser"
 import { useDeviceSelection } from "../model/use-device-selection"
 
@@ -71,8 +71,8 @@ export function DevicesTab({ browser }: { browser: Browser }) {
         onSelect={(d) => sel.openDrawer({ imei: d.imei, id: d.id })}
         onEdit={sel.openEdit}
       />
-      <DeviceDetailDrawer
-        target={sel.target}
+      <DeviceDrawer
+        imei={sel.target?.imei ?? null}
         open={sel.drawerOpen}
         onClose={() => sel.setDrawerOpen(false)}
         onEdit={(d) => { sel.setDrawerOpen(false); sel.openEdit(d) }}

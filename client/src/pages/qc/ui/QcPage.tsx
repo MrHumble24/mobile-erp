@@ -1,99 +1,88 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
-import { useDevices, type DeviceView } from "@/entities/device"
-import { useDeviceModels } from "@/entities/device-model"
+import { useAuthStore } from "@/features/auth"
+import { useQcStats } from "@/entities/qc"
+import { QcLookupsPanel } from "@/features/manage-qc-lookups"
 import { GradeDeviceDialog } from "@/features/grade-device"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Badge } from "@/shared/ui/badge"
-import { BarcodeInput } from "@/shared/ui/barcode-input"
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
 import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
-import { QcDeviceTable } from "./QcDeviceTable"
+import { QcScanner, QC_SCANNER_ID } from "./QcScanner"
+import { QueueTab } from "./QueueTab"
+import { InspectionsTab } from "./InspectionsTab"
+import { StatsTab } from "./StatsTab"
 
-const QC_TABS = ["all", "IN_STOCK", "DEFECTIVE"] as const
+const QC_TABS = ["queue", "inspections", "stats", "lookups"] as const
 type QcTab = (typeof QC_TABS)[number]
 
-function QcHeader({ count }: { count: number }) {
+function QcHeader({ awaiting, onScan }: { awaiting?: number; onScan: (imei: string) => void }) {
   const { t } = useI18n()
   return (
-    <PageHeader
-      title={t("qc.title")}
-      description="Qurilmalarni texnik diagnostika qilish, nuqsonlarni aniqlash va sifat bahosini belgilash"
-      badge={
-        <Badge variant="outline" className="text-xs">
-          {count} ta qurilma
-        </Badge>
-      }
-    />
+    <div className="space-y-4">
+      <PageHeader
+        title={t("qc.title")}
+        badge={
+          awaiting != null ? (
+            <Badge variant={awaiting > 0 ? "destructive" : "outline"} className="text-xs">
+              {t("qc.awaitingBadge", { count: awaiting })}
+            </Badge>
+          ) : undefined
+        }
+      />
+      <QcScanner onScan={onScan} />
+    </div>
   )
 }
 
-function QcTabs({ activeTab, onChange }: { activeTab: QcTab; onChange: (v: QcTab) => void }) {
-  const { t } = useI18n()
-  return (
-    <Tabs value={activeTab} onValueChange={(val) => onChange(val as QcTab)}>
-      <TabsList>
-        <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
-        <TabsTrigger value="IN_STOCK">{t("inventory.statusInStock")}</TabsTrigger>
-        <TabsTrigger value="DEFECTIVE">{t("inventory.statusDefective")}</TabsTrigger>
-      </TabsList>
-    </Tabs>
-  )
+function useInspectTarget() {
+  const [imei, setImei] = React.useState<string | null>(null)
+  const [open, setOpen] = React.useState(false)
+  const openFor = (next: string) => { setImei(next); setOpen(true) }
+  const focusScanner = () => {
+    setOpen(false)
+    setTimeout(() => document.getElementById(QC_SCANNER_ID)?.focus(), 50)
+  }
+  return { imei, open, setOpen, openFor, focusScanner }
 }
 
 export function QcPage() {
-  const [activeTab, setActiveTab] = useUrlTab<QcTab>("all", { validTabs: QC_TABS })
-  const [selectedDevice, setSelectedDevice] = React.useState<DeviceView | null>(null)
-  const [dialogOpen, setDialogOpen] = React.useState(false)
-
-  const { data: modelsData } = useDeviceModels()
-  const statusFilter = activeTab === "all" ? undefined : activeTab
-  const { data: devicesData, isLoading } = useDevices({ statusCode: statusFilter })
-
-  const qcDevices = React.useMemo(() => {
-    return (devicesData?.items || []).filter((d) => d.statusCode === "IN_STOCK" || d.statusCode === "DEFECTIVE")
-  }, [devicesData])
-
-  const modelsMap = React.useMemo(() => {
-    return (modelsData || []).reduce<Record<string, string>>((acc, m) => {
-      acc[m.id] = `${m.brand} ${m.name}`
-      return acc
-    }, {})
-  }, [modelsData])
-
-  const openInspect = (device: DeviceView) => {
-    setSelectedDevice(device)
-    setDialogOpen(true)
-  }
+  const { t } = useI18n()
+  const [tab, setTab] = useUrlTab<QcTab>("queue", { validTabs: QC_TABS })
+  const canManageLookups = useAuthStore((s) => s.hasPermission("settings.manage"))
+  const { data: stats } = useQcStats()
+  const inspect = useInspectTarget()
 
   return (
     <div className="space-y-6">
-      <QcHeader count={qcDevices.length} />
-
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="w-full max-w-md">
-          <BarcodeInput
-            placeholder="IMEI skanerlang va tekshiring..."
-            onScan={(imei) => {
-              const dev = qcDevices.find((d) => d.imei === imei)
-              if (dev) openInspect(dev)
-            }}
-          />
-        </div>
-        <QcTabs activeTab={activeTab} onChange={setActiveTab} />
-      </div>
-
-      {isLoading ? (
-        <div className="py-12 text-center text-muted-foreground">Yuklanmoqda...</div>
-      ) : (
-        <QcDeviceTable devices={qcDevices} modelsMap={modelsMap} onInspect={openInspect} />
-      )}
-
+      <QcHeader awaiting={stats?.awaitingInspection} onScan={inspect.openFor} />
+      <Tabs value={tab} onValueChange={(v) => setTab(v as QcTab)}>
+        <TabsList>
+          <TabsTrigger value="queue">{t("qc.tabQueue")}</TabsTrigger>
+          <TabsTrigger value="inspections">{t("qc.tabInspections")}</TabsTrigger>
+          <TabsTrigger value="stats">{t("qc.tabStats")}</TabsTrigger>
+          {canManageLookups && <TabsTrigger value="lookups">{t("qc.tabLookups")}</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="queue">
+          <QueueTab onInspect={inspect.openFor} />
+        </TabsContent>
+        <TabsContent value="inspections">
+          <InspectionsTab />
+        </TabsContent>
+        <TabsContent value="stats">
+          <StatsTab />
+        </TabsContent>
+        {canManageLookups && (
+          <TabsContent value="lookups">
+            <QcLookupsPanel />
+          </TabsContent>
+        )}
+      </Tabs>
       <GradeDeviceDialog
-        deviceId={selectedDevice?.id || ""}
-        imei={selectedDevice?.imei || ""}
-        open={dialogOpen && Boolean(selectedDevice)}
-        onOpenChange={(open) => !open && setDialogOpen(false)}
+        imei={inspect.imei}
+        open={inspect.open}
+        onOpenChange={inspect.setOpen}
+        onInspectNext={inspect.focusScanner}
       />
     </div>
   )

@@ -16,10 +16,56 @@ export interface QcInspectionView {
   defects: QcDefectView[]
 }
 
+export interface InspectionDeviceRef {
+  id: string
+  imei: string
+  modelId: string
+  model: { brand: string; name: string }
+  statusCode: string
+}
+
+export interface QcInspectionListItem extends QcInspectionView {
+  device: InspectionDeviceRef
+  inspectedBy: { id: string; name: string }
+}
+
+export interface PaginatedInspections {
+  items: QcInspectionListItem[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface InspectionFilters {
+  deviceId?: string
+  imei?: string
+  passed?: "true" | "false"
+  gradeCode?: string
+  defectCode?: string
+  inspectedById?: string
+  from?: string
+  to?: string
+  page?: number
+  pageSize?: number
+}
+
 export interface LookupView {
   code: string
   label: string
   sortOrder: number
+  isActive: boolean
+}
+
+export interface CreateLookupDto {
+  code: string
+  label: string
+  sortOrder?: number
+}
+
+export interface UpdateLookupDto {
+  label?: string
+  sortOrder?: number
+  isActive?: boolean
 }
 
 export interface CreateInspectionDto {
@@ -30,4 +76,20 @@ export interface CreateInspectionDto {
   repairCostEstimate?: number
   notes?: string
   defects: { defectCode: string; notes?: string }[]
+}
+
+export interface StatsRange {
+  from?: string
+  to?: string
+}
+
+export interface QcStatsView {
+  inspected: number
+  passed: number
+  failed: number
+  passRate: number
+  byGrade: { gradeCode: string; count: number }[]
+  topDefects: { defectCode: string; label: string; count: number }[]
+  avgBatteryHealth: number | null
+  awaitingInspection: number
 }

@@ -1,4 +1,5 @@
 import {
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -35,6 +36,11 @@ export class ListDevicesDto {
   @IsString()
   @MaxLength(255)
   search?: string;
+
+  /** `'false'` = no QC inspection yet; `'true'` = inspected at least once. */
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  inspected?: 'true' | 'false';
 
   @IsOptional()
   @IsInt()

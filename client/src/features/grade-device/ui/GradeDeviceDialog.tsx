@@ -1,98 +1,68 @@
-import * as React from "react"
+import type { ReactNode } from "react"
+import { PackageX, ShieldAlert } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useDefectTypes, useGrades, useCreateInspection, type CreateInspectionDto } from "@/entities/qc"
+import { useAuthStore } from "@/features/auth"
+import { useDeviceByImei, type DeviceDetailView } from "@/entities/device"
+import { useDefectTypes, useGrades } from "@/entities/qc"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Switch } from "@/shared/ui/switch"
-import { Label } from "@/shared/ui/label"
-import { toast } from "@/shared/ui/sonner"
-import { DefectsChecklist } from "./DefectsChecklist"
-import { QcParamInputs } from "./QcParamInputs"
+import { GradeDeviceForm } from "./GradeDeviceForm"
 
-function PassFailBanner({ passed, onToggle }: { passed: boolean; onToggle: (val: boolean) => void }) {
-  const { t } = useI18n()
+const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
+
+function Centered({ icon, text }: { icon: ReactNode; text: string }) {
   return (
-    <div className="flex items-center justify-between p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa]">
-      <div>
-        <Label className="text-base font-semibold">{t("qc.result")}</Label>
-        <p className="text-xs text-muted-foreground mt-0.5">{passed ? t("qc.passed") : t("qc.failed")}</p>
-      </div>
-      <Switch checked={passed} onCheckedChange={(val) => onToggle(Boolean(val))} />
+    <div className="my-8 text-center space-y-3">
+      {icon}
+      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   )
 }
 
-function toPayload(deviceId: string, passed: boolean, gradeCode: string, battery: number, cost: number, notes: string, defects: string[]): CreateInspectionDto {
-  return {
-    deviceId,
-    passed,
-    gradeCode: gradeCode || undefined,
-    batteryHealth: battery,
-    repairCostEstimate: cost > 0 ? cost : undefined,
-    notes: notes || undefined,
-    defects: defects.map((defectCode) => ({ defectCode })),
-  }
-}
-
-function GradeDeviceForm({ deviceId, onDone }: { deviceId: string; onDone: () => void }) {
+function DialogBody({
+  device,
+  onDone,
+  onInspectNext,
+}: {
+  device: DeviceDetailView
+  onDone: () => void
+  onInspectNext: () => void
+}) {
   const { t } = useI18n()
-  const { data: defectTypesData } = useDefectTypes()
-  const { data: gradesData } = useGrades()
-  const createMutation = useCreateInspection()
+  const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
+  const { data: defectTypes, isLoading: dLoading } = useDefectTypes()
+  const { data: grades, isLoading: gLoading } = useGrades()
 
-  const [passed, setPassed] = React.useState(true)
-  const [gradeCode, setGradeCode] = React.useState("A")
-  const [batteryHealth, setBatteryHealth] = React.useState(100)
-  const [repairCost, setRepairCost] = React.useState(0)
-  const [notes, setNotes] = React.useState("")
-  const [defects, setDefects] = React.useState<string[]>([])
-
-  const toggleDefect = (code: string) => {
-    setDefects((p) => p.includes(code) ? p.filter((c) => c !== code) : [...p, code])
+  if (dLoading || gLoading) {
+    return <div className="my-8 text-center text-muted-foreground">{t("common.loading")}</div>
   }
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    createMutation.mutate(
-      toPayload(deviceId, passed, gradeCode, batteryHealth, repairCost, notes, defects),
-      { onSuccess: () => { toast.success(t("qc.inspectionSaved")); onDone() } }
-    )
+  if (!INSPECTABLE.has(device.statusCode)) {
+    return <Centered icon={<ShieldAlert className="mx-auto size-10 text-amber-500" />} text={t("qc.notInspectable")} />
   }
-
   return (
-    <form onSubmit={submit} className="space-y-4 my-2">
-      <PassFailBanner passed={passed} onToggle={setPassed} />
-      <QcParamInputs
-        grades={gradesData || []}
-        gradeCode={gradeCode}
-        onGradeChange={setGradeCode}
-        batteryHealth={batteryHealth}
-        onBatteryChange={setBatteryHealth}
-        repairCost={repairCost}
-        onRepairCostChange={setRepairCost}
-        notes={notes}
-        onNotesChange={setNotes}
-      />
-      <DefectsChecklist defectTypes={defectTypesData || []} selectedCodes={defects} onToggle={toggleDefect} />
-      <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-        {createMutation.isPending ? t("common.loading") : t("common.save")}
-      </Button>
-    </form>
+    <GradeDeviceForm
+      device={device}
+      defectTypes={defectTypes || []}
+      grades={grades || []}
+      canViewCost={canViewCost}
+      onDone={onDone}
+      onInspectNext={onInspectNext}
+    />
   )
 }
 
 export function GradeDeviceDialog({
-  deviceId,
   imei,
   open,
   onOpenChange,
+  onInspectNext,
 }: {
-  deviceId: string
-  imei: string
+  imei: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onInspectNext: () => void
 }) {
   const { t } = useI18n()
+  const { data: device, isLoading, isError } = useDeviceByImei(open ? imei : undefined)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,7 +71,18 @@ export function GradeDeviceDialog({
           <DialogTitle>{t("qc.runInspection")}</DialogTitle>
           <DialogDescription className="font-mono text-sm">{imei}</DialogDescription>
         </DialogHeader>
-        <GradeDeviceForm deviceId={deviceId} onDone={() => onOpenChange(false)} />
+        {isLoading && <div className="my-8 text-center text-muted-foreground">{t("common.loading")}</div>}
+        {!isLoading && (isError || !device) && imei && (
+          <Centered icon={<PackageX className="mx-auto size-10 text-muted-foreground" />} text={t("inventory.imeiNotFound")} />
+        )}
+        {device && (
+          <DialogBody
+            key={device.id}
+            device={device}
+            onDone={() => onOpenChange(false)}
+            onInspectNext={onInspectNext}
+          />
+        )}
       </DialogPopup>
     </Dialog>
   )

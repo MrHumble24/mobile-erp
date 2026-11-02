@@ -1,13 +1,16 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { DevicesService } from '../devices/devices.service.js';
 import { CreateInspectionDto } from './dto/create-inspection.dto.js';
+import { QcLookupsRepository } from './qc-lookups.repository.js';
 import { QcRepository } from './qc.repository.js';
 import { QcService } from './qc.service.js';
 
 function build(statusCode: string) {
   const repo = {
     createInspection: jest.fn().mockResolvedValue({ id: 'i1' }),
-    findByDevice: jest.fn(),
+    list: jest.fn(),
+  };
+  const lookups = {
     listGrades: jest.fn().mockResolvedValue([{ code: 'A' }]),
     listDefectTypes: jest.fn().mockResolvedValue([{ code: 'CAMERA' }]),
   };
@@ -17,10 +20,13 @@ function build(statusCode: string) {
   };
   const service = new QcService(
     repo as unknown as QcRepository,
+    lookups as unknown as QcLookupsRepository,
     devices as unknown as DevicesService,
   );
   return { service, repo, devices };
 }
+
+const CAMERA = [{ defectCode: 'CAMERA' }];
 
 function dto(over: Partial<CreateInspectionDto>): CreateInspectionDto {
   return { deviceId: 'd1', passed: true, defects: [], ...over };
@@ -29,7 +35,10 @@ function dto(over: Partial<CreateInspectionDto>): CreateInspectionDto {
 describe('QcService.createInspection', () => {
   it('moves an IN_STOCK device to DEFECTIVE on a failed inspection', async () => {
     const { service, devices } = build('IN_STOCK');
-    await service.createInspection(dto({ passed: false }), 'u1');
+    await service.createInspection(
+      dto({ passed: false, defects: CAMERA }),
+      'u1',
+    );
     expect(devices.changeStatus).toHaveBeenCalledWith(
       'd1',
       'DEFECTIVE',
@@ -63,6 +72,30 @@ describe('QcService.createInspection', () => {
         'u1',
       ),
     ).rejects.toThrow(BadRequestException);
+    expect(repo.createInspection).not.toHaveBeenCalled();
+  });
+
+  it('rejects a failed inspection with no defects', async () => {
+    const { service, repo } = build('IN_STOCK');
+    await expect(
+      service.createInspection(dto({ passed: false, defects: [] }), 'u1'),
+    ).rejects.toThrow(BadRequestException);
+    expect(repo.createInspection).not.toHaveBeenCalled();
+  });
+
+  it('rejects a battery health outside 0-100', async () => {
+    const { service, repo } = build('IN_STOCK');
+    await expect(
+      service.createInspection(dto({ batteryHealth: 150 }), 'u1'),
+    ).rejects.toThrow(BadRequestException);
+    expect(repo.createInspection).not.toHaveBeenCalled();
+  });
+
+  it('rejects inspecting a device that is not in stock or defective', async () => {
+    const { service, repo } = build('SOLD');
+    await expect(
+      service.createInspection(dto({ passed: true }), 'u1'),
+    ).rejects.toThrow(ConflictException);
     expect(repo.createInspection).not.toHaveBeenCalled();
   });
 });

@@ -13,9 +13,10 @@ import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
 import { toast } from "@/shared/ui/sonner"
-import type { DeviceTarget } from "../model/use-device-selection"
 import { StatusChangeForm } from "./StatusChangeForm"
 import { QcSummarySection } from "./QcSummarySection"
+
+const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
 
 function SpecCell({ label, value }: { label: string; value: string }) {
   return (
@@ -67,18 +68,45 @@ function NotFoundState() {
   )
 }
 
+function DrawerActions({
+  device,
+  canEdit,
+  onEdit,
+  onInspect,
+}: {
+  device: DeviceDetailView
+  canEdit: boolean
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+}) {
+  const { t } = useI18n()
+  const canInspect = Boolean(onInspect) && INSPECTABLE.has(device.statusCode)
+  return (
+    <div className="flex items-center gap-2">
+      {canInspect && (
+        <Button size="sm" onClick={() => onInspect?.(device)}>{t("qc.runInspection")}</Button>
+      )}
+      {canEdit && onEdit && (
+        <Button variant="outline" size="sm" onClick={() => onEdit(device)}>{t("inventory.editDevice")}</Button>
+      )}
+    </div>
+  )
+}
+
 function DrawerBody({
   device,
   canViewCost,
   canChangeStatus,
   canEdit,
   onEdit,
+  onInspect,
 }: {
   device: DeviceDetailView
   canViewCost: boolean
   canChangeStatus: boolean
   canEdit: boolean
-  onEdit: (d: DeviceView) => void
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
 }) {
   const { t } = useI18n()
   const { data: history } = useDeviceHistory(device.id)
@@ -86,9 +114,7 @@ function DrawerBody({
     <div className="space-y-5 my-4 overflow-y-auto">
       <div className="flex items-center justify-between">
         <DeviceStatusBadge status={device.statusCode} />
-        {canEdit && (
-          <Button variant="outline" size="sm" onClick={() => onEdit(device)}>{t("inventory.editDevice")}</Button>
-        )}
+        <DrawerActions device={device} canEdit={canEdit} onEdit={onEdit} onInspect={onInspect} />
       </div>
       <DeviceSpecsGrid device={device} canViewCost={canViewCost} />
       <div className="space-y-2">
@@ -104,35 +130,36 @@ function DrawerBody({
   )
 }
 
-export function DeviceDetailDrawer({
-  target,
-  open,
-  onClose,
-  onEdit,
-}: {
-  target: DeviceTarget | null
+export interface DeviceDrawerProps {
+  imei?: string | null
   open: boolean
   onClose: () => void
-  onEdit: (d: DeviceView) => void
-}) {
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+}
+
+/** Shared device detail drawer: resolves a device by IMEI and renders specs, QC, history and status. */
+export function DeviceDrawer({ imei, open, onClose, onEdit, onInspect }: DeviceDrawerProps) {
   const { t } = useI18n()
   const hasPermission = useAuthStore((s) => s.hasPermission)
-  const { data: device, isLoading, isError } = useDeviceByImei(target?.imei)
+  const { data: device, isLoading, isError } = useDeviceByImei(imei)
 
-  const handleEdit = (d: DeviceView) => {
-    toast.dismiss()
-    onEdit(d)
-  }
+  const handleEdit = onEdit
+    ? (d: DeviceView) => {
+        toast.dismiss()
+        onEdit(d)
+      }
+    : undefined
 
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
       <SheetPopup className="w-full sm:max-w-3xl lg:max-w-5xl">
         <SheetHeader>
           <SheetTitle>{t("inventory.imeiDetails")}</SheetTitle>
-          <SheetDescription className="font-mono text-sm">{target?.imei}</SheetDescription>
+          <SheetDescription className="font-mono text-sm">{imei}</SheetDescription>
         </SheetHeader>
         {isLoading && <div className="my-8 text-center text-muted-foreground">{t("common.loading")}</div>}
-        {!isLoading && (isError || !device) && target && <NotFoundState />}
+        {!isLoading && (isError || !device) && imei && <NotFoundState />}
         {device && (
           <DrawerBody
             device={device}
@@ -140,6 +167,7 @@ export function DeviceDetailDrawer({
             canChangeStatus={hasPermission("device.status.change")}
             canEdit={hasPermission("device.update")}
             onEdit={handleEdit}
+            onInspect={onInspect}
           />
         )}
       </SheetPopup>

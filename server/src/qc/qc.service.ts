@@ -1,13 +1,26 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { DevicesService } from '../devices/devices.service.js';
 import { CreateInspectionDto } from './dto/create-inspection.dto.js';
+import { ListInspectionsDto } from './dto/list-inspections.dto.js';
+import { QcLookupsRepository } from './qc-lookups.repository.js';
 import { QcRepository } from './qc.repository.js';
-import { LookupView, QcInspectionView } from './types/qc.types.js';
+import {
+  InspectionFilters,
+  PaginatedInspections,
+  QcInspectionView,
+} from './types/qc.types.js';
+
+const INSPECTABLE = new Set(['IN_STOCK', 'DEFECTIVE']);
 
 @Injectable()
 export class QcService {
   constructor(
     private readonly repo: QcRepository,
+    private readonly lookups: QcLookupsRepository,
     private readonly devices: DevicesService,
   ) {}
 
@@ -16,6 +29,9 @@ export class QcService {
     userId: string,
   ): Promise<QcInspectionView> {
     const device = await this.devices.get(dto.deviceId);
+    this.assertInspectable(device.statusCode);
+    this.assertFailHasDefects(dto);
+    this.assertBattery(dto);
     await this.assertCodes(dto);
     const inspection = await this.repo.createInspection({
       ...dto,
@@ -25,16 +41,9 @@ export class QcService {
     return inspection;
   }
 
-  list(deviceId?: string): Promise<QcInspectionView[]> {
-    return this.repo.findByDevice(deviceId);
-  }
-
-  listDefectTypes(): Promise<LookupView[]> {
-    return this.repo.listDefectTypes();
-  }
-
-  listGrades(): Promise<LookupView[]> {
-    return this.repo.listGrades();
+  list(dto: ListInspectionsDto): Promise<PaginatedInspections> {
+    const { page, pageSize } = dto;
+    return this.repo.list(toFilters(dto), page, pageSize);
   }
 
   /** QC pass/fail drives the device between IN_STOCK and DEFECTIVE. */
@@ -50,10 +59,33 @@ export class QcService {
     }
   }
 
+  private assertInspectable(statusCode: string): void {
+    if (!INSPECTABLE.has(statusCode)) {
+      throw new ConflictException(
+        `Device in status ${statusCode} cannot be inspected`,
+      );
+    }
+  }
+
+  private assertFailHasDefects(dto: CreateInspectionDto): void {
+    if (!dto.passed && dto.defects.length === 0) {
+      throw new BadRequestException(
+        'A failed inspection requires at least one defect',
+      );
+    }
+  }
+
+  private assertBattery(dto: CreateInspectionDto): void {
+    const bh = dto.batteryHealth;
+    if (bh !== undefined && (bh < 0 || bh > 100)) {
+      throw new BadRequestException('batteryHealth must be between 0 and 100');
+    }
+  }
+
   private async assertCodes(dto: CreateInspectionDto): Promise<void> {
     const [grades, defectTypes] = await Promise.all([
-      this.repo.listGrades(),
-      this.repo.listDefectTypes(),
+      this.lookups.listGrades(false),
+      this.lookups.listDefectTypes(false),
     ]);
     if (dto.gradeCode && !grades.some((g) => g.code === dto.gradeCode)) {
       throw new BadRequestException(`Unknown grade: ${dto.gradeCode}`);
@@ -68,4 +100,17 @@ export class QcService {
       );
     }
   }
+}
+
+function toFilters(dto: ListInspectionsDto): InspectionFilters {
+  return {
+    deviceId: dto.deviceId,
+    imei: dto.imei,
+    passed: dto.passed === undefined ? undefined : dto.passed === 'true',
+    gradeCode: dto.gradeCode,
+    defectCode: dto.defectCode,
+    inspectedById: dto.inspectedById,
+    from: dto.from ? new Date(dto.from) : undefined,
+    to: dto.to ? new Date(dto.to) : undefined,
+  };
 }

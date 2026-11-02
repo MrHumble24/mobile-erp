@@ -2,7 +2,7 @@ import { useI18n } from "@/shared/i18n"
 import { Input } from "@/shared/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { STORAGE_OPTIONS } from "@/entities/device"
-import type { DeviceModelView } from "@/entities/device-model"
+import { storageOptionsFromModels, type DeviceModelView } from "@/entities/device-model"
 import type { InventoryFilterState } from "../model/use-device-browser"
 
 type OnChange = (val: string | undefined) => void
@@ -48,17 +48,6 @@ function StatusSelect({ value, onChange }: { value?: string; onChange: OnChange 
   )
 }
 
-/** Union of every active model's `storage` attribute options; fixed list when none. */
-function storageOptionsFrom(models: DeviceModelView[]): readonly string[] {
-  const union = new Set<string>()
-  for (const model of models) {
-    if (!model.isActive) continue
-    const storage = model.attributes.find((a) => a.key === "storage")
-    storage?.options.forEach((o) => union.add(o))
-  }
-  return union.size > 0 ? [...union] : STORAGE_OPTIONS
-}
-
 function StorageSelect({ value, onChange, options }: { value?: string; onChange: OnChange; options: readonly string[] }) {
   const { t } = useI18n()
   return (
@@ -90,7 +79,7 @@ export function InventoryFilters({ filters, models }: { filters: InventoryFilter
       />
       <ModelSelect value={filters.modelId} onChange={filters.setModelId} models={models} />
       <StatusSelect value={filters.statusCode} onChange={filters.setStatusCode} />
-      <StorageSelect value={filters.storage} onChange={filters.setStorage} options={storageOptionsFrom(models)} />
+      <StorageSelect value={filters.storage} onChange={filters.setStorage} options={storageOptionsFromModels(models, STORAGE_OPTIONS)} />
     </div>
   )
 }

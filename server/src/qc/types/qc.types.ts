@@ -17,10 +17,55 @@ export interface QcInspectionView {
   defects: QcDefectView[];
 }
 
+export interface InspectionDeviceRef {
+  id: string;
+  imei: string;
+  modelId: string;
+  model: { brand: string; name: string };
+  statusCode: string;
+}
+
+/** List-row inspection: adds device + inspector context to the base view. */
+export interface QcInspectionListItem extends QcInspectionView {
+  device: InspectionDeviceRef;
+  inspectedBy: { id: string; name: string };
+}
+
+export interface PaginatedInspections {
+  items: QcInspectionListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface LookupView {
   code: string;
   label: string;
   sortOrder: number;
+  isActive: boolean;
+}
+
+export interface CreateLookupInput {
+  code: string;
+  label: string;
+  sortOrder?: number;
+}
+
+export interface UpdateLookupInput {
+  label?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface InspectionFilters {
+  deviceId?: string;
+  imei?: string;
+  passed?: boolean;
+  gradeCode?: string;
+  defectCode?: string;
+  inspectedById?: string;
+  from?: Date;
+  to?: Date;
 }
 
 export interface CreateInspectionInput {
@@ -32,4 +77,15 @@ export interface CreateInspectionInput {
   repairCostEstimate?: number;
   notes?: string;
   defects: { defectCode: string; notes?: string }[];
+}
+
+export interface QcStatsView {
+  inspected: number;
+  passed: number;
+  failed: number;
+  passRate: number;
+  byGrade: { gradeCode: string; count: number }[];
+  topDefects: { defectCode: string; label: string; count: number }[];
+  avgBatteryHealth: number | null;
+  awaitingInspection: number;
 }
