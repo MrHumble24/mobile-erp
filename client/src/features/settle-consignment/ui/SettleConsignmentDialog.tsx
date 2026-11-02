@@ -91,6 +91,7 @@ function SettleForm({
         notes={notes}
         setNotes={setNotes}
       />
+      <p className="text-xs text-muted-foreground">{t("consignments.settleHint")}</p>
       <Button type="submit" className="w-full" disabled={settleMutation.isPending}>
         {settleMutation.isPending ? t("common.loading") : t("consignments.settle")}
       </Button>
