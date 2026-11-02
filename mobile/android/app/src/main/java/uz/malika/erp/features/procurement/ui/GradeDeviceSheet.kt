@@ -45,16 +45,18 @@ import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.Tokens
 
 private data class GradeInputs(val device: QcDeviceDto, val grades: List<LookupDto>, val defects: List<LookupDto>)
 
-/** Grade a device by IMEI (online-only). On success invokes [onSaved]. */
+/** Grade a device by IMEI (online-only). On success invokes [onSaved] and toasts. */
 @Composable
 fun GradeDeviceSheet(
     imei: String,
     online: Boolean,
     repo: ProcurementRepository,
+    toaster: Toaster,
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -63,7 +65,7 @@ fun GradeDeviceSheet(
     }
     AppBottomSheet(onDismiss = onDismiss) {
         Column(Modifier.padding(16.dp)) {
-            AsyncContent(loaded) { GradeForm(it, online, repo, onSaved, onDismiss) }
+            AsyncContent(loaded) { GradeForm(it, online, repo, toaster, onSaved, onDismiss) }
         }
     }
 }
@@ -73,6 +75,7 @@ private fun GradeForm(
     inputs: GradeInputs,
     online: Boolean,
     repo: ProcurementRepository,
+    toaster: Toaster,
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -107,6 +110,7 @@ private fun GradeForm(
         scope.launch {
             try {
                 repo.createInspection(body)
+                toaster.success(t("common.success", null))
                 onSaved(); onDismiss()
             } catch (e: AppException) {
                 error = e.message

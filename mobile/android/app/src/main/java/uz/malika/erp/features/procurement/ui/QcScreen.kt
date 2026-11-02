@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,9 +28,11 @@ import uz.malika.erp.features.procurement.model.procurementVmFactory
 import uz.malika.erp.features.procurement.model.rememberAsync
 import uz.malika.erp.features.procurement.model.rememberProcurementRepository
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.Toaster
 
 private enum class QcTab { QUEUE, INSPECTIONS, STATS, LOOKUPS }
 
@@ -58,7 +61,13 @@ fun QcScreen(container: AppContainer) {
 
     var tab by remember { mutableStateOf(QcTab.QUEUE) }
     var preset by remember { mutableStateOf(StatsPreset.SEVEN_DAYS) }
+    var customRange by remember { mutableStateOf(DateRange()) }
     var sheet by remember { mutableStateOf<QcSheet?>(null) }
+
+    // Incoming cross-feature arg (e.g. device sheet → "Run QC") opens the grade sheet.
+    LaunchedEffect(Unit) {
+        container.featureNav.consumeArg("qc")?.let { sheet = QcSheet.Grade(it) }
+    }
 
     Column(Modifier.fillMaxSize()) {
         ScannerField(
@@ -79,13 +88,19 @@ fun QcScreen(container: AppContainer) {
         )
         when (tab) {
             QcTab.QUEUE -> AsyncContent(queue, onRetry = vm::refreshQueue) {
-                QcQueueTab(it, modelNames) { imei -> sheet = QcSheet.Grade(imei) }
+                QcQueueTab(it, modelNames, vm::loadMoreQueue) { imei -> sheet = QcSheet.Grade(imei) }
             }
             QcTab.INSPECTIONS -> AsyncContent(inspections, onRetry = vm::refreshInspections) {
-                QcInspectionsTab(it)
+                QcInspectionsTab(it, vm.resultFilter, vm::setResultFilter, vm::loadMoreInspections)
             }
             QcTab.STATS -> AsyncContent(stats, onRetry = { vm.refreshStats(preset) }) {
-                QcStatsTab(it, preset) { p -> preset = p; vm.refreshStats(p) }
+                QcStatsTab(
+                    stats = it,
+                    preset = preset,
+                    range = customRange,
+                    onPreset = { p -> preset = p; vm.refreshStats(p) },
+                    onCustomRange = { r -> customRange = r; vm.setStatsRange(r.startMillis, r.endMillis) },
+                )
             }
             QcTab.LOOKUPS -> AsyncContent(grades, onRetry = vm::refreshLookups) { gradeRows ->
                 QcLookupsTab(
@@ -101,7 +116,7 @@ fun QcScreen(container: AppContainer) {
         }
     }
 
-    QcSheets(sheet, online, repo, preset, vm) { sheet = it }
+    QcSheets(sheet, online, repo, preset, vm, container.toaster) { sheet = it }
 }
 
 @Composable
@@ -111,13 +126,14 @@ private fun QcSheets(
     repo: ProcurementRepository,
     preset: StatsPreset,
     vm: QcViewModel,
+    toaster: Toaster,
     setSheet: (QcSheet?) -> Unit,
 ) {
     val dismiss = { setSheet(null) }
     when (sheet) {
         null -> Unit
         is QcSheet.Grade -> GradeDeviceSheet(
-            imei = sheet.imei, online = online, repo = repo,
+            imei = sheet.imei, online = online, repo = repo, toaster = toaster,
             onSaved = {
                 vm.refreshQueue(); vm.refreshInspections(); vm.refreshStats(preset)
             },

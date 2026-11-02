@@ -43,6 +43,7 @@ interface ProcurementService {
     suspend fun devices(
         @Query("shipmentId") shipmentId: String? = null,
         @Query("inspected") inspected: String? = null,
+        @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 50,
     ): PaginatedDevicesDto
 
@@ -55,6 +56,7 @@ interface ProcurementService {
     @GET("qc/inspections")
     suspend fun inspections(
         @Query("passed") passed: String? = null,
+        @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 50,
     ): PaginatedInspectionsDto
 

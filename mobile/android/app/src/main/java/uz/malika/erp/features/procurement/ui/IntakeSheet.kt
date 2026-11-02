@@ -1,5 +1,9 @@
 package uz.malika.erp.features.procurement.ui
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -25,13 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uz.malika.erp.app.LocalCan
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.data.ProcurementRepository
+import uz.malika.erp.features.procurement.data.RegisteredDeviceDto
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
+import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
@@ -50,9 +58,11 @@ fun IntakeSheet(
 ) {
     val t = LocalT.current
     val scope = rememberCoroutineScope()
+    val canCost = LocalCan.current("device.cost.view")
     val drafts = remember { mutableStateListOf<IntakeDraft>() }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var results by remember { mutableStateOf<List<RegisteredDeviceDto>>(emptyList()) }
 
     fun add(draft: IntakeDraft) {
         if (drafts.any { it.imei == draft.imei }) { error = t("shipments.duplicateImei", null); return }
@@ -65,8 +75,10 @@ fun IntakeSheet(
         busy = true; error = null
         scope.launch {
             try {
-                repo.addDevices(shipment.id, drafts.toList())
-                onSaved(); onDismiss()
+                // Keep the registered units' landed costs so the summary matches the web.
+                results = repo.addDevices(shipment.id, drafts.toList())
+                drafts.clear()
+                onSaved()
             } catch (e: AppException) {
                 error = if (e.statusCode == 409) t("shipments.duplicateImei", null) else e.message
             } finally {
@@ -107,6 +119,10 @@ fun IntakeSheet(
                 Spacer(Modifier.height(12.dp))
                 Text(it, color = Tokens.destructive, style = MaterialTheme.typography.bodyMedium)
             }
+            if (canCost && results.isNotEmpty()) {
+                Spacer(Modifier.height(20.dp))
+                LandedResults(results)
+            }
             Spacer(Modifier.height(20.dp))
             PillButton(
                 text = t(if (busy) "common.loading" else "shipments.submitBatch", null),
@@ -115,6 +131,29 @@ fun IntakeSheet(
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+/** Per-device landed cost returned by the server after a batch is registered. */
+@Composable
+private fun LandedResults(results: List<RegisteredDeviceDto>) {
+    val t = LocalT.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Tokens.mist, RoundedCornerShape(12.dp))
+            .border(BorderStroke(1.dp, Tokens.bone), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+    ) {
+        Text(t("shipments.landedCostResults", null), style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(8.dp))
+        results.forEach { r ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                ImeiText(r.imei, style = MaterialTheme.typography.bodySmall)
+                MoneyText(r.landedCost, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.height(4.dp))
         }
     }
 }

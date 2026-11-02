@@ -24,14 +24,14 @@ class ProcurementRepository(private val api: ProcurementService) {
 
     // ── Shared device/model reads (owned here until an inventory slice lands) ──
     suspend fun deviceModels(): List<DeviceModelDto> = runApi { api.deviceModels() }
-    suspend fun devices(shipmentId: String? = null, inspected: String? = null): PaginatedDevicesDto =
-        runApi { api.devices(shipmentId = shipmentId, inspected = inspected) }
+    suspend fun devices(shipmentId: String? = null, inspected: String? = null, page: Int = 1): PaginatedDevicesDto =
+        runApi { api.devices(shipmentId = shipmentId, inspected = inspected, page = page) }
     suspend fun deviceByImei(imei: String): QcDeviceDto = runApi { api.deviceByImei(imei) }
 
     // ── QC ─────────────────────────────────────────────────────────────────────
     suspend fun createInspection(body: CreateInspectionBody) = runApi { api.createInspection(body) }
-    suspend fun inspections(passed: String? = null): PaginatedInspectionsDto =
-        runApi { api.inspections(passed = passed) }
+    suspend fun inspections(passed: String? = null, page: Int = 1): PaginatedInspectionsDto =
+        runApi { api.inspections(passed = passed, page = page) }
     suspend fun stats(from: String? = null, to: String? = null): QcStatsDto =
         runApi { api.stats(from, to) }
     suspend fun lookups(kind: String, includeInactive: Boolean): List<LookupDto> =

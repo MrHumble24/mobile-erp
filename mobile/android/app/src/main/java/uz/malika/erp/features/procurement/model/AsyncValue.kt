@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.PageState
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
 
@@ -29,6 +30,35 @@ fun <T> MutableStateFlow<AsyncValue<T>>.reload(scope: CoroutineScope, block: sus
             AsyncValue.Data(block())
         } catch (e: AppException) {
             AsyncValue.Error(e.message)
+        }
+    }
+}
+
+/**
+ * A paginated server read ({@code { items, total }}) held as [AsyncValue] of a
+ * [PageState]. [reloadPaged] fetches page 1 fresh; [loadMore] appends the next
+ * page in place (the first/last states stay `Data`, so only the footer spinner
+ * toggles via `PageState.loading`). [fetch] returns `items to total`.
+ */
+fun <T> MutableStateFlow<AsyncValue<PageState<T>>>.reloadPaged(
+    scope: CoroutineScope,
+    fetch: suspend (Int) -> Pair<List<T>, Int>,
+) = reload(scope) { val (items, total) = fetch(1); PageState<T>().append(items, total, 1) }
+
+fun <T> MutableStateFlow<AsyncValue<PageState<T>>>.loadMore(
+    scope: CoroutineScope,
+    fetch: suspend (Int) -> Pair<List<T>, Int>,
+) {
+    val cur = (value as? AsyncValue.Data)?.value ?: return
+    if (cur.loading || !cur.hasMore) return
+    val next = cur.nextPage
+    value = AsyncValue.Data(cur.copy(loading = true))
+    scope.launch {
+        value = try {
+            val (items, total) = fetch(next)
+            AsyncValue.Data(cur.append(items, total, next))
+        } catch (_: AppException) {
+            AsyncValue.Data(cur.copy(loading = false))
         }
     }
 }

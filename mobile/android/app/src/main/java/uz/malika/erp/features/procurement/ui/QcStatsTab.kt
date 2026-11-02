@@ -24,14 +24,22 @@ import uz.malika.erp.features.procurement.data.QcStatsDto
 import uz.malika.erp.features.procurement.model.StatsPreset
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.AppDateRangeField
+import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.ui.theme.Tokens
 
-/** QC statistics with three quick date-range presets. */
+/** QC statistics with quick date-range presets plus a custom range. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun QcStatsTab(stats: QcStatsDto, preset: StatsPreset, onPreset: (StatsPreset) -> Unit) {
+fun QcStatsTab(
+    stats: QcStatsDto,
+    preset: StatsPreset,
+    range: DateRange,
+    onPreset: (StatsPreset) -> Unit,
+    onCustomRange: (DateRange) -> Unit,
+) {
     val t = LocalT.current
     Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
         SegmentedControl(
@@ -39,10 +47,19 @@ fun QcStatsTab(stats: QcStatsDto, preset: StatsPreset, onPreset: (StatsPreset) -
                 SegmentOption(StatsPreset.TODAY, t("qc.preset_today", null)),
                 SegmentOption(StatsPreset.SEVEN_DAYS, t("qc.preset_7d", null)),
                 SegmentOption(StatsPreset.THIRTY_DAYS, t("qc.preset_30d", null)),
+                SegmentOption(StatsPreset.CUSTOM, t("qc.preset_custom", null)),
             ),
             selected = preset,
             onSelect = onPreset,
         )
+        if (preset == StatsPreset.CUSTOM) {
+            Spacer(Modifier.height(12.dp))
+            AppDateRangeField(
+                label = t("qc.dateRange", null),
+                range = range,
+                onPick = onCustomRange,
+            )
+        }
         Spacer(Modifier.height(16.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Tile(t("qc.statInspected", null), "${stats.inspected}")

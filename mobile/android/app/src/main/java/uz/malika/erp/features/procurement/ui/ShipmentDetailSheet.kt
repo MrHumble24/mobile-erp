@@ -11,25 +11,31 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.DeviceRowDto
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.ShipmentDto
-import uz.malika.erp.features.procurement.model.AsyncContent
-import uz.malika.erp.features.procurement.model.rememberAsync
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.PageState
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
+import uz.malika.erp.shared.ui.LoadMoreFooter
+import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
-/**
- * Shipment summary + its registered devices (first page; batches rarely exceed
- * 50). Hosts the edit and continue-intake actions, gated by permission codes.
- */
+/** Shipment summary + its registered devices (paginated), as a phone bottom sheet. */
 @Composable
 fun ShipmentDetailSheet(
     shipment: ShipmentDto,
@@ -41,36 +47,84 @@ fun ShipmentDetailSheet(
     onContinueIntake: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val t = LocalT.current
-    val devices = rememberAsync(shipment.id) { repo.devices(shipmentId = shipment.id).items }
-
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(t("shipments.detailTitle", null), style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                t("shipments.registeredProgress", mapOf("registered" to shipment.deviceCount, "expected" to shipment.expectedCount)),
-                style = MaterialTheme.typography.bodySmall,
-            )
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (canManage) {
-                    PillButton(t("shipments.editShipment", null), onEdit, variant = ButtonVariant.OUTLINE, modifier = Modifier.weight(1f))
-                }
-                if (canCreate) {
-                    PillButton(t("shipments.continueIntake", null), onContinueIntake, modifier = Modifier.weight(1f))
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-            AsyncContent(devices) { rows ->
-                if (rows.isEmpty()) {
-                    EmptyView(t("shipments.noDevices", null))
-                } else {
-                    DevicesTable(rows, modelNames)
-                }
-            }
-            Spacer(Modifier.height(8.dp))
+        ShipmentDetailContent(
+            shipment = shipment,
+            modelNames = modelNames,
+            canManage = canManage,
+            canCreate = canCreate,
+            repo = repo,
+            onEdit = onEdit,
+            onContinueIntake = onContinueIntake,
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+/**
+ * The detail body itself — reused as a phone bottom sheet ([ShipmentDetailSheet])
+ * and as the tablet master-detail pane. Loads the registered devices one page
+ * at a time (load-more).
+ */
+@Composable
+fun ShipmentDetailContent(
+    shipment: ShipmentDto,
+    modelNames: Map<String, String>,
+    canManage: Boolean,
+    canCreate: Boolean,
+    repo: ProcurementRepository,
+    onEdit: () -> Unit,
+    onContinueIntake: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val t = LocalT.current
+    val scope = rememberCoroutineScope()
+    var devices by remember(shipment.id) { mutableStateOf(PageState<DeviceRowDto>()) }
+    var loaded by remember(shipment.id) { mutableStateOf(false) }
+
+    suspend fun load(page: Int) {
+        devices = devices.copy(loading = true)
+        devices = try {
+            val dto = repo.devices(shipmentId = shipment.id, page = page)
+            devices.append(dto.items, dto.total, page)
+        } catch (_: AppException) {
+            devices.copy(loading = false)
         }
+        loaded = true
+    }
+
+    LaunchedEffect(shipment.id) { load(1) }
+
+    Column(modifier) {
+        Text(t("shipments.detailTitle", null), style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            t("shipments.registeredProgress", mapOf("registered" to shipment.deviceCount, "expected" to shipment.expectedCount)),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (canManage) {
+                PillButton(t("shipments.editShipment", null), onEdit, variant = ButtonVariant.OUTLINE, modifier = Modifier.weight(1f))
+            }
+            if (canCreate) {
+                PillButton(t("shipments.continueIntake", null), onContinueIntake, modifier = Modifier.weight(1f))
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        when {
+            !loaded -> Loading()
+            devices.items.isEmpty() -> EmptyView(t("shipments.noDevices", null))
+            else -> {
+                DevicesTable(devices.items, modelNames)
+                LoadMoreFooter(
+                    hasMore = devices.hasMore,
+                    loading = devices.loading,
+                    onLoadMore = { scope.launch { load(devices.nextPage) } },
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
     }
 }
 

@@ -63,6 +63,8 @@ fun InventoryScreen(container: AppContainer) {
                 alertsVm = alertsVm,
                 online = online,
                 canUpdate = canUpdate,
+                featureNav = container.featureNav,
+                toaster = container.toaster,
                 onShowAlerts = { selected = InventoryTab.ALERTS },
             )
             InventoryTab.MODELS -> DeviceModelsTab(catalogVm = catalogVm, online = online)

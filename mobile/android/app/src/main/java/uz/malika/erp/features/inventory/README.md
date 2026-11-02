@@ -11,6 +11,11 @@ gated by `device.read`).
   barcode). Edit specs + target price and manual status transitions (ADR 0012)
   are online-only writes. Margin row shows only when landed cost is present
   (cost is redacted → null for under-privileged users).
+  - Detail actions: "Sell in POS" (`IN_STOCK` + `sale.create`) and "Run QC"
+    (`IN_STOCK`/`DEFECTIVE` + `qc.create`) hand off to POS/QC via
+    `featureNav.open`; copy-IMEI and status change toast `container.toaster`.
+    Incoming `inventory` arg opens the sheet via `consumeArg`. On tablets
+    (≥720dp) the detail is a master-detail side pane, not a bottom sheet.
 - **Models**: device-model list + create/edit with the dynamic attribute schema
   (ADR 0013). Shown only with `device.update`.
 - **Alerts**: low-stock list + alert-rule create/edit; writes need `settings.manage`.
@@ -30,5 +35,5 @@ gated by `device.read`).
   are not on the foundation `ApiService`); it reuses the container's base-URL +
   auth behaviour. `ui/AppSelect.kt` is a slice-local Caldera select (the kit ships
   none). Both are candidates for the integrator to promote.
-- `t("common.offline")` is not yet in the web i18n JSON (Gemini handoff); it falls
-  back to the raw key until added.
+- `t("common.offline")`, `inventory.selectDevice` and kit-wide `common.loadMore`
+  are not yet in the web i18n JSON (Gemini handoff); the raw key shows until added.
