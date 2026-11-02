@@ -35,6 +35,8 @@ export interface ReceiptItem {
   storage: string | null
   color: string | null
   price: string
+  /** Per-item warranty, set only on combined multi-sale receipts (server receipts carry it at the top level). */
+  warranty?: { days: number; endsAt: string } | null
 }
 
 export interface ReceiptView {

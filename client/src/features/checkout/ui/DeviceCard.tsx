@@ -1,5 +1,6 @@
 import { Smartphone, CheckCircle, Battery } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { Card, CardContent } from "@/shared/ui/card"
 import { DeviceStatusBadge, type DeviceDetailView } from "@/entities/device"
 
@@ -34,7 +35,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
           </div>
           <div>
             <span className="text-muted-foreground">{t("inventory.targetPrice")}:</span>{" "}
-            <span className="font-semibold text-primary">{device.targetPrice ? `$${device.targetPrice}` : "-"}</span>
+            <span className="font-semibold text-primary">{formatMoney(device.targetPrice)}</span>
           </div>
         </div>
 

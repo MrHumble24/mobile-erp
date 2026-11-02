@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { usePartners } from "@/entities/partner"
-import { useCreateConsignment } from "@/entities/consignment"
+import { useCreateConsignment, type ConsignmentView } from "@/entities/consignment"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -122,18 +122,29 @@ function ConsignFormInputs({
   )
 }
 
+function consignErrorMessage(err: any, t: (k: string) => string): string {
+  if (err?.creditLimit !== undefined) {
+    return `${t("consignments.creditLimitExceeded")}. Limit: $${err.creditLimit}, Qarz: $${err.outstanding}, Jami: $${err.projected}`
+  }
+  return err?.statusCode === 409 ? t("common.retry") : err?.message || t("common.error")
+}
+
 function ConsignDeviceForm({
   onCancel,
   onSuccess,
+  initialImei = "",
+  initialAgreedPrice = "",
 }: {
   onCancel: () => void
-  onSuccess?: () => void
+  onSuccess?: (consignment: ConsignmentView) => void
+  initialImei?: string
+  initialAgreedPrice?: string
 }) {
   const { t } = useI18n()
   const createMutation = useCreateConsignment()
   const [partnerId, setPartnerId] = React.useState("")
-  const [imei, setImei] = React.useState("")
-  const [agreedPrice, setAgreedPrice] = React.useState("")
+  const [imei, setImei] = React.useState(initialImei)
+  const [agreedPrice, setAgreedPrice] = React.useState(initialAgreedPrice)
   const [dueDate, setDueDate] = React.useState("")
   const [notes, setNotes] = React.useState("")
 
@@ -151,17 +162,12 @@ function ConsignDeviceForm({
     }
 
     createMutation.mutate(dto, {
-      onSuccess: () => {
+      onSuccess: (created) => {
         toast.success(t("consignments.consignSuccess"))
         onCancel()
-        onSuccess?.()
+        onSuccess?.(created)
       },
-      onError: (err: any) => {
-        const msg = err?.creditLimit !== undefined
-          ? `${t("consignments.creditLimitExceeded")}. Limit: $${err.creditLimit}, Qarz: $${err.outstanding}, Jami: $${err.projected}`
-          : err?.statusCode === 409 ? t("common.retry") : (err?.message || t("common.error"))
-        toast.error(msg)
-      },
+      onError: (err: any) => toast.error(consignErrorMessage(err, t)),
     })
   }
 
@@ -181,10 +187,14 @@ export function ConsignDeviceDialog({
   open,
   onOpenChange,
   onSuccess,
+  initialImei,
+  initialAgreedPrice,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess?: () => void
+  onSuccess?: (consignment: ConsignmentView) => void
+  initialImei?: string
+  initialAgreedPrice?: string
 }) {
   const { t } = useI18n()
 
@@ -194,7 +204,14 @@ export function ConsignDeviceDialog({
         <DialogHeader>
           <DialogTitle>{t("consignments.newConsignment")}</DialogTitle>
         </DialogHeader>
-        {open && <ConsignDeviceForm onCancel={() => onOpenChange(false)} onSuccess={onSuccess} />}
+        {open && (
+          <ConsignDeviceForm
+            onCancel={() => onOpenChange(false)}
+            onSuccess={onSuccess}
+            initialImei={initialImei}
+            initialAgreedPrice={initialAgreedPrice}
+          />
+        )}
       </DialogPopup>
     </Dialog>
   )

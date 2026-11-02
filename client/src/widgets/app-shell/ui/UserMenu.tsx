@@ -108,7 +108,7 @@ export function UserMenu() {
       <LogoutConfirmDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}
-        onConfirm={() => useCartStore.getState().resetCart()}
+        onConfirm={() => useCartStore.getState().clear()}
       />
     </>
   )

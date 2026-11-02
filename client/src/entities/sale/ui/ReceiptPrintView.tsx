@@ -79,6 +79,12 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
             <div className="text-[9px] text-black/90 font-mono tracking-wider">
               IMEI: {item.imei}
             </div>
+            {item.warranty && (
+              <div className="text-[9px] text-black/75">
+                {t("pos.officialWarranty")}: {item.warranty.days} {t("pos.daysShort")} ·{" "}
+                {new Date(item.warranty.endsAt).toLocaleDateString()}
+              </div>
+            )}
           </div>
         ))}
       </div>

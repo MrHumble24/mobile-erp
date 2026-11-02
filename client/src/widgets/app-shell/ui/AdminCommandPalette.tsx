@@ -205,7 +205,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
       <LogoutConfirmDialog
         open={logoutOpen}
         onOpenChange={setLogoutOpen}
-        onConfirm={() => useCartStore.getState().resetCart()}
+        onConfirm={() => useCartStore.getState().clear()}
       />
     </>
   )
