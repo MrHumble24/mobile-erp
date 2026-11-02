@@ -1,0 +1,42 @@
+package uz.malika.erp.features.procurement.data
+
+import uz.malika.erp.core.runApi
+
+/**
+ * The only place the procurement slice talks HTTP. Each call wraps [runApi] so
+ * failures surface as a normalized `AppException`. Reads need `shipment.read` /
+ * `qc.read` / `device.read`; writes need `shipment.manage`, `device.create`,
+ * `qc.create` or `settings.manage` — all enforced server-side.
+ */
+class ProcurementRepository(private val api: ProcurementService) {
+
+    // ── Suppliers ────────────────────────────────────────────────────────────
+    suspend fun suppliers(): List<SupplierDto> = runApi { api.suppliers() }
+    suspend fun createSupplier(body: SupplierBody) = runApi { api.createSupplier(body) }
+    suspend fun updateSupplier(id: String, body: SupplierBody) = runApi { api.updateSupplier(id, body) }
+
+    // ── Shipments + intake ────────────────────────────────────────────────────
+    suspend fun shipments(): List<ShipmentDto> = runApi { api.shipments() }
+    suspend fun createShipment(body: CreateShipmentBody) = runApi { api.createShipment(body) }
+    suspend fun updateShipment(id: String, body: UpdateShipmentBody) = runApi { api.updateShipment(id, body) }
+    suspend fun addDevices(id: String, drafts: List<IntakeDraft>) =
+        runApi { api.addDevices(id, RegisterDevicesBody(drafts.map { it.toBody() })) }
+
+    // ── Shared device/model reads (owned here until an inventory slice lands) ──
+    suspend fun deviceModels(): List<DeviceModelDto> = runApi { api.deviceModels() }
+    suspend fun devices(shipmentId: String? = null, inspected: String? = null): PaginatedDevicesDto =
+        runApi { api.devices(shipmentId = shipmentId, inspected = inspected) }
+    suspend fun deviceByImei(imei: String): QcDeviceDto = runApi { api.deviceByImei(imei) }
+
+    // ── QC ─────────────────────────────────────────────────────────────────────
+    suspend fun createInspection(body: CreateInspectionBody) = runApi { api.createInspection(body) }
+    suspend fun inspections(passed: String? = null): PaginatedInspectionsDto =
+        runApi { api.inspections(passed = passed) }
+    suspend fun stats(from: String? = null, to: String? = null): QcStatsDto =
+        runApi { api.stats(from, to) }
+    suspend fun lookups(kind: String, includeInactive: Boolean): List<LookupDto> =
+        runApi { api.lookups(kind, if (includeInactive) "true" else null) }
+    suspend fun createLookup(kind: String, body: LookupBody) = runApi { api.createLookup(kind, body) }
+    suspend fun updateLookup(kind: String, code: String, body: LookupBody) =
+        runApi { api.updateLookup(kind, code, body) }
+}
