@@ -86,7 +86,8 @@ export class ConsignmentsWriteRepository {
   ): Promise<ConsignmentView> {
     return this.prisma.$transaction(async (tx) => {
       const c = await this.loadOut(tx, id);
-      await this.moveDevice(tx, c.device, 'IN_STOCK', input.expectedVersion, {
+      const to = input.condition ?? 'IN_STOCK';
+      await this.moveDevice(tx, c.device, to, input.expectedVersion, {
         changedById: input.changedById,
         reason: input.reason ?? 'consignment returned',
       });

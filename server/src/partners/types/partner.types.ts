@@ -25,6 +25,13 @@ export interface CreditStatus {
   outstanding: Prisma.Decimal;
 }
 
+/** Directory filters. `overdue` keeps only partners with an overdue item. */
+export interface PartnerFilters {
+  search?: string;
+  active?: boolean;
+  overdue?: boolean;
+}
+
 export interface PaymentView {
   id: string;
   partnerId: string;

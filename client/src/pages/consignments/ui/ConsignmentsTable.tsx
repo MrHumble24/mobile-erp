@@ -1,4 +1,4 @@
-import { CheckCircle2, RotateCcw } from "lucide-react"
+import { CheckCircle2, Eye, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import type { ConsignmentView } from "@/entities/consignment"
@@ -12,88 +12,85 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table"
+import { daysOverdue } from "../lib/overdue"
+
+export interface ConsignmentRowActions {
+  onOpenDetail: (item: ConsignmentView) => void
+  onSettle: (item: ConsignmentView) => void
+  onReturn: (item: ConsignmentView) => void
+}
 
 function ConsignmentStatusBadge({ statusCode }: { statusCode: string }) {
-  if (statusCode === "OUT") return <Badge variant="blue">Nasiyada</Badge>
-  if (statusCode === "SETTLED") return <Badge variant="mint">Yopilgan</Badge>
-  if (statusCode === "RETURNED") return <Badge variant="outline">Qaytarilgan</Badge>
+  const { t } = useI18n()
+  if (statusCode === "OUT") return <Badge variant="blue">{t("consignments.statusOut")}</Badge>
+  if (statusCode === "SETTLED") return <Badge variant="mint">{t("consignments.statusSettled")}</Badge>
+  if (statusCode === "RETURNED") return <Badge variant="outline">{t("consignments.statusReturned")}</Badge>
   return <Badge variant="default">{statusCode}</Badge>
 }
 
-function ConsignmentActions({
-  item,
-  onSettle,
-  onReturn,
-}: {
-  item: ConsignmentView
-  onSettle: (item: ConsignmentView) => void
-  onReturn: (item: ConsignmentView) => void
-}) {
+function DueCell({ item }: { item: ConsignmentView }) {
   const { t } = useI18n()
-  if (item.statusCode !== "OUT") return null
-
+  const overdue = daysOverdue(item.dueDate, item.statusCode)
   return (
-    <div className="flex justify-end gap-2">
-      <Button
-        size="sm"
-        className="gap-1.5 h-8 text-xs"
-        onClick={() => onSettle(item)}
-      >
-        <CheckCircle2 className="size-3.5" />
-        {t("consignments.settle")}
-      </Button>
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1.5 h-8 text-xs text-destructive hover:bg-destructive/10"
-        onClick={() => onReturn(item)}
-      >
-        <RotateCcw className="size-3.5" />
-        {t("consignments.return")}
-      </Button>
+    <div className="text-xs">
+      <div className="text-muted-foreground">{formatDate(item.dueDate)}</div>
+      {overdue > 0 && (
+        <span className="font-semibold text-destructive">
+          {overdue} {t("consignments.daysOverdue")}
+        </span>
+      )}
     </div>
   )
 }
 
-function ConsignmentTableRow({
-  item,
-  onSettle,
-  onReturn,
-}: {
-  item: ConsignmentView
-  onSettle: (item: ConsignmentView) => void
-  onReturn: (item: ConsignmentView) => void
-}) {
+function RowActions({ item, actions }: { item: ConsignmentView; actions: ConsignmentRowActions }) {
+  const { t } = useI18n()
+  return (
+    <div className="flex justify-end gap-2">
+      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => actions.onOpenDetail(item)}>
+        <Eye className="size-3.5" />
+        {t("consignments.viewDetail")}
+      </Button>
+      {item.statusCode === "OUT" && (
+        <>
+          <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => actions.onSettle(item)}>
+            <CheckCircle2 className="size-3.5" />
+            {t("consignments.settle")}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 h-8 text-xs text-destructive hover:bg-destructive/10"
+            onClick={() => actions.onReturn(item)}
+          >
+            <RotateCcw className="size-3.5" />
+            {t("consignments.return")}
+          </Button>
+        </>
+      )}
+    </div>
+  )
+}
+
+function ConsignmentTableRow({ item, actions }: { item: ConsignmentView; actions: ConsignmentRowActions }) {
   return (
     <TableRow>
-      <TableCell className="font-mono text-sm font-semibold">{item.imei}</TableCell>
-      <TableCell className="font-mono font-bold text-sm">
-        {formatMoney(item.agreedPrice)}
-      </TableCell>
-      <TableCell className="text-xs text-muted-foreground">
-        {formatDate(item.dueDate)}
-      </TableCell>
-      <TableCell>
-        <ConsignmentStatusBadge statusCode={item.statusCode} />
-      </TableCell>
-      <TableCell className="text-xs text-muted-foreground">
-        {formatDate(item.consignedAt)}
-      </TableCell>
-      <TableCell className="text-right">
-        <ConsignmentActions item={item} onSettle={onSettle} onReturn={onReturn} />
-      </TableCell>
+      <TableCell className="font-semibold text-sm">{item.partnerShopName}</TableCell>
+      <TableCell className="font-mono text-sm">{item.imei}</TableCell>
+      <TableCell className="font-mono font-bold text-sm">{formatMoney(item.agreedPrice)}</TableCell>
+      <TableCell><DueCell item={item} /></TableCell>
+      <TableCell><ConsignmentStatusBadge statusCode={item.statusCode} /></TableCell>
+      <TableCell className="text-right"><RowActions item={item} actions={actions} /></TableCell>
     </TableRow>
   )
 }
 
 export function ConsignmentsTable({
   items,
-  onSettle,
-  onReturn,
+  actions,
 }: {
   items: ConsignmentView[]
-  onSettle: (item: ConsignmentView) => void
-  onReturn: (item: ConsignmentView) => void
+  actions: ConsignmentRowActions
 }) {
   const { t } = useI18n()
 
@@ -110,22 +107,17 @@ export function ConsignmentsTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>{t("consignments.partner")}</TableHead>
             <TableHead>{t("consignments.device")}</TableHead>
             <TableHead>{t("consignments.agreedPrice")}</TableHead>
             <TableHead>{t("consignments.dueDate")}</TableHead>
             <TableHead>{t("common.status")}</TableHead>
-            <TableHead>{t("common.date")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <ConsignmentTableRow
-              key={item.id}
-              item={item}
-              onSettle={onSettle}
-              onReturn={onReturn}
-            />
+            <ConsignmentTableRow key={item.id} item={item} actions={actions} />
           ))}
         </TableBody>
       </Table>

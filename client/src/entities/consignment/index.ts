@@ -2,6 +2,7 @@ export type {
   ConsignmentView,
   OverdueConsignment,
   ConsignmentPage,
+  ConsignmentStats,
   ConsignmentFilters,
   CreateConsignmentDto,
   SettleConsignmentDto,
@@ -12,6 +13,7 @@ export { consignmentKeys } from "./api/consignment.keys"
 export {
   useConsignments,
   useOverdueConsignments,
+  useConsignmentStats,
   useConsignment,
   useCreateConsignment,
   useSettleConsignment,

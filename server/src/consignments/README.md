@@ -9,13 +9,20 @@ B2B "Nasiya" device transfers and their resolution (PRD Module 4).
   Idempotent on `clientMutationId`; device must be IN_STOCK (409 otherwise);
   enforces the partner credit limit (409 with the numbers).
 - `GET /` — `consignment.read`. Filters `partnerId`, `statusCode`,
-  `overdue=true`; paginated (`page`, `pageSize`).
+  `overdue=true`, `search` (IMEI or partner shop name), `from`/`to` (ISO bounds
+  on `consignedAt`); paginated (`page`, `pageSize`). Rows carry
+  `partnerShopName` and `saleId` (set once SETTLED). Where-builder in
+  `lib/consignment.where.ts` (unit-tested).
+- `GET /stats` — `consignment.read`. Tiles for the filtered set:
+  `{ total, openCount, overdueCount, outstanding }`. Status/overdue are dropped
+  from the base so the breakdown shows regardless of the active tab.
 - `GET /overdue` — `consignment.read`. OUT past `dueDate`, with partner contact
   (for the wave-3 Telegram job).
 - `GET /:id` — `consignment.read`.
 - `POST /:id/settle` — `consignment.settle`. `{ salePrice?, notes?,
   expectedVersion? }`. 409 if not OUT.
-- `POST /:id/return` — `consignment.settle`. `{ reason?, expectedVersion? }`.
+- `POST /:id/return` — `consignment.settle`. `{ reason?, condition?, expectedVersion? }`.
+  `condition` (`IN_STOCK` default | `DEFECTIVE`) is the device status to restore.
   409 if not OUT.
 
 ## Invariants

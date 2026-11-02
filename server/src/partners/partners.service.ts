@@ -15,8 +15,10 @@ import { CreatePartnerDto } from './dto/create-partner.dto.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UpdatePartnerDto } from './dto/update-partner.dto.js';
 import { PartnersRepository } from './partners.repository.js';
+import { AgingBucket } from './lib/aging.js';
 import {
   LedgerEntry,
+  PartnerFilters,
   PartnerView,
   PaymentView,
 } from './types/partner.types.js';
@@ -28,12 +30,17 @@ export class PartnersService {
     private readonly events: EventEmitter2,
   ) {}
 
-  list(): Promise<PartnerView[]> {
-    return this.repo.listWithBalance();
+  list(filters: PartnerFilters = {}): Promise<PartnerView[]> {
+    return this.repo.listWithBalance(filters);
   }
 
   get(id: string): Promise<PartnerView> {
     return this.require(id);
+  }
+
+  async aging(id: string): Promise<AgingBucket[]> {
+    await this.require(id);
+    return this.repo.aging(id);
   }
 
   create(dto: CreatePartnerDto): Promise<PartnerView> {

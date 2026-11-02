@@ -1,15 +1,19 @@
 import { http } from "@/shared/api/http"
 import type {
+  AgingBucket,
   CreatePartnerDto,
   LedgerEntry,
+  PartnerFilters,
   PartnerView,
   RecordPaymentDto,
   UpdatePartnerDto,
 } from "../model/partner.types"
 
 export const partnerRepository = {
-  list: async (): Promise<PartnerView[]> => {
-    return http<PartnerView[]>("/partners")
+  list: async (filters?: PartnerFilters): Promise<PartnerView[]> => {
+    return http<PartnerView[]>("/partners", {
+      params: filters as Record<string, string | number | boolean | undefined>,
+    })
   },
 
   get: async (id: string): Promise<PartnerView> => {
@@ -18,6 +22,10 @@ export const partnerRepository = {
 
   ledger: async (id: string): Promise<LedgerEntry[]> => {
     return http<LedgerEntry[]>(`/partners/${id}/ledger`)
+  },
+
+  aging: async (id: string): Promise<AgingBucket[]> => {
+    return http<AgingBucket[]>(`/partners/${id}/aging`)
   },
 
   create: async (dto: CreatePartnerDto): Promise<PartnerView> => {

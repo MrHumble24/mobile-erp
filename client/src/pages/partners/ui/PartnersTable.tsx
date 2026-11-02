@@ -13,32 +13,42 @@ import {
   TableRow,
 } from "@/shared/ui/table"
 
-function PartnerActionButtons({
-  partner,
-  onOpenLedger,
-  onOpenPayment,
-}: {
-  partner: PartnerView
-  onOpenLedger: (p: PartnerView) => void
+export interface PartnerRowActions {
+  onOpenDetail: (p: PartnerView) => void
   onOpenPayment: (p: PartnerView) => void
-}) {
+}
+
+function CreditBar({ partner }: { partner: PartnerView }) {
+  const { t } = useI18n()
+  const limit = Number(partner.creditLimit)
+  const used = Number(partner.outstanding)
+  if (limit <= 0) {
+    return <span className="text-xs text-muted-foreground">{t("partners.creditUnlimited")}</span>
+  }
+  const pct = Math.min(100, Math.max(0, (used / limit) * 100))
+  const color = pct >= 90 ? "bg-destructive" : pct >= 70 ? "bg-amber-500" : "bg-emerald-500"
+  return (
+    <div className="w-32 space-y-1">
+      <div className="flex justify-between text-[11px] text-muted-foreground">
+        <span>{formatMoney(used)}</span>
+        <span>{formatMoney(limit)}</span>
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-[#ececec]">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function PartnerActionButtons({ partner, actions }: { partner: PartnerView; actions: PartnerRowActions }) {
   const { t } = useI18n()
   return (
     <div className="flex justify-end gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        className="gap-1.5 h-8 text-xs"
-        onClick={() => onOpenLedger(partner)}
-      >
+      <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs" onClick={() => actions.onOpenDetail(partner)}>
         <History className="size-3.5" />
         {t("partners.ledgerTitle")}
       </Button>
-      <Button
-        size="sm"
-        className="gap-1.5 h-8 text-xs"
-        onClick={() => onOpenPayment(partner)}
-      >
+      <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => actions.onOpenPayment(partner)}>
         <CreditCard className="size-3.5" />
         {t("partners.recordPayment")}
       </Button>
@@ -46,29 +56,20 @@ function PartnerActionButtons({
   )
 }
 
-function PartnerTableRow({
-  partner,
-  onOpenLedger,
-  onOpenPayment,
-}: {
-  partner: PartnerView
-  onOpenLedger: (p: PartnerView) => void
-  onOpenPayment: (p: PartnerView) => void
-}) {
+function PartnerTableRow({ partner, actions }: { partner: PartnerView; actions: PartnerRowActions }) {
   const { t } = useI18n()
-  const limit = Number(partner.creditLimit)
-
   return (
     <TableRow>
       <TableCell>
-        <div className="font-semibold text-sm">{partner.shopName}</div>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-sm">{partner.shopName}</span>
+          {!partner.isActive && <Badge variant="outline">{t("partners.inactive")}</Badge>}
+        </div>
         <div className="text-xs text-muted-foreground">
           {partner.contactPerson || ""} {partner.phone ? `(${partner.phone})` : ""}
         </div>
       </TableCell>
-      <TableCell className="text-sm font-mono">
-        {limit === 0 ? "∞" : formatMoney(limit)}
-      </TableCell>
+      <TableCell><CreditBar partner={partner} /></TableCell>
       <TableCell className="font-mono font-bold text-sm text-amber-600">
         {formatMoney(partner.outstanding)}
       </TableCell>
@@ -81,25 +82,13 @@ function PartnerTableRow({
         </div>
       </TableCell>
       <TableCell className="text-right">
-        <PartnerActionButtons
-          partner={partner}
-          onOpenLedger={onOpenLedger}
-          onOpenPayment={onOpenPayment}
-        />
+        <PartnerActionButtons partner={partner} actions={actions} />
       </TableCell>
     </TableRow>
   )
 }
 
-export function PartnersTable({
-  partners,
-  onOpenLedger,
-  onOpenPayment,
-}: {
-  partners: PartnerView[]
-  onOpenLedger: (p: PartnerView) => void
-  onOpenPayment: (p: PartnerView) => void
-}) {
+export function PartnersTable({ partners, actions }: { partners: PartnerView[]; actions: PartnerRowActions }) {
   const { t } = useI18n()
 
   if (partners.length === 0) {
@@ -116,7 +105,7 @@ export function PartnersTable({
         <TableHeader>
           <TableRow>
             <TableHead>{t("partners.name")}</TableHead>
-            <TableHead>{t("partners.creditLimit")}</TableHead>
+            <TableHead>{t("partners.creditUsed")}</TableHead>
             <TableHead>{t("partners.outstanding")}</TableHead>
             <TableHead>{t("partners.openCount")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
@@ -124,12 +113,7 @@ export function PartnersTable({
         </TableHeader>
         <TableBody>
           {partners.map((p) => (
-            <PartnerTableRow
-              key={p.id}
-              partner={p}
-              onOpenLedger={onOpenLedger}
-              onOpenPayment={onOpenPayment}
-            />
+            <PartnerTableRow key={p.id} partner={p} actions={actions} />
           ))}
         </TableBody>
       </Table>

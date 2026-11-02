@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toConsignmentView, withImei } from './lib/consignment.mapper.js';
+import { buildConsignmentWhere } from './lib/consignment.where.js';
 import {
   ConsignmentFilters,
   ConsignmentPage,
+  ConsignmentStats,
   ConsignmentView,
   OverdueConsignment,
 } from './types/consignment.types.js';
@@ -35,7 +37,7 @@ export class ConsignmentsRepository {
     page: number,
     pageSize: number,
   ): Promise<ConsignmentPage> {
-    const where = buildWhere(filters);
+    const where = buildConsignmentWhere(filters);
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.consignment.findMany({
         where,
@@ -49,12 +51,45 @@ export class ConsignmentsRepository {
     return { items: rows.map(toConsignmentView), total, page, pageSize };
   }
 
+  /**
+   * Tiles for the filtered set. Status/overdue are dropped from the base so the
+   * breakdown (open, overdue, outstanding) is shown regardless of the tab.
+   */
+  async stats(filters: ConsignmentFilters): Promise<ConsignmentStats> {
+    const base = buildConsignmentWhere({
+      partnerId: filters.partnerId,
+      search: filters.search,
+      from: filters.from,
+      to: filters.to,
+    });
+    const out: Prisma.ConsignmentWhereInput = { ...base, statusCode: 'OUT' };
+    const [total, openCount, overdueCount, agg] =
+      await this.prisma.$transaction([
+        this.prisma.consignment.count({ where: base }),
+        this.prisma.consignment.count({ where: out }),
+        this.prisma.consignment.count({
+          where: { ...out, dueDate: { lt: new Date() } },
+        }),
+        this.prisma.consignment.aggregate({
+          where: out,
+          _sum: { agreedPrice: true },
+        }),
+      ]);
+    return {
+      total,
+      openCount,
+      overdueCount,
+      outstanding: agg._sum.agreedPrice ?? new Prisma.Decimal(0),
+    };
+  }
+
   async findOverdue(): Promise<OverdueConsignment[]> {
     const rows = await this.prisma.consignment.findMany({
       where: { statusCode: 'OUT', dueDate: { lt: new Date() } },
       orderBy: { dueDate: 'asc' },
       include: {
         device: { select: { imei: true } },
+        sale: { select: { id: true } },
         partner: {
           select: { shopName: true, phone: true, telegramHandle: true },
         },
@@ -67,16 +102,4 @@ export class ConsignmentsRepository {
       partnerTelegramHandle: r.partner.telegramHandle,
     }));
   }
-}
-
-function buildWhere(f: ConsignmentFilters): Prisma.ConsignmentWhereInput {
-  const where: Prisma.ConsignmentWhereInput = {};
-  if (f.partnerId) where.partnerId = f.partnerId;
-  if (f.overdue) {
-    where.statusCode = 'OUT';
-    where.dueDate = { lt: new Date() };
-  } else if (f.statusCode) {
-    where.statusCode = f.statusCode;
-  }
-  return where;
 }
