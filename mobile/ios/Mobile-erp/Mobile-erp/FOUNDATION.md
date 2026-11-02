@@ -63,6 +63,49 @@ via a synchronized-group exception set in the pbxproj (so duplicate names are fi
 `ForbiddenPanel`. Use stock `List`/`Form`/`NavigationStack`/`Picker`/`Menu`/
 `Button(.borderedProminent/.bordered)` so iOS 26 Liquid Glass applies to chrome.
 
+## Cross-feature kit (`Shared/Kit/`) — the shared pieces every feature reuses
+Stack-level, no business words; prefixed `Kit…` (iOS is one module). Reach for
+these before re-rolling navigation, feedback, paging, date filters or export.
+
+**Cross-feature navigation** — `container.router.open(_:)`. One `KitRoute` per
+other feature's screen; it switches the tab and parks a one-shot arg the target
+consumes. `featureId` must equal the target's `FeatureModule.id`.
+```swift
+container.router.open(.inventory(imei: "356938035643809"))
+container.router.open(.pos())            // .pos(imei:) .qc(imei:) .sales(saleId:) .consignments(id:)
+// target feature's root, once on appear/change:
+if case let .inventory(imei)? = container.router.consume("inventory") { store.focus(imei) }
+```
+
+**Global toasts** — `container.toasts` (overlay mounted once in `RootView`).
+Pass a localized string, not a key.
+```swift
+container.toasts.success(i18n.t("common.success"))
+container.toasts.error(err.message)   // .info(_) too; auto-dismiss ~3s
+```
+
+**Load-more pagination** — `KitPaginator<Item>` (server `page`/`pageSize` +
+`{items,total}`) + `KitLoadMoreFooter`. The footer auto-loads on scroll-in.
+```swift
+let pager = KitPaginator<Sale> { page, size in
+    let r = try await repo.list(filters, page: page, pageSize: size); return (r.items, r.total) }
+// .task { await pager.first() } · pager.refresh() on filter change
+List { ForEach(pager.items) { SaleRow($0) }; KitLoadMoreFooter(pager: pager) }
+```
+
+**Date-range filter** — `KitDateRange { from, to }` (nil = open) + field/sheet.
+```swift
+@State private var range = KitDateRange.all
+KitDateRangeField(range: $range)   // two DatePickers in a sheet; range.isActive to badge
+```
+
+**CSV export + share** — `KitCSV.build/escape/write` (RFC-4180, UTF-8 BOM) +
+`KitCSVShareButton` (native share sheet via `ShareLink`).
+```swift
+KitCSVShareButton(filename: "sales.csv", label: i18n.t("sales.exportCsv")) {
+    KitCSV.build(headers: ["IMEI", "Price"], rows: sales.map { [$0.imei, $0.price] }) }
+```
+
 ## Theme rules
 Near-monochrome Caldera: app tint = ink-black (`Tokens.ink`, adapts in Dark
 Mode), NOT violet. Status colors via `Tokens.deviceStatusColor(code)`. Sometype
@@ -102,5 +145,9 @@ floating actions / scanner overlay, not everywhere.
 ## Deliberate wave-0 notes
 - `common.forbidden`/`common.offline`/dev-panel copy aren't in the web i18n yet
   (en/literal fallback shows; Uzbek is a Gemini handoff).
+- Kit copy missing from web i18n (en/literal fallback; Gemini handoff):
+  `common.loadMore` ("Load more"), `common.clear` ("Clear"). The date-range
+  picker otherwise reuses `reports.preset_custom`/`dateFrom`/`dateTo` and
+  `common.confirm`; toasts/CSV take caller-supplied strings.
 - Conflict inbox UI is wave 1; `ConflictStore` ships the fetch/resolve calls.
 - Sometype Mono registered via `UIAppFonts`; SF Mono is the automatic fallback.

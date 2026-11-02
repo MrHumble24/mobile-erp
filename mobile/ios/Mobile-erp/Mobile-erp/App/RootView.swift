@@ -16,6 +16,7 @@ struct RootView: View {
             }
         }
         .animation(.default, value: container.session.isAuthenticated)
+        .kitToastOverlay()
         .task { container.bootstrap() }
     }
 }

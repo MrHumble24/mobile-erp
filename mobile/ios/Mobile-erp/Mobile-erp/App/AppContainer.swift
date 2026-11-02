@@ -18,6 +18,8 @@ final class AppContainer {
     let modelContainer: ModelContainer
     let terminalID: String
     let devAccess = DevConsoleAccess()
+    let router = KitRouter()
+    let toasts = KitToastCenter()
 
     var modelContext: ModelContext { modelContainer.mainContext }
     var outbox: Outbox { Outbox(context: modelContext) }
@@ -66,6 +68,7 @@ final class AppContainer {
     func bootstrap() {
         #if DEBUG
         runDebugSelfChecks()
+        KitSelfCheck.run()
         #endif
         if connectivity.isOnline { sync.syncNow() }
     }
