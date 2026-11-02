@@ -1,27 +1,35 @@
 # expenses
 
-Operational expense ledger (PRD Module 5).
+Operational expense ledger + recurring templates (PRD Module 5).
 
 ## Owns
 
-- The `expenses` table: amount, category, description, isRecurring, incurredAt,
-  createdById (set from the authenticated user, never from the client body).
+- `expenses`: amount, category, description, vendor (free-text payee),
+  isRecurring, incurredAt, recurrenceId (set when spawned from a template),
+  createdById (the authenticated user, never the client body), `deletedAt`
+  (soft delete).
+- `expense_recurrences`: a template (category, amount, vendor, description,
+  frequency `monthly|weekly`, nextDueAt, isActive). ADR 0017.
 
 ## Exposes
 
 - REST `/expenses`:
-  - `GET` — filters `from`/`to` (incurredAt), `categoryId`, `isRecurring`;
-    paginated (`page`, `pageSize`). `expense.read`.
-  - `GET /summary?from&to` — `{ total, byCategory: [{categoryId,name,total}] }`
-    via one aggregate + one groupBy. `expense.read`.
-  - `GET :id`, `POST`, `PATCH :id`, `DELETE :id` — writes need `expense.manage`.
+  - `GET` — filters `from`/`to`, `categoryId`, `recordedById`, `search`
+    (description+vendor), `minAmount`/`maxAmount`, `isRecurring`; `sort`
+    (`incurredAt|amount|createdAt`) + `dir`; paginated. `expense.read`.
+  - `GET /summary?from&to` — `{ total, previousTotal, count, byCategory[],
+    topCategory, daily[] }`. `expense.read`.
+  - `GET :id`, `POST`, `PATCH :id`, `DELETE :id` (soft delete) — `expense.manage`.
+- REST `/expense-recurrences`: `GET`, `POST`, `PATCH :id`,
+  `POST /generate` (spawn all due). Reads `expense.read`, writes `expense.manage`.
 
 ## Invariants
 
+- Every read excludes `deletedAt IS NOT NULL` (via `toWhere`).
 - `createdById` is the current user; the client cannot spoof it.
-- Category names in the summary come from `ExpenseCategoriesService.list()`.
+- `generateDue` advances one period per call (run again to clear a backlog).
 
 ## Must never
 
-- Compute financial roll-ups beyond a flat summary — profit/P&L live in
-  `reports`.
+- Compute P&L roll-ups — profit lives in `reports`.
+- Let `deletedAt` rows leak into a read (see ADR 0017 note on `reports`).

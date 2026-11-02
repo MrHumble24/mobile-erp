@@ -9,4 +9,5 @@ export const expenseKeys = {
     [...expenseKeys.summaries(), params] as const,
   details: () => [...expenseKeys.all, "detail"] as const,
   detail: (id: string) => [...expenseKeys.details(), id] as const,
+  recurrences: () => [...expenseKeys.all, "recurrence"] as const,
 }

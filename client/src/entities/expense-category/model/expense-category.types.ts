@@ -18,4 +18,5 @@ export interface UpdateExpenseCategoryDto {
   description?: string
   sortOrder?: number
   isActive?: boolean
+  reassignToId?: string
 }

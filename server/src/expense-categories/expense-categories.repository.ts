@@ -26,7 +26,28 @@ export class ExpenseCategoriesRepository {
     return this.prisma.expenseCategory.create({ data: dto });
   }
 
-  update(id: string, dto: UpdateExpenseCategoryDto) {
+  update(id: string, dto: Omit<UpdateExpenseCategoryDto, 'reassignToId'>) {
     return this.prisma.expenseCategory.update({ where: { id }, data: dto });
+  }
+
+  /** Count live (non-deleted) expenses in a category — drives the deactivate guard. */
+  countExpenses(categoryId: string) {
+    return this.prisma.expense.count({
+      where: { categoryId, deletedAt: null },
+    });
+  }
+
+  /** Move every expense & recurrence template from one category to another, atomically. */
+  reassign(fromId: string, toId: string) {
+    return this.prisma.$transaction([
+      this.prisma.expense.updateMany({
+        where: { categoryId: fromId },
+        data: { categoryId: toId },
+      }),
+      this.prisma.expenseRecurrence.updateMany({
+        where: { categoryId: fromId },
+        data: { categoryId: toId },
+      }),
+    ]);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -23,7 +24,27 @@ export class ExpenseCategoriesService {
   async update(id: string, dto: UpdateExpenseCategoryDto) {
     await this.require(id);
     if (dto.name) await this.assertNameFree(dto.name, id);
-    return this.repo.update(id, dto);
+    const { reassignToId, ...rest } = dto;
+    if (rest.isActive === false) {
+      await this.handleDeactivate(id, reassignToId);
+    }
+    return this.repo.update(id, rest);
+  }
+
+  /** Deactivating a category in use requires moving its rows to another category first. */
+  private async handleDeactivate(id: string, reassignToId?: string) {
+    const inUse = await this.repo.countExpenses(id);
+    if (inUse === 0) return;
+    if (!reassignToId) {
+      throw new ConflictException(
+        `Category has ${inUse} expense(s); supply reassignToId to deactivate`,
+      );
+    }
+    if (reassignToId === id) {
+      throw new BadRequestException('Cannot reassign a category to itself');
+    }
+    await this.require(reassignToId);
+    await this.repo.reassign(id, reassignToId);
   }
 
   private async require(id: string) {

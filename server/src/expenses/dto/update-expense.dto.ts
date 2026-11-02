@@ -25,6 +25,11 @@ export class UpdateExpenseDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  vendor?: string;
+
+  @IsOptional()
   @IsBoolean()
   isRecurring?: boolean;
 

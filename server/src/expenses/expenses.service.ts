@@ -8,7 +8,8 @@ import {
 } from './dto/expense-query.dto.js';
 import { UpdateExpenseDto } from './dto/update-expense.dto.js';
 import { ExpensesRepository } from './expenses.repository.js';
-import { ExpenseSummary } from './types/expense.types.js';
+import { pickTopCategory, previousPeriod } from './lib/summary.lib.js';
+import { ExpenseCategoryTotal, ExpenseSummary } from './types/expense.types.js';
 
 @Injectable()
 export class ExpensesService {
@@ -24,7 +25,13 @@ export class ExpensesService {
       from: parseDate(query.from),
       to: parseDate(query.to),
       categoryId: query.categoryId,
+      recordedById: query.recordedById,
+      search: query.search,
+      minAmount: query.minAmount,
+      maxAmount: query.maxAmount,
       isRecurring: query.isRecurring,
+      sort: query.sort ?? 'incurredAt',
+      dir: query.dir ?? 'desc',
       page,
       pageSize,
     });
@@ -52,27 +59,35 @@ export class ExpensesService {
 
   async remove(id: string) {
     await this.require(id);
-    await this.repo.remove(id);
+    await this.repo.softRemove(id);
   }
 
   async summary(query: ExpenseSummaryQueryDto): Promise<ExpenseSummary> {
-    const where = this.repo.toWhere({
-      from: parseDate(query.from),
-      to: parseDate(query.to),
-    });
-    const [totalAgg, grouped, categories] = await Promise.all([
-      this.repo.sumTotal(where),
-      this.repo.sumByCategory(where),
+    const from = parseDate(query.from);
+    const to = parseDate(query.to);
+    const prev = previousPeriod(from, to);
+    const [agg, prevAgg, grouped, categories, daily] = await Promise.all([
+      this.repo.sumAgg(this.repo.toWhere({ from, to })),
+      this.repo.sumAgg(this.repo.toWhere({ from: prev.from, to: prev.to })),
+      this.repo.sumByCategory(this.repo.toWhere({ from, to })),
       this.categories.list(),
+      this.repo.dailySeries(from, to),
     ]);
     const nameOf = new Map(categories.map((c) => [c.id, c.name]));
-    return {
-      total: toNumber(totalAgg._sum.amount),
-      byCategory: grouped.map((row) => ({
+    const byCategory: ExpenseCategoryTotal[] = grouped
+      .map((row) => ({
         categoryId: row.categoryId,
         name: nameOf.get(row.categoryId) ?? 'Unknown',
         total: toNumber(row._sum.amount),
-      })),
+      }))
+      .sort((a, b) => b.total - a.total);
+    return {
+      total: toNumber(agg._sum.amount),
+      previousTotal: prev.from ? toNumber(prevAgg._sum.amount) : 0,
+      count: agg._count,
+      byCategory,
+      topCategory: pickTopCategory(byCategory),
+      daily,
     };
   }
 
