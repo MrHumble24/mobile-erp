@@ -138,30 +138,6 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
 
-  /* Spacing */
-  --spacing-unit: 4px;
-  --spacing-4: 4px;
-  --spacing-8: 8px;
-  --spacing-12: 12px;
-  --spacing-16: 16px;
-  --spacing-20: 20px;
-  --spacing-24: 24px;
-  --spacing-28: 28px;
-  --spacing-32: 32px;
-  --spacing-40: 40px;
-  --spacing-48: 48px;
-  --spacing-52: 52px;
-  --spacing-56: 56px;
-  --spacing-72: 72px;
-  --spacing-80: 80px;
-  --spacing-100: 100px;
-
-  /* Layout */
-  --page-max-width: 1200px;
-  --section-gap: 80px;
-  --card-padding: 28px;
-  --element-gap: 12px;
-
   /* Named Radii */
   --radius-tags: 100px;
   --radius-cards: 12px;
@@ -254,16 +230,22 @@
   animation: rotate-conic 2.5s linear infinite;
 }
 
-/* Sliding Draggable BottomSheet with Offsets */
+/* Liquid Blurred BottomSheet Backdrop */
 .bottomsheet-backdrop {
-  --backdrop-opacity: 0.45;
-  opacity: calc(var(--backdrop-opacity) * (1 - var(--drawer-swipe-progress, 0)));
-  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  background: rgba(9, 12, 29, 0.35);
+  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(102%);
+  backdrop-filter: blur(20px) saturate(190%) contrast(102%);
+  opacity: calc(1 - var(--drawer-swipe-progress, 0));
+  transition: opacity 300ms cubic-bezier(0.32, 0.72, 0, 1),
+              -webkit-backdrop-filter 300ms cubic-bezier(0.32, 0.72, 0, 1),
+              backdrop-filter 300ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .bottomsheet-backdrop[data-starting-style],
 .bottomsheet-backdrop[data-ending-style] {
   opacity: 0;
+  -webkit-backdrop-filter: blur(0px) saturate(100%);
+  backdrop-filter: blur(0px) saturate(100%);
 }
 
 .bottomsheet-backdrop[data-ending-style] {
@@ -272,6 +254,9 @@
 
 .bottomsheet-backdrop[data-swiping] {
   transition-duration: 0ms !important;
+  opacity: calc(1 - var(--drawer-swipe-progress, 0));
+  -webkit-backdrop-filter: blur(calc((1 - var(--drawer-swipe-progress, 0)) * 20px)) saturate(calc(100% + (1 - var(--drawer-swipe-progress, 0)) * 90%));
+  backdrop-filter: blur(calc((1 - var(--drawer-swipe-progress, 0)) * 20px)) saturate(calc(100% + (1 - var(--drawer-swipe-progress, 0)) * 90%));
 }
 
 .bottomsheet-popup {

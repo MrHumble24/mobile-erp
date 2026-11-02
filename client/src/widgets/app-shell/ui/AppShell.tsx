@@ -68,7 +68,7 @@ function MobileSidebarDrawer({
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-[#090c1d]/35 backdrop-blur-xl backdrop-saturate-200 transition-opacity animate-in fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
