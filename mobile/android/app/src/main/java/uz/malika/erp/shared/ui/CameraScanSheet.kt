@@ -9,6 +9,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -28,7 +29,8 @@ import java.util.concurrent.Executors
 
 /**
  * Live camera scanner (CameraX preview + [CodeAnalyzer]): barcodes, QR codes and
- * printed IMEI numbers. Fires [onDetect] with the first hit; the caller dismisses the sheet.
+ * printed IMEI numbers fire [onDetect] on their own; any other printed number shows
+ * under the preview for the user to tap. The caller dismisses the sheet.
  * Requests CAMERA at first mount; without it, shows an inline message.
  */
 @Composable
@@ -53,7 +55,11 @@ fun CameraScanSheet(onDetect: (String) -> Unit, permissionMessage: String) {
     }
 
     val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
-    val analyzer = remember { CodeAnalyzer(onDetect) }
+    var numbers by remember { mutableStateOf(emptyList<String>()) }
+    val analyzer = remember {
+        // Newest first, capped, so the row stays steady while OCR jitters frame to frame.
+        CodeAnalyzer(onDetect) { seen -> numbers = (seen + numbers).distinct().take(MAX_NUMBERS) }
+    }
     DisposableEffect(Unit) {
         onDispose {
             analysisExecutor.shutdown()
@@ -61,29 +67,34 @@ fun CameraScanSheet(onDetect: (String) -> Unit, permissionMessage: String) {
         }
     }
 
-    AndroidView(
-        modifier = Modifier.fillMaxWidth().height(360.dp),
-        factory = { ctx ->
-            val previewView = PreviewView(ctx)
-            val providerFuture = ProcessCameraProvider.getInstance(ctx)
-            providerFuture.addListener({
-                val provider = providerFuture.get()
-                val preview = Preview.Builder().build().also {
-                    it.surfaceProvider = previewView.surfaceProvider
-                }
-                val analysis = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                    .build()
-                analysis.setAnalyzer(analysisExecutor, analyzer)
-                provider.unbindAll()
-                provider.bindToLifecycle(
-                    lifecycleOwner,
-                    CameraSelector.DEFAULT_BACK_CAMERA,
-                    preview,
-                    analysis,
-                )
-            }, ContextCompat.getMainExecutor(ctx))
-            previewView
-        },
-    )
+    Column {
+        AndroidView(
+            modifier = Modifier.fillMaxWidth().height(360.dp),
+            factory = { ctx ->
+                val previewView = PreviewView(ctx)
+                val providerFuture = ProcessCameraProvider.getInstance(ctx)
+                providerFuture.addListener({
+                    val provider = providerFuture.get()
+                    val preview = Preview.Builder().build().also {
+                        it.surfaceProvider = previewView.surfaceProvider
+                    }
+                    val analysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                    analysis.setAnalyzer(analysisExecutor, analyzer)
+                    provider.unbindAll()
+                    provider.bindToLifecycle(
+                        lifecycleOwner,
+                        CameraSelector.DEFAULT_BACK_CAMERA,
+                        preview,
+                        analysis,
+                    )
+                }, ContextCompat.getMainExecutor(ctx))
+                previewView
+            },
+        )
+        ScannedNumbers(numbers, onPick = onDetect)
+    }
 }
+
+private const val MAX_NUMBERS = 8
