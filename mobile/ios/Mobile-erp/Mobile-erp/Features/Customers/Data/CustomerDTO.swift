@@ -23,6 +23,14 @@ struct CustomerPage: Decodable {
     let total: Int
 }
 
+/// Directory-wide summary tiles (`GET /customers/stats`).
+struct CustomerStats: Decodable {
+    let total: Int
+    let newThisMonth: Int
+    let withPurchases: Int
+    let repeatBuyers: Int
+}
+
 /// One row of a customer's purchase history (`GET /customers/:id/sales`).
 struct CustomerSale: Decodable, Identifiable {
     let id: String

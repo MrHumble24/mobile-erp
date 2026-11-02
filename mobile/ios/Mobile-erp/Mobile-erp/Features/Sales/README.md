@@ -3,11 +3,17 @@
 Completed sales, receipts, returns, and warranty lookup.
 
 ## Owns
-- Sales list (`GET /sales`) with channel / status / date-range / search filters.
-- Sale detail sheet → printable receipt (`GET /sales/:id/receipt`) and the
-  return flow (`POST /sales/:id/return`, gated on `sale.return`).
+- Sales list (`GET /sales`) with channel / status / warranty / cashier / search
+  filters + a `KitDateRangeField` range, paginated via `KitPaginator` (load
+  more) with CSV export (`KitCSVShareButton`).
+- Summary tiles (`GET /sales/stats`): count, revenue, avg price, returns +
+  refunded, net profit (shown only when the server includes it).
+- Sale detail sheet → printable receipt (`GET /sales/:id/receipt`), the return
+  flow (`POST /sales/:id/return`, gated on `sale.return`, toasts on success),
+  and `KitRouter` links to the device (inventory) and consignment.
 - Warranty lookup by IMEI: online `GET /sales/warranty/:imei`, else rebuilt
   offline from the cached `DeviceEntity` + its latest sale.
+- Cashier options for the sold-by filter via `GET /users` (gated on `user.read`).
 
 ## Public API
 - `SalesModule.feature` — the one registry line. Permission: `sale.read`.

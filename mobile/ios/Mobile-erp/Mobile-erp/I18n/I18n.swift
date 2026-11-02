@@ -14,9 +14,9 @@ final class I18n {
     private(set) var locale: String
     private let bundles: [String: [String: [String: String]]]
 
-    /// Namespaces — the 15 the web client merges (see its `index.ts`).
+    /// Namespaces — the web client's namespaces (see its `index.ts`).
     static let namespaces = [
-        "auth", "common", "consignments", "dashboard", "expenses",
+        "auth", "common", "consignments", "customers", "dashboard", "expenses",
         "inventory", "nav", "partners", "pos", "qc",
         "reports", "sales", "settings", "shipments", "users",
     ]

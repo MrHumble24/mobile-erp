@@ -1,16 +1,15 @@
 import SwiftUI
 
-/// Channel + status + date-range + search filters for the sales list. Writes to
-/// the model's `filters` and reloads on change. Stock controls so iOS chrome
-/// gets Liquid Glass for free.
+/// Channel / status / warranty / cashier filters + a `KitDateRangeField` for the
+/// sales list. Search is driven by the view's `.searchable`. Writes to the
+/// model's `filters` and reloads on change. Stock controls so iOS chrome gets
+/// Liquid Glass for free.
 struct SalesFilterBar: View {
     let model: SalesListModel
     @Environment(I18n.self) private var i18n
-
-    @State private var useRange = false
+    @State private var range = KitDateRange.all
 
     var body: some View {
-        @Bindable var model = model
         Section {
             Picker(i18n.t("sales.filterChannel"), selection: channel) {
                 Text(i18n.t("common.all")).tag(String?.none)
@@ -22,14 +21,34 @@ struct SalesFilterBar: View {
                 Text(i18n.t("sales.statusActive")).tag(String?.some("false"))
                 Text(i18n.t("sales.statusReturned")).tag(String?.some("true"))
             }
-            Toggle(i18n.t("common.date"), isOn: $useRange.animation())
-                .onChange(of: useRange) { _, on in
-                    if !on { model.filters.from = nil; model.filters.to = nil; model.reload() }
-                    else { setDefaultRange() }
+            Picker(i18n.t("sales.filterWarranty"), selection: warranty) {
+                Text(i18n.t("common.all")).tag(String?.none)
+                Text(i18n.t("sales.warrantyValid")).tag(String?.some("active"))
+                Text(i18n.t("sales.warrantyExpired")).tag(String?.some("expired"))
+            }
+            if model.canReadUsers && !model.cashiers.isEmpty {
+                Picker(i18n.t("sales.soldBy"), selection: soldBy) {
+                    Text(i18n.t("common.all")).tag(String?.none)
+                    ForEach(model.cashiers) { c in
+                        Text(c.name).tag(String?.some(c.id))
+                    }
                 }
-            if useRange {
-                DatePicker(i18n.t("sales.soldAt"), selection: from, displayedComponents: .date)
-                DatePicker(i18n.t("sales.statusReturned"), selection: to, displayedComponents: .date)
+            }
+            HStack {
+                KitDateRangeField(range: $range)
+                    .onChange(of: range) { _, r in
+                        model.filters.from = r.from
+                        model.filters.to = r.to
+                        model.reload()
+                    }
+                Spacer()
+                Button(i18n.t("sales.resetFilters"), systemImage: "arrow.counterclockwise") {
+                    model.filters = SaleFilters()
+                    range = .all
+                    model.reload()
+                }
+                .font(.subheadline)
+                .buttonStyle(.bordered)
             }
         }
     }
@@ -40,17 +59,10 @@ struct SalesFilterBar: View {
     private var returned: Binding<String?> {
         Binding(get: { model.filters.returned }, set: { model.filters.returned = $0; model.reload() })
     }
-    private var from: Binding<Date> {
-        Binding(get: { model.filters.from ?? Date() }, set: { model.filters.from = $0; model.reload() })
+    private var warranty: Binding<String?> {
+        Binding(get: { model.filters.warranty }, set: { model.filters.warranty = $0; model.reload() })
     }
-    private var to: Binding<Date> {
-        Binding(get: { model.filters.to ?? Date() }, set: { model.filters.to = $0; model.reload() })
-    }
-
-    private func setDefaultRange() {
-        let now = Date()
-        model.filters.from = Calendar.current.date(byAdding: .day, value: -30, to: now)
-        model.filters.to = now
-        model.reload()
+    private var soldBy: Binding<String?> {
+        Binding(get: { model.filters.soldById }, set: { model.filters.soldById = $0; model.reload() })
     }
 }

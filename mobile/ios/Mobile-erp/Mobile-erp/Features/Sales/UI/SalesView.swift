@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// Sales list with channel/status/date filters and search, plus a warranty
+/// Sales list with channel/status/warranty/cashier filters, a date range, search
+/// and summary tiles. Paginated (load more) with CSV export, plus a warranty
 /// lookup reachable from the toolbar (works offline). Rows open a detail sheet.
 struct SalesView: View {
     @Environment(AppContainer.self) private var container
@@ -12,8 +13,14 @@ struct SalesView: View {
     var body: some View {
         @Bindable var model = model
         List {
-            SalesFilterBar(model: model)
-            content
+            if model.pager != nil {
+                SalesFilterBar(model: model)
+                if let stats = model.stats {
+                    Section { SalesSummary(stats: stats) }
+                        .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                }
+                content
+            }
         }
         .searchable(text: $model.filters.search)
         .onSubmit(of: .search) { model.reload() }
@@ -27,12 +34,20 @@ struct SalesView: View {
                     Label(i18n.t("sales.tabWarranty"), systemImage: "checkmark.shield")
                 }
             }
+            if let items = model.pager?.items, !items.isEmpty {
+                ToolbarItem(placement: .secondaryAction) {
+                    KitCSVShareButton(filename: "sales.csv", label: i18n.t("sales.exportCsv")) {
+                        KitCSV.build(headers: SalesCsv.headers(includeProfit: model.canViewProfit),
+                                     rows: SalesCsv.rows(items, includeProfit: model.canViewProfit))
+                    }
+                }
+            }
         }
         .sheet(item: $selected) { sale in SaleDetailSheet(sale: sale, onChanged: { model.reload() }) }
         .sheet(isPresented: $showWarranty) { WarrantyLookupSheet(onChanged: { model.reload() }) }
         .task {
             model.configure(container)
-            if model.page == nil { model.reload() }
+            if model.pager.items.isEmpty { model.reload() }
             #if DEBUG
             _ = SalesSelfCheck.ran
             #endif
@@ -40,27 +55,29 @@ struct SalesView: View {
     }
 
     @ViewBuilder private var content: some View {
+        let pager = model.pager!
         if model.offline {
             Section {
                 Label(i18n.t("common.offline", default: "Offline — sales need a connection."),
                       systemImage: "wifi.slash")
                     .foregroundStyle(Tokens.warning)
             }
-        } else if model.loading && model.page == nil {
+        } else if pager.isLoading && pager.items.isEmpty {
             Section { LoadingView().frame(height: 120) }
-        } else if let message = model.errorMessage {
+        } else if let message = pager.error, pager.items.isEmpty {
             Section { ErrorStateView(message: message) { model.reload() } }
-        } else if let page = model.page, page.items.isEmpty {
+        } else if pager.items.isEmpty {
             Section {
                 EmptyStateView(systemImage: "doc.text.magnifyingglass",
                                title: i18n.t("sales.noSalesFound"))
             }
-        } else if let page = model.page {
+        } else {
             Section {
-                ForEach(page.items) { sale in
+                ForEach(pager.items) { sale in
                     Button { selected = sale } label: { SaleRow(sale: sale) }
                         .buttonStyle(.plain)
                 }
+                KitLoadMoreFooter(pager: pager)
             }
         }
     }
