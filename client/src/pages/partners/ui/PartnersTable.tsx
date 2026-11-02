@@ -1,5 +1,6 @@
 import { CreditCard, History } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import type { PartnerView } from "@/entities/partner"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
@@ -66,10 +67,10 @@ function PartnerTableRow({
         </div>
       </TableCell>
       <TableCell className="text-sm font-mono">
-        {limit === 0 ? "∞" : `$${limit.toLocaleString()}`}
+        {limit === 0 ? "∞" : formatMoney(limit)}
       </TableCell>
       <TableCell className="font-mono font-bold text-sm text-amber-600">
-        ${Number(partner.outstanding).toLocaleString()}
+        {formatMoney(partner.outstanding)}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1.5 text-xs">

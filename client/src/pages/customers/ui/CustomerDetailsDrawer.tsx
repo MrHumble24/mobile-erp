@@ -1,4 +1,5 @@
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDate } from "@/shared/lib/format"
 import {
   type CustomerView,
   type CustomerSaleView,
@@ -14,12 +15,12 @@ function CustomerSaleItem({ sale }: { sale: CustomerSaleView }) {
           {sale.device.model?.brand} {sale.device.model?.name}
         </div>
         <div className="font-mono font-bold text-sm">
-          ${Number(sale.salePrice).toLocaleString()}
+          {formatMoney(sale.salePrice)}
         </div>
       </div>
       <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
         <span>{sale.device.imei}</span>
-        <span>{new Date(sale.soldAt).toLocaleDateString()}</span>
+        <span>{formatDate(sale.soldAt)}</span>
       </div>
     </div>
   )

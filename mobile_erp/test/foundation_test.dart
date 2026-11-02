@@ -8,7 +8,7 @@ void main() {
     expect(parseMoney(null).toString(), '0');
     expect(parseMoney('garbage').toString(), '0');
     expect(parseMoney('1250000.50').toString(), '1250000.5');
-    expect(formatMoney('1250000'), contains('so\'m'));
+    expect(formatMoney('1250000'), contains('\$'));
     // grouped to thousands (locale separator may vary, digits must survive)
     expect(formatMoney('1250000').replaceAll(RegExp(r'[^0-9]'), ''), '1250000');
   });

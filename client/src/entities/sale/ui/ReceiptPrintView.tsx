@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Printer, Copy, Check } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 import type { ReceiptView, ReceiptItem } from "../model/sale.types"
@@ -71,7 +72,7 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
           <div key={item.imei} className="space-y-0.5">
             <div className="flex justify-between font-bold text-[11px]">
               <span className="line-clamp-1">{item.model}</span>
-              <span className="shrink-0 font-mono">${Number(item.price).toLocaleString()}</span>
+              <span className="shrink-0 font-mono">{formatMoney(item.price)}</span>
             </div>
             <div className="text-[9px] text-black/75 flex justify-between">
               <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
@@ -90,7 +91,7 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
       </div>
       <div className="py-2.5 border-b-2 border-dashed border-black/30 flex justify-between items-center text-xs font-black">
         <span className="uppercase tracking-wider">{t("pos.totalDue")}:</span>
-        <span className="font-mono text-base font-bold">${Number(total).toLocaleString()}</span>
+        <span className="font-mono text-base font-bold">{formatMoney(total)}</span>
       </div>
     </>
   )

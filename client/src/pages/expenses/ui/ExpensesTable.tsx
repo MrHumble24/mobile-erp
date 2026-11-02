@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
 import { useDeleteExpense, type ExpenseView } from "@/entities/expense"
 import { Badge } from "@/shared/ui/badge"
@@ -55,7 +56,7 @@ function ExpenseTableRow({
         {expense.category?.name || "—"}
       </TableCell>
       <TableCell className="font-mono font-bold text-sm text-destructive">
-        ${Number(expense.amount).toLocaleString()}
+        {formatMoney(expense.amount)}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {expense.description || "—"}
@@ -68,7 +69,7 @@ function ExpenseTableRow({
         )}
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        {new Date(expense.incurredAt).toLocaleDateString()}
+        {formatDate(expense.incurredAt)}
       </TableCell>
       {hasExpenseManage && (
         <TableCell className="text-right">

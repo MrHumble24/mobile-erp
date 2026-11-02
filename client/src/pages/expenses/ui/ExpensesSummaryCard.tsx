@@ -1,4 +1,5 @@
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { useExpenseSummary } from "@/entities/expense"
 import { MetricCard } from "@/shared/ui/metric-card"
 
@@ -22,7 +23,7 @@ export function ExpensesSummaryCard({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <MetricCard
         label={t("expenses.totalExpenses")}
-        value={`$${Number(summary.total).toLocaleString()}`}
+        value={formatMoney(summary.total)}
         variant="white"
       />
 
@@ -35,7 +36,7 @@ export function ExpensesSummaryCard({
             <div key={item.categoryId} className="p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px]">
               <span className="text-xs text-muted-foreground line-clamp-1">{item.name}</span>
               <p className="font-mono font-bold text-base mt-1">
-                ${Number(item.total).toLocaleString()}
+                {formatMoney(item.total)}
               </p>
             </div>
           ))}

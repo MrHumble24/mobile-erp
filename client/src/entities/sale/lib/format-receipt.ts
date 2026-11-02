@@ -1,4 +1,5 @@
 import type { ReceiptView } from "../model/sale.types"
+import { formatMoney } from "@/shared/lib/format"
 
 export function formatReceiptText(receipt: ReceiptView, t: (key: string) => string): string {
   const dateStr = new Date(receipt.soldAt).toLocaleString()
@@ -12,7 +13,7 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
   const itemsStr = receipt.items
     .map(
       (item) =>
-        `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   IMEI: ${item.imei}\n   Narxi: $${Number(item.price).toLocaleString()}`
+        `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   IMEI: ${item.imei}\n   Narxi: ${formatMoney(item.price)}`
     )
     .join("\n")
 
@@ -24,7 +25,7 @@ ${t("pos.cashier")}: ${receipt.cashier}${customerStr}
 ─────────────────────────
 ${itemsStr}
 ─────────────────────────
-💵 ${t("pos.totalDue")}: $${Number(receipt.total).toLocaleString()}${warrantyStr}
+💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${warrantyStr}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ${t("pos.thankYou")}
 ${t("pos.storeLocation")}`

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { useRecordPayment, type PartnerView } from "@/entities/partner"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
@@ -118,7 +119,7 @@ export function RecordPaymentDialog({
         <DialogHeader>
           <DialogTitle>{t("partners.recordPayment")}</DialogTitle>
           <DialogDescription>
-            {partner.shopName} · {t("partners.outstanding")}: ${Number(partner.outstanding).toLocaleString()}
+            {partner.shopName} · {t("partners.outstanding")}: {formatMoney(partner.outstanding)}
           </DialogDescription>
         </DialogHeader>
         {open && (

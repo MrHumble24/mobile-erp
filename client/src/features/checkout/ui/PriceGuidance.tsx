@@ -47,7 +47,7 @@ function QuickPriceButtons({
         variant="outline"
         size="sm"
         className="h-7 text-xs"
-        onClick={() => onPriceChange(Math.round(salePrice / 10000) * 10000)}
+        onClick={() => onPriceChange(Math.round(salePrice / 10) * 10)}
       >
         {t("pos.quickRound")}
       </Button>

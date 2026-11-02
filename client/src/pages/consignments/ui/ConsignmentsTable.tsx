@@ -1,5 +1,6 @@
 import { CheckCircle2, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDate } from "@/shared/lib/format"
 import type { ConsignmentView } from "@/entities/consignment"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
@@ -67,16 +68,16 @@ function ConsignmentTableRow({
     <TableRow>
       <TableCell className="font-mono text-sm font-semibold">{item.imei}</TableCell>
       <TableCell className="font-mono font-bold text-sm">
-        ${Number(item.agreedPrice).toLocaleString()}
+        {formatMoney(item.agreedPrice)}
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        {new Date(item.dueDate).toLocaleDateString()}
+        {formatDate(item.dueDate)}
       </TableCell>
       <TableCell>
         <ConsignmentStatusBadge statusCode={item.statusCode} />
       </TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        {new Date(item.consignedAt).toLocaleDateString()}
+        {formatDate(item.consignedAt)}
       </TableCell>
       <TableCell className="text-right">
         <ConsignmentActions item={item} onSettle={onSettle} onReturn={onReturn} />

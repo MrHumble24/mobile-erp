@@ -24,4 +24,4 @@ which opens `ReportBreakdownSheet`. `canViewCost` (device.cost.view) and
 ## Must never
 
 - Call `useQuery`/HTTP directly, or format money outside `shared/lib/format`
-  (`formatMoney` = UZS so'm).
+  (`formatMoney` = USD $).

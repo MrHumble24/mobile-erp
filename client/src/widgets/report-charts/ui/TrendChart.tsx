@@ -29,7 +29,7 @@ export interface TrendChartProps {
 }
 
 const compact = (v: number): string =>
-  new Intl.NumberFormat("en-US", { notation: "compact" }).format(v)
+  new Intl.NumberFormat("en-US", { notation: "compact", style: "currency", currency: "USD" }).format(v)
 
 function useTrendConfig(): ChartConfig {
   const { t } = useI18n()

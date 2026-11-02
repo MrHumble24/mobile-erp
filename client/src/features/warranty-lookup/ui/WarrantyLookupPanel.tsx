@@ -1,6 +1,7 @@
 import * as React from "react"
 import { ShieldCheck, ShieldAlert, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useWarrantyLookup, type WarrantyLookupView } from "@/entities/sale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
@@ -43,7 +44,7 @@ function WarrantyInfoCard({
         <div>
           <span className="font-mono text-base font-semibold">{data.imei}</span>
           <p className="text-xs text-muted-foreground">
-            {t("sales.soldAt")}: {new Date(data.purchasedAt).toLocaleDateString()}
+            {t("sales.soldAt")}: {formatDate(data.purchasedAt)}
           </p>
         </div>
         <WarrantyStatusBadge data={data} />
@@ -52,7 +53,7 @@ function WarrantyInfoCard({
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div className="bg-[#f8f9fa] border border-[#e8e8e8] p-3 rounded-[12px]">
           <span className="text-xs text-muted-foreground">{t("sales.salePrice")}</span>
-          <p className="font-semibold text-base">${Number(data.salePrice).toLocaleString()}</p>
+          <p className="font-semibold text-base">{formatMoney(data.salePrice)}</p>
         </div>
         <div className="bg-[#f8f9fa] border border-[#e8e8e8] p-3 rounded-[12px]">
           <span className="text-xs text-muted-foreground">{t("qc.grade")}</span>

@@ -1,4 +1,5 @@
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDateTime } from "@/shared/lib/format"
 import { type PartnerView, type LedgerEntry, usePartnerLedger } from "@/entities/partner"
 import { Badge } from "@/shared/ui/badge"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
@@ -19,14 +20,14 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
             changeNum > 0 ? "text-amber-600" : "text-emerald-600"
           }`}
         >
-          {changeNum > 0 ? `+$${changeNum.toLocaleString()}` : `-$${Math.abs(changeNum).toLocaleString()}`}
+          {changeNum > 0 ? `+${formatMoney(changeNum)}` : formatMoney(changeNum)}
         </span>
       </div>
 
       <div className="flex justify-between text-xs text-muted-foreground pt-1">
-        <span>{new Date(entry.at).toLocaleString()}</span>
+        <span>{formatDateTime(entry.at)}</span>
         <span>
-          {t("partners.runningBalance")}: ${Number(entry.runningBalance).toLocaleString()}
+          {t("partners.runningBalance")}: {formatMoney(entry.runningBalance)}
         </span>
       </div>
 
@@ -75,7 +76,7 @@ export function PartnerLedgerDrawer({
         <SheetHeader>
           <SheetTitle>{partner.shopName}</SheetTitle>
           <SheetDescription>
-            {t("partners.outstanding")}: ${Number(partner.outstanding).toLocaleString()}
+            {t("partners.outstanding")}: {formatMoney(partner.outstanding)}
           </SheetDescription>
         </SheetHeader>
 

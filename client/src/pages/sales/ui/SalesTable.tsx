@@ -1,5 +1,6 @@
 import { Receipt } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney, formatDateTime } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
 import type { SaleView } from "@/entities/sale"
 import { Badge } from "@/shared/ui/badge"
@@ -55,16 +56,16 @@ function SalesTableRow({
     <TableRow>
       <SaleInfoCells sale={sale} />
       <TableCell className="font-semibold text-sm">
-        ${Number(sale.salePrice).toLocaleString()}
+        {formatMoney(sale.salePrice)}
       </TableCell>
       {hasProfitView && (
         <TableCell className="font-mono text-sm text-emerald-600 font-semibold">
-          {sale.netProfit !== undefined ? `$${Number(sale.netProfit).toLocaleString()}` : "—"}
+          {sale.netProfit !== undefined ? formatMoney(sale.netProfit) : "—"}
         </TableCell>
       )}
       <TableCell className="text-xs text-muted-foreground">{sale.soldBy?.name || "—"}</TableCell>
       <TableCell className="text-xs text-muted-foreground">
-        {new Date(sale.soldAt).toLocaleString()}
+        {formatDateTime(sale.soldAt)}
       </TableCell>
       <TableCell className="text-right">
         <Button
