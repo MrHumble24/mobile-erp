@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { AccessService } from '../access/access.service.js';
-import { RoleView } from '../access/types/access.types.js';
+import {
+  RoleView,
+  UserPermissionBreakdown,
+} from '../access/types/access.types.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import {
@@ -16,7 +19,11 @@ import {
 import { SetRolesDto } from './dto/set-roles.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UsersRepository } from './users.repository.js';
-import { UserView } from './types/user.types.js';
+import {
+  PaginatedUsers,
+  UserListFilters,
+  UserView,
+} from './types/user.types.js';
 
 @Injectable()
 export class UsersService {
@@ -25,12 +32,35 @@ export class UsersService {
     private readonly access: AccessService,
   ) {}
 
-  list(): Promise<UserView[]> {
-    return this.repo.findAll();
+  list(filters: UserListFilters): Promise<PaginatedUsers> {
+    return this.repo.findPage(filters);
+  }
+
+  async stats(): Promise<{
+    total: number;
+    active: number;
+    byRole: Record<string, number>;
+  }> {
+    const [{ total, active }, byRole] = await Promise.all([
+      this.repo.countActive(),
+      this.repo.countByRole(),
+    ]);
+    return { total, active, byRole };
   }
 
   async get(id: string): Promise<UserView> {
     return this.require(id);
+  }
+
+  async getEffectivePermissions(id: string): Promise<UserPermissionBreakdown> {
+    await this.require(id);
+    return this.access.describeUser(id);
+  }
+
+  async resetPassword(id: string, password: string): Promise<void> {
+    await this.require(id);
+    const passwordHash = await argon2.hash(password);
+    await this.repo.setPassword(id, passwordHash);
   }
 
   async create(
@@ -49,7 +79,14 @@ export class UsersService {
     });
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<UserView> {
+  async update(
+    caller: AuthenticatedUser,
+    id: string,
+    dto: UpdateUserDto,
+  ): Promise<UserView> {
+    if (caller.id === id && dto.isActive === false) {
+      throw new ForbiddenException('You cannot deactivate your own account');
+    }
     await this.require(id);
     return this.repo.update(id, dto);
   }

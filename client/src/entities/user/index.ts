@@ -8,13 +8,24 @@ export type {
   PermissionOverride,
   RoleView,
   CreateRoleDto,
+  UpdateRoleDto,
   PermissionView,
+  UserListFilters,
+  PaginatedUsers,
+  UserStats,
+  RoleGrant,
+  UserPermissionBreakdown,
+  ResetPasswordDto,
 } from "./model/user.types"
 export { userRepository } from "./api/user.repository"
 export { userKeys } from "./api/user.keys"
 export {
   useUsers,
+  useUsersPage,
+  useUserStats,
   useUser,
+  useUserEffectivePermissions,
+  useResetPassword,
   useCreateUser,
   useUpdateUser,
   useSetUserRoles,
@@ -22,6 +33,7 @@ export {
   useRoles,
   usePermissions,
   useCreateRole,
+  useRenameRole,
   useSetRolePermissions,
   useDeleteRole,
 } from "./model/use-users"

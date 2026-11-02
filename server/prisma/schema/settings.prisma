@@ -5,10 +5,19 @@
 
 model StoreSettings {
   id                  Int      @id @default(1)
+  /// Store identity, shown on receipts and the app shell.
+  storeName           String?
+  storeAddress        String?
+  storePhone          String?
+  /// Free-text footer printed at the bottom of each receipt.
+  receiptFooter       String?
   telegramChatId      String?
   /// Local shop closing time "HH:mm" for the daily digest.
   closingTime         String   @default("20:00")
   defaultWarrantyDays Int      @default(14)
+  /// Nasiya (installment) defaults: due window and overdue reminder lead time.
+  defaultNasiyaDueDays Int     @default(30)
+  overdueReminderDays Int      @default(3)
   /// Alert when a sale's margin falls below this percent of landed cost.
   minMarginPercent    Decimal  @default(0) @db.Decimal(5, 2)
   /// Fallback low-stock threshold when no StockAlertRule matches.

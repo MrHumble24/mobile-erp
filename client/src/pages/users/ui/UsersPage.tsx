@@ -15,10 +15,7 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t("users.title")}
-        description="Do'kon xodimlari hisoblari, lavozim rollari va ruxsatnomalar matritsasini sozlash"
-      />
+      <PageHeader title={t("users.title")} description={t("users.subtitle")} />
 
       <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto pb-1">

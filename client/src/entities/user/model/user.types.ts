@@ -35,8 +35,51 @@ export interface UpdateUserDto {
     lastName?: string
     phone?: string
     telegramHandle?: string
+    locale?: string
   }
   isActive?: boolean
+}
+
+export interface UserListFilters {
+  search?: string
+  role?: string
+  active?: boolean
+  page: number
+  pageSize: number
+}
+
+export interface PaginatedUsers {
+  items: UserView[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface UserStats {
+  total: number
+  active: number
+  byRole: Record<string, number>
+}
+
+export interface RoleGrant {
+  permissionCode: string
+  roleCodes: string[]
+}
+
+export interface UserPermissionBreakdown {
+  roles: string[]
+  roleGrants: RoleGrant[]
+  overrides: Array<{ permissionCode: string; granted: boolean; reason: string | null }>
+  effective: string[]
+}
+
+export interface ResetPasswordDto {
+  password: string
+}
+
+export interface UpdateRoleDto {
+  name?: string
+  description?: string
 }
 
 export interface SetRolesDto {

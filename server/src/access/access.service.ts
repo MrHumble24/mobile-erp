@@ -11,6 +11,7 @@ import {
   EffectiveAccess,
   PermissionView,
   RoleView,
+  UserPermissionBreakdown,
 } from './types/access.types.js';
 
 @Injectable()
@@ -34,6 +35,17 @@ export class AccessService {
     return (await this.getEffectiveAccess(userId)).permissions;
   }
 
+  /** Per-permission breakdown (role grants, overrides, net) for the user UI. */
+  async describeUser(userId: string): Promise<UserPermissionBreakdown> {
+    const detail = await this.repo.getUserAccessDetail(userId);
+    const effective = new Set(detail.roleGrants.map((g) => g.permissionCode));
+    for (const o of detail.overrides) {
+      if (o.granted) effective.add(o.permissionCode);
+      else effective.delete(o.permissionCode);
+    }
+    return { ...detail, effective: [...effective] };
+  }
+
   listRoles(): Promise<RoleView[]> {
     return this.repo.listRoles();
   }
@@ -47,6 +59,16 @@ export class AccessService {
       throw new ConflictException(`Role ${dto.code} already exists`);
     }
     return this.repo.createRole(dto);
+  }
+
+  async renameRole(
+    code: string,
+    data: { name?: string; description?: string },
+  ): Promise<RoleView> {
+    if (!(await this.repo.findRole(code))) {
+      throw new NotFoundException(`Role ${code} not found`);
+    }
+    return this.repo.renameRole(code, data);
   }
 
   async setRolePermissions(
@@ -67,8 +89,12 @@ export class AccessService {
     if (role.isSystem) {
       throw new ForbiddenException(`System role ${code} cannot be deleted`);
     }
-    if ((await this.repo.countUsersWithRole(code)) > 0) {
-      throw new ConflictException(`Role ${code} is assigned to users`);
+    const assignedUsers = await this.repo.countUsersWithRole(code);
+    if (assignedUsers > 0) {
+      throw new ConflictException({
+        message: `Role ${code} is assigned to ${assignedUsers} user(s)`,
+        assignedUsers,
+      });
     }
     await this.repo.deleteRole(code);
   }
