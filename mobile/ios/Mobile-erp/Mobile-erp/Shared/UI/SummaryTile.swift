@@ -39,15 +39,14 @@ struct SummaryTile: View {
     }
 }
 
-/// Adaptive grid wrapper for a row of `SummaryTile`s, shared by the sales and
-/// customer summaries.
+/// Roomy single-column stack wrapper for `SummaryTile`s, shared by the sales and
+/// customer summaries. Avoids multi-column grids so large monetary amounts never truncate.
 struct SummaryTileGrid<Content: View>: View {
     private let content: Content
-    private let columns = [GridItem(.adaptive(minimum: 150), spacing: 12)]
 
     init(@ViewBuilder content: () -> Content) { self.content = content() }
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) { content }
+        VStack(spacing: 10) { content }
     }
 }
