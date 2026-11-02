@@ -1,0 +1,117 @@
+import { Injectable } from '@nestjs/common';
+import { PartnersService } from '../partners/partners.service.js';
+import {
+  ProfitBreakdownQueryDto,
+  ReturnsQueryDto,
+  TrendQueryDto,
+} from './dto/reports-query.dto.js';
+import { fillAging } from './lib/aging.js';
+import { toBreakdownRows } from './lib/share.js';
+import { fillTrend } from './lib/trend.js';
+import { ReportsBreakdownRepository } from './reports-breakdown.repository.js';
+import { ReportsConsignmentsRepository } from './reports-consignments.repository.js';
+import { ReportsInventoryRepository } from './reports-inventory.repository.js';
+import { ReportsReturnsRepository } from './reports-returns.repository.js';
+import { ReportsTrendRepository } from './reports-trend.repository.js';
+import { rangeOrDefault } from './reports.service.js';
+import {
+  BreakdownRow,
+  ConsignmentPartnerRow,
+  ConsignmentsReport,
+  InventoryReport,
+  ReturnsPage,
+  TrendPoint,
+} from './types/reports.types.js';
+
+@Injectable()
+export class ReportsAnalyticsService {
+  constructor(
+    private readonly trendRepo: ReportsTrendRepository,
+    private readonly breakdownRepo: ReportsBreakdownRepository,
+    private readonly returnsRepo: ReportsReturnsRepository,
+    private readonly consignmentsRepo: ReportsConsignmentsRepository,
+    private readonly inventoryRepo: ReportsInventoryRepository,
+    private readonly partners: PartnersService,
+  ) {}
+
+  async trend(query: TrendQueryDto): Promise<TrendPoint[]> {
+    const { from, to } = rangeOrDefault(query);
+    const rows = await this.trendRepo.series(from, to, query.bucket);
+    return fillTrend(rows, from, to, query.bucket);
+  }
+
+  async profitBreakdown(
+    query: ProfitBreakdownQueryDto,
+  ): Promise<BreakdownRow[]> {
+    const { from, to } = rangeOrDefault(query);
+    const rows = await this.breakdownRepo.breakdown(query.groupBy, from, to);
+    return toBreakdownRows(rows);
+  }
+
+  async returns(query: ReturnsQueryDto): Promise<ReturnsPage> {
+    const { items, total } = await this.returnsRepo.page(
+      parseDate(query.from),
+      parseDate(query.to),
+      query.page,
+      query.pageSize,
+    );
+    return { items, total, page: query.page, pageSize: query.pageSize };
+  }
+
+  async consignments(query: {
+    from?: string;
+    to?: string;
+  }): Promise<ConsignmentsReport> {
+    const from = parseDate(query.from);
+    const to = parseDate(query.to);
+    const [[createdCount, settledCount, returnedCount], revenueRows, partners] =
+      await Promise.all([
+        this.consignmentsRepo.counts(from, to),
+        this.consignmentsRepo.settledRevenueByPartner(from, to),
+        this.partners.list(),
+      ]);
+    const revenueOf = new Map(
+      revenueRows.map((r) => [r.partnerId, r.settledRevenue]),
+    );
+    const byPartner: ConsignmentPartnerRow[] = partners
+      .map((p) => ({
+        partnerId: p.id,
+        shopName: p.shopName,
+        outstanding: Number(p.outstanding),
+        openCount: p.openCount,
+        overdueCount: p.overdueCount,
+        settledRevenue: revenueOf.get(p.id) ?? 0,
+      }))
+      .filter(
+        (p) =>
+          p.outstanding !== 0 ||
+          p.openCount > 0 ||
+          p.overdueCount > 0 ||
+          p.settledRevenue > 0,
+      )
+      .sort((a, b) => b.outstanding - a.outstanding);
+    return {
+      createdCount,
+      settledCount,
+      returnedCount,
+      settledRevenue: revenueRows.reduce((s, r) => s + r.settledRevenue, 0),
+      outstandingTotal: byPartner.reduce((s, p) => s + p.outstanding, 0),
+      overdueCount: byPartner.reduce((s, p) => s + p.overdueCount, 0),
+      byPartner,
+    };
+  }
+
+  async inventory(): Promise<InventoryReport> {
+    const [totals, byStatus, byModel, agingRaw] = await Promise.all([
+      this.inventoryRepo.totals(),
+      this.inventoryRepo.byStatus(),
+      this.inventoryRepo.byModel(),
+      this.inventoryRepo.agingRaw(),
+    ]);
+    return { ...totals, byStatus, byModel, aging: fillAging(agingRaw) };
+  }
+}
+
+function parseDate(value?: string): Date | undefined {
+  return value ? new Date(value) : undefined;
+}

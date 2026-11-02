@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsIn,
@@ -20,8 +21,12 @@ export class DateRangeQueryDto {
 
 export class ExpenseReportQueryDto extends DateRangeQueryDto {
   @IsOptional()
-  @IsIn(['category', 'month'])
-  groupBy: 'category' | 'month' = 'category';
+  @IsIn(['category', 'month', 'day'])
+  groupBy: 'category' | 'month' | 'day' = 'category';
+
+  @IsOptional()
+  @IsUUID()
+  categoryId?: string;
 }
 
 export class ModelPricingQueryDto {
@@ -40,4 +45,31 @@ export class DailyClosingQueryDto {
   @IsOptional()
   @IsDateString()
   date?: string;
+}
+
+export class TrendQueryDto extends DateRangeQueryDto {
+  @IsOptional()
+  @IsIn(['day', 'week', 'month'])
+  bucket: 'day' | 'week' | 'month' = 'day';
+}
+
+export class ProfitBreakdownQueryDto extends DateRangeQueryDto {
+  @IsOptional()
+  @IsIn(['channel', 'model', 'cashier', 'day'])
+  groupBy: 'channel' | 'model' | 'cashier' | 'day' = 'channel';
+}
+
+export class ReturnsQueryDto extends DateRangeQueryDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  pageSize: number = 50;
 }

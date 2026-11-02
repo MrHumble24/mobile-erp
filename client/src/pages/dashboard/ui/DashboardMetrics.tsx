@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { formatMoney } from "@/shared/lib/format"
 import { useProfitReport, type ProfitReport } from "@/entities/report"
 import { MetricCard } from "@/shared/ui/metric-card"
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs"
@@ -34,26 +35,26 @@ function ProfitMetricCards({ report }: { report: ProfitReport }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <MetricCard
         label={t("dashboard.grossProfit")}
-        value={`$${Math.round(report.grossProfit).toLocaleString()}`}
+        value={formatMoney(report.grossProfit)}
         variant="white"
         subtext={`${report.unitsSold} ${t("dashboard.unitsSold")}`}
       />
       <MetricCard
         label={t("dashboard.netOperatingIncome")}
-        value={`$${Math.round(report.netOperatingIncome).toLocaleString()}`}
+        value={formatMoney(report.netOperatingIncome)}
         variant="white"
       />
       <MetricCard
         label={t("dashboard.revenue")}
-        value={`$${Math.round(report.revenue).toLocaleString()}`}
+        value={formatMoney(report.revenue)}
         variant="white"
-        subtext={`Chakana: $${Math.round(report.byChannel.retail).toLocaleString()} · B2B: $${Math.round(report.byChannel.b2b).toLocaleString()}`}
+        subtext={`${t("dashboard.retail")}: ${formatMoney(report.byChannel.retail)} · B2B: ${formatMoney(report.byChannel.b2b)}`}
       />
       <MetricCard
         label={t("dashboard.expenses")}
-        value={`$${Math.round(report.expenses).toLocaleString()}`}
+        value={formatMoney(report.expenses)}
         variant="dark"
-        subtext={`Qaytarildi: $${Math.round(report.returnsRefunded).toLocaleString()}`}
+        subtext={`${t("dashboard.returnsRefunded")}: ${formatMoney(report.returnsRefunded)}`}
       />
     </div>
   )

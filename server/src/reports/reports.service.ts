@@ -6,13 +6,15 @@ import {
   ExpenseReportQueryDto,
   ModelPricingQueryDto,
 } from './dto/reports-query.dto.js';
+import { bucketStarts } from './lib/trend.js';
+import { withExpenseShare } from './lib/share.js';
 import { ReportsDailyClosingRepository } from './reports-daily-closing.repository.js';
 import { ReportsExpensesRepository } from './reports-expenses.repository.js';
 import { ReportsModelPricingRepository } from './reports-model-pricing.repository.js';
 import { ReportsProfitRepository } from './reports-profit.repository.js';
 import {
   DailyClosingReport,
-  ExpenseReportRow,
+  ExpenseReportRowWithShare,
   ModelPricingRow,
   ProfitReport,
 } from './types/reports.types.js';
@@ -58,12 +60,18 @@ export class ReportsService {
     };
   }
 
-  expenses(query: ExpenseReportQueryDto): Promise<ExpenseReportRow[]> {
+  async expenses(
+    query: ExpenseReportQueryDto,
+  ): Promise<ExpenseReportRowWithShare[]> {
     const from = parseDate(query.from);
     const to = parseDate(query.to);
-    return query.groupBy === 'month'
-      ? this.expensesRepo.byMonth(from, to)
-      : this.expensesRepo.byCategory(from, to);
+    const rows =
+      query.groupBy === 'month'
+        ? await this.expensesRepo.byMonth(from, to, query.categoryId)
+        : query.groupBy === 'day'
+          ? await this.expensesRepo.byDay(from, to, query.categoryId)
+          : await this.expensesRepo.byCategory(from, to, query.categoryId);
+    return withExpenseShare(rows);
   }
 
   modelPricing(query: ModelPricingQueryDto): Promise<ModelPricingRow[]> {
@@ -93,6 +101,40 @@ export class ReportsService {
       settledConsignments: settledC,
     };
   }
+
+  async dailyClosingRange(
+    query: DateRangeQueryDto,
+  ): Promise<DailyClosingReport[]> {
+    const { from, to } = rangeOrDefault(query);
+    const rows = await this.closingRepo.rangeByDay(from, to);
+    const byDay = new Map(
+      rows.map((r) => [new Date(r.bucket).toISOString().slice(0, 10), r]),
+    );
+    return bucketStarts(from, to, 'day').map((date) => {
+      const r = byDay.get(date);
+      return {
+        date,
+        unitsSold: r?.unitsSold ?? 0,
+        revenue: r?.revenue ?? 0,
+        grossProfit: (r?.revenue ?? 0) - (r?.cogs ?? 0),
+        expenses: r?.expenses ?? 0,
+        newConsignments: r?.newConsignments ?? 0,
+        settledConsignments: r?.settledConsignments ?? 0,
+      };
+    });
+  }
+}
+
+/** Range with a 30-day fallback window when either bound is missing. */
+export function rangeOrDefault(
+  query: DateRangeQueryDto,
+  days = 30,
+): { from: Date; to: Date } {
+  const to = query.to ? new Date(query.to) : new Date();
+  const from = query.from
+    ? new Date(query.from)
+    : new Date(to.getTime() - days * DAY_MS);
+  return { from, to };
 }
 
 function parseDate(value?: string): Date | undefined {
