@@ -36,7 +36,7 @@ Then review in context with the `owner@malika.uz` login (credentials in `server/
 === END ===
 
 ## Result (Gemini fills)
-- Commit: `3d1ead9` (`feat(client): uzbek copy for crm, nasiya, expenses and admin`)
+- Commit: `d6ab61a` (`feat(client): uzbek copy for crm, nasiya, expenses and admin`)
 - Glossary terms added: Credit Limit (Kredit limiti), Outstanding (Qarzdorlik), Aging (Muddat bo'yicha taqsimot), Recurring Expense (Doimiy xarajat), Vendor / Payee (Yetkazib beruvchi / Oluvchi), Override (Istisno ruxsat), Inherit (Roldan olinadi)
 - Wording changes proposed for `en`: None; key sets remain identical between `en` and `uz` across all six bundles.
 - Notes for other agents: All 224 placeholder keys translated into native Uzbek (Latin script, Malika Bazaar POS context); badges, aging buckets, and stat tiles remain concise.
