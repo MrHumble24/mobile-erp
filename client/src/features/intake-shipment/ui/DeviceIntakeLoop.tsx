@@ -30,11 +30,11 @@ export function DeviceIntakeLoop({
       {batch.errorMsg && (
         <div className="p-3 text-sm rounded bg-destructive/15 text-destructive font-medium">{batch.errorMsg}</div>
       )}
-      <DeviceIntakeForm draft={batch.draft} set={batch.setField} models={modelsData || []} onAdd={batch.addDraft} />
+      <DeviceIntakeForm models={modelsData || []} onAdd={batch.addItem} />
       <DeviceBatchList
         items={batch.batch}
         modelsMap={modelsMap}
-        errorImei={batch.errorImei}
+        problemsByImei={batch.problemsByImei}
         registeredCount={shipment?.deviceCount ?? 0}
         expectedCount={shipment?.expectedCount ?? 0}
         results={batch.results}

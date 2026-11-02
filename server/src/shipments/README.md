@@ -15,6 +15,9 @@ allocation lives here (ADR 0006); per-unit lifecycle lives in `devices`.
   targetPrice? }] }` (`device.create`). Each unit starts `IN_STOCK` with a
   history row (`fromStatusCode: null`); landed cost is recomputed for the whole
   batch atomically. Duplicate IMEI → 409. Returns `RegisteredDeviceView[]`.
+  Each unit's `specs` is validated against its model's attribute schema
+  (`DeviceModelsService.getAttributes` + `validateSpecs`); failures → 400
+  `{ message: 'Invalid specs', problems: [{ imei, key, message }] }`.
 
 ## Must never
 

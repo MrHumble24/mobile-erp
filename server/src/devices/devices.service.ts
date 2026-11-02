@@ -4,6 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { DeviceModelsService } from '../device-models/device-models.service.js';
+import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
 import { ListDevicesDto } from './dto/list-devices.dto.js';
@@ -22,6 +24,7 @@ export class DevicesService {
   constructor(
     private readonly query: DevicesQueryRepository,
     private readonly status: DevicesStatusRepository,
+    private readonly models: DeviceModelsService,
   ) {}
 
   list(dto: ListDevicesDto): Promise<PaginatedDevices> {
@@ -47,7 +50,14 @@ export class DevicesService {
   }
 
   async updateDetails(id: string, dto: UpdateDeviceDto): Promise<DeviceView> {
-    await this.require(id);
+    const device = await this.require(id);
+    if (dto.specs !== undefined) {
+      const attributes = await this.models.getAttributes(device.modelId);
+      const problems = validateSpecs(attributes, dto.specs);
+      if (problems.length > 0) {
+        throw new BadRequestException({ message: 'Invalid specs', problems });
+      }
+    }
     return this.status.updateDetails(id, dto);
   }
 

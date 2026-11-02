@@ -3,17 +3,19 @@
 Edits an in-stock device's editable attributes.
 
 ## Owns
-- `EditDeviceDialog` — shadcn `Dialog` + `Form` (react-hook-form + zod) editing
-  `specs.storage/color/ram/condition` and `targetPrice`.
-- `edit-device.schema.ts` — zod schema; `targetPrice` is a numeric string, mapped
-  to `number | null` on submit.
+- `EditDeviceDialog` — shadcn `Dialog` + `Form` editing the device's `specs`
+  via `DynamicSpecFields` (driven by the device model's attribute schema) plus
+  `targetPrice`. A 400 `{ problems }` maps field errors by key.
+- `edit-device.schema.ts` — zod schema; `specs` is a string record, `targetPrice`
+  a numeric string mapped to `number | null` on submit.
 
 ## Public API
 - `EditDeviceDialog` ({ device, open, onOpenChange }).
 
 ## Uses
 - `entities/device`: `useUpdateDevice` (invalidates lists + detail + by-imei),
-  `STORAGE_OPTIONS`, `DeviceView`, `UpdateDeviceDto`.
+  `DeviceView`, `UpdateDeviceDto`.
+- `entities/device-model`: `useDeviceModelAttributes`, `DynamicSpecFields`.
 
 ## Must never
 - Call HTTP directly or import another feature.

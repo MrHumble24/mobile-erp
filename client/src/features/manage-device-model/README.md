@@ -6,7 +6,12 @@ CRUD for device models (brand + name + active flag).
 - `DeviceModelsPanel` — table of models + "new" button + edit action.
 - `DeviceModelDialog` — shadcn `Form` create/edit; a 409 from the server surfaces
   as a duplicate-name field error.
-- `device-model-form.schema.ts` — zod schema.
+- `AttributeEditor` / `AttributeRow` / `OptionsChipsEditor` — the per-model spec
+  schema editor: add/reorder/remove attributes (label, auto-slugged key, type,
+  required, select options as chips). The reserved `storage` attribute is shown
+  locked (key + type not editable, cannot be removed; options editable).
+- `device-model-form.schema.ts` — zod schema mirroring the server rules
+  (`slugKey`, unique keys) plus `toDtoAttributes`/`toFormAttributes` mappers.
 
 ## Public API
 - `DeviceModelsPanel` (no props; self-contained).

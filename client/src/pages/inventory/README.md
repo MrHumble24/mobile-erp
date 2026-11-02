@@ -25,5 +25,6 @@ Status changes use `entities/device` transition map + `expectedVersion`.
   native form/table controls (use `shared/ui`).
 
 ## Open questions
-- No server endpoint for distinct storage values; the filter uses a fixed list
-  (`STORAGE_OPTIONS`). No cheap per-model device count, so the models tab omits it.
+- The storage filter lists the union of every active model's `storage` attribute
+  options, falling back to `STORAGE_OPTIONS` when no model defines any. No cheap
+  per-model device count, so the models tab omits it.

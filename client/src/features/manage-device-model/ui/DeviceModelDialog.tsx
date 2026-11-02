@@ -12,7 +12,14 @@ import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { toast } from "@/shared/ui/sonner"
-import { deviceModelFormSchema, type DeviceModelFormValues } from "../model/device-model-form.schema"
+import {
+  deviceModelFormSchema,
+  defaultFormAttributes,
+  toDtoAttributes,
+  toFormAttributes,
+  type DeviceModelFormValues,
+} from "../model/device-model-form.schema"
+import { AttributeEditor } from "./AttributeEditor"
 
 type FormApi = UseFormReturn<DeviceModelFormValues>
 
@@ -57,12 +64,14 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
   const createMutation = useCreateDeviceModel()
   const updateMutation = useUpdateDeviceModel()
   const isPending = createMutation.isPending || updateMutation.isPending
+  const savedKeys = new Set((model?.attributes ?? []).map((a) => a.key))
   const form = useForm<DeviceModelFormValues>({
     resolver: zodResolver(deviceModelFormSchema),
     defaultValues: {
       brand: model?.brand ?? "",
       name: model?.name ?? "",
       isActive: model?.isActive ?? true,
+      attributes: model ? toFormAttributes(model.attributes) : defaultFormAttributes(),
     },
   })
 
@@ -75,9 +84,10 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
   }
 
   const onSubmit = (values: DeviceModelFormValues) => {
+    const attributes = toDtoAttributes(values.attributes)
     const opts = { onSuccess: () => { toast.success(t("common.success")); onDone() }, onError: handleError }
-    if (model) updateMutation.mutate({ id: model.id, dto: values }, opts)
-    else createMutation.mutate({ brand: values.brand, name: values.name }, opts)
+    if (model) updateMutation.mutate({ id: model.id, dto: { ...values, attributes } }, opts)
+    else createMutation.mutate({ brand: values.brand, name: values.name, attributes }, opts)
   }
 
   return (
@@ -86,6 +96,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
         <ModelTextField form={form} name="brand" label={t("inventory.brand")} />
         <ModelTextField form={form} name="name" label={t("inventory.model")} />
         <ActiveField form={form} />
+        <AttributeEditor form={form} savedKeys={savedKeys} />
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? t("common.loading") : t("common.save")}
         </Button>
@@ -106,7 +117,7 @@ export function DeviceModelDialog({
   const { t } = useI18n()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPopup className="sm:max-w-md">
+      <DialogPopup className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{model ? t("inventory.editModel") : t("inventory.newModel")}</DialogTitle>
         </DialogHeader>

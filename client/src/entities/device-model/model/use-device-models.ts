@@ -10,6 +10,13 @@ export function useDeviceModels() {
   })
 }
 
+/** The attribute schema for one model, read from the cached models list. */
+export function useDeviceModelAttributes(modelId: string | undefined) {
+  const { data, isLoading } = useDeviceModels()
+  const model = modelId ? data?.find((m) => m.id === modelId) : undefined
+  return { attributes: model?.attributes ?? [], model, isLoading }
+}
+
 export function useCreateDeviceModel() {
   const queryClient = useQueryClient()
   return useMutation({

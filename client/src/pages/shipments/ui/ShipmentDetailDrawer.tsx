@@ -73,7 +73,7 @@ export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
   const { shipment, supplier, open, onClose, canViewCost, canIntake, canManage, onIntake, onEdit } = props
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
-      <SheetPopup className="w-full sm:max-w-2xl">
+      <SheetPopup className="w-full sm:max-w-3xl lg:max-w-5xl">
         <SheetHeader>
           <SheetTitle>{t("shipments.detailTitle")}</SheetTitle>
           <SheetDescription>{supplier?.name}</SheetDescription>

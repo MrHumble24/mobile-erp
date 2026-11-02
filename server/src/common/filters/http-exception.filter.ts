@@ -11,6 +11,7 @@ interface ErrorResponse {
   statusCode: number;
   message: string | string[];
   error: string;
+  [key: string]: unknown;
 }
 
 /** Normalizes every thrown error to `{ statusCode, message, error }`. */
@@ -26,7 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = isHttp
       ? exception.getStatus()
       : HttpStatus.INTERNAL_SERVER_ERROR;
-    const { message, error } = this.normalize(exception, isHttp);
+    const { message, error, extra } = this.normalize(exception, isHttp);
 
     if (statusCode >= 500) {
       this.logger.error(
@@ -34,24 +35,41 @@ export class HttpExceptionFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : undefined,
       );
     }
-    res.status(statusCode).json({ statusCode, message, error });
+    res.status(statusCode).json({ statusCode, message, error, ...extra });
   }
 
   private normalize(
     exception: unknown,
     isHttp: boolean,
-  ): { message: string | string[]; error: string } {
+  ): {
+    message: string | string[];
+    error: string;
+    extra: Record<string, unknown>;
+  } {
     if (isHttp && exception instanceof HttpException) {
       const body = exception.getResponse();
       if (typeof body === 'string') {
-        return { message: body, error: exception.name };
+        return { message: body, error: exception.name, extra: {} };
       }
-      const b = body as { message?: string | string[]; error?: string };
+      // Preserve any extra fields the thrower attached (e.g. `problems`).
+      const b = body as {
+        message?: string | string[];
+        error?: string;
+      } & Record<string, unknown>;
+      const extra = { ...b };
+      delete extra.message;
+      delete extra.error;
+      delete extra.statusCode;
       return {
         message: b.message ?? exception.message,
         error: b.error ?? exception.name,
+        extra,
       };
     }
-    return { message: 'Internal server error', error: 'InternalServerError' };
+    return {
+      message: 'Internal server error',
+      error: 'InternalServerError',
+      extra: {},
+    };
   }
 }

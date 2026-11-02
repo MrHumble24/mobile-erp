@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
 import { DevicesService } from './devices.service.js';
@@ -11,9 +12,13 @@ function build(state: { statusCode: string; version: number } | null) {
     applyStatusChange: jest.fn().mockResolvedValue({ id: 'd1' }),
   };
   const query = {} as unknown as DevicesQueryRepository;
+  const models = {
+    getAttributes: jest.fn().mockResolvedValue([]),
+  } as unknown as DeviceModelsService;
   const service = new DevicesService(
     query,
     status as unknown as DevicesStatusRepository,
+    models,
   );
   return { service, status };
 }

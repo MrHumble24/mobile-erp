@@ -1,45 +1,63 @@
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { type RegisterDeviceItem, type RegisteredDeviceView } from "@/entities/shipment"
+import type { SpecFieldProblem } from "@/entities/device-model"
 import { Button } from "@/shared/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
+
+function specSummary(specs: Record<string, unknown>): string {
+  const parts = Object.values(specs)
+    .map((v) => String(v ?? "").trim())
+    .filter(Boolean)
+  return parts.length > 0 ? parts.join(" · ") : "-"
+}
 
 function BatchRow({
   item,
   modelName,
-  hasError,
+  problems,
   onRemove,
 }: {
   item: RegisterDeviceItem
   modelName: string
-  hasError: boolean
+  problems?: SpecFieldProblem[]
   onRemove: () => void
 }) {
   const { t } = useI18n()
+  const hasError = problems !== undefined
   return (
-    <TableRow className={hasError ? "bg-destructive/10" : undefined}>
-      <TableCell className="font-mono text-xs">{item.imei}</TableCell>
-      <TableCell className="text-xs">{modelName}</TableCell>
-      <TableCell className="text-xs">{String(item.specs.storage || "-")}</TableCell>
-      <TableCell className="text-xs font-semibold">{formatMoney(item.acquisitionCost)}</TableCell>
-      <TableCell className="text-right">
-        <Button variant="ghost" size="sm" onClick={onRemove} className="h-7 text-xs text-destructive">
-          {t("common.delete")}
-        </Button>
-      </TableCell>
-    </TableRow>
+    <>
+      <TableRow className={hasError ? "bg-destructive/10" : undefined}>
+        <TableCell className="font-mono text-xs">{item.imei}</TableCell>
+        <TableCell className="text-xs">{modelName}</TableCell>
+        <TableCell className="text-xs">{specSummary(item.specs)}</TableCell>
+        <TableCell className="text-xs font-semibold">{formatMoney(item.acquisitionCost)}</TableCell>
+        <TableCell className="text-right">
+          <Button variant="ghost" size="sm" onClick={onRemove} className="h-7 text-xs text-destructive">
+            {t("common.delete")}
+          </Button>
+        </TableCell>
+      </TableRow>
+      {problems && problems.length > 0 && (
+        <TableRow className="bg-destructive/10">
+          <TableCell colSpan={5} className="py-1 text-xs text-destructive">
+            {problems.map((p) => `${p.key}: ${p.message}`).join("; ")}
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   )
 }
 
 function BatchTable({
   items,
   modelsMap,
-  errorImei,
+  problemsByImei,
   onRemove,
 }: {
   items: RegisterDeviceItem[]
   modelsMap: Record<string, string>
-  errorImei: string | null
+  problemsByImei: Record<string, SpecFieldProblem[]>
   onRemove: (index: number) => void
 }) {
   const { t } = useI18n()
@@ -50,7 +68,7 @@ function BatchTable({
           <TableRow>
             <TableHead>IMEI</TableHead>
             <TableHead>{t("inventory.model")}</TableHead>
-            <TableHead>{t("inventory.storage")}</TableHead>
+            <TableHead>{t("shipments.specs")}</TableHead>
             <TableHead>{t("shipments.acquisitionCost")}</TableHead>
             <TableHead />
           </TableRow>
@@ -61,7 +79,7 @@ function BatchTable({
               key={it.imei}
               item={it}
               modelName={modelsMap[it.modelId] || it.modelId}
-              hasError={errorImei === it.imei}
+              problems={problemsByImei[it.imei]}
               onRemove={() => onRemove(idx)}
             />
           ))}
@@ -89,7 +107,7 @@ function LandedResults({ results }: { results: RegisteredDeviceView[] }) {
 export function DeviceBatchList({
   items,
   modelsMap,
-  errorImei,
+  problemsByImei,
   registeredCount,
   expectedCount,
   results,
@@ -100,7 +118,7 @@ export function DeviceBatchList({
 }: {
   items: RegisterDeviceItem[]
   modelsMap: Record<string, string>
-  errorImei: string | null
+  problemsByImei: Record<string, SpecFieldProblem[]>
   registeredCount: number
   expectedCount: number
   results: RegisteredDeviceView[]
@@ -119,7 +137,7 @@ export function DeviceBatchList({
         </span>
       </div>
       {items.length > 0 && (
-        <BatchTable items={items} modelsMap={modelsMap} errorImei={errorImei} onRemove={onRemove} />
+        <BatchTable items={items} modelsMap={modelsMap} problemsByImei={problemsByImei} onRemove={onRemove} />
       )}
       {canViewCost && results.length > 0 && <LandedResults results={results} />}
       <Button className="w-full" onClick={onSubmit} disabled={items.length === 0 || isSubmitting}>

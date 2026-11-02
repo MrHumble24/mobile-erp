@@ -47,6 +47,8 @@
   "addDevice": "Add Device to Intake",
   "deviceList": "Intake Devices List",
   "submitBatch": "Save Devices Batch",
+  "specs": "Specs",
+  "invalidSpecs": "Some device specs are invalid. Fix the highlighted rows.",
   "supplierName": "Supplier Name",
   "supplierCountry": "Country",
   "supplierContact": "Contact / Phone"
