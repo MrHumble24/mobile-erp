@@ -17,10 +17,10 @@ function DropdownMenuContent({
 }: React.ComponentProps<typeof MenuPrimitive.Positioner>) {
   return (
     <DropdownMenuPortal>
-      <MenuPrimitive.Positioner sideOffset={sideOffset} {...props}>
+      <MenuPrimitive.Positioner sideOffset={sideOffset} className="z-[100] outline-none" {...props}>
         <MenuPrimitive.Popup
           className={cn(
-            "z-50 min-w-52 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-52 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-0.5 transition-all",
             className
           )}
         >
@@ -55,9 +55,9 @@ function DropdownMenuItem({
 function DropdownMenuLabel({
   className,
   ...props
-}: React.ComponentProps<typeof MenuPrimitive.GroupLabel>) {
+}: React.ComponentProps<"div">) {
   return (
-    <MenuPrimitive.GroupLabel
+    <div
       className={cn(
         "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-[#838383]",
         className

@@ -47,22 +47,24 @@ export function RolesTab() {
       {isLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
 
       {roles && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("users.roleCode")}</TableHead>
-              <TableHead>{t("users.roleName")}</TableHead>
-              <TableHead>{t("users.description")}</TableHead>
-              <TableHead>Turi</TableHead>
-              <TableHead>{t("users.permissionsCount")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {roles.map((role) => (
-              <RoleTableRow key={role.code} role={role} />
-            ))}
-          </TableBody>
-        </Table>
+        <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("users.roleCode")}</TableHead>
+                <TableHead>{t("users.roleName")}</TableHead>
+                <TableHead>{t("users.description")}</TableHead>
+                <TableHead>Turi</TableHead>
+                <TableHead>{t("users.permissionsCount")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {roles.map((role) => (
+                <RoleTableRow key={role.code} role={role} />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       <CreateRoleDialog open={createOpen} onOpenChange={setCreateOpen} />

@@ -26,7 +26,7 @@ function ActiveField({ form }: { form: FormApi }) {
       control={form.control}
       name="isActive"
       render={({ field }) => (
-        <FormItem className="flex items-center justify-between rounded-lg border p-3">
+        <FormItem className="flex items-center justify-between rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
           <FormLabel className="mb-0">{t("shipments.supplierActive")}</FormLabel>
           <FormControl>
             <Switch checked={field.value ?? true} onCheckedChange={field.onChange} />

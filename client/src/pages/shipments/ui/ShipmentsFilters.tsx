@@ -48,7 +48,7 @@ export function ShipmentsFilters({
         className="h-10"
       />
       <SupplierSelect value={filters.supplierId} onChange={filters.setSupplierId} suppliers={suppliers} />
-      <div className="flex items-center gap-2.5 rounded-lg border px-3 h-10">
+      <div className="flex items-center gap-2.5 rounded-[9px] border border-[#d4d4d4] bg-white px-3.5 h-10 shadow-none">
         <Switch checked={filters.openOnly} onCheckedChange={filters.setOpenOnly} />
         <Label className="mb-0 text-sm">{t("shipments.openOnly")}</Label>
       </div>

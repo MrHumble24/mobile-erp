@@ -54,14 +54,14 @@ export function DeviceTable({
 
   if (devices.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground border rounded-lg bg-card/30">
+      <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
         {t("inventory.empty")}
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <DeviceTableHead canViewCost={canViewCost} />
         <TableBody>

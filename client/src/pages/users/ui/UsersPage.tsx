@@ -1,14 +1,17 @@
-import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { UsersTab } from "./UsersTab"
 import { RolesTab } from "./RolesTab"
 import { PermissionMatrixTab } from "./PermissionMatrixTab"
 
+const USER_TABS = ["users", "roles", "matrix"] as const
+type UserTab = (typeof USER_TABS)[number]
+
 export function UsersPage() {
   const { t } = useI18n()
-  const [tab, setTab] = React.useState("users")
+  const [tab, setTab] = useUrlTab<UserTab>("users", { validTabs: USER_TABS })
 
   return (
     <div className="space-y-6">

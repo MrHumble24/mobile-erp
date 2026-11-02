@@ -78,23 +78,25 @@ export function UsersTab() {
       {isLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
 
       {users && (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("users.fullName")}</TableHead>
-              <TableHead>{t("users.email")}</TableHead>
-              <TableHead>{t("users.roles")}</TableHead>
-              <TableHead>{t("users.isActive")}</TableHead>
-              <TableHead>So'nggi kirish</TableHead>
-              <TableHead className="text-right">{t("common.actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <UserTableRow key={user.id} user={user} onEditRoles={setEditingUser} />
-            ))}
-          </TableBody>
-        </Table>
+        <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("users.fullName")}</TableHead>
+                <TableHead>{t("users.email")}</TableHead>
+                <TableHead>{t("users.roles")}</TableHead>
+                <TableHead>{t("users.isActive")}</TableHead>
+                <TableHead>So'nggi kirish</TableHead>
+                <TableHead className="text-right">{t("common.actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <UserTableRow key={user.id} user={user} onEditRoles={setEditingUser} />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />

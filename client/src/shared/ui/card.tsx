@@ -24,7 +24,7 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "rounded-[12px] p-6 shadow-none transition-colors",
+        "rounded-[16px] p-6 shadow-[var(--shadow-xs)] transition-all",
         variantStyles,
         className
       )}

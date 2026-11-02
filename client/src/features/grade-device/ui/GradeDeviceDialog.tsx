@@ -12,7 +12,7 @@ import { QcParamInputs } from "./QcParamInputs"
 function PassFailBanner({ passed, onToggle }: { passed: boolean; onToggle: (val: boolean) => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg bg-card/40">
+    <div className="flex items-center justify-between p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa]">
       <div>
         <Label className="text-base font-semibold">{t("qc.result")}</Label>
         <p className="text-xs text-muted-foreground mt-0.5">{passed ? t("qc.passed") : t("qc.failed")}</p>

@@ -64,30 +64,32 @@ function ExpenseReportTable({
 }) {
   const { t } = useI18n()
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{groupBy === "category" ? t("expenses.category") : "Oy"}</TableHead>
-          <TableHead className="text-right">{t("common.amount")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.key}>
-            <TableCell className="font-semibold text-sm">{row.label}</TableCell>
-            <TableCell className="font-mono font-bold text-sm text-right">
-              ${Math.round(row.total).toLocaleString()}
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{groupBy === "category" ? t("expenses.category") : "Oy"}</TableHead>
+            <TableHead className="text-right">{t("common.amount")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.key}>
+              <TableCell className="font-semibold text-sm">{row.label}</TableCell>
+              <TableCell className="font-mono font-bold text-sm text-right">
+                ${Math.round(row.total).toLocaleString()}
+              </TableCell>
+            </TableRow>
+          ))}
+          <TableRow className="border-t-2 border-[#e8e8e8] font-bold bg-[#f8f9fa]">
+            <TableCell>{t("common.total")}</TableCell>
+            <TableCell className="font-mono text-sm text-right text-destructive font-bold">
+              ${Math.round(total).toLocaleString()}
             </TableCell>
           </TableRow>
-        ))}
-        <TableRow className="border-t-2 font-bold bg-muted/20">
-          <TableCell>{t("common.total")}</TableCell>
-          <TableCell className="font-mono text-sm text-right text-destructive font-bold">
-            ${Math.round(total).toLocaleString()}
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 

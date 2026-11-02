@@ -3,10 +3,24 @@ import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer"
 import { X } from "lucide-react"
 import { cn } from "@/shared/lib/utils"
 
-const Sheet = DrawerPrimitive.Root
+function Sheet({
+  swipeDirection = "down",
+  snapPoints = [0.65, 1],
+  ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+  return (
+    <DrawerPrimitive.Root
+      swipeDirection={swipeDirection}
+      snapPoints={snapPoints}
+      {...props}
+    />
+  )
+}
+
 const SheetTrigger = DrawerPrimitive.Trigger
 const SheetClose = DrawerPrimitive.Close
 const SheetPortal = DrawerPrimitive.Portal
+const SheetViewport = DrawerPrimitive.Viewport
 
 function SheetBackdrop({
   className,
@@ -15,7 +29,7 @@ function SheetBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity",
+        "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs bottomsheet-backdrop",
         className
       )}
       {...props}
@@ -26,42 +40,58 @@ function SheetBackdrop({
 export interface SheetPopupProps
   extends React.ComponentProps<typeof DrawerPrimitive.Popup> {
   side?: "right" | "left" | "bottom"
+  showHandle?: boolean
+  showClose?: boolean
+  contentClassName?: string
 }
 
 function SheetPopup({
-  side = "right",
+  side: _side,
   className,
   children,
+  showHandle = true,
+  showClose = true,
+  contentClassName,
   ...props
 }: SheetPopupProps) {
-  const sideClasses = {
-    right: "inset-y-0 right-0 h-full w-full max-w-lg border-l border-[#e8e8e8]",
-    left: "inset-y-0 left-0 h-full w-full max-w-lg border-r border-[#e8e8e8]",
-    bottom: "inset-x-0 bottom-0 max-h-[85vh] w-full border-t border-[#e8e8e8] rounded-t-[16px]",
-  }[side]
-
   return (
     <SheetPortal>
       <SheetBackdrop />
-      <DrawerPrimitive.Popup
-        className={cn(
-          "fixed z-50 bg-white text-[#202020] p-6 sm:p-7 shadow-[var(--shadow-xl)] outline-none overflow-y-auto flex flex-col justify-between transition-transform duration-300",
-          sideClasses,
-          className
-        )}
-        {...props}
-      >
-        <div className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div className="w-10 h-1 rounded-full bg-[#d4d4d4] mx-auto sm:hidden" />
-          </div>
-          {children}
-        </div>
-        <DrawerPrimitive.Close className="absolute top-5 right-5 size-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#646464] hover:bg-[#eeeeee] hover:text-[#202020] transition-colors outline-none cursor-pointer">
-          <X className="size-4 stroke-[2.2]" />
-          <span className="sr-only">Yopish</span>
-        </DrawerPrimitive.Close>
-      </DrawerPrimitive.Popup>
+      <DrawerPrimitive.Viewport className="fixed inset-0 z-50 flex items-end justify-center sm:p-4">
+        <DrawerPrimitive.Popup
+          className={cn(
+            "relative z-50 flex flex-col bg-white text-[#202020] shadow-[var(--shadow-xl)] border border-[#e8e8e8] outline-none overscroll-contain",
+            "w-full rounded-t-[24px] max-h-[92vh]",
+            "sm:max-w-3xl sm:rounded-[24px]",
+            "bottomsheet-popup",
+            className
+          )}
+          {...props}
+        >
+          {showHandle && (
+            <div
+              className="pt-3 pb-2 flex justify-center shrink-0 cursor-grab active:cursor-grabbing select-none touch-none"
+              aria-label="Drag handle"
+            >
+              <div className="w-12 h-1.5 rounded-full bg-[#d4d4d4] hover:bg-[#b0b0b0] transition-colors pointer-events-none" />
+            </div>
+          )}
+          {showClose && (
+            <DrawerPrimitive.Close className="absolute top-3.5 right-4 size-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#646464] hover:bg-[#eeeeee] hover:text-[#202020] transition-colors outline-none cursor-pointer z-10">
+              <X className="size-4 stroke-[2.2]" />
+              <span className="sr-only">Yopish</span>
+            </DrawerPrimitive.Close>
+          )}
+          <DrawerPrimitive.Content
+            className={cn(
+              "overflow-y-auto overscroll-contain flex-1 px-5 sm:px-7 pb-7 pt-1 outline-none",
+              contentClassName
+            )}
+          >
+            {children}
+          </DrawerPrimitive.Content>
+        </DrawerPrimitive.Popup>
+      </DrawerPrimitive.Viewport>
     </SheetPortal>
   )
 }
@@ -119,6 +149,7 @@ export {
   SheetTrigger,
   SheetClose,
   SheetPortal,
+  SheetViewport,
   SheetBackdrop,
   SheetPopup,
   SheetHeader,

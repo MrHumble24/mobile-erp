@@ -1,8 +1,9 @@
+import * as React from "react"
 import { useNavigate } from "react-router"
 import { LogOut, Settings, ShieldCheck } from "lucide-react"
-import { useAuthStore } from "@/features/auth"
+import { useAuthStore, LogoutConfirmDialog } from "@/features/auth"
+import { useCartStore } from "@/features/checkout"
 import { useI18n } from "@/shared/i18n"
-import { Button } from "@/shared/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +14,14 @@ import {
 } from "@/shared/ui/dropdown-menu"
 import { Badge } from "@/shared/ui/badge"
 
-function UserTriggerButton({ name, email }: { name?: string; email?: string }) {
+function UserTriggerContent({ name, email }: { name?: string; email?: string }) {
   const safeName = (name ?? "").trim()
   const safeEmail = (email ?? "").trim()
   const displayName = safeName || (safeEmail ? safeEmail.split("@")[0] : "") || "User"
   const avatarLetter = (displayName ? displayName.charAt(0) : "U").toUpperCase()
 
   return (
-    <Button variant="ghost" className="flex items-center gap-2 h-9 px-2.5 rounded-full hover:bg-black/[0.04]">
+    <>
       <div className="size-7 rounded-full bg-[#6647f0]/10 flex items-center justify-center text-[#6647f0] font-bold text-xs shrink-0">
         {avatarLetter}
       </div>
@@ -28,7 +29,7 @@ function UserTriggerButton({ name, email }: { name?: string; email?: string }) {
         <p className="text-xs font-semibold text-[#202020] truncate">{displayName}</p>
         <p className="text-[10px] text-[#838383] truncate mt-0.5">{safeEmail}</p>
       </div>
-    </Button>
+    </>
   )
 }
 
@@ -71,36 +72,44 @@ export function UserMenu() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const clearSession = useAuthStore((s) => s.clearSession)
+  const [logoutOpen, setLogoutOpen] = React.useState(false)
 
   if (!user) return null
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<UserTriggerButton name={user.profile?.fullName} email={user.email} />}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-2 h-9 px-2.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer select-none outline-none border-none bg-transparent">
+          <UserTriggerContent name={user.profile?.fullName} email={user.email} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-60">
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-xs font-bold leading-none text-[#090c1d]">
+                {user.profile?.fullName || user.email || "User"}
+              </p>
+              <p className="text-[11px] text-[#838383] truncate">{user.email || ""}</p>
+              <UserRoleBadges roles={user.roles ?? []} />
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <UserQuickNavItems onNavigate={navigate} />
+          <DropdownMenuItem
+            variant="destructive"
+            className="cursor-pointer text-[#e53935]"
+            onClick={() => setLogoutOpen(true)}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{t("auth.logout")}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <LogoutConfirmDialog
+        open={logoutOpen}
+        onOpenChange={setLogoutOpen}
+        onConfirm={() => useCartStore.getState().resetCart()}
       />
-      <DropdownMenuContent align="end" className="w-60">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-xs font-bold leading-none text-[#090c1d]">
-              {user.profile?.fullName || user.email || "User"}
-            </p>
-            <p className="text-[11px] text-[#838383] truncate">{user.email || ""}</p>
-            <UserRoleBadges roles={user.roles ?? []} />
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <UserQuickNavItems onNavigate={navigate} />
-        <DropdownMenuItem
-          variant="destructive"
-          className="cursor-pointer text-[#e53935]"
-          onClick={() => clearSession()}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>{t("auth.logout")}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    </>
   )
 }

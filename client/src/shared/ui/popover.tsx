@@ -14,10 +14,10 @@ function PopoverContent({
 }: React.ComponentProps<typeof PopoverPrimitive.Positioner>) {
   return (
     <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Positioner sideOffset={sideOffset} {...props}>
+      <PopoverPrimitive.Positioner sideOffset={sideOffset} className="z-[100] outline-none" {...props}>
         <PopoverPrimitive.Popup
           className={cn(
-            "z-50 w-72 rounded-[12px] bg-white p-4 text-[#202020] shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-2.5 transition-all",
+            "z-[100] w-72 rounded-[12px] bg-white p-4 text-[#202020] shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-2.5 transition-all",
             className
           )}
         >

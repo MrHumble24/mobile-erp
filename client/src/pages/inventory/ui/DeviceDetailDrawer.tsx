@@ -29,7 +29,7 @@ function SpecCell({ label, value }: { label: string; value: string }) {
 function DeviceSpecsGrid({ device, canViewCost }: { device: DeviceDetailView; canViewCost: boolean }) {
   const { t } = useI18n()
   return (
-    <div className="grid grid-cols-2 gap-3 text-sm border rounded-lg p-3 bg-muted/20">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm border border-[#e8e8e8] rounded-[16px] p-4 bg-[#f8f9fa] shadow-[var(--shadow-xs)]">
       <SpecCell label={t("inventory.storage")} value={String(device.specs?.storage || "-")} />
       <SpecCell label={t("inventory.color")} value={String(device.specs?.color || "-")} />
       <SpecCell label={t("inventory.ram")} value={String(device.specs?.ram || "-")} />

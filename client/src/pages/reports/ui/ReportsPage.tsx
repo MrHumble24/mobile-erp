@@ -1,15 +1,18 @@
-import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { ProfitReportTab } from "./ProfitReportTab"
 import { ExpenseReportTab } from "./ExpenseReportTab"
 import { ModelPricingReportTab } from "./ModelPricingReportTab"
 import { DailyClosingReportTab } from "./DailyClosingReportTab"
 
+const REPORT_TABS = ["profit", "expenses", "pricing", "closing"] as const
+type ReportTab = (typeof REPORT_TABS)[number]
+
 export function ReportsPage() {
   const { t } = useI18n()
-  const [tab, setTab] = React.useState("profit")
+  const [tab, setTab] = useUrlTab<ReportTab>("profit", { validTabs: REPORT_TABS })
 
   return (
     <div className="space-y-6">

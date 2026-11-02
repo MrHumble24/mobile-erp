@@ -98,34 +98,36 @@ export function ConsignmentsTable({
 
   if (items.length === 0) {
     return (
-      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
+      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#d4d4d4] rounded-[16px] bg-white">
         {t("consignments.noConsignmentsFound")}
       </div>
     )
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("consignments.device")}</TableHead>
-          <TableHead>{t("consignments.agreedPrice")}</TableHead>
-          <TableHead>{t("consignments.dueDate")}</TableHead>
-          <TableHead>{t("common.status")}</TableHead>
-          <TableHead>{t("common.date")}</TableHead>
-          <TableHead className="text-right">{t("common.actions")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((item) => (
-          <ConsignmentTableRow
-            key={item.id}
-            item={item}
-            onSettle={onSettle}
-            onReturn={onReturn}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("consignments.device")}</TableHead>
+            <TableHead>{t("consignments.agreedPrice")}</TableHead>
+            <TableHead>{t("consignments.dueDate")}</TableHead>
+            <TableHead>{t("common.status")}</TableHead>
+            <TableHead>{t("common.date")}</TableHead>
+            <TableHead className="text-right">{t("common.actions")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <ConsignmentTableRow
+              key={item.id}
+              item={item}
+              onSettle={onSettle}
+              onReturn={onReturn}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

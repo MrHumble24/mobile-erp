@@ -8,7 +8,7 @@ import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/
 
 function CustomerSaleItem({ sale }: { sale: CustomerSaleView }) {
   return (
-    <div className="p-3 border border-border rounded-lg bg-card/60 space-y-1 text-sm">
+    <div className="p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] space-y-1.5 text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between items-start">
         <div className="font-semibold">
           {sale.device.model?.brand} {sale.device.model?.name}
@@ -67,7 +67,7 @@ export function CustomerDetailsDrawer({
         </SheetHeader>
 
         {customer.notes && (
-          <div className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-lg">
+          <div className="text-xs text-muted-foreground bg-[#f8f9fa] border border-[#e8e8e8] p-2.5 rounded-[12px]">
             {customer.notes}
           </div>
         )}

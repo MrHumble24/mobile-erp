@@ -92,7 +92,7 @@ function ExpenseDetailsAndRecurring({
         />
       </div>
 
-      <div className="flex items-center justify-between py-2 border-t border-border">
+      <div className="flex items-center justify-between py-3 border-t border-[#e8e8e8]">
         <Label htmlFor="recurring-switch" className="cursor-pointer">{t("expenses.isRecurring")}</Label>
         <Switch id="recurring-switch" checked={isRecurring} onCheckedChange={setIsRecurring} />
       </div>

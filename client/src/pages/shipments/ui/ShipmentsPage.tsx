@@ -10,7 +10,11 @@ import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { ShipmentsTab } from "./ShipmentsTab"
+
+const SHIPMENT_TABS = ["shipments", "suppliers"] as const
+type ShipmentTab = (typeof SHIPMENT_TABS)[number]
 
 function useShipmentMaps(shipments: ShipmentView[], suppliers: { id: string; name: string }[]) {
   const suppliersMap = React.useMemo(
@@ -51,6 +55,7 @@ function ShipmentsHeader({ count, canManage, onNew }: { count?: number; canManag
 
 export function ShipmentsPage() {
   const { t } = useI18n()
+  const [tab, setTab] = useUrlTab<ShipmentTab>("shipments", { validTabs: SHIPMENT_TABS })
   const canManage = useAuthStore((s) => s.hasPermission("shipment.manage"))
   const { data: shipments, isLoading } = useShipments()
   const { data: suppliers } = useSuppliers()
@@ -60,7 +65,7 @@ export function ShipmentsPage() {
   return (
     <div className="space-y-6">
       <ShipmentsHeader count={shipments?.length} canManage={canManage} onNew={() => setNewOpen(true)} />
-      <Tabs defaultValue="shipments">
+      <Tabs value={tab} onValueChange={(val) => setTab(val as ShipmentTab)}>
         <TabsList>
           <TabsTrigger value="shipments">{t("shipments.title")}</TabsTrigger>
           <TabsTrigger value="suppliers">{t("shipments.suppliers")}</TabsTrigger>

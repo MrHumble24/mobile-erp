@@ -9,7 +9,7 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
   const changeNum = Number(entry.change)
 
   return (
-    <div className="p-3 border border-border rounded-lg bg-card/60 space-y-1 text-sm">
+    <div className="p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] space-y-1.5 text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between items-center">
         <Badge variant={isConsignment ? "violet" : "mint"}>
           {isConsignment ? t("partners.kindConsignment") : t("partners.kindPayment")}
@@ -31,7 +31,7 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
       </div>
 
       {entry.notes && (
-        <div className="text-xs text-muted-foreground italic bg-muted/30 p-1.5 rounded">
+        <div className="text-xs text-muted-foreground italic bg-[#f8f9fa] border border-[#e8e8e8] p-2 rounded-[10px]">
           {entry.notes}
         </div>
       )}

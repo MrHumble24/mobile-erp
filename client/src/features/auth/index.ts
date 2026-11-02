@@ -1,4 +1,6 @@
 export { useAuthStore, type AuthUser, type AuthUserProfile } from "./model/auth.store"
 export { useLogin } from "./model/use-login"
+export { useLogout, type UseLogoutOptions } from "./model/use-logout"
 export { LoginForm } from "./ui/LoginForm"
+export { LogoutConfirmDialog, type LogoutConfirmDialogProps } from "./ui/LogoutConfirmDialog"
 export { authRepository, type LoginDto, type LoginResponse } from "./api/auth.repository"

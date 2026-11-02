@@ -87,33 +87,35 @@ export function ExpensesTable({ expenses }: { expenses: ExpenseView[] }) {
 
   if (expenses.length === 0) {
     return (
-      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
+      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#d4d4d4] rounded-[16px] bg-white">
         {t("expenses.noExpensesFound")}
       </div>
     )
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("expenses.category")}</TableHead>
-          <TableHead>{t("expenses.amount")}</TableHead>
-          <TableHead>{t("expenses.description")}</TableHead>
-          <TableHead>{t("expenses.isRecurring")}</TableHead>
-          <TableHead>{t("expenses.incurredAt")}</TableHead>
-          {hasExpenseManage && <TableHead className="text-right">{t("common.actions")}</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {expenses.map((expense) => (
-          <ExpenseTableRow
-            key={expense.id}
-            expense={expense}
-            hasExpenseManage={hasExpenseManage}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("expenses.category")}</TableHead>
+            <TableHead>{t("expenses.amount")}</TableHead>
+            <TableHead>{t("expenses.description")}</TableHead>
+            <TableHead>{t("expenses.isRecurring")}</TableHead>
+            <TableHead>{t("expenses.incurredAt")}</TableHead>
+            {hasExpenseManage && <TableHead className="text-right">{t("common.actions")}</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {expenses.map((expense) => (
+            <ExpenseTableRow
+              key={expense.id}
+              expense={expense}
+              hasExpenseManage={hasExpenseManage}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

@@ -97,7 +97,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-border/40">
+    <Card className="w-full max-w-md shadow-[var(--shadow-lg)] border border-[#e8e8e8] bg-white rounded-[20px]">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold tracking-tight">{t("auth.loginTitle")}</CardTitle>
         <CardDescription className="text-muted-foreground">{t("auth.loginSubtitle")}</CardDescription>

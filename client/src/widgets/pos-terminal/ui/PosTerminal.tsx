@@ -43,7 +43,7 @@ export function PosTerminal() {
       {cart.device ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <DeviceCard device={cart.device} />
-          <div className="p-6 border rounded-xl bg-card shadow-sm">
+          <div className="p-6 border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
             <CheckoutParamsForm
               salePrice={cart.salePrice}
               onPriceChange={cart.setSalePrice}

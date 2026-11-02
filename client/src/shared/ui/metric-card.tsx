@@ -55,7 +55,7 @@ function MetricCard({
     <div
       data-slot="metric-card"
       className={cn(
-        "rounded-[12px] p-6 flex flex-col justify-between min-h-[140px] shadow-none transition-all",
+        "rounded-[16px] p-6 flex flex-col justify-between min-h-[140px] shadow-[var(--shadow-xs)] transition-all",
         isDark
           ? "bg-[#111111] text-white border border-[#2a2a2a]"
           : "bg-white text-[#202020] border border-[#e8e8e8]",

@@ -10,7 +10,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
   const qc = device.latestInspection
 
   return (
-    <Card className="border-primary/20 bg-card/60">
+    <Card className="border border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]">
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
@@ -27,7 +27,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
           <DeviceStatusBadge status={device.statusCode} />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs border-t pt-2">
+        <div className="grid grid-cols-2 gap-2 text-xs border-t border-[#e8e8e8] pt-2">
           <div>
             <span className="text-muted-foreground">{t("inventory.storage")}:</span>{" "}
             <span className="font-medium">{storage} {color && `(${color})`}</span>
@@ -39,7 +39,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
         </div>
 
         {qc && (
-          <div className="flex items-center gap-3 text-xs bg-muted/40 rounded p-2 text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs bg-[#f8f9fa] border border-[#e8e8e8] rounded-[10px] p-2 text-muted-foreground">
             <div className="flex items-center gap-1">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               <span>Grade: <strong className="text-foreground">{qc.gradeCode || "OK"}</strong></span>

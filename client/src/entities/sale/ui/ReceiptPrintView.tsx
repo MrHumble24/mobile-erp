@@ -6,7 +6,7 @@ import type { ReceiptView } from "../model/sale.types"
 function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
   const { t } = useI18n()
   return (
-    <div className="w-[58mm] border border-dashed border-border bg-white text-black p-3 font-mono text-[11px] leading-tight rounded shadow-sm print:border-none print:shadow-none print:m-0 print:p-0">
+    <div className="w-[58mm] border border-dashed border-[#d4d4d4] bg-white text-black p-3 font-mono text-[11px] leading-tight rounded shadow-sm print:border-none print:shadow-none print:m-0 print:p-0">
       <div className="text-center pb-2 border-b border-black/20 space-y-0.5">
         <p className="font-bold text-xs uppercase tracking-wider">Malika ERP / POS</p>
         <p className="text-[10px] text-black/70">Malika Bozor, Toshkent</p>

@@ -7,7 +7,11 @@ import { PageHeader } from "@/shared/ui/page-header"
 import { Badge } from "@/shared/ui/badge"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { QcDeviceTable } from "./QcDeviceTable"
+
+const QC_TABS = ["all", "IN_STOCK", "DEFECTIVE"] as const
+type QcTab = (typeof QC_TABS)[number]
 
 function QcHeader({ count }: { count: number }) {
   const { t } = useI18n()
@@ -24,10 +28,10 @@ function QcHeader({ count }: { count: number }) {
   )
 }
 
-function QcTabs({ activeTab, onChange }: { activeTab: string; onChange: (v: string) => void }) {
+function QcTabs({ activeTab, onChange }: { activeTab: QcTab; onChange: (v: QcTab) => void }) {
   const { t } = useI18n()
   return (
-    <Tabs value={activeTab} onValueChange={onChange}>
+    <Tabs value={activeTab} onValueChange={(val) => onChange(val as QcTab)}>
       <TabsList>
         <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
         <TabsTrigger value="IN_STOCK">{t("inventory.statusInStock")}</TabsTrigger>
@@ -38,7 +42,7 @@ function QcTabs({ activeTab, onChange }: { activeTab: string; onChange: (v: stri
 }
 
 export function QcPage() {
-  const [activeTab, setActiveTab] = React.useState<string>("all")
+  const [activeTab, setActiveTab] = useUrlTab<QcTab>("all", { validTabs: QC_TABS })
   const [selectedDevice, setSelectedDevice] = React.useState<DeviceView | null>(null)
   const [dialogOpen, setDialogOpen] = React.useState(false)
 

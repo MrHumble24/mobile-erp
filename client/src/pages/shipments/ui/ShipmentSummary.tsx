@@ -54,14 +54,14 @@ export function ShipmentSummary({
 }) {
   const { t } = useI18n()
   return (
-    <div className="grid grid-cols-2 gap-3 text-sm border rounded-lg p-3 bg-muted/20">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm border border-[#e8e8e8] rounded-[16px] p-4 bg-[#f8f9fa] shadow-[var(--shadow-xs)]">
       <SupplierLine supplier={supplier} />
       <Row label={t("shipments.shipmentDate")} value={formatDate(shipment.shipmentDate)} />
       <Row label={t("shipments.expectedCount")} value={String(shipment.expectedCount)} />
       <Row label={t("shipments.receivedCount")} value={String(shipment.deviceCount)} />
       {canViewCost && <CostRows shipment={shipment} avgLanded={avgLanded} />}
       <Row label={t("shipments.createdAt")} value={formatDateTime(shipment.createdAt)} />
-      <div className="col-span-2">
+      <div className="sm:col-span-2">
         <Row label={t("common.notes")} value={shipment.notes || "-"} />
       </div>
     </div>

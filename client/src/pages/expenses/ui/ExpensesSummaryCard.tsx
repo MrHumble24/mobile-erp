@@ -26,13 +26,13 @@ export function ExpensesSummaryCard({
         variant="white"
       />
 
-      <div className="md:col-span-2 rounded-[12px] p-6 bg-card border border-border flex flex-col justify-between">
+      <div className="md:col-span-2 rounded-[16px] p-6 bg-white border border-[#e8e8e8] shadow-[var(--shadow-xs)] flex flex-col justify-between">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
           {t("expenses.summaryTitle")}
         </span>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {summary.byCategory.map((item) => (
-            <div key={item.categoryId} className="p-3 bg-muted/40 rounded-xl">
+            <div key={item.categoryId} className="p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px]">
               <span className="text-xs text-muted-foreground line-clamp-1">{item.name}</span>
               <p className="font-mono font-bold text-base mt-1">
                 ${Number(item.total).toLocaleString()}

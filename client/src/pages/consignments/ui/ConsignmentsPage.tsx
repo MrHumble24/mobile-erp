@@ -14,7 +14,11 @@ import {
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { ConsignmentsTable } from "./ConsignmentsTable"
+
+const CONSIGNMENT_TABS = ["out", "overdue", "all"] as const
+type ConsignmentTab = (typeof CONSIGNMENT_TABS)[number]
 
 interface TabContentProps {
   onSettle: (item: ConsignmentView) => void
@@ -49,7 +53,7 @@ function ConsignmentTabPanels({ onSettle, onReturn }: TabContentProps) {
 
 export function ConsignmentsPage() {
   const { t } = useI18n()
-  const [tab, setTab] = React.useState("out")
+  const [tab, setTab] = useUrlTab<ConsignmentTab>("out", { validTabs: CONSIGNMENT_TABS })
   const [createOpen, setCreateOpen] = React.useState(false)
   const [settleItem, setSettleItem] = React.useState<ConsignmentView | null>(null)
   const [returnItem, setReturnItem] = React.useState<ConsignmentView | null>(null)

@@ -21,7 +21,7 @@ export interface ShipmentsTableProps {
 function EmptyShipmentsState() {
   const { t } = useI18n()
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border rounded-lg bg-card/30">
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
       <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
         <Truck className="size-6 text-muted-foreground" />
       </div>
@@ -83,7 +83,7 @@ export function ShipmentsTable(props: ShipmentsTableProps) {
   if (shipments.length === 0) return <EmptyShipmentsState />
 
   return (
-    <div className="rounded-lg border bg-card overflow-hidden">
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

@@ -27,7 +27,12 @@ function CommandDialog({
 }: React.ComponentProps<typeof Dialog> & { children: React.ReactNode }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange} {...props}>
-      <DialogPopup className="overflow-hidden p-0 max-w-xl">
+      <DialogPopup
+        showHandle={false}
+        showClose={false}
+        className="sm:max-w-xl p-0 overflow-hidden"
+        contentClassName="p-0 overflow-hidden"
+      >
         <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[#838383] [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-4 [&_[cmdk-input]]:h-11">
           {children}
         </Command>

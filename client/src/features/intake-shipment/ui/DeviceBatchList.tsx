@@ -44,7 +44,7 @@ function BatchTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="border rounded-md max-h-48 overflow-y-auto">
+    <div className="border border-[#e8e8e8] rounded-[14px] bg-white max-h-48 overflow-y-auto shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -74,7 +74,7 @@ function BatchTable({
 function LandedResults({ results }: { results: RegisteredDeviceView[] }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-1 rounded-md border bg-muted/20 p-3">
+    <div className="space-y-1 rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
       <span className="text-xs font-semibold">{t("shipments.landedCostResults")}</span>
       {results.map((r) => (
         <div key={r.id} className="flex justify-between text-xs">
@@ -111,7 +111,7 @@ export function DeviceBatchList({
 }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-3 pt-2 border-t">
+    <div className="space-y-3 pt-3 border-t border-[#e8e8e8]">
       <div className="flex items-center justify-between text-sm">
         <span className="font-semibold">{t("shipments.deviceList")} ({items.length})</span>
         <span className="text-muted-foreground">

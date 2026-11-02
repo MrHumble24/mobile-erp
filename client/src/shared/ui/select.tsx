@@ -65,10 +65,14 @@ function SelectContent({
 }: React.ComponentProps<typeof SelectPrimitive.Positioner>) {
   return (
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Positioner sideOffset={sideOffset} {...props}>
+      <SelectPrimitive.Positioner
+        sideOffset={sideOffset}
+        className="z-[100] outline-none"
+        {...props}
+      >
         <SelectPrimitive.Popup
           className={cn(
-            "z-50 min-w-44 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 border border-[#e8e8e8] outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 border border-[#e8e8e8] outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
             className
           )}
         >

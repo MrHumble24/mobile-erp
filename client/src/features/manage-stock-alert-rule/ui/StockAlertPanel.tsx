@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Plus, TriangleAlert } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { cn } from "@/shared/lib/utils"
 import {
   useStockAlertRules,
   useLowStock,
@@ -27,7 +28,10 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
           return (
             <div
               key={r.id}
-              className={`flex items-center justify-between rounded-lg border p-3 text-sm ${below ? "border-[#e53935]/40 bg-[#e53935]/5" : "bg-card"}`}
+              className={cn(
+                "flex items-center justify-between rounded-[12px] border p-3 text-sm transition-colors",
+                below ? "border-[#e53935]/40 bg-[#e53935]/5" : "border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]"
+              )}
             >
               <span className="font-medium">
                 {nameOf(r.modelId)} · {r.storage}
@@ -57,7 +61,7 @@ function RulesTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

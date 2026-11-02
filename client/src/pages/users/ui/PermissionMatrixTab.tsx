@@ -24,13 +24,13 @@ function PermissionGroup({
   onToggle: (code: string) => void
 }) {
   return (
-    <div className="p-4 border border-border rounded-lg bg-card space-y-3">
+    <div className="p-4 border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
       <h4 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
         {resource}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {permissions.map((p) => (
-          <label key={p.code} className="flex items-start gap-2 text-xs cursor-pointer p-1.5 rounded hover:bg-muted/40">
+          <label key={p.code} className="flex items-start gap-2 text-xs cursor-pointer p-2 rounded-[8px] hover:bg-[#f8f9fa] transition-colors">
             <Checkbox
               checked={selectedCodes.includes(p.code)}
               onCheckedChange={() => onToggle(p.code)}

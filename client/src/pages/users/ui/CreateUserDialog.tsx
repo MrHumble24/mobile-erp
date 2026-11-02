@@ -65,7 +65,7 @@ function RoleCheckboxes({
   return (
     <div className="space-y-2">
       <Label>{t("users.roles")}</Label>
-      <div className="grid grid-cols-2 gap-2 p-3 bg-muted/40 rounded-lg max-h-32 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px] max-h-32 overflow-y-auto">
         {roles?.map((r) => (
           <label key={r.code} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
             <Checkbox

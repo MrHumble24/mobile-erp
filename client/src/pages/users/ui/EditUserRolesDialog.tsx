@@ -16,7 +16,7 @@ function RoleCheckboxList({
   onToggle: (code: string) => void
 }) {
   return (
-    <div className="space-y-2 p-3 bg-muted/40 rounded-lg max-h-48 overflow-y-auto">
+    <div className="space-y-2 p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px] max-h-48 overflow-y-auto">
       {roles?.map((r) => (
         <label key={r.code} className="flex items-center gap-2 text-sm font-medium cursor-pointer">
           <Checkbox

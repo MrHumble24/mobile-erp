@@ -38,7 +38,7 @@ function WarrantyInfoCard({
   const { t } = useI18n()
 
   return (
-    <div className="space-y-4 pt-4 border-t border-border">
+    <div className="space-y-4 pt-4 border-t border-[#e8e8e8]">
       <div className="flex items-center justify-between">
         <div>
           <span className="font-mono text-base font-semibold">{data.imei}</span>
@@ -50,18 +50,18 @@ function WarrantyInfoCard({
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
-        <div className="bg-muted/40 p-2.5 rounded-lg">
+        <div className="bg-[#f8f9fa] border border-[#e8e8e8] p-3 rounded-[12px]">
           <span className="text-xs text-muted-foreground">{t("sales.salePrice")}</span>
           <p className="font-semibold text-base">${Number(data.salePrice).toLocaleString()}</p>
         </div>
-        <div className="bg-muted/40 p-2.5 rounded-lg">
+        <div className="bg-[#f8f9fa] border border-[#e8e8e8] p-3 rounded-[12px]">
           <span className="text-xs text-muted-foreground">{t("qc.grade")}</span>
           <p className="font-semibold text-base">{data.latestInspection?.grade || "—"}</p>
         </div>
       </div>
 
       {data.latestInspection?.notes && (
-        <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+        <div className="text-xs text-muted-foreground bg-[#f8f9fa] border border-[#e8e8e8] p-2.5 rounded-[8px]">
           {data.latestInspection.notes}
         </div>
       )}

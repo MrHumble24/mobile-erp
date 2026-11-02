@@ -3,8 +3,10 @@ import { useI18n } from "@/shared/i18n"
 import { useProfitReport, type ProfitReport } from "@/entities/report"
 import { MetricCard } from "@/shared/ui/metric-card"
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 
-export type DashboardPeriod = "today" | "week" | "month"
+const DASHBOARD_PERIODS = ["today", "week", "month"] as const
+export type DashboardPeriod = (typeof DASHBOARD_PERIODS)[number]
 
 function getPeriodDates(period: DashboardPeriod): { from: string; to: string } {
   const now = new Date()
@@ -59,7 +61,10 @@ function ProfitMetricCards({ report }: { report: ProfitReport }) {
 
 export function DashboardMetrics() {
   const { t } = useI18n()
-  const [period, setPeriod] = React.useState<DashboardPeriod>("today")
+  const [period, setPeriod] = useUrlTab<DashboardPeriod>("today", {
+    paramKey: "period",
+    validTabs: DASHBOARD_PERIODS,
+  })
   const { from, to } = React.useMemo(() => getPeriodDates(period), [period])
   const { data: report, isLoading } = useProfitReport(from, to)
 

@@ -8,8 +8,12 @@ import { Badge } from "@/shared/ui/badge"
 import { Link } from "@/shared/ui/link"
 import { buttonVariants } from "@/shared/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { DevicesTab } from "./DevicesTab"
 import { useDeviceBrowser } from "../model/use-device-browser"
+
+const INVENTORY_TABS = ["devices", "models", "alerts"] as const
+type InventoryTab = (typeof INVENTORY_TABS)[number]
 
 function InventoryHeader({ total }: { total?: number }) {
   const { t } = useI18n()
@@ -35,6 +39,7 @@ function InventoryHeader({ total }: { total?: number }) {
 
 export function InventoryPage() {
   const { t } = useI18n()
+  const [tab, setTab] = useUrlTab<InventoryTab>("devices", { validTabs: INVENTORY_TABS })
   const hasPermission = useAuthStore((s) => s.hasPermission)
   const canManageModels = hasPermission("device.update")
   const canViewStock = hasPermission("device.read")
@@ -44,7 +49,7 @@ export function InventoryPage() {
   return (
     <div className="space-y-6">
       <InventoryHeader total={browser.query.data?.total} />
-      <Tabs defaultValue="devices">
+      <Tabs value={tab} onValueChange={(val) => setTab(val as InventoryTab)}>
         <TabsList>
           <TabsTrigger value="devices">{t("inventory.tabDevices")}</TabsTrigger>
           {canManageModels && <TabsTrigger value="models">{t("inventory.tabModels")}</TabsTrigger>}
