@@ -7,7 +7,7 @@ export interface CartCustomer {
   phone?: string
 }
 
-interface CartState {
+export interface CartState {
   device: DeviceDetailView | null
   salePrice: number
   customer: CartCustomer | null

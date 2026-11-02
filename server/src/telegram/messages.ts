@@ -91,7 +91,7 @@ export function dailyDigest(p: {
 }
 
 function money(n: number): string {
-  return `${n.toLocaleString('en-US')} UZS`;
+  return `$${n.toLocaleString('en-US')}`;
 }
 
 function date(d: Date): string {
