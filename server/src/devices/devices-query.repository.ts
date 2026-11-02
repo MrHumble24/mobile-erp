@@ -35,10 +35,31 @@ export class DevicesQueryRepository {
         orderBy: { intakeDate: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
+        include: {
+          inspections: {
+            orderBy: { inspectedAt: 'desc' },
+            take: 1,
+            select: inspectionSummarySelect,
+          },
+        },
       }),
       this.prisma.device.count({ where }),
     ]);
-    return { items: rows.map(toDeviceView), total, page, pageSize };
+    const items = rows.map((row) => ({
+      ...toDeviceView(row),
+      latestInspection: row.inspections[0] ?? null,
+    }));
+    return { items, total, page, pageSize };
+  }
+
+  /** Devices still owing a first QC pass: in stock or defective, never inspected. */
+  countAwaitingInspection(): Promise<number> {
+    return this.prisma.device.count({
+      where: {
+        statusCode: { in: ['IN_STOCK', 'DEFECTIVE'] },
+        inspections: { none: {} },
+      },
+    });
   }
 
   async findById(id: string): Promise<DeviceView | null> {
@@ -90,6 +111,8 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
   if (filters.modelId) where.modelId = filters.modelId;
   if (filters.shipmentId) where.shipmentId = filters.shipmentId;
   if (filters.statusCode) where.statusCode = filters.statusCode;
+  if (filters.inspected === 'true') where.inspections = { some: {} };
+  if (filters.inspected === 'false') where.inspections = { none: {} };
   if (filters.storage) {
     where.specs = { path: ['storage'], equals: filters.storage };
   }

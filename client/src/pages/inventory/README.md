@@ -16,9 +16,11 @@ stock-alert rules. Composes entities and features; holds no HTTP of its own.
 - `use-device-selection.ts` — drawer target `{ imei, id? }` + edit-dialog state.
 
 ## Drawer
-Resolves everything from `useDeviceByImei`, so a scanned IMEI that is not on the
-current page still opens. Unknown IMEI → not-found state linking to `/shipments`.
-Status changes use `entities/device` transition map + `expectedVersion`.
+Uses the shared `widgets/device-drawer` (`DeviceDrawer`), which resolves
+everything from `useDeviceByImei`, so a scanned IMEI not on the current page
+still opens. Unknown IMEI → not-found state linking to `/shipments`. Status
+changes use `entities/device` transition map + `expectedVersion`. The devices
+tab passes `onEdit` to surface the edit dialog it owns.
 
 ## Must never
 - Call `fetch`/repositories directly, hold server data in local state, or render

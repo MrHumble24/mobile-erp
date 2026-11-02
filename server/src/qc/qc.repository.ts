@@ -1,22 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   CreateInspectionInput,
-  LookupView,
+  InspectionFilters,
+  PaginatedInspections,
   QcInspectionView,
 } from './types/qc.types.js';
+import {
+  inspectionListInclude,
+  InspectionListRow,
+  toInspectionListItem,
+  toInspectionView,
+} from './lib/inspection-view.mapper.js';
 
-const inspectionInclude = {
-  include: { defects: { select: { defectCode: true, notes: true } } },
-} as const;
-
-const lookupArgs = {
-  where: { isActive: true },
-  orderBy: { sortOrder: 'asc' },
-  select: { code: true, label: true, sortOrder: true },
-} as const;
-
-/** All Prisma access for QC inspections and QC lookups. */
+/** All Prisma access for QC inspections (create + paginated list). */
 @Injectable()
 export class QcRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -40,55 +38,46 @@ export class QcRepository {
           })),
         },
       },
-      ...inspectionInclude,
+      include: { defects: { select: { defectCode: true, notes: true } } },
     });
     return toInspectionView(row);
   }
 
-  async findByDevice(deviceId?: string): Promise<QcInspectionView[]> {
-    const rows = await this.prisma.qcInspection.findMany({
-      where: deviceId ? { deviceId } : {},
-      orderBy: { inspectedAt: 'desc' },
-      ...inspectionInclude,
-    });
-    return rows.map(toInspectionView);
-  }
-
-  listDefectTypes(): Promise<LookupView[]> {
-    return this.prisma.defectType.findMany(lookupArgs);
-  }
-
-  listGrades(): Promise<LookupView[]> {
-    return this.prisma.cosmeticGrade.findMany(lookupArgs);
+  async list(
+    filters: InspectionFilters,
+    page: number,
+    pageSize: number,
+  ): Promise<PaginatedInspections> {
+    const where = buildWhere(filters);
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.qcInspection.findMany({
+        where,
+        orderBy: { inspectedAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        ...inspectionListInclude,
+      }),
+      this.prisma.qcInspection.count({ where }),
+    ]);
+    const items = (rows as InspectionListRow[]).map(toInspectionListItem);
+    return { items, total, page, pageSize };
   }
 }
 
-interface InspectionRow {
-  id: string;
-  deviceId: string;
-  inspectedById: string;
-  passed: boolean;
-  gradeCode: string | null;
-  batteryHealth: number | null;
-  repairCostEstimate: { toString(): string } | null;
-  notes: string | null;
-  inspectedAt: Date;
-  defects: { defectCode: string; notes: string | null }[];
-}
-
-function toInspectionView(row: InspectionRow): QcInspectionView {
-  return {
-    id: row.id,
-    deviceId: row.deviceId,
-    inspectedById: row.inspectedById,
-    passed: row.passed,
-    gradeCode: row.gradeCode,
-    batteryHealth: row.batteryHealth,
-    repairCostEstimate: row.repairCostEstimate
-      ? row.repairCostEstimate.toString()
-      : null,
-    notes: row.notes,
-    inspectedAt: row.inspectedAt,
-    defects: row.defects,
-  };
+function buildWhere(filters: InspectionFilters): Prisma.QcInspectionWhereInput {
+  const where: Prisma.QcInspectionWhereInput = {};
+  if (filters.deviceId) where.deviceId = filters.deviceId;
+  if (filters.imei) where.device = { imei: filters.imei };
+  if (filters.passed !== undefined) where.passed = filters.passed;
+  if (filters.gradeCode) where.gradeCode = filters.gradeCode;
+  if (filters.inspectedById) where.inspectedById = filters.inspectedById;
+  if (filters.defectCode) {
+    where.defects = { some: { defectCode: filters.defectCode } };
+  }
+  if (filters.from || filters.to) {
+    where.inspectedAt = {};
+    if (filters.from) where.inspectedAt.gte = filters.from;
+    if (filters.to) where.inspectedAt.lte = filters.to;
+  }
+  return where;
 }

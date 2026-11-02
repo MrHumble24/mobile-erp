@@ -46,8 +46,13 @@ export interface DeviceStatusHistoryView {
   changedAt: Date;
 }
 
+/** List row = scalar device plus its most recent QC summary (or null). */
+export interface DeviceListView extends DeviceView {
+  latestInspection: QcInspectionSummary | null;
+}
+
 export interface PaginatedDevices {
-  items: DeviceView[];
+  items: DeviceListView[];
   total: number;
   page: number;
   pageSize: number;
@@ -60,6 +65,7 @@ export interface DeviceFilters {
   storage?: string;
   statusCode?: string;
   search?: string;
+  inspected?: 'true' | 'false';
 }
 
 export interface DeviceDetailsPatch {

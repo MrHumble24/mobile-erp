@@ -5,7 +5,7 @@ import { BarcodeInput } from "@/shared/ui/barcode-input"
 import { Button } from "@/shared/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { STORAGE_OPTIONS } from "@/entities/device"
-import type { DeviceModelView } from "@/entities/device-model"
+import { storageOptionsFromModels, type DeviceModelView } from "@/entities/device-model"
 import type { InventoryFilterState } from "../model/use-device-browser"
 
 type OnChange = (val: string | undefined) => void
@@ -50,16 +50,6 @@ function StorageSelect({ value, onChange, options }: { value?: string; onChange:
       </SelectContent>
     </Select>
   )
-}
-
-function storageOptionsFrom(models: DeviceModelView[]): readonly string[] {
-  const union = new Set<string>()
-  for (const model of models) {
-    if (!model.isActive) continue
-    const storage = model.attributes.find((a) => a.key === "storage")
-    storage?.options.forEach((o) => union.add(o))
-  }
-  return union.size > 0 ? [...union] : STORAGE_OPTIONS
 }
 
 const STATUS_ITEMS = [
@@ -110,11 +100,7 @@ export interface InventoryFiltersProps {
   onScan?: (imei: string) => void
 }
 
-function FiltersInputs({
-  filters,
-  models,
-  onScan,
-}: InventoryFiltersProps) {
+function FiltersInputs({ filters, models, onScan }: InventoryFiltersProps) {
   const { t } = useI18n()
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3">
@@ -135,7 +121,7 @@ function FiltersInputs({
         <StorageSelect
           value={filters.storage}
           onChange={filters.setStorage}
-          options={storageOptionsFrom(models)}
+          options={storageOptionsFromModels(models, STORAGE_OPTIONS)}
         />
       </div>
     </div>

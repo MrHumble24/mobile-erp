@@ -6,10 +6,10 @@ import { useCartStore } from "@/features/checkout"
 import { useDeviceModels } from "@/entities/device-model"
 import { type DeviceView } from "@/entities/device"
 import { EditDeviceDialog } from "@/features/edit-device"
+import { DeviceDrawer } from "@/widgets/device-drawer"
 import { toast } from "@/shared/ui/sonner"
 import { InventoryFilters } from "./InventoryFilters"
 import { DeviceListSection } from "./DeviceListSection"
-import { DeviceDetailDrawer } from "./DeviceDetailDrawer"
 import type { useDeviceBrowser } from "../model/use-device-browser"
 import { useDeviceSelection } from "../model/use-device-selection"
 
@@ -82,11 +82,12 @@ export function DevicesTab({ browser }: { browser: Browser }) {
         onSell={handleSell}
         onResetFilters={handleResetFilters}
       />
-      <DeviceDetailDrawer
-        target={sel.target}
+      <DeviceDrawer
+        imei={sel.target?.imei ?? null}
         open={sel.drawerOpen}
         onClose={() => sel.setDrawerOpen(false)}
         onEdit={(d) => { sel.setDrawerOpen(false); sel.openEdit(d) }}
+        onSell={(d) => { sel.setDrawerOpen(false); handleSell(d) }}
       />
       <EditDeviceDialog device={sel.editDevice} open={sel.editOpen} onOpenChange={sel.setEditOpen} />
     </div>

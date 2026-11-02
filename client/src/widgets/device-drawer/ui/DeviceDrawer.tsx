@@ -1,8 +1,6 @@
-import { useNavigate } from "react-router"
 import { Copy, PackageX, Pencil, ShoppingCart } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
-import { useCartStore } from "@/features/checkout"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import {
   useDeviceByImei,
@@ -15,9 +13,10 @@ import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
 import { toast } from "@/shared/ui/sonner"
-import type { DeviceTarget } from "../model/use-device-selection"
 import { StatusChangeForm } from "./StatusChangeForm"
 import { QcSummarySection } from "./QcSummarySection"
+
+const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
 
 function DeviceBarcode({ imei }: { imei: string }) {
   const bars = Array.from({ length: 44 }, (_, i) => ((i * 7 + imei.charCodeAt(i % imei.length)) % 3) + 1)
@@ -40,7 +39,6 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
   const margin = price - cost
   const marginPercent = cost > 0 ? (margin / cost) * 100 : 0
   const isPositive = margin >= 0
-
   return (
     <div className="flex items-center justify-between p-3 rounded-[12px] bg-white border border-[#e8e8e8] shadow-[var(--shadow-xs)] text-xs">
       <div>
@@ -57,39 +55,31 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
   )
 }
 
+function SpecCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="text-[#838383] text-xs">{label}:</span>
+      <p className="font-medium text-[#202020]">{value}</p>
+    </div>
+  )
+}
+
 function DeviceSpecsGrid({ device, canViewCost }: { device: DeviceDetailView; canViewCost: boolean }) {
   const { t } = useI18n()
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border border-[#e8e8e8] rounded-[16px] p-4 bg-[#f8f9fa] shadow-[var(--shadow-xs)]">
-        <div>
-          <span className="text-[#838383] text-xs">{t("inventory.storage")}:</span>
-          <p className="font-medium text-[#202020]">{String(device.specs?.storage || "—")}</p>
-        </div>
-        <div>
-          <span className="text-[#838383] text-xs">{t("inventory.color")}:</span>
-          <p className="font-medium text-[#202020]">{String(device.specs?.color || "—")}</p>
-        </div>
-        <div>
-          <span className="text-[#838383] text-xs">{t("inventory.condition")}:</span>
-          <p className="font-medium text-[#202020]">{String(device.specs?.condition || "—")}</p>
-        </div>
-        <div>
-          <span className="text-[#838383] text-xs">{t("inventory.ram")}:</span>
-          <p className="font-medium text-[#202020]">{String(device.specs?.ram || "—")}</p>
-        </div>
+        <SpecCell label={t("inventory.storage")} value={String(device.specs?.storage || "—")} />
+        <SpecCell label={t("inventory.color")} value={String(device.specs?.color || "—")} />
+        <SpecCell label={t("inventory.condition")} value={String(device.specs?.condition || "—")} />
+        <SpecCell label={t("inventory.ram")} value={String(device.specs?.ram || "—")} />
         <div>
           <span className="text-[#838383] text-xs">{t("inventory.targetPrice")}:</span>
           <p className="font-bold text-[#090c1d]">{formatMoney(device.targetPrice)}</p>
         </div>
-        <div>
-          <span className="text-[#838383] text-xs">{t("inventory.intakeDate")}:</span>
-          <p className="font-medium text-[#202020]">{formatDate(device.intakeDate)}</p>
-        </div>
+        <SpecCell label={t("inventory.intakeDate")} value={formatDate(device.intakeDate)} />
       </div>
-      {canViewCost && (
-        <MarginCard targetPrice={device.targetPrice} landedCost={device.landedCost} />
-      )}
+      {canViewCost && <MarginCard targetPrice={device.targetPrice} landedCost={device.landedCost} />}
     </div>
   )
 }
@@ -120,30 +110,34 @@ function NotFoundState() {
   )
 }
 
-function DrawerTopActions({
+function DrawerActions({
   device,
   canEdit,
   onEdit,
+  onInspect,
   onSell,
 }: {
   device: DeviceDetailView
   canEdit: boolean
-  onEdit: (d: DeviceView) => void
-  onSell: () => void
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+  onSell?: (d: DeviceDetailView) => void
 }) {
   const { t } = useI18n()
-  const isInStock = device.statusCode === "IN_STOCK"
+  const canInspect = Boolean(onInspect) && INSPECTABLE.has(device.statusCode)
+  const canSell = Boolean(onSell) && device.statusCode === "IN_STOCK"
   return (
     <div className="flex items-center justify-between gap-2">
       <DeviceStatusBadge status={device.statusCode} />
       <div className="flex items-center gap-2">
-        {isInStock && (
-          <Button size="sm" onClick={onSell} className="gap-1.5 bg-[#10b981] hover:bg-[#059669] text-white">
+        {canSell && (
+          <Button size="sm" onClick={() => onSell?.(device)} className="gap-1.5 bg-[#10b981] hover:bg-[#059669] text-white">
             <ShoppingCart className="size-4" />
             {t("inventory.sellInPos")}
           </Button>
         )}
-        {canEdit && (
+        {canInspect && <Button size="sm" onClick={() => onInspect?.(device)}>{t("qc.runInspection")}</Button>}
+        {canEdit && onEdit && (
           <Button variant="outline" size="sm" onClick={() => onEdit(device)} className="gap-1.5">
             <Pencil className="size-3.5" />
             {t("inventory.editDevice")}
@@ -160,29 +154,22 @@ function DrawerBody({
   canChangeStatus,
   canEdit,
   onEdit,
-  onClose,
+  onInspect,
+  onSell,
 }: {
   device: DeviceDetailView
   canViewCost: boolean
   canChangeStatus: boolean
   canEdit: boolean
-  onEdit: (d: DeviceView) => void
-  onClose: () => void
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+  onSell?: (d: DeviceDetailView) => void
 }) {
   const { t } = useI18n()
-  const navigate = useNavigate()
   const { data: history } = useDeviceHistory(device.id)
-
-  const handleSell = () => {
-    useCartStore.getState().setDevice(device)
-    onClose()
-    navigate("/pos")
-    toast.success(t("inventory.deviceAddedToCart"))
-  }
-
   return (
     <div className="space-y-5 my-4 overflow-y-auto">
-      <DrawerTopActions device={device} canEdit={canEdit} onEdit={onEdit} onSell={handleSell} />
+      <DrawerActions device={device} canEdit={canEdit} onEdit={onEdit} onInspect={onInspect} onSell={onSell} />
       <DeviceBarcode imei={device.imei} />
       <DeviceSpecsGrid device={device} canViewCost={canViewCost} />
       <div className="space-y-2">
@@ -198,15 +185,7 @@ function DrawerBody({
   )
 }
 
-function DrawerHeaderMeta({
-  title,
-  imei,
-  onCopy,
-}: {
-  title: string
-  imei?: string
-  onCopy: () => void
-}) {
+function DrawerHeaderMeta({ title, imei, onCopy }: { title: string; imei?: string | null; onCopy: () => void }) {
   const { t } = useI18n()
   return (
     <SheetHeader>
@@ -228,25 +207,32 @@ function DrawerHeaderMeta({
   )
 }
 
-export function DeviceDetailDrawer({
-  target,
-  open,
-  onClose,
-  onEdit,
-}: {
-  target: DeviceTarget | null
+export interface DeviceDrawerProps {
+  imei?: string | null
   open: boolean
   onClose: () => void
-  onEdit: (d: DeviceView) => void
-}) {
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+  onSell?: (d: DeviceDetailView) => void
+}
+
+/** Shared device detail drawer: resolves a device by IMEI and renders specs, QC, history and status. */
+export function DeviceDrawer({ imei, open, onClose, onEdit, onInspect, onSell }: DeviceDrawerProps) {
   const { t } = useI18n()
   const hasPermission = useAuthStore((s) => s.hasPermission)
-  const { data: device, isLoading, isError } = useDeviceByImei(target?.imei)
+  const { data: device, isLoading, isError } = useDeviceByImei(imei)
+
+  const handleEdit = onEdit
+    ? (d: DeviceView) => {
+        toast.dismiss()
+        onEdit(d)
+      }
+    : undefined
 
   const handleCopyImei = () => {
-    if (!target?.imei) return
-    navigator.clipboard.writeText(target.imei)
-    toast.success(`${t("inventory.imeiCopied")}: ${target.imei}`)
+    if (!imei) return
+    navigator.clipboard.writeText(imei)
+    toast.success(`${t("inventory.imeiCopied")}: ${imei}`)
   }
 
   const modelTitle = device?.model ? `${device.model.brand} ${device.model.name}` : t("inventory.imeiDetails")
@@ -254,17 +240,18 @@ export function DeviceDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
       <SheetPopup className="w-full sm:max-w-2xl lg:max-w-3xl">
-        <DrawerHeaderMeta title={modelTitle} imei={target?.imei} onCopy={handleCopyImei} />
+        <DrawerHeaderMeta title={modelTitle} imei={imei} onCopy={handleCopyImei} />
         {isLoading && <div className="my-8 text-center text-muted-foreground">{t("common.loading")}</div>}
-        {!isLoading && (isError || !device) && target && <NotFoundState />}
+        {!isLoading && (isError || !device) && imei && <NotFoundState />}
         {device && (
           <DrawerBody
             device={device}
             canViewCost={hasPermission("device.cost.view")}
             canChangeStatus={hasPermission("device.status.change")}
             canEdit={hasPermission("device.update")}
-            onEdit={onEdit}
-            onClose={onClose}
+            onEdit={handleEdit}
+            onInspect={onInspect}
+            onSell={onSell}
           />
         )}
       </SheetPopup>

@@ -1,6 +1,7 @@
 export type {
   DeviceView,
   DeviceDetailView,
+  QcInspectionSummary,
   DeviceStatusHistoryView,
   PaginatedDevices,
   DeviceFilters,

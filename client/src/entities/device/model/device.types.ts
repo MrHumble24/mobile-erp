@@ -22,6 +22,8 @@ export interface DeviceView {
   version: number
   createdAt: string
   updatedAt: string
+  /** Present on list rows: the device's most recent QC summary, or null. */
+  latestInspection?: QcInspectionSummary | null
 }
 
 export interface DeviceModelRef {
@@ -67,6 +69,7 @@ export interface DeviceFilters {
   storage?: string
   statusCode?: string
   search?: string
+  inspected?: "true" | "false"
   page?: number
   pageSize?: number
 }

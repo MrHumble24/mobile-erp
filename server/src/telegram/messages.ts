@@ -22,7 +22,8 @@ export function belowMarginSale(p: {
   targetPrice: number | null;
   marginPercent: number;
 }): string {
-  const target = p.targetPrice === null ? "maqsad narxi yo'q" : money(p.targetPrice);
+  const target =
+    p.targetPrice === null ? "maqsad narxi yo'q" : money(p.targetPrice);
   return (
     `⚠️ Past marjali savdo: ${p.model} (IMEI ${p.imei})\n` +
     `Sotildi: ${money(p.salePrice)} (mo'ljal: ${target}, marja: ${p.marginPercent.toFixed(1)}%)`

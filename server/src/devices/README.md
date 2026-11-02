@@ -6,8 +6,10 @@ transitions and status history. Intake (creation + landed cost) belongs to
 
 ## Exposes (REST `/devices`)
 
-- `GET /` — filter `imei|modelId|storage|statusCode|search`, paginated
-  `{ items, total, page, pageSize }` (`device.read`).
+- `GET /` — filter `imei|modelId|storage|statusCode|search`, plus
+  `inspected=true|false` (has / lacks any QC inspection), paginated
+  `{ items, total, page, pageSize }` (`device.read`). Each row carries
+  `latestInspection { id, passed, gradeCode, batteryHealth, inspectedAt } | null`.
 - `GET /by-imei/:imei` — POS lookup: device + model + status + latest QC
   summary (`device.read`).
 - `GET /:id`, `GET /:id/history` (`device.read`).
@@ -24,6 +26,9 @@ transitions and status history. Intake (creation + landed cost) belongs to
 expectedVersion?)` — transition guard + version-locked update + history, in one
 transaction. Sales/consignment inject `DevicesService`. Transitions are
 data-driven in `types/status-transitions.ts`.
+
+`DevicesService.countAwaitingInspection()` — in-stock/defective devices with no
+QC inspection yet; consumed by `QcStatsService`.
 
 ## Must never
 

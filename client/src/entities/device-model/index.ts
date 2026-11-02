@@ -14,3 +14,4 @@ export {
   useUpdateDeviceModel,
 } from "./model/use-device-models"
 export { DynamicSpecFields, type SpecFieldProblem } from "./ui/DynamicSpecFields"
+export { storageOptionsFromModels } from "./lib/storage-options"

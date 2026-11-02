@@ -36,6 +36,11 @@ export class DevicesService {
     return this.require(id);
   }
 
+  /** In-stock/defective devices with no QC inspection yet (for the QC queue stats). */
+  countAwaitingInspection(): Promise<number> {
+    return this.query.countAwaitingInspection();
+  }
+
   async getByImei(imei: string): Promise<DeviceDetailView> {
     const device = await this.query.findDetailByImei(imei);
     if (!device) {
