@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { useAuthStore } from "@/features/auth"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { ShipmentCreateForm } from "./ShipmentCreateForm"
 import { DeviceIntakeLoop } from "./DeviceIntakeLoop"
@@ -14,13 +15,9 @@ export function IntakeShipmentDialog({
   existingShipmentId?: string | null
 }) {
   const { t } = useI18n()
+  const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
   const [createdShipmentId, setCreatedShipmentId] = React.useState<string | null>(null)
   const activeShipmentId = existingShipmentId || createdShipmentId
-
-  const handleFinish = () => {
-    onOpenChange(false)
-    setCreatedShipmentId(null)
-  }
 
   return (
     <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setCreatedShipmentId(null) }}>
@@ -30,14 +27,14 @@ export function IntakeShipmentDialog({
             {activeShipmentId ? t("shipments.intakeDevices") : t("shipments.newShipment")}
           </DialogTitle>
           <DialogDescription>
-            {activeShipmentId ? t("shipments.scanImei") : "Partiya ma'lumotlarini to'ldiring"}
+            {activeShipmentId ? t("shipments.scanImei") : t("shipments.createShipmentHint")}
           </DialogDescription>
         </DialogHeader>
 
         {activeShipmentId ? (
-          <DeviceIntakeLoop shipmentId={activeShipmentId} onFinish={handleFinish} />
+          <DeviceIntakeLoop shipmentId={activeShipmentId} canViewCost={canViewCost} />
         ) : (
-          <ShipmentCreateForm onSuccess={(newId) => setCreatedShipmentId(newId)} />
+          <ShipmentCreateForm onSuccess={(newId) => setCreatedShipmentId(newId)} canViewCost={canViewCost} />
         )}
       </DialogPopup>
     </Dialog>

@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useSearchParams } from "react-router"
 import { useAuthStore } from "@/features/auth"
 import { useDeviceModels } from "@/entities/device-model"
 import { EditDeviceDialog } from "@/features/edit-device"
@@ -44,6 +45,14 @@ export function DevicesTab({ browser }: { browser: Browser }) {
   const { filters, pagination, query } = browser
   const sel = useDeviceSelection()
   const { models, map } = useModelsMap()
+  const [searchParams] = useSearchParams()
+  const imeiParam = searchParams.get("imei")
+
+  // Deep link from the shipment drawer: /inventory?imei=<imei> opens that device.
+  React.useEffect(() => {
+    if (imeiParam) sel.openDrawer({ imei: imeiParam })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imeiParam])
 
   return (
     <div className="space-y-5">

@@ -62,6 +62,7 @@ export interface PaginatedDevices {
 
 export interface DeviceFilters {
   imei?: string
+  shipmentId?: string
   modelId?: string
   storage?: string
   statusCode?: string
