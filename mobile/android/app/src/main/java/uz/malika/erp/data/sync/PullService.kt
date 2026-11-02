@@ -1,6 +1,7 @@
 package uz.malika.erp.data.sync
 
 import androidx.room.withTransaction
+import uz.malika.erp.core.logging.AppLog
 import uz.malika.erp.core.runApi
 import uz.malika.erp.data.local.AppDatabase
 import uz.malika.erp.data.local.SyncMetaEntity
@@ -21,6 +22,7 @@ class PullService(
         // Guard against a server that never advances the cursor.
         repeat(1000) {
             val page = api.changes(since)
+            AppLog.i("sync", "pull page: ${page.devices.size} devices, ${page.partners.size} partners")
             db.withTransaction {
                 if (page.devices.isNotEmpty()) {
                     db.deviceDao().upsertAll(page.devices.map(ChangesMapper::device))

@@ -2,6 +2,7 @@ package uz.malika.erp.core
 
 import org.json.JSONObject
 import retrofit2.HttpException
+import uz.malika.erp.core.logging.AppLog
 import java.io.IOException
 
 /**
@@ -53,7 +54,8 @@ suspend fun <T> runApi(block: suspend () -> T): T = try {
 } catch (e: AppException) {
     throw e
 } catch (e: HttpException) {
-    throw AppException.fromHttp(e)
+    AppException.fromHttp(e).also { AppLog.e("api", "${it.statusCode} ${it.message}") }.let { throw it }
 } catch (_: IOException) {
+    AppLog.w("api", "no connection to the server")
     throw AppException(0, "No connection to the server.")
 }

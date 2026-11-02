@@ -11,7 +11,7 @@ features/<slice>/  data/ (repo + domain) · model/ (ViewModel, state) · ui/ (sc
 data/remote/  HttpClient → the ONE configured Retrofit; ApiService (auth+sync) + DTOs
 data/local/   Room DB + DAOs + entities (devices, partners, outbox, sync_meta)
 data/sync/    pull (/sync/changes) · push (/sync/push) · SyncManager · Connectivity · Outbox
-core/         Config · DevConfig · SecureStore · AppException + runApi · Jwt · Ids · AuthEvents
+core/         Config · DevConfig (3 envs) · DevHost (auto dev URL) · SecureStore · AppException + runApi · Jwt · Ids · AuthEvents · logging/ (AppLog · NetworkLog)
 i18n/         I18n loader (reads web JSON from assets) + LocaleStore + LocalT
 shared/ui/    the Caldera UI kit     shared/lib/  Money (BigDecimal)
 ui/theme/     Tokens (1:1 with web index.css) · Type · Theme (MalikaTheme)
@@ -55,8 +55,25 @@ object InventoryFeature : FeatureModule {
 - **Every other write is online-only**: gate on `container.connectivity.online`
   and block with a "needs connection" message. Never fake-queue it.
 
+## Developer Console & logging (`features/devconsole/`)
+- Reach it from login ("Developer settings", code `153535`) or, once signed in,
+  the "Developer" nav item (debug: always; release: after the code this session —
+  `DevAccess`). Three sections: **Environment**, **Network**, **Logs**.
+- **Add a console section** = one new file + one line: write a `@Composable
+  (AppContainer) -> Unit`, then add a `DevConsoleSection(id, title, icon, content)`
+  to `DevConsoleSections.all`. Nothing else changes.
+- **Log an app event**: `AppLog.d/i/w/e(tag, message, throwable?)` — a one-liner at
+  the call site (ring buffer of 500 + Logcat, read live by the console; no
+  persistence). Network traffic is captured automatically by `networkLogInterceptor`
+  in `HttpClient` (masks `Authorization` + `password`, truncates at 64 KB).
+- **Environments**: Production (deployed), Staging (no server yet → blank, blocked
+  until a URL is set), Development (auto URL — emulator `10.0.2.2` else the build
+  machine's LAN IP in `BuildConfig.DEV_HOST`, port `Config.DEV_PORT`). Any env's URL
+  is overridable in the console ("Reset to auto"); switching env clears the session.
+
 ## Server-contract gotchas
-- Base URL from the dev panel (default `http://10.0.2.2:3000`); server has NO prefix.
+- Base URL from the Developer Console; Development auto-detects the host (emulator
+  vs. the build machine's LAN IP) so no IP is typed. Server has NO prefix.
   **One OkHttp/Retrofit** (`AppContainer.retrofit`, built by `HttpClient`). A slice
   that needs routes beyond `ApiService` declares its own Retrofit interface and
   gets it with `container.retrofit.create(FeatureApi::class.java)` — never a second

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.core.AuthEvents
+import uz.malika.erp.core.logging.AppLog
 import uz.malika.erp.data.sync.SyncManager
 import uz.malika.erp.features.auth.data.AuthRepository
 import uz.malika.erp.features.auth.data.AuthUser
@@ -35,7 +36,10 @@ class SessionViewModel(
 
     init {
         viewModelScope.launch {
-            authEvents.unauthorized.collect { _state.value = SessionState(user = null) }
+            authEvents.unauthorized.collect {
+                AppLog.i("auth", "session cleared (401 auto-logout)")
+                _state.value = SessionState(user = null)
+            }
         }
         if (_state.value.user != null) syncManager.syncNow() // hydrate on restored session
     }
@@ -46,15 +50,18 @@ class SessionViewModel(
         viewModelScope.launch {
             try {
                 val user = repo.login(email, password)
+                AppLog.i("auth", "login ok: $email")
                 _state.value = SessionState(user = user)
                 syncManager.syncNow()
             } catch (e: AppException) {
+                AppLog.w("auth", "login failed ($email): ${e.statusCode} ${e.message}")
                 _state.value = _state.value.copy(loading = false, error = e)
             }
         }
     }
 
     fun logout() {
+        AppLog.i("auth", "logout")
         repo.logout()
         _state.value = SessionState(user = null)
     }

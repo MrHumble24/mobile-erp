@@ -10,6 +10,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import uz.malika.erp.core.AuthEvents
 import uz.malika.erp.core.DevConfigStore
 import uz.malika.erp.core.SecureStore
+import uz.malika.erp.core.logging.AppLog
 import java.util.concurrent.TimeUnit
 
 /**
@@ -43,6 +44,7 @@ object HttpClient {
             .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(baseUrlInterceptor(devConfig))
             .addInterceptor(authInterceptor(secure, authEvents))
+            .addInterceptor(networkLogInterceptor()) // last: logs the final request
             .build()
 
         val contentType = "application/json".toMediaType()
@@ -76,6 +78,7 @@ object HttpClient {
         val response = chain.proceed(request)
         val isLogin = request.url.encodedPath.endsWith("/auth/login")
         if (response.code == 401 && !isLogin) {
+            AppLog.w("auth", "401 on ${request.url.encodedPath} → clearing session")
             secure.remove(SecureStore.Keys.TOKEN, SecureStore.Keys.USER)
             authEvents.signalUnauthorized()
         }

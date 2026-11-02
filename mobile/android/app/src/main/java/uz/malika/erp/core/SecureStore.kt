@@ -36,7 +36,8 @@ class SecureStore(context: Context) {
         const val USER = "auth_user"
         const val TERMINAL_ID = "terminal_id"
         const val DEV_ENV = "dev_env"
-        const val DEV_URL_PROD = "dev_url_prod"
-        const val DEV_URL_DEV = "dev_url_dev"
+        const val DEV_OVERRIDE_PROD = "dev_override_prod"
+        const val DEV_OVERRIDE_STAGING = "dev_override_staging"
+        const val DEV_OVERRIDE_DEV = "dev_override_dev"
     }
 }
