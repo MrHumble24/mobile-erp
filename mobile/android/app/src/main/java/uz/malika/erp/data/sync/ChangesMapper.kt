@@ -1,0 +1,45 @@
+package uz.malika.erp.data.sync
+
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import uz.malika.erp.data.local.DeviceEntity
+import uz.malika.erp.data.local.PartnerEntity
+import uz.malika.erp.data.remote.DeviceSyncDto
+import uz.malika.erp.data.remote.PartnerSyncDto
+
+/**
+ * Maps `/sync/changes` DTOs into Room entities. Kept separate so the pull
+ * service stays about paging, not field plucking. JSON blobs (specs, latestSale)
+ * are stored verbatim as text; money arrives as Decimal strings or numbers.
+ */
+object ChangesMapper {
+
+    fun device(d: DeviceSyncDto) = DeviceEntity(
+        id = d.id,
+        imei = d.imei,
+        statusCode = d.statusCode,
+        version = d.version,
+        targetPrice = d.targetPrice.asScalar(),
+        specs = d.specs?.takeUnless { it is JsonNull }?.toString() ?: "{}",
+        modelId = d.model?.id ?: "",
+        modelBrand = d.model?.brand ?: "",
+        modelName = d.model?.name ?: "",
+        latestSale = d.latestSale?.takeUnless { it is JsonNull }?.toString(),
+        gradeCode = d.latestInspection?.gradeCode,
+        inspectionNotes = d.latestInspection?.notes,
+        updatedAt = d.updatedAt,
+    )
+
+    fun partner(p: PartnerSyncDto) = PartnerEntity(
+        id = p.id,
+        shopName = p.shopName,
+        phone = p.phone,
+        creditLimit = p.creditLimit.asScalar() ?: "0",
+        outstanding = p.outstanding.asScalar() ?: "0",
+    )
+
+    /** A JSON primitive (string or number) as its bare string; null otherwise. */
+    private fun JsonElement?.asScalar(): String? =
+        (this as? JsonPrimitive)?.takeUnless { it is JsonNull }?.content
+}
