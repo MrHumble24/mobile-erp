@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Mobileerp" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Light, no action bar. Compose draws the Caldera chrome itself; this is
+         only the window background / status-bar base before Compose mounts. -->
+    <style name="Theme.MalikaErp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/caldera_canvas</item>
+        <item name="android:statusBarColor">@color/caldera_canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>
