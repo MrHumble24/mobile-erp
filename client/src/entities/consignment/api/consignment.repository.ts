@@ -2,6 +2,7 @@ import { http } from "@/shared/api/http"
 import type {
   ConsignmentFilters,
   ConsignmentPage,
+  ConsignmentStats,
   ConsignmentView,
   CreateConsignmentDto,
   OverdueConsignment,
@@ -12,6 +13,12 @@ import type {
 export const consignmentRepository = {
   list: async (filters?: ConsignmentFilters): Promise<ConsignmentPage> => {
     return http<ConsignmentPage>("/consignments", {
+      params: filters as Record<string, string | number | boolean | undefined>,
+    })
+  },
+
+  stats: async (filters?: ConsignmentFilters): Promise<ConsignmentStats> => {
+    return http<ConsignmentStats>("/consignments/stats", {
       params: filters as Record<string, string | number | boolean | undefined>,
     })
   },

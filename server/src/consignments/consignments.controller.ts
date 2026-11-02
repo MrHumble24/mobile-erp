@@ -34,6 +34,12 @@ export class ConsignmentsController {
     return this.consignments.overdue();
   }
 
+  @Get('stats')
+  @RequirePermissions('consignment.read')
+  stats(@Query() query: ListConsignmentsQuery) {
+    return this.consignments.stats(query);
+  }
+
   @Get(':id')
   @RequirePermissions('consignment.read')
   get(@Param('id') id: string) {

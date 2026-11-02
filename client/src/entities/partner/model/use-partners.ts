@@ -3,14 +3,23 @@ import { partnerRepository } from "../api/partner.repository"
 import { partnerKeys } from "../api/partner.keys"
 import type {
   CreatePartnerDto,
+  PartnerFilters,
   RecordPaymentDto,
   UpdatePartnerDto,
 } from "./partner.types"
 
-export function usePartners() {
+export function usePartners(filters?: PartnerFilters) {
   return useQuery({
-    queryKey: partnerKeys.list(),
-    queryFn: () => partnerRepository.list(),
+    queryKey: partnerKeys.list(filters),
+    queryFn: () => partnerRepository.list(filters),
+  })
+}
+
+export function usePartnerAging(partnerId?: string | null) {
+  return useQuery({
+    queryKey: partnerKeys.aging(partnerId || ""),
+    queryFn: () => partnerRepository.aging(partnerId || ""),
+    enabled: Boolean(partnerId),
   })
 }
 

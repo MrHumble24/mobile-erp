@@ -1,5 +1,8 @@
 export type {
   PartnerView,
+  PartnerFilters,
+  AgingBucket,
+  AgingBucketCode,
   LedgerEntry,
   CreatePartnerDto,
   UpdatePartnerDto,
@@ -11,6 +14,7 @@ export {
   usePartners,
   usePartner,
   usePartnerLedger,
+  usePartnerAging,
   useCreatePartner,
   useUpdatePartner,
   useRecordPayment,

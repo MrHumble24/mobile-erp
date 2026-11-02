@@ -9,10 +9,16 @@ B2B partner directory, balances, ledger and payments (PRD Module 4).
 
 ## Exposes (HTTP, all under `/partners`)
 
-- `GET /` — `partner.read`. List with balance fields.
+- `GET /` — `partner.read`. List with balance fields. Filters: `search`
+  (shop/contact/phone ILIKE), `active` (`true`/`false`), `overdue=true`
+  (only partners with an overdue item).
 - `GET /:id` — `partner.read`. One partner with balance fields.
 - `GET /:id/ledger` — `partner.read`. Chronological consignment charges,
   RETURNED reversals and payment credits with a running balance.
+- `GET /:id/aging` — `partner.read`. Five fixed buckets (`current`, `d1_30`,
+  `d31_60`, `d61_90`, `d90_plus`) over OUT consignments, by days past due.
+  `amount` is gross `Σ agreedPrice` per bucket (pre-payments); maths in
+  `lib/aging.ts` (unit-tested).
 - `POST /` — `partner.manage`. Create.
 - `PATCH /:id` — `partner.manage`. Update / deactivate.
 - `POST /:id/payments` — `partner.payment`. `{ amount>0, consignmentId?,

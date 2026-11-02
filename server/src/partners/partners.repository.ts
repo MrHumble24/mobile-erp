@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AgingBucket, bucketOpenConsignments } from './lib/aging.js';
+import { buildLedger } from './lib/ledger.js';
 import {
   CreatePartnerInput,
   CreatePaymentInput,
   CreditStatus,
   LedgerEntry,
+  PartnerFilters,
   PartnerView,
   PaymentView,
 } from './types/partner.types.js';
@@ -53,16 +56,45 @@ const balanceSelect = Prisma.sql`
     COALESCE(c.overdue_count, 0) AS "overdueCount"
 `;
 
+/** Directory filters as a WHERE fragment over the balance query. */
+function balanceWhere(filters: PartnerFilters): Prisma.Sql {
+  const conditions: Prisma.Sql[] = [];
+  const term = filters.search?.trim();
+  if (term) {
+    const like = `%${term}%`;
+    conditions.push(
+      Prisma.sql`(p."shopName" ILIKE ${like} OR p."contactPerson" ILIKE ${like} OR p.phone ILIKE ${like})`,
+    );
+  }
+  if (filters.active !== undefined) {
+    conditions.push(Prisma.sql`p."isActive" = ${filters.active}`);
+  }
+  if (filters.overdue) {
+    conditions.push(Prisma.sql`COALESCE(c.overdue_count, 0) > 0`);
+  }
+  if (conditions.length === 0) return Prisma.empty;
+  return Prisma.sql`WHERE ${Prisma.join(conditions, ' AND ')}`;
+}
+
 /** All Prisma access for partners, their balances, ledger and payments. */
 @Injectable()
 export class PartnersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async listWithBalance(): Promise<PartnerView[]> {
+  async listWithBalance(filters: PartnerFilters = {}): Promise<PartnerView[]> {
     const rows = await this.prisma.$queryRaw<BalanceRow[]>(
-      Prisma.sql`${balanceSelect} ${balanceFrom} ORDER BY p."shopName" ASC`,
+      Prisma.sql`${balanceSelect} ${balanceFrom} ${balanceWhere(filters)} ORDER BY p."shopName" ASC`,
     );
     return rows.map(toPartnerView);
+  }
+
+  /** OUT consignments (dueDate, agreedPrice) for the aging buckets. */
+  async aging(partnerId: string): Promise<AgingBucket[]> {
+    const rows = await this.prisma.consignment.findMany({
+      where: { partnerId, statusCode: 'OUT' },
+      select: { dueDate: true, agreedPrice: true },
+    });
+    return bucketOpenConsignments(rows);
   }
 
   async findWithBalance(id: string): Promise<PartnerView | null> {
@@ -146,66 +178,6 @@ export class PartnersRepository {
     ]);
     return buildLedger(consignments, payments);
   }
-}
-
-type ConsignmentLedgerRow = {
-  id: string;
-  agreedPrice: Prisma.Decimal;
-  consignedAt: Date;
-  statusCode: string;
-  resolvedAt: Date | null;
-  notes: string | null;
-};
-
-type PaymentLedgerRow = {
-  id: string;
-  amount: Prisma.Decimal;
-  paidAt: Date;
-  notes: string | null;
-};
-
-/** Charge at consignedAt; reverse RETURNED at resolvedAt; credit payments. */
-function buildLedger(
-  consignments: ConsignmentLedgerRow[],
-  payments: PaymentLedgerRow[],
-): LedgerEntry[] {
-  const events: Omit<LedgerEntry, 'runningBalance'>[] = [];
-  for (const c of consignments) {
-    events.push({
-      at: c.consignedAt,
-      kind: 'consignment',
-      refId: c.id,
-      change: c.agreedPrice,
-      statusCode: c.statusCode,
-      notes: c.notes,
-    });
-    if (c.statusCode === 'RETURNED' && c.resolvedAt) {
-      events.push({
-        at: c.resolvedAt,
-        kind: 'consignment',
-        refId: c.id,
-        change: c.agreedPrice.negated(),
-        statusCode: 'RETURNED',
-        notes: c.notes,
-      });
-    }
-  }
-  for (const p of payments) {
-    events.push({
-      at: p.paidAt,
-      kind: 'payment',
-      refId: p.id,
-      change: p.amount.negated(),
-      statusCode: null,
-      notes: p.notes,
-    });
-  }
-  events.sort((a, b) => a.at.getTime() - b.at.getTime());
-  let running = new Prisma.Decimal(0);
-  return events.map((e) => {
-    running = running.plus(e.change);
-    return { ...e, runningBalance: running };
-  });
 }
 
 function toPartnerView(row: BalanceRow): PartnerView {

@@ -24,6 +24,13 @@ export function useOverdueConsignments() {
   })
 }
 
+export function useConsignmentStats(filters?: ConsignmentFilters) {
+  return useQuery({
+    queryKey: consignmentKeys.stats(filters),
+    queryFn: () => consignmentRepository.stats(filters),
+  })
+}
+
 export function useConsignment(id: string) {
   return useQuery({
     queryKey: consignmentKeys.detail(id),
@@ -39,7 +46,8 @@ export function useCreateConsignment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: consignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: consignmentKeys.overdue() })
-      queryClient.invalidateQueries({ queryKey: partnerKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: consignmentKeys.statsAll() })
+      queryClient.invalidateQueries({ queryKey: partnerKeys.all })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
     },
   })
@@ -53,7 +61,8 @@ export function useSettleConsignment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: consignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: consignmentKeys.overdue() })
-      queryClient.invalidateQueries({ queryKey: partnerKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: consignmentKeys.statsAll() })
+      queryClient.invalidateQueries({ queryKey: partnerKeys.all })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
     },
   })
@@ -67,7 +76,8 @@ export function useReturnConsignment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: consignmentKeys.lists() })
       queryClient.invalidateQueries({ queryKey: consignmentKeys.overdue() })
-      queryClient.invalidateQueries({ queryKey: partnerKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: consignmentKeys.statsAll() })
+      queryClient.invalidateQueries({ queryKey: partnerKeys.all })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
     },
   })

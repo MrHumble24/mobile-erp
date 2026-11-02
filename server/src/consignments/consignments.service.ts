@@ -15,9 +15,21 @@ import { ReturnConsignmentDto } from './dto/return-consignment.dto.js';
 import { SettleConsignmentDto } from './dto/settle-consignment.dto.js';
 import {
   ConsignmentPage,
+  ConsignmentStats,
   ConsignmentView,
   OverdueConsignment,
 } from './types/consignment.types.js';
+
+function toFilters(query: ListConsignmentsQuery) {
+  return {
+    partnerId: query.partnerId,
+    statusCode: query.statusCode,
+    overdue: query.overdue,
+    search: query.search,
+    from: query.from,
+    to: query.to,
+  };
+}
 
 @Injectable()
 export class ConsignmentsService {
@@ -72,14 +84,14 @@ export class ConsignmentsService {
 
   list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
     return this.reads.list(
-      {
-        partnerId: query.partnerId,
-        statusCode: query.statusCode,
-        overdue: query.overdue,
-      },
+      toFilters(query),
       query.page ?? 1,
       query.pageSize ?? 20,
     );
+  }
+
+  stats(query: ListConsignmentsQuery): Promise<ConsignmentStats> {
+    return this.reads.stats(toFilters(query));
   }
 
   overdue(): Promise<OverdueConsignment[]> {
@@ -115,6 +127,7 @@ export class ConsignmentsService {
   ): Promise<ConsignmentView> {
     return this.writes.returnToStock(id, {
       reason: dto.reason,
+      condition: dto.condition,
       expectedVersion: dto.expectedVersion,
       changedById: caller.id,
     });

@@ -5,7 +5,10 @@ import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } fro
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { toast } from "@/shared/ui/sonner"
+
+type Condition = "IN_STOCK" | "DEFECTIVE"
 
 function ReturnForm({
   consignment,
@@ -19,13 +22,14 @@ function ReturnForm({
   const { t } = useI18n()
   const returnMutation = useReturnConsignment()
   const [reason, setReason] = React.useState("")
+  const [condition, setCondition] = React.useState<Condition>("IN_STOCK")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     returnMutation.mutate(
       {
         id: consignment.id,
-        dto: { reason: reason.trim() || undefined },
+        dto: { reason: reason.trim() || undefined, condition },
       },
       {
         onSuccess: () => {
@@ -42,6 +46,19 @@ function ReturnForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 my-2">
+      <div className="space-y-1">
+        <Label>{t("consignments.returnCondition")}</Label>
+        <Select value={condition} onValueChange={(v) => setCondition((v as Condition) || "IN_STOCK")}>
+          <SelectTrigger className="h-10">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="IN_STOCK">{t("consignments.conditionInStock")}</SelectItem>
+            <SelectItem value="DEFECTIVE">{t("consignments.conditionDefective")}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="space-y-1">
         <Label>{t("consignments.returnReason")}</Label>
         <Input

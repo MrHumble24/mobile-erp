@@ -1,97 +1,110 @@
 import * as React from "react"
-import { Plus } from "lucide-react"
+import { Download, Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import {
-  useConsignments,
-  useOverdueConsignments,
-  type ConsignmentView,
-} from "@/entities/consignment"
+import { useAuthStore } from "@/features/auth"
+import { useConsignments, type ConsignmentView } from "@/entities/consignment"
 import { ConsignDeviceDialog } from "@/features/consign-device"
-import {
-  ReturnConsignmentDialog,
-  SettleConsignmentDialog,
-} from "@/features/settle-consignment"
+import { ReturnConsignmentDialog, SettleConsignmentDialog } from "@/features/settle-consignment"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
-import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
+import { Pagination } from "@/shared/ui/pagination"
+import { Skeleton } from "@/shared/ui/skeleton"
+import { useConsignmentFilters } from "../model/use-consignment-filters"
+import { exportConsignmentsCsv } from "../lib/consignments-csv"
+import { ConsignmentsFilters } from "./ConsignmentsFilters"
+import { ConsignmentsSummary } from "./ConsignmentsSummary"
 import { ConsignmentsTable } from "./ConsignmentsTable"
+import { ConsignmentDetailSheet } from "./ConsignmentDetailSheet"
 
-const CONSIGNMENT_TABS = ["out", "overdue", "all"] as const
-type ConsignmentTab = (typeof CONSIGNMENT_TABS)[number]
-
-interface TabContentProps {
-  onSettle: (item: ConsignmentView) => void
-  onReturn: (item: ConsignmentView) => void
-}
-
-function ConsignmentTabPanels({ onSettle, onReturn }: TabContentProps) {
-  const { t } = useI18n()
-  const { data: outPage, isLoading: outLoading } = useConsignments({ statusCode: "OUT" })
-  const { data: overdueItems, isLoading: overdueLoading } = useOverdueConsignments()
-  const { data: allPage, isLoading: allLoading } = useConsignments()
-
-  return (
-    <>
-      <TabsContent value="out" className="mt-5">
-        {outLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
-        {outPage && <ConsignmentsTable items={outPage.items} onSettle={onSettle} onReturn={onReturn} />}
-      </TabsContent>
-
-      <TabsContent value="overdue" className="mt-5">
-        {overdueLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
-        {overdueItems && <ConsignmentsTable items={overdueItems} onSettle={onSettle} onReturn={onReturn} />}
-      </TabsContent>
-
-      <TabsContent value="all" className="mt-5">
-        {allLoading && <p className="text-sm text-muted-foreground">{t("common.loading")}</p>}
-        {allPage && <ConsignmentsTable items={allPage.items} onSettle={onSettle} onReturn={onReturn} />}
-      </TabsContent>
-    </>
-  )
+function useConsignmentDialogs() {
+  const [createOpen, setCreateOpen] = React.useState(false)
+  const [detailId, setDetailId] = React.useState<string | null>(null)
+  const [settleItem, setSettleItem] = React.useState<ConsignmentView | null>(null)
+  const [returnItem, setReturnItem] = React.useState<ConsignmentView | null>(null)
+  return { createOpen, setCreateOpen, detailId, setDetailId, settleItem, setSettleItem, returnItem, setReturnItem }
 }
 
 export function ConsignmentsPage() {
   const { t } = useI18n()
-  const [tab, setTab] = useUrlTab<ConsignmentTab>("out", { validTabs: CONSIGNMENT_TABS })
-  const [createOpen, setCreateOpen] = React.useState(false)
-  const [settleItem, setSettleItem] = React.useState<ConsignmentView | null>(null)
-  const [returnItem, setReturnItem] = React.useState<ConsignmentView | null>(null)
+  const canCreate = useAuthStore((s) => s.hasPermission("consignment.create"))
+  const filters = useConsignmentFilters()
+  const { data, isLoading } = useConsignments(filters.queryFilters)
+  const d = useConsignmentDialogs()
+
+  const actions = React.useMemo(
+    () => ({
+      onOpenDetail: (item: ConsignmentView) => d.setDetailId(item.id),
+      onSettle: (item: ConsignmentView) => d.setSettleItem(item),
+      onReturn: (item: ConsignmentView) => d.setReturnItem(item),
+    }),
+    [d]
+  )
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("consignments.title")}
-        description="Hamkorlarga nasiyaga berilgan qurilmalar, to'lov muddatlari va hisob-kitoblar"
+        description={t("consignments.description")}
         actions={
-          <Button onClick={() => setCreateOpen(true)} className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs">
-            <Plus className="size-4" />
-            {t("consignments.newConsignment")}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={!data || data.items.length === 0}
+              onClick={() => data && exportConsignmentsCsv(data.items, t)}
+            >
+              <Download className="size-4" />
+              {t("consignments.exportCsv")}
+            </Button>
+            {canCreate && (
+              <Button onClick={() => d.setCreateOpen(true)} className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs">
+                <Plus className="size-4" />
+                {t("consignments.newConsignment")}
+              </Button>
+            )}
+          </div>
         }
       />
 
-      <Tabs value={tab} onValueChange={setTab}>
-        <div className="overflow-x-auto pb-1">
-          <TabsList className="w-auto inline-flex">
-            <TabsTrigger value="out">{t("consignments.tabOut")}</TabsTrigger>
-            <TabsTrigger value="overdue">{t("consignments.tabOverdue")}</TabsTrigger>
-            <TabsTrigger value="all">{t("common.all")}</TabsTrigger>
-          </TabsList>
-        </div>
-        <ConsignmentTabPanels onSettle={setSettleItem} onReturn={setReturnItem} />
-      </Tabs>
+      <ConsignmentsFilters filters={filters} />
+      <ConsignmentsSummary filters={filters.queryFilters} />
 
-      <ConsignDeviceDialog open={createOpen} onOpenChange={setCreateOpen} />
+      {isLoading ? (
+        <Skeleton className="h-96 rounded-[16px]" />
+      ) : (
+        <ConsignmentsTable items={data?.items ?? []} actions={actions} />
+      )}
+
+      {data && data.total > 0 && (
+        <Pagination
+          page={filters.page}
+          pageSize={filters.pageSize}
+          total={data.total}
+          rangeLabel={(from, to, total) => t("inventory.pageRange", { from, to, total })}
+          perPageLabel={t("inventory.perPage")}
+          onPageChange={filters.setPage}
+          onPageSizeChange={filters.setPageSize}
+        />
+      )}
+
+      <ConsignDeviceDialog open={d.createOpen} onOpenChange={d.setCreateOpen} />
+      <ConsignmentDetailSheet
+        consignmentId={d.detailId}
+        open={Boolean(d.detailId)}
+        onClose={() => d.setDetailId(null)}
+        onSettle={(c) => d.setSettleItem(c)}
+        onReturn={(c) => d.setReturnItem(c)}
+      />
       <SettleConsignmentDialog
-        consignment={settleItem}
-        open={Boolean(settleItem)}
-        onOpenChange={(open) => !open && setSettleItem(null)}
+        consignment={d.settleItem}
+        open={Boolean(d.settleItem)}
+        onOpenChange={(open) => !open && d.setSettleItem(null)}
       />
       <ReturnConsignmentDialog
-        consignment={returnItem}
-        open={Boolean(returnItem)}
-        onOpenChange={(open) => !open && setReturnItem(null)}
+        consignment={d.returnItem}
+        open={Boolean(d.returnItem)}
+        onOpenChange={(open) => !open && d.setReturnItem(null)}
       />
     </div>
   )

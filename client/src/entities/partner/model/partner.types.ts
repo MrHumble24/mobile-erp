@@ -13,6 +13,25 @@ export interface PartnerView {
   overdueCount: number
 }
 
+export interface PartnerFilters {
+  search?: string
+  active?: boolean
+  overdue?: boolean
+}
+
+export type AgingBucketCode =
+  | "current"
+  | "d1_30"
+  | "d31_60"
+  | "d61_90"
+  | "d90_plus"
+
+export interface AgingBucket {
+  bucket: AgingBucketCode
+  count: number
+  amount: string
+}
+
 export interface LedgerEntry {
   at: string
   kind: "consignment" | "payment"

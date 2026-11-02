@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreatePartnerDto } from './dto/create-partner.dto.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
+import { ListPartnersQuery } from './dto/list-partners.query.js';
 import { UpdatePartnerDto } from './dto/update-partner.dto.js';
 import { PartnersService } from './partners.service.js';
 
@@ -13,8 +22,8 @@ export class PartnersController {
 
   @Get()
   @RequirePermissions('partner.read')
-  list() {
-    return this.partners.list();
+  list(@Query() query: ListPartnersQuery) {
+    return this.partners.list(query);
   }
 
   @Get(':id')
@@ -27,6 +36,12 @@ export class PartnersController {
   @RequirePermissions('partner.read')
   ledger(@Param('id') id: string) {
     return this.partners.ledger(id);
+  }
+
+  @Get(':id/aging')
+  @RequirePermissions('partner.read')
+  aging(@Param('id') id: string) {
+    return this.partners.aging(id);
   }
 
   @Post()
