@@ -3,7 +3,10 @@
 Customer directory, detail, and purchase history.
 
 ## Owns
-- Searchable customer list (`GET /customers`) with sort + "has purchases" filter.
+- Searchable customer list (`GET /customers`) with sort + "has purchases"
+  filter, paginated via `KitPaginator` (load more) + CSV export.
+- Summary tiles (`GET /customers/stats`): total, new this month, with purchases,
+  repeat buyers.
 - Detail sheet: profile + purchase aggregates + history (`GET /customers/:id/sales`).
 - Create (`POST /customers`), gated on `customer.manage`.
 
@@ -19,8 +22,8 @@ Customer directory, detail, and purchase history.
 - Create and edit (`POST` / `PATCH /customers/:id`) both run through the shared
   `container.api` (`CustomerFormSheet` switches on `editing`; edit is gated on
   `customer.manage` from the detail sheet). Online-only.
-- The `customers` i18n namespace is not loaded by the foundation `I18n` (its
-  namespace list omits it), so labels reuse `sales.*` / `common.*` keys.
+- The `customers` i18n namespace is now loaded by the foundation `I18n`; stat
+  tiles use `customers.stat*`. Older list labels still reuse `sales.*`/`common.*`.
 
 ## Note
 - Named `Customers.README.md` (not `README.md`) to avoid a synchronized-group bundle

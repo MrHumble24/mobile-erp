@@ -6,12 +6,18 @@ import Foundation
 struct CustomersRepository {
     let api: APIClient
 
-    func page(search: String, hasPurchases: Bool?, sort: String) async throws -> CustomerPage {
-        var query: [String: String] = ["sort": sort]
+    func page(search: String, hasPurchases: Bool?, sort: String,
+              page: Int, pageSize: Int) async throws -> CustomerPage {
+        var query: [String: String] = ["sort": sort,
+                                        "page": String(page), "pageSize": String(pageSize)]
         let trimmed = search.trimmingCharacters(in: .whitespaces)
         if !trimmed.isEmpty { query["search"] = trimmed }
         if let hasPurchases { query["hasPurchases"] = hasPurchases ? "true" : "false" }
         return try await api.get("/customers", query: query)
+    }
+
+    func stats() async throws -> CustomerStats {
+        try await api.get("/customers/stats")
     }
 
     func sales(_ id: String) async throws -> [CustomerSale] {

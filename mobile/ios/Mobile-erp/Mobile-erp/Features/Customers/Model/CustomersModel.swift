@@ -1,18 +1,18 @@
 import Foundation
 import Observation
 
-/// Customer directory state: search text + sort + the loaded page. Reads are
-/// online-only; offline shows a needs-connection note.
+/// Customer directory state: search + sort + "has purchases" filter, a paginated
+/// feed and summary stats. Reads are online-only; offline shows a note.
 @MainActor
 @Observable
 final class CustomersModel {
     var search = ""
     var hasPurchasesOnly = false
     var sort = "recent"      // "recent" | "name"
-    var page: CustomerPage?
-    var loading = false
-    var errorMessage: String?
+    var stats: CustomerStats?
     var offline = false
+
+    private(set) var pager: KitPaginator<CustomerListItem>!
 
     @ObservationIgnored private var container: AppContainer?
     private var repo: CustomersRepository { CustomersRepository(api: container!.api) }
@@ -23,52 +23,44 @@ final class CustomersModel {
     func configure(_ container: AppContainer) {
         guard self.container == nil else { return }
         self.container = container
+        pager = KitPaginator<CustomerListItem>(pageSize: 20) { [weak self] page, size in
+            guard let self else { return ([], 0) }
+            let p = try await self.repo.page(
+                search: self.search,
+                hasPurchases: self.hasPurchasesOnly ? true : nil,
+                sort: self.sort, page: page, pageSize: size)
+            return (p.items, p.total)
+        }
     }
 
     func reload() {
         guard let container else { return }
         guard container.connectivity.isOnline else {
             offline = true
-            page = nil
             return
         }
         offline = false
-        loading = true
-        errorMessage = nil
-        let (search, hasPurchases, sort) = (self.search, hasPurchasesOnly ? true : nil, self.sort)
         Task {
-            do {
-                page = try await repo.page(search: search, hasPurchases: hasPurchases, sort: sort)
-            } catch let error as AppError {
-                errorMessage = error.message
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-            loading = false
+            await pager.refresh()
+            stats = try? await repo.stats()
         }
     }
 
     /// Create a customer, then refresh the list. Returns an error string or nil.
     func create(name: String, phone: String?, notes: String?) async -> String? {
-        guard let container else { return "not ready" }
-        guard container.connectivity.isOnline else { return "offline" }
-        do {
-            try await repo.create(name: name, phone: phone, notes: notes)
-            reload()
-            return nil
-        } catch let error as AppError {
-            return error.message
-        } catch {
-            return error.localizedDescription
-        }
+        await write { try await $0.create(name: name, phone: phone, notes: notes) }
     }
 
     /// Edit a customer, then refresh the list. Returns an error string or nil.
     func update(id: String, name: String, phone: String?, notes: String?) async -> String? {
+        await write { try await $0.update(id, name: name, phone: phone, notes: notes) }
+    }
+
+    private func write(_ body: (CustomersRepository) async throws -> Void) async -> String? {
         guard let container else { return "not ready" }
         guard container.connectivity.isOnline else { return "offline" }
         do {
-            try await repo.update(id, name: name, phone: phone, notes: notes)
+            try await body(repo)
             reload()
             return nil
         } catch let error as AppError {

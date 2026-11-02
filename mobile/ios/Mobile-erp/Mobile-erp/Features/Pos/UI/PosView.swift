@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// POS terminal: scan an IMEI → review the device → checkout. Works offline
-/// (device lookup from the cache, sale queued to the outbox). A completed sale
-/// opens the receipt sheet and resets for the next scan.
+/// POS terminal: scan IMEIs into a multi-device cart, set each line's price and
+/// warranty, attach a customer, then check out (one sale per device). Works
+/// offline — lookups come from the cache and each sale queues to the outbox.
+/// Completed sales open the receipt result sheet.
 struct PosView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -16,38 +17,34 @@ struct PosView: View {
                     .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
             }
 
-            if model.busy && model.device == nil {
-                Section { LoadingView().frame(height: 100) }
-            } else if let key = model.errorKey {
+            if let key = model.errorKey {
                 Section {
                     Label(errorText(key), systemImage: "exclamationmark.triangle")
                         .foregroundStyle(Tokens.warning)
                 }
-            } else if let device = model.device {
-                Section(i18n.t("pos.deviceCard")) {
-                    LabeledContent(device.modelLabel) {
-                        StatusBadge(deviceStatus: device.statusCode, label: device.statusCode)
-                    }
-                    Text(device.imei).font(.mono(13)).foregroundStyle(.secondary)
-                    if let target = device.targetPrice {
-                        LabeledContent(i18n.t("pos.targetPrice")) {
-                            MoneyText(value: target)
-                        }
-                    }
-                }
-                PosCheckoutForm(device: device, model: model)
-            } else {
+            }
+
+            if model.cart.isEmpty {
                 Section {
                     EmptyStateView(systemImage: "qrcode.viewfinder",
                                    title: i18n.t("pos.cartEmpty"))
                         .frame(maxWidth: .infinity)
                 }
                 .listRowBackground(Color.clear)
+            } else {
+                Section(i18n.t("pos.lineCount")) {
+                    ForEach(model.cart.lines) { line in
+                        PosCartLineRow(cart: model.cart, line: line)
+                    }
+                }
+                PosCustomerPanel(model: model)
+                PosCheckoutBar(model: model)
             }
         }
         .navigationTitle(i18n.t("pos.title"))
-        .sheet(item: $model.completed) { sale in
-            PosReceiptSheet(sale: sale)
+        .sheet(item: Binding(get: { model.completed.map(CompletedSalesBox.init) },
+                             set: { if $0 == nil { model.dismissResult() } })) { box in
+            PosCheckoutResultSheet(sales: box.sales) { model.dismissResult() }
         }
         .task {
             model.configure(container)
@@ -61,8 +58,16 @@ struct PosView: View {
         switch key {
         case "pos.alreadyQueued":
             return i18n.t(key, default: "Already queued for sync")
+        case "pos.duplicateDevice":
+            return i18n.t(key, default: "Device is already in the cart")
         default:
             return i18n.t(key)
         }
     }
+}
+
+/// Identifiable wrapper so `[CompletedSale]` drives a `.sheet(item:)`.
+private struct CompletedSalesBox: Identifiable {
+    let sales: [CompletedSale]
+    var id: String { sales.map(\.receiptId).joined() }
 }
