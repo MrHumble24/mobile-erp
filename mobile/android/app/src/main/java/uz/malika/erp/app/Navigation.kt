@@ -11,7 +11,10 @@ import androidx.navigation.compose.rememberNavController
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.auth.model.SessionViewModel
 import uz.malika.erp.features.auth.ui.LoginScreen
-import uz.malika.erp.features.devpanel.DevPanelScreen
+import uz.malika.erp.features.devconsole.DEV_CONSOLE_ROUTE
+import uz.malika.erp.features.devconsole.DevAccess
+import uz.malika.erp.features.devconsole.devConsoleNavItem
+import uz.malika.erp.features.devconsole.ui.DevConsoleScreen
 
 /**
  * Top-level navigation. Signed out → login (+ the public dev panel). Signed in
@@ -36,10 +39,10 @@ private fun UnauthedNav(container: AppContainer, session: SessionViewModel, onli
     val nav = rememberNavController()
     NavHost(nav, startDestination = "login") {
         composable("login") {
-            LoginScreen(session, online, onOpenDevPanel = { nav.navigate("dev") })
+            LoginScreen(session, online, onOpenDevPanel = { nav.navigate(DEV_CONSOLE_ROUTE) })
         }
-        composable("dev") {
-            DevPanelScreen(container, onClose = { nav.popBackStack() })
+        composable(DEV_CONSOLE_ROUTE) {
+            DevConsoleScreen(container, onClose = { nav.popBackStack() })
         }
     }
 }
@@ -51,7 +54,9 @@ private fun AuthedShell(container: AppContainer, session: SessionViewModel, onli
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
 
-    val navItems = FeatureRegistry.navItems.filter { it.permission == null || user.can(it.permission) }
+    val devUnlocked by DevAccess.unlocked.collectAsState()
+    val navItems = FeatureRegistry.navItems.filter { it.permission == null || user.can(it.permission) } +
+        if (devUnlocked) listOf(devConsoleNavItem) else emptyList()
 
     CompositionLocalProvider(LocalCan provides { code -> user.can(code) }) {
         AppShell(

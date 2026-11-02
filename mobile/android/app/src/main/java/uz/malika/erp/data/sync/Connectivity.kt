@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import uz.malika.erp.core.logging.AppLog
 
 /**
  * `true` when the device has a validated internet transport. Drives the sync
@@ -37,7 +39,9 @@ class Connectivity(context: Context, scope: CoroutineScope) {
         trySend(isCurrentlyOnline())
         cm?.registerDefaultNetworkCallback(callback)
         awaitClose { cm?.unregisterNetworkCallback(callback) }
-    }.distinctUntilChanged().stateIn(scope, SharingStarted.Eagerly, isCurrentlyOnline())
+    }.distinctUntilChanged()
+        .onEach { AppLog.i("net", if (it) "online" else "offline") }
+        .stateIn(scope, SharingStarted.Eagerly, isCurrentlyOnline())
 
     private fun isCurrentlyOnline(): Boolean {
         val active = cm?.activeNetwork ?: return false

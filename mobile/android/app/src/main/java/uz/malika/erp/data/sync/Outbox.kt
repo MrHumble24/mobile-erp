@@ -1,6 +1,7 @@
 package uz.malika.erp.data.sync
 
 import kotlinx.serialization.json.JsonElement
+import uz.malika.erp.core.logging.AppLog
 import uz.malika.erp.core.newUuidV4
 import uz.malika.erp.core.nowIso
 import uz.malika.erp.data.local.AppDatabase
@@ -37,6 +38,7 @@ class OutboxApi(
                 createdAt = nowIso(),
             ),
         )
+        AppLog.i("outbox", "enqueued $type ($id)")
         trigger()
         return id
     }

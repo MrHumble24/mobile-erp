@@ -45,7 +45,7 @@ class AppContainer(context: Context) {
     val api = retrofit.create(ApiService::class.java)
     val db = AppDatabase.build(context)
 
-    private val terminalId = TerminalId(secure)
+    val terminalId = TerminalId(secure)
     val connectivity = Connectivity(context, appScope)
 
     private val pull = PullService(api, db)

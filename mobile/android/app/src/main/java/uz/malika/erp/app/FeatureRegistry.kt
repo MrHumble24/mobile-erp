@@ -1,6 +1,7 @@
 package uz.malika.erp.app
 
 import uz.malika.erp.features.admin.AdminFeature
+import uz.malika.erp.features.devconsole.DevConsoleFeature
 import uz.malika.erp.features.finance.FinanceFeature
 import uz.malika.erp.features.inventory.InventoryFeature
 import uz.malika.erp.features.nasiya.NasiyaFeature
@@ -25,6 +26,7 @@ object FeatureRegistry {
         ProcurementFeature,
         NasiyaFeature,
         AdminFeature,
+        DevConsoleFeature, // route only; its nav entry is gated by DevAccess in the shell
     )
 
     /**

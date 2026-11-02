@@ -1,6 +1,7 @@
 package uz.malika.erp.data.sync
 
 import kotlinx.serialization.json.Json
+import uz.malika.erp.core.logging.AppLog
 import uz.malika.erp.core.runApi
 import uz.malika.erp.data.local.AppDatabase
 import uz.malika.erp.data.remote.ApiService
@@ -43,6 +44,7 @@ class PushService(
     }
 
     private suspend fun apply(r: PushResult) {
+        AppLog.i("sync", "push ${r.id.take(8)} → ${r.status}")
         when (r.status) {
             "applied", "duplicate" -> db.outboxDao().remove(r.id)
             "conflict" -> db.outboxDao().markStatus(r.id, "conflict", r.conflictId)

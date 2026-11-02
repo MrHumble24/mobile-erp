@@ -1,9 +1,30 @@
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.util.Collections
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
+
+/**
+ * The build machine's LAN IPv4, baked into `BuildConfig.DEV_HOST` so a real
+ * device reaches the dev server without anyone typing an IP. Picks the first
+ * up, non-loopback, non-virtual, site-local interface, preferring Wi-Fi/Ethernet
+ * (en, wlan, wl names). Falls back to the emulator host 10.0.2.2 when none found.
+ */
+fun detectLanHost(): String = runCatching {
+    val ifaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+        .filter { it.isUp && !it.isLoopback && !it.isVirtual }
+        .sortedBy { i -> if (listOf("en", "wlan", "wl").any { i.name.startsWith(it) }) 0 else 1 }
+    ifaces.firstNotNullOfOrNull { iface ->
+        Collections.list(iface.inetAddresses)
+            .firstOrNull { it is Inet4Address && it.isSiteLocalAddress }
+            ?.hostAddress
+    }
+}.getOrNull() ?: "10.0.2.2"
 
 android {
     namespace = "uz.malika.erp"
@@ -19,6 +40,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // The dev server host, auto-detected at build time (see detectLanHost).
+        buildConfigField("String", "DEV_HOST", "\"${detectLanHost()}\"")
     }
 
     // i18n is read straight from the web client — single source, never copied.
@@ -39,6 +63,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

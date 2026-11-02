@@ -18,11 +18,28 @@ cd mobile/android
 Open in Android Studio and Run, or `installDebug` then launch "Malika Bazaar".
 
 ## Point the app at a server
-The server has **no URL prefix** and listens on `:3000`.
-- **Emulator** → default `http://10.0.2.2:3000` (host machine) works out of the box.
-- **Real device** → open **Developer settings** from the login screen (access
-  code `153535`), pick the environment, and set the API base URL to the server's
-  LAN IP, e.g. `http://192.168.1.50:3000`. It persists and applies immediately.
+The server has **no URL prefix** and listens on `:3000`. Open the **Developer
+Console** (login → "Developer settings", code `153535`, or the "Developer" nav
+item once signed in) → **Environment**. Three environments:
+
+| Environment | Default URL                              |
+|-------------|------------------------------------------|
+| Production  | `https://mobile-api.abdulboriy.dev`      |
+| Staging     | _(none yet)_ — selectable but blocked until you enter a URL |
+| Development | auto-detected (see below)                |
+
+**Development needs no IP typed.** On an **emulator** the host is `10.0.2.2`. On a
+**real device** it is the build machine's LAN IPv4, detected at build time by
+`detectLanHost()` in `app/build.gradle.kts` and baked into `BuildConfig.DEV_HOST`
+(fallback `10.0.2.2`); the port is `Config.DEV_PORT` (3000). The console shows the
+detected host and its source ("emulator" / "auto (build machine)" / "override").
+
+Any environment's URL can be overridden in the console and reset to auto/default;
+changes persist and apply immediately. Switching environment signs you out (a
+token from one environment is invalid in another). "Test connection" pings the
+public `/health` route and reports reachable / latency / error. The **Network**
+and **Logs** sections show live in-memory HTTP + app logs (no persistence;
+`Authorization` and `password` are masked).
 
 Debug builds permit cleartext HTTP (see `res/xml/network_security_config.xml`) so
 plain-HTTP LAN servers work. Dev users: `owner@malika.uz` / `cashier@malika.uz` /
