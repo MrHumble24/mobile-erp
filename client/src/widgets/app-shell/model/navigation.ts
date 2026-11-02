@@ -8,6 +8,7 @@ import {
   Receipt,
   ArrowLeftRight,
   Users,
+  UserRound,
   DollarSign,
   BarChart3,
   Settings,
@@ -43,6 +44,7 @@ export const NAV_SECTIONS: NavSection[] = [
     groupKey: "nav.groupFinance",
     items: [
       { to: "/sales", labelKey: "nav.sales", permission: "sale.read", icon: Receipt },
+      { to: "/customers", labelKey: "nav.customers", permission: "customer.read", icon: UserRound },
       { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },
       { to: "/partners", labelKey: "nav.partners", permission: "partner.read", icon: Users },
       { to: "/expenses", labelKey: "nav.expenses", permission: "expense.read", icon: DollarSign },
