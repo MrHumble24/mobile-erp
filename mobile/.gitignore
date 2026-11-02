@@ -1,15 +1,12 @@
-# Logs
-logs
-*.log
-
-# Dependencies & Build
-node_modules/
-dist/
-build/
-.DS_Store
-
-# Graphify
-graphify-out/
-graphify.db
-graphify-cache/
-
+# Android
+android/.gradle/
+android/.idea/
+android/local.properties
+android/build/
+android/app/build/
+*.iml
+.kotlin/
+# iOS / Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
