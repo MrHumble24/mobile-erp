@@ -1,0 +1,20 @@
+import Foundation
+
+/// One device staged in the intake loop before the batch is POSTed. Costs are
+/// operator-entered (not redacted reads), so they are plain Decimals here.
+/// Identity is the IMEI — the draft set rejects duplicates.
+struct IntakeDraft: Identifiable {
+    let imei: String
+    let modelId: String
+    let specs: [String: String]
+    let acquisitionCost: Decimal
+    let targetPrice: Decimal?
+
+    var id: String { imei }
+    var specsSummary: String { specs.values.sorted().joined(separator: " · ") }
+
+    var dto: IntakeDeviceDTO {
+        IntakeDeviceDTO(imei: imei, modelId: modelId, specs: specs,
+                        acquisitionCost: acquisitionCost, targetPrice: targetPrice)
+    }
+}
