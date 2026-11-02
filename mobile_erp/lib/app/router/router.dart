@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth_events.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../home_screen.dart';
 import '../widgets/app_shell.dart';
 import 'feature_registry.dart';
 
@@ -29,17 +28,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final loggedIn = session.valueOrNull != null;
       final atLogin = state.matchedLocation == '/login';
       if (!loggedIn) return atLogin ? null : '/login';
-      if (atLogin) return '/';
+      // Dashboard is the landing page: bounce login and the bare index to it.
+      if (atLogin || state.matchedLocation == '/') return '/dashboard';
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       ShellRoute(
         builder: (_, _, child) => AppShell(child: child),
-        routes: [
-          GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
-          ...featureRoutes,
-        ],
+        routes: featureRoutes,
       ),
     ],
   );
