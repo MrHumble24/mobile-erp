@@ -4,8 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import {
+  SaleCreatedEvent,
+  TelegramEvents,
+} from '../telegram/events/telegram-events.js';
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
@@ -23,7 +28,12 @@ export class SalesService {
   constructor(
     private readonly reads: SalesRepository,
     private readonly checkout: SalesCheckoutRepository,
+    private readonly events: EventEmitter2,
   ) {}
+
+  findByClientMutationId(id: string): Promise<SaleView | null> {
+    return this.reads.findByClientMutationId(id);
+  }
 
   async create(
     caller: AuthenticatedUser,
@@ -56,7 +66,12 @@ export class SalesService {
   private async runCheckout(
     caller: AuthenticatedUser,
     dto: CreateSaleDto,
-    device: { id: string; version: number; landedCost: Prisma.Decimal },
+    device: {
+      id: string;
+      version: number;
+      landedCost: Prisma.Decimal;
+      targetPrice: Prisma.Decimal | null;
+    },
     soldAt: Date,
     days: number,
   ): Promise<SaleView> {
@@ -78,7 +93,9 @@ export class SalesService {
           endsAt: warrantyEndsAt(soldAt, days),
         },
       });
-      return (await this.reads.findById(saleId))!;
+      const view = (await this.reads.findById(saleId))!;
+      this.emitSaleCreated(view, dto.salePrice, device);
+      return view;
     } catch (e) {
       if (dto.clientMutationId && isUniqueViolation(e)) {
         const existing = await this.reads.findByClientMutationId(
@@ -88,6 +105,24 @@ export class SalesService {
       }
       throw e;
     }
+  }
+
+  private emitSaleCreated(
+    view: SaleView,
+    salePrice: number,
+    device: { landedCost: Prisma.Decimal; targetPrice: Prisma.Decimal | null },
+  ): void {
+    this.events.emit(
+      TelegramEvents.saleCreated,
+      new SaleCreatedEvent(
+        view.id,
+        view.device.imei,
+        `${view.device.model.brand} ${view.device.model.name}`,
+        salePrice,
+        device.targetPrice === null ? null : Number(device.targetPrice),
+        Number(device.landedCost),
+      ),
+    );
   }
 
   list(query: ListSalesQueryDto) {

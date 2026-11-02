@@ -13,6 +13,8 @@ model StoreSettings {
   minMarginPercent    Decimal  @default(0) @db.Decimal(5, 2)
   /// Fallback low-stock threshold when no StockAlertRule matches.
   lowStockThreshold   Int      @default(2)
+  /// Date the closing digest was last sent, so the minute-cron fires once a day.
+  digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt
 
   @@map("store_settings")

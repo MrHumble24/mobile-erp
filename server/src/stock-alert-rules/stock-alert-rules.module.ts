@@ -8,5 +8,6 @@ import { StockAlertRulesService } from './stock-alert-rules.service.js';
   imports: [DeviceModelsModule],
   controllers: [StockAlertRulesController],
   providers: [StockAlertRulesService, StockAlertRulesRepository],
+  exports: [StockAlertRulesService],
 })
 export class StockAlertRulesModule {}

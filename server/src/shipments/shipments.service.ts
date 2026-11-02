@@ -3,9 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
+import {
+  ShipmentDevicesRegisteredEvent,
+  TelegramEvents,
+} from '../telegram/events/telegram-events.js';
 import { CreateShipmentDto } from './dto/create-shipment.dto.js';
 import {
   RegisterDeviceDto,
@@ -21,6 +26,7 @@ export class ShipmentsService {
     private readonly repo: ShipmentsRepository,
     private readonly suppliers: SuppliersService,
     private readonly models: DeviceModelsService,
+    private readonly events: EventEmitter2,
   ) {}
 
   list(): Promise<ShipmentView[]> {
@@ -58,10 +64,26 @@ export class ShipmentsService {
     dto: RegisterDevicesDto,
     userId: string,
   ): Promise<RegisteredDeviceView[]> {
-    await this.require(id);
-    await this.assertModelsExist(dto.devices);
+    const shipment = await this.require(id);
+    const models = await this.loadModels(dto.devices);
+    const registered = await this.register(id, dto.devices, userId);
+    // Best-effort notification; must never fail an intake.
+    void this.announce(
+      shipment.supplierId,
+      id,
+      registered.length,
+      models,
+    ).catch(() => undefined);
+    return registered;
+  }
+
+  private async register(
+    id: string,
+    devices: RegisterDeviceDto[],
+    userId: string,
+  ): Promise<RegisteredDeviceView[]> {
     try {
-      return await this.repo.addDevices(id, dto.devices, userId);
+      return await this.repo.addDevices(id, devices, userId);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException('A device with this IMEI already exists');
@@ -70,9 +92,30 @@ export class ShipmentsService {
     }
   }
 
-  private async assertModelsExist(devices: RegisterDeviceDto[]): Promise<void> {
+  private async announce(
+    supplierId: string,
+    shipmentId: string,
+    count: number,
+    models: { brand: string; name: string }[],
+  ): Promise<void> {
+    const supplier = await this.suppliers.get(supplierId);
+    const names = [...new Set(models.map((m) => `${m.brand} ${m.name}`))];
+    this.events.emit(
+      TelegramEvents.shipmentDevicesRegistered,
+      new ShipmentDevicesRegisteredEvent(
+        shipmentId,
+        supplier.name,
+        count,
+        names,
+      ),
+    );
+  }
+
+  private loadModels(
+    devices: RegisterDeviceDto[],
+  ): Promise<{ brand: string; name: string }[]> {
     const ids = [...new Set(devices.map((d) => d.modelId))];
-    await Promise.all(ids.map((id) => this.models.get(id)));
+    return Promise.all(ids.map((id) => this.models.get(id)));
   }
 
   private async require(id: string): Promise<ShipmentView> {

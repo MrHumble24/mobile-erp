@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { PartnersRepository } from './partners.repository.js';
@@ -23,8 +24,12 @@ function build(overrides: Partial<Record<string, jest.Mock>> = {}) {
     createPayment: jest.fn().mockResolvedValue({ id: 'pay1' }),
     ...overrides,
   };
-  const service = new PartnersService(repo as unknown as PartnersRepository);
-  return { service, repo };
+  const events = { emit: jest.fn() };
+  const service = new PartnersService(
+    repo as unknown as PartnersRepository,
+    events as unknown as EventEmitter2,
+  );
+  return { service, repo, events };
 }
 
 describe('PartnersService.assertWithinCreditLimit', () => {

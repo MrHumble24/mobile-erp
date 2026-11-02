@@ -13,5 +13,6 @@ import { ConsignmentsWriteRepository } from './consignments.write.repository.js'
     ConsignmentsRepository,
     ConsignmentsWriteRepository,
   ],
+  exports: [ConsignmentsService],
 })
 export class ConsignmentsModule {}

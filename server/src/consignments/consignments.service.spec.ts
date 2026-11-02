@@ -1,4 +1,5 @@
 import { ConflictException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PartnersService } from '../partners/partners.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { ConsignmentsRepository } from './consignments.repository.js';
@@ -13,16 +14,26 @@ const caller: AuthenticatedUser = {
 
 function build() {
   const reads = { findByClientMutationId: jest.fn().mockResolvedValue(null) };
-  const writes = { createTransfer: jest.fn().mockResolvedValue({ id: 'c1' }) };
+  const writes = {
+    createTransfer: jest.fn().mockResolvedValue({
+      id: 'c1',
+      imei: '123456789012345',
+      agreedPrice: 500,
+      dueDate: new Date('2026-12-01T00:00:00.000Z'),
+    }),
+  };
   const partners = {
     assertWithinCreditLimit: jest.fn().mockResolvedValue(undefined),
+    get: jest.fn().mockResolvedValue({ shopName: 'Shop A' }),
   };
+  const events = { emit: jest.fn() };
   const service = new ConsignmentsService(
     reads as unknown as ConsignmentsRepository,
     writes as unknown as ConsignmentsWriteRepository,
     partners as unknown as PartnersService,
+    events as unknown as EventEmitter2,
   );
-  return { service, reads, writes, partners };
+  return { service, reads, writes, partners, events };
 }
 
 const dto = {
