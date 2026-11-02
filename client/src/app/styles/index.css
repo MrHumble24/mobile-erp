@@ -53,23 +53,6 @@
   --text-heading-lg: 60px;
   --text-display: 80px;
 
-  /* Spacing */
-  --spacing-4: 4px;
-  --spacing-8: 8px;
-  --spacing-12: 12px;
-  --spacing-16: 16px;
-  --spacing-20: 20px;
-  --spacing-24: 24px;
-  --spacing-28: 28px;
-  --spacing-32: 32px;
-  --spacing-40: 40px;
-  --spacing-48: 48px;
-  --spacing-52: 52px;
-  --spacing-56: 56px;
-  --spacing-72: 72px;
-  --spacing-80: 80px;
-  --spacing-100: 100px;
-
   /* Border Radius */
   --radius-tags: 100px;
   --radius-cards: 12px;
@@ -78,7 +61,6 @@
   --radius-inputs: 9px;
   --radius-buttons: 9999px;
   --radius-largecards: 20px;
-  --radius-sm: 1px;
   --radius-lg: 9px;
   --radius-xl: 12px;
   --radius-2xl: 16px;

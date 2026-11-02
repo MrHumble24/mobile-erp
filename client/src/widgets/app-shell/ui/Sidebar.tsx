@@ -14,7 +14,7 @@ import {
 function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   return (
     <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-[#e8e8e8] flex items-center gap-2.5 shrink-0")}>
-      <div className="w-8 h-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs">
+      <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs">
         M
       </div>
       {!collapsed && (
@@ -53,14 +53,14 @@ function SidebarLinkElement({
       onClick={onItemClick}
       aria-label={label}
       className={cn(
-        "flex items-center gap-2.5 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline",
-        collapsed ? "justify-center px-0 w-9 mx-auto" : "px-3.5 w-full",
+        "flex items-center gap-3 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline",
+        collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
           ? "bg-[#202020] text-white shadow-xs"
           : "text-[#646464] hover:bg-black/[0.04] hover:text-[#202020]"
       )}
     >
-      <Icon className="w-4 h-4 shrink-0" />
+      <Icon className="size-4 shrink-0 stroke-[2.2]" />
       {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   )

@@ -3,7 +3,6 @@ import { Outlet, useLocation } from "react-router"
 import { AppShellHeader } from "./AppShellHeader"
 import { Sidebar } from "./Sidebar"
 import { AdminCommandPalette } from "./AdminCommandPalette"
-import { Sheet, SheetPopup } from "@/shared/ui/sheet"
 import { useI18n, type Locale } from "@/shared/i18n"
 
 const COLLAPSED_STORAGE_KEY = "malika_erp_sidebar_collapsed"
@@ -59,21 +58,28 @@ function useKeyboardShortcuts(onToggleSidebar: () => void, onOpenSearch: () => v
 
 function MobileSidebarDrawer({
   open,
-  onOpenChange,
+  onClose,
 }: {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onClose: () => void
 }) {
+  if (!open) return null
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetPopup side="left" className="p-0 w-72 max-w-[85vw] border-r border-[#e8e8e8]">
+    <div className="fixed inset-0 z-50 md:hidden">
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-white shadow-xl z-50 animate-in slide-in-from-left duration-200 flex flex-col">
         <Sidebar
           collapsed={false}
-          onItemClick={() => onOpenChange(false)}
-          className="border-none w-full h-full"
+          onItemClick={onClose}
+          className="w-full h-full border-r border-[#e8e8e8]"
         />
-      </SheetPopup>
-    </Sheet>
+      </div>
+    </div>
   )
 }
 
@@ -85,7 +91,6 @@ export function AppShell() {
 
   useKeyboardShortcuts(handleToggleSidebar, () => setCommandOpen(true))
 
-  // Close mobile drawer whenever location changes
   React.useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname, setMobileOpen])
@@ -97,16 +102,13 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen bg-[#f8f9fa] text-[#202020] antialiased">
-      {/* Desktop Sticky Collapsible Sidebar */}
       <Sidebar
         collapsed={collapsed}
         className="hidden md:flex h-screen sticky top-0"
       />
 
-      {/* Mobile Drawer Sidebar */}
-      <MobileSidebarDrawer open={mobileOpen} onOpenChange={setMobileOpen} />
+      <MobileSidebarDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <AppShellHeader
           collapsed={collapsed}
