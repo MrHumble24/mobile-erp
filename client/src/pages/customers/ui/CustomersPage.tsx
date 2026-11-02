@@ -2,6 +2,7 @@ import * as React from "react"
 import { Plus, Search, User, History } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useCustomers, type CustomerView } from "@/entities/customer"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import {
@@ -45,7 +46,7 @@ function CustomerTableRow({
         <Button
           size="sm"
           variant="outline"
-          className="gap-1.5 h-8 text-xs"
+          className="gap-1.5 h-8 text-xs rounded-full"
           onClick={() => onSelect(customer)}
         >
           <History className="size-3.5" />
@@ -66,29 +67,31 @@ function CustomersListTable({
   const { t } = useI18n()
   if (customers.length === 0) {
     return (
-      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed rounded-lg">
+      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#e8e8e8] rounded-[12px] bg-white">
         {t("sales.noCustomersFound")}
       </div>
     )
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("common.name")}</TableHead>
-          <TableHead>{t("common.phone")}</TableHead>
-          <TableHead>{t("common.notes")}</TableHead>
-          <TableHead>{t("common.date")}</TableHead>
-          <TableHead className="text-right">{t("common.actions")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {customers.map((c) => (
-          <CustomerTableRow key={c.id} customer={c} onSelect={onSelect} />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("common.name")}</TableHead>
+            <TableHead>{t("common.phone")}</TableHead>
+            <TableHead>{t("common.notes")}</TableHead>
+            <TableHead>{t("common.date")}</TableHead>
+            <TableHead className="text-right">{t("common.actions")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {customers.map((c) => (
+            <CustomerTableRow key={c.id} customer={c} onSelect={onSelect} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 
@@ -102,13 +105,19 @@ export function CustomersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">{t("sales.customersTitle")}</h1>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="size-4" />
-          {t("sales.newCustomer")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("sales.customersTitle")}
+        description="Do'kon mijozlari bazasi, aloqa ma'lumotlari va shaxsiy savdolar tarixi"
+        actions={
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs"
+          >
+            <Plus className="size-4" />
+            {t("sales.newCustomer")}
+          </Button>
+        }
+      />
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -116,7 +125,7 @@ export function CustomersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("common.search")}
-          className="pl-9"
+          className="pl-9 h-9 rounded-[9px]"
         />
       </div>
 

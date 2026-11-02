@@ -4,6 +4,7 @@ import { useI18n } from "@/shared/i18n"
 import { useExpenses, type ExpenseFilters } from "@/entities/expense"
 import { useExpenseCategories } from "@/entities/expense-category"
 import { LogExpenseDialog } from "@/features/log-expense"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { ExpensesSummaryCard } from "./ExpensesSummaryCard"
@@ -25,7 +26,7 @@ function CategoryFilterSelect({
         value={value || "all"}
         onValueChange={(val) => onChange(val === "all" ? undefined : val || undefined)}
       >
-        <SelectTrigger className="h-10">
+        <SelectTrigger className="h-9 rounded-[9px]">
           <SelectValue placeholder={t("expenses.category")} />
         </SelectTrigger>
         <SelectContent>
@@ -47,7 +48,6 @@ function RecurringFilterSelect({
   onChange: (v?: boolean) => void
 }) {
   const { t } = useI18n()
-
   return (
     <div className="w-48">
       <Select
@@ -56,7 +56,7 @@ function RecurringFilterSelect({
           onChange(val === "all" ? undefined : val === "recurring")
         }
       >
-        <SelectTrigger className="h-10">
+        <SelectTrigger className="h-9 rounded-[9px]">
           <SelectValue placeholder={t("expenses.isRecurring")} />
         </SelectTrigger>
         <SelectContent>
@@ -83,13 +83,16 @@ export function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">{t("expenses.title")}</h1>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2">
-          <Plus className="size-4" />
-          {t("expenses.newExpense")}
-        </Button>
-      </div>
+      <PageHeader
+        title={t("expenses.title")}
+        description="Do'kon operatsion xarajatlari, ijara, oylik maoshlar va to'lovlar hisobi"
+        actions={
+          <Button onClick={() => setCreateOpen(true)} className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs">
+            <Plus className="size-4" />
+            {t("expenses.newExpense")}
+          </Button>
+        }
+      />
 
       <ExpensesSummaryCard />
 

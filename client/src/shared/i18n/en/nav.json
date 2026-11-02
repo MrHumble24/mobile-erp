@@ -11,5 +11,15 @@
   "reports": "Reports",
   "settings": "Settings",
   "users": "Users & Access",
-  "toggle": "Menu"
+  "toggle": "Menu",
+  "groupOperations": "Operations",
+  "groupFinance": "Finance & Partners",
+  "groupAdmin": "Administration",
+  "searchPlaceholder": "Search... (⌘K)",
+  "searchCommandTitle": "Quick Navigation & Actions",
+  "searchNoResults": "No results found",
+  "quickPos": "POS",
+  "statusOnline": "Online",
+  "collapseSidebar": "Collapse sidebar",
+  "expandSidebar": "Expand sidebar"
 }

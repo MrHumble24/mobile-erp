@@ -1,14 +1,70 @@
 import * as React from "react"
+import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
-import { useShipments } from "@/entities/shipment"
+import { useShipments, type ShipmentView } from "@/entities/shipment"
 import { useSuppliers } from "@/entities/supplier"
 import { IntakeShipmentDialog } from "@/features/intake-shipment"
+import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
+import { Badge } from "@/shared/ui/badge"
 import { ShipmentsTable } from "./ShipmentsTable"
 
-export function ShipmentsPage() {
+function ShipmentPageHeader({
+  count,
+  canManage,
+  onNewShipment,
+}: {
+  count?: number
+  canManage: boolean
+  onNewShipment: () => void
+}) {
   const { t } = useI18n()
+  return (
+    <PageHeader
+      title={t("shipments.title")}
+      description="Yetkazib beruvchilardan kelgan tovar partiyalari va qabul qilish jurnali"
+      badge={
+        count != null ? (
+          <Badge variant="outline" className="text-xs">
+            {count} ta partiya
+          </Badge>
+        ) : undefined
+      }
+      actions={
+        canManage ? (
+          <Button
+            onClick={onNewShipment}
+            className="h-9 px-4 rounded-full text-xs font-semibold gap-1.5 shadow-xs"
+          >
+            <Plus className="size-4" />
+            {t("shipments.newShipment")}
+          </Button>
+        ) : undefined
+      }
+    />
+  )
+}
+
+function ShipmentsContent({
+  isLoading,
+  shipments,
+  suppliersMap,
+  onIntake,
+}: {
+  isLoading: boolean
+  shipments: ShipmentView[]
+  suppliersMap: Record<string, string>
+  onIntake: (id?: string) => void
+}) {
+  const { t } = useI18n()
+  if (isLoading) {
+    return <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
+  }
+  return <ShipmentsTable shipments={shipments} suppliersMap={suppliersMap} onIntake={onIntake} />
+}
+
+export function ShipmentsPage() {
   const canManage = useAuthStore((s) => s.hasPermission("shipment.manage"))
   const { data: shipmentsData, isLoading } = useShipments()
   const { data: suppliersData } = useSuppliers()
@@ -30,30 +86,17 @@ export function ShipmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{t("shipments.title")}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {shipmentsData ? `${shipmentsData.length} partiya` : t("common.loading")}
-          </p>
-        </div>
-        {canManage && (
-          <Button onClick={() => handleStartIntake()}>
-            + {t("shipments.newShipment")}
-          </Button>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
-      ) : (
-        <ShipmentsTable
-          shipments={shipmentsData || []}
-          suppliersMap={suppliersMap}
-          onIntake={(id) => handleStartIntake(id)}
-        />
-      )}
-
+      <ShipmentPageHeader
+        count={shipmentsData?.length}
+        canManage={canManage}
+        onNewShipment={() => handleStartIntake()}
+      />
+      <ShipmentsContent
+        isLoading={isLoading}
+        shipments={shipmentsData || []}
+        suppliersMap={suppliersMap}
+        onIntake={(id) => handleStartIntake(id)}
+      />
       <IntakeShipmentDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
