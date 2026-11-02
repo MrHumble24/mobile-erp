@@ -5,7 +5,8 @@ import { cn } from "@/shared/lib/utils"
 
 function Sheet({
   swipeDirection = "down",
-  snapPoints = [0.65, 1],
+  // Open fully: a 65% "peek" snap point hides the bottom third (and its Save buttons) on desktop.
+  snapPoints = [1],
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
   return (
@@ -29,7 +30,7 @@ function SheetBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 backdrop-blur-xs bottomsheet-backdrop",
+        "fixed inset-0 z-50 bg-[#090c1d]/35 backdrop-blur-xl backdrop-saturate-200 bottomsheet-backdrop",
         className
       )}
       {...props}
