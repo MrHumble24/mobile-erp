@@ -1,11 +1,11 @@
 # Native mobile — remaining gaps (checkpoint 2026-11-02)
 
-**Status (2026-11-02, later):** kit + all 8 feature groups built. Android + IMEI text
-scanning merged to `main` (74f0e6d). iOS integrated on branch `integrate/native-gaps`
-(build green) — waiting for Gemini's uncommitted iOS polish to be committed, then merge
-keeping Gemini's look on conflicts. Open: Gemini keys `common.loadMore`, `common.clear`,
-`common.offline`, `dashboard.quickActions`, `inventory.selectDevice`,
-`shipments.selectShipment`, `qc.dateRange`, `pos.notInStock`.
+**Status (2026-11-02, done):** kit + all 8 feature groups + camera number reading
+(barcode/QR/IMEI auto, other numbers tap-to-pick) merged to `main` on both platforms
+(015115a); Gemini's iOS polish kept on conflicts. Single branch `main`. Open: Gemini keys
+`common.loadMore`, `common.clear`, `common.offline`, `dashboard.quickActions`,
+`inventory.selectDevice`, `shipments.selectShipment`, `qc.dateRange`, `pos.notInStock`;
+Gemini restyle of the new screens (POS cart lines, report tabs, expense tabs); device testing.
 
 State: `main` has both native apps (`mobile/android`, `mobile/ios`) with all web
 features at base level + developer console. Both builds green. Not yet tested on

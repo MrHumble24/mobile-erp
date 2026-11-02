@@ -19,10 +19,6 @@ struct CustomersView: View {
         @Bindable var model = model
         List {
             if model.pager != nil {
-                if let stats = model.stats {
-                    Section { CustomersSummary(stats: stats) }
-                        .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
-                }
                 content
             }
         }

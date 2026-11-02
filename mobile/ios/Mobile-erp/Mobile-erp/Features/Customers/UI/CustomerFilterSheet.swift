@@ -11,6 +11,14 @@ struct CustomerFilterSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let stats = model.stats {
+                    Section(i18n.t("sales.statsOverview", default: "Customer Overview")) {
+                        CustomersSummary(stats: stats)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
+                            .listRowBackground(Color.clear)
+                    }
+                }
+
                 Section(i18n.t("common.sort", default: "Sort Order")) {
                     Picker(i18n.t("common.sort", default: "Sort"), selection: $model.sort) {
                         Label(i18n.t("common.date", default: "Recently Active"), systemImage: "clock").tag("recent")
