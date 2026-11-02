@@ -64,6 +64,7 @@ export interface DeviceFilters {
   shipmentId?: string;
   storage?: string;
   statusCode?: string;
+  statusCodes?: string;
   search?: string;
   inspected?: 'true' | 'false';
 }

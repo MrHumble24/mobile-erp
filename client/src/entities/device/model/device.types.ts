@@ -68,6 +68,8 @@ export interface DeviceFilters {
   modelId?: string
   storage?: string
   statusCode?: string
+  /** Comma-separated list, ignored when statusCode is set. */
+  statusCodes?: string
   search?: string
   inspected?: "true" | "false"
   page?: number

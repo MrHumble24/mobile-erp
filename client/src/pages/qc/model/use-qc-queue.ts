@@ -18,11 +18,11 @@ export interface QcQueueFilterState {
 }
 
 /**
- * Queue = devices awaiting a first QC pass. An uninspected device is always
- * IN_STOCK (defective/sold/consigned all come from an inspected or sold unit),
- * so `inspected=false` alone yields the awaiting queue; the status filter
- * narrows further once inspected rows are shown.
+ * Queue = devices awaiting a first QC pass. Only IN_STOCK and DEFECTIVE units are
+ * inspectable (a unit can be sold or consigned without ever being inspected), so
+ * the query is pinned to those statuses unless the user picks one explicitly.
  */
+const INSPECTABLE_STATUSES = "IN_STOCK,DEFECTIVE"
 export function useQcQueue() {
   const [searchInput, setSearchInputRaw] = React.useState("")
   const [statusCode, setStatusCodeRaw] = React.useState<string>()
@@ -53,6 +53,7 @@ export function useQcQueue() {
   const query = useDevices({
     inspected: showInspected ? undefined : "false",
     statusCode,
+    statusCodes: statusCode ? undefined : INSPECTABLE_STATUSES,
     modelId,
     storage,
     search: search || undefined,

@@ -32,6 +32,12 @@ export class ListDevicesDto {
   @MaxLength(32)
   statusCode?: string;
 
+  /** Comma-separated list, e.g. `IN_STOCK,DEFECTIVE`. Ignored when statusCode is set. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  statusCodes?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(255)

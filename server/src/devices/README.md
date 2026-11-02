@@ -35,3 +35,6 @@ QC inspection yet; consumed by `QcStatsService`.
 - Expose `acquisitionCost`/`landedCost` unredacted (money is string; the cost
   interceptor strips by key).
 - Allow a transition absent from the transition table.
+
+`GET /devices` also accepts `statusCodes=A,B` (ignored when `statusCode` is set) so the QC queue can
+restrict itself to IN_STOCK + DEFECTIVE in one request.

@@ -111,6 +111,13 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
   if (filters.modelId) where.modelId = filters.modelId;
   if (filters.shipmentId) where.shipmentId = filters.shipmentId;
   if (filters.statusCode) where.statusCode = filters.statusCode;
+  else if (filters.statusCodes) {
+    const codes = filters.statusCodes
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    if (codes.length > 0) where.statusCode = { in: codes };
+  }
   if (filters.inspected === 'true') where.inspections = { some: {} };
   if (filters.inspected === 'false') where.inspections = { none: {} };
   if (filters.storage) {
