@@ -15,11 +15,27 @@ struct MetricTile: View {
     let value: String
     var subtext: String?
     var emphasis: Color?
+    /// When set, the tile becomes a button opening a breakdown (web parity).
+    var onTap: (() -> Void)?
 
     var body: some View {
+        if let onTap {
+            Button(action: onTap) { card }.buttonStyle(.plain)
+        } else {
+            card
+        }
+    }
+
+    private var card: some View {
         AppCard {
             VStack(alignment: .leading, spacing: 6) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Text(label).font(.caption).foregroundStyle(.secondary)
+                    if onTap != nil {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2).foregroundStyle(.tertiary)
+                    }
+                }
                 Text(value).font(.title3.weight(.semibold))
                     .foregroundStyle(emphasis ?? Tokens.ink)
                     .monospacedDigit()

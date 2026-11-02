@@ -22,6 +22,23 @@ enum FinanceSelfCheck {
         let row = #"{"modelId":"m1","storage":"128GB","avgAcquisitionCost":null,"avgSellingPrice":500,"unitsInStock":2,"unitsSold":1}"#
         let mp = try! JSONDecoder().decode(ModelPricingRow.self, from: Data(row.utf8))
         assert(mp.avgAcquisitionCost == nil && mp.avgSellingPrice == 500)
+
+        // Trend point with grossProfit redacted (absent) → 0, no decode failure.
+        let tp = try! JSONDecoder().decode(
+            TrendPoint.self, from: Data(#"{"bucket":"2026-11-01","revenue":1000,"expenses":50}"#.utf8))
+        assert(tp.revenue == 1000 && tp.grossProfit == 0 && tp.bucket == "2026-11-01")
+
+        // Breakdown row with cogs redacted → 0; share kept.
+        let br = try! JSONDecoder().decode(
+            FinBreakdownRow.self,
+            from: Data(#"{"key":"retail","label":"Retail","revenue":700,"unitsSold":2,"share":0.7}"#.utf8))
+        assert(br.cogs == 0 && br.revenue == 700 && br.share == 0.7)
+
+        // Inventory with landedValue redacted (absent) → nil.
+        let inv = try! JSONDecoder().decode(
+            InventoryReport.self,
+            from: Data(#"{"inStockUnits":5,"defectiveUnits":1,"consignedUnits":0,"byStatus":[],"byModel":[],"aging":[]}"#.utf8))
+        assert(inv.inStockUnits == 5 && inv.inStockLandedValue == nil)
     }()
 }
 #endif

@@ -19,6 +19,29 @@ struct ReportsRepository {
         try await api.get("/reports/model-pricing", query: ["windowDays": String(windowDays)])
     }
 
+    func trend(from: Date?, to: Date?, bucket: String) async throws -> [TrendPoint] {
+        var q = range(from, to); q["bucket"] = bucket
+        return try await api.get("/reports/trend", query: q)
+    }
+
+    func profitBreakdown(groupBy: String, from: Date?, to: Date?) async throws -> [FinBreakdownRow] {
+        var q = range(from, to); q["groupBy"] = groupBy
+        return try await api.get("/reports/profit/breakdown", query: q)
+    }
+
+    func returns(from: Date?, to: Date?, page: Int, pageSize: Int) async throws -> ReturnsPage {
+        var q = range(from, to); q["page"] = String(page); q["pageSize"] = String(pageSize)
+        return try await api.get("/reports/returns", query: q)
+    }
+
+    func consignments(from: Date?, to: Date?) async throws -> ConsignmentsReport {
+        try await api.get("/reports/consignments", query: range(from, to))
+    }
+
+    func inventory() async throws -> InventoryReport {
+        try await api.get("/reports/inventory")
+    }
+
     func dailyClosing(date: Date) async throws -> DailyClosingReport {
         try await api.get("/reports/daily-closing", query: ["date": iso(date)])
     }
