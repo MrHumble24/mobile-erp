@@ -43,6 +43,8 @@ struct KitCSVShareButton: View {
     @State private var fileURL: URL?
 
     var body: some View {
+        // Keyed on the CSV itself so the file is rewritten when rows load or filters change.
+        let csv = build()
         Group {
             if let fileURL {
                 ShareLink(item: fileURL) {
@@ -52,8 +54,8 @@ struct KitCSVShareButton: View {
                 ProgressView()
             }
         }
-        .task(id: filename) {
-            fileURL = try? KitCSV.write(build(), filename: filename)
+        .task(id: csv) {
+            fileURL = try? KitCSV.write(csv, filename: filename)
         }
     }
 }

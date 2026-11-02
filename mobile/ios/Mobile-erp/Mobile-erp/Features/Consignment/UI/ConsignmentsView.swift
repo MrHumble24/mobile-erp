@@ -109,9 +109,7 @@ struct ConsignmentsView: View {
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         if let model, !model.items.isEmpty {
             ToolbarItem(placement: .topBarTrailing) {
-                // ponytail: count in the name forces KitCSVShareButton to rebuild
-                // the file as more rows load (its .task keys on the filename).
-                KitCSVShareButton(filename: "consignments-\(model.items.count).csv",
+                KitCSVShareButton(filename: "consignments.csv",
                                   label: i18n.t("consignments.exportCsv")) {
                     ConsignmentLogic.csv(model.items) { i18n.t($0) }
                 }
