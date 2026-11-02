@@ -1,7 +1,7 @@
 import { CloudOff, RefreshCw, UploadCloud, AlertTriangle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useOnlineStatus } from "@/shared/lib/offline"
-import { useOutboxStore, selectPending, selectRejected } from "@/entities/sync"
+import { useOutboxStore, selectPendingCount, selectRejectedCount } from "@/entities/sync"
 import { Link } from "@/shared/ui/link"
 import { cn } from "@/shared/lib/utils"
 
@@ -15,8 +15,8 @@ function lastSyncLabel(t: T, at: number | null) {
 export function SyncStatusIndicator() {
   const { t } = useI18n()
   const online = useOnlineStatus()
-  const pending = useOutboxStore(selectPending).length
-  const rejected = useOutboxStore(selectRejected).length
+  const pending = useOutboxStore(selectPendingCount)
+  const rejected = useOutboxStore(selectRejectedCount)
   const syncing = useOutboxStore((s) => s.syncing)
   const lastSyncAt = useOutboxStore((s) => s.lastSyncAt)
 

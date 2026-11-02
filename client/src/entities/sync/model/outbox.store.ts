@@ -75,6 +75,14 @@ export const useOutboxStore = create<OutboxState>((set, get) => ({
 export const selectPending = (s: OutboxState) => s.entries.filter((e) => e.status === "pending")
 export const selectRejected = (s: OutboxState) => s.entries.filter((e) => e.status === "rejected")
 
+// Count selectors return a number (stable by Object.is) so they are safe to use
+// directly as Zustand hook selectors; the array selectors above are for the
+// engine/plain reads, not component subscriptions.
+export const selectPendingCount = (s: OutboxState) =>
+  s.entries.reduce((n, e) => (e.status === "pending" ? n + 1 : n), 0)
+export const selectRejectedCount = (s: OutboxState) =>
+  s.entries.reduce((n, e) => (e.status === "rejected" ? n + 1 : n), 0)
+
 /** Non-hook enqueue for use inside mutationFns and mutation callbacks. */
 export function enqueueMutation(input: EnqueueInput): Promise<void> {
   return useOutboxStore.getState().enqueue(input)

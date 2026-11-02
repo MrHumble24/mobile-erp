@@ -1,5 +1,5 @@
 import { useI18n } from "@/shared/i18n"
-import { useOutboxStore, selectPending, useDrainNow } from "@/entities/sync"
+import { useOutboxStore, selectPendingCount, useDrainNow } from "@/entities/sync"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
@@ -13,7 +13,7 @@ type SyncTab = (typeof SYNC_TABS)[number]
 export function SyncPage() {
   const { t } = useI18n()
   const [tab, setTab] = useUrlTab<SyncTab>("queue", { validTabs: SYNC_TABS })
-  const pendingCount = useOutboxStore(selectPending).length
+  const pendingCount = useOutboxStore(selectPendingCount)
   const drain = useDrainNow()
 
   return (
