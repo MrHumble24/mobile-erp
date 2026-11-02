@@ -32,7 +32,13 @@ export function usePosCheckout(blocked: boolean, onReset: () => void) {
   const handleCheckout = () => {
     if (checkout.isPending || blocked) return
     checkout.mutate(undefined, {
-      onSuccess: ({ saleIds: ids }) => openReceipt(ids),
+      onSuccess: ({ saleIds: ids, queuedCount }) => {
+        if (ids.length > 0) openReceipt(ids)
+        if (queuedCount > 0) {
+          toast.success(t("sync.queuedSale", { count: queuedCount }))
+          if (ids.length === 0) onReset()
+        }
+      },
       onError: (err) => {
         toast.error(failureMessage(err, t))
         if (err.saleIds.length > 0) openReceipt(err.saleIds)

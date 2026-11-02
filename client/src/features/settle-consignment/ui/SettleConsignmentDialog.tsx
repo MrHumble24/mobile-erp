@@ -1,5 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { isNetworkError } from "@/shared/api/http"
+import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useSettleConsignment, type ConsignmentView } from "@/entities/consignment"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
@@ -62,14 +64,9 @@ function SettleForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const dto = { salePrice: Number(salePrice), notes: notes.trim() || undefined }
     settleMutation.mutate(
-      {
-        id: consignment.id,
-        dto: {
-          salePrice: Number(salePrice),
-          notes: notes.trim() || undefined,
-        },
-      },
+      { id: consignment.id, dto },
       {
         onSuccess: () => {
           toast.success(t("consignments.settleSuccess"))
@@ -77,6 +74,18 @@ function SettleForm({
           onSuccess?.()
         },
         onError: (err: any) => {
+          if (isNetworkError(err)) {
+            void enqueueMutation({
+              id: crypto.randomUUID(),
+              type: MUTATION_TYPES.consignmentSettle,
+              payload: { consignmentId: consignment.id, ...dto },
+            }).then(() => {
+              toast.success(t("sync.queuedSettle"))
+              onCancel()
+              onSuccess?.()
+            })
+            return
+          }
           toast.error(err?.statusCode === 409 ? t("common.retry") : (err?.message || t("common.error")))
         },
       }

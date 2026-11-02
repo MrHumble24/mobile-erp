@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  RefreshCw,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -55,6 +56,7 @@ export const NAV_SECTIONS: NavSection[] = [
     groupKey: "nav.groupAdmin",
     items: [
       { to: "/users", labelKey: "nav.users", permission: "user.manage", icon: ShieldCheck },
+      { to: "/sync", labelKey: "nav.sync", permission: "sync.resolve", icon: RefreshCw },
       { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
     ],
   },

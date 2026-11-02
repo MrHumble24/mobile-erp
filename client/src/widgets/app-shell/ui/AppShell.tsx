@@ -4,6 +4,7 @@ import { AppShellHeader } from "./AppShellHeader"
 import { Sidebar } from "./Sidebar"
 import { AdminCommandPalette } from "./AdminCommandPalette"
 import { useI18n, type Locale } from "@/shared/i18n"
+import { useSyncEngine } from "@/entities/sync"
 
 const COLLAPSED_STORAGE_KEY = "malika_erp_sidebar_collapsed"
 
@@ -89,6 +90,7 @@ export function AppShell() {
   const [commandOpen, setCommandOpen] = React.useState(false)
   const { collapsed, mobileOpen, setMobileOpen, handleToggleSidebar } = useSidebarState()
 
+  useSyncEngine()
   useKeyboardShortcuts(handleToggleSidebar, () => setCommandOpen(true))
 
   React.useEffect(() => {

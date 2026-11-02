@@ -69,10 +69,11 @@ export function ConsignDeviceForm({
     if (!form.partnerId || !form.dueDate) return
     if (!form.rows.some((r) => r.imei.trim() && r.agreedPrice)) return
 
-    const { created, error } = await form.submit()
+    const { created, queued, error } = await form.submit()
     if (created.length > 0) {
       toast.success(created.length > 1 ? t("consignments.batchSuccess") : t("consignments.consignSuccess"))
     }
+    if (queued > 0) toast.success(t("sync.queuedConsign", { count: queued }))
     if (error) {
       toast.error(consignErrorMessage(error, t))
       return

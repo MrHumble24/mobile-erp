@@ -14,6 +14,7 @@ import uzReports from "./uz/reports.json"
 import uzSales from "./uz/sales.json"
 import uzSettings from "./uz/settings.json"
 import uzShipments from "./uz/shipments.json"
+import uzSync from "./uz/sync.json"
 import uzUsers from "./uz/users.json"
 
 import enAuth from "./en/auth.json"
@@ -31,6 +32,7 @@ import enReports from "./en/reports.json"
 import enSales from "./en/sales.json"
 import enSettings from "./en/settings.json"
 import enShipments from "./en/shipments.json"
+import enSync from "./en/sync.json"
 import enUsers from "./en/users.json"
 
 export type Locale = "uz" | "en"
@@ -52,6 +54,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     sales: uzSales,
     settings: uzSettings,
     shipments: uzShipments,
+    sync: uzSync,
     users: uzUsers,
   },
   en: {
@@ -70,6 +73,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     sales: enSales,
     settings: enSettings,
     shipments: enShipments,
+    sync: enSync,
     users: enUsers,
   },
 }

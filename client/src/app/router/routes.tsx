@@ -17,6 +17,7 @@ const PartnersPage = lazy(() => import("@/pages/partners"))
 const ExpensesPage = lazy(() => import("@/pages/expenses"))
 const ReportsPage = lazy(() => import("@/pages/reports"))
 const UsersPage = lazy(() => import("@/pages/users"))
+const SyncPage = lazy(() => import("@/pages/sync"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
 
 function SuspenseFallback() {
@@ -65,6 +66,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="user.manage" />}>
           <Route path="/users" element={<UsersPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="sync.resolve" />}>
+          <Route path="/sync" element={<SyncPage />} />
         </Route>
         <Route element={<RequirePermission permission="settings.manage" />}>
           <Route path="/settings" element={<SettingsPage />} />

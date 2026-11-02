@@ -1,13 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { HttpError } from "@/shared/api/http"
+import { HttpError, isNetworkError } from "@/shared/api/http"
 import { saleRepository, saleKeys } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { customerKeys } from "@/entities/customer"
+import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
 import { toSaleDto } from "../lib/to-sale-dto"
 
 export interface CheckoutResult {
+  /** Sales confirmed by the server now. */
   saleIds: string[]
+  /** Lines queued offline; will sync when the connection returns. */
+  queuedCount: number
 }
 
 /** A line failed mid-checkout; carries the already-succeeded sale ids so the caller can still print them. */
@@ -37,19 +41,35 @@ export function useCheckout() {
   return useMutation<CheckoutResult, CheckoutLineError>({
     mutationFn: async () => {
       const saleIds: string[] = []
+      let queuedCount = 0
       // Snapshot now; removeLine mutates the store as we go.
       const lines = [...useCartStore.getState().lines]
       for (const line of lines) {
         const customer = useCartStore.getState().customer
+        const dto = toSaleDto(line, customer)
         try {
-          const sale = await saleRepository.create(toSaleDto(line, customer))
+          const sale = await saleRepository.create(dto)
           saleIds.push(sale.id)
           useCartStore.getState().removeLine(line.lineId)
         } catch (err) {
+          // Transport failure → queue the same payload (same clientMutationId)
+          // and clear the line as if it succeeded. HTTP verdicts still stop here.
+          if (isNetworkError(err)) {
+            await enqueueMutation({
+              id: line.clientMutationId,
+              type: MUTATION_TYPES.saleCreate,
+              payload: dto as unknown as Record<string, unknown>,
+              baseVersion: line.device.version,
+              occurredAt: new Date().toISOString(),
+            })
+            queuedCount += 1
+            useCartStore.getState().removeLine(line.lineId)
+            continue
+          }
           throw new CheckoutLineError(line.device.imei, saleIds, err)
         }
       }
-      return { saleIds }
+      return { saleIds, queuedCount }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: saleKeys.lists() })

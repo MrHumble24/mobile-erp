@@ -1,0 +1,57 @@
+import { CloudOff, RefreshCw, UploadCloud, AlertTriangle } from "lucide-react"
+import { useI18n } from "@/shared/i18n"
+import { useOnlineStatus } from "@/shared/lib/offline"
+import { useOutboxStore, selectPending, selectRejected } from "@/entities/sync"
+import { Link } from "@/shared/ui/link"
+import { cn } from "@/shared/lib/utils"
+
+type T = (k: string, p?: Record<string, string | number>) => string
+
+function lastSyncLabel(t: T, at: number | null) {
+  return at ? t("sync.lastSync", { time: new Date(at).toLocaleTimeString() }) : t("sync.neverSynced")
+}
+
+/** Header pill: online/offline dot, pending + rejected counts, click → /sync. */
+export function SyncStatusIndicator() {
+  const { t } = useI18n()
+  const online = useOnlineStatus()
+  const pending = useOutboxStore(selectPending).length
+  const rejected = useOutboxStore(selectRejected).length
+  const syncing = useOutboxStore((s) => s.syncing)
+  const lastSyncAt = useOutboxStore((s) => s.lastSyncAt)
+
+  const summary = `${online ? t("sync.online") : t("sync.offline")} · ${lastSyncLabel(t, lastSyncAt)}`
+
+  return (
+    <Link
+      to="/sync"
+      title={summary}
+      aria-label={t("sync.openSync")}
+      className="hidden sm:inline-flex items-center gap-1.5 px-3 h-8 rounded-full border text-[11px] font-medium no-underline shrink-0 transition-colors border-[#e8e8e8] text-[#202020] hover:border-[#b3b3b3]"
+    >
+      <span
+        className={cn("size-1.5 rounded-full shrink-0", online ? "bg-[#00c07a] animate-pulse" : "bg-[#f59e0b]")}
+      />
+      {online ? (
+        syncing ? <RefreshCw className="size-3.5 animate-spin" /> : <span>{t("sync.online")}</span>
+      ) : (
+        <span className="inline-flex items-center gap-1 text-[#b45309]">
+          <CloudOff className="size-3.5" />
+          {t("sync.offline")}
+        </span>
+      )}
+      {pending > 0 && (
+        <span className="inline-flex items-center gap-1 text-[#2563eb]">
+          <UploadCloud className="size-3.5" />
+          {pending}
+        </span>
+      )}
+      {rejected > 0 && (
+        <span className="inline-flex items-center gap-1 text-[#dc2626]">
+          <AlertTriangle className="size-3.5" />
+          {rejected}
+        </span>
+      )}
+    </Link>
+  )
+}
