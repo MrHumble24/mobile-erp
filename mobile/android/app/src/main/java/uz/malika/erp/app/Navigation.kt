@@ -1,20 +1,15 @@
 package uz.malika.erp.app
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import uz.malika.erp.AppContainer
-import uz.malika.erp.shared.ui.ToastHost
 import uz.malika.erp.features.auth.model.SessionViewModel
 import uz.malika.erp.features.auth.ui.LoginScreen
 import uz.malika.erp.features.devconsole.DEV_CONSOLE_ROUTE
@@ -79,30 +74,26 @@ private fun AuthedShell(container: AppContainer, session: SessionViewModel, onli
     }
 
     CompositionLocalProvider(LocalCan provides { code -> user.can(code) }) {
-        Box(Modifier.fillMaxSize()) {
-            AppShell(
-                navItems = navItems,
-                currentRoute = currentRoute,
-                online = online,
-                onSelect = { route ->
-                    nav.navigate(route) {
-                        launchSingleTop = true
-                        restoreState = true
-                        popUpTo(FeatureRegistry.startRoute) { saveState = true }
-                    }
-                },
-                onLogout = session::logout,
-            ) { modifier ->
-                NavHost(
-                    navController = nav,
-                    startDestination = FeatureRegistry.startRoute,
-                    modifier = modifier,
-                ) {
-                    FeatureRegistry.features.forEach { it.register(this, nav, container) }
+        AppShell(
+            navItems = navItems,
+            currentRoute = currentRoute,
+            online = online,
+            onSelect = { route ->
+                nav.navigate(route) {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(FeatureRegistry.startRoute) { saveState = true }
                 }
+            },
+            onLogout = session::logout,
+        ) { modifier ->
+            NavHost(
+                navController = nav,
+                startDestination = FeatureRegistry.startRoute,
+                modifier = modifier,
+            ) {
+                FeatureRegistry.features.forEach { it.register(this, nav, container) }
             }
-            // One app-wide toast host, fed the container's Toaster (see shared/ui/Toast.kt).
-            ToastHost(container.toaster.toasts, Modifier.align(Alignment.BottomCenter))
         }
     }
 }
