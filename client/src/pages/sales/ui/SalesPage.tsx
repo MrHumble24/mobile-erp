@@ -1,79 +1,119 @@
 import * as React from "react"
+import { Download } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useSales, type SaleFilters } from "@/entities/sale"
-import { WarrantyLookupPanel } from "@/features/warranty-lookup"
+import { useAuthStore } from "@/features/auth"
+import { useSales, type SaleView } from "@/entities/sale"
+import { WarrantyLookupPanel, ReturnSaleDialog } from "@/features/warranty-lookup"
 import { PageHeader } from "@/shared/ui/page-header"
-import { SalesTable } from "./SalesTable"
+import { Button } from "@/shared/ui/button"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs"
+import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
+import { useSalesFilters } from "../model/use-sales-filters"
+import { exportSalesCsv } from "../lib/sales-csv"
+import { SalesListTab } from "./SalesListTab"
+import { SaleDetailSheet } from "./SaleDetailSheet"
 import { SaleReceiptDialog } from "./SaleReceiptDialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 
-function ChannelFilter({
-  value,
-  onChange,
-}: {
-  value?: "retail" | "b2b"
-  onChange: (val?: "retail" | "b2b") => void
-}) {
-  const { t } = useI18n()
+const SALES_TABS = ["sales", "warranty"] as const
+type SalesTab = (typeof SALES_TABS)[number]
 
-  return (
-    <div className="w-48">
-      <Select
-        value={value || "all"}
-        onValueChange={(val) => onChange(val === "all" ? undefined : (val as "retail" | "b2b"))}
-      >
-        <SelectTrigger className="h-9 rounded-[9px]">
-          <SelectValue placeholder={t("sales.filterChannel")} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("common.all")}</SelectItem>
-          <SelectItem value="retail">{t("sales.channelRetail")}</SelectItem>
-          <SelectItem value="b2b">{t("sales.channelB2B")}</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  )
+interface ReturnTarget {
+  id: string
+  salePrice: number
+}
+
+function useSaleDialogs() {
+  const [detailId, setDetailId] = React.useState<string | null>(null)
+  const [receiptId, setReceiptId] = React.useState<string | null>(null)
+  const [returnTarget, setReturnTarget] = React.useState<ReturnTarget | null>(null)
+  return { detailId, setDetailId, receiptId, setReceiptId, returnTarget, setReturnTarget }
 }
 
 export function SalesPage() {
   const { t } = useI18n()
-  const [channel, setChannel] = React.useState<"retail" | "b2b" | undefined>()
-  const [selectedReceiptId, setSelectedReceiptId] = React.useState<string | null>(null)
+  const [tab, setTab] = useUrlTab<SalesTab>("sales", { validTabs: SALES_TABS })
+  const hasProfitView = useAuthStore((s) => s.hasPermission("sale.profit.view"))
+  const canReturn = useAuthStore((s) => s.hasPermission("sale.return"))
+  const canReadUsers = useAuthStore((s) => s.hasPermission("user.read"))
 
-  const filters: SaleFilters = React.useMemo(() => ({ channel }), [channel])
-  const { data: salePage, isLoading } = useSales(filters)
+  const filters = useSalesFilters()
+  const { data, isLoading } = useSales(filters.queryFilters)
+  const d = useSaleDialogs()
+
+  const actions = React.useMemo(
+    () => ({
+      onOpenDetail: (sale: SaleView) => d.setDetailId(sale.id),
+      onOpenReceipt: (id: string) => d.setReceiptId(id),
+      onReturn: (sale: SaleView) =>
+        d.setReturnTarget({ id: sale.id, salePrice: Number(sale.salePrice) }),
+    }),
+    [d]
+  )
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("sales.title")}
-        description="Amalga oshirilgan savdolar ro'yxati, to'lov usullari, cheklar va kafolat muddati tekshiruvi"
-        actions={<ChannelFilter value={channel} onChange={setChannel} />}
+        description={t("sales.description")}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={!data || data.items.length === 0}
+            onClick={() => data && exportSalesCsv(data.items, hasProfitView)}
+          >
+            <Download className="size-4" />
+            {t("sales.exportCsv")}
+          </Button>
+        }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2 space-y-4">
-          {isLoading && (
-            <div className="p-8 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
-          )}
-          {salePage && (
-            <SalesTable
-              sales={salePage.items}
-              onOpenReceipt={(id) => setSelectedReceiptId(id)}
-            />
-          )}
-        </div>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as SalesTab)}>
+        <TabsList>
+          <TabsTrigger value="sales">{t("sales.tabSales")}</TabsTrigger>
+          <TabsTrigger value="warranty">{t("sales.tabWarranty")}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="sales">
+          <SalesListTab
+            filters={filters}
+            data={data}
+            isLoading={isLoading}
+            hasProfitView={hasProfitView}
+            canReturn={canReturn}
+            canReadUsers={canReadUsers}
+            actions={actions}
+          />
+        </TabsContent>
+        <TabsContent value="warranty">
+          <div className="max-w-xl">
+            <WarrantyLookupPanel onOpenSale={(id) => d.setDetailId(id)} />
+          </div>
+        </TabsContent>
+      </Tabs>
 
-        <div className="lg:col-span-1">
-          <WarrantyLookupPanel />
-        </div>
-      </div>
-
+      <SaleDetailSheet
+        saleId={d.detailId}
+        open={Boolean(d.detailId)}
+        onClose={() => d.setDetailId(null)}
+        canViewProfit={hasProfitView}
+        canReturn={canReturn}
+        onReceipt={(id) => d.setReceiptId(id)}
+        onReturn={actions.onReturn}
+      />
       <SaleReceiptDialog
-        saleId={selectedReceiptId}
-        open={Boolean(selectedReceiptId)}
-        onOpenChange={(open) => !open && setSelectedReceiptId(null)}
+        saleId={d.receiptId}
+        open={Boolean(d.receiptId)}
+        onOpenChange={(open) => !open && d.setReceiptId(null)}
       />
+      {d.returnTarget && (
+        <ReturnSaleDialog
+          saleId={d.returnTarget.id}
+          salePrice={d.returnTarget.salePrice}
+          open={Boolean(d.returnTarget)}
+          onOpenChange={(open) => !open && d.setReturnTarget(null)}
+        />
+      )}
     </div>
   )
 }

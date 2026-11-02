@@ -16,6 +16,13 @@ export interface SaleWarrantyRef {
   endsAt: string
 }
 
+export interface SaleReturnRef {
+  returnedAt: string
+  refundAmount: string
+  reason: string | null
+  processedBy: { id: string; name: string }
+}
+
 export interface SaleView {
   id: string
   device: SaleDeviceRef
@@ -27,6 +34,18 @@ export interface SaleView {
   soldBy: { id: string; name: string }
   warranty: SaleWarrantyRef | null
   consignmentId: string | null
+  notes: string | null
+  return: SaleReturnRef | null
+}
+
+export interface SaleStats {
+  count: number
+  revenue: string
+  avgPrice: string
+  returnedCount: number
+  refundTotal: string
+  /** Absent for callers without `sale.profit.view` (redacted server-side). */
+  netProfit?: string
 }
 
 export interface ReceiptItem {
@@ -91,6 +110,9 @@ export interface SaleFilters {
   soldById?: string
   customerId?: string
   channel?: "retail" | "b2b"
+  search?: string
+  returned?: "true" | "false"
+  warranty?: "active" | "expired"
   page?: number
   pageSize?: number
 }

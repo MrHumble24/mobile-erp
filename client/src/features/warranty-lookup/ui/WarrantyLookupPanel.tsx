@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ShieldCheck, ShieldAlert, RotateCcw } from "lucide-react"
+import { ShieldCheck, ShieldAlert, RotateCcw, ExternalLink } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useWarrantyLookup, type WarrantyLookupView } from "@/entities/sale"
@@ -32,9 +32,11 @@ function WarrantyStatusBadge({ data }: { data: WarrantyLookupView }) {
 function WarrantyInfoCard({
   data,
   onOpenReturn,
+  onOpenSale,
 }: {
   data: WarrantyLookupView
   onOpenReturn: () => void
+  onOpenSale?: (saleId: string) => void
 }) {
   const { t } = useI18n()
 
@@ -67,20 +69,30 @@ function WarrantyInfoCard({
         </div>
       )}
 
-      {!data.alreadyReturned && (
-        <Button variant="destructive" className="w-full gap-2" onClick={onOpenReturn}>
-          <RotateCcw className="size-4" />
-          {t("sales.returnDevice")}
-        </Button>
-      )}
+      <div className="flex flex-col gap-2">
+        {onOpenSale && (
+          <Button variant="outline" className="w-full gap-2" onClick={() => onOpenSale(data.saleId)}>
+            <ExternalLink className="size-4" />
+            {t("sales.openSale")}
+          </Button>
+        )}
+        {!data.alreadyReturned && (
+          <Button variant="destructive" className="w-full gap-2" onClick={onOpenReturn}>
+            <RotateCcw className="size-4" />
+            {t("sales.returnDevice")}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
 
 function WarrantyLookupResult({
   searchImei,
+  onOpenSale,
 }: {
   searchImei: string
+  onOpenSale?: (saleId: string) => void
 }) {
   const { t } = useI18n()
   const [returnDialogOpen, setReturnDialogOpen] = React.useState(false)
@@ -92,7 +104,7 @@ function WarrantyLookupResult({
 
   return (
     <>
-      <WarrantyInfoCard data={data} onOpenReturn={() => setReturnDialogOpen(true)} />
+      <WarrantyInfoCard data={data} onOpenReturn={() => setReturnDialogOpen(true)} onOpenSale={onOpenSale} />
       <ReturnSaleDialog
         saleId={data.saleId}
         salePrice={Number(data.salePrice)}
@@ -104,7 +116,7 @@ function WarrantyLookupResult({
   )
 }
 
-export function WarrantyLookupPanel() {
+export function WarrantyLookupPanel({ onOpenSale }: { onOpenSale?: (saleId: string) => void }) {
   const { t } = useI18n()
   const [imeiInput, setImeiInput] = React.useState("")
   const [searchImei, setSearchImei] = React.useState("")
@@ -129,10 +141,10 @@ export function WarrantyLookupPanel() {
             setImeiInput("")
             setSearchImei("")
           }}
-          placeholder="IMEI (15 xona) kiriting..."
+          placeholder={t("sales.imeiPlaceholder")}
         />
         {searchImei && searchImei.length === 15 && (
-          <WarrantyLookupResult searchImei={searchImei} />
+          <WarrantyLookupResult searchImei={searchImei} onOpenSale={onOpenSale} />
         )}
       </CardContent>
     </Card>

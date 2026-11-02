@@ -11,6 +11,13 @@ export function useSales(filters?: SaleFilters) {
   })
 }
 
+export function useSalesStats(filters?: SaleFilters) {
+  return useQuery({
+    queryKey: saleKeys.stats(filters),
+    queryFn: () => saleRepository.stats(filters),
+  })
+}
+
 export function useSale(id: string) {
   return useQuery({
     queryKey: saleKeys.detail(id),
@@ -52,7 +59,8 @@ export function useReturnSale() {
     mutationFn: ({ id, dto }: { id: string; dto: ReturnSaleDto }) =>
       saleRepository.returnSale(id, dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
+      // saleKeys.all covers lists, stats and detail for this entity.
+      queryClient.invalidateQueries({ queryKey: saleKeys.all })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
     },
   })
