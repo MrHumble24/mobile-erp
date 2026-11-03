@@ -113,6 +113,17 @@ Mono for IMEI/money only (`Font.mono`). Apply `.glassEffect`/`.buttonStyle(.glas
 SPARINGLY and only behind `if #available(iOS 26, *)` with a material fallback —
 floating actions / scanner overlay, not everywhere.
 
+## Navigation gotchas (learned the hard way)
+- **Never let UIKit's tab "More" host a screen.** With > 5 tabs, iOS puts the
+  rest in its own "More" controller, which keeps rebuilding SwiftUI screens:
+  `@State` models reset, `.task { load() }` reruns → infinite spinner + freeze
+  (Hamkorlar, Nasiyalar, 2026-11-03). `AppShell` caps iPhone at 4 tabs +
+  `MoreTab`; add features via `FeatureRegistry` only, never a raw `TabView`.
+- **Every screen lives inside exactly one `NavigationStack`** (the tab's or
+  `MoreTab`'s). Don't add your own inner stack, and don't drop the outer one.
+- Spinner that never stops? First check the view isn't being re-created
+  (log once in `.task`) before touching the loading logic.
+
 ## Server-contract gotchas
 - Base URL from the dev panel (`DevConfig`), applied at runtime. No path prefix.
 - **Cost fields are redacted** (absent, not null) for under-privileged users and
