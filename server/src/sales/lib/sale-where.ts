@@ -25,6 +25,7 @@ function searchOr(search?: string): Prisma.SaleWhereInput['OR'] {
   if (!term) return undefined;
   return [
     { device: { imei: { contains: term } } },
+    { device: { imei2: { contains: term } } },
     { customer: { name: { contains: term, mode: 'insensitive' } } },
     { customer: { phone: { contains: term, mode: 'insensitive' } } },
   ];

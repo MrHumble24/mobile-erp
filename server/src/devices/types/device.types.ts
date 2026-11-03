@@ -2,6 +2,7 @@
 export interface DeviceView {
   id: string;
   imei: string;
+  imei2: string | null;
   shipmentId: string;
   modelId: string;
   specs: Record<string, unknown>;
@@ -72,6 +73,7 @@ export interface DeviceFilters {
 export interface DeviceDetailsPatch {
   specs?: Record<string, unknown>;
   targetPrice?: number | null;
+  imei2?: string | null;
 }
 
 export interface StatusChangeInput {

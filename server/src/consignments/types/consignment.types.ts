@@ -6,6 +6,7 @@ export interface ConsignmentView {
   partnerShopName: string;
   deviceId: string;
   imei: string;
+  imei2: string | null;
   agreedPrice: Prisma.Decimal;
   dueDate: Date;
   statusCode: string;

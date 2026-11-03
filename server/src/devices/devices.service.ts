@@ -63,6 +63,14 @@ export class DevicesService {
         throw new BadRequestException({ message: 'Invalid specs', problems });
       }
     }
+    if (dto.imei2) {
+      if (dto.imei2 === device.imei) {
+        throw new BadRequestException('imei2 must differ from imei');
+      }
+      if (await this.query.imeiInUse(dto.imei2, id)) {
+        throw new ConflictException(`IMEI ${dto.imei2} already in use`);
+      }
+    }
     return this.status.updateDetails(id, dto);
   }
 

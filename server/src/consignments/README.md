@@ -6,12 +6,13 @@ B2B "Nasiya" device transfers and their resolution (PRD Module 4).
 
 - `POST /` — `consignment.create`. One-tap transfer. `{ imei, partnerId,
   agreedPrice, dueDate, notes?, clientMutationId?, expectedVersion? }`.
-  Idempotent on `clientMutationId`; device must be IN_STOCK (409 otherwise);
-  enforces the partner credit limit (409 with the numbers).
+  `imei` is resolved against either IMEI column (dual-SIM). Idempotent on
+  `clientMutationId`; device must be IN_STOCK (409 otherwise); enforces the
+  partner credit limit (409 with the numbers).
 - `GET /` — `consignment.read`. Filters `partnerId`, `statusCode`,
-  `overdue=true`, `search` (IMEI or partner shop name), `from`/`to` (ISO bounds
-  on `consignedAt`); paginated (`page`, `pageSize`). Rows carry
-  `partnerShopName` and `saleId` (set once SETTLED). Where-builder in
+  `overdue=true`, `search` (either IMEI column or partner shop name), `from`/`to`
+  (ISO bounds on `consignedAt`); paginated (`page`, `pageSize`). Rows carry
+  `imei2`, `partnerShopName` and `saleId` (set once SETTLED). Where-builder in
   `lib/consignment.where.ts` (unit-tested).
 - `GET /stats` — `consignment.read`. Tiles for the filtered set:
   `{ total, openCount, overdueCount, outstanding }`. Status/overdue are dropped

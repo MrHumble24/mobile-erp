@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { anyImeiWhere } from '../devices/lib/imei.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toConsignmentView, withImei } from './lib/consignment.mapper.js';
@@ -96,8 +97,8 @@ export class ConsignmentsWriteRepository {
   }
 
   private async loadDeviceByImei(tx: Tx, imei: string): Promise<DeviceLock> {
-    const device = await tx.device.findUnique({
-      where: { imei },
+    const device = await tx.device.findFirst({
+      where: anyImeiWhere(imei),
       select: { id: true, statusCode: true, version: true, landedCost: true },
     });
     if (!device) throw new NotFoundException(`Device ${imei} not found`);

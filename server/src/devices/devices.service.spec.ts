@@ -6,12 +6,20 @@ import { DevicesService } from './devices.service.js';
 import { OptimisticLockError } from './types/optimistic-lock.error.js';
 import { isAllowedTransition } from './types/status-transitions.js';
 
-function build(state: { statusCode: string; version: number } | null) {
+function build(
+  state: { statusCode: string; version: number } | null,
+  queryOverrides: Partial<Record<string, jest.Mock>> = {},
+) {
   const status = {
     findState: jest.fn().mockResolvedValue(state),
     applyStatusChange: jest.fn().mockResolvedValue({ id: 'd1' }),
+    updateDetails: jest.fn().mockResolvedValue({ id: 'd1' }),
   };
-  const query = {} as unknown as DevicesQueryRepository;
+  const query = {
+    findById: jest.fn(),
+    imeiInUse: jest.fn().mockResolvedValue(false),
+    ...queryOverrides,
+  } as unknown as DevicesQueryRepository;
   const models = {
     getAttributes: jest.fn().mockResolvedValue([]),
   } as unknown as DeviceModelsService;
@@ -20,7 +28,7 @@ function build(state: { statusCode: string; version: number } | null) {
     status as unknown as DevicesStatusRepository,
     models,
   );
-  return { service, status };
+  return { service, status, query };
 }
 
 describe('isAllowedTransition', () => {
@@ -71,5 +79,43 @@ describe('DevicesService.changeStatus', () => {
     await expect(
       service.changeStatus('d1', 'SOLD', 'u1', undefined, 0),
     ).rejects.toThrow(ConflictException);
+  });
+});
+
+describe('DevicesService.updateDetails imei2', () => {
+  const device = { id: 'd1', imei: '111111111111111', modelId: 'm1' };
+
+  it('rejects imei2 equal to imei', async () => {
+    const { service, status } = build(null, {
+      findById: jest.fn().mockResolvedValue(device),
+    });
+    await expect(
+      service.updateDetails('d1', { imei2: device.imei }),
+    ).rejects.toThrow(BadRequestException);
+    expect(status.updateDetails).not.toHaveBeenCalled();
+  });
+
+  it('rejects an imei2 already used by another device', async () => {
+    const { service, status } = build(null, {
+      findById: jest.fn().mockResolvedValue(device),
+      imeiInUse: jest.fn().mockResolvedValue(true),
+    });
+    await expect(
+      service.updateDetails('d1', { imei2: '222222222222222' }),
+    ).rejects.toThrow(ConflictException);
+    expect(status.updateDetails).not.toHaveBeenCalled();
+  });
+
+  it('persists a valid, free imei2 (checking both columns, excluding self)', async () => {
+    const imeiInUse = jest.fn().mockResolvedValue(false);
+    const { service, status } = build(null, {
+      findById: jest.fn().mockResolvedValue(device),
+      imeiInUse,
+    });
+    await service.updateDetails('d1', { imei2: '222222222222222' });
+    expect(imeiInUse).toHaveBeenCalledWith('222222222222222', 'd1');
+    expect(status.updateDetails).toHaveBeenCalledWith('d1', {
+      imei2: '222222222222222',
+    });
   });
 });

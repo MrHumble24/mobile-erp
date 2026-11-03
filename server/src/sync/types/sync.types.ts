@@ -25,6 +25,7 @@ export interface ConflictView {
   id: string;
   deviceId: string;
   imei: string;
+  imei2: string | null;
   terminalId: string;
   attemptedChange: StoredMutation;
   baseVersion: number;
@@ -36,6 +37,7 @@ export interface ConflictView {
 export interface DeviceChange {
   id: string;
   imei: string;
+  imei2: string | null;
   statusCode: string;
   version: number;
   targetPrice: string | null;

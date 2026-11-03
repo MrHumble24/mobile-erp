@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { anyImeiWhere } from '../devices/lib/imei.js';
 import { buildSaleWhere } from './lib/sale-where.js';
 import { toReceiptView, toSaleView } from './lib/sale.mapper.js';
 import { remainingWarrantyDays } from './lib/warranty.js';
@@ -23,6 +24,7 @@ const saleSelect = {
   device: {
     select: {
       imei: true,
+      imei2: true,
       specs: true,
       model: { select: { brand: true, name: true } },
     },
@@ -148,8 +150,8 @@ export class SalesRepository {
     landedCost: Prisma.Decimal;
     targetPrice: Prisma.Decimal | null;
   } | null> {
-    return this.prisma.device.findUnique({
-      where: { imei },
+    return this.prisma.device.findFirst({
+      where: anyImeiWhere(imei),
       select: {
         id: true,
         statusCode: true,
@@ -197,7 +199,7 @@ export class SalesRepository {
 
   async warrantyLookup(imei: string): Promise<WarrantyLookupView | null> {
     const sale = await this.prisma.sale.findFirst({
-      where: { device: { imei } },
+      where: { device: anyImeiWhere(imei) },
       orderBy: { soldAt: 'desc' },
       select: {
         id: true,

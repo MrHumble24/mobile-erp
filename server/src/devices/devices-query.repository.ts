@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toDeviceView } from './lib/device-view.mapper.js';
+import { anyImeiWhere } from './lib/imei.js';
 import {
   DeviceDetailView,
   DeviceFilters,
@@ -68,8 +69,8 @@ export class DevicesQueryRepository {
   }
 
   async findDetailByImei(imei: string): Promise<DeviceDetailView | null> {
-    const row = await this.prisma.device.findUnique({
-      where: { imei },
+    const row = await this.prisma.device.findFirst({
+      where: anyImeiWhere(imei),
       include: {
         model: { select: { id: true, brand: true, name: true } },
         status: { select: { code: true, label: true } },
@@ -87,6 +88,17 @@ export class DevicesQueryRepository {
       status: row.status,
       latestInspection: row.inspections[0] ?? null,
     };
+  }
+
+  /** True when `value` already occupies either IMEI column of another device. */
+  async imeiInUse(value: string, excludeId?: string): Promise<boolean> {
+    const row = await this.prisma.device.findFirst({
+      where: excludeId
+        ? { AND: [anyImeiWhere(value), { id: { not: excludeId } }] }
+        : anyImeiWhere(value),
+      select: { id: true },
+    });
+    return row !== null;
   }
 
   findHistory(deviceId: string): Promise<DeviceStatusHistoryView[]> {
@@ -126,6 +138,7 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
   if (filters.search) {
     where.OR = [
       { imei: { contains: filters.search, mode: 'insensitive' } },
+      { imei2: { contains: filters.search, mode: 'insensitive' } },
       { model: { brand: { contains: filters.search, mode: 'insensitive' } } },
       { model: { name: { contains: filters.search, mode: 'insensitive' } } },
     ];

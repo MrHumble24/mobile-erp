@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { anyImeiWhere } from '../devices/lib/imei.js';
 import type { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { ConflictView, StoredMutation } from './types/sync.types.js';
@@ -12,7 +13,7 @@ const conflictWithImei = {
   resolvedAt: true,
   resolution: true,
   createdAt: true,
-  device: { select: { imei: true } },
+  device: { select: { imei: true, imei2: true } },
 } as const;
 
 /** Device lookups and sync_conflicts persistence for the push/resolve flow. */
@@ -21,8 +22,8 @@ export class SyncRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async deviceIdByImei(imei: string): Promise<string | null> {
-    const row = await this.prisma.device.findUnique({
-      where: { imei },
+    const row = await this.prisma.device.findFirst({
+      where: anyImeiWhere(imei),
       select: { id: true },
     });
     return row?.id ?? null;
@@ -120,12 +121,13 @@ function toConflictView(row: {
   resolvedAt: Date | null;
   resolution: string | null;
   createdAt: Date;
-  device: { imei: string };
+  device: { imei: string; imei2: string | null };
 }): ConflictView {
   return {
     id: row.id,
     deviceId: row.deviceId,
     imei: row.device.imei,
+    imei2: row.device.imei2,
     terminalId: row.terminalId,
     attemptedChange: row.attemptedChange as unknown as StoredMutation,
     baseVersion: row.baseVersion,

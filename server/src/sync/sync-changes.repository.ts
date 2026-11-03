@@ -23,6 +23,7 @@ export class SyncChangesRepository {
       select: {
         id: true,
         imei: true,
+        imei2: true,
         statusCode: true,
         version: true,
         targetPrice: true,
@@ -53,6 +54,7 @@ export class SyncChangesRepository {
 type DeviceRow = {
   id: string;
   imei: string;
+  imei2: string | null;
   statusCode: string;
   version: number;
   targetPrice: Prisma.Decimal | null;
@@ -74,6 +76,7 @@ function toDeviceChange(row: DeviceRow): DeviceChange {
   return {
     id: row.id,
     imei: row.imei,
+    imei2: row.imei2,
     statusCode: row.statusCode,
     version: row.version,
     targetPrice: row.targetPrice === null ? null : row.targetPrice.toFixed(2),

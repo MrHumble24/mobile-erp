@@ -12,6 +12,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
 
 class InlineCustomerDto {
   @IsString()
@@ -27,7 +28,7 @@ class InlineCustomerDto {
 
 export class CreateSaleDto {
   @IsString()
-  @Matches(/^\d{15}$/, { message: 'imei must be 15 digits' })
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
   imei!: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })

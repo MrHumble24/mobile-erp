@@ -30,6 +30,7 @@ export interface ShipmentPatch {
 
 export interface RegisterDeviceInput {
   imei: string;
+  imei2?: string;
   modelId: string;
   specs: Record<string, unknown>;
   acquisitionCost: number;
@@ -40,6 +41,7 @@ export interface RegisterDeviceInput {
 export interface RegisteredDeviceView {
   id: string;
   imei: string;
+  imei2: string | null;
   modelId: string;
   acquisitionCost: string;
   landedCost: string;

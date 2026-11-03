@@ -27,6 +27,7 @@ export function toSaleView(row: SaleRow): SaleView {
     id: row.id,
     device: {
       imei: row.device.imei,
+      imei2: row.device.imei2,
       model: row.device.model,
       specs: row.device.specs,
     },
@@ -63,6 +64,7 @@ export function toReceiptView(row: SaleRow): ReceiptView {
     items: [
       {
         imei: row.device.imei,
+        imei2: row.device.imei2,
         model,
         storage: specValue(row.device.specs, 'storage'),
         color: specValue(row.device.specs, 'color'),

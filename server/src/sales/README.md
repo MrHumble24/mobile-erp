@@ -7,13 +7,15 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
 
 - `POST /sales` (`sale.create`) `{ imei, salePrice, customerId?, customer?{name,phone},
   warrantyDays?, notes?, clientMutationId?, expectedVersion? }` → `SaleView`.
-  Device must exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
+  `imei` is resolved against either IMEI column (dual-SIM), the device must
+  exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
   sellable, see ADR 0007). Idempotent on `clientMutationId` (returns the prior sale).
 - `GET /sales` (`sale.read`)
   `?from&to&soldById&customerId&channel=retail|b2b&search&returned=true|false&warranty=active|expired&page&pageSize`
   → `{ items: SaleView[], total, page, pageSize }`. Channel: retail = `consignmentId`
-  null, b2b = not null. `search` matches device IMEI (contains) or customer name/phone
-  (contains, insensitive). `warranty=active` excludes returned units. The WHERE clause
+  null, b2b = not null. `search` matches either device IMEI column (contains) or
+  customer name/phone (contains, insensitive). `warranty=active` excludes returned
+  units. The WHERE clause
   is `lib/sale-where.ts` (one source of truth for list + stats).
 - `GET /sales/stats` (`sale.read`) — same filters as the list (page/pageSize ignored) →
   `{ count, revenue, avgPrice, returnedCount, refundTotal, netProfit }`. Aggregates the
@@ -21,14 +23,14 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   `CostRedactionInterceptor`). Lives here, not in `reports`, so a cashier can see their
   own day summary without `report.finance`. Declared before `:id`.
 - `GET /sales/:id` (`sale.read`) → `SaleView`.
-- `GET /sales/warranty/:imei` (`sale.read`) → `WarrantyLookupView`
+- `GET /sales/warranty/:imei` (`sale.read`, matches either IMEI column) → `WarrantyLookupView`
   `{ imei, saleId, purchasedAt, salePrice, warranty{days,startsAt,endsAt}|null,
   remainingDays, latestInspection{grade,notes}|null, alreadyReturned }`.
 - `POST /sales/:id/return` (`sale.return`) `{ refundAmount, reason?,
   deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView` (409 if already returned).
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields at all).
 
-`SaleView` = `{ id, device{imei,model{brand,name},specs}, customer, salePrice,
+`SaleView` = `{ id, device{imei,imei2,model{brand,name},specs}, customer, salePrice,
 landedCostSnapshot, netProfit, soldAt, soldBy{id,name}, warranty, consignmentId, notes,
 return{returnedAt,refundAmount,reason,processedBy{id,name}}|null }`.
 `netProfit` is derived in the mapper (salePrice − landedCostSnapshot), never stored;

@@ -20,6 +20,7 @@ export interface QcInspectionView {
 export interface InspectionDeviceRef {
   id: string;
   imei: string;
+  imei2: string | null;
   modelId: string;
   model: { brand: string; name: string };
   statusCode: string;

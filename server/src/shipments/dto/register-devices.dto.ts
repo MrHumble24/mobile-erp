@@ -10,11 +10,17 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { IsSpecsObject } from '../../devices/dto/specs.validator.js';
+import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
 
 export class RegisterDeviceDto {
   /** Exactly 15 numeric digits. */
-  @Matches(/^\d{15}$/, { message: 'imei must be exactly 15 digits' })
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
   imei!: string;
+
+  /** Optional second IMEI (dual-SIM). Same format; must differ from `imei`. */
+  @IsOptional()
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
+  imei2?: string;
 
   @IsUUID()
   modelId!: string;

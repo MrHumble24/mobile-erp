@@ -12,6 +12,7 @@ export interface SaleRow {
   notes: string | null;
   device: {
     imei: string;
+    imei2: string | null;
     specs: Prisma.JsonValue;
     model: { brand: string; name: string };
   };
@@ -43,6 +44,7 @@ export interface SaleView {
   id: string;
   device: {
     imei: string;
+    imei2: string | null;
     model: { brand: string; name: string };
     specs: Prisma.JsonValue;
   };
@@ -101,6 +103,7 @@ export interface ReceiptView {
   cashier: string;
   items: {
     imei: string;
+    imei2: string | null;
     model: string;
     storage: string | null;
     color: string | null;

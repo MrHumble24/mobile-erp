@@ -18,6 +18,7 @@ describe('buildSaleWhere', () => {
     const where = buildSaleWhere({ ...base, search: ' 359 ' });
     expect(where.OR).toEqual([
       { device: { imei: { contains: '359' } } },
+      { device: { imei2: { contains: '359' } } },
       { customer: { name: { contains: '359', mode: 'insensitive' } } },
       { customer: { phone: { contains: '359', mode: 'insensitive' } } },
     ]);

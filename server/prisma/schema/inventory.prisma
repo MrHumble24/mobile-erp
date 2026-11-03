@@ -52,6 +52,10 @@ model Device {
   id         String      @id @default(uuid())
   /// 15-digit IMEI. Unique index also enforces duplicate-scan prevention.
   imei       String      @unique @db.VarChar(15)
+  /// Optional second IMEI for dual-SIM units. Unique on its own column; the
+  /// service also rejects collisions across `imei`/`imei2` and imei2 == imei
+  /// (a `imei2 <> imei` CHECK in the migration backstops the latter).
+  imei2      String?     @unique @db.VarChar(15)
   shipmentId String
   shipment   Shipment    @relation(fields: [shipmentId], references: [id])
   modelId    String

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { computeLandedCost } from './lib/landed-cost.js';
@@ -62,10 +66,12 @@ export class ShipmentsRepository {
     userId: string,
   ): Promise<RegisteredDeviceView[]> {
     return this.prisma.$transaction(async (tx) => {
+      await this.assertImeisFree(tx, inputs);
       for (const input of inputs) {
         await tx.device.create({
           data: {
             imei: input.imei,
+            imei2: input.imei2 ?? null,
             shipmentId,
             modelId: input.modelId,
             specs: input.specs as Prisma.InputJsonValue,
@@ -83,6 +89,37 @@ export class ShipmentsRepository {
     });
   }
 
+  /**
+   * Rejects an intake whose IMEIs collide — within the batch, between a unit's
+   * own imei/imei2, or against either IMEI column of an existing device. The
+   * single-column unique indexes cannot see cross-column clashes on their own.
+   */
+  private async assertImeisFree(
+    tx: Prisma.TransactionClient,
+    inputs: RegisterDeviceInput[],
+  ): Promise<void> {
+    const values: string[] = [];
+    for (const d of inputs) {
+      if (d.imei2 && d.imei2 === d.imei) {
+        throw new BadRequestException(
+          `imei2 must differ from imei (${d.imei})`,
+        );
+      }
+      values.push(d.imei);
+      if (d.imei2) values.push(d.imei2);
+    }
+    if (new Set(values).size !== values.length) {
+      throw new ConflictException('Duplicate IMEI within the batch');
+    }
+    const clash = await tx.device.findFirst({
+      where: { OR: [{ imei: { in: values } }, { imei2: { in: values } }] },
+      select: { imei: true },
+    });
+    if (clash) {
+      throw new ConflictException('A device with this IMEI already exists');
+    }
+  }
+
   private async recompute(
     tx: Prisma.TransactionClient,
     shipmentId: string,
@@ -97,6 +134,7 @@ export class ShipmentsRepository {
       select: {
         id: true,
         imei: true,
+        imei2: true,
         modelId: true,
         acquisitionCost: true,
         targetPrice: true,
@@ -115,6 +153,7 @@ export class ShipmentsRepository {
       results.push({
         id: d.id,
         imei: d.imei,
+        imei2: d.imei2,
         modelId: d.modelId,
         acquisitionCost: d.acquisitionCost.toString(),
         landedCost,

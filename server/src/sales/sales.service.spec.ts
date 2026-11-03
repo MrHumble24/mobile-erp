@@ -82,6 +82,26 @@ describe('SalesService.create', () => {
     );
   });
 
+  it('sells a device scanned by its second IMEI', async () => {
+    const findDeviceByImei = jest.fn().mockResolvedValue({
+      id: 'dev-1',
+      statusCode: 'IN_STOCK',
+      version: 3,
+      landedCost: 100,
+      targetPrice: 300,
+    });
+    const { service, checkout } = build({ findDeviceByImei });
+    // The scanned value is the unit's imei2; the repository resolves either column.
+    await service.create(caller, {
+      imei: '999888777666555',
+      salePrice: 250,
+    });
+    expect(findDeviceByImei).toHaveBeenCalledWith('999888777666555');
+    expect(checkout.checkout).toHaveBeenCalledWith(
+      expect.objectContaining({ deviceId: 'dev-1' }),
+    );
+  });
+
   it('snapshots landed cost and the current cashier on checkout', async () => {
     const { service, checkout } = build();
     await service.create(caller, dto);

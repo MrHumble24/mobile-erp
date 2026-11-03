@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { anyImeiWhere } from '../devices/lib/imei.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -67,7 +68,7 @@ export class QcRepository {
 function buildWhere(filters: InspectionFilters): Prisma.QcInspectionWhereInput {
   const where: Prisma.QcInspectionWhereInput = {};
   if (filters.deviceId) where.deviceId = filters.deviceId;
-  if (filters.imei) where.device = { imei: filters.imei };
+  if (filters.imei) where.device = anyImeiWhere(filters.imei);
   if (filters.passed !== undefined) where.passed = filters.passed;
   if (filters.gradeCode) where.gradeCode = filters.gradeCode;
   if (filters.inspectedById) where.inspectedById = filters.inspectedById;

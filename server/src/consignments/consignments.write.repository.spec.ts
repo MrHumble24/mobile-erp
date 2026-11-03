@@ -9,6 +9,7 @@ function makeTx() {
   return {
     device: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     deviceStatusHistory: { create: jest.fn().mockResolvedValue({}) },
@@ -39,7 +40,7 @@ const transfer = {
 describe('ConsignmentsWriteRepository.createTransfer', () => {
   it('rejects a device that is not IN_STOCK and writes nothing', async () => {
     const tx = makeTx();
-    tx.device.findUnique.mockResolvedValue({
+    tx.device.findFirst.mockResolvedValue({
       id: 'd1',
       statusCode: 'CONSIGNED',
       version: 0,
@@ -54,7 +55,7 @@ describe('ConsignmentsWriteRepository.createTransfer', () => {
 
   it('flips the device to CONSIGNED under the optimistic lock and logs history', async () => {
     const tx = makeTx();
-    tx.device.findUnique.mockResolvedValue({
+    tx.device.findFirst.mockResolvedValue({
       id: 'd1',
       statusCode: 'IN_STOCK',
       version: 3,
@@ -92,7 +93,7 @@ describe('ConsignmentsWriteRepository.createTransfer', () => {
 
   it('rejects a stale expectedVersion', async () => {
     const tx = makeTx();
-    tx.device.findUnique.mockResolvedValue({
+    tx.device.findFirst.mockResolvedValue({
       id: 'd1',
       statusCode: 'IN_STOCK',
       version: 5,
@@ -106,7 +107,7 @@ describe('ConsignmentsWriteRepository.createTransfer', () => {
 
   it('409s when the optimistic update matches no row', async () => {
     const tx = makeTx();
-    tx.device.findUnique.mockResolvedValue({
+    tx.device.findFirst.mockResolvedValue({
       id: 'd1',
       statusCode: 'IN_STOCK',
       version: 0,

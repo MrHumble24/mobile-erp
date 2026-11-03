@@ -6,15 +6,18 @@ transitions and status history. Intake (creation + landed cost) belongs to
 
 ## Exposes (REST `/devices`)
 
-- `GET /` — filter `imei|modelId|storage|statusCode|search`, plus
-  `inspected=true|false` (has / lacks any QC inspection), paginated
-  `{ items, total, page, pageSize }` (`device.read`). Each row carries
+- `GET /` — filter `imei|modelId|storage|statusCode|search` (`search` matches
+  both IMEI columns), plus `inspected=true|false`, paginated
+  `{ items, total, page, pageSize }` (`device.read`). Every row carries
+  `imei2: string | null` and
   `latestInspection { id, passed, gradeCode, batteryHealth, inspectedAt } | null`.
 - `GET /by-imei/:imei` — POS lookup: device + model + status + latest QC
-  summary (`device.read`).
+  summary (`device.read`). Matches `imei` **or** `imei2` (dual-SIM units).
 - `GET /:id`, `GET /:id/history` (`device.read`).
-- `PATCH /:id` — `{ specs?, targetPrice? }` (`device.update`). When `specs` is
-  present it is validated against the device model's attribute schema
+- `PATCH /:id` — `{ specs?, targetPrice?, imei2? }` (`device.update`). `imei2`
+  is a 15-digit optional second IMEI; `null` clears it. It must differ from
+  `imei` (400) and not collide with either IMEI column of another unit (409).
+  When `specs` is present it is validated against the model's attribute schema
   (`DeviceModelsService.getAttributes` + `validateSpecs`); failures → 400
   `{ message: 'Invalid specs', problems: [{ key, message }] }`.
 - `POST /:id/status` — `{ toStatusCode, reason?, expectedVersion }`
@@ -29,6 +32,10 @@ data-driven in `types/status-transitions.ts`.
 
 `DevicesService.countAwaitingInspection()` — in-stock/defective devices with no
 QC inspection yet; consumed by `QcStatsService`.
+
+`lib/imei.ts` is the one source of IMEI knowledge: `IMEI_REGEX`/`IMEI_MESSAGE`
+(every DTO) and `anyImeiWhere(value)` — the `imei = x OR imei2 = x` filter every
+by-IMEI lookup across modules (sales, consignment, QC, sync) uses.
 
 ## Must never
 

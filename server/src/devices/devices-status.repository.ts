@@ -32,6 +32,7 @@ export class DevicesStatusRepository {
       data.specs = patch.specs as Prisma.InputJsonValue;
     }
     if (patch.targetPrice !== undefined) data.targetPrice = patch.targetPrice;
+    if (patch.imei2 !== undefined) data.imei2 = patch.imei2;
     const row = await this.prisma.device.update({ where: { id }, data });
     return toDeviceView(row);
   }

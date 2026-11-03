@@ -9,10 +9,11 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
 
 export class CreateConsignmentDto {
-  /** 15-digit IMEI. Device must exist and be IN_STOCK. */
-  @Matches(/^\d{15}$/, { message: 'imei must be 15 digits' })
+  /** 15-digit IMEI (matches either IMEI column). Device must be IN_STOCK. */
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
   imei!: string;
 
   @IsUUID()

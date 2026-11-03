@@ -4,6 +4,7 @@ import { DeviceView } from '../types/device.types.js';
 export interface DeviceScalarRow {
   id: string;
   imei: string;
+  imei2: string | null;
   shipmentId: string;
   modelId: string;
   specs: unknown;
@@ -22,6 +23,7 @@ export function toDeviceView(row: DeviceScalarRow): DeviceView {
   return {
     id: row.id,
     imei: row.imei,
+    imei2: row.imei2,
     shipmentId: row.shipmentId,
     modelId: row.modelId,
     specs: (row.specs ?? {}) as Record<string, unknown>,

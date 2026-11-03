@@ -26,6 +26,7 @@ describe('buildConsignmentWhere', () => {
     const where = buildConsignmentWhere({ search: ' 123 ' }, NOW);
     expect(where.OR).toEqual([
       { device: { imei: { contains: '123', mode: 'insensitive' } } },
+      { device: { imei2: { contains: '123', mode: 'insensitive' } } },
       { partner: { shopName: { contains: '123', mode: 'insensitive' } } },
     ]);
   });
