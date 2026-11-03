@@ -4,6 +4,7 @@ export interface ConsignmentView {
   partnerShopName: string
   deviceId: string
   imei: string
+  imei2?: string | null
   agreedPrice: string
   dueDate: string
   statusCode: "OUT" | "SETTLED" | "RETURNED" | string

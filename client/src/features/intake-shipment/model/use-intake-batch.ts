@@ -5,6 +5,8 @@ import type { SpecFieldProblem } from "@/entities/device-model"
 
 export interface IntakeDraftValues {
   imei: string
+  imei2: string
+  dualSim: boolean
   modelId: string
   specs: Record<string, string>
   cost: number
@@ -64,10 +66,14 @@ function submitHandlers(bag: SubmitBag) {
 function draftError(
   values: IntakeDraftValues,
   imei: string,
+  imei2: string,
   batch: RegisterDeviceItem[],
   t: (key: string) => string,
 ): string | null {
   if (!/^\d{15}$/.test(imei)) return t("shipments.imeiLength")
+  if (values.dualSim && !imei2) return t("inventory.imei2Required")
+  if (imei2 && !/^\d{15}$/.test(imei2)) return t("shipments.imeiLength")
+  if (imei2 && imei2 === imei) return t("inventory.imei2Mismatch")
   if (batch.some((b) => b.imei === imei)) return t("shipments.duplicateImei")
   if (!values.modelId) return t("shipments.selectModel")
   return null
@@ -82,19 +88,25 @@ export function useIntakeBatch(shipmentId: string) {
   const [problemsByImei, setProblemsByImei] = React.useState<ProblemMap>({})
   const [results, setResults] = React.useState<RegisteredDeviceView[]>([])
 
-  const addItem = (values: IntakeDraftValues): boolean => {
+  /** Validates and appends one unit; returns an i18n error (shown in the confirm dialog) or null. */
+  const addItem = (values: IntakeDraftValues): string | null => {
     const imei = values.imei.trim()
-    const error = draftError(values, imei, batch, t)
-    if (error) {
-      setErrorMsg(error)
-      return false
-    }
+    const imei2 = values.imei2.trim()
+    const error = draftError(values, imei, imei2, batch, t)
+    if (error) return error
     setErrorMsg("")
     setBatch((p) => [
       ...p,
-      { imei, modelId: values.modelId, specs: values.specs, acquisitionCost: values.cost, targetPrice: values.targetPrice },
+      {
+        imei,
+        imei2: values.dualSim ? imei2 || null : null,
+        modelId: values.modelId,
+        specs: values.specs,
+        acquisitionCost: values.cost,
+        targetPrice: values.targetPrice,
+      },
     ])
-    return true
+    return null
   }
 
   const submit = () => {

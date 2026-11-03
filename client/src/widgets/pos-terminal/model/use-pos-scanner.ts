@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useDeviceByImei, type DeviceDetailView } from "@/entities/device"
+import { useDeviceByImei, matchesImei, type DeviceDetailView } from "@/entities/device"
 
 export interface ScanResult {
   kind: "status" | "notFound"
@@ -45,7 +45,7 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
       handledRef.current = lookup
       return
     }
-    if (data && data.imei === lookup.imei) {
+    if (data && matchesImei(data, lookup.imei)) {
       handledRef.current = lookup
       if (data.statusCode === "IN_STOCK") onInStockRef.current(data)
     }
@@ -68,7 +68,7 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
   const scanResult: ScanResult | null = React.useMemo(() => {
     if (!lookup || isFetching) return null
     if (isError) return { kind: "notFound", imei: lookup.imei }
-    if (data && data.imei === lookup.imei && data.statusCode !== "IN_STOCK") {
+    if (data && matchesImei(data, lookup.imei) && data.statusCode !== "IN_STOCK") {
       return { kind: "status", imei: lookup.imei, device: data }
     }
     return null

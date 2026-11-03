@@ -13,7 +13,7 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
   const itemsStr = receipt.items
     .map(
       (item) =>
-        `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   IMEI: ${item.imei}\n   Narxi: ${formatMoney(item.price)}`
+        `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   IMEI: ${item.imei}${item.imei2 ? `\n   IMEI 2: ${item.imei2}` : ""}\n   Narxi: ${formatMoney(item.price)}`
     )
     .join("\n")
 

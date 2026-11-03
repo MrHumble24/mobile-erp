@@ -17,7 +17,7 @@ interface DeviceTableRowProps {
   onSell?: (device: DeviceView) => void
 }
 
-function ImeiCell({ imei }: { imei: string }) {
+function ImeiCell({ imei, imei2 }: { imei: string; imei2: string | null }) {
   const { t } = useI18n()
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -26,18 +26,21 @@ function ImeiCell({ imei }: { imei: string }) {
   }
 
   return (
-    <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-[#090c1d]">
-      <span>{imei}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        type="button"
-        onClick={handleCopy}
-        title={t("inventory.copyImei")}
-        className="size-5 p-0.5 opacity-50 hover:opacity-100 hover:text-[#090c1d] cursor-pointer"
-      >
-        <Copy className="size-3" />
-      </Button>
+    <div className="font-mono text-xs font-semibold text-[#090c1d]">
+      <div className="flex items-center gap-1.5">
+        <span>{imei}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          onClick={handleCopy}
+          title={t("inventory.copyImei")}
+          className="size-5 p-0.5 opacity-50 hover:opacity-100 hover:text-[#090c1d] cursor-pointer"
+        >
+          <Copy className="size-3" />
+        </Button>
+      </div>
+      {imei2 && <div className="text-[10px] font-normal text-[#838383]">IMEI 2: {imei2}</div>}
     </div>
   )
 }
@@ -105,7 +108,7 @@ export function DeviceTableRow({
   return (
     <TableRow className="hover:bg-[#f8f9fa] cursor-pointer transition-colors" onClick={() => onSelect?.(device)}>
       <TableCell>
-        <ImeiCell imei={device.imei} />
+        <ImeiCell imei={device.imei} imei2={device.imei2} />
       </TableCell>
       <TableCell className="font-medium text-[#202020]">{modelName || device.modelId}</TableCell>
       <TableCell className="text-xs text-[#646464]">{storage}</TableCell>

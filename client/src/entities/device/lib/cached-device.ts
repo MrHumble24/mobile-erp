@@ -1,4 +1,4 @@
-import { idbGet, STORES } from "@/shared/lib/offline"
+import { idbGet, idbGetAll, STORES } from "@/shared/lib/offline"
 import type { DeviceDetailView, DeviceSpecs } from "../model/device.types"
 
 /**
@@ -9,6 +9,7 @@ import type { DeviceDetailView, DeviceSpecs } from "../model/device.types"
 interface CachedDevice {
   id: string
   imei: string
+  imei2: string | null
   statusCode: string
   version: number
   targetPrice: string | null
@@ -22,6 +23,7 @@ function toDetail(c: CachedDevice): DeviceDetailView {
   return {
     id: c.id,
     imei: c.imei,
+    imei2: c.imei2 ?? null,
     shipmentId: "",
     modelId: c.model.id,
     specs: (c.specs ?? {}) as DeviceSpecs,
@@ -37,8 +39,13 @@ function toDetail(c: CachedDevice): DeviceDetailView {
   }
 }
 
-/** Reads a device from the offline cache by IMEI, or null if not cached. */
+/** Reads a device from the offline cache by either IMEI, or null if not cached. */
 export async function getCachedDeviceByImei(imei: string): Promise<DeviceDetailView | null> {
-  const cached = await idbGet<CachedDevice>(STORES.devices, imei)
-  return cached ? toDetail(cached) : null
+  const byKey = await idbGet<CachedDevice>(STORES.devices, imei)
+  if (byKey) return toDetail(byKey)
+  // Store is keyed by primary imei; scan for a dual-SIM imei2 hit.
+  // ponytail: linear scan over the shop's cached stock (bounded); add an imei2 index if it grows.
+  const all = await idbGetAll<CachedDevice>(STORES.devices)
+  const byImei2 = all.find((d) => d.imei2 === imei)
+  return byImei2 ? toDetail(byImei2) : null
 }

@@ -31,7 +31,10 @@ export function DeviceHeaderCard({ device }: { device: DeviceDetailView }) {
   return (
     <div className="space-y-2 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] p-3.5">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-sm font-medium">{device.imei}</span>
+        <div className="font-mono text-sm font-medium">
+          <span>{device.imei}</span>
+          {device.imei2 && <span className="block text-xs font-normal text-muted-foreground">IMEI 2: {device.imei2}</span>}
+        </div>
         <DeviceStatusBadge status={device.statusCode} />
       </div>
       <p className="text-sm font-semibold">{device.model.brand} {device.model.name}</p>

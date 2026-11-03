@@ -12,7 +12,7 @@ import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } fro
 import { Button } from "@/shared/ui/button"
 import { Form } from "@/shared/ui/form"
 import { toast } from "@/shared/ui/sonner"
-import { editDeviceSchema, type EditDeviceValues } from "../model/edit-device.schema"
+import { buildEditDeviceSchema, type EditDeviceValues } from "../model/edit-device.schema"
 import { EditDeviceFields } from "./EditDeviceFields"
 
 function initialSpecs(device: DeviceView, attributes: AttributeDef[]): Record<string, string> {
@@ -32,7 +32,8 @@ function toDto(values: EditDeviceValues, attributes: AttributeDef[]): UpdateDevi
     specs[attr.key] = attr.type === "number" ? Number(value) : value
   }
   const tp = values.targetPrice?.trim()
-  return { specs, targetPrice: tp ? Number(tp) : null }
+  const imei2 = values.dualSim ? values.imei2?.trim() : ""
+  return { specs, targetPrice: tp ? Number(tp) : null, imei2: imei2 ? imei2 : null }
 }
 
 function EditDeviceForm({
@@ -48,10 +49,12 @@ function EditDeviceForm({
   const updateMutation = useUpdateDevice()
   const [problems, setProblems] = React.useState<SpecFieldProblem[]>([])
   const form = useForm<EditDeviceValues>({
-    resolver: zodResolver(editDeviceSchema),
+    resolver: zodResolver(buildEditDeviceSchema(device.imei, t)),
     defaultValues: {
       specs: initialSpecs(device, attributes),
       targetPrice: device.targetPrice ?? "",
+      dualSim: !!device.imei2,
+      imei2: device.imei2 ?? "",
     },
   })
 

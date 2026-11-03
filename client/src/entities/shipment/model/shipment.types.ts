@@ -28,6 +28,7 @@ export interface UpdateShipmentDto {
 
 export interface RegisterDeviceItem {
   imei: string
+  imei2?: string | null
   modelId: string
   specs: Record<string, unknown>
   acquisitionCost: number
@@ -41,6 +42,7 @@ export interface RegisterDevicesDto {
 export interface RegisteredDeviceView {
   id: string
   imei: string
+  imei2: string | null
   modelId: string
   acquisitionCost: string
   landedCost: string

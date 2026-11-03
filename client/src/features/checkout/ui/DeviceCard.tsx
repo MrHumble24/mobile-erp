@@ -23,6 +23,9 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
                 {device.model?.brand} {device.model?.name}
               </h3>
               <p className="font-mono text-xs text-muted-foreground">{device.imei}</p>
+              {device.imei2 && (
+                <p className="font-mono text-[10px] text-muted-foreground">IMEI 2: {device.imei2}</p>
+              )}
             </div>
           </div>
           <DeviceStatusBadge status={device.statusCode} />

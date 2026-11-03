@@ -48,7 +48,17 @@ function DetailBody({
             </Link>
           }
         />
-        <Row label={t("consignments.device")} value={<span className="font-mono">{consignment.imei}</span>} />
+        <Row
+          label={t("consignments.device")}
+          value={
+            <span className="font-mono">
+              {consignment.imei}
+              {consignment.imei2 && (
+                <span className="block text-xs text-muted-foreground">IMEI 2: {consignment.imei2}</span>
+              )}
+            </span>
+          }
+        />
         <Row label={t("consignments.agreedPrice")} value={formatMoney(consignment.agreedPrice)} />
         <Row
           label={t("consignments.dueDate")}

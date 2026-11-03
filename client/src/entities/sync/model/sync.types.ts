@@ -58,6 +58,7 @@ export interface ResolveConflictDto {
 export interface DeviceChange {
   id: string
   imei: string
+  imei2: string | null
   statusCode: string
   version: number
   targetPrice: string | null

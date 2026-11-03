@@ -1,5 +1,6 @@
 export interface SaleDeviceRef {
   imei: string
+  imei2?: string | null
   model: { brand: string; name: string }
   specs: Record<string, unknown>
 }
@@ -50,6 +51,7 @@ export interface SaleStats {
 
 export interface ReceiptItem {
   imei: string
+  imei2?: string | null
   model: string
   storage: string | null
   color: string | null

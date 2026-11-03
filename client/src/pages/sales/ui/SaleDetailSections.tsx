@@ -38,6 +38,9 @@ export function DeviceSection({ sale }: { sale: SaleView }) {
         {sale.device.model.brand} {sale.device.model.name}
       </p>
       <p className="font-mono text-xs text-muted-foreground">{sale.device.imei}</p>
+      {sale.device.imei2 && (
+        <p className="font-mono text-xs text-muted-foreground">IMEI 2: {sale.device.imei2}</p>
+      )}
       {chips.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-1">
           {chips.map(([k, v]) => (

@@ -11,6 +11,7 @@ export interface DeviceSpecs {
 export interface DeviceView {
   id: string
   imei: string
+  imei2: string | null
   shipmentId: string
   modelId: string
   specs: DeviceSpecs
@@ -79,6 +80,8 @@ export interface DeviceFilters {
 export interface UpdateDeviceDto {
   specs?: DeviceSpecs
   targetPrice?: number | null
+  /** Optional dual-SIM second IMEI; null clears it. */
+  imei2?: string | null
 }
 
 export interface ChangeStatusDto {

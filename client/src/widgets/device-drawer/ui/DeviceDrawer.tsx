@@ -171,6 +171,9 @@ function DrawerBody({
     <div className="space-y-5 my-4 overflow-y-auto">
       <DrawerActions device={device} canEdit={canEdit} onEdit={onEdit} onInspect={onInspect} onSell={onSell} />
       <DeviceBarcode imei={device.imei} />
+      {device.imei2 && (
+        <p className="text-center font-mono text-xs text-[#646464]">IMEI 2: {device.imei2}</p>
+      )}
       <DeviceSpecsGrid device={device} canViewCost={canViewCost} />
       <div className="space-y-2">
         <h4 className="text-sm font-semibold">{t("inventory.qcInspection")}</h4>

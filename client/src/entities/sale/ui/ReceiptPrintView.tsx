@@ -80,6 +80,11 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
             <div className="text-[9px] text-black/90 font-mono tracking-wider">
               IMEI: {item.imei}
             </div>
+            {item.imei2 && (
+              <div className="text-[9px] text-black/90 font-mono tracking-wider">
+                IMEI 2: {item.imei2}
+              </div>
+            )}
             {item.warranty && (
               <div className="text-[9px] text-black/75">
                 {t("pos.officialWarranty")}: {item.warranty.days} {t("pos.daysShort")} ·{" "}
