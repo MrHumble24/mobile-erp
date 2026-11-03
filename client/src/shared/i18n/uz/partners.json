@@ -40,5 +40,6 @@
   "aging_d61_90": "61-90 kun",
   "aging_d90_plus": "90+ kun",
   "noPartnersFound": "Hamkorlar topilmadi",
-  "noLedgerEntries": "Hisob-kitob yozuvlari topilmadi"
+  "noLedgerEntries": "Hisob-kitob yozuvlari topilmadi",
+  "payFull": "To'liq qoldiqni kiritish ({amount})"
 }

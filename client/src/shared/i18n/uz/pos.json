@@ -76,5 +76,6 @@
   "scClearScanner": "Skanerni tozalash",
   "scRemoveLast": "Oxirgi qurilmani o'chirish",
   "scToggleCustomer": "Mijoz qidirish",
-  "scToggleMode": "Sotuv / Nasiya rejimini almashtirish"
+  "scToggleMode": "Sotuv / Nasiya rejimini almashtirish",
+  "alreadyQueued": "Allaqachon navbatda"
 }
