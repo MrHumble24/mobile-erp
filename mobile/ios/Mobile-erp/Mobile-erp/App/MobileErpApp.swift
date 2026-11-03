@@ -13,6 +13,7 @@ struct MobileErpApp: App {
                 .environment(container)
                 .environment(container.i18n)
                 .tint(Tokens.ink)
+                .toggleStyle(AppSwitchStyle())
         }
     }
 }

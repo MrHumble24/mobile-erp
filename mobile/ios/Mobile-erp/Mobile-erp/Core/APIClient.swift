@@ -116,9 +116,7 @@ final class APIClient {
             url: baseURL().appendingPathComponent(path),
             resolvingAgainstBaseURL: false
         )
-        if !query.isEmpty {
-            comps?.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
-        }
+        if !query.isEmpty { comps?.queryItems = Self.canonicalQuery(query) }
         guard let url = comps?.url else { throw AppError.network }
 
         var req = URLRequest(url: url)
@@ -139,6 +137,15 @@ final class APIClient {
         do {
             (data, response) = try await session.data(for: req)
         } catch {
+            // Offline / server unreachable: serve the last good GET from the
+            // native URLCache so every read screen keeps working offline.
+            // Writes (non-GET) are never faked — they queue in the outbox.
+            if method == "GET", let cached = URLCache.shared.cachedResponse(for: req) {
+                NetLogStore.shared.finish(logId, status: nil, body: cached.data,
+                                          error: "offline: served cached response")
+                AppLog.warn("net", "\(method) \(path) offline — served cached response")
+                return cached.data
+            }
             NetLogStore.shared.finish(logId, status: nil, body: nil,
                                       error: error.localizedDescription)
             AppLog.error("net", "\(method) \(path) failed: \(error.localizedDescription)")
@@ -158,7 +165,21 @@ final class APIClient {
             }
             throw AppError(statusCode: status, body: data)
         }
+        // Cache successful reads for the offline fallback above. Cleared on
+        // logout/401 (Session.clear) so one user never sees another's data.
+        if method == "GET", let http {
+            URLCache.shared.storeCachedResponse(
+                CachedURLResponse(response: http, data: data), for: req)
+        }
         return data
+    }
+
+    /// Query items in a stable, key-sorted order. Swift randomizes `Dictionary`
+    /// iteration per process launch, so an unsorted multi-param URL differs
+    /// between launches and defeats the offline response cache (keyed on the
+    /// exact URL). Sorting makes the same request produce the same URL every run.
+    static func canonicalQuery(_ query: [String: String]) -> [URLQueryItem] {
+        query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) }
     }
 
     private func decode<T: Decodable>(_ data: Data) throws -> T {

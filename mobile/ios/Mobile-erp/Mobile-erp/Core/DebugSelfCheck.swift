@@ -21,6 +21,11 @@ func runDebugSelfChecks() {
     assert(!isJWTExpired(makeJWT(exp: 4_102_444_800)))    // year 2100
     assert(isJWTExpired("not-a-jwt"))
 
+    // Query canonicalization: key-sorted and stable, so the same GET yields the
+    // same URL every launch (the offline response cache keys on it).
+    let q = APIClient.canonicalQuery(["to": "T", "from": "F", "a": "1"])
+    assert(q.map(\.name) == ["a", "from", "to"])
+
     runLoggingSelfChecks()
     runScanTextSelfChecks()
 }
