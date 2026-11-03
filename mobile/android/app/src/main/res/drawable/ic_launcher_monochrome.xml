@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer: "M" glyph only, single colour (system retints) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M32.88,73.68 L32.88,34.32 L54,60.72 L75.12,34.32 L75.12,73.68"
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="7.92"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
