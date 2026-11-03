@@ -52,6 +52,7 @@ struct AlertRuleForm: View {
 
                     TextField(i18n.t("inventory.threshold"), text: $threshold)
                         .keyboardType(.numberPad)
+                        .sanitizeDigits($threshold)
                 }
                 if let error {
                     Section { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }

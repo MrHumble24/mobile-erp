@@ -37,6 +37,7 @@ struct DevConsoleGate: View {
             Section("Access code") {
                 SecureField("Enter code", text: $code)
                     .keyboardType(.numberPad)
+                    .sanitizeDigits($code)
                     .onSubmit(unlock)
                 if showError {
                     Text("Wrong code").font(.footnote).foregroundStyle(Tokens.danger)

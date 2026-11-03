@@ -23,10 +23,30 @@ struct LabeledField: View {
                 .foregroundStyle(.secondary)
             TextField(label, text: $text)
                 .keyboardType(keyboard)
-                .autocorrectionDisabled(mono)
-                .textInputAutocapitalization(mono ? .characters : .sentences)
+                .autocorrectionDisabled(mono || keyboard != .default)
+                .textInputAutocapitalization(mono ? .characters : (keyboard == .default ? .sentences : .never))
                 .font(mono ? .mono(15) : .body)
         }
         .padding(.vertical, 2)
+        .modifier(AutoSanitize(keyboard: keyboard, text: $text))
+    }
+}
+
+/// Automatically hooks real-time input sanitization based on the field's keyboard type.
+private struct AutoSanitize: ViewModifier {
+    let keyboard: UIKeyboardType
+    @Binding var text: String
+
+    func body(content: Content) -> some View {
+        switch keyboard {
+        case .phonePad:
+            content.sanitizePhone($text)
+        case .numberPad:
+            content.sanitizeDigits($text)
+        case .decimalPad:
+            content.sanitizeDecimal($text)
+        default:
+            content
+        }
     }
 }

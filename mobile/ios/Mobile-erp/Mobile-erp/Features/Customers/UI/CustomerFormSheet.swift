@@ -40,6 +40,7 @@ struct CustomerFormSheet: View {
                             .foregroundStyle(.secondary)
                         TextField(i18n.t("sales.customerPhone"), text: $phone)
                             .keyboardType(.phonePad)
+                            .sanitizePhone($phone)
                     }
                     .padding(.vertical, 2)
 

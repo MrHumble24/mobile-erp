@@ -47,6 +47,7 @@ struct SettleConsignmentSheet: View {
                             .font(.mono(22, weight: .bold))
                             .keyboardType(.decimalPad)
                             .monospacedDigit()
+                            .sanitizeDecimal($salePrice)
                         if salePrice != agreedWhole {
                             Spacer()
                             Button {

@@ -21,8 +21,10 @@ struct DynamicSpecFields: View {
                     ForEach(attr.options, id: \.self) { Text($0).tag($0) }
                 }
             case .number:
-                TextField(label, text: binding(attr.key))
+                let b = binding(attr.key)
+                TextField(label, text: b)
                     .keyboardType(.decimalPad)
+                    .sanitizeDecimal(b)
             case .text:
                 TextField(label, text: binding(attr.key))
             }

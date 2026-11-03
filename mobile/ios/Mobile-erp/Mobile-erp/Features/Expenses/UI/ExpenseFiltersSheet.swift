@@ -39,8 +39,10 @@ struct ExpenseFiltersSheet: View {
                 Section {
                     TextField(i18n.t("expenses.minAmount"), text: $model.minAmount)
                         .keyboardType(.decimalPad)
+                        .sanitizeDecimal($model.minAmount)
                     TextField(i18n.t("expenses.maxAmount"), text: $model.maxAmount)
                         .keyboardType(.decimalPad)
+                        .sanitizeDecimal($model.maxAmount)
                 }
                 Section {
                     Picker(i18n.t("expenses.sortLabel"), selection: $model.sort) {

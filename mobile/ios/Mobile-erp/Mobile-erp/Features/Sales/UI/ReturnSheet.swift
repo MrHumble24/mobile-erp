@@ -32,6 +32,7 @@ struct ReturnSheet: View {
                             .font(.mono(24, weight: .bold))
                             .keyboardType(.decimalPad)
                             .monospacedDigit()
+                            .sanitizeDecimal($refund)
                     }
                     .padding(.vertical, 2)
                 }

@@ -47,10 +47,16 @@ struct PosCustomerPanel: View {
         TextField(i18n.t("pos.customerName"), text: Binding(
             get: { cart.customer?.name ?? "" },
             set: { cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone) }))
-        TextField(i18n.t("pos.customerPhone"), text: Binding(
-            get: { cart.customer?.phone ?? "" },
-            set: { cart.customer = PosCartCustomer(id: nil, name: cart.customer?.name ?? "", phone: $0) }))
+        TextField(i18n.t("pos.customerPhone"), text: customerPhoneBinding)
             .keyboardType(.phonePad)
+            .sanitizePhone(customerPhoneBinding)
+    }
+
+    private var customerPhoneBinding: Binding<String> {
+        Binding(
+            get: { cart.customer?.phone ?? "" },
+            set: { cart.customer = PosCartCustomer(id: nil, name: cart.customer?.name ?? "", phone: $0.sanitizedPhone) }
+        )
     }
 }
 

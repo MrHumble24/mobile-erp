@@ -31,6 +31,7 @@ struct EditDeviceSheet: View {
                         DynamicSpecFields(attributes: attributes, specs: $specs)
                         TextField(i18n.t("inventory.targetPrice"), text: $targetPrice)
                             .keyboardType(.decimalPad)
+                            .sanitizeDecimal($targetPrice)
                     }
                     if let error {
                         Text(error).font(.footnote).foregroundStyle(Tokens.danger)

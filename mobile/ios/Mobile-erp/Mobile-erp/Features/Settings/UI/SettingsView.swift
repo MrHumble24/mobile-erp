@@ -129,15 +129,33 @@ struct SettingsView: View {
     private func number(_ key: String, _ binding: Binding<String>, _ validationKey: String,
                         decimal: Bool = false, placeholder: String = "") -> some View {
         let invalid = model.invalidFields.contains(validationKey)
+        let isTime = validationKey == "closingTime"
         return VStack(alignment: .leading, spacing: 2) {
             Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
             TextField(placeholder, text: binding)
-                .keyboardType(decimal ? .decimalPad : .numbersAndPunctuation)
+                .keyboardType(isTime ? .numbersAndPunctuation : (decimal ? .decimalPad : .numberPad))
                 .font(.mono(16))
             if invalid {
                 Text(i18n.t("common.required", default: "Invalid value"))
                     .font(.caption2).foregroundStyle(Tokens.danger)
             }
+        }
+        .modifier(SettingFieldSanitizer(binding: binding, decimal: decimal, isTime: isTime))
+    }
+}
+
+private struct SettingFieldSanitizer: ViewModifier {
+    @Binding var binding: String
+    let decimal: Bool
+    let isTime: Bool
+
+    func body(content: Content) -> some View {
+        if isTime {
+            content
+        } else if decimal {
+            content.sanitizeDecimal($binding)
+        } else {
+            content.sanitizeDigits($binding)
         }
     }
 }

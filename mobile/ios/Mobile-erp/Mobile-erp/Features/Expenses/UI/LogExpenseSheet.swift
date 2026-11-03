@@ -59,6 +59,7 @@ struct LogExpenseSheet: View {
                             .font(.mono(24, weight: .bold))
                             .keyboardType(.decimalPad)
                             .monospacedDigit()
+                            .sanitizeDecimal($amount)
                     }
                     .padding(.vertical, 2)
 

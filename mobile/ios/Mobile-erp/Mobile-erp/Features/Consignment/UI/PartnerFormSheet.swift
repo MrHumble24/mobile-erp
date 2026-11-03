@@ -38,7 +38,7 @@ struct PartnerFormSheet: View {
                 Section {
                     CaptionedField(i18n.t("partners.name"), text: $shopName)
                     CaptionedField(i18n.t("partners.contactPerson"), text: $contactPerson)
-                    CaptionedField(i18n.t("partners.phone"), text: $phone)
+                    CaptionedField(i18n.t("partners.phone"), text: $phone, phone: true)
                     CaptionedField(i18n.t("partners.telegramHandle"), text: $telegramHandle)
                 }
                 Section {
@@ -116,12 +116,14 @@ struct CaptionedField: View {
     @Binding var text: String
     var mono = false
     var number = false
+    var phone = false
 
-    init(_ label: String, text: Binding<String>, mono: Bool = false, number: Bool = false) {
+    init(_ label: String, text: Binding<String>, mono: Bool = false, number: Bool = false, phone: Bool = false) {
         self.label = label
         self._text = text
         self.mono = mono
         self.number = number
+        self.phone = phone
     }
 
     var body: some View {
@@ -129,8 +131,26 @@ struct CaptionedField: View {
             Text(label).font(.caption).foregroundStyle(.secondary)
             TextField(label, text: $text)
                 .font(mono ? .mono(16) : .body)
-                .keyboardType(number ? .decimalPad : .default)
-                .textInputAutocapitalization(number ? .never : .sentences)
+                .keyboardType(phone ? .phonePad : (number ? .decimalPad : .default))
+                .textInputAutocapitalization((number || phone) ? .never : .sentences)
+                .autocorrectionDisabled(mono || number || phone)
+        }
+        .modifier(AutoSanitizeCaptioned(phone: phone, number: number, text: $text))
+    }
+}
+
+private struct AutoSanitizeCaptioned: ViewModifier {
+    let phone: Bool
+    let number: Bool
+    @Binding var text: String
+
+    func body(content: Content) -> some View {
+        if phone {
+            content.sanitizePhone($text)
+        } else if number {
+            content.sanitizeDecimal($text)
+        } else {
+            content
         }
     }
 }

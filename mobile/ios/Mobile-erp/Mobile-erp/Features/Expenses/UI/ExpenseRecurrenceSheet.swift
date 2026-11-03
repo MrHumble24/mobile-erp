@@ -48,6 +48,7 @@ struct ExpenseRecurrenceSheet: View {
                 Section {
                     TextField(i18n.t("expenses.amount"), text: $amount)
                         .keyboardType(.decimalPad).font(.mono(16))
+                        .sanitizeDecimal($amount)
                     Picker(i18n.t("expenses.frequency"), selection: $frequency) {
                         Text(i18n.t("expenses.frequencyMonthly")).tag("monthly")
                         Text(i18n.t("expenses.frequencyWeekly")).tag("weekly")

@@ -113,7 +113,9 @@ struct UserDetailSheet: View {
                          keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
-            TextField(i18n.t(key), text: binding).keyboardType(keyboard)
+            TextField(i18n.t(key), text: binding)
+                .keyboardType(keyboard)
+                .modifier(UserFieldSanitizer(keyboard: keyboard, text: binding))
         }
     }
 
@@ -125,6 +127,19 @@ struct UserDetailSheet: View {
         if let error = model.error {
             Label(error, systemImage: "exclamationmark.triangle")
                 .font(.footnote).foregroundStyle(Tokens.danger)
+        }
+    }
+}
+
+private struct UserFieldSanitizer: ViewModifier {
+    let keyboard: UIKeyboardType
+    @Binding var text: String
+
+    func body(content: Content) -> some View {
+        if keyboard == .phonePad {
+            content.sanitizePhone($text)
+        } else {
+            content
         }
     }
 }

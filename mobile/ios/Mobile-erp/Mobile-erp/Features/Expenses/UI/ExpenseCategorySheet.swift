@@ -43,6 +43,7 @@ struct ExpenseCategorySheet: View {
                     TextField(i18n.t("expenses.description"), text: $description)
                     TextField(i18n.t("expenses.sortOrder"), text: $sortOrder)
                         .keyboardType(.numberPad)
+                        .sanitizeDigits($sortOrder)
                 }
                 if isEdit {
                     Section {

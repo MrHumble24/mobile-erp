@@ -24,7 +24,7 @@ struct SupplierFormSheet: View {
                 Section {
                     LabeledField(i18n.t("shipments.supplierName"), text: $name)
                     LabeledField(i18n.t("shipments.supplierCountry"), text: $country)
-                    LabeledField(i18n.t("shipments.supplierContact"), text: $contact)
+                    LabeledField(i18n.t("shipments.supplierContact"), text: $contact, keyboard: .phonePad)
                     LabeledField(i18n.t("common.notes"), text: $notes)
                     if editing {
                         Toggle(i18n.t("shipments.supplierActive"), isOn: $isActive)

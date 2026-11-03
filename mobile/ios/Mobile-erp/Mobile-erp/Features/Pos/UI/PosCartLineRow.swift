@@ -28,9 +28,11 @@ struct PosCartLineRow: View {
                 TextField(i18n.t("pos.salePrice"), text: price)
                     .keyboardType(.decimalPad)
                     .font(.mono(15))
+                    .sanitizeDecimal(price)
                 TextField(i18n.t("pos.warrantyDays"), text: warranty)
                     .keyboardType(.numberPad)
                     .frame(width: 110)
+                    .sanitizeDigits(warranty)
             }
             TextField(i18n.t("pos.notes"), text: notes, axis: .vertical)
                 .lineLimit(1...2)
@@ -40,10 +42,10 @@ struct PosCartLineRow: View {
     }
 
     private var price: Binding<String> {
-        Binding(get: { line.price }, set: { cart.setPrice(line.id, $0) })
+        Binding(get: { line.price }, set: { cart.setPrice(line.id, $0.sanitizedDecimal) })
     }
     private var warranty: Binding<String> {
-        Binding(get: { line.warrantyDays }, set: { cart.setWarranty(line.id, $0) })
+        Binding(get: { line.warrantyDays }, set: { cart.setWarranty(line.id, $0.sanitizedDigits) })
     }
     private var notes: Binding<String> {
         Binding(get: { line.notes }, set: { cart.setNotes(line.id, $0) })

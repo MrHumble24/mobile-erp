@@ -40,6 +40,7 @@ struct CreateUserSheet: View {
                             .foregroundStyle(.secondary)
                         TextField(i18n.t("common.phone"), text: $phone)
                             .keyboardType(.phonePad)
+                            .sanitizePhone($phone)
                     }
                     .padding(.vertical, 2)
 
