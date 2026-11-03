@@ -37,10 +37,13 @@ final class SettingsModel {
     var isDirty: Bool { form != original }
 
     func load() async {
-        guard let repo else { return }
         loading = true
         loadError = nil
         defer { loading = false }
+        guard let repo else {
+            loadError = AppError(statusCode: 0, message: "Settings repository not available")
+            return
+        }
         do {
             let settings = try await repo.get()
             form = SettingsValues(settings)

@@ -1,9 +1,9 @@
 {
   "dashboard": "Dashboard",
-  "pos": "POS Terminal",
+  "pos": "POS",
   "inventory": "Inventory",
   "shipments": "Shipments",
-  "qc": "Inspection (QC)",
+  "qc": "Inspection",
   "sales": "Sales",
   "customers": "Customers",
   "consignments": "Consignments",

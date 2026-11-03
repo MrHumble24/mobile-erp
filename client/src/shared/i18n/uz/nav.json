@@ -1,9 +1,9 @@
 {
   "dashboard": "Bosh sahifa",
-  "pos": "Kassa (POS)",
-  "inventory": "Ombor (Qurilmalar)",
+  "pos": "Kassa",
+  "inventory": "Ombor",
   "shipments": "Partiyalar",
-  "qc": "Tekshiruv (QC)",
+  "qc": "Tekshiruv",
   "sales": "Savdolar",
   "customers": "Mijozlar",
   "consignments": "Nasiyalar",

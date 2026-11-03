@@ -114,15 +114,21 @@ struct SettingsView: View {
 
     // MARK: field builders that carry their own validation key
 
+    @ViewBuilder
     private func labeled(_ key: String, _ binding: Binding<String>,
                          keyboard: UIKeyboardType = .default, mono: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
-            TextField(i18n.t(key), text: binding)
+            let field = TextField(i18n.t(key), text: binding)
                 .keyboardType(keyboard)
                 .font(mono ? .mono(16) : .body)
                 .autocorrectionDisabled(mono)
                 .textInputAutocapitalization(mono ? .never : .sentences)
+            if keyboard == .phonePad {
+                field.sanitizePhone(binding)
+            } else {
+                field
+            }
         }
     }
 
