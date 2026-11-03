@@ -29,6 +29,9 @@ struct ExpenseRecurringTab: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
         .toolbar {
             if canManage {
                 ToolbarItem(placement: .topBarTrailing) {

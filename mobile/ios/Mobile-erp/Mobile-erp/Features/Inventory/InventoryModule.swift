@@ -86,6 +86,6 @@ private struct InventoryTabs: View {
         }
         .navigationTitle(i18n.t("inventory.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
     }
 }

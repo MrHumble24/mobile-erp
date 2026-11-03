@@ -10,14 +10,28 @@ struct FinRangeBar: View {
         HStack(spacing: 10) {
             Menu {
                 ForEach(FinRangePreset.allCases) { preset in
-                    Button(i18n.t(preset.labelKey)) { range.preset = preset }
+                    Button(i18n.t(preset.labelKey)) {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        range.preset = preset
+                    }
                 }
             } label: {
-                Label(i18n.t(range.preset.labelKey), systemImage: "calendar")
-                    .font(.subheadline)
+                HStack(spacing: 6) {
+                    Image(systemName: "calendar")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Tokens.signalBlue)
+                    Text(i18n.t(range.preset.labelKey))
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Tokens.ink)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Tokens.surface, in: Capsule())
+                .overlay(Capsule().strokeBorder(Tokens.hairline, lineWidth: 1))
             }
-            .buttonStyle(.bordered)
-            .tint(Tokens.ink)
 
             if range.preset == .custom {
                 KitDateRangeField(range: Binding(

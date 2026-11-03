@@ -22,6 +22,9 @@ struct FinReturnsBreakdown: View {
                         KitLoadMoreFooter(pager: pager)
                     }
                     .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
+                    .listRowBackground(Tokens.surface)
+                    .background(Tokens.bg)
                 }
             } else {
                 LoadingView().frame(height: 160)

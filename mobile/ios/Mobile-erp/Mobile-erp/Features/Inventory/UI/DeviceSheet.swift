@@ -144,6 +144,9 @@ private struct DeviceSheetBody: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
     }
 }
 

@@ -49,7 +49,7 @@ struct DeviceSpecsGrid: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 4)
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Tokens.surface)
             .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)

@@ -22,7 +22,7 @@ struct QcQueueView: View {
 
             content
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("qc.tabQueue", default: "Tekshiruv navbati"))
         .navigationBarTitleDisplayMode(.inline)
         .task(id: refresh) {
@@ -52,6 +52,9 @@ struct QcQueueView: View {
                     KitLoadMoreFooter(pager: pager)
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Tokens.surface)
+                .background(Tokens.bg)
             }
         } else {
             LoadingView()

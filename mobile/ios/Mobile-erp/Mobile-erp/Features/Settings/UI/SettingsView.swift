@@ -88,6 +88,7 @@ struct SettingsView: View {
                 .frame(height: 48)
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
             .tint(Tokens.ink)
             .disabled(model.saving || !model.isDirty || !model.invalidFields.isEmpty)
             .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))

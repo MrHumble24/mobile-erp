@@ -35,7 +35,7 @@ struct PartnersSummary: View {
             if model.overdue > 0 {
                 AppCard(
                     padding: 14,
-                    backgroundColor: Tokens.danger.opacity(0.10),
+                    backgroundColor: Tokens.badBg,
                     borderColor: Tokens.danger.opacity(0.35)
                 ) {
                     HStack(spacing: 14) {

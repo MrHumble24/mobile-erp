@@ -29,7 +29,8 @@ struct QcStatsView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+                .background(Tokens.surface, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Tokens.hairline, lineWidth: 1))
 
                 if let store {
                     LoadableView(state: store.state, retry: reload) { stats in
@@ -41,7 +42,7 @@ struct QcStatsView: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("qc.tabStats", default: "QC Statistikasi"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

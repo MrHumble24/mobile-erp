@@ -31,6 +31,7 @@ struct PosCheckoutBar: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
             .tint(Tokens.ink)
             .disabled(model.busy || !allPriced)
             .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))

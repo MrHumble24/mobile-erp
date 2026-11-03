@@ -105,6 +105,7 @@ struct UserDetailSheet: View {
                     Task { await model.saveProfile(savedMessage: i18n.t("users.profileSaved")) }
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
             }
         }
     }

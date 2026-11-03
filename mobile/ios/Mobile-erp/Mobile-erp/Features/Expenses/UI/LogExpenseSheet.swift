@@ -87,6 +87,7 @@ struct LogExpenseSheet: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .disabled(!canSave)
                     .listRowInsets(EdgeInsets())

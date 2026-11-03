@@ -7,8 +7,10 @@ inventory is a live snapshot, pricing a rolling window, closing a single day.
 
 ## Owns
 - All `/reports/*` reads (perm `report.finance`) + best-effort `/device-models`
-  labels. Charts are **Swift Charts**: `FinTrendChart` (revenue/profit/expense
-  lines) and `BarChartCard` breakdowns, with tappable `FinShareList` rows.
+  labels. Charts are **Swift Charts**: `FinTrendChart` (revenue / gross-profit /
+  expense bars on a temporal day/week/month axis — tap a bar to pin the dashed
+  rule + value capsule) and `BarChartCard` breakdowns (x labels drop past six
+  crowded categories; the `FinShareList` rows name them).
 - Drill-downs (`FinBreakdownSheet`): NOI waterfall, paginated returns
   (`KitPaginator`), by-model gross-profit/units, and zero-fetch detail for a
   sales-model / partner / inventory-model row.

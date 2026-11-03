@@ -75,6 +75,8 @@ final class Session {
         keychain.delete(.token)
         keychain.delete(.user)
         user = nil
+        // Drop cached GET responses so the next user can't read them offline.
+        URLCache.shared.removeAllCachedResponses()
     }
 
     var hasToken: Bool {

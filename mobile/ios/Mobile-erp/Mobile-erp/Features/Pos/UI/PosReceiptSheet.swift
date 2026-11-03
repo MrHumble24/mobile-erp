@@ -29,7 +29,7 @@ struct PosReceiptSheet: View {
                 .padding(.vertical, 20)
                 .frame(maxWidth: .infinity)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Tokens.bg)
             .navigationTitle(i18n.t("pos.receiptTitle", default: "Receipt"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -108,13 +108,12 @@ struct PosReceiptSheet: View {
                     .padding(.top, 4)
             }
             .padding(20)
-            .background(Color(.secondarySystemGroupedBackground))
+            .background(Tokens.surface)
             .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
                     .strokeBorder(Tokens.hairline, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 3)
         }
     }
 
@@ -138,6 +137,7 @@ struct PosReceiptSheet: View {
                     .frame(height: 24)
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
             .tint(Tokens.ink)
 
             HStack(spacing: 12) {

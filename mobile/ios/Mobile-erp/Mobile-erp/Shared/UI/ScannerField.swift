@@ -59,14 +59,13 @@ struct ScannerField: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Tokens.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
                 .strokeBorder(focused ? Tokens.ring.opacity(0.6) : Tokens.hairline, lineWidth: 1)
         )
         .animation(.snappy(duration: 0.2), value: focused)
-        .onAppear { focused = true }
         .sheet(isPresented: $showCamera) {
             CameraScanner { code in
                 showCamera = false

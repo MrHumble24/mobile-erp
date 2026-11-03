@@ -116,6 +116,7 @@ struct SaleDetailSheet: View {
                             .frame(height: 24)
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)

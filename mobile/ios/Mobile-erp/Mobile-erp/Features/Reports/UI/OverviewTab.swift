@@ -23,7 +23,7 @@ struct FinOverviewTab: View {
                     ErrorStateView(message: error) { Task { await load() } }
                 } else if let report {
                     MetricGrid(tiles: tiles(report))
-                    FinTrendChart(title: i18n.t("reports.trendTitle"), points: trend)
+                    FinTrendChart(title: i18n.t("reports.trendTitle"), bucket: bucket, points: trend)
                     channelCard
                 } else {
                     LoadingView().frame(height: 200)
@@ -31,7 +31,7 @@ struct FinOverviewTab: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task(id: key) { await load() }
     }
 
@@ -63,22 +63,71 @@ struct FinOverviewTab: View {
     }
 
     private func tiles(_ r: ProfitReport) -> [MetricTile] {
-        [
-            MetricTile(label: i18n.t("dashboard.revenue"), value: reportMoney(r.revenue),
-                       subtext: "\(i18n.t("dashboard.retail")): \(reportMoney(r.retail))"),
-            MetricTile(label: i18n.t("dashboard.cogs"), value: reportMoney(r.cogs),
-                       subtext: "\(r.unitsSold) \(i18n.t("dashboard.unitsSold"))"),
-            MetricTile(label: i18n.t("dashboard.grossProfit"), value: reportMoney(r.grossProfit),
-                       onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }),
-            MetricTile(label: i18n.t("dashboard.expenses"), value: reportMoney(r.expenses),
-                       emphasis: Tokens.danger),
-            MetricTile(label: i18n.t("dashboard.netOperatingIncome"),
-                       value: reportMoney(r.netOperatingIncome), emphasis: Tokens.success,
-                       onTap: { onBreakdown(.noi(from: from, to: to)) }),
-            MetricTile(label: i18n.t("dashboard.returnsRefunded"), value: reportMoney(r.returnsRefunded),
-                       onTap: { onBreakdown(.returns(from: from, to: to)) }),
-            MetricTile(label: i18n.t("dashboard.unitsSold"), value: "\(r.unitsSold)",
-                       onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }),
+        let noi = r.netOperatingIncome ?? 0
+        let isProfit = noi >= 0
+        let grossProfit = r.grossProfit ?? 0
+        let isGrossProfit = grossProfit >= 0
+
+        return [
+            MetricTile(
+                label: i18n.t("dashboard.netOperatingIncome"),
+                value: reportMoney(r.netOperatingIncome),
+                subtext: "\(i18n.t("dashboard.grossProfit")): \(reportMoney(r.grossProfit))  −  \(i18n.t("dashboard.expenses")): \(reportMoney(r.expenses))",
+                emphasis: isProfit ? Tokens.success : Tokens.danger,
+                icon: isProfit ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill",
+                iconColor: isProfit ? Tokens.success : Tokens.danger,
+                badge: isProfit ? i18n.t("reports.profit", default: "Foyda") : i18n.t("reports.loss", default: "Zarar"),
+                badgeColor: isProfit ? Tokens.success : Tokens.danger,
+                isHero: true,
+                onTap: { onBreakdown(.noi(from: from, to: to)) }
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.revenue"),
+                value: reportMoney(r.revenue),
+                subtext: "\(i18n.t("dashboard.retail")): \(reportMoney(r.retail))",
+                icon: "arrow.down.circle.fill",
+                iconColor: Tokens.signalBlue
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.expenses"),
+                value: reportMoney(r.expenses),
+                subtext: i18n.t("reports.tab_expenses", default: "Xarajatlar"),
+                emphasis: Tokens.danger,
+                icon: "arrow.up.circle.fill",
+                iconColor: Tokens.danger
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.cogs"),
+                value: reportMoney(r.cogs),
+                subtext: "\(r.unitsSold) \(i18n.t("reports.units", default: "dona"))",
+                icon: "cart.fill",
+                iconColor: Tokens.slate
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.grossProfit"),
+                value: reportMoney(r.grossProfit),
+                subtext: "\(i18n.t("dashboard.revenue")) − \(i18n.t("dashboard.cogs"))",
+                emphasis: isGrossProfit ? Tokens.ink : Tokens.danger,
+                icon: "chart.line.uptrend.xyaxis",
+                iconColor: isGrossProfit ? Tokens.success : Tokens.danger,
+                onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.returnsRefunded"),
+                value: reportMoney(r.returnsRefunded),
+                subtext: i18n.t("reports.refund", default: "Qaytarilgan"),
+                icon: "arrow.uturn.backward.circle.fill",
+                iconColor: Tokens.warning,
+                onTap: { onBreakdown(.returns(from: from, to: to)) }
+            ),
+            MetricTile(
+                label: i18n.t("dashboard.unitsSold"),
+                value: "\(r.unitsSold) \(i18n.t("reports.units", default: "dona"))",
+                subtext: i18n.t("reports.byModel", default: "Modellar bo'yicha"),
+                icon: "shippingbox.fill",
+                iconColor: Tokens.ink,
+                onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }
+            ),
         ]
     }
 }

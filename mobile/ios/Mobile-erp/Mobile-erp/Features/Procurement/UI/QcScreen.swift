@@ -56,7 +56,7 @@ struct QcScreen: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("nav.qc"))
         .navigationBarTitleDisplayMode(.inline)
         .task {

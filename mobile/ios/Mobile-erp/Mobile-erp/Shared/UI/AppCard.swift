@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// The default grouped-content container: Caldera radius 12 with a bone
-/// hairline in light mode (a subtle separator in dark). Fills the system
-/// grouped-background surface so it adapts to Dark Mode.
+/// The default grouped-content container: Ink radius 12 with a 1 pt hairline
+/// border (cards are separated by hairline, not tone). Fills `Tokens.surface`
+/// so it adapts to Dark Mode.
 struct AppCard<Content: View>: View {
     var padding: CGFloat = 16
-    var backgroundColor: Color = Color(.secondarySystemGroupedBackground)
+    var backgroundColor: Color = Tokens.surface
     var borderColor: Color = Tokens.hairline
     @ViewBuilder var content: () -> Content
 

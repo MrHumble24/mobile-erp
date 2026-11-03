@@ -39,7 +39,7 @@ struct ConsignmentsStatsView: View {
                         if s.overdueCount > 0 {
                             AppCard(
                                 padding: 16,
-                                backgroundColor: Tokens.danger.opacity(0.08),
+                                backgroundColor: Tokens.badBg,
                                 borderColor: Tokens.danger.opacity(0.3)
                             ) {
                                 HStack(spacing: 14) {
@@ -107,7 +107,7 @@ struct ConsignmentsStatsView: View {
                 }
                 .padding(16)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Tokens.bg)
             .navigationTitle(i18n.t("consignments.statsTitle", default: "Nasiya tahlili"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

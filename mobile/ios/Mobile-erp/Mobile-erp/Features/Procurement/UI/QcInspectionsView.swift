@@ -31,7 +31,7 @@ struct QcInspectionsView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(
-                            (filter == .passed ? Tokens.success : Tokens.danger).opacity(0.12),
+                            Tokens.pillTint(filter == .passed ? Tokens.success : Tokens.danger),
                             in: Capsule()
                         )
                     Spacer()
@@ -43,12 +43,12 @@ struct QcInspectionsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color(.secondarySystemGroupedBackground))
+                .background(Tokens.surface2)
             }
 
             content
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("qc.tabInspections", default: "Tekshiruvlar"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -87,6 +87,9 @@ struct QcInspectionsView: View {
                     KitLoadMoreFooter(pager: pager)
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Tokens.surface)
+                .background(Tokens.bg)
             }
         } else {
             LoadingView()
@@ -145,6 +148,9 @@ private struct QcInspectionsFilterSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Tokens.surface)
+            .background(Tokens.bg)
             .navigationTitle(i18n.t("common.filter", default: "Filtrlash"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -24,7 +24,7 @@ struct ReceiptSheet: View {
                         .padding(.vertical, 20)
                         .frame(maxWidth: .infinity)
                     }
-                    .background(Color(.systemGroupedBackground))
+                    .background(Tokens.bg)
                 } else if let error {
                     ErrorStateView(message: error) { load() }
                 } else {
@@ -85,6 +85,7 @@ struct ReceiptSheet: View {
                 Label(i18n.t("sales.printReceipt"), systemImage: "printer").frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
         }
     }
 

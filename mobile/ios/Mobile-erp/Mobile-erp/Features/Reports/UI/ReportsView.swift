@@ -62,6 +62,18 @@ enum FinReportTab: String, CaseIterable, Identifiable {
 
     var labelKey: String { "reports.tab_\(rawValue)" }
 
+    var systemImage: String {
+        switch self {
+        case .overview: return "chart.pie.fill"
+        case .sales: return "cart.fill"
+        case .expenses: return "creditcard.fill"
+        case .nasiya: return "banknote.fill"
+        case .inventory: return "shippingbox.fill"
+        case .pricing: return "tag.fill"
+        case .closing: return "lock.fill"
+        }
+    }
+
     /// The shared date range applies to overview/sales/expenses/nasiya only;
     /// inventory is a live snapshot, pricing uses a window, closing a single day.
     var usesRange: Bool {

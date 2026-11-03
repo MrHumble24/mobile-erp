@@ -24,6 +24,7 @@ struct UserRolesEditor: View {
                 Task { await model.saveRoles(savedMessage: i18n.t("users.rolesSaved")) }
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
             .disabled(model.isSelf || !model.rolesDirty)
         }
     }
@@ -61,6 +62,7 @@ struct UserOverridesEditor: View {
                 Task { await model.saveOverrides(savedMessage: i18n.t("users.overridesSaved")) }
             }
             .buttonStyle(.borderedProminent)
+            .foregroundStyle(Tokens.onInk)
             .disabled(model.isSelf || !model.overridesDirty)
         }
     }

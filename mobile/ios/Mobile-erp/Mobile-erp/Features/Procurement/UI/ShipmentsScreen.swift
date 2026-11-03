@@ -23,7 +23,7 @@ struct ShipmentsScreen: View {
             case .suppliers: SuppliersListView()
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("nav.shipments"))
         .navigationBarTitleDisplayMode(.inline)
         .task {

@@ -111,6 +111,7 @@ private struct GradeForm: View {
             Section {
                 Button(i18n.t("common.save")) { Task { await submit() } }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .disabled(busy)
             }

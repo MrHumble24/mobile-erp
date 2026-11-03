@@ -43,6 +43,7 @@ struct StatusChangeForm: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
                 .disabled(saving || !online || target.isEmpty)
             } header: {
                 Text(i18n.t("inventory.changeStatus"))

@@ -75,6 +75,10 @@ enum DashPeriod: Hashable {
         case .month:
             from = cal.date(from: cal.dateComponents([.year, .month], from: now)) ?? now
         }
-        return (from, now)
+        // Upper bound is end of today (start of tomorrow), not `now`: the data is
+        // identical (nothing happens in the future) but the URL stays stable within
+        // the day, so the offline response cache can serve it on the next launch.
+        let to = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: now)) ?? now
+        return (from, to)
     }
 }

@@ -41,6 +41,9 @@ struct DevQuickLoginView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
     }
 }
 
@@ -119,7 +122,7 @@ private struct DevAccountCard: View {
                 }
             }
             .padding(10)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs))
+            .background(Tokens.surface2, in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs))
         }
         .padding(.vertical, 4)
     }

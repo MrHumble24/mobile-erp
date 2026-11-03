@@ -27,7 +27,7 @@ struct FinNasiyaTab: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task(id: key) { await load() }
     }
 

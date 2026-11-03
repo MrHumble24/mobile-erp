@@ -11,7 +11,7 @@ struct ConsignmentMetricTile: View {
     var body: some View {
         AppCard(
             padding: 14,
-            backgroundColor: highlight ? Tokens.danger.opacity(0.10) : Color(.secondarySystemGroupedBackground),
+            backgroundColor: highlight ? Tokens.badBg : Tokens.surface,
             borderColor: highlight ? Tokens.danger.opacity(0.35) : Tokens.hairline
         ) {
             VStack(alignment: .leading, spacing: 6) {

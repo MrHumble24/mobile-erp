@@ -37,7 +37,7 @@ struct UsersFilterSheet: View {
                                 HStack(spacing: 12) {
                                     AppCard(
                                         padding: 14,
-                                        backgroundColor: Tokens.success.opacity(0.08),
+                                        backgroundColor: Tokens.okBg,
                                         borderColor: Tokens.success.opacity(0.25)
                                     ) {
                                         VStack(alignment: .leading, spacing: 4) {
@@ -58,7 +58,7 @@ struct UsersFilterSheet: View {
                                     let inactiveCount = max(0, stats.total - stats.active)
                                     AppCard(
                                         padding: 14,
-                                        backgroundColor: Tokens.slate.opacity(0.08),
+                                        backgroundColor: Tokens.surface2,
                                         borderColor: Tokens.slate.opacity(0.25)
                                     ) {
                                         VStack(alignment: .leading, spacing: 4) {
@@ -102,7 +102,7 @@ struct UsersFilterSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Color(.secondarySystemBackground),
+                            .background(Tokens.surface2,
                                         in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
                             .onChange(of: model.roleFilter) { model.onFilterChange() }
                         }
@@ -141,7 +141,7 @@ struct UsersFilterSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(Color(.secondarySystemGroupedBackground),
+                    .background(Tokens.surface,
                                 in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
                 }
                 .padding(16)

@@ -28,7 +28,7 @@ struct DailyClosingTab: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task(id: date) { await load() }
     }
 

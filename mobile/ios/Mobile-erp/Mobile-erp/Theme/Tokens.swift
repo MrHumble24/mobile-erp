@@ -1,67 +1,100 @@
 import SwiftUI
 
-/// Caldera design tokens — mirrored from `client/src/app/styles/index.css`
-/// (same names, camelCase). Change a value here, nowhere else.
+/// Caldera design tokens — the "Ink" mobile theme.
 ///
-/// Identity is near-monochrome: the app tint is ink-black (NOT violet). Brand
-/// and status hues are fixed (they read on both appearances); surfaces and text
-/// use SwiftUI's system semantic colors so Dark Mode adapts for free.
+/// Source of truth: `docs/design/mobile-themes/theme-01-ink.html` (its `:root`
+/// and dark blocks and the token table). The same values drive `Tokens.kt` on
+/// Android. Change a value here, nowhere else.
+///
+/// Identity is pure monochrome: surfaces go white → near-black, text is ink,
+/// the app tint is ink (lifted to near-white in Dark Mode). The only colour on
+/// screen is status (ok / warn / bad / info). No shadows; 1 px hairline borders.
 enum Tokens {
-    // Raw palette (`--color-*`).
-    static let signalWhite = Color(hex: 0xFFFFFF)
-    static let inkBlack = Color(hex: 0x202020)
-    static let onyx = Color(hex: 0x090C1D)
-    static let slate = Color(hex: 0x646464)
-    static let ash = Color(hex: 0x838383)
-    static let cloud = Color(hex: 0xD4D4D4)
-    static let bone = Color(hex: 0xE8E8E8)
-    static let mist = Color(hex: 0xF8F9FA)
+    // Surfaces & text (adaptive light → dark).
 
-    static let brandViolet = Color(hex: 0x6647F0)
-    static let signalBlue = Color(hex: 0x0091FF)
-    static let emerald = Color(hex: 0x00C07A)
-    static let destructive = Color(hex: 0xE53935)
+    /// Screen background (`bg`).
+    static let bg = Color(light: 0xFFFFFF, dark: 0x0A0A0A)
 
-    /// Admin status accents (emerald / amber / rose) — not the marketing hues.
-    static let success = Color(hex: 0x059669)
-    static let warning = Color(hex: 0xD97706)
-    static let danger = Color(hex: 0xE11D48)
+    /// Cards, lists, tab bar (`surface`).
+    static let surface = Color(light: 0xFFFFFF, dark: 0x141414)
 
-    /// `--color-ring` (focus) = signal-blue.
-    static let ring = signalBlue
+    /// Chips, segmented control, inputs (`surface2`). Historic name: `mist`.
+    static let mist = Color(light: 0xF1F1F2, dark: 0x1F1F1F)
+    static let surface2 = mist
 
-    /// App tint = ink-black, lifted to near-white in Dark Mode so it stays
-    /// legible on dark chrome. The one adaptive brand color.
+    /// Primary text (`fg`) and the app tint (`accent`) — identical in Ink, so
+    /// one adaptive token serves both.
     static let ink = Color(light: 0x202020, dark: 0xF2F2F2)
 
-    /// Hairline border — bone in light, system separator in dark.
-    static let hairline = Color(light: 0xE8E8E8, dark: 0x3A3A3C)
+    /// Foreground placed on an `ink`/accent fill (`on-accent`); inverts so the
+    /// label always contrasts.
+    static let onInk = Color(light: 0xFFFFFF, dark: 0x141414)
+
+    /// Secondary text, captions (`muted`). Historic name: `slate`.
+    static let slate = Color(light: 0x6B6B6B, dark: 0x9B9B9B)
+
+    /// Inactive / tertiary marker. Not a themed Ink token; a fixed mid-grey
+    /// that reads on both appearances.
+    static let ash = Color(hex: 0x838383)
+
+    /// Dividers, hairline borders (`hair`).
+    static let hairline = Color(light: 0xE6E6E6, dark: 0x262626)
+
+    // Status hues (`ok` / `warn` / `bad` / `info`) — the only colour on screen.
+    static let success = Color(light: 0x059669, dark: 0x34D399)
+    static let warning = Color(light: 0xD97706, dark: 0xFBBF24)
+    static let danger = Color(light: 0xE11D48, dark: 0xFB7185)
+    /// Info blue (`info`), also the `CONSIGNED` device status and focus ring.
+    static let signalBlue = Color(light: 0x0A84FF, dark: 0x5AAAFF)
+
+    /// Error text / destructive copy — same hue as `danger`.
+    static let destructive = danger
+
+    // Status tint backgrounds for pills (`ok-bg` / `warn-bg` / `bad-bg` / `info-bg`).
+    static let okBg = Color(light: 0xE6F6EF, dark: 0x0F2A20)
+    static let warnBg = Color(light: 0xFBF0DC, dark: 0x2E2410)
+    static let badBg = Color(light: 0xFCE7EC, dark: 0x331520)
+    static let infoBg = Color(light: 0xE3F0FF, dark: 0x10243A)
+
+    /// `--color-ring` (focus) = info blue.
+    static let ring = signalBlue
 
     // Named radii (`--radius-*`), in points.
     enum Radius {
-        static let inputs: CGFloat = 9
+        static let inputs: CGFloat = 10
         static let cards: CGFloat = 12
         static let large: CGFloat = 20
         static let pill: CGFloat = 9999
     }
 
-    /// Device status code → accent, matching the web `DeviceStatusBadge`.
+    /// Device status code → status hue (matches the web `DeviceStatusBadge`).
     static func deviceStatusColor(_ code: String) -> Color {
         switch code.uppercased() {
-        case "IN_STOCK": return emerald
-        case "DEFECTIVE": return destructive
+        case "IN_STOCK": return success
+        case "DEFECTIVE": return danger
         case "CONSIGNED": return signalBlue
         case "SOLD": return slate
         default: return slate
         }
     }
+
+    /// Pill/tile tint background paired with a status hue (Ink `*-bg`). Non-status
+    /// hues (muted/inactive) fall back to the neutral chip surface. Call sites pass
+    /// the raw `Tokens` hue, so identity comparison resolves the pair.
+    static func pillTint(_ hue: Color) -> Color {
+        if hue == success { return okBg }
+        if hue == warning { return warnBg }
+        if hue == danger { return badBg }
+        if hue == signalBlue { return infoBg }
+        return surface2
+    }
 }
 
 extension Font {
-    /// Sometype Mono (bundled TTF) for IMEI and money columns; SwiftUI falls
-    /// back to the system monospaced face if the font fails to load.
+    /// IBM Plex Mono (bundled TTF) for IMEI, money and count columns; SwiftUI
+    /// falls back to the system monospaced face if the font fails to load.
     static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .custom("Sometype Mono", size: size).weight(weight)
+        .custom("IBM Plex Mono", size: size).weight(weight)
     }
 }
 

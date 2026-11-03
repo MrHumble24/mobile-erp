@@ -63,6 +63,7 @@ struct ConsignmentDetailView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     Button(role: .destructive) { onReturn(c) } label: {
                         Label(i18n.t("consignments.return"), systemImage: "arrow.uturn.backward")
                             .frame(maxWidth: .infinity)
@@ -72,6 +73,9 @@ struct ConsignmentDetailView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
     }
 
     private func dueRow(_ c: Consignment) -> some View {

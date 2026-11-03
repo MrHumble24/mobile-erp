@@ -27,6 +27,9 @@ struct ExpensesListTab: View {
             listBody
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
         .refreshable { await model.reload() }
         .toolbar { toolbar }
         .sheet(isPresented: $showFilters) { ExpenseFiltersSheet(model: model) }

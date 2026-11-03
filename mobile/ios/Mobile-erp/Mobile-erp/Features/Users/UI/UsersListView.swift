@@ -118,7 +118,7 @@ private struct UserRowView: View {
                             .font(.system(size: 11, weight: .medium))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 4))
+                            .background(Tokens.surface2, in: RoundedRectangle(cornerRadius: 4))
                             .foregroundStyle(.secondary)
                     }
                 }

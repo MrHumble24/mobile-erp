@@ -54,7 +54,7 @@ struct InventoryMetricsBar: View {
             }
             .frame(width: 125, alignment: .leading)
             .padding(12)
-            .background(Color(.secondarySystemGroupedBackground),
+            .background(Tokens.surface,
                         in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)

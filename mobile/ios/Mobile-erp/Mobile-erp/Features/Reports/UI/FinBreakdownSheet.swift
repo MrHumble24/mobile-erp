@@ -13,7 +13,7 @@ struct FinBreakdownSheet: View {
             container
                 .navigationTitle(i18n.t(request.titleKey))
                 .navigationBarTitleDisplayMode(.inline)
-                .background(Color(.systemGroupedBackground))
+                .background(Tokens.bg)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(i18n.t("common.close")) { dismiss() }

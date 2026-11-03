@@ -65,6 +65,9 @@ struct ConsignmentsView: View {
                     body(model)
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .listRowBackground(Tokens.surface)
+                .background(Tokens.bg)
                 .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
                 .onSubmit(of: .search) { Task { await model.load() } }
                 .refreshable { await model.load() }
@@ -170,7 +173,7 @@ struct ConsignmentsView: View {
             .foregroundStyle(Tokens.signalBlue)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(Tokens.signalBlue.opacity(0.12), in: Capsule())
+            .background(Tokens.infoBg, in: Capsule())
 
             Spacer()
 
@@ -189,7 +192,7 @@ struct ConsignmentsView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Tokens.surface2)
     }
 
     private func pendingMarker(_ count: Int) -> some View {

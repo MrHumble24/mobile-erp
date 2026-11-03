@@ -17,10 +17,10 @@
 		<true/>
 	</dict>
 
-	<!-- Sometype Mono (Caldera mono face) for IMEI and money columns. -->
+	<!-- IBM Plex Mono (Ink theme mono face) for IMEI, money and count columns. -->
 	<key>UIAppFonts</key>
 	<array>
-		<string>SometypeMono.ttf</string>
+		<string>IBMPlexMono-Regular.ttf</string>
 	</array>
 </dict>
 </plist>

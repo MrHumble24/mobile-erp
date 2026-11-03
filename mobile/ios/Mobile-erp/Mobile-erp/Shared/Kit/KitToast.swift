@@ -97,7 +97,6 @@ private struct KitToastBanner: View {
         .overlay(RoundedRectangle(cornerRadius: Tokens.Radius.cards)
             .strokeBorder(Tokens.hairline))
         .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards))
-        .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }

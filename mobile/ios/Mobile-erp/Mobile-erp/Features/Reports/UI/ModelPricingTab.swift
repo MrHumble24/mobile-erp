@@ -36,7 +36,7 @@ struct ModelPricingTab: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task { await load() }
     }
 

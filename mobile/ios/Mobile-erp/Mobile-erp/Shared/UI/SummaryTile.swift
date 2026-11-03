@@ -15,16 +15,16 @@ struct SummaryTile: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(label)
                     .font(.caption)
-                    .foregroundStyle(highlight ? Color.white.opacity(0.75) : .secondary)
+                    .foregroundStyle(highlight ? Tokens.onInk.opacity(0.75) : .secondary)
                     .lineLimit(1)
                 Text(value)
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(highlight ? .white : Tokens.ink)
+                    .foregroundStyle(highlight ? Tokens.onInk : Tokens.ink)
                     .monospacedDigit()
                 if let subtext {
                     Text(subtext)
                         .font(.caption2)
-                        .foregroundStyle(highlight ? Color.white.opacity(0.75) : .secondary)
+                        .foregroundStyle(highlight ? Tokens.onInk.opacity(0.75) : .secondary)
                         .lineLimit(1)
                 }
             }

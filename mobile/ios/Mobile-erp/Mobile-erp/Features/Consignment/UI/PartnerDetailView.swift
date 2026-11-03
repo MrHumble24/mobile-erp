@@ -36,6 +36,9 @@ struct PartnerDetailView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Tokens.surface)
+            .background(Tokens.bg)
             .navigationTitle(partner.shopName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -63,7 +66,7 @@ struct PartnerDetailView: View {
 
         return AppCard(
             padding: 18,
-            backgroundColor: (hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success)).opacity(0.10),
+            backgroundColor: Tokens.pillTint(hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success)),
             borderColor: (hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success)).opacity(0.35)
         ) {
             VStack(alignment: .leading, spacing: 8) {
@@ -125,6 +128,7 @@ struct PartnerDetailView: View {
                         .frame(height: 48)
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
                 .tint(Tokens.ink)
             }
             HStack(spacing: 10) {

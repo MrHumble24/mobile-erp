@@ -43,7 +43,7 @@ struct QcStatsBody: View {
             if stats.awaitingInspection > 0 {
                 AppCard(
                     padding: 14,
-                    backgroundColor: Tokens.warning.opacity(0.12),
+                    backgroundColor: Tokens.warnBg,
                     borderColor: Tokens.warning.opacity(0.35)
                 ) {
                     HStack(spacing: 12) {

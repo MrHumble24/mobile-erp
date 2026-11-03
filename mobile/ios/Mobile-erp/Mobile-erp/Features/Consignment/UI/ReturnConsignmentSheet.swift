@@ -82,6 +82,7 @@ struct ReturnConsignmentSheet: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .disabled(saving)
                     .listRowInsets(EdgeInsets())

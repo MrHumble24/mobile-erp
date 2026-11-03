@@ -14,7 +14,7 @@ struct PartnersStatsView: View {
                 }
                 .padding(16)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Tokens.bg)
             .navigationTitle(i18n.t("partners.statsTitle", default: "Hamkorlar statistikasi"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

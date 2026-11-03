@@ -28,7 +28,7 @@ struct DashboardView: View {
             .padding()
         }
         .navigationTitle(i18n.t("dashboard.title"))
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task {
             if labels.isEmpty {
                 labels = await DashboardRepository(api: container.api).deviceModelLabels()

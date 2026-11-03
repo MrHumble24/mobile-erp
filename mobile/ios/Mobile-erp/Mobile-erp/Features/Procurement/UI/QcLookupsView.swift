@@ -26,6 +26,9 @@ struct QcLookupsView: View {
                           onEdit: { form = LookupFormTarget(kind: "defect-types", existing: $0) })
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
         .navigationTitle(i18n.t("qc.tabLookups", default: "Ma'lumotnomalar"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

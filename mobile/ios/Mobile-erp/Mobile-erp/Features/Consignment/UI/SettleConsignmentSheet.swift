@@ -59,7 +59,7 @@ struct SettleConsignmentSheet: View {
                                     .foregroundStyle(Tokens.signalBlue)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
-                                    .background(Tokens.signalBlue.opacity(0.12), in: Capsule())
+                                    .background(Tokens.infoBg, in: Capsule())
                             }
                             .buttonStyle(.plain)
                         }

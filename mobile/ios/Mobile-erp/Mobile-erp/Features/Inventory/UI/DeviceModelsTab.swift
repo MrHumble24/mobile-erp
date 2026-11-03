@@ -42,6 +42,9 @@ struct DeviceModelsTab: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
         .searchable(text: $query, prompt: "\(i18n.t("inventory.brand")) / \(i18n.t("inventory.model"))")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

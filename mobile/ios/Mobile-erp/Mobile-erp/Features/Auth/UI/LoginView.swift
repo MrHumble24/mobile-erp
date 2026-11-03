@@ -135,6 +135,7 @@ struct LoginView: View {
                         .frame(height: 50)
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .disabled(session.isLoggingIn || email.isEmpty || password.isEmpty)
                     .listRowInsets(EdgeInsets())

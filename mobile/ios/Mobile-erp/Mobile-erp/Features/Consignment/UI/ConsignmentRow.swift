@@ -65,7 +65,7 @@ struct ConsignmentRow: View {
                                 .foregroundStyle(Tokens.danger)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Tokens.danger.opacity(0.12), in: Capsule())
+                                .background(Tokens.badBg, in: Capsule())
                         }
                     }
                 }
@@ -83,7 +83,8 @@ struct ConsignmentRow: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(Tokens.surface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Tokens.hairline, lineWidth: 1))
 
             // Notes if provided
             if let notes = item.notes, !notes.trimmingCharacters(in: .whitespaces).isEmpty {

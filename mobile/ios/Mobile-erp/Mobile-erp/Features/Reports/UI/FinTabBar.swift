@@ -11,13 +11,28 @@ struct FinTabBar: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(tabs) { tab in
-                    Button { selection = tab } label: {
-                        Text(i18n.t(tab.labelKey))
-                            .font(.subheadline.weight(selection == tab ? .semibold : .regular))
-                            .foregroundStyle(selection == tab ? Tokens.signalWhite : Tokens.ink)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(selection == tab ? Tokens.ink : Tokens.mist, in: Capsule())
+                    Button {
+                        if selection != tab {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            selection = tab
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: tab.systemImage)
+                                .font(.caption2.weight(.semibold))
+                            Text(i18n.t(tab.labelKey))
+                                .font(.subheadline.weight(selection == tab ? .semibold : .regular))
+                        }
+                        .foregroundStyle(selection == tab ? Tokens.onInk : Tokens.ink)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(
+                            selection == tab ? Tokens.ink : Tokens.surface,
+                            in: Capsule()
+                        )
+                        .overlay(
+                            Capsule().strokeBorder(selection == tab ? Color.clear : Tokens.hairline, lineWidth: 1)
+                        )
                     }
                     .buttonStyle(.plain)
                 }

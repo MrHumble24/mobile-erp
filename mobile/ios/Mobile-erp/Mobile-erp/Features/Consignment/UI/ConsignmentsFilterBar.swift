@@ -20,7 +20,7 @@ struct ConsignmentsFilterBar: View {
                     .onSubmit(onChange)
             }
             .padding(.horizontal, 12).padding(.vertical, 9)
-            .background(Color(.secondarySystemBackground),
+            .background(Tokens.surface2,
                         in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
 
             HStack {

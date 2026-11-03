@@ -69,6 +69,9 @@ struct ShipmentsListView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Tokens.surface)
+            .background(Tokens.bg)
         }
     }
 
@@ -88,6 +91,9 @@ struct ShipmentsListView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
+                    .listRowBackground(Tokens.surface)
+                    .background(Tokens.bg)
                 }
             }
             .navigationTitle(i18n.t("shipments.title"))

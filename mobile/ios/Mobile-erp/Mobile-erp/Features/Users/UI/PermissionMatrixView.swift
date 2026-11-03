@@ -116,6 +116,7 @@ struct PermissionMatrixView: View {
                           systemImage: "checkmark.circle.fill")
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
                 .tint(Tokens.ink)
             }
             .padding()

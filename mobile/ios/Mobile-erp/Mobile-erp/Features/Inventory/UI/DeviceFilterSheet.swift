@@ -85,7 +85,7 @@ struct DeviceFilterSheet: View {
                                         .foregroundStyle(.tertiary)
                                 }
                                 .padding(12)
-                                .background(Tokens.warning.opacity(0.12),
+                                .background(Tokens.warnBg,
                                             in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
                             }
                             .buttonStyle(.plain)
@@ -93,7 +93,7 @@ struct DeviceFilterSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(Color(.secondarySystemGroupedBackground),
+                    .background(Tokens.surface,
                                 in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
 
                     // Model & Storage Filters
@@ -116,7 +116,7 @@ struct DeviceFilterSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Color(.secondarySystemBackground),
+                            .background(Tokens.surface2,
                                         in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
                         }
 
@@ -134,7 +134,7 @@ struct DeviceFilterSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Color(.secondarySystemBackground),
+                            .background(Tokens.surface2,
                                         in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
                         }
 
@@ -155,7 +155,7 @@ struct DeviceFilterSheet: View {
                         }
                     }
                     .padding(16)
-                    .background(Color(.secondarySystemGroupedBackground),
+                    .background(Tokens.surface,
                                 in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
                 }
                 .padding(16)
@@ -201,7 +201,7 @@ struct DeviceFilterSheet: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(isSelected ? Color(.systemBackground) : Color(.secondarySystemBackground),
+            .background(isSelected ? Tokens.surface : Tokens.surface2,
                         in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)

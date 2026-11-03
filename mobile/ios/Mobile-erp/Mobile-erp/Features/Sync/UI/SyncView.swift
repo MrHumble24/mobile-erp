@@ -31,7 +31,7 @@ struct SyncView: View {
         Section {
             AppCard(
                 padding: 18,
-                backgroundColor: (model.isOnline ? Tokens.success : Tokens.warning).opacity(0.10),
+                backgroundColor: Tokens.pillTint(model.isOnline ? Tokens.success : Tokens.warning),
                 borderColor: (model.isOnline ? Tokens.success : Tokens.warning).opacity(0.35)
             ) {
                 VStack(alignment: .leading, spacing: 14) {
@@ -86,6 +86,7 @@ struct SyncView: View {
                             .frame(height: 48)
                     }
                     .buttonStyle(.borderedProminent)
+                    .foregroundStyle(Tokens.onInk)
                     .tint(Tokens.ink)
                     .disabled(!model.isOnline)
                 }
@@ -189,6 +190,7 @@ private struct ConflictRowView: View {
                     onResolve("apply-terminal")
                 }
                 .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
             }
             .disabled(disabled)
         }

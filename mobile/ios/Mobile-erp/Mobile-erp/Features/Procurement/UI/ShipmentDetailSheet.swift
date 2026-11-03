@@ -34,6 +34,9 @@ struct ShipmentDetailSheet: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Tokens.surface)
+            .background(Tokens.bg)
             .navigationTitle(i18n.t("shipments.detailTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

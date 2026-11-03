@@ -28,7 +28,7 @@ struct FinInventoryTab: View {
             }
             .padding()
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Tokens.bg)
         .task { await load() }
     }
 

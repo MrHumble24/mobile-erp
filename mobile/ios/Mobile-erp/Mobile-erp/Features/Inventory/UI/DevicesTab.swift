@@ -59,6 +59,9 @@ struct DevicesTab: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .listRowBackground(Tokens.surface)
+        .background(Tokens.bg)
         .searchable(text: $filter.search, prompt: i18n.t("inventory.scanOrSearch"))
         .toolbar { toolbarItems }
         .sheet(isPresented: $showFilters) { filterSheet }
@@ -85,6 +88,9 @@ struct DevicesTab: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .listRowBackground(Tokens.surface)
+            .background(Tokens.bg)
             .searchable(text: $filter.search, prompt: i18n.t("inventory.scanOrSearch"))
             .toolbar { toolbarItems }
             .navigationTitle(i18n.t("inventory.tabDevices"))

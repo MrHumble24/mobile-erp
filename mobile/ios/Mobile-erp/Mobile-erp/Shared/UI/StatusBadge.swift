@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Pill badge tinted by a semantic status color (12% fill, solid label) —
+/// Pill badge tinted by a semantic status color (Ink `*-bg` fill, solid label) —
 /// the Caldera status-chip look. Pass a color directly, or use
 /// `StatusBadge(deviceStatus:label:)` for the device-status palette.
 struct StatusBadge: View {
@@ -24,6 +24,6 @@ struct StatusBadge: View {
             .foregroundStyle(color)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(color.opacity(0.12), in: Capsule())
+            .background(Tokens.pillTint(color), in: Capsule())
     }
 }
