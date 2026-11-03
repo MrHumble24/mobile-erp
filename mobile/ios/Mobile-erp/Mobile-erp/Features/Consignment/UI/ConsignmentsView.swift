@@ -14,6 +14,7 @@ struct ConsignmentsView: View {
     @State private var returnItem: Consignment?
     @State private var showCreate = false
     @State private var showFilters = false
+    @State private var showStats = false
 
     private var hasActiveFilters: Bool {
         guard let model else { return false }
@@ -75,6 +76,9 @@ struct ConsignmentsView: View {
             }
             .sheet(isPresented: $showFilters) {
                 ConsignmentsFilterSheet(model: model) { Task { await model.load() } }
+            }
+            .sheet(isPresented: $showStats) {
+                ConsignmentsStatsView(model: model)
             }
         } else {
             LoadingView()
@@ -199,9 +203,18 @@ struct ConsignmentsView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                showStats = true
+            } label: {
+                Label(i18n.t("consignments.statsTitle", default: "Statistika"),
+                      systemImage: "chart.bar.xaxis")
+            }
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 showFilters = true
             } label: {
-                Label(i18n.t("common.filter", default: "Filters & Overview"),
+                Label(i18n.t("common.filter", default: "Filtrlar"),
                       systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
             }
         }

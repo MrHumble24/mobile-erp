@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Bottom sheet presenting partner directory metrics and filter options.
-/// Houses the summary metrics and filter controls, ensuring the main
-/// partner directory screen remains clear, responsive, and uncluttered.
+/// Dedicated bottom sheet presenting partner directory filter options.
+/// Focused purely on filtering (active status, overdue debts) without clutter.
 struct PartnersFilterSheet: View {
     @Bindable var model: PartnersListModel
 
@@ -11,70 +10,47 @@ struct PartnersFilterSheet: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    // Summary metrics
-                    PartnersSummary(model: model)
-
-                    // Filters
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text(i18n.t("common.filter", default: "Filters"))
-                            .font(.headline)
-                            .foregroundStyle(Tokens.ink)
-
-                        // Status Filter
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(i18n.t("partners.status", default: "Partner Status"))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
-
-                            Picker(i18n.t("partners.status"), selection: $model.active) {
-                                ForEach(PartnersListModel.ActiveFilter.allCases) { a in
-                                    Text(label(a)).tag(a)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                        }
-
-                        // Overdue only toggle
-                        Toggle(isOn: $model.overdueOnly) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(i18n.t("partners.overdueOnly", default: "Overdue Debt Only"))
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(Tokens.ink)
-                                Text(i18n.t("partners.overdueDesc", default: "Show only partners with outstanding overdue balances"))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .tint(Tokens.danger)
-                        .padding(.vertical, 4)
-
-                        if hasActiveFilters {
-                            Button(role: .destructive) {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                model.active = .all
-                                model.overdueOnly = false
-                                dismiss()
-                            } label: {
-                                Label(i18n.t("inventory.clearFilters", default: "Reset All Filters"),
-                                      systemImage: "arrow.counterclockwise")
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 10)
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(Tokens.danger)
-                            .padding(.top, 4)
+            Form {
+                Section(i18n.t("partners.status", default: "Hamkor holati")) {
+                    Picker(i18n.t("partners.status"), selection: $model.active) {
+                        ForEach(PartnersListModel.ActiveFilter.allCases) { a in
+                            Text(label(a)).tag(a)
                         }
                     }
-                    .padding(16)
-                    .background(Color(.secondarySystemGroupedBackground),
-                                in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
+                    .pickerStyle(.inline)
+                    .labelsHidden()
                 }
-                .padding(16)
+
+                Section {
+                    Toggle(isOn: $model.overdueOnly) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(i18n.t("partners.overdueOnly", default: "Muddati o'tgan qarzlar"))
+                                .font(.subheadline.weight(.medium))
+                            Text(i18n.t("partners.overdueDesc", default: "Muddati o'tgan qarzdorligi bor hamkorlar"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .tint(Tokens.danger)
+                }
+
+                if hasActiveFilters {
+                    Section {
+                        Button(role: .destructive) {
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            model.active = .all
+                            model.overdueOnly = false
+                            dismiss()
+                        } label: {
+                            Label(i18n.t("inventory.clearFilters", default: "Filtrlarni tozalash"),
+                                  systemImage: "arrow.counterclockwise")
+                                .foregroundStyle(Tokens.danger)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                    }
+                }
             }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle(i18n.t("partners.overviewTitle", default: "Overview & Filters"))
+            .navigationTitle(i18n.t("common.filter", default: "Filtrlar"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -96,10 +72,9 @@ struct PartnersFilterSheet: View {
 
     private func label(_ a: PartnersListModel.ActiveFilter) -> String {
         switch a {
-        case .all: return i18n.t("common.all", default: "All")
-        case .active: return i18n.t("partners.active", default: "Active")
-        case .inactive: return i18n.t("partners.inactive", default: "Inactive")
+        case .all: return i18n.t("common.all", default: "Barchasi")
+        case .active: return i18n.t("partners.active", default: "Faol")
+        case .inactive: return i18n.t("partners.inactive", default: "Nofaol")
         }
     }
 }
-
