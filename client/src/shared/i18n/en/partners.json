@@ -14,6 +14,7 @@
   "overdueCount": "Overdue Consignments",
   "recordPayment": "Record Payment",
   "paymentAmount": "Payment Amount ($)",
+  "payFull": "Fill Full Balance ({amount})",
   "ledgerTitle": "Partner Ledger",
   "kindConsignment": "Consignment Given",
   "kindPayment": "Payment Received",

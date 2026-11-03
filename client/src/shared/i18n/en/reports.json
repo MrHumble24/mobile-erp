@@ -86,5 +86,8 @@
   "exportCsv": "Export CSV",
   "empty": "No data for this period",
   "share": "Share",
-  "other": "Other"
+  "other": "Other",
+  "profit": "Profit",
+  "loss": "Loss",
+  "allMetrics": "All"
 }

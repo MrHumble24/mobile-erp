@@ -55,6 +55,7 @@
   "deviceConflict": "Device is no longer in stock",
   "lineFailed": "{imei} failed: {reason}",
   "duplicateDevice": "Device is already in the cart",
+  "alreadyQueued": "Already queued",
   "modeSale": "Sale",
   "modeNasiya": "Nasiya",
   "soldInfo": "Already sold on {date}",

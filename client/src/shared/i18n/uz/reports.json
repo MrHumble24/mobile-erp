@@ -71,14 +71,14 @@
   "kind_payment": "To'lov",
   "intakeDate": "Qabul sanasi",
   "brkRevenue": "Tushum — savdolar bo'yicha",
-  "brkCogs": "Tannarx (COGS) — savdolar bo'yicha",
+  "brkCogs": "Tannarx — savdolar bo'yicha",
   "brkSalesByModel": "Modellar bo'yicha savdo",
   "brkGrossProfit": "Modellar bo'yicha yalpi foyda",
   "brkUnits": "Sotilgan dona soni (modellar bo'yicha)",
   "brkExpenses": "Xarajatlar ro'yxati",
   "brkExpenseCategory": "Toifalar bo'yicha xarajatlar",
   "brkReturns": "Qaytarilgan mablag'lar",
-  "brkNoi": "Sof operatsion foyda",
+  "brkNoi": "Sof foyda",
   "brkPartner": "Hamkor nasiyalari",
   "brkInventoryModel": "Ombordagi qurilmalar",
   "showTable": "Jadval",
@@ -86,5 +86,8 @@
   "exportCsv": "CSV yuklash",
   "empty": "Ushbu davr uchun ma'lumotlar yo'q",
   "share": "Ulush",
-  "other": "Boshqalar"
+  "other": "Boshqalar",
+  "profit": "Foyda",
+  "loss": "Zarar",
+  "allMetrics": "Barchasi"
 }
