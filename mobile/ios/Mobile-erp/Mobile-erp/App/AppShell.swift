@@ -65,7 +65,14 @@ struct AppShell: View {
                         Text(i18n.t(module.labelKey))
                             .font(.headline)
                     }
-                    toolbarContent
+                    if !container.connectivity.isOnline {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Label(i18n.t("common.offline", default: "Offline"), systemImage: "wifi.slash")
+                                .labelStyle(.titleAndIcon)
+                                .font(.caption)
+                                .foregroundStyle(Tokens.warning)
+                        }
+                    }
                 }
         } else {
             NavigationStack {
@@ -105,7 +112,7 @@ struct AppShell: View {
 }
 
 /// Locale switcher (uz / en), persisted. Stock `Picker` inside the account menu.
-private struct LocaleMenu: View {
+struct LocaleMenu: View {
     let i18n: I18n
     var body: some View {
         Picker(i18n.t("settings.language", default: "Language"),

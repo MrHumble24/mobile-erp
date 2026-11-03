@@ -38,7 +38,8 @@ final class AppLog {
     func log(_ level: AppLogLevel, _ tag: String, _ message: String) {
         entries.append(AppLogEntry(date: Date(), level: level, tag: tag, message: message))
         if entries.count > Self.capacity { entries.removeFirst(entries.count - Self.capacity) }
-        logger.log(level: level.osType, "[\(tag, privacy: .public)] \(message, privacy: .public)")
+        // Only the shared log mirrors to Console; throwaway instances (self-checks) stay silent.
+        if self === Self.shared { logger.log(level: level.osType, "[\(tag, privacy: .public)] \(message, privacy: .public)") }
     }
 
     func clear() { entries.removeAll() }

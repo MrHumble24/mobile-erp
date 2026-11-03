@@ -148,3 +148,4 @@ struct ConsignmentsStatsView: View {
         }
     }
 }
+

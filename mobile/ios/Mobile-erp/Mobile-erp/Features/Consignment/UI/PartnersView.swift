@@ -75,29 +75,59 @@ struct PartnersView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                showStats = true
-            } label: {
-                Label(i18n.t("partners.statsTitle", default: "Statistika"),
-                      systemImage: "chart.bar.xaxis")
-            }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                showFilters = true
-            } label: {
-                Label(i18n.t("common.filter", default: "Filtrlar"),
-                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-            }
-        }
         if container.session.can("partner.manage") {
             ToolbarItem(placement: .primaryAction) {
-                Button { showCreate = true } label: {
-                    Label(i18n.t("partners.newPartner"), systemImage: "plus")
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showCreate = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.body.weight(.semibold))
                 }
+            }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showFilters = true
+                } label: {
+                    Label(
+                        hasActiveFilters
+                            ? i18n.t("partners.filterActive", default: "Filtrlar (Faol)")
+                            : i18n.t("common.filter", default: "Filtrlar"),
+                        systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease"
+                    )
+                }
+
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showStats = true
+                } label: {
+                    Label(
+                        i18n.t("partners.statsTitle", default: "Statistika"),
+                        systemImage: "chart.bar.xaxis"
+                    )
+                }
+
+                Divider()
+
+                if let name = container.session.user?.displayName {
+                    Text(name)
+                }
+                LocaleMenu(i18n: i18n)
+
+                Button(role: .destructive) {
+                    container.session.logout()
+                } label: {
+                    Label(i18n.t("auth.logout", default: "Chiqish"),
+                          systemImage: "rectangle.portrait.and.arrow.right")
+                }
+            } label: {
+                Image(systemName: hasActiveFilters ? "ellipsis.circle.fill" : "ellipsis.circle")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(hasActiveFilters ? Tokens.signalBlue : .primary)
             }
         }
     }

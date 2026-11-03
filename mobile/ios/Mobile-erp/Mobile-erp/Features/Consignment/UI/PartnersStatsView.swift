@@ -30,3 +30,4 @@ struct PartnersStatsView: View {
         .presentationDragIndicator(.visible)
     }
 }
+

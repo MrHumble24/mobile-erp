@@ -200,37 +200,71 @@ struct ConsignmentsView: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                showStats = true
-            } label: {
-                Label(i18n.t("consignments.statsTitle", default: "Statistika"),
-                      systemImage: "chart.bar.xaxis")
-            }
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                showFilters = true
-            } label: {
-                Label(i18n.t("common.filter", default: "Filtrlar"),
-                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-            }
-        }
-        if let model, !model.items.isEmpty {
-            ToolbarItem(placement: .secondaryAction) {
-                KitCSVShareButton(filename: "consignments.csv",
-                                  label: i18n.t("consignments.exportCsv")) {
-                    ConsignmentLogic.csv(model.items) { i18n.t($0) }
-                }
-            }
-        }
         if container.session.can("consignment.create") {
             ToolbarItem(placement: .primaryAction) {
-                Button { showCreate = true } label: {
-                    Label(i18n.t("consignments.newConsignment"), systemImage: "plus")
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showCreate = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.body.weight(.semibold))
                 }
+            }
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                // 1. Filtrlar
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showFilters = true
+                } label: {
+                    Label(
+                        hasActiveFilters
+                            ? i18n.t("consignments.filterActive", default: "Filtrlar (Faol)")
+                            : i18n.t("common.filter", default: "Filtrlar"),
+                        systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease"
+                    )
+                }
+
+                // 2. Statistika
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showStats = true
+                } label: {
+                    Label(
+                        i18n.t("consignments.statsTitle", default: "Tahlil va Statistika"),
+                        systemImage: "chart.bar.xaxis"
+                    )
+                }
+
+                // 3. CSV eksport
+                if let model, !model.items.isEmpty {
+                    KitCSVShareButton(
+                        filename: "consignments.csv",
+                        label: i18n.t("consignments.exportCsv", default: "CSV yuklash")
+                    ) {
+                        ConsignmentLogic.csv(model.items) { i18n.t($0) }
+                    }
+                }
+
+                Divider()
+
+                if let name = container.session.user?.displayName {
+                    Text(name)
+                }
+                LocaleMenu(i18n: i18n)
+
+                Button(role: .destructive) {
+                    container.session.logout()
+                } label: {
+                    Label(i18n.t("auth.logout", default: "Chiqish"),
+                          systemImage: "rectangle.portrait.and.arrow.right")
+                }
+            } label: {
+                Image(systemName: hasActiveFilters ? "ellipsis.circle.fill" : "ellipsis.circle")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(hasActiveFilters ? Tokens.signalBlue : .primary)
             }
         }
     }
