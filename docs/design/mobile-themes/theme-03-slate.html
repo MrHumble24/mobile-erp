@@ -1,0 +1,184 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Slate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: page header → token strip → three phones in a wrapping row → spec table. One token set drives web preview and native tokens. */
+:root{--page:#E4E8EE;--bg:#EEF1F5;--surface:#FFFFFF;--surface2:#E3E8EF;--fg:#1B2430;--muted:#66717F;--hair:#E3E8EF;--accent:#0A7AFF;--on-accent:#FFFFFF;--bezel:#1E2630;--shadow:0 1px 2px rgba(20,30,50,.06),0 1px 1px rgba(20,30,50,.04);
+  --ok:#059669;--warn:#D97706;--bad:#E11D48;--info:#0A84FF;--ok-bg:#E6F6EF;--warn-bg:#FBF0DC;--bad-bg:#FCE7EC;--info-bg:#E3F0FF;
+  --r-card:20px;--r-ctl:14px;--r-pill:999px;--bw:0px;
+  --sans:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#090D12;--bg:#0F141A;--surface:#19202A;--surface2:#232C38;--fg:#E8EDF3;--muted:#8C98A8;--hair:#232C38;--accent:#4DA3FF;--on-accent:#061E36;--bezel:#2A3341;--shadow:0 1px 2px rgba(0,0,0,.4); --ok:#34D399;--warn:#FBBF24;--bad:#FB7185;--info:#5AAAFF;--ok-bg:#0F2A20;--warn-bg:#2E2410;--bad-bg:#331520;--info-bg:#10243A;color-scheme:dark}}
+:root[data-theme="dark"]{--page:#090D12;--bg:#0F141A;--surface:#19202A;--surface2:#232C38;--fg:#E8EDF3;--muted:#8C98A8;--hair:#232C38;--accent:#4DA3FF;--on-accent:#061E36;--bezel:#2A3341;--shadow:0 1px 2px rgba(0,0,0,.4); --ok:#34D399;--warn:#FBBF24;--bad:#FB7185;--info:#5AAAFF;--ok-bg:#0F2A20;--warn-bg:#2E2410;--bad-bg:#331520;--info-bg:#10243A;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--fg);font:15px/1.45 var(--sans);padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{margin:0;text-wrap:balance}
+.m{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:36px}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
+.head h1{font-size:clamp(26px,4vw,38px);font-weight:600;letter-spacing:-.02em}
+.head p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.toggle{display:inline-flex;border:1px solid var(--hair);border-radius:var(--r-pill);padding:3px;background:var(--surface)}
+.toggle button{all:unset;cursor:pointer;padding:6px 14px;border-radius:var(--r-pill);font:600 13px var(--sans);color:var(--muted)}
+.toggle button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.toggle button:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.sw{border-radius:var(--r-card);border:var(--bw) solid var(--hair);background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+.sw i{display:block;height:56px}
+.sw div{padding:10px 12px;display:grid;gap:2px}
+.sw b{font-size:13px;font-weight:600}.sw small{color:var(--muted);font-family:var(--mono);font-size:11px}
+.phones{display:flex;flex-wrap:wrap;justify-content:center;gap:40px 28px}
+.phone{margin:0;width:372px;max-width:100%;display:grid;gap:12px}
+.phone figcaption{text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.screen{background:var(--bg);color:var(--fg);border:1px solid var(--hair);border-radius:46px;height:790px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 0 8px var(--bezel),0 30px 60px -30px rgba(0,0,0,.45)}
+.status{position:relative;display:flex;justify-content:space-between;align-items:center;padding:18px 32px 6px;font:600 15px var(--sans);font-variant-numeric:tabular-nums}
+.status .sig{font-size:11px;letter-spacing:1px}
+.cam{position:absolute;left:50%;top:14px;translate:-50% 0;background:#000;border-radius:999px}
+.ios .cam{width:118px;height:34px}.android .cam{width:14px;height:14px;top:16px}
+.nav{padding:8px 20px 12px;display:flex;align-items:center;gap:12px}
+.nav.large{flex-direction:column;align-items:flex-start;gap:0;padding-top:14px}
+.nav.large small{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.nav.large h1{font-size:34px;font-weight:700;letter-spacing:-.03em}
+.nav.bar h1{font-size:18px;font-weight:600;flex:1;text-align:center}
+.android .nav.bar{padding-top:12px}.android .nav.bar h1{text-align:left;font-size:24px;font-weight:600;letter-spacing:-.02em}
+.back{display:inline-flex;align-items:center;gap:2px;color:var(--accent);font-weight:500;min-width:64px}
+.back .ic{width:22px;height:22px}
+.acts{display:inline-flex;gap:14px;min-width:64px;justify-content:flex-end;color:var(--accent)}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.dim{color:var(--muted)}
+.content{flex:1;overflow:auto;padding:4px 16px 16px;display:grid;gap:10px;align-content:start;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--surface);border:var(--bw) solid var(--hair);border-radius:var(--r-card);padding:14px;display:grid;gap:2px;box-shadow:var(--shadow)}
+.kpi small{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em}
+.kpi b{font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kpi b.m{font-size:19px;padding:5px 0}
+.kpi .d{font-size:11.5px;color:var(--muted)}.kpi .d.up{color:var(--ok)}
+.kpi.warn{border-color:var(--warn);background:var(--warn-bg)}
+.sec{display:flex;justify-content:space-between;align-items:baseline;padding:10px 4px 0}
+.sec h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.sec a{font-size:13px;color:var(--accent);font-weight:500}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:var(--bw) solid var(--hair);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.list li,.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;min-width:0}
+.list li+li{border-top:1px solid var(--hair)}
+.list li>div:first-child,.row>div{min-width:0;display:grid;gap:2px}
+.list b,.row b{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.list small,.row small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.list .r{text-align:right;display:grid;gap:3px;justify-items:end;flex:none}
+.row{background:var(--surface);border:var(--bw) solid var(--hair);border-radius:var(--r-card);box-shadow:var(--shadow)}
+.pill{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:var(--r-pill);background:var(--surface2);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}.pill.info{background:var(--info-bg);color:var(--info)}
+.chips{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;font-size:13px;font-weight:500;padding:7px 13px;border-radius:var(--r-pill);background:var(--surface2);color:var(--fg);border:var(--bw) solid transparent}
+.chip.on{background:var(--accent);color:var(--on-accent)}
+.fab{position:sticky;bottom:4px;justify-self:end;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on-accent);padding:14px 18px;border-radius:var(--r-ctl);font-weight:600;box-shadow:0 8px 20px -8px rgba(0,0,0,.4)}
+.android .fab{border-radius:16px}
+.seg{display:grid;grid-auto-flow:column;background:var(--surface2);border-radius:var(--r-ctl);padding:3px;gap:3px}
+.seg span{text-align:center;padding:8px;border-radius:calc(var(--r-ctl) - 3px);font-size:13.5px;font-weight:500;color:var(--muted)}
+.seg .on{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.field{display:flex;align-items:baseline;gap:8px;background:var(--surface);border:var(--bw) solid var(--hair);border-radius:var(--r-card);padding:12px 14px;box-shadow:var(--shadow)}
+.field label{flex:1;font-weight:500}.field small{color:var(--muted)}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding:10px 4px 0}
+.total small{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;font-size:12px}
+.total b{font-size:26px;letter-spacing:-.02em;font-weight:700}.total b span{font-size:13px;color:var(--muted);font-weight:500;font-family:var(--sans)}
+.btn{display:block;text-align:center;background:var(--accent);color:var(--on-accent);padding:15px;border-radius:var(--r-ctl);font-weight:600;font-size:16px}
+.tabbar{display:grid;grid-template-columns:repeat(5,1fr);padding:8px 8px 26px;border-top:1px solid var(--hair);background:var(--surface)}
+.tab{display:grid;justify-items:center;gap:3px;font-size:10.5px;font-weight:500;color:var(--muted);padding:4px 0}
+.tab .ic{width:24px;height:24px}
+.tab.on{color:var(--accent)}
+.android .tabbar{padding:10px 8px 22px}
+.android .tab .ic{padding:4px 18px;width:60px;height:30px;border-radius:999px}
+.android .tab.on .ic{background:var(--accent);color:var(--on-accent)}.android .tab.on{color:var(--fg)}
+.spec{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--hair)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+td.m{font-size:12.5px}
+td i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px;border:1px solid var(--hair)}
+@media (prefers-reduced-motion:no-preference){.toggle button,.chip,.tab{transition:background .15s,color .15s}}
+@media (max-width:420px){.screen{height:740px;border-radius:40px}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-6h4v6"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8 12 4l8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11h11.2L21 7H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.3-4.3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+<symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+</defs></svg>
+<div class="wrap">
+<div class="head"><div><div class="eyebrow">Malika Bazaar · mobile theme 3 of 3</div><h1>Slate</h1><p>Tonal instead of outlined. Cards float on a cool slate ground with no borders, only a one-pixel lift. Signal blue is the single accent. Larger radii and a softer palette for a calmer, less clinical feel.</p></div>
+<div class="toggle" role="group" aria-label="Preview theme"><button id="t-light" aria-pressed="false">Light</button><button id="t-system" aria-pressed="true">System</button><button id="t-dark" aria-pressed="false">Dark</button></div></div>
+<div class="strip">
+<div class="sw"><i style="background:var(--bg)"></i><div><b>Background</b><small>bg</small></div></div>
+<div class="sw"><i style="background:var(--surface)"></i><div><b>Surface</b><small>surface</small></div></div>
+<div class="sw"><i style="background:var(--surface2)"></i><div><b>Chip / input</b><small>surface2</small></div></div>
+<div class="sw"><i style="background:var(--fg)"></i><div><b>Text</b><small>fg</small></div></div>
+<div class="sw"><i style="background:var(--muted)"></i><div><b>Muted text</b><small>muted</small></div></div>
+<div class="sw"><i style="background:var(--accent)"></i><div><b>Accent</b><small>accent</small></div></div>
+<div class="sw"><i style="background:linear-gradient(90deg,var(--ok) 0 33%,var(--warn) 33% 66%,var(--bad) 66%)"></i><div><b>Status</b><small>ok · warn · bad</small></div></div>
+<div class="sw"><i style="background:var(--surface);display:grid;place-items:center;font:700 22px var(--sans)">Aa <span class="m" style="font-weight:400;font-size:15px">0123</span></i><div><b>Type</b><small>Figtree · DM Mono</small></div></div>
+</div>
+<div class="phones"><figure class="phone ios"><figcaption>iOS · Dashboard</figcaption><div class="screen">
+<div class="status"><span>9:41</span><i class="cam"></i><span class="sig">●●● ▮</span></div>
+<header class="nav large"><small>Monday, 3 Nov</small><h1>Today</h1></header><div class="content"><div class="kpis">
+<div class="kpi"><small>Sales</small><b>14</b><span class="d up">+3 vs yesterday</span></div>
+<div class="kpi"><small>Revenue</small><b class="m">38 450 000</b><span class="d">UZS</span></div>
+<div class="kpi"><small>Gross margin</small><b>12.4%</b><span class="d up">+0.8 pt</span></div>
+<div class="kpi warn"><small>Low stock</small><b>3</b><span class="d">models under 2 units</span></div>
+</div>
+<div class="sec"><h2>Recent sales</h2><a href="#">All</a></div>
+<ul class="list">
+<li><div><b>iPhone 15 Pro 256</b><small class="m">35 492 180 311 207 8</small></div><div class="r"><b class="m">9 200 000</b><small>14:32 · Cash</small></div></li>
+<li><div><b>Galaxy S24 128</b><small class="m">35 801 772 190 445 1</small></div><div class="r"><b class="m">6 100 000</b><small>13:05 · Card</small></div></li>
+<li><div><b>Redmi Note 13</b><small class="m">86 990 061 532 118 4</small></div><div class="r"><b class="m">2 350 000</b><small>11:48 · Transfer</small></div></li>
+</ul>
+<div class="sec"><h2>Pending</h2></div>
+<ul class="list">
+<li><div><b>QC queue</b><small>6 devices waiting for grade</small></div><span class="pill info">6</span></li>
+<li><div><b>Consignments due</b><small>2 partners · return by Friday</small></div><span class="pill warn">2</span></li>
+</ul></div><nav class="tabbar"><a class="tab on" href="#"><svg class="ic "><use href="#i-home"/></svg><span>Home</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-box"/></svg><span>Stock</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-cart"/></svg><span>Sell</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-chart"/></svg><span>Reports</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-more"/></svg><span>More</span></a></nav></div></figure><figure class="phone android"><figcaption>Android · Inventory</figcaption><div class="screen">
+<div class="status"><span>9:41</span><i class="cam"></i><span class="sig">●●● ▮</span></div>
+<header class="nav bar"><h1>Inventory</h1><span class="acts"><svg class="ic "><use href="#i-search"/></svg><svg class="ic "><use href="#i-filter"/></svg></span></header><div class="chips"><a class="chip on" href="#">All · 128</a><a class="chip" href="#">In stock</a><a class="chip" href="#">Consigned</a><a class="chip" href="#">Defective</a><a class="chip" href="#">Sold</a></div><div class="content"><ul class="list dev">
+<li><div><b>iPhone 15 Pro 256 · Natural</b><small><span class="m">35 492 180 311 207 8</span> · Grade A</small></div><div class="r"><b class="m">9 200 000</b><span class="pill ok">In stock</span></div></li>
+<li><div><b>iPhone 14 128 · Midnight</b><small><span class="m">35 311 006 288 019 2</span> · Grade B</small></div><div class="r"><b class="m">6 450 000</b><span class="pill info">Consigned</span></div></li>
+<li><div><b>Galaxy S24 Ultra 512</b><small><span class="m">35 801 772 190 445 1</span> · Grade A</small></div><div class="r"><b class="m">11 900 000</b><span class="pill ok">In stock</span></div></li>
+<li><div><b>Pixel 8 128 · Obsidian</b><small><span class="m">35 644 390 021 773 0</span> · Grade C</small></div><div class="r"><b class="m">4 100 000</b><span class="pill bad">Defective</span></div></li>
+<li><div><b>Redmi Note 13 256</b><small><span class="m">86 990 061 532 118 4</span> · Grade B</small></div><div class="r"><b class="m">2 350 000</b><span class="pill muted">Sold</span></div></li>
+<li><div><b>iPhone 13 128 · Blue</b><small><span class="m">35 201 554 870 336 5</span> · Grade B</small></div><div class="r"><b class="m">5 300 000</b><span class="pill ok">In stock</span></div></li>
+<li><div><b>Galaxy A55 256</b><small><span class="m">35 119 820 445 902 7</span> · Grade A</small></div><div class="r"><b class="m">3 650 000</b><span class="pill ok">In stock</span></div></li>
+</ul>
+<a class="fab" href="#"><svg class="ic "><use href="#i-scan"/></svg><span>Scan IMEI</span></a></div><nav class="tabbar"><a class="tab" href="#"><svg class="ic "><use href="#i-home"/></svg><span>Home</span></a><a class="tab on" href="#"><svg class="ic "><use href="#i-box"/></svg><span>Stock</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-cart"/></svg><span>Sell</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-chart"/></svg><span>Reports</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-more"/></svg><span>More</span></a></nav></div></figure><figure class="phone ios"><figcaption>iOS · POS checkout</figcaption><div class="screen">
+<div class="status"><span>9:41</span><i class="cam"></i><span class="sig">●●● ▮</span></div>
+<header class="nav bar"><a class="back" href="#"><svg class="ic "><use href="#i-back"/></svg>Sell</a><h1>New sale</h1><span class="acts"><svg class="ic "><use href="#i-scan"/></svg></span></header><div class="content"><ul class="list cart">
+<li><div><b>iPhone 15 Pro 256 · Natural</b><small class="m">35 492 180 311 207 8</small></div><b class="m">9 200 000</b></li>
+<li><div><b>Silicone case · Clear</b><small>Accessory</small></div><b class="m">120 000</b></li>
+</ul>
+<div class="sec"><h2>Customer</h2></div>
+<a class="row" href="#"><div><b>Dilshod Karimov</b><small class="m">+998 90 123 45 67</small></div><svg class="ic dim"><use href="#i-chev"/></svg></a>
+<div class="sec"><h2>Payment</h2></div>
+<div class="seg"><span class="on">Cash</span><span>Card</span><span>Transfer</span></div>
+<div class="field"><label for="disc">Discount</label><span class="m">0</span><small>UZS</small></div>
+<div class="total"><small>Total</small><b class="m">9 320 000 <span>UZS</span></b></div>
+<a class="btn" href="#">Charge 9 320 000 UZS</a></div><nav class="tabbar"><a class="tab" href="#"><svg class="ic "><use href="#i-home"/></svg><span>Home</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-box"/></svg><span>Stock</span></a><a class="tab on" href="#"><svg class="ic "><use href="#i-cart"/></svg><span>Sell</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-chart"/></svg><span>Reports</span></a><a class="tab" href="#"><svg class="ic "><use href="#i-more"/></svg><span>More</span></a></nav></div></figure></div>
+<div><div class="eyebrow" style="margin-bottom:12px">Token spec · maps 1:1 to Tokens.swift and Tokens.kt</div><div class="spec"><table>
+<tr><th>Token</th><th>Light</th><th>Dark</th><th>Role</th></tr>
+<tr><td>page</td><td class="m"><i style="background:#E4E8EE"></i>#E4E8EE</td><td class="m"><i style="background:#090D12"></i>#090D12</td><td>Page behind phones (preview only)</td></tr><tr><td>bg</td><td class="m"><i style="background:#EEF1F5"></i>#EEF1F5</td><td class="m"><i style="background:#0F141A"></i>#0F141A</td><td>Screen background</td></tr><tr><td>surface</td><td class="m"><i style="background:#FFFFFF"></i>#FFFFFF</td><td class="m"><i style="background:#19202A"></i>#19202A</td><td>Cards, lists, tab bar</td></tr><tr><td>surface2</td><td class="m"><i style="background:#E3E8EF"></i>#E3E8EF</td><td class="m"><i style="background:#232C38"></i>#232C38</td><td>Chips, segmented control, inputs</td></tr><tr><td>fg</td><td class="m"><i style="background:#1B2430"></i>#1B2430</td><td class="m"><i style="background:#E8EDF3"></i>#E8EDF3</td><td>Primary text</td></tr><tr><td>muted</td><td class="m"><i style="background:#66717F"></i>#66717F</td><td class="m"><i style="background:#8C98A8"></i>#8C98A8</td><td>Secondary text, captions</td></tr><tr><td>hair</td><td class="m"><i style="background:#E3E8EF"></i>#E3E8EF</td><td class="m"><i style="background:#232C38"></i>#232C38</td><td>Dividers, hairline borders</td></tr><tr><td>accent</td><td class="m"><i style="background:#0A7AFF"></i>#0A7AFF</td><td class="m"><i style="background:#4DA3FF"></i>#4DA3FF</td><td>Primary button, active tab, links</td></tr><tr><td>on-accent</td><td class="m"><i style="background:#FFFFFF"></i>#FFFFFF</td><td class="m"><i style="background:#061E36"></i>#061E36</td><td>Text on accent</td></tr>
+<tr><td>radius.card / radius.ctl</td><td class="m">20 / 14 pt</td><td class="m">same</td><td>Cards, lists · buttons, inputs, segments</td></tr>
+<tr><td>border</td><td class="m">none (tonal + shadow)</td><td class="m">none (tonal + shadow)</td><td>Card edge; hairline rows always 1 px</td></tr>
+<tr><td>font.sans / font.mono</td><td class="m">Figtree</td><td class="m">DM Mono</td><td>UI text · IMEI, money, counts (tabular)</td></tr>
+</table></div></div>
+</div>
+<script>
+(function(){var root=document.documentElement,btns={light:t_light,system:t_system,dark:t_dark};
+function set(mode){try{mode==='system'?root.removeAttribute('data-theme'):root.setAttribute('data-theme',mode)}catch(e){}
+for(var k in btns)btns[k].setAttribute('aria-pressed',String(k===mode))}
+for(var k in btns)(function(k){btns[k].addEventListener('click',function(){set(k)})})(k)})();
+</script>
