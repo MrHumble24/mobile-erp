@@ -52,6 +52,28 @@ data class ConsignmentsReport(
     val byPartner: List<ConsignmentPartnerRow> = emptyList(),
 )
 
+/** One refunded return (`/reports/returns`). `refundAmount` is a JSON number. */
+@Serializable
+data class ReturnRow(
+    val id: String = "",
+    val saleId: String = "",
+    val imei: String = "",
+    val model: String = "",
+    @Serializable(with = FlexMoneySerializer::class) val refundAmount: String = "0",
+    val reason: String? = null,
+    val returnedAt: String = "",
+    val processedBy: String = "",
+)
+
+/** One page of [ReturnRow]s (`{ items, total, page, pageSize }`). */
+@Serializable
+data class ReturnsPage(
+    val items: List<ReturnRow> = emptyList(),
+    val total: Int = 0,
+    val page: Int = 1,
+    val pageSize: Int = 50,
+)
+
 @Serializable
 data class InventoryStatusRow(val statusCode: String = "", val label: String = "", val count: Int = 0)
 

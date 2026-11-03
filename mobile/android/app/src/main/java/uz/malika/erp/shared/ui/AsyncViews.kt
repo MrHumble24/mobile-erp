@@ -3,10 +3,13 @@ package uz.malika.erp.shared.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Inbox
@@ -31,14 +34,30 @@ fun Loading(modifier: Modifier = Modifier) {
     }
 }
 
-/** "Nothing here yet" placeholder with an optional action. */
+/**
+ * "Nothing here yet" placeholder. Full-screen centered by default; pass
+ * [compact] for a single ~56dp icon+text row inside a card (no fillMaxSize).
+ */
 @Composable
 fun EmptyView(
     message: String,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Outlined.Inbox,
+    compact: Boolean = false,
     action: (@Composable () -> Unit)? = null,
-) = CenteredStack(modifier, icon, Tokens.ash, message, action)
+) = if (compact) {
+    Row(
+        modifier.fillMaxWidth().padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = Tokens.ash)
+        Spacer(Modifier.width(8.dp))
+        Text(message, style = MaterialTheme.typography.bodyMedium, color = Tokens.ash)
+    }
+} else {
+    CenteredStack(modifier, icon, Tokens.ash, message, action)
+}
 
 /** Error state with the failure message and an optional retry. */
 @Composable

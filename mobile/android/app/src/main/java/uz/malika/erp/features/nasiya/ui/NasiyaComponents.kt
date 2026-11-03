@@ -68,6 +68,7 @@ fun CreditBar(creditLimit: String, outstanding: String, modifier: Modifier = Mod
 }
 
 /** Caldera status color for a consignment status code. */
+@Composable
 fun consignmentStatusColor(code: String): Color = when (code) {
     "OUT" -> Tokens.signalBlue
     "SETTLED" -> Tokens.success

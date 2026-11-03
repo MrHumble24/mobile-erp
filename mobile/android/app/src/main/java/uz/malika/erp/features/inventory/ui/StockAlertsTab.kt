@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,7 +57,7 @@ fun StockAlertsTab(
 
     fun nameOf(id: String) = models.firstOrNull { it.id == id }?.label ?: id
 
-    Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH)) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (lowStock.isNotEmpty()) {
                 item { LowStockHeader() }

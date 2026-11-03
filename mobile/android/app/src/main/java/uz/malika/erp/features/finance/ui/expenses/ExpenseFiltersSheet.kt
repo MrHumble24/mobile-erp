@@ -2,66 +2,63 @@ package uz.malika.erp.features.finance.ui.expenses
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.data.ExpenseFilter
 import uz.malika.erp.features.finance.data.ExpenseSort
-import uz.malika.erp.features.finance.model.isoDate
 import uz.malika.erp.features.finance.ui.components.AppSelectField
 import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppDateRangeField
+import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.DateRange
+import uz.malika.erp.shared.ui.PillButton
 
 /**
- * Expenses list filters mirroring the web page: search, category, recurring,
- * amount bounds, sort and a date range ([AppDateRangeField]). Text/amount
- * changes are debounced in the ViewModel; the rest refetch immediately.
+ * Expenses filter bottom sheet (iOS parity): category, recurring, sort, amount
+ * bounds and date range. Search stays inline on the screen. Every control
+ * applies immediately through the ViewModel; the min/max fields share one
+ * component so the paired row keeps equal height.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ExpenseFilters(
+fun ExpenseFiltersSheet(
     categories: List<ExpenseCategory>,
     filter: ExpenseFilter,
+    min: String,
+    max: String,
+    range: DateRange,
     onCategory: (String?) -> Unit,
     onRecurring: (Boolean?) -> Unit,
-    onSearch: (String) -> Unit,
-    onAmount: (Double?, Double?) -> Unit,
     onSort: (ExpenseSort) -> Unit,
-    onRange: (String?, String?) -> Unit,
+    onMin: (String) -> Unit,
+    onMax: (String) -> Unit,
+    onRange: (DateRange) -> Unit,
+    canReset: Boolean,
+    onReset: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
-    var search by remember { mutableStateOf("") }
-    var min by remember { mutableStateOf("") }
-    var max by remember { mutableStateOf("") }
-    var range by remember { mutableStateOf(DateRange()) }
-
-    fun pushAmount() = onAmount(min.toDoubleOrNull(), max.toDoubleOrNull())
-
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        AppFormField(
-            label = t("common.search", null),
-            value = search,
-            onValueChange = { search = it; onSearch(it) },
-            placeholder = t("expenses.searchPlaceholder", null),
-        )
-        FlowRow(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+    AppBottomSheet(onDismiss = onDismiss) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            Text(t("common.filter", null), style = MaterialTheme.typography.headlineSmall)
             AppSelectField(
                 label = t("expenses.category", null),
                 options = buildList {
@@ -70,7 +67,6 @@ fun ExpenseFilters(
                 },
                 selected = filter.categoryId,
                 onSelect = onCategory,
-                modifier = Modifier.width(200.dp),
             )
             AppSelectField(
                 label = t("expenses.filterRecurring", null),
@@ -81,7 +77,6 @@ fun ExpenseFilters(
                 ),
                 selected = filter.isRecurring,
                 onSelect = onRecurring,
-                modifier = Modifier.width(200.dp),
             )
             AppSelectField(
                 label = t("expenses.sortLabel", null),
@@ -93,31 +88,35 @@ fun ExpenseFilters(
                 ),
                 selected = filter.sort,
                 onSelect = onSort,
-                modifier = Modifier.width(200.dp),
             )
-            AppFormField(
-                label = t("expenses.minAmount", null),
-                value = min,
-                onValueChange = { min = it; pushAmount() },
-                keyboardType = KeyboardType.Decimal,
-                modifier = Modifier.width(150.dp),
-            )
-            AppFormField(
-                label = t("expenses.maxAmount", null),
-                value = max,
-                onValueChange = { max = it; pushAmount() },
-                keyboardType = KeyboardType.Decimal,
-                modifier = Modifier.width(150.dp),
-            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AppFormField(
+                    label = t("expenses.minAmount", null),
+                    value = min,
+                    onValueChange = onMin,
+                    keyboardType = KeyboardType.Decimal,
+                    modifier = Modifier.weight(1f),
+                )
+                AppFormField(
+                    label = t("expenses.maxAmount", null),
+                    value = max,
+                    onValueChange = onMax,
+                    keyboardType = KeyboardType.Decimal,
+                    modifier = Modifier.weight(1f),
+                )
+            }
             AppDateRangeField(
                 label = t("reports.period", null),
                 range = range,
-                onPick = {
-                    range = it
-                    onRange(isoDate(it.startMillis), isoDate(it.endMillis))
-                },
-                modifier = Modifier.width(260.dp),
+                onPick = onRange,
             )
+            Spacer(Modifier.height(4.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
+                if (canReset) {
+                    PillButton(t("expenses.resetFilters", null), onClick = onReset, variant = ButtonVariant.GHOST)
+                }
+                PillButton(t("common.close", null), onClick = onDismiss)
+            }
         }
     }
 }

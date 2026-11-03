@@ -28,6 +28,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 
 /** Record a cash/transfer payment against a partner's balance. Online-only. */
@@ -44,6 +45,7 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
     var amount by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     val amountValue = amount.trim().toDoubleOrNull() ?: 0.0
+    val outstandingValue = partner.outstanding.toDoubleOrNull() ?: 0.0
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
@@ -56,6 +58,14 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
                 style = MaterialTheme.typography.bodySmall,
             )
             AppFormField(t("partners.paymentAmount", null), amount, { amount = it }, keyboardType = KeyboardType.Number)
+            if (outstandingValue > 0.0 && amount != outstandingValue.toInt().toString()) {
+                PillButton(
+                    text = t("partners.payFull", mapOf("amount" to formatMoney(partner.outstanding))),
+                    onClick = { amount = outstandingValue.toInt().toString() },
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = ButtonVariant.GHOST,
+                )
+            }
             AppFormField(t("common.notes", null), notes, { notes = it })
             ActionError(state.error, state.offline)
             PillButton(

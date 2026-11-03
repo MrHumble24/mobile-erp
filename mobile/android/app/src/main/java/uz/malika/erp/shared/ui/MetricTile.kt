@@ -43,10 +43,16 @@ fun MetricTile(
             style = style,
             color = emphasis ?: Tokens.foreground,
         )
-        if (subtext != null) {
-            Spacer(Modifier.height(4.dp))
-            Text(subtext, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
-        }
+        // Reserve the subtitle line even when empty so tiles in a grid row stay
+        // equal height whether or not they carry a subtext.
+        Spacer(Modifier.height(4.dp))
+        Text(
+            subtext.orEmpty(),
+            style = MaterialTheme.typography.bodySmall,
+            color = Tokens.mutedForeground,
+            minLines = 1,
+            maxLines = 1,
+        )
     }
 }
 

@@ -12,8 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -71,9 +68,8 @@ fun PartnersScreen(container: AppContainer) {
     var consignFor by remember { mutableStateOf<PartnerEntity?>(null) }
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(t("partners.title", null), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            if (can("partner.manage")) {
+        if (can("partner.manage")) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 PillButton(t("partners.newPartner", null), onClick = { createOpen = true })
             }
         }

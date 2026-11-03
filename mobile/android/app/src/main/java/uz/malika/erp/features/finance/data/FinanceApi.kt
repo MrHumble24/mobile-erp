@@ -90,6 +90,14 @@ interface FinanceApi {
         @Query("groupBy") groupBy: String,
     ): List<BreakdownRow>
 
+    @GET("reports/returns")
+    suspend fun returns(
+        @Query("from") from: String?,
+        @Query("to") to: String?,
+        @Query("page") page: Int,
+        @Query("pageSize") pageSize: Int,
+    ): ReturnsPage
+
     @GET("reports/consignments")
     suspend fun consignmentsReport(
         @Query("from") from: String?,

@@ -52,16 +52,15 @@ fun SalesTab(
             modifier = Modifier.width(200.dp),
         )
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
-            BreakdownBars(
-                title = t("reports.salesBreakdownTitle", null),
-                rows = rows.map { BreakdownDatum(it.key, it.label, parseMoney(it.revenue).toDouble(), it.share) },
-                formatValue = ::moneyOf,
-                onSelect = if (groupBy == "model") {
-                    { datum -> rows.firstOrNull { it.key == datum.key }?.let { onDrill(modelDrill(it, t)) } }
-                } else {
-                    null
-                },
-            )
+            if (groupBy == "model") {
+                ModelMeasureTable(rows = rows, onRow = { onDrill(modelDrill(it, t)) })
+            } else {
+                BreakdownBars(
+                    title = t("reports.salesBreakdownTitle", null),
+                    rows = rows.map { BreakdownDatum(it.key, it.label, parseMoney(it.revenue).toDouble(), it.share) },
+                    formatValue = ::moneyOf,
+                )
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.inventory.data.DeviceDetail
 import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
+import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.inventory.data.QcSummary
 import uz.malika.erp.features.inventory.data.inventoryMargin
 import uz.malika.erp.i18n.LocalT
@@ -162,15 +163,17 @@ private fun Kv(key: String, value: String, color: Color?) {
 /** Scrollable status-history list. */
 @Composable
 fun DeviceHistoryList(history: List<DeviceHistoryEntry>) {
+    val t = LocalT.current
     if (history.isEmpty()) {
         Text("—", style = MaterialTheme.typography.bodyMedium)
         return
     }
+    fun label(code: String) = t(DeviceStatusMeta.labelKey(code), null)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         history.forEach { h ->
             Column {
-                val from = h.fromStatusCode?.let { "$it → " } ?: ""
-                Text(from + h.toStatusCode, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.W600)
+                val from = h.fromStatusCode?.let { "${label(it)} → " } ?: ""
+                Text(from + label(h.toStatusCode), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.W600)
                 h.reason?.let { Text("\"$it\"", style = MaterialTheme.typography.bodySmall) }
                 Text(h.changedAt, style = MaterialTheme.typography.labelMedium, color = Tokens.slate)
             }

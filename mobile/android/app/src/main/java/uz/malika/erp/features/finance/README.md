@@ -11,13 +11,21 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   Overview / Sales / Expenses / Nasiya / Inventory / Pricing / Closing. A shared
   `AppDateRangeField` drives the ranged tabs. Charts are Compose-Canvas (no lib):
   `TrendLineChart` (multi-series) + `BreakdownBars` (ranked horizontal bars with
-  share, top-N capped). Tapping a tile or bar opens `ReportDrillSheet` (a
-  data-driven breakdown drill-down; model/partner rows jump via `featureNav`).
-- **Expenses** (route `expenses`, `expense.read`): list tab (summary, filters —
-  search/category/recurring/amount/sort/date range, paginated list + load more,
-  CSV export) and recurring-templates tab (list, create/edit, activate toggle,
-  generate due). Category create / edit / deactivate+reassign (`expense.category.manage`).
-  Expense create / edit / delete (`expense.manage`).
+  share, top-N capped) + `NoiWaterfall` (Canvas NOI waterfall). Tapping a tile or
+  bar opens a breakdown drill-down: the data-driven `ReportDrillSheet` (model/
+  partner rows jump via `featureNav`); the Overview NOI tile opens
+  `NoiWaterfallSheet`; the returns tile opens the paginated `ReturnsBreakdownSheet`
+  (`/reports/returns`, load-more); the Sales "model" group shows
+  `ModelMeasureTable` (segmented gross-profit ↔ units toggle, ranked by measure).
+- **Expenses** (route `expenses`, `expense.read`): list tab — prominent
+  new-expense action with categories/CSV in an overflow menu, summary card, an
+  inline search field beside a filter button (active-filter count badge) that
+  opens `ExpenseFiltersSheet` (`AppBottomSheet`: category/recurring/sort/min/max/
+  date range; min+max share one component for equal height), paginated list +
+  load more. No per-screen title (the shell renders it). Recurring-templates tab
+  (list, create/edit, activate toggle, generate due). Category create / edit /
+  deactivate+reassign (`expense.category.manage`). Expense create / edit / delete
+  (`expense.manage`).
 
 ## Public API
 `FinanceFeature : FeatureModule` — the only export (3 routes).

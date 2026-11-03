@@ -44,6 +44,7 @@ import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.MonoFamily
+import uz.malika.erp.ui.theme.Tokens
 
 /** At/above this width the device detail is a side pane, not a bottom sheet. */
 private const val TABLET_MIN_DP = 720
@@ -87,6 +88,7 @@ fun DevicesTab(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= TABLET_MIN_DP.dp
         Column(Modifier.fillMaxSize()) {
+            // Full-bleed: the metrics row scrolls edge-to-edge with its own gutter.
             InventoryMetricsBar(
                 metrics = metrics,
                 lowStockCount = lowStock.size,
@@ -96,36 +98,38 @@ fun DevicesTab(
                 onShowAlerts = onShowAlerts,
             )
             Spacer(Modifier.height(12.dp))
-            ScannerField(
-                onScan = devicesVm::setSearch,
-                placeholder = t("inventory.scanOrSearch", null),
-                autofocus = false,
-            )
-            Spacer(Modifier.height(8.dp))
-            FilterRow(
-                selectedModel = filter.modelId,
-                selectedStorage = filter.storage,
-                models = models,
-                isEmpty = filter.isEmpty,
-                onModel = devicesVm::setModel,
-                onStorage = devicesVm::setStorage,
-                onClear = devicesVm::clear,
-            )
-            Spacer(Modifier.height(8.dp))
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                if (wide) {
-                    Row(Modifier.fillMaxSize()) {
-                        Box(Modifier.weight(1f).fillMaxHeight()) {
-                            DeviceList(list, t("inventory.empty", null)) { openImei = it }
+            Column(Modifier.weight(1f).padding(horizontal = Tokens.Space.screenH)) {
+                ScannerField(
+                    onScan = devicesVm::setSearch,
+                    placeholder = t("inventory.scanOrSearch", null),
+                    autofocus = false,
+                )
+                Spacer(Modifier.height(8.dp))
+                FilterRow(
+                    selectedModel = filter.modelId,
+                    selectedStorage = filter.storage,
+                    models = models,
+                    isEmpty = filter.isEmpty,
+                    onModel = devicesVm::setModel,
+                    onStorage = devicesVm::setStorage,
+                    onClear = devicesVm::clear,
+                )
+                Spacer(Modifier.height(8.dp))
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    if (wide) {
+                        Row(Modifier.fillMaxSize()) {
+                            Box(Modifier.weight(1f).fillMaxHeight()) {
+                                DeviceList(list, t("inventory.empty", null)) { openImei = it }
+                            }
+                            Box(Modifier.weight(1.3f).fillMaxHeight()) {
+                                val sel = openImei
+                                if (sel == null) EmptyView(message = t("inventory.selectDevice", null))
+                                else detail(sel) { openImei = null }
+                            }
                         }
-                        Box(Modifier.weight(1.3f).fillMaxHeight()) {
-                            val sel = openImei
-                            if (sel == null) EmptyView(message = t("inventory.selectDevice", null))
-                            else detail(sel) { openImei = null }
-                        }
+                    } else {
+                        DeviceList(list, t("inventory.empty", null)) { openImei = it }
                     }
-                } else {
-                    DeviceList(list, t("inventory.empty", null)) { openImei = it }
                 }
             }
         }

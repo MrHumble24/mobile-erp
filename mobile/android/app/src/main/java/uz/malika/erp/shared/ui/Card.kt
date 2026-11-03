@@ -11,21 +11,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 private val CardShape = RoundedCornerShape(12.dp) // radius-cards
 
 /**
- * A bordered surface with the soft Caldera shadow — the default container for
- * grouped content. Tappable when [onClick] is given.
+ * A bordered surface — the default container for grouped content. Ink uses no
+ * elevation shadows; the card edge is a single 1 dp hairline. Tappable when
+ * [onClick] is given.
  */
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    padding: PaddingValues = PaddingValues(16.dp),
+    padding: PaddingValues = PaddingValues(Tokens.Space.cardInner),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val clickMod = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
@@ -33,7 +33,6 @@ fun AppCard(
         shape = CardShape,
         color = Tokens.surfaceCanvas,
         modifier = modifier
-            .shadow(3.dp, CardShape, clip = false)
             .border(BorderStroke(1.dp, Tokens.border), CardShape)
             .then(clickMod),
     ) {

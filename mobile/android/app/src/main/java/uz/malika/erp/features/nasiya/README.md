@@ -8,7 +8,8 @@ same partner mirror — so there is no cross-slice import to duplicate.
 - **Partners** (`partner.read`): directory with search + `active`/`overdue`
   facets — online from `/partners` (the mirror can't serve those facets), falling
   back to the LOCAL mirror (search only) offline; ledger + aging + record-payment
-  + create/edit (online); consign from a partner's ledger.
+  (one-tap "fill full balance") + create/edit (online); consign from a partner's
+  ledger.
 - **Consignments** (`consignment.read`): Out/Overdue/Settled/Returned/All tabs,
   search, date range, summary tiles, CSV export, "load more" pagination; detail
   sheet (links to device + resulting sale via cross-feature nav); consign (native

@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +18,6 @@ import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.Async
 import uz.malika.erp.features.finance.ui.components.financeViewModel
 import uz.malika.erp.features.finance.ui.components.rememberAsync
-import uz.malika.erp.i18n.LocalT
 
 /**
  * Management dashboard (route `dashboard`, auth-only). Each section is gated by
@@ -29,7 +26,6 @@ import uz.malika.erp.i18n.LocalT
  */
 @Composable
 fun DashboardScreen(container: AppContainer) {
-    val t = LocalT.current
     val can = LocalCan.current
     val vm = financeViewModel(container) { FinanceReadsViewModel(it) }
 
@@ -45,7 +41,6 @@ fun DashboardScreen(container: AppContainer) {
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(t("dashboard.title", null), style = MaterialTheme.typography.headlineSmall)
             QuickActions(container.featureNav::open)
             if (can("report.finance")) KpiSection(vm)
 

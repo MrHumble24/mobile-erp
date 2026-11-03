@@ -56,6 +56,8 @@ fun ReportsScreen(container: AppContainer) {
     val default = remember { defaultReportRangeMillis() }
     var range by remember { mutableStateOf(DateRange(default.first, default.second)) }
     var drill by remember { mutableStateOf<ReportDrill?>(null) }
+    var returnsRange by remember { mutableStateOf<Pair<String?, String?>?>(null) }
+    var noi by remember { mutableStateOf<uz.malika.erp.features.finance.data.ProfitReport?>(null) }
 
     val fromIso = isoDate(range.startMillis)
     val toIso = isoDate(range.endMillis)
@@ -86,7 +88,11 @@ fun ReportsScreen(container: AppContainer) {
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
-                ReportTab.OVERVIEW -> OverviewTab(vm, fromIso, toIso, bucket, openDrill)
+                ReportTab.OVERVIEW -> OverviewTab(
+                    vm, fromIso, toIso, bucket, openDrill,
+                    onReturns = { f, to -> returnsRange = f to to },
+                    onNoi = { noi = it },
+                )
                 ReportTab.SALES -> SalesTab(vm, fromIso, toIso, openDrill)
                 ReportTab.EXPENSES -> ExpensesReportTab(vm, fromIso, toIso, openDrill)
                 ReportTab.NASIYA -> NasiyaTab(vm, fromIso, toIso, openDrill)
@@ -103,5 +109,11 @@ fun ReportsScreen(container: AppContainer) {
             onOpen = { container.featureNav.open(it) },
             onDismiss = { drill = null },
         )
+    }
+    returnsRange?.let { (f, to) ->
+        ReturnsBreakdownSheet(vm, f, to, onDismiss = { returnsRange = null })
+    }
+    noi?.let { report ->
+        NoiWaterfallSheet(report, onDismiss = { noi = null })
     }
 }

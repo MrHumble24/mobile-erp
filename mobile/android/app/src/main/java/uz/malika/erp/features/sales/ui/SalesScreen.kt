@@ -1,5 +1,6 @@
 package uz.malika.erp.features.sales.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -89,40 +91,50 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
 
     val items = listUi.state.items
     val listColumn: @Composable (Modifier) -> Unit = { mod ->
-        Column(mod) {
-            Column(Modifier.padding(16.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(t("sales.title", null), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                    PillButton(
-                        text = t("sales.exportCsv", null),
-                        onClick = {
-                            shareTextFile(
-                                context,
-                                "sales-${nowIso().take(10)}.csv",
-                                salesCsv(items, includeProfit = items.any { it.netProfit != null }),
-                            )
-                        },
-                        variant = ButtonVariant.OUTLINE,
-                        enabled = items.isNotEmpty(),
+        // Whole screen scrolls: the header (CSV + stats + filters) rides in the
+        // list as item 0, so tall stat/filter blocks never push the rows off-screen.
+        LazyColumn(mod.fillMaxSize()) {
+            item {
+                Column(Modifier.padding(16.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                        PillButton(
+                            text = t("sales.exportCsv", null),
+                            onClick = {
+                                shareTextFile(
+                                    context,
+                                    "sales-${nowIso().take(10)}.csv",
+                                    salesCsv(items, includeProfit = items.any { it.netProfit != null }),
+                                )
+                            },
+                            variant = ButtonVariant.OUTLINE,
+                            enabled = items.isNotEmpty(),
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    stats?.let { SalesSummary(it); Spacer(Modifier.height(12.dp)) }
+                    SalesFiltersBar(
+                        vm = vm,
+                        values = SalesFilterValues(filters.channel, filters.returned, filters.warranty, filters.soldById),
+                        canReadUsers = canReadUsers,
+                        cashiers = cashiers,
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                stats?.let { SalesSummary(it); Spacer(Modifier.height(12.dp)) }
-                SalesFiltersBar(
-                    vm = vm,
-                    values = SalesFilterValues(filters.channel, filters.returned, filters.warranty, filters.soldById),
-                    canReadUsers = canReadUsers,
-                    cashiers = cashiers,
-                )
             }
             when {
-                listUi.state.loading && items.isEmpty() -> Box(Modifier.fillMaxSize()) { Loading() }
-                listUi.error != null -> ErrorView(listUi.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null))
-                items.isEmpty() -> EmptyView(t("sales.noSalesFound", null))
-                else -> LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    items(items) { sale -> SaleRow(sale, t) { selected = sale } }
+                listUi.state.loading && items.isEmpty() ->
+                    item { Box(Modifier.fillParentMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) { Loading() } }
+                listUi.error != null ->
+                    item { ErrorView(listUi.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null)) }
+                items.isEmpty() ->
+                    item { EmptyView(t("sales.noSalesFound", null)) }
+                else -> {
+                    items(items) { sale ->
+                        Box(Modifier.padding(horizontal = 16.dp)) { SaleRow(sale, t) { selected = sale } }
+                    }
                     item {
-                        LoadMoreFooter(listUi.state.hasMore, listUi.state.loading, vm::loadMore)
+                        Box(Modifier.padding(horizontal = 16.dp)) {
+                            LoadMoreFooter(listUi.state.hasMore, listUi.state.loading, vm::loadMore)
+                        }
                     }
                 }
             }
@@ -140,6 +152,9 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
             }
         } else {
             Scaffold(
+                // AppShell already reserves system-bar insets; zero this nested
+                // Scaffold's so the content is not padded twice.
+                contentWindowInsets = WindowInsets(0),
                 floatingActionButton = {
                     ExtendedFloatingActionButton(
                         onClick = { warrantySheet = true },
@@ -159,6 +174,9 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                 onReceipt = { vm.loadReceipt(sale.id) },
                 onReturn = { selected = null; returnSaleId = sale.id },
                 onOpenDevice = { selected = null; container.featureNav.open(Destination.Inventory(sale.imei)) },
+                onOpenConsignment = {
+                    sale.consignmentId?.let { selected = null; container.featureNav.open(Destination.Consignments(it)) }
+                },
             )
         }
     }

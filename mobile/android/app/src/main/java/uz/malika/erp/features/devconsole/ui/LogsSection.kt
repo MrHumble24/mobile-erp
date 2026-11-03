@@ -32,9 +32,10 @@ import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
+@Composable
 private fun levelColor(level: LogLevel) = when (level) {
     LogLevel.D -> Tokens.slate
-    LogLevel.I -> Tokens.signalBlue
+    LogLevel.I -> Tokens.info
     LogLevel.W -> Tokens.warning
     LogLevel.E -> Tokens.danger
 }

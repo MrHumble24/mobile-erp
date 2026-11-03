@@ -4,9 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.sales.data.SaleStats
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
-import uz.malika.erp.ui.theme.Tokens
+import uz.malika.erp.shared.ui.signedEmphasis
 
 /** Stats tiles for the sales list (mirrors the web SalesSummary). Profit is shown only when present (not redacted). */
 @Composable
@@ -21,12 +22,12 @@ fun SalesSummary(stats: SaleStats, modifier: Modifier = Modifier) {
                 t("sales.statsReturns", null),
                 stats.returnedCount.toString(),
                 m,
-                subtext = "${t("sales.statsRefundTotal", null)}: ${stats.refundTotal}",
+                subtext = "${t("sales.statsRefundTotal", null)}: ${formatMoney(stats.refundTotal)}",
                 money = false,
             )
         }
         stats.netProfit?.let { profit ->
-            add { m -> MetricTile(t("sales.statsNetProfit", null), profit, m, emphasis = Tokens.success) }
+            add { m -> MetricTile(t("sales.statsNetProfit", null), profit, m, emphasis = signedEmphasis(profit)) }
         }
     }
     MetricGrid(tiles, modifier, perRow = 2)

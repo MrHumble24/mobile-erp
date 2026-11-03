@@ -3,10 +3,10 @@ package uz.malika.erp.features.inventory.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -33,8 +33,8 @@ import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Metrics strip above the device list. Status cards toggle the list filter; the
- * low-stock card jumps to the Alerts tab. Horizontally scrollable on narrow
- * screens.
+ * low-stock card jumps to the Alerts tab. Scrolls edge-to-edge with a screen-gutter
+ * content padding so the first/last tile sit on the 16dp margin (never clipped).
  */
 @Composable
 fun InventoryMetricsBar(
@@ -46,20 +46,31 @@ fun InventoryMetricsBar(
     onShowAlerts: () -> Unit,
 ) {
     val t = LocalT.current
-    Row(
-        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+    LazyRow(
+        Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = Tokens.Space.screenH),
     ) {
-        MetricCard(t("inventory.metricsTotal", null), metrics.total, Tokens.onyx,
-            active = selectedStatus == null) { onSelectStatus(null) }
-        MetricCard(t("inventory.metricsInStock", null), metrics.inStock, Tokens.success,
-            active = selectedStatus == "IN_STOCK") { onToggleStatus("IN_STOCK") }
-        MetricCard(t("inventory.metricsDefective", null), metrics.defective, Tokens.danger,
-            active = selectedStatus == "DEFECTIVE") { onToggleStatus("DEFECTIVE") }
-        MetricCard(t("inventory.metricsConsigned", null), metrics.consigned, Tokens.signalBlue,
-            active = selectedStatus == "CONSIGNED") { onToggleStatus("CONSIGNED") }
-        MetricCard(t("inventory.metricsLowStock", null), lowStockCount, Tokens.warning,
-            active = false, onTap = onShowAlerts)
+        item {
+            MetricCard(t("inventory.metricsTotal", null), metrics.total, Tokens.onyx,
+                active = selectedStatus == null) { onSelectStatus(null) }
+        }
+        item {
+            MetricCard(t("inventory.metricsInStock", null), metrics.inStock, Tokens.success,
+                active = selectedStatus == "IN_STOCK") { onToggleStatus("IN_STOCK") }
+        }
+        item {
+            MetricCard(t("inventory.metricsDefective", null), metrics.defective, Tokens.danger,
+                active = selectedStatus == "DEFECTIVE") { onToggleStatus("DEFECTIVE") }
+        }
+        item {
+            MetricCard(t("inventory.metricsConsigned", null), metrics.consigned, Tokens.signalBlue,
+                active = selectedStatus == "CONSIGNED") { onToggleStatus("CONSIGNED") }
+        }
+        item {
+            MetricCard(t("inventory.metricsLowStock", null), lowStockCount, Tokens.warning,
+                active = false, onTap = onShowAlerts)
+        }
     }
 }
 

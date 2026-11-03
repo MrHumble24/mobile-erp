@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,7 +82,7 @@ fun QcScreen(container: AppContainer) {
             ),
             selected = tab,
             onSelect = { tab = it },
-            modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
         when (tab) {
             QcTab.QUEUE -> AsyncContent(queue, onRetry = vm::refreshQueue) {

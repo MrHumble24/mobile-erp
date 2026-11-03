@@ -1,5 +1,6 @@
 package uz.malika.erp.features.devconsole.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.ui.theme.Tokens
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.devconsole.DevAccess
 import uz.malika.erp.features.devconsole.DevConsoleSection
@@ -43,13 +46,23 @@ fun DevConsoleScreen(container: AppContainer, onClose: () -> Unit) {
         return
     }
 
+    // A Quick Login preset tap closes the console so the (now prefilled) sign-in returns.
+    LaunchedEffect(Unit) {
+        DevQuickLogin.pending.collect { if (it != null) onClose() }
+    }
+
     val sections = DevConsoleSections.all
     var selectedId by remember { mutableStateOf(sections.first().id) }
     val selected = sections.firstOrNull { it.id == selectedId } ?: sections.first()
 
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    Column(Modifier.fillMaxSize().background(Tokens.background).padding(16.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Developer Console", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            Text(
+                "Developer Console",
+                style = MaterialTheme.typography.headlineSmall,
+                color = Tokens.foreground,
+                modifier = Modifier.weight(1f),
+            )
             PillButton("Close", onClose, variant = ButtonVariant.GHOST)
         }
         Spacer(Modifier.height(12.dp))

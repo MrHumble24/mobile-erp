@@ -24,6 +24,7 @@ import uz.malika.erp.features.inventory.model.StockAlertsViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.ui.theme.Tokens
 
 private enum class InventoryTab { DEVICES, MODELS, ALERTS }
 
@@ -52,9 +53,14 @@ fun InventoryScreen(container: AppContainer) {
     var selected by rememberSaveable { mutableStateOf(InventoryTab.DEVICES) }
     if (tabs.none { it.value == selected }) selected = InventoryTab.DEVICES
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    Column(Modifier.fillMaxSize()) {
         Spacer(Modifier.height(12.dp))
-        SegmentedControl(options = tabs, selected = selected, onSelect = { selected = it })
+        SegmentedControl(
+            options = tabs,
+            selected = selected,
+            onSelect = { selected = it },
+            modifier = Modifier.padding(horizontal = Tokens.Space.screenH),
+        )
         Spacer(Modifier.height(8.dp))
         when (selected) {
             InventoryTab.DEVICES -> DevicesTab(

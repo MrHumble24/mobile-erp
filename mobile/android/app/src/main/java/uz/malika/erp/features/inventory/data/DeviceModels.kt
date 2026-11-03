@@ -1,5 +1,7 @@
 package uz.malika.erp.features.inventory.data
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -109,12 +111,6 @@ object DeviceStatusMeta {
         "CONSIGNED" to "inventory.statusConsigned",
         "SOLD" to "inventory.statusSold",
     )
-    private val colors = mapOf(
-        "IN_STOCK" to Tokens.success,
-        "DEFECTIVE" to Tokens.danger,
-        "CONSIGNED" to Tokens.signalBlue,
-        "SOLD" to Tokens.ash,
-    )
     private val manualTransitions = mapOf(
         "IN_STOCK" to listOf("DEFECTIVE"),
         "DEFECTIVE" to listOf("IN_STOCK"),
@@ -123,7 +119,17 @@ object DeviceStatusMeta {
     )
 
     fun labelKey(code: String): String = labelKeys[code] ?: code
-    fun color(code: String): Color = colors[code] ?: Tokens.ash
+
+    @Composable
+    @ReadOnlyComposable
+    fun color(code: String): Color = when (code) {
+        "IN_STOCK" -> Tokens.success
+        "DEFECTIVE" -> Tokens.danger
+        "CONSIGNED" -> Tokens.info
+        "SOLD" -> Tokens.mutedForeground
+        else -> Tokens.ash
+    }
+
     fun transitionsFor(code: String): List<String> = manualTransitions[code] ?: emptyList()
 }
 

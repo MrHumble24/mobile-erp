@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -80,6 +81,9 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     var formFor by remember { mutableStateOf<FormTarget?>(null) }
 
     Scaffold(
+        // AppShell already reserves system-bar insets; zero this nested Scaffold's
+        // so the content is not padded twice.
+        contentWindowInsets = WindowInsets(0),
         floatingActionButton = {
             if (canManage) ExtendedFloatingActionButton(
                 onClick = { formFor = FormTarget(null, "", null, null) },
@@ -88,64 +92,72 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
             )
         },
     ) { pad ->
-        Column(Modifier.fillMaxSize().padding(pad)) {
-            Column(Modifier.padding(16.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        t("sales.customersTitle", null),
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.weight(1f),
+        // Whole screen scrolls: header (CSV + stats + search + filters) rides in
+        // the list as item 0, so it never pushes the rows off-screen as it grows.
+        LazyColumn(Modifier.fillMaxSize().padding(pad)) {
+            item {
+                Column(Modifier.padding(16.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                        PillButton(
+                            text = t("customers.exportCsv", null),
+                            onClick = {
+                                shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems))
+                            },
+                            variant = ButtonVariant.OUTLINE,
+                            enabled = listItems.isNotEmpty(),
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    stats?.let { CustomerSummary(it); Spacer(Modifier.height(12.dp)) }
+                    AppTextField(
+                        value = search,
+                        onValueChange = { search = it },
+                        placeholder = t("common.search", null),
+                        imeAction = ImeAction.Search,
+                        keyboardActions = KeyboardActions(onSearch = { vm.setSearch(search.trim()) }),
                     )
-                    PillButton(
-                        text = t("customers.exportCsv", null),
-                        onClick = {
-                            shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems))
+                    Spacer(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf(
+                            SegmentOption("all", t("common.all", null)),
+                            SegmentOption("yes", t("common.yes", null)),
+                            SegmentOption("no", t("common.no", null)),
+                        ),
+                        selected = hasPurchases,
+                        onSelect = {
+                            hasPurchases = it
+                            vm.setHasPurchases(if (it == "all") null else it == "yes")
                         },
-                        variant = ButtonVariant.OUTLINE,
-                        enabled = listItems.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    SegmentedControl(
+                        options = listOf(
+                            SegmentOption("recent", t("common.date", null)),
+                            SegmentOption("name", t("common.name", null)),
+                        ),
+                        selected = sort,
+                        onSelect = { sort = it; vm.setSort(it) },
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                stats?.let { CustomerSummary(it); Spacer(Modifier.height(12.dp)) }
-                AppTextField(
-                    value = search,
-                    onValueChange = { search = it },
-                    placeholder = t("common.search", null),
-                    imeAction = ImeAction.Search,
-                    keyboardActions = KeyboardActions(onSearch = { vm.setSearch(search.trim()) }),
-                )
-                Spacer(Modifier.height(8.dp))
-                SegmentedControl(
-                    options = listOf(
-                        SegmentOption("all", t("common.all", null)),
-                        SegmentOption("yes", t("common.yes", null)),
-                        SegmentOption("no", t("common.no", null)),
-                    ),
-                    selected = hasPurchases,
-                    onSelect = {
-                        hasPurchases = it
-                        vm.setHasPurchases(if (it == "all") null else it == "yes")
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(8.dp))
-                SegmentedControl(
-                    options = listOf(
-                        SegmentOption("recent", t("common.date", null)),
-                        SegmentOption("name", t("common.name", null)),
-                    ),
-                    selected = sort,
-                    onSelect = { sort = it; vm.setSort(it) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
             when {
-                ui.state.loading && listItems.isEmpty() -> Box(Modifier.fillMaxSize()) { Loading() }
-                ui.error != null -> ErrorView(ui.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null))
-                listItems.isEmpty() -> EmptyView(t("sales.noCustomersFound", null))
-                else -> LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                    items(listItems) { c -> CustomerRow(c, t) { selected = c } }
-                    item { LoadMoreFooter(ui.state.hasMore, ui.state.loading, vm::loadMore) }
+                ui.state.loading && listItems.isEmpty() ->
+                    item { Box(Modifier.fillParentMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) { Loading() } }
+                ui.error != null ->
+                    item { ErrorView(ui.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null)) }
+                listItems.isEmpty() ->
+                    item { EmptyView(t("sales.noCustomersFound", null)) }
+                else -> {
+                    items(listItems) { c ->
+                        Box(Modifier.padding(horizontal = 16.dp)) { CustomerRow(c, t) { selected = c } }
+                    }
+                    item {
+                        Box(Modifier.padding(horizontal = 16.dp)) {
+                            LoadMoreFooter(ui.state.hasMore, ui.state.loading, vm::loadMore)
+                        }
+                    }
                 }
             }
         }

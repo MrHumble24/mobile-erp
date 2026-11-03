@@ -40,6 +40,7 @@ import uz.malika.erp.ui.theme.Tokens
 private enum class Choice { INHERIT, GRANT, REVOKE }
 
 /** Human source for a permission given its override + role grants (mirrors web sourceLabel). */
+@Composable
 private fun sourceLabel(
     choice: Choice,
     roleCodes: List<String>,

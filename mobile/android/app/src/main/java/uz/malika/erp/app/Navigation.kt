@@ -1,10 +1,14 @@
 package uz.malika.erp.app
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -43,7 +47,11 @@ private fun UnauthedNav(container: AppContainer, session: SessionViewModel, onli
             LoginScreen(session, online, onOpenDevPanel = { nav.navigate(DEV_CONSOLE_ROUTE) })
         }
         composable(DEV_CONSOLE_ROUTE) {
-            DevConsoleScreen(container, onClose = { nav.popBackStack() })
+            // This route is rendered bare (no AppShell), so it owns its safe-area
+            // inset; the authed in-shell console inherits the shell's padding instead.
+            Box(Modifier.fillMaxSize().systemBarsPadding()) {
+                DevConsoleScreen(container, onClose = { nav.popBackStack() })
+            }
         }
     }
 }

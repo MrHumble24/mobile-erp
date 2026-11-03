@@ -18,7 +18,7 @@ import uz.malika.erp.ui.theme.Tokens
 enum class ButtonVariant { DEFAULT, SECONDARY, OUTLINE, GHOST, DESTRUCTIVE }
 
 private val PillShape = RoundedCornerShape(50)
-private val Pad = PaddingValues(horizontal = 20.dp, vertical = 14.dp)
+private val Pad = PaddingValues(horizontal = Tokens.Space.buttonH, vertical = Tokens.Space.buttonV)
 
 /**
  * The one button. Pill-shaped (radius-full), 6 Caldera variants. Feature screens

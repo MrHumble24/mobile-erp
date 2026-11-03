@@ -2,17 +2,25 @@ package uz.malika.erp.features.finance.ui.expenses
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,23 +31,26 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.features.finance.data.Expense
+import uz.malika.erp.features.finance.data.ExpenseSort
 import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.features.finance.model.buildExpensesCsv
+import uz.malika.erp.features.finance.model.isoDate
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.shareTextFile
-import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.AppTextField
+import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
-/** The Expenses tab body: header actions, summary, filters, paginated list. */
-@OptIn(ExperimentalLayoutApi::class)
+/** The Expenses tab body: compact actions + search, summary, filter sheet, paginated list. */
 @Composable
 fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier: Modifier = Modifier) {
     val t = LocalT.current
@@ -51,6 +62,23 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
     var editing by remember { mutableStateOf<Expense?>(null) }
     var showLog by remember { mutableStateOf(false) }
     var detail by remember { mutableStateOf<Expense?>(null) }
+    var showFilters by remember { mutableStateOf(false) }
+
+    // Inline filter UI state, hoisted so it survives the sheet opening and closing.
+    var search by remember { mutableStateOf("") }
+    var min by remember { mutableStateOf("") }
+    var max by remember { mutableStateOf("") }
+    var range by remember { mutableStateOf(DateRange()) }
+
+    val filter = state.filter
+    val activeFilters = listOf(
+        filter.categoryId != null,
+        filter.isRecurring != null,
+        filter.minAmount != null,
+        filter.maxAmount != null,
+        filter.fromIso != null,
+        filter.sort != ExpenseSort.NEWEST,
+    ).count { it }
 
     LazyColumn(
         modifier.fillMaxSize().padding(16.dp),
@@ -70,15 +98,11 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
         }
         item { ExpenseSummaryCard(state.summary) }
         item {
-            ExpenseFilters(
-                categories = state.categories,
-                filter = state.filter,
-                onCategory = vm::setCategory,
-                onRecurring = vm::setRecurring,
-                onSearch = vm::setSearch,
-                onAmount = vm::setAmount,
-                onSort = vm::setSort,
-                onRange = vm::setRange,
+            SearchRow(
+                search = search,
+                onSearch = { search = it; vm.setSearch(it) },
+                activeFilters = activeFilters,
+                onOpenFilters = { showFilters = true },
             )
         }
         val items = state.page.items
@@ -99,6 +123,27 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
         }
     }
 
+    if (showFilters) {
+        ExpenseFiltersSheet(
+            categories = state.categories,
+            filter = filter,
+            min = min,
+            max = max,
+            range = range,
+            onCategory = vm::setCategory,
+            onRecurring = vm::setRecurring,
+            onSort = vm::setSort,
+            onMin = { min = it; vm.setAmount(min.toDoubleOrNull(), max.toDoubleOrNull()) },
+            onMax = { max = it; vm.setAmount(min.toDoubleOrNull(), max.toDoubleOrNull()) },
+            onRange = { range = it; vm.setRange(isoDate(it.startMillis), isoDate(it.endMillis)) },
+            canReset = activeFilters > 0 || search.isNotBlank(),
+            onReset = {
+                search = ""; min = ""; max = ""; range = DateRange()
+                vm.clearFilters()
+            },
+            onDismiss = { showFilters = false },
+        )
+    }
     if (showCategories) {
         ExpenseCategoriesSheet(
             vm = vm,
@@ -126,16 +171,57 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/** Inline search field with a filter button carrying an active-filter count badge. */
+@Composable
+private fun SearchRow(search: String, onSearch: (String) -> Unit, activeFilters: Int, onOpenFilters: () -> Unit) {
+    val t = LocalT.current
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.weight(1f)) {
+            AppTextField(
+                value = search,
+                onValueChange = onSearch,
+                placeholder = t("expenses.searchPlaceholder", null),
+                imeAction = ImeAction.Search,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        BadgedBox(
+            badge = { if (activeFilters > 0) Badge(containerColor = Tokens.primary) { Text("$activeFilters") } },
+        ) {
+            IconButton(onClick = onOpenFilters) {
+                Icon(Icons.Outlined.FilterList, contentDescription = t("common.filter", null), tint = Tokens.foreground)
+            }
+        }
+    }
+}
+
+/** Prominent new-expense action with secondary actions (categories, CSV) in an overflow menu. */
 @Composable
 private fun Header(canManage: Boolean, onCategories: () -> Unit, onNew: () -> Unit, onCsv: () -> Unit, csvEnabled: Boolean) {
     val t = LocalT.current
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(t("expenses.title", null), style = MaterialTheme.typography.headlineSmall)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PillButton(t("expenses.categories", null), onClick = onCategories, variant = ButtonVariant.OUTLINE)
-            if (csvEnabled) PillButton(t("expenses.exportCsv", null), onClick = onCsv, variant = ButtonVariant.OUTLINE)
-            if (canManage) PillButton(t("expenses.newExpense", null), onClick = onNew)
+    var menu by remember { mutableStateOf(false) }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        if (canManage) {
+            PillButton(t("expenses.newExpense", null), onClick = onNew, modifier = Modifier.weight(1f))
+            Spacer(Modifier.width(8.dp))
+        } else {
+            Spacer(Modifier.weight(1f))
+        }
+        Box {
+            IconButton(onClick = { menu = true }) {
+                Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
+            }
+            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                DropdownMenuItem(
+                    text = { Text(t("expenses.categories", null)) },
+                    onClick = { menu = false; onCategories() },
+                )
+                DropdownMenuItem(
+                    text = { Text(t("expenses.exportCsv", null)) },
+                    enabled = csvEnabled,
+                    onClick = { menu = false; onCsv() },
+                )
+            }
         }
     }
 }

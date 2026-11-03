@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.procurement.data.DeviceRowDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.PageState
@@ -47,7 +48,7 @@ fun QcQueueTab(
                         ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            (modelNames[d.modelId] ?: d.modelId) + " · " + d.statusCode,
+                            (modelNames[d.modelId] ?: d.modelId) + " · " + t(DeviceStatusMeta.labelKey(d.statusCode), null),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }

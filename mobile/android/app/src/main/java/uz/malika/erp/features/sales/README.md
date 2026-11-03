@@ -12,14 +12,17 @@ three permission-gated routes.
   per sale, so checkout fans the cart into **one `sale.create` per device**
   (`SaleCreate.ops`), each enqueued to the outbox with that device's version as
   `expectedVersion` (ADR 0007); the push drain delivers them. A device already
-  carted or with a pending queued sale is rejected on re-scan. A cross-feature
+  carted is rejected on re-scan ("already in cart"); one with a sale still
+  waiting in the offline queue gets a distinct "already queued" message. A cross-feature
   preload (inventory/QC "Sell in POS") scans in via `featureNav.consumeArg("pos")`.
   Local 58mm receipt (all lines) + print. Toaster on the result.
 - **Sales** (`sales`, `sale.read`): paginated list (`PageState` + load more),
   stats tiles (`/sales/stats`), filters — search, date range (`AppDateRangeField`),
   channel, returned-status, warranty, and cashier (`/users`, shown only with
   `user.read`) — CSV export (`Csv` + share sheet), detail sheet with an **Open
-  device** link (`featureNav → Destination.Inventory`), server receipt + print,
+  device** link (`featureNav → Destination.Inventory`), a **View consignment**
+  link on B2B sales (`featureNav → Destination.Consignments`), **copy IMEI** and
+  a **tappable customer phone** (opens the dialer), server receipt + print,
   returns (`sale.return`, online-only, toaster on success), and warranty lookup
   by IMEI — online via `/sales/warranty/:imei`, **offline** from the cached
   device + latest sale.

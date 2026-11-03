@@ -61,7 +61,7 @@ class PosViewModel(
                 val s = _state.value
                 _state.value = when {
                     device == null -> s.copy(busy = false, errorKey = "common.notFound")
-                    s.pendingSold.contains(device.imei) -> s.copy(busy = false, errorKey = "pos.duplicateDevice")
+                    s.pendingSold.contains(device.imei) -> s.copy(busy = false, errorKey = "pos.alreadyQueued")
                     s.lines.any { it.device.imei == device.imei } ->
                         s.copy(busy = false, errorKey = "pos.duplicateDevice")
                     !device.inStock -> s.copy(busy = false, errorKey = "pos.notInStock")

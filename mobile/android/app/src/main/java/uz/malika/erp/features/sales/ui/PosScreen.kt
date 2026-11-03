@@ -70,8 +70,6 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Text(t("pos.title", null), style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
         ScannerField(onScan = { vm.scan(it, online) }, placeholder = t("pos.scanPrompt", null))
         state.errorKey?.let {
             Spacer(Modifier.height(8.dp))

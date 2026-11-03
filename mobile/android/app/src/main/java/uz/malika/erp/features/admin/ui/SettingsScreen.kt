@@ -83,7 +83,7 @@ private fun SettingsForm(vm: SettingsViewModel, settings: StoreSettingsDto, onli
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.widthIn(max = 640.dp).fillMaxWidth()) {
-            Text(t("settings.storeSettings", null), style = MaterialTheme.typography.titleLarge)
+            Text(t("settings.storeSettings", null), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(16.dp))
 
             StoreIdentitySection(form)

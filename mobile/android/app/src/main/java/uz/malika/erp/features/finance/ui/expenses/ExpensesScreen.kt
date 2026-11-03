@@ -3,6 +3,7 @@ package uz.malika.erp.features.finance.ui.expenses
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -57,7 +58,13 @@ fun ExpensesScreen(container: AppContainer) {
     val state by vm.state.collectAsState()
     var tab by remember { mutableStateOf(ExpenseTab.EXPENSES) }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbar) }, containerColor = Tokens.background) { pad ->
+    // The AppShell Scaffold already reserves status/navigation-bar insets; zero this
+    // nested Scaffold's own so the top gutter and bottom are not padded twice.
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbar) },
+        containerColor = Tokens.background,
+        contentWindowInsets = WindowInsets(0),
+    ) { pad ->
         Column(Modifier.fillMaxSize().padding(pad)) {
             SegmentedControl(
                 options = listOf(

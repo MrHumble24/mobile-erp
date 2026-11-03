@@ -47,7 +47,7 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
     var editing by remember { mutableStateOf<DeviceModelView?>(null) }
     var creating by remember { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH)) {
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppTextField(

@@ -24,7 +24,7 @@ fun StatusChip(
     androidx.compose.foundation.layout.Box(
         modifier
             .background(color.copy(alpha = 0.12f), RoundedCornerShape(100.dp))
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = Tokens.Space.chipH, vertical = Tokens.Space.chipV),
     ) {
         Text(label, style = MaterialTheme.typography.labelLarge, color = color)
     }

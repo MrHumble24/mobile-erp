@@ -30,7 +30,7 @@ fun LowStockCard(vm: FinanceReadsViewModel, labels: Map<String, String>) {
     SectionCard(t("dashboard.lowStockTitle", null)) {
         val handle = rememberAsync { vm.lowStock() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
-            if (rows.isEmpty()) EmptyView(t("dashboard.lowStockTitle", null))
+            if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
             else AppDataTable(
                 columns = listOf(
                     t("inventory.model", null), t("inventory.storage", null),
@@ -58,7 +58,7 @@ fun OverdueCard(vm: FinanceReadsViewModel) {
     SectionCard(t("dashboard.overdueConsignmentsTitle", null)) {
         val handle = rememberAsync { vm.overdue() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
-            if (rows.isEmpty()) EmptyView(t("dashboard.overdueConsignmentsTitle", null))
+            if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
             else AppDataTable(
                 columns = listOf(
                     t("consignments.partner", null), t("consignments.device", null),
@@ -87,7 +87,7 @@ fun ModelPricingCard(vm: FinanceReadsViewModel, labels: Map<String, String>) {
     SectionCard(t("dashboard.modelPricingTitle", null)) {
         val handle = rememberAsync { vm.modelPricing() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
-            if (rows.isEmpty()) EmptyView(t("dashboard.modelPricingTitle", null))
+            if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
             else ModelPricingTable(rows, labels, canCost)
         }
     }

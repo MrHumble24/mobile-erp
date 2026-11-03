@@ -22,6 +22,7 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
+import uz.malika.erp.shared.ui.signedEmphasis
 import uz.malika.erp.ui.theme.Tokens
 
 /** Overview: P&L tiles (tap → P&L-components drill) + trend chart + channel split. */
@@ -32,6 +33,8 @@ fun OverviewTab(
     toIso: String?,
     bucket: String,
     onDrill: (ReportDrill) -> Unit,
+    onReturns: (String?, String?) -> Unit,
+    onNoi: (ProfitReport) -> Unit,
 ) {
     val t = LocalT.current
     val profit = rememberAsync(fromIso, toIso) { vm.profit(fromIso, toIso) }
@@ -42,7 +45,9 @@ fun OverviewTab(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        AsyncContent(profit, retryLabel = t("common.retry", null)) { r -> Tiles(r, onDrill) }
+        AsyncContent(profit, retryLabel = t("common.retry", null)) { r ->
+            Tiles(r, onDrill, onReturns = { onReturns(fromIso, toIso) }, onNoi = { onNoi(r) })
+        }
         AsyncContent(trend, retryLabel = t("common.retry", null)) { points ->
             TrendLineChart(t("reports.trendTitle", null), points)
         }
@@ -57,12 +62,22 @@ fun OverviewTab(
 }
 
 @Composable
-private fun Tiles(r: ProfitReport, onDrill: (ReportDrill) -> Unit) {
+private fun Tiles(
+    r: ProfitReport,
+    onDrill: (ReportDrill) -> Unit,
+    onReturns: () -> Unit,
+    onNoi: () -> Unit,
+) {
     val t = LocalT.current
     val drill = profitDrill(t("reports.breakdownHint", null), r, t)
-    fun tile(label: String, value: String, emphasis: androidx.compose.ui.graphics.Color? = null, money: Boolean = true):
-        @Composable (Modifier) -> Unit = { m ->
-        MetricTile(label, value, m.clickable { onDrill(drill) }, emphasis = emphasis, money = money)
+    fun tile(
+        label: String,
+        value: String,
+        emphasis: androidx.compose.ui.graphics.Color? = null,
+        money: Boolean = true,
+        onTap: () -> Unit = { onDrill(drill) },
+    ): @Composable (Modifier) -> Unit = { m ->
+        MetricTile(label, value, m.clickable(onClick = onTap), emphasis = emphasis, money = money)
     }
     MetricGrid(
         tiles = listOf(
@@ -70,8 +85,8 @@ private fun Tiles(r: ProfitReport, onDrill: (ReportDrill) -> Unit) {
             tile(t("dashboard.cogs", null), r.cogs),
             tile(t("dashboard.grossProfit", null), r.grossProfit),
             tile(t("dashboard.expenses", null), r.expenses, emphasis = Tokens.danger),
-            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = Tokens.success),
-            tile(t("dashboard.returnsRefunded", null), r.returnsRefunded),
+            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signedEmphasis(r.netOperatingIncome), onTap = onNoi),
+            tile(t("dashboard.returnsRefunded", null), r.returnsRefunded, onTap = onReturns),
             tile(t("dashboard.unitsSold", null), r.unitsSold.toString(), money = false),
         ),
     )

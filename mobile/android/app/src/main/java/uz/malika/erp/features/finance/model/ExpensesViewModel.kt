@@ -65,6 +65,13 @@ class ExpensesViewModel(private val container: AppContainer) : ViewModel() {
         reload()
     }
 
+    /** Reset every filter (category, recurring, sort, amount, range, search) to defaults. */
+    fun clearFilters() {
+        debounceJob?.cancel()
+        patch { ExpenseFilter() }
+        reload()
+    }
+
     /** Debounced text/amount filters — refetch once typing settles. */
     fun setSearch(search: String) = debounce { patch { it.copy(search = search) } }
     fun setAmount(min: Double?, max: Double?) = debounce { patch { it.copy(minAmount = min, maxAmount = max) } }
