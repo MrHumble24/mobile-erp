@@ -15,9 +15,16 @@ import uz.malika.erp.features.inventory.model.DeviceMetrics
 /** Pure-logic checks for the inventory slice (no Android framework needed). */
 class InventoryLogicTest {
 
-    private fun entity(id: String, imei: String, status: String, modelId: String, specs: String = "{}") =
+    private fun entity(
+        id: String,
+        imei: String,
+        status: String,
+        modelId: String,
+        specs: String = "{}",
+        imei2: String? = null,
+    ) =
         DeviceEntity(
-            id = id, imei = imei, statusCode = status, version = 1, targetPrice = null,
+            id = id, imei = imei, imei2 = imei2, statusCode = status, version = 1, targetPrice = null,
             specs = specs, modelId = modelId, modelBrand = "Apple", modelName = "iPhone 15",
             latestSale = null, gradeCode = null, inspectionNotes = null, updatedAt = "",
         )
@@ -51,6 +58,19 @@ class InventoryLogicTest {
         assertEquals(1, DeviceFilter(storage = "256GB").apply(list).size)
         assertEquals(1, DeviceFilter(search = "0001").apply(list).size)
         assertEquals(2, DeviceFilter().apply(list).size)
+    }
+
+    @Test fun searchResolvesByEitherImei() {
+        val list = listOf(
+            DeviceListItem.fromEntity(entity("1", "350001", "IN_STOCK", "m1", imei2 = "990001")),
+            DeviceListItem.fromEntity(entity("2", "350002", "IN_STOCK", "m1")),
+        )
+        // The device is found when searching by its second IMEI, mirroring the
+        // DeviceDao `imei OR imei2` lookup used by POS / warranty / consignment.
+        val byImei2 = DeviceFilter(search = "990001").apply(list)
+        assertEquals(1, byImei2.size)
+        assertEquals("1", byImei2.first().id)
+        assertTrue(DeviceFilter(search = "990001").apply(list).all { it.imei2 == "990001" })
     }
 
     @Test fun metricsCountEachStatus() {

@@ -37,3 +37,7 @@ all three nav items and routes.
 - Web parity: users list "load more" (kit `PageState`+`LoadMoreFooter`); override
   source badge per permission (from `effective-permissions.roleGrants`); counted
   `users.roleInUse` on 409 (count scraped from the message — no structured field).
+- Users search is inline (`SearchFilterRow`); role + active facets live in
+  `UserFilterSheet` (built on the kit `FilterSheet`), not on the screen. New-user
+  is a single icon action. The filter badge counts non-default facets; reset
+  (`UsersViewModel.reset`) clears search + facets. (`UserFilters.kt` was removed.)

@@ -55,6 +55,7 @@ data class SaleDto(
 @Serializable
 data class SaleDeviceDto(
     val imei: String = "",
+    val imei2: String? = null,
     val model: ModelRefDto = ModelRefDto(),
     val specs: JsonElement? = null,
 )
@@ -112,6 +113,7 @@ data class ReceiptDto(
 @Serializable
 data class ReceiptItemDto(
     val imei: String = "",
+    val imei2: String? = null,
     val model: String = "",
     val storage: String? = null,
     val color: String? = null,
@@ -130,6 +132,7 @@ data class ReceiptCustomerDto(val name: String = "", val phone: String? = null)
 data class DeviceByImeiDto(
     val id: String = "",
     val imei: String = "",
+    val imei2: String? = null,
     val version: Int = 0,
     val statusCode: String = "",
     val model: ModelRefDto = ModelRefDto(),

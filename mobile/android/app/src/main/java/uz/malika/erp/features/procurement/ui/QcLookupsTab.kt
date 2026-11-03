@@ -13,19 +13,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.procurement.data.LookupDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.FilterButton
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
-/** Manage QC grades and defect types. Writes need `settings.manage`. */
+/** Manage QC grades and defect types. Active/all toggle lives in the filter sheet. */
 @Composable
 fun QcLookupsTab(
     grades: List<LookupDto>,
@@ -37,21 +40,27 @@ fun QcLookupsTab(
     onEdit: (String, LookupDto) -> Unit,
 ) {
     val t = LocalT.current
+    var showFilters by remember { mutableStateOf(false) }
     Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Text(t("qc.active", null), style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.height(6.dp))
-        SegmentedControl(
-            options = listOf(
-                SegmentOption(false, t("qc.active", null)),
-                SegmentOption(true, t("common.all", null)),
-            ),
-            selected = includeInactive,
-            onSelect = onToggleInactive,
-        )
-        Spacer(Modifier.height(20.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            FilterButton(
+                activeCount = if (includeInactive) 1 else 0,
+                onClick = { showFilters = true },
+            )
+        }
+        Spacer(Modifier.height(4.dp))
         LookupSection(t("qc.grades", null), "grades", grades, canManage, onAdd, onEdit)
         Spacer(Modifier.height(20.dp))
         LookupSection(t("qc.defectTypes", null), "defect-types", defects, canManage, onAdd, onEdit)
+    }
+
+    if (showFilters) {
+        QcLookupsFilterSheet(
+            includeInactive = includeInactive,
+            onToggleInactive = onToggleInactive,
+            onReset = { onToggleInactive(false) },
+            onDismiss = { showFilters = false },
+        )
     }
 }
 

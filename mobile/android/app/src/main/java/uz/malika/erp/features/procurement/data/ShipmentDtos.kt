@@ -71,6 +71,7 @@ data class RegisterDeviceBody(
     val specs: Map<String, String>,
     val acquisitionCost: Double,
     val targetPrice: Double? = null,
+    val imei2: String? = null,
 )
 
 @Serializable
@@ -108,6 +109,7 @@ data class DeviceRowDto(
     val modelId: String,
     val statusCode: String,
     val landedCost: String? = null,
+    val imei2: String? = null,
 )
 
 @Serializable
@@ -123,6 +125,7 @@ data class IntakeDraft(
     val specs: Map<String, String>,
     val acquisitionCost: Double,
     val targetPrice: Double?,
+    val imei2: String? = null,
 ) {
-    fun toBody() = RegisterDeviceBody(imei, modelId, specs, acquisitionCost, targetPrice)
+    fun toBody() = RegisterDeviceBody(imei, modelId, specs, acquisitionCost, targetPrice, imei2)
 }

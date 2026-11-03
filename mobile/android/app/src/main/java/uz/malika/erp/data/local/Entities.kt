@@ -12,6 +12,7 @@ import androidx.room.PrimaryKey
 data class DeviceEntity(
     @PrimaryKey val id: String,
     val imei: String,
+    val imei2: String? = null, // optional second IMEI (dual-SIM); matched by findByImei
     val statusCode: String,
     val version: Int,
     val targetPrice: String?, // Decimal string

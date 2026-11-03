@@ -38,22 +38,24 @@ import uz.malika.erp.ui.theme.Tokens
 fun DeviceBarcode(imei: String) {
     if (imei.isEmpty()) return
     val bars = (0 until 44).map { i -> ((i * 7 + imei[i % imei.length].code) % 3) + 1 }
+    // Intentional fixed white plate + black bars in both themes: cashiers scan
+    // this, so it must stay high-contrast and scannable, not invert in dark mode.
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Tokens.signalWhite, RoundedCornerShape(12.dp))
+            .background(Color.White, RoundedCornerShape(12.dp))
             .border(BorderStroke(1.dp, Tokens.bone), RoundedCornerShape(12.dp))
             .padding(vertical = 8.dp, horizontal = 12.dp),
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
     ) {
         Row(Modifier.height(36.dp), horizontalArrangement = Arrangement.Center) {
             bars.forEach { w ->
-                Box(Modifier.width((w * 1.5).dp).height(36.dp).background(Tokens.inkBlack))
+                Box(Modifier.width((w * 1.5).dp).height(36.dp).background(Color.Black))
                 Spacer(Modifier.width(2.dp))
             }
         }
         Spacer(Modifier.height(4.dp))
-        Text(imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+        Text(imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Color.Black)
     }
 }
 
@@ -102,7 +104,7 @@ private fun MarginRow(targetPrice: String?, landedCost: String) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(Tokens.signalWhite, RoundedCornerShape(12.dp))
+            .background(Tokens.surface2, RoundedCornerShape(12.dp))
             .border(BorderStroke(1.dp, Tokens.bone), RoundedCornerShape(12.dp))
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,

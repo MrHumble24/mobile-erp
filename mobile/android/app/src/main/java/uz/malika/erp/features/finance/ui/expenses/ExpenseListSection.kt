@@ -13,9 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,7 +28,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
@@ -42,12 +38,12 @@ import uz.malika.erp.features.finance.model.buildExpensesCsv
 import uz.malika.erp.features.finance.model.isoDate
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.shareTextFile
-import uz.malika.erp.shared.ui.AppTextField
 import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.ui.theme.Tokens
 
 /** The Expenses tab body: compact actions + search, summary, filter sheet, paginated list. */
@@ -98,10 +94,11 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
         }
         item { ExpenseSummaryCard(state.summary) }
         item {
-            SearchRow(
-                search = search,
-                onSearch = { search = it; vm.setSearch(it) },
-                activeFilters = activeFilters,
+            SearchFilterRow(
+                query = search,
+                onQueryChange = { search = it; vm.setSearch(it) },
+                placeholder = t("expenses.searchPlaceholder", null),
+                activeCount = activeFilters,
                 onOpenFilters = { showFilters = true },
             )
         }
@@ -168,30 +165,6 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
             onEdit = { editing = expense; detail = null; showLog = true },
             onDismiss = { detail = null },
         )
-    }
-}
-
-/** Inline search field with a filter button carrying an active-filter count badge. */
-@Composable
-private fun SearchRow(search: String, onSearch: (String) -> Unit, activeFilters: Int, onOpenFilters: () -> Unit) {
-    val t = LocalT.current
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.weight(1f)) {
-            AppTextField(
-                value = search,
-                onValueChange = onSearch,
-                placeholder = t("expenses.searchPlaceholder", null),
-                imeAction = ImeAction.Search,
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        BadgedBox(
-            badge = { if (activeFilters > 0) Badge(containerColor = Tokens.primary) { Text("$activeFilters") } },
-        ) {
-            IconButton(onClick = onOpenFilters) {
-                Icon(Icons.Outlined.FilterList, contentDescription = t("common.filter", null), tint = Tokens.foreground)
-            }
-        }
     }
 }
 

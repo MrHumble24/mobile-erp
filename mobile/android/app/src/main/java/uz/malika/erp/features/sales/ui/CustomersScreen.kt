@@ -1,6 +1,5 @@
 package uz.malika.erp.features.sales.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,17 +9,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.PersonAdd
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,11 +33,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.delay
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.core.nowIso
@@ -47,15 +51,13 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.shareTextFile
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.AppTextField
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.Loading
-import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.SearchFilterRow
+import uz.malika.erp.ui.theme.Tokens
 
 /** Searchable customer directory with aggregates, detail, and online-only create/edit. */
 @Composable
@@ -77,8 +79,15 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     var search by remember { mutableStateOf("") }
     var hasPurchases by remember { mutableStateOf("all") }
     var sort by remember { mutableStateOf("recent") }
+    var showFilters by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf<CustomerListItem?>(null) }
     var formFor by remember { mutableStateOf<FormTarget?>(null) }
+
+    LaunchedEffect(search) {
+        delay(300)
+        vm.setSearch(search.trim())
+    }
+    val activeFilters = listOf(filters.hasPurchases != null, filters.sort != "recent").count { it }
 
     Scaffold(
         // AppShell already reserves system-bar insets; zero this nested Scaffold's
@@ -89,57 +98,38 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
                 onClick = { formFor = FormTarget(null, "", null, null) },
                 icon = { Icon(Icons.Outlined.PersonAdd, contentDescription = null) },
                 text = { Text(t("sales.newCustomer", null)) },
+                containerColor = Tokens.primary,
+                contentColor = Tokens.primaryForeground,
+                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                shape = RoundedCornerShape(14.dp),
             )
         },
     ) { pad ->
         // Whole screen scrolls: header (CSV + stats + search + filters) rides in
         // the list as item 0, so it never pushes the rows off-screen as it grows.
-        LazyColumn(Modifier.fillMaxSize().padding(pad)) {
+        LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = listBottomPadding(fab = true)) {
             item {
-                Column(Modifier.padding(16.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                        PillButton(
-                            text = t("customers.exportCsv", null),
+                Column(Modifier.padding(Tokens.Space.section)) {
+                    stats?.let { CustomerSummary(it); Spacer(Modifier.height(Tokens.Space.section)) }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        SearchFilterRow(
+                            query = search,
+                            onQueryChange = { search = it },
+                            placeholder = t("common.search", null),
+                            activeCount = activeFilters,
+                            onOpenFilters = { showFilters = true },
+                            modifier = Modifier.weight(1f),
+                        )
+                        Spacer(Modifier.width(Tokens.Space.gap))
+                        IconButton(
                             onClick = {
                                 shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems))
                             },
-                            variant = ButtonVariant.OUTLINE,
                             enabled = listItems.isNotEmpty(),
-                        )
+                        ) {
+                            Icon(Icons.Outlined.FileDownload, contentDescription = t("customers.exportCsv", null), tint = Tokens.foreground)
+                        }
                     }
-                    Spacer(Modifier.height(12.dp))
-                    stats?.let { CustomerSummary(it); Spacer(Modifier.height(12.dp)) }
-                    AppTextField(
-                        value = search,
-                        onValueChange = { search = it },
-                        placeholder = t("common.search", null),
-                        imeAction = ImeAction.Search,
-                        keyboardActions = KeyboardActions(onSearch = { vm.setSearch(search.trim()) }),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    SegmentedControl(
-                        options = listOf(
-                            SegmentOption("all", t("common.all", null)),
-                            SegmentOption("yes", t("common.yes", null)),
-                            SegmentOption("no", t("common.no", null)),
-                        ),
-                        selected = hasPurchases,
-                        onSelect = {
-                            hasPurchases = it
-                            vm.setHasPurchases(if (it == "all") null else it == "yes")
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    SegmentedControl(
-                        options = listOf(
-                            SegmentOption("recent", t("common.date", null)),
-                            SegmentOption("name", t("common.name", null)),
-                        ),
-                        selected = sort,
-                        onSelect = { sort = it; vm.setSort(it) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
                 }
             }
             when {
@@ -176,6 +166,18 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
 
     formFor?.let { target ->
         CustomerFormDialog(vm, target, online) { formFor = null }
+    }
+
+    if (showFilters) {
+        CustomerFilterSheet(
+            hasPurchases = hasPurchases,
+            sort = sort,
+            onHasPurchases = { hasPurchases = it; vm.setHasPurchases(if (it == "all") null else it == "yes") },
+            onSort = { sort = it; vm.setSort(it) },
+            canReset = activeFilters > 0 || search.isNotBlank(),
+            onReset = { search = ""; hasPurchases = "all"; sort = "recent"; vm.clearFilters() },
+            onDismiss = { showFilters = false },
+        )
     }
 }
 

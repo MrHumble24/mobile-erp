@@ -22,6 +22,7 @@ import java.math.RoundingMode
 data class DeviceListItem(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val statusCode: String,
     val modelId: String,
     val modelLabel: String,
@@ -30,17 +31,20 @@ data class DeviceListItem(
 ) {
     val storage: String? get() = specs["storage"]
 
-    /** Search by last digits of the IMEI or the model label (case-insensitive). */
+    /** Search by either IMEI or the model label (case-insensitive). */
     fun matches(query: String): Boolean {
         if (query.isBlank()) return true
         val q = query.trim().lowercase()
-        return imei.lowercase().contains(q) || modelLabel.lowercase().contains(q)
+        return imei.lowercase().contains(q) ||
+            imei2?.lowercase()?.contains(q) == true ||
+            modelLabel.lowercase().contains(q)
     }
 
     companion object {
         fun fromEntity(e: DeviceEntity) = DeviceListItem(
             id = e.id,
             imei = e.imei,
+            imei2 = e.imei2,
             statusCode = e.statusCode,
             modelId = e.modelId,
             modelLabel = "${e.modelBrand} ${e.modelName}".trim(),
@@ -59,6 +63,7 @@ data class QcSummary(val passed: Boolean, val gradeCode: String?, val batteryHea
 data class DeviceDetail(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val modelId: String,
     val modelLabel: String,
     val statusCode: String,
@@ -73,6 +78,7 @@ data class DeviceDetail(
         fun fromDto(d: DeviceDetailDto) = DeviceDetail(
             id = d.id,
             imei = d.imei,
+            imei2 = d.imei2,
             modelId = d.modelId,
             modelLabel = "${d.model?.brand ?: ""} ${d.model?.name ?: ""}".trim(),
             statusCode = d.statusCode,

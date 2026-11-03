@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.runtime.collectAsState
 import uz.malika.erp.AppContainer
 import uz.malika.erp.data.remote.HttpClient
+import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.sales.data.PosRepository
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.SalesApi
@@ -38,6 +39,7 @@ import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.ScanConfirmSheet
 import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.ui.theme.Tokens
 
@@ -93,6 +95,26 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
                 PosCheckoutForm(vm, state, online, api)
             }
         }
+    }
+
+    state.prompt?.let { prompt ->
+        val device = prompt.device
+        ScanConfirmSheet(
+            code = prompt.code,
+            confirmLabel = t("common.add", null),
+            cancelLabel = t("common.cancel", null),
+            closeLabel = t("common.close", null),
+            onConfirm = { vm.confirmScan() },
+            onDismiss = { vm.dismissScan() },
+            title = device?.modelLabel,
+            // When the scan matched the second IMEI, show both so the cashier sees the primary too.
+            subtitle = device?.takeIf { !it.imei2.isNullOrBlank() && prompt.code != it.imei }
+                ?.let { "IMEI: ${it.imei} · ${t("inventory.imei2", null)}: ${it.imei2}" },
+            price = device?.targetPrice,
+            statusLabel = device?.let { t(DeviceStatusMeta.labelKey(it.statusCode), null) },
+            statusColor = device?.let { DeviceStatusMeta.color(it.statusCode) } ?: Tokens.slate,
+            error = prompt.errorKey?.let { t(it, null) },
+        )
     }
 
     state.completed?.let { done ->

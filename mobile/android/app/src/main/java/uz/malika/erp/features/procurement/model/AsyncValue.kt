@@ -22,6 +22,13 @@ sealed interface AsyncValue<out T> {
     data class Data<T>(val value: T) : AsyncValue<T>
 }
 
+/** Map the value of a [AsyncValue.Data], passing Loading/Error through unchanged. */
+inline fun <T, R> AsyncValue<T>.mapData(transform: (T) -> R): AsyncValue<R> = when (this) {
+    is AsyncValue.Data -> AsyncValue.Data(transform(value))
+    is AsyncValue.Error -> this
+    AsyncValue.Loading -> AsyncValue.Loading
+}
+
 /** Launch [block] and publish Loading → Data/Error into this flow. */
 fun <T> MutableStateFlow<AsyncValue<T>>.reload(scope: CoroutineScope, block: suspend () -> T) {
     value = AsyncValue.Loading

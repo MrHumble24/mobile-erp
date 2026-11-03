@@ -18,6 +18,7 @@ import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.Async
 import uz.malika.erp.features.finance.ui.components.financeViewModel
 import uz.malika.erp.features.finance.ui.components.rememberAsync
+import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Management dashboard (route `dashboard`, auth-only). Each section is gated by
@@ -38,8 +39,8 @@ fun DashboardScreen(container: AppContainer) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= 800.dp
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Tokens.Space.screenH),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.section),
         ) {
             QuickActions(container.featureNav::open)
             if (can("report.finance")) KpiSection(vm)
@@ -49,7 +50,7 @@ fun DashboardScreen(container: AppContainer) {
                 if (can("consignment.read")) add { OverdueCard(vm) }
             }
             if (wide && tables.size == 2) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.section), verticalAlignment = Alignment.Top) {
                     Column(Modifier.weight(1f)) { tables[0]() }
                     Column(Modifier.weight(1f)) { tables[1]() }
                 }

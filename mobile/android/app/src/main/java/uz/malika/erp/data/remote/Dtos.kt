@@ -42,6 +42,7 @@ data class ChangesResponse(
 data class DeviceSyncDto(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val statusCode: String,
     val version: Int,
     val targetPrice: JsonElement? = null,

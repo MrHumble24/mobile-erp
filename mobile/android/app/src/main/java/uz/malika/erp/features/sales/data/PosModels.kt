@@ -9,6 +9,7 @@ import uz.malika.erp.data.local.DeviceEntity
 data class ScannedDevice(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val version: Int,
     val statusCode: String,
     val modelLabel: String,
@@ -20,6 +21,7 @@ data class ScannedDevice(
         fun fromCache(d: DeviceEntity) = ScannedDevice(
             id = d.id,
             imei = d.imei,
+            imei2 = d.imei2,
             version = d.version,
             statusCode = d.statusCode,
             modelLabel = "${d.modelBrand} ${d.modelName}".trim(),
@@ -29,6 +31,7 @@ data class ScannedDevice(
         fun fromDto(d: DeviceByImeiDto) = ScannedDevice(
             id = d.id,
             imei = d.imei,
+            imei2 = d.imei2,
             version = d.version,
             statusCode = d.statusCode,
             modelLabel = "${d.model.brand} ${d.model.name}".trim(),

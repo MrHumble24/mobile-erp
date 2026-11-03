@@ -40,7 +40,10 @@ fun ConsignmentCard(
             Column(Modifier.weight(1f)) {
                 Text(item.partnerShopName.ifBlank { "—" }, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(item.imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.mutedForeground)
-            }
+                item.imei2?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.mutedForeground)
+                }
+}
             StatusChip(statusLabel(item.statusCode, t), color = consignmentStatusColor(item.statusCode))
         }
 

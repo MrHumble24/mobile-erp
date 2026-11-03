@@ -1,5 +1,4 @@
 package uz.malika.erp.features.inventory.ui
-import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -29,17 +29,15 @@ import androidx.compose.material3.Text
 import uz.malika.erp.app.FeatureNav
 import uz.malika.erp.features.inventory.data.DeviceListItem
 import uz.malika.erp.features.inventory.data.DeviceStatusMeta
-import uz.malika.erp.features.inventory.data.DeviceModelView
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.DevicesViewModel
-import uz.malika.erp.features.inventory.model.FALLBACK_STORAGES
 import uz.malika.erp.features.inventory.model.StockAlertsViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.AppCard
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.FilterButton
 import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.shared.ui.Toaster
@@ -68,6 +66,8 @@ fun DevicesTab(
     val lowStock by alertsVm.lowStock.collectAsState()
     val models = catalogVm.models.collectAsState().value.valueOrNull ?: emptyList()
     var openImei by remember { mutableStateOf<String?>(null) }
+    var showFilters by remember { mutableStateOf(false) }
+    val activeFilters = listOf(filter.modelId != null, filter.storage != null).count { it }
 
     // Incoming cross-feature arg (e.g. another screen opening a device) seeds the sheet.
     LaunchedEffect(Unit) { featureNav.consumeArg("inventory")?.let { openImei = it } }
@@ -99,22 +99,18 @@ fun DevicesTab(
             )
             Spacer(Modifier.height(12.dp))
             Column(Modifier.weight(1f).padding(horizontal = Tokens.Space.screenH)) {
-                ScannerField(
-                    onScan = devicesVm::setSearch,
-                    placeholder = t("inventory.scanOrSearch", null),
-                    autofocus = false,
-                )
-                Spacer(Modifier.height(8.dp))
-                FilterRow(
-                    selectedModel = filter.modelId,
-                    selectedStorage = filter.storage,
-                    models = models,
-                    isEmpty = filter.isEmpty,
-                    onModel = devicesVm::setModel,
-                    onStorage = devicesVm::setStorage,
-                    onClear = devicesVm::clear,
-                )
-                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f)) {
+                        ScannerField(
+                            onScan = devicesVm::setSearch,
+                            placeholder = t("inventory.scanOrSearch", null),
+                            autofocus = false,
+                        )
+                    }
+                    Spacer(Modifier.width(Tokens.Space.gap))
+                    FilterButton(activeCount = activeFilters, onClick = { showFilters = true })
+                }
+                Spacer(Modifier.height(Tokens.Space.gap))
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     if (wide) {
                         Row(Modifier.fillMaxSize()) {
@@ -140,6 +136,19 @@ fun DevicesTab(
             }
         }
     }
+
+    if (showFilters) {
+        DeviceFilterSheet(
+            selectedModel = filter.modelId,
+            selectedStorage = filter.storage,
+            models = models,
+            canReset = activeFilters > 0,
+            onModel = devicesVm::setModel,
+            onStorage = devicesVm::setStorage,
+            onReset = devicesVm::clearFilters,
+            onDismiss = { showFilters = false },
+        )
+    }
 }
 
 @Composable
@@ -148,55 +157,10 @@ private fun DeviceList(list: List<DeviceListItem>, emptyMessage: String, onOpen:
         EmptyView(message = emptyMessage)
         return
     }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
         items(list, key = { it.id }) { device ->
             DeviceRow(device = device, onClick = { onOpen(device.imei) })
         }
-    }
-}
-
-@Composable
-private fun FilterRow(
-    selectedModel: String?,
-    selectedStorage: String?,
-    models: List<DeviceModelView>,
-    isEmpty: Boolean,
-    onModel: (String?) -> Unit,
-    onStorage: (String?) -> Unit,
-    onClear: () -> Unit,
-) {
-    val t = LocalT.current
-    Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        AppSelect(
-            value = models.firstOrNull { it.id == selectedModel },
-            options = models,
-            optionLabel = { it.label },
-            onSelect = { onModel(it?.id) },
-            label = t("inventory.filterModel", null),
-            nullOption = t("inventory.allModels", null),
-            modifier = Modifier.weight(1f),
-        )
-        AppSelect(
-            value = selectedStorage?.takeIf { it in FALLBACK_STORAGES },
-            options = FALLBACK_STORAGES,
-            optionLabel = { it },
-            onSelect = onStorage,
-            label = t("inventory.filterStorage", null),
-            nullOption = t("inventory.allStorages", null),
-            modifier = Modifier.weight(1f),
-        )
-    }
-    if (!isEmpty) {
-        Spacer(Modifier.height(8.dp))
-        PillButton(
-            text = t("inventory.clearFilters", null),
-            onClick = onClear,
-            variant = ButtonVariant.GHOST,
-        )
     }
 }
 
@@ -212,6 +176,9 @@ private fun DeviceRow(device: DeviceListItem, onClick: () -> Unit) {
                     device.imei + suffix,
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
                 )
+                device.imei2?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.slate)
+                }
             }
             StatusChip(
                 label = t(DeviceStatusMeta.labelKey(device.statusCode), null),

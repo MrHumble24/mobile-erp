@@ -41,5 +41,6 @@ fun PermissionMatrixTab(accessVm: AccessViewModel) {
             else if (roles[col - 1].permissionCodes.contains(perm.code)) "✓" else "—"
         },
         modifier = Modifier.fillMaxSize().padding(16.dp),
+        stackOnCompact = false,
     )
 }

@@ -33,6 +33,7 @@ import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.isCompactWidth
 import uz.malika.erp.ui.theme.Tokens
 
 /** Shipment summary + its registered devices (paginated), as a phone bottom sheet. */
@@ -132,6 +133,45 @@ fun ShipmentDetailContent(
 private fun DevicesTable(rows: List<DeviceRowDto>, modelNames: Map<String, String>) {
     val t = LocalT.current
     val showCost = rows.any { it.landedCost != null }
+    if (isCompactWidth()) {
+        Column {
+            rows.forEach { d ->
+                Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                    ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
+                    d.imei2?.takeIf { it.isNotBlank() }?.let {
+                        ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
+                    }
+                    Text(
+                        modelNames[d.modelId] ?: d.modelId,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Tokens.mutedForeground,
+                    )
+                    Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Text(
+                            "${t("common.status", null)}: ${d.statusCode}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Tokens.mutedForeground,
+                        )
+                        if (showCost && d.landedCost != null) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    "${t("shipments.avgLandedPerUnit", null)}:",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Tokens.mutedForeground,
+                                )
+                                MoneyText(
+                                    d.landedCost,
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground),
+                                )
+                            }
+                        }
+                    }
+                }
+                HorizontalDivider(color = Tokens.border)
+            }
+        }
+        return
+    }
     Column {
         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("IMEI", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1.4f))
@@ -145,6 +185,9 @@ private fun DevicesTable(rows: List<DeviceRowDto>, modelNames: Map<String, Strin
             Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1.4f)) {
                     ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
+                    d.imei2?.takeIf { it.isNotBlank() }?.let {
+                        ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
+                    }
                     Text(modelNames[d.modelId] ?: d.modelId, style = MaterialTheme.typography.bodySmall)
                 }
                 Text(d.statusCode, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))

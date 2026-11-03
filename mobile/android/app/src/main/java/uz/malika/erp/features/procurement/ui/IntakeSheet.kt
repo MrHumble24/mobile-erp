@@ -65,7 +65,11 @@ fun IntakeSheet(
     var results by remember { mutableStateOf<List<RegisteredDeviceDto>>(emptyList()) }
 
     fun add(draft: IntakeDraft) {
-        if (drafts.any { it.imei == draft.imei }) { error = t("shipments.duplicateImei", null); return }
+        // A unit is a duplicate if either of its IMEIs collides with either IMEI
+        // of an already-staged unit.
+        val newCodes = listOfNotNull(draft.imei, draft.imei2?.takeIf { it.isNotBlank() })
+        val staged = drafts.flatMap { listOfNotNull(it.imei, it.imei2?.takeIf { c -> c.isNotBlank() }) }
+        if (newCodes.any { it in staged }) { error = t("shipments.duplicateImei", null); return }
         drafts.add(draft); error = null
     }
 

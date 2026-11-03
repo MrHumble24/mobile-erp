@@ -28,6 +28,7 @@ import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppTextField
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -69,7 +70,7 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
                     if (list.isEmpty()) {
                         EmptyView(message = t("inventory.empty", null))
                     } else {
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
                             items(list, key = { it.id }) { m -> ModelRow(m) { editing = m } }
                         }
                     }

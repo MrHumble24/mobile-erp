@@ -75,6 +75,13 @@ class ConsignmentsViewModel(container: AppContainer) : ViewModel() {
 
     fun refresh() = reload(debounce = false)
 
+    /** Clear the inline search and date range (the tab is navigation, not a filter). */
+    fun clearFilters() {
+        _search.value = ""
+        _range.value = DateRange()
+        reload(debounce = false)
+    }
+
     /** Open one consignment by id (cross-feature deep link); fetched fresh. */
     fun openById(id: String) {
         viewModelScope.launch {

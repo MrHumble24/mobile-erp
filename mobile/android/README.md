@@ -55,3 +55,10 @@ The Caldera design system (near-monochrome, `client/src/app/styles/index.css`) i
 mirrored 1:1 in `ui/theme/Tokens.kt`. Fonts (Plus Jakarta Sans, Inter, Sometype
 Mono) are bundled as OFL variable TTFs in `res/font/`. Light theme only; dynamic
 color is disabled. Feature screens use the `shared/ui` kit, never raw Material styling.
+
+## Launcher icon
+Ported from the iOS brand icon (`mobile/ios/Mobile-erp/Mobile-erp/AppIcon.icon`): a
+white "M" monogram over a vertical P3 gradient (converted to sRGB `#432EBA`→`#080C1E`).
+Adaptive layers are `res/drawable/ic_launcher_{background,foreground,monochrome}.xml`;
+regenerate the legacy mipmap webps from the same vectors with
+`python3 -I <scratchpad>/android-icon/render.py` (PIL only — no SVG lib needed).

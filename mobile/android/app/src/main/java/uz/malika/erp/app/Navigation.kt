@@ -81,18 +81,21 @@ private fun AuthedShell(container: AppContainer, session: SessionViewModel, onli
         }
     }
 
+    val select: (String) -> Unit = { route ->
+        nav.navigate(route) {
+            launchSingleTop = true
+            restoreState = true
+            popUpTo(FeatureRegistry.startRoute) { saveState = true }
+        }
+    }
+    val overflow = bottomBarSplit(navItems).second
+
     CompositionLocalProvider(LocalCan provides { code -> user.can(code) }) {
         AppShell(
             navItems = navItems,
             currentRoute = currentRoute,
             online = online,
-            onSelect = { route ->
-                nav.navigate(route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(FeatureRegistry.startRoute) { saveState = true }
-                }
-            },
+            onSelect = select,
             onLogout = session::logout,
         ) { modifier ->
             NavHost(
@@ -101,6 +104,7 @@ private fun AuthedShell(container: AppContainer, session: SessionViewModel, onli
                 modifier = modifier,
             ) {
                 FeatureRegistry.features.forEach { it.register(this, nav, container) }
+                composable(MORE_ROUTE) { MoreScreen(items = overflow, onSelect = select) }
             }
         }
     }

@@ -44,12 +44,13 @@ class DevicesViewModel(private val repo: DeviceRepository) : ViewModel() {
             statusCode = if (_filter.value.statusCode == code) null else code,
         )
     }
-    fun clear() { _filter.value = DeviceFilter() }
+    /** Clears only the sheet filters (model + storage); search and status stay. */
+    fun clearFilters() { _filter.value = _filter.value.copy(modelId = null, storage = null) }
 
     suspend fun detail(imei: String): DeviceDetail = repo.detailByImei(imei)
     suspend fun history(id: String): List<DeviceHistoryEntry> = repo.history(id)
-    suspend fun update(id: String, specs: Map<String, Any>, targetPrice: Double?) =
-        repo.update(id, specs, targetPrice)
+    suspend fun update(id: String, specs: Map<String, Any>, targetPrice: Double?, imei2: String?) =
+        repo.update(id, specs, targetPrice, imei2)
     suspend fun changeStatus(id: String, toStatusCode: String, expectedVersion: Int, reason: String?) =
         repo.changeStatus(id, toStatusCode, expectedVersion, reason)
 }

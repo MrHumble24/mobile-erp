@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,7 +50,7 @@ fun AppTextField(
         isError = isError,
         singleLine = singleLine,
         shape = InputShape,
-        placeholder = placeholder?.let { { Text(it) } },
+        placeholder = placeholder?.let { { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) } },
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),

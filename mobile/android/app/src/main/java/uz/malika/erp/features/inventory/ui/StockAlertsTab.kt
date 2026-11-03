@@ -34,6 +34,7 @@ import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.StockAlertsViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
@@ -58,7 +59,7 @@ fun StockAlertsTab(
     fun nameOf(id: String) = models.firstOrNull { it.id == id }?.label ?: id
 
     Box(Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH)) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
             if (lowStock.isNotEmpty()) {
                 item { LowStockHeader() }
                 items(lowStock, key = { "low-${it.id}" }) { r -> LowStockRow(r, ::nameOf) }

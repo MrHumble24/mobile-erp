@@ -25,8 +25,8 @@ class DeviceRepository(private val api: InventoryApi, private val dao: DeviceDao
     suspend fun history(id: String): List<DeviceHistoryEntry> =
         runApi { api.deviceHistory(id).map(DeviceHistoryEntry::fromDto) }
 
-    /** Replaces specs and sets target price. A null price clears it (sent explicitly). */
-    suspend fun update(id: String, specs: Map<String, Any>, targetPrice: Double?) = runApi {
+    /** Replaces specs, target price and second IMEI. Null price/imei2 clear them (sent explicitly). */
+    suspend fun update(id: String, specs: Map<String, Any>, targetPrice: Double?, imei2: String?) = runApi {
         val body: JsonObject = buildJsonObject {
             put("specs", buildJsonObject {
                 specs.forEach { (k, v) ->
@@ -37,6 +37,7 @@ class DeviceRepository(private val api: InventoryApi, private val dao: DeviceDao
                 }
             })
             put("targetPrice", targetPrice?.let { JsonPrimitive(it) } ?: JsonNull)
+            put("imei2", imei2?.let { JsonPrimitive(it) } ?: JsonNull)
         }
         api.updateDevice(id, body)
     }

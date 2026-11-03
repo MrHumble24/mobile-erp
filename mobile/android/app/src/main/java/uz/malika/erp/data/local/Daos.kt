@@ -14,8 +14,9 @@ interface DeviceDao {
     @Query("SELECT * FROM devices ORDER BY imei ASC")
     fun watchAll(): Flow<List<DeviceEntity>>
 
-    @Query("SELECT * FROM devices WHERE imei = :imei LIMIT 1")
-    suspend fun findByImei(imei: String): DeviceEntity?
+    /** Matches either IMEI so a dual-SIM device resolves from either number. */
+    @Query("SELECT * FROM devices WHERE imei = :code OR imei2 = :code LIMIT 1")
+    suspend fun findByImei(code: String): DeviceEntity?
 
     @Upsert
     suspend fun upsertAll(rows: List<DeviceEntity>)

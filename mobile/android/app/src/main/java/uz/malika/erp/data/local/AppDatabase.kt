@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * The single Room database. Feature repositories read these cached tables with
@@ -17,7 +19,7 @@ import androidx.room.RoomDatabase
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,7 +29,19 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun syncMetaDao(): SyncMetaDao
 
     companion object {
+        /**
+         * Adds the optional second IMEI. A plain ALTER (not destructive migration)
+         * so the outbox's queued offline mutations survive the schema bump.
+         */
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE devices ADD COLUMN imei2 TEXT")
+            }
+        }
+
         fun build(context: Context): AppDatabase =
-            Room.databaseBuilder(context, AppDatabase::class.java, "malika.db").build()
+            Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
+                .addMigrations(MIGRATION_1_2)
+                .build()
     }
 }

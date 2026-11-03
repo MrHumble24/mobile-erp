@@ -71,6 +71,7 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
     fun setSearch(q: String) { _filters.value = _filters.value.copy(search = q); refresh() }
     fun setHasPurchases(v: Boolean?) { _filters.value = _filters.value.copy(hasPurchases = v); refresh() }
     fun setSort(sort: String) { _filters.value = _filters.value.copy(sort = sort); refresh() }
+    fun clearFilters() { _filters.value = CustomerFilters(); refresh() }
 
     fun loadSales(customerId: String) {
         _sales.value = CustomerSalesUi(loading = true)

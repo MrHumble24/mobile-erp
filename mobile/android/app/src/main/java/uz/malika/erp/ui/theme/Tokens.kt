@@ -138,6 +138,8 @@ object Tokens {
         val chipV = 6.dp      // status chip vertical padding
         val buttonH = 20.dp   // pill button horizontal padding
         val buttonV = 10.dp   // pill button vertical padding (→ ~40dp tall)
+        val listBottom = 24.dp     // bottom inset for a scrolling list with no FAB (breathing room above the bottom bar)
+        val fabClearance = 88.dp   // bottom inset for a list under a FAB: 56dp FAB + 16dp margin + 16dp breathing room
     }
 
     /** Minimum touch target — tighter than Material's 48dp default, ≥40dp for a11y. */

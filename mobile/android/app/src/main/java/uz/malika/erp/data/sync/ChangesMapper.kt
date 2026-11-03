@@ -18,6 +18,7 @@ object ChangesMapper {
     fun device(d: DeviceSyncDto) = DeviceEntity(
         id = d.id,
         imei = d.imei,
+        imei2 = d.imei2,
         statusCode = d.statusCode,
         version = d.version,
         targetPrice = d.targetPrice.asScalar(),

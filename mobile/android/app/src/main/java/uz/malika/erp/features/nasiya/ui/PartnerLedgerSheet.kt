@@ -1,13 +1,11 @@
 package uz.malika.erp.features.nasiya.ui
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +34,8 @@ import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
-import uz.malika.erp.shared.ui.MoneyText
+import uz.malika.erp.shared.ui.MetricGrid
+import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
@@ -106,15 +105,19 @@ private fun AgingGrid(buckets: List<AgingBucketDto>) {
     if (buckets.none { it.count > 0 }) return
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(t("partners.agingTitle", null), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            buckets.forEach { b ->
-                AppCard(modifier = Modifier.width(96.dp), padding = androidx.compose.foundation.layout.PaddingValues(10.dp)) {
-                    Text(t("partners.aging_${b.bucket}", null), style = MaterialTheme.typography.labelSmall, color = Tokens.mutedForeground)
-                    MoneyText(b.amount.money(), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-                    Text(b.count.toString(), style = MaterialTheme.typography.labelSmall, color = Tokens.mutedForeground)
+        MetricGrid(
+            perRow = 4,
+            tiles = buckets.map { b ->
+                { m ->
+                    MetricTile(
+                        t("partners.aging_${b.bucket}", null),
+                        b.amount.money(),
+                        m,
+                        subtext = b.count.toString(),
+                    )
                 }
-            }
-        }
+            },
+        )
     }
 }
 

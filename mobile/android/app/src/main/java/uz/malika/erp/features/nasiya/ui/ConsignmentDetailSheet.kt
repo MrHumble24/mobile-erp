@@ -51,6 +51,9 @@ fun ConsignmentDetailSheet(
             }
             DetailRow(t("consignments.partner", null), item.partnerShopName.ifBlank { "—" })
             DetailRow(t("consignments.device", null), item.imei, mono = true)
+            item.imei2?.takeIf { it.isNotBlank() }?.let {
+                DetailRow(t("inventory.imei2", null), it, mono = true)
+            }
             DetailRow(t("consignments.agreedPrice", null), formatMoney(item.agreedPrice.money()), mono = true)
             DetailRow(
                 t("consignments.dueDate", null),

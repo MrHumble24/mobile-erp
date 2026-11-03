@@ -7,6 +7,7 @@ enum class SaleChannel { RETAIL, B2B }
 data class Sale(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val modelLabel: String,
     val customerName: String?,
     val customerPhone: String?,
@@ -24,6 +25,7 @@ data class Sale(
 fun SaleDto.toDomain() = Sale(
     id = id,
     imei = device.imei,
+    imei2 = device.imei2,
     modelLabel = "${device.model.brand} ${device.model.name}".trim(),
     customerName = customer?.name,
     customerPhone = customer?.phone,

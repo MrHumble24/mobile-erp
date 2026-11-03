@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.inventory.data.AttributeDef
 import uz.malika.erp.features.inventory.data.AttributeType
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.ui.AdaptiveInputs
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -90,21 +91,28 @@ private fun AttributeRow(
 ) {
     val t = LocalT.current
     AppCard {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AppFormField(
-                label = t("inventory.attrLabel", null),
-                value = attr.label,
-                onValueChange = { onChanged(attr.copy(label = it)) },
-                modifier = Modifier.weight(1f),
-            )
-            AppFormField(
-                label = t("inventory.attrKey", null),
-                value = attr.key,
-                onValueChange = { onChanged(attr.copy(key = it)) },
-                enabled = !keyLocked,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        AdaptiveInputs(
+            fields = listOf(
+                { m ->
+                    AppFormField(
+                        label = t("inventory.attrLabel", null),
+                        value = attr.label,
+                        onValueChange = { onChanged(attr.copy(label = it)) },
+                        modifier = m,
+                    )
+                },
+                { m ->
+                    AppFormField(
+                        label = t("inventory.attrKey", null),
+                        value = attr.key,
+                        onValueChange = { onChanged(attr.copy(key = it)) },
+                        enabled = !keyLocked,
+                        modifier = m,
+                    )
+                },
+            ),
+            spacing = 8.dp,
+        )
         Spacer(Modifier.height(8.dp))
         AppSelect(
             value = attr.type,

@@ -34,6 +34,7 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /** Detail view for one sale: facts, the printable receipt, the device link, and the return flow. */
@@ -62,6 +63,13 @@ fun SaleDetailSheet(
             StatusChip(
                 if (retail) t("sales.channelRetail", null) else t("sales.channelB2B", null),
                 color = if (retail) Tokens.signalBlue else Tokens.warning,
+            )
+        }
+        sale.imei2?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                "${t("inventory.imei2", null)}: $it",
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+                color = Tokens.mutedForeground,
             )
         }
         Spacer(Modifier.height(12.dp))

@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,11 +20,15 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * A thin themed table for tabular screens (sales, reports). Horizontally
- * scrollable so it survives narrow widths. For simple vertical lists prefer a
- * `LazyColumn` of [AppCard]s; use this when columns matter. Each column has a
+ * A thin themed table for tabular screens (sales, reports). On wide windows it
+ * is a horizontally scrollable column grid; on compact width ([isCompactWidth])
+ * each record stacks as a two-line row — the first column as primary text, the
+ * rest as labelled values — so nothing clips on a phone. Pass
+ * [stackOnCompact] = false for a grid that must stay a grid (the permission
+ * matrix), which keeps horizontal scroll at every width. Each column has a
  * fixed [columnWidths] entry (dp).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun <T> AppDataTable(
     columns: List<String>,
@@ -31,7 +37,18 @@ fun <T> AppDataTable(
     cell: (row: T, columnIndex: Int) -> String,
     modifier: Modifier = Modifier,
     onRowClick: ((T) -> Unit)? = null,
+    stackOnCompact: Boolean = true,
 ) {
+    if (stackOnCompact && isCompactWidth()) {
+        Column(modifier.fillMaxWidth()) {
+            rows.forEach { row ->
+                val rowMod = if (onRowClick != null) Modifier.clickable { onRowClick(row) } else Modifier
+                StackedRecord(columns, rowMod.fillMaxWidth().padding(vertical = 12.dp)) { i -> cell(row, i) }
+                HorizontalDivider(color = Tokens.border)
+            }
+        }
+        return
+    }
     val scroll = rememberScrollState()
     Column(modifier.horizontalScroll(scroll)) {
         Row(Modifier.padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -59,6 +76,29 @@ fun <T> AppDataTable(
                 }
             }
             HorizontalDivider(color = Tokens.border)
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun StackedRecord(columns: List<String>, modifier: Modifier, cell: (Int) -> String) {
+    Column(modifier) {
+        Text(cell(0), style = MaterialTheme.typography.bodyMedium, color = Tokens.foreground)
+        if (columns.size > 1) {
+            FlowRow(
+                Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                for (i in 1 until columns.size) {
+                    Text(
+                        "${columns[i]}: ${cell(i)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Tokens.mutedForeground,
+                    )
+                }
+            }
         }
     }
 }

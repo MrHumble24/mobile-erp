@@ -2,8 +2,10 @@ package uz.malika.erp.features.nasiya.ui
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,8 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,9 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -38,26 +45,25 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.Csv
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.shareTextFile
-import uz.malika.erp.shared.ui.AppDateRangeField
-import uz.malika.erp.shared.ui.AppTextField
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.Loading
+import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Consignments with Out / Overdue / Settled / Returned / All tabs, search, a
- * date range, summary tiles and CSV export. Each OUT row offers settle/return;
- * `consignment.create` holders can consign a device. Offline writes are parked
- * in the outbox (pending marker). The detail sheet links to the device (POS /
- * inventory) and the resulting sale through cross-feature navigation.
+ * Consignments with Out / Overdue / Settled / Returned / All tabs (navigation),
+ * inline search, summary tiles and a filter sheet holding the date range. New
+ * consignment and CSV export are compact icon actions. Each OUT row offers
+ * settle/return; `consignment.create` holders can consign. Offline writes are
+ * parked in the outbox (pending marker). The detail sheet links to the device
+ * (POS / inventory) and the resulting sale through cross-feature navigation.
  */
 @Composable
 fun ConsignmentsScreen(container: AppContainer) {
@@ -74,6 +80,7 @@ fun ConsignmentsScreen(container: AppContainer) {
     val pending by vm.pendingCount.collectAsState()
     val deepLinked by vm.deepLinked.collectAsState()
 
+    var showFilters by remember { mutableStateOf(false) }
     var createOpen by remember { mutableStateOf(false) }
     var detailFor by remember { mutableStateOf<ConsignmentViewDto?>(null) }
     var settleFor by remember { mutableStateOf<ConsignmentViewDto?>(null) }
@@ -87,15 +94,34 @@ fun ConsignmentsScreen(container: AppContainer) {
         deepLinked?.let { detailFor = it; vm.clearDeepLink() }
     }
 
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (can("consignment.create")) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                PillButton(t("consignments.newConsignment", null), onClick = { createOpen = true })
-            }
-        }
+    val activeFilters = if (range.startMillis != null || range.endMillis != null) 1 else 0
 
-        if (pending > 0) {
-            StatusChip("${t("common.loading", null)} · $pending", color = Tokens.warning)
+    Column(
+        Modifier.fillMaxSize().padding(Tokens.Space.section),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.section),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            if (pending > 0) {
+                StatusChip("${t("common.loading", null)} · $pending", color = Tokens.warning)
+            }
+            Spacer(Modifier.weight(1f))
+            if (can("consignment.create")) {
+                IconButton(onClick = { createOpen = true }) {
+                    Icon(Icons.Outlined.Add, contentDescription = t("consignments.newConsignment", null), tint = Tokens.foreground)
+                }
+            }
+            OverflowMenu(csvEnabled = state.page.items.isNotEmpty()) {
+                val headers = listOf(
+                    t("consignments.partner", null),
+                    t("consignments.device", null),
+                    t("consignments.agreedPrice", null),
+                    t("consignments.dueDate", null),
+                    t("common.status", null),
+                    t("consignments.daysOverdue", null),
+                )
+                val csv = Csv.build(headers, consignmentCsvRows(state.page.items))
+                shareTextFile(context, "consignments.csv", csv, chooserTitle = t("consignments.exportCsv", null))
+            }
         }
 
         Row(Modifier.horizontalScroll(rememberScrollState())) {
@@ -112,45 +138,30 @@ fun ConsignmentsScreen(container: AppContainer) {
             )
         }
 
-        AppTextField(
-            value = search,
-            onValueChange = vm::setSearch,
+        SearchFilterRow(
+            query = search,
+            onQueryChange = vm::setSearch,
             placeholder = t("consignments.searchPlaceholder", null),
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            activeCount = activeFilters,
+            onOpenFilters = { showFilters = true },
         )
 
-        AppDateRangeField(label = t("common.date", null), range = range, onPick = vm::setRange)
-
         state.stats?.let { s ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), money = false, modifier = Modifier.weight(1f))
-                MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), money = false, modifier = Modifier.weight(1f))
-                MetricTile(
-                    t("consignments.statsOverdue", null),
-                    s.overdueCount.toString(),
-                    money = false,
-                    emphasis = if (s.overdueCount > 0) Tokens.destructive else null,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        if (state.page.items.isNotEmpty()) {
-            PillButton(
-                t("consignments.exportCsv", null),
-                onClick = {
-                    val headers = listOf(
-                        t("consignments.partner", null),
-                        t("consignments.device", null),
-                        t("consignments.agreedPrice", null),
-                        t("consignments.dueDate", null),
-                        t("common.status", null),
-                        t("consignments.daysOverdue", null),
-                    )
-                    val csv = Csv.build(headers, consignmentCsvRows(state.page.items))
-                    shareTextFile(context, "consignments.csv", csv, chooserTitle = t("consignments.exportCsv", null))
-                },
-                variant = ButtonVariant.OUTLINE,
+            MetricGrid(
+                perRow = 3,
+                tiles = listOf(
+                    { m -> MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), m, money = false) },
+                    { m -> MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), m, money = false) },
+                    { m ->
+                        MetricTile(
+                            t("consignments.statsOverdue", null),
+                            s.overdueCount.toString(),
+                            m,
+                            money = false,
+                            emphasis = if (s.overdueCount > 0) Tokens.destructive else null,
+                        )
+                    },
+                ),
             )
         }
 
@@ -158,7 +169,7 @@ fun ConsignmentsScreen(container: AppContainer) {
             state.loading -> Loading()
             state.error != null -> ErrorView(state.error!!, retryLabel = t("common.retry", null), onRetry = vm::refresh)
             state.page.items.isEmpty() -> EmptyView(t("consignments.noConsignmentsFound", null))
-            else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
                 items(state.page.items, key = { it.id }) { item ->
                     ConsignmentCard(
                         item = item,
@@ -174,6 +185,15 @@ fun ConsignmentsScreen(container: AppContainer) {
         }
     }
 
+    if (showFilters) {
+        ConsignmentFilterSheet(
+            range = range,
+            onRange = vm::setRange,
+            canReset = activeFilters > 0 || search.isNotBlank(),
+            onReset = vm::clearFilters,
+            onDismiss = { showFilters = false },
+        )
+    }
     if (createOpen) ConsignDeviceSheet(container, lockedPartnerId = null, lockedPartnerName = null) {
         createOpen = false
         vm.refresh()
@@ -190,4 +210,23 @@ fun ConsignmentsScreen(container: AppContainer) {
     }
     settleFor?.let { c -> SettleConsignmentSheet(container, c) { settleFor = null; vm.refresh() } }
     returnFor?.let { c -> ReturnConsignmentSheet(container, c) { returnFor = null; vm.refresh() } }
+}
+
+/** Overflow menu carrying the CSV export (enabled only when there are rows). */
+@Composable
+private fun OverflowMenu(csvEnabled: Boolean, onCsv: () -> Unit) {
+    val t = LocalT.current
+    var menu by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { menu = true }) {
+            Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
+        }
+        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            DropdownMenuItem(
+                text = { Text(t("consignments.exportCsv", null)) },
+                enabled = csvEnabled,
+                onClick = { menu = false; onCsv() },
+            )
+        }
+    }
 }

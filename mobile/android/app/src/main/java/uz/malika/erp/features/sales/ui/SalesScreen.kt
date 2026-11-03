@@ -1,6 +1,5 @@
 package uz.malika.erp.features.sales.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -15,9 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.VerifiedUser
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.delay
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.Destination
 import uz.malika.erp.app.LocalCan
@@ -52,13 +56,14 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.shareTextFile
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppCard
-import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MoneyText
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
@@ -86,19 +91,43 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     var selected by remember { mutableStateOf<Sale?>(null) }
     var returnSaleId by remember { mutableStateOf<String?>(null) }
     var warrantySheet by remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf(false) }
+    var search by remember { mutableStateOf("") }
+    var range by remember { mutableStateOf(DateRange()) }
 
     LaunchedEffect(canReadUsers) { if (canReadUsers) vm.loadCashiers() }
+    LaunchedEffect(search) {
+        delay(300)
+        vm.setSearch(search.trim().takeIf { it.isNotBlank() })
+    }
+
+    val activeFilters = listOf(
+        filters.channel != null,
+        filters.returned != null,
+        filters.warranty != null,
+        filters.soldById != null,
+        filters.from != null,
+    ).count { it }
 
     val items = listUi.state.items
     val listColumn: @Composable (Modifier) -> Unit = { mod ->
         // Whole screen scrolls: the header (CSV + stats + filters) rides in the
         // list as item 0, so tall stat/filter blocks never push the rows off-screen.
-        LazyColumn(mod.fillMaxSize()) {
+        LazyColumn(mod.fillMaxSize(), contentPadding = listBottomPadding(fab = true)) {
             item {
-                Column(Modifier.padding(16.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                        PillButton(
-                            text = t("sales.exportCsv", null),
+                Column(Modifier.padding(Tokens.Space.section)) {
+                    stats?.let { SalesSummary(it); Spacer(Modifier.height(Tokens.Space.section)) }
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        SearchFilterRow(
+                            query = search,
+                            onQueryChange = { search = it },
+                            placeholder = t("sales.filterSearch", null),
+                            activeCount = activeFilters,
+                            onOpenFilters = { showFilters = true },
+                            modifier = Modifier.weight(1f),
+                        )
+                        Spacer(Modifier.width(Tokens.Space.gap))
+                        IconButton(
                             onClick = {
                                 shareTextFile(
                                     context,
@@ -106,18 +135,11 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                                     salesCsv(items, includeProfit = items.any { it.netProfit != null }),
                                 )
                             },
-                            variant = ButtonVariant.OUTLINE,
                             enabled = items.isNotEmpty(),
-                        )
+                        ) {
+                            Icon(Icons.Outlined.FileDownload, contentDescription = t("sales.exportCsv", null), tint = Tokens.foreground)
+                        }
                     }
-                    Spacer(Modifier.height(12.dp))
-                    stats?.let { SalesSummary(it); Spacer(Modifier.height(12.dp)) }
-                    SalesFiltersBar(
-                        vm = vm,
-                        values = SalesFilterValues(filters.channel, filters.returned, filters.warranty, filters.soldById),
-                        canReadUsers = canReadUsers,
-                        cashiers = cashiers,
-                    )
                 }
             }
             when {
@@ -160,6 +182,10 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                         onClick = { warrantySheet = true },
                         icon = { Icon(Icons.Outlined.VerifiedUser, contentDescription = null) },
                         text = { Text(t("sales.warrantyLookup", null)) },
+                        containerColor = Tokens.primary,
+                        contentColor = Tokens.primaryForeground,
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                        shape = RoundedCornerShape(14.dp),
                     )
                 },
             ) { pad -> listColumn(Modifier.padding(pad)) }
@@ -198,6 +224,20 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     returnSaleId?.let { id ->
         ReturnDialog(vm, id, online, container.toaster) { returnSaleId = null }
     }
+
+    if (showFilters) {
+        SalesFilterSheet(
+            vm = vm,
+            values = SalesFilterValues(filters.channel, filters.returned, filters.warranty, filters.soldById),
+            canReadUsers = canReadUsers,
+            cashiers = cashiers,
+            range = range,
+            onRangeChange = { range = it },
+            canReset = activeFilters > 0 || search.isNotBlank(),
+            onReset = { search = ""; range = DateRange(); vm.clearFilters() },
+            onDismiss = { showFilters = false },
+        )
+    }
 }
 
 @Composable
@@ -208,6 +248,9 @@ private fun SaleRow(sale: Sale, t: uz.malika.erp.i18n.Translate, onClick: () -> 
             Column(Modifier.weight(1f)) {
                 Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall)
                 Text(sale.imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+                sale.imei2?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.mutedForeground)
+                }
                 Text(
                     "${sale.customerName ?: t("pos.walkIn", null)} · ${formatDate(sale.soldAt)}",
                     style = MaterialTheme.typography.bodySmall,

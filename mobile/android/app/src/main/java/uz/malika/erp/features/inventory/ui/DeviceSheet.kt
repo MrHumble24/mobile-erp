@@ -25,9 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.i18n.Translate
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.DeviceDetail
 import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
@@ -124,17 +126,9 @@ private fun DeviceSheetBody(
                     device.modelLabel.ifEmpty { t("inventory.imeiDetails", null) },
                     style = MaterialTheme.typography.titleLarge,
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "IMEI: ${device.imei}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
-                    )
-                    IconButton(onClick = {
-                        clipboard.setText(AnnotatedString(device.imei))
-                        toaster.success("${t("inventory.imeiCopied", null)}: ${device.imei}")
-                    }) {
-                        Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null))
-                    }
+                ImeiCopyRow("IMEI", device.imei, clipboard, toaster, t)
+                device.imei2?.takeIf { it.isNotBlank() }?.let {
+                    ImeiCopyRow(t("inventory.imei2", null), it, clipboard, toaster, t)
                 }
             }
             if (canUpdate) {
@@ -198,6 +192,29 @@ private fun DeviceSheetBody(
                 online = online,
                 onSaved = { showEdit = false; onChanged() },
             )
+        }
+    }
+}
+
+/** One labelled IMEI line in the mono face with a copy-to-clipboard button. */
+@Composable
+private fun ImeiCopyRow(
+    label: String,
+    value: String,
+    clipboard: ClipboardManager,
+    toaster: Toaster,
+    t: Translate,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            "$label: $value",
+            style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+        )
+        IconButton(onClick = {
+            clipboard.setText(AnnotatedString(value))
+            toaster.success("${t("inventory.imeiCopied", null)}: $value")
+        }) {
+            Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null))
         }
     }
 }

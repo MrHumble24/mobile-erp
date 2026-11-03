@@ -120,6 +120,7 @@ data class ConsignmentViewDto(
     val partnerShopName: String = "",
     val deviceId: String = "",
     val imei: String,
+    val imei2: String? = null,
     val agreedPrice: JsonElement? = null,
     val dueDate: String,
     val statusCode: String,

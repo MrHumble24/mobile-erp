@@ -6,10 +6,24 @@ The Inventory slice group, ported from the web `pages/inventory` +
 gated by `device.read`).
 
 ## Owns
-- **Devices**: offline-first list (Room mirror) with scan/search + model/storage/
-  status filters, metrics bar, and a detail sheet (specs, QC, status history,
+- **Devices**: offline-first list (Room mirror). The main screen stays uncluttered:
+  the metrics bar (each card is a status filter when tapped), an inline scan/search
+  field beside a `FilterButton` (shared `SearchFilterRow` pattern — the scanner keeps
+  its camera affordance, so the row is hand-built), and the list. Model + storage
+  filters live in `DeviceFilterSheet` (shared `FilterSheet`); the button badge counts
+  non-default sheet filters and reset calls `DevicesViewModel.clearFilters()`. There is
+  a detail sheet (specs, QC, status history,
   barcode). Edit specs + target price and manual status transitions (ADR 0012)
-  are online-only writes. Margin row shows only when landed cost is present
+  are online-only writes. An optional **IMEI 2** (dual-SIM) shows as a secondary
+  mono line in list rows and as its own copy-able line in the detail sheet when
+  present; it is editable in `EditDeviceSheet` behind a **Dual SIM** toggle
+  (`inventory.dualSim`) that defaults ON when `device.imei2` is set. On ⇒ the
+  IMEI 2 field is required (15 digits, ≠ IMEI via shared `isImei`); off ⇒ the
+  save sends an explicit `null` to clear it. Search matches either IMEI.
+  The device cache carries `imei2` (Room schema v2, `MIGRATION_1_2` — a plain ALTER
+  so the outbox survives) and `DeviceDao.findByImei` matches `imei OR imei2`, so a
+  scan of the second number resolves the device everywhere (POS, warranty,
+  consignment). Margin row shows only when landed cost is present
   (cost is redacted → null for under-privileged users).
   - Detail actions: "Sell in POS" (`IN_STOCK` + `sale.create`) and "Run QC"
     (`IN_STOCK`/`DEFECTIVE` + `qc.create`) hand off to POS/QC via

@@ -6,15 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PersonAddAlt1
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,38 +28,55 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.admin.data.UserDto
 import uz.malika.erp.features.admin.model.AccessViewModel
+import uz.malika.erp.features.admin.model.Async
 import uz.malika.erp.features.admin.model.UsersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
-import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.LoadMoreFooter
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
-/** Users list: summary, filters, create, and a tappable card per user → detail sheet. */
+/** Users list: summary, inline search + filter sheet, create, and a tappable card per user → detail sheet. */
 @Composable
 fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessViewModel) {
     val t = LocalT.current
     val online by container.connectivity.online.collectAsStateWithLifecycle()
     val users by usersVm.users.collectAsStateWithLifecycle()
+    val filters by usersVm.filters.collectAsStateWithLifecycle()
+    val roles by accessVm.roles.collectAsStateWithLifecycle()
+    val roleList = (roles as? Async.Ok)?.value.orEmpty()
     var createOpen by remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf(false) }
     var detail by remember { mutableStateOf<UserDto?>(null) }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+    val activeFilters = listOf(filters.role != null, filters.active != null).count { it }
+
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = listBottomPadding()) {
         item { UsersSummary(usersVm) }
-        item { Spacer(Modifier.height(12.dp)) }
-        item { UserFilters(usersVm, accessVm) }
+        item { Spacer(Modifier.height(Tokens.Space.section)) }
         item {
-            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-                PillButton(
-                    text = t("users.newUser", null),
-                    onClick = { createOpen = true },
-                    enabled = online,
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.section),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SearchFilterRow(
+                    query = filters.search,
+                    onQueryChange = usersVm::setSearch,
+                    placeholder = t("users.filterSearch", null),
+                    activeCount = activeFilters,
+                    onOpenFilters = { showFilters = true },
+                    modifier = Modifier.weight(1f),
                 )
+                Spacer(Modifier.width(Tokens.Space.gap))
+                IconButton(onClick = { createOpen = true }, enabled = online) {
+                    Icon(Icons.Outlined.PersonAddAlt1, contentDescription = t("users.newUser", null), tint = Tokens.foreground)
+                }
             }
         }
+        item { Spacer(Modifier.height(Tokens.Space.gap)) }
         item {
             AsyncContent(users, onRetry = usersVm::load) { page ->
                 UsersList(page.items, onOpen = { detail = it })
@@ -69,6 +85,18 @@ fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessV
         }
     }
 
+    if (showFilters) {
+        UserFilterSheet(
+            active = filters.active,
+            role = filters.role,
+            roles = roleList,
+            onActive = usersVm::setActive,
+            onRole = usersVm::setRole,
+            canReset = activeFilters > 0 || filters.search.isNotBlank(),
+            onReset = usersVm::reset,
+            onDismiss = { showFilters = false },
+        )
+    }
     if (createOpen) {
         CreateUserDialog(accessVm, usersVm, online, onDismiss = { createOpen = false })
     }
@@ -84,7 +112,7 @@ private fun UsersList(list: List<UserDto>, onOpen: (UserDto) -> Unit) {
         EmptyView(t("common.notFound", null))
         return
     }
-    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.padding(horizontal = Tokens.Space.section), verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
         list.forEach { user -> UserCard(user, onClick = { onOpen(user) }) }
     }
 }
@@ -98,13 +126,13 @@ private fun UserCard(user: UserDto, onClick: () -> Unit) {
                 Text(user.displayName, style = MaterialTheme.typography.titleMedium)
                 Text(user.email, style = MaterialTheme.typography.bodySmall)
                 if (user.roles.isNotEmpty()) {
-                    Spacer(Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Spacer(Modifier.height(Tokens.Space.rowV))
+                    Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.rowV)) {
                         user.roles.take(3).forEach { StatusChip(it, color = Tokens.slate) }
                     }
                 }
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(Tokens.Space.section))
             StatusChip(
                 label = if (user.isActive) t("users.statusActive", null) else t("users.statusInactive", null),
                 color = if (user.isActive) Tokens.success else Tokens.danger,

@@ -57,6 +57,7 @@ interface InventoryApi {
 data class DeviceDetailDto(
     val id: String,
     val imei: String,
+    val imei2: String? = null,
     val modelId: String,
     val statusCode: String,
     val version: Int,

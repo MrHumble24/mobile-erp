@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,12 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.ShipmentDto
+import uz.malika.erp.features.procurement.model.AsyncContent
+import uz.malika.erp.features.procurement.model.AsyncValue
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
-import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.ui.theme.Tokens
 
 /** Below this width the detail opens as a bottom sheet; at/above it, a side pane. */
@@ -45,16 +44,17 @@ private const val TABLET_MIN_DP = 720
 /**
  * Shipments list with adaptive detail: a bottom sheet on phones, a master-detail
  * side pane on tablets (≥ [TABLET_MIN_DP]dp). [onOpenSheet] drives the phone path.
+ * Search, summary and the Add action live one level up on the screen.
  */
 @Composable
 fun ShipmentsMasterDetail(
-    shipments: List<ShipmentDto>,
+    state: AsyncValue<List<ShipmentDto>>,
     supplierNames: Map<String, String>,
     modelNames: Map<String, String>,
     canManage: Boolean,
     canCreate: Boolean,
     repo: ProcurementRepository,
-    onNew: () -> Unit,
+    onRetry: () -> Unit,
     onEdit: (ShipmentDto) -> Unit,
     onContinueIntake: (ShipmentDto) -> Unit,
     onOpenSheet: (ShipmentDto) -> Unit,
@@ -62,14 +62,15 @@ fun ShipmentsMasterDetail(
     val t = LocalT.current
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (maxWidth < TABLET_MIN_DP.dp) {
-            ShipmentsTab(shipments, supplierNames, canManage, onNew, onOpenSheet)
+            ShipmentsList(state, supplierNames, onRetry, onOpenSheet)
             return@BoxWithConstraints
         }
         var selectedId by remember { mutableStateOf<String?>(null) }
-        val selected = shipments.firstOrNull { it.id == selectedId }
+        val list = (state as? AsyncValue.Data)?.value.orEmpty()
+        val selected = list.firstOrNull { it.id == selectedId }
         Row(Modifier.fillMaxSize()) {
             Box(Modifier.weight(1f).fillMaxHeight()) {
-                ShipmentsTab(shipments, supplierNames, canManage, onNew, onOpen = { selectedId = it.id })
+                ShipmentsList(state, supplierNames, onRetry, onOpen = { selectedId = it.id })
             }
             Box(Modifier.weight(1.3f).fillMaxHeight().verticalScroll(rememberScrollState())) {
                 if (selected == null) {
@@ -83,7 +84,7 @@ fun ShipmentsMasterDetail(
                         repo = repo,
                         onEdit = { onEdit(selected) },
                         onContinueIntake = { onContinueIntake(selected) },
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(Tokens.Space.section),
                     )
                 }
             }
@@ -91,30 +92,24 @@ fun ShipmentsMasterDetail(
     }
 }
 
-/** Shipment batches list (a tab of the Shipments screen), newest-first. */
+/** Shipment batches list (newest-first), with loading/error/empty states. */
 @Composable
-fun ShipmentsTab(
-    shipments: List<ShipmentDto>,
+private fun ShipmentsList(
+    state: AsyncValue<List<ShipmentDto>>,
     supplierNames: Map<String, String>,
-    canManage: Boolean,
-    onNew: () -> Unit,
+    onRetry: () -> Unit,
     onOpen: (ShipmentDto) -> Unit,
 ) {
     val t = LocalT.current
-    Column(Modifier.fillMaxWidth()) {
-        if (canManage) {
-            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.End) {
-                PillButton(t("shipments.newShipment", null), onNew)
-            }
-        }
-        if (shipments.isEmpty()) {
-            EmptyView(t("shipments.emptyHint", null))
+    AsyncContent(state, onRetry = onRetry) { list ->
+        if (list.isEmpty()) {
+            EmptyView(t("common.notFound", null), compact = true)
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = listBottomPadding(),
+                verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap),
             ) {
-                items(shipments, key = { it.id }) { s ->
+                items(list, key = { it.id }) { s ->
                     ShipmentCard(s, supplierNames[s.supplierId] ?: s.supplierId, onOpen)
                 }
             }
@@ -128,20 +123,17 @@ private fun ShipmentCard(shipment: ShipmentDto, supplierName: String, onOpen: (S
     AppCard(onClick = { onOpen(shipment) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(supplierName, style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(4.dp))
                 Text(
                     shipment.dateLabel + " · " + t(
                         "shipments.registeredProgress",
                         mapOf("registered" to shipment.deviceCount, "expected" to shipment.expectedCount),
                     ),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.titleMedium,
                 )
+                Spacer(Modifier.height(4.dp))
+                Text(supplierName, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
             }
-            StatusChip(
-                label = t(if (shipment.isComplete) "shipments.statusComplete" else "shipments.statusOpen", null),
-                color = if (shipment.isComplete) Tokens.success else Tokens.warning,
-            )
+            ShipmentStatusChip(shipment)
             Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Tokens.ash)
         }
     }

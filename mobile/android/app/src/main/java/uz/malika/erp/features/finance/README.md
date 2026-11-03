@@ -4,12 +4,22 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
 
 ## Owns
 - **Dashboard** (route `dashboard`, auth-only): cross-feature quick actions via
-  `container.featureNav` (POS, inventory, QC, sales, consignments — each gated by
-  its permission), KPI period toggle (`report.finance`), low-stock (`device.read`),
-  overdue consignments (`consignment.read`), model pricing (cost col `device.cost.view`).
+  `container.featureNav` rendered as a One UI shortcut row (rounded-square icon
+  tile + label; icons mirror the nav registry per route — POS, inventory, QC,
+  sales, consignments, each gated by its permission), KPI period toggle
+  (`report.finance`; net income tinted via `signedEmphasis`), low-stock
+  (`device.read`), overdue consignments (`consignment.read`), model pricing as a
+  two-line row list mirroring iOS so it fits the card with no clipped header
+  (acquisition cost `device.cost.view`). The shared `ModelPricingTable` stays for
+  the wide reports Pricing tab.
 - **Reports** (route `reports`, `report.finance`): seven tabs matching web —
-  Overview / Sales / Expenses / Nasiya / Inventory / Pricing / Closing. A shared
-  `AppDateRangeField` drives the ranged tabs. Charts are Compose-Canvas (no lib):
+  Overview / Sales / Expenses / Nasiya / Inventory / Pricing / Closing. The tab
+  pills stay inline (navigation); all filters live in one `ReportFilterSheet`
+  opened from a top-right `FilterButton`, with the active range shown as a
+  compact label beside it. The sheet holds the date-range presets (today / 7d /
+  30d / month / custom) and, on Sales/Expenses, that tab's group-by selector
+  (hoisted into the screen). Shown only on the ranged tabs. Charts are
+  Compose-Canvas (no lib):
   `TrendLineChart` (multi-series) + `BreakdownBars` (ranked horizontal bars with
   share, top-N capped) + `NoiWaterfall` (Canvas NOI waterfall). Tapping a tile or
   bar opens a breakdown drill-down: the data-driven `ReportDrillSheet` (model/

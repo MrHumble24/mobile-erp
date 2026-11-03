@@ -44,3 +44,10 @@ same partner mirror — so there is no cross-slice import to duplicate.
   via `featureNav.consumeArg`, fetching that row by id.
 - Reuses kit `AppDateRangeField`/`MetricTile`; `CreditBar`, `PartnerPicker`,
   `DueDatePicker` (single M3 date) stay slice-local.
+- Filters live in bottom sheets, not on the screen: Partners keeps search inline
+  (`SearchFilterRow`) with active/overdue in `PartnerFilterSheet`; Consignments
+  keeps search inline with the date range in `ConsignmentFilterSheet`. The
+  consignment status tabs stay on-screen as navigation (not a filter). New-row
+  and CSV export are compact icon actions (CSV in an overflow menu). The filter
+  button badge counts non-default filters; reset (`ConsignmentsViewModel.clearFilters`,
+  `PartnersViewModel.reset`) clears search + filters.
