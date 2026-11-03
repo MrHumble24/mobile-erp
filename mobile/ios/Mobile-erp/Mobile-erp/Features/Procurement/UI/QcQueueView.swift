@@ -15,15 +15,24 @@ struct QcQueueView: View {
     @State private var grading: ScannedImei?
 
     var body: some View {
-        content
-            .task(id: refresh) {
-                if pager == nil { pager = makePager() }
-                await loadModels()
-                await pager?.first()
-            }
-            .sheet(item: $grading, onDismiss: reload) { s in
-                GradeDeviceSheet(imei: s.imei) { onGraded() }
-            }
+        VStack(spacing: 0) {
+            ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { grading = ScannedImei(imei: $0) }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
+            content
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(i18n.t("qc.tabQueue", default: "Tekshiruv navbati"))
+        .navigationBarTitleDisplayMode(.inline)
+        .task(id: refresh) {
+            if pager == nil { pager = makePager() }
+            await loadModels()
+            await pager?.first()
+        }
+        .sheet(item: $grading, onDismiss: reload) { s in
+            GradeDeviceSheet(imei: s.imei) { onGraded() }
+        }
     }
 
     @ViewBuilder

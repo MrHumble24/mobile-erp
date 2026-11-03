@@ -1,32 +1,60 @@
 import SwiftUI
 
-/// `/qc` root — a persistent scan header over four tabs: queue, inspections,
-/// stats, lookups. Scanning an IMEI opens the grade sheet for that unit.
+/// `/qc` root — dedicated hub for Quality Control.
+/// Provides a fast IMEI scanner and dedicated sub-pages for Queue, Inspections History,
+/// QC Statistics, and Reference Data (Lookups).
 /// Mounted behind `qc.read` by the shell.
 struct QcScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-    @State private var tab: Tab = .queue
     @State private var scanned: ScannedImei?
     @State private var refresh = UUID()
 
-    private enum Tab: Hashable { case queue, inspections, stats, lookups }
-
     var body: some View {
-        VStack(spacing: 0) {
-            ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { scanned = ScannedImei(imei: $0) }
-                .padding(.horizontal).padding(.top, 8)
+        ScrollView {
+            VStack(spacing: 16) {
+                // Quick Scan Header
+                ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { scanned = ScannedImei(imei: $0) }
 
-            Picker("", selection: $tab) {
-                Text(i18n.t("qc.tabQueue")).tag(Tab.queue)
-                Text(i18n.t("qc.tabInspections")).tag(Tab.inspections)
-                Text(i18n.t("qc.tabStats")).tag(Tab.stats)
-                Text(i18n.t("qc.tabLookups")).tag(Tab.lookups)
+                // Dedicated Sub-Pages Navigation
+                VStack(spacing: 12) {
+                    QcNavCard(
+                        title: i18n.t("qc.tabQueue", default: "Tekshiruv navbati"),
+                        subtitle: i18n.t("qc.queueSubtitle", default: "Tekshirilishi kerak bo'lgan yangi qurilmalar"),
+                        icon: "clock.badge.checkmark",
+                        iconColor: Tokens.signalBlue,
+                        destination: QcQueueView(refresh: refresh) { refresh = UUID() }
+                    )
+
+                    QcNavCard(
+                        title: i18n.t("qc.tabInspections", default: "Tekshiruvlar tarixi"),
+                        subtitle: i18n.t("qc.inspectionsSubtitle", default: "O'tkazilgan tekshiruvlar va ularning natijalari"),
+                        icon: "doc.text.magnifyingglass",
+                        iconColor: Tokens.success,
+                        destination: QcInspectionsView(refresh: refresh)
+                    )
+
+                    QcNavCard(
+                        title: i18n.t("qc.tabStats", default: "QC Statistikasi"),
+                        subtitle: i18n.t("qc.statsSubtitle", default: "Sifat ko'rsatkichlari va nuqsonlar tahlili"),
+                        icon: "chart.bar.xaxis",
+                        iconColor: Color(red: 0.55, green: 0.35, blue: 0.95),
+                        destination: QcStatsView(refresh: refresh)
+                    )
+
+                    if container.session.can("settings.manage") {
+                        QcNavCard(
+                            title: i18n.t("qc.tabLookups", default: "Ma'lumotnomalar"),
+                            subtitle: i18n.t("qc.lookupsSubtitle", default: "Holat darajalari va nuqson turlari boshqaruvi"),
+                            icon: "slider.horizontal.3",
+                            iconColor: Tokens.warning,
+                            destination: QcLookupsView()
+                        )
+                    }
+                }
             }
-            .pickerStyle(.segmented)
-            .padding()
-
-            content
+            .padding(.horizontal)
+            .padding(.vertical, 12)
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(i18n.t("nav.qc"))
@@ -49,15 +77,45 @@ struct QcScreen: View {
             scanned = ScannedImei(imei: imei)
         }
     }
+}
 
-    @ViewBuilder
-    private var content: some View {
-        switch tab {
-        case .queue: QcQueueView(refresh: refresh) { refresh = UUID() }
-        case .inspections: QcInspectionsView(refresh: refresh)
-        case .stats: QcStatsView(refresh: refresh)
-        case .lookups: QcLookupsView()
+/// A roomy, single-column navigation card linking to a dedicated sub-page.
+private struct QcNavCard<Destination: View>: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    let iconColor: Color
+    let destination: Destination
+
+    var body: some View {
+        NavigationLink(destination: destination) {
+            AppCard(padding: 16) {
+                HStack(spacing: 14) {
+                    Image(systemName: icon)
+                        .font(.title2.weight(.medium))
+                        .foregroundStyle(iconColor)
+                        .frame(width: 48, height: 48)
+                        .background(iconColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(title)
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(Tokens.ink)
+                        Text(subtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color(.tertiaryLabel))
+                }
+            }
         }
+        .buttonStyle(.plain)
     }
 }
 
