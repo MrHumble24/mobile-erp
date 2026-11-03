@@ -54,17 +54,23 @@ struct ConsignmentsView: View {
     @ViewBuilder private var content: some View {
         if let model {
             @Bindable var model = model
-            List {
-                if model.pendingCount > 0 { pendingMarker(model.pendingCount) }
-                body(model)
-            }
-            .listStyle(.plain)
-            .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
-            .onSubmit(of: .search) { Task { await model.load() } }
-            .refreshable { await model.load() }
-            .overlay {
-                if (model.isLoading || model.pager.isLoading) && model.items.isEmpty {
-                    LoadingView()
+            VStack(spacing: 0) {
+                if hasActiveFilters {
+                    activeFilterBar(model)
+                }
+
+                List {
+                    if model.pendingCount > 0 { pendingMarker(model.pendingCount) }
+                    body(model)
+                }
+                .listStyle(.insetGrouped)
+                .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
+                .onSubmit(of: .search) { Task { await model.load() } }
+                .refreshable { await model.load() }
+                .overlay {
+                    if (model.isLoading || model.pager.isLoading) && model.items.isEmpty {
+                        LoadingView()
+                    }
                 }
             }
             .sheet(isPresented: $showFilters) {
@@ -85,23 +91,31 @@ struct ConsignmentsView: View {
 
     @ViewBuilder private func body(_ model: ConsignmentsListModel) -> some View {
         if model.offline {
-            EmptyStateView(systemImage: "wifi.slash",
-                           title: i18n.t("common.offline", default: "Offline"),
-                           message: i18n.t("consignments.noConsignmentsFound"))
-                .listRowBackground(Color.clear)
+            Section {
+                EmptyStateView(systemImage: "wifi.slash",
+                               title: i18n.t("common.offline", default: "Offline"),
+                               message: i18n.t("consignments.noConsignmentsFound"))
+            }
+            .listRowBackground(Color.clear)
         } else if let error = model.error, model.items.isEmpty {
-            ErrorStateView(message: error) {
-                Task { await model.load() }
+            Section {
+                ErrorStateView(message: error) {
+                    Task { await model.load() }
+                }
             }
             .listRowBackground(Color.clear)
         } else if model.items.isEmpty && !model.isLoading && !model.pager.isLoading {
-            EmptyStateView(systemImage: "arrow.left.arrow.right",
-                           title: i18n.t("consignments.noConsignmentsFound"))
-                .listRowBackground(Color.clear)
-        } else {
             Section {
-                ForEach(model.items) { item in
-                    Button { detailId = item.id } label: {
+                EmptyStateView(systemImage: "shippingbox",
+                               title: i18n.t("consignments.noConsignmentsFound"))
+            }
+            .listRowBackground(Color.clear)
+        } else {
+            ForEach(model.items) { item in
+                Section {
+                    Button {
+                        detailId = item.id
+                    } label: {
                         ConsignmentRow(item: item,
                                        onSettle: { settleItem = item },
                                        onReturn: { returnItem = item })
@@ -127,9 +141,51 @@ struct ConsignmentsView: View {
                         }
                     }
                 }
+            }
+            Section {
                 KitLoadMoreFooter(pager: model.pager)
             }
+            .listRowBackground(Color.clear)
         }
+    }
+
+    private func activeFilterBar(_ model: ConsignmentsListModel) -> some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                    .font(.caption)
+                if model.status != .all {
+                    Text(i18n.t(model.status.labelKey))
+                        .font(.caption.weight(.semibold))
+                }
+                if model.preset != .all {
+                    Text(model.preset.labelKey.map { i18n.t($0) } ?? "")
+                        .font(.caption.weight(.semibold))
+                }
+            }
+            .foregroundStyle(Tokens.signalBlue)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Tokens.signalBlue.opacity(0.12), in: Capsule())
+
+            Spacer()
+
+            Button {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                model.reset()
+                Task { await model.load() }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark.circle.fill")
+                    Text(i18n.t("common.reset", default: "Tozalash"))
+                }
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(Color(.secondarySystemGroupedBackground))
     }
 
     private func pendingMarker(_ count: Int) -> some View {
@@ -150,7 +206,7 @@ struct ConsignmentsView: View {
             }
         }
         if let model, !model.items.isEmpty {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .secondaryAction) {
                 KitCSVShareButton(filename: "consignments.csv",
                                   label: i18n.t("consignments.exportCsv")) {
                     ConsignmentLogic.csv(model.items) { i18n.t($0) }

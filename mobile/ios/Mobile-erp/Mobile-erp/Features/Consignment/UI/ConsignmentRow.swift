@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// One consignment row: partner, IMEI (mono), agreed price, due date with a
-/// days-overdue flag, status badge, and settle/return actions for OUT items.
+/// One consignment card: status icon, partner, IMEI chip, agreed price, due date with
+/// human-friendly date format & overdue badge, status pill, and settle/return actions for OUT items.
 struct ConsignmentRow: View {
     let item: Consignment
     var onSettle: () -> Void
@@ -10,111 +10,192 @@ struct ConsignmentRow: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header Row: Status Icon + Partner Name & IMEI + Status Badge
+            HStack(alignment: .center, spacing: 12) {
+                statusIcon
+                    .frame(width: 42, height: 42)
+                    .background(statusColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.partnerShopName)
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(Tokens.ink)
+                        .lineLimit(1)
 
-                    HStack(spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "barcode.viewfinder")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(.secondary)
                         Text(item.imei)
                             .font(.mono(12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
                 }
-                Spacer()
-                statusBadge
-            }
 
-            HStack(alignment: .bottom) {
-                dueLine
                 Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(i18n.t("consignments.agreedPrice", default: "Agreed"))
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    MoneyText(value: item.agreedPrice, size: 16)
-                        .foregroundStyle(Tokens.ink)
+
+                HStack(spacing: 8) {
+                    statusBadge
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(Color(.tertiaryLabel))
                 }
             }
 
+            // Metrics Box: Due date & Agreed price with clear visual hierarchy
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(i18n.t("consignments.dueDate", default: "Muddati"))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    HStack(spacing: 5) {
+                        Image(systemName: "calendar")
+                            .font(.caption)
+                            .foregroundStyle(overdue > 0 ? Tokens.danger : .secondary)
+                        Text(formattedDate(item.dueDate))
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(overdue > 0 ? Tokens.danger : Tokens.ink)
+
+                        if overdue > 0 {
+                            Text("\(overdue)d")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(Tokens.danger)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Tokens.danger.opacity(0.12), in: Capsule())
+                        }
+                    }
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(i18n.t("consignments.agreedPrice", default: "Kelishilgan narx"))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+
+                    MoneyText(value: item.agreedPrice, size: 17)
+                        .foregroundStyle(Tokens.ink)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            // Notes if provided
+            if let notes = item.notes, !notes.trimmingCharacters(in: .whitespaces).isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "text.bubble")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text(notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+
+            // Direct action buttons for OUT items
             if item.isOut {
-                Divider().padding(.vertical, 2)
-                actions
+                HStack(spacing: 10) {
+                    Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        onSettle()
+                    } label: {
+                        Label(i18n.t("consignments.settle", default: "Settle Sale"), systemImage: "checkmark.circle.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Tokens.success)
+                    .buttonBorderShape(.capsule)
+
+                    Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        onReturn()
+                    } label: {
+                        Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(Tokens.danger)
+                    .buttonBorderShape(.capsule)
+                }
+                .buttonStyle(.borderless)
+                .padding(.top, 2)
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
     }
 
     private var overdue: Int {
         ConsignmentLogic.daysOverdue(dueDate: item.dueDate, statusCode: item.statusCode)
     }
 
-    private var dueLine: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "calendar")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(item.dueDate.prefix(10))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            if overdue > 0 {
-                HStack(spacing: 3) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .font(.system(size: 10))
-                    Text("\(overdue) \(i18n.t("consignments.daysOverdue", default: "d overdue"))")
-                        .font(.caption2.weight(.bold))
-                }
-                .foregroundStyle(Tokens.danger)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(Tokens.danger.opacity(0.12), in: Capsule())
+    private var statusIcon: some View {
+        Group {
+            switch item.statusCode {
+            case "OUT":
+                Image(systemName: "shippingbox.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Tokens.signalBlue)
+            case "SETTLED":
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Tokens.success)
+            case "RETURNED":
+                Image(systemName: "arrow.uturn.backward.circle.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Tokens.slate)
+            default:
+                Image(systemName: "doc.text")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Tokens.slate)
             }
+        }
+    }
+
+    private var statusColor: Color {
+        switch item.statusCode {
+        case "OUT": return Tokens.signalBlue
+        case "SETTLED": return Tokens.success
+        case "RETURNED": return Tokens.slate
+        default: return Tokens.slate
         }
     }
 
     private var statusBadge: some View {
-        let (label, color): (String, Color) = {
+        let label = {
             switch item.statusCode {
-            case "OUT": return (i18n.t("consignments.statusOut"), Tokens.signalBlue)
-            case "SETTLED": return (i18n.t("consignments.statusSettled"), Tokens.success)
-            case "RETURNED": return (i18n.t("consignments.statusReturned"), Tokens.slate)
-            default: return (item.statusCode, Tokens.slate)
+            case "OUT": return i18n.t("consignments.statusOut")
+            case "SETTLED": return i18n.t("consignments.statusSettled")
+            case "RETURNED": return i18n.t("consignments.statusReturned")
+            default: return item.statusCode
             }
         }()
-        return StatusBadge(label, color: color)
+        return StatusBadge(label, color: statusColor)
     }
 
-    private var actions: some View {
-        HStack(spacing: 10) {
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                onSettle()
-            } label: {
-                Label(i18n.t("consignments.settle", default: "Settle Sale"), systemImage: "checkmark.circle.fill")
-                    .font(.caption.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Tokens.success)
-            .buttonBorderShape(.capsule)
-
-            Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                onReturn()
-            } label: {
-                Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")
-                    .font(.caption.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
-            }
-            .buttonStyle(.bordered)
-            .tint(Tokens.danger)
-            .buttonBorderShape(.capsule)
+    private func formattedDate(_ raw: String) -> String {
+        let clean = String(raw.prefix(10))
+        let parts = clean.split(separator: "-")
+        guard parts.count == 3 else { return clean }
+        let year = parts[0]
+        let month = parts[1]
+        let day = parts[2]
+        let monthNames = [
+            "01": "yan", "02": "fev", "03": "mar", "04": "apr", "05": "may", "06": "iyn",
+            "07": "iyl", "08": "avg", "09": "sen", "10": "okt", "11": "noy", "12": "dek"
+        ]
+        if let m = monthNames[String(month)] {
+            return "\(day)-\(m), \(year)"
         }
-        .buttonStyle(.borderless)
+        return clean
     }
 }
