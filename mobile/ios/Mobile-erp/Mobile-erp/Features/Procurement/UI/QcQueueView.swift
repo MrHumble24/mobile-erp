@@ -86,6 +86,9 @@ private struct QueueRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.imei).font(.mono(13))
+                if let imei2 = device.imei2, !imei2.isEmpty {
+                    Text(imei2).font(.mono(11)).foregroundStyle(.tertiary)
+                }
                 Text("\(modelName) · \(device.statusCode)").font(.caption).foregroundStyle(.secondary)
             }
             Spacer()

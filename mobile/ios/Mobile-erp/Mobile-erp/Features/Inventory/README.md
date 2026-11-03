@@ -9,6 +9,14 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
   storage / status filters; online detail sheet, edit, and manual status
   transitions (ADR 0012). iPad shows a `NavigationSplitView` master-detail;
   iPhone opens the detail as a sheet.
+- Optional second IMEI (dual-SIM): `DeviceDetail.imei2` / `DeviceListItem.imei2`
+  (cached via `DeviceEntity.imei2`). List rows and the detail sheet show it when
+  present (detail uses `CopyableIMEI` for both lines); list search and the POS /
+  warranty cache lookups match either IMEI. `EditDeviceSheet` edits it behind a
+  "Dual SIM" toggle (`inventory.dualSim`, `AppSwitchStyle`), default on when
+  `device.imei2` is present: on requires it (15-digit, ≠ IMEI; empty →
+  `inventory.imei2Required`); off clears it (null on PATCH). Dual-SIM is derived
+  (`imei2 != nil`), never stored.
 - Device-sheet cross-feature actions: **Sell in POS** (`.pos(imei:)`, IN_STOCK +
   `sale.create`) and **Run QC** (`.qc(imei:)`, IN_STOCK/DEFECTIVE + `qc.create`)
   via `container.router`. The devices tab also *consumes* an incoming

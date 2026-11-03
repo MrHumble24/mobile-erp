@@ -107,16 +107,7 @@ private struct DeviceRowEditor: View {
 
     var body: some View {
         Section("\(i18n.t("consignments.device")) #\(index + 1)") {
-            if row.imei.isEmpty {
-                ScannerField(placeholder: "IMEI") { row.imei = $0 }
-            } else {
-                HStack {
-                    Text(row.imei).font(.mono(14))
-                    Spacer()
-                    Button { row.imei = "" } label: { Image(systemName: "xmark.circle.fill") }
-                        .buttonStyle(.plain).foregroundStyle(.secondary)
-                }
-            }
+            ScanOrValueField(text: $row.imei, placeholder: "IMEI")
             CaptionedField(i18n.t("consignments.agreedPrice"), text: $row.agreedPrice, mono: true, number: true)
             if canRemove {
                 Button(role: .destructive) { onRemove() } label: {

@@ -8,6 +8,7 @@ import SwiftData
 final class DeviceEntity {
     @Attribute(.unique) var id: String
     var imei: String
+    var imei2: String?
     var statusCode: String
     var version: Int
     var targetPrice: String?   // Decimal string
@@ -20,12 +21,13 @@ final class DeviceEntity {
     var inspectionNotes: String?
     var updatedAt: String
 
-    init(id: String, imei: String, statusCode: String, version: Int,
+    init(id: String, imei: String, imei2: String?, statusCode: String, version: Int,
          targetPrice: String?, specsJSON: String, modelId: String,
          modelBrand: String, modelName: String, latestSaleJSON: String?,
          gradeCode: String?, inspectionNotes: String?, updatedAt: String) {
         self.id = id
         self.imei = imei
+        self.imei2 = imei2
         self.statusCode = statusCode
         self.version = version
         self.targetPrice = targetPrice

@@ -38,3 +38,8 @@ Add both to `FeatureRegistry.all`. Nothing else in `App/` changes.
   (`patchVoid`); no slice-local HTTP client.
 - DEBUG self-check: `consignmentSelfCheck()` (overdue + period bounds), run
   from `ConsignmentsView.task`.
+
+## Dual-SIM (second IMEI)
+- `Consignment.imei2` (optional) shows under the IMEI in the consignment row and
+  detail view when present. The offline device lookup in `ConsignmentWriter`
+  matches either IMEI.

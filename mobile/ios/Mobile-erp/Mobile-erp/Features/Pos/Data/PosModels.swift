@@ -5,6 +5,7 @@ import Foundation
 struct ScannedDevice: Identifiable {
     let id: String
     let imei: String
+    let imei2: String?
     let version: Int
     let statusCode: String
     let modelLabel: String
@@ -13,12 +14,24 @@ struct ScannedDevice: Identifiable {
     var inStock: Bool { statusCode == "IN_STOCK" }
 }
 
+/// A scanned IMEI awaiting the cashier's confirmation before it joins the cart.
+/// `device` is set when the scan resolved to a sellable unit; otherwise it is nil
+/// and `errorKey` names the gate that failed (rendered in the sheet's error
+/// variant). Identifiable so it drives a `.sheet(item:)`.
+struct PendingScan: Identifiable {
+    let id = UUID()
+    let code: String
+    let device: ScannedDevice?
+    let errorKey: String?
+}
+
 /// Result of a checkout, rendered as the receipt. Built from local data so it is
 /// identical online and offline — a queued sale has no server response to await.
 struct CompletedSale: Identifiable {
     var id: String { receiptId }
     let receiptId: String
     let imei: String
+    let imei2: String?
     let modelLabel: String
     let salePrice: String
     let soldAt: Date

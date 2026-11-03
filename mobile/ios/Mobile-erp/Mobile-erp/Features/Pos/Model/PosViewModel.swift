@@ -11,6 +11,9 @@ import Observation
 final class PosViewModel {
     let cart = PosCart()
     var errorKey: String?
+    /// A scanned IMEI awaiting the cashier's confirm tap before it joins the cart
+    /// (or an error variant explaining why it can't). Drives the confirm sheet.
+    var pendingScan: PendingScan?
     var busy = false
     var completed: [CompletedSale]?
     var defaultWarrantyDays: Int?
@@ -29,16 +32,38 @@ final class PosViewModel {
         Task { defaultWarrantyDays = await repo.defaultWarrantyDays() }
     }
 
-    /// Resolve a scanned IMEI from the offline cache and add it to the cart.
+    /// Resolve a scanned IMEI from the offline cache and stage it for confirmation
+    /// (gated: exists · not already queued · in stock · not already in the cart).
+    /// Nothing enters the cart here — `confirmScan()` does, after the cashier taps
+    /// Confirm. A gate failure stages the matching error for the sheet's error
+    /// variant.
     func scan(_ raw: String) {
         guard container != nil else { return }
-        errorKey = nil
         let imei = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let found = repo.lookup(imei) else { errorKey = "common.notFound"; return }
-        if repo.pendingSoldImeis().contains(found.imei) { errorKey = "pos.alreadyQueued"; return }
-        guard found.inStock else { errorKey = "pos.deviceConflict"; return }
-        if !cart.add(found, warrantyDays: defaultWarrantyDays) { errorKey = "pos.duplicateDevice" }
+        guard let found = repo.lookup(imei) else {
+            pendingScan = PendingScan(code: imei, device: nil, errorKey: "common.notFound"); return
+        }
+        if repo.pendingSoldImeis().contains(found.imei) {
+            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.alreadyQueued"); return
+        }
+        guard found.inStock else {
+            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.deviceConflict"); return
+        }
+        if cart.lines.contains(where: { $0.device.imei == found.imei }) {
+            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.duplicateDevice"); return
+        }
+        pendingScan = PendingScan(code: imei, device: found, errorKey: nil)
     }
+
+    /// Commit the staged scan into the cart. No-op (just dismiss) for an error
+    /// variant, where `device` is nil.
+    func confirmScan() {
+        defer { pendingScan = nil }
+        guard let device = pendingScan?.device else { return }
+        cart.add(device, warrantyDays: defaultWarrantyDays)
+    }
+
+    func dismissScan() { pendingScan = nil }
 
     /// Typeahead search for an existing customer to attach.
     func searchCustomers(_ query: String) {
@@ -121,6 +146,7 @@ final class PosViewModel {
         return CompletedSale(
             receiptId: receiptId,
             imei: line.device.imei,
+            imei2: line.device.imei2,
             modelLabel: line.device.modelLabel,
             salePrice: line.price,
             soldAt: now,

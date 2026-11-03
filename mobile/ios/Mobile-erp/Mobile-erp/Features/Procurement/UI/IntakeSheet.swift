@@ -29,7 +29,10 @@ struct IntakeSheet: View {
                 Section(i18n.t("shipments.intakeDevices")) {
                     if let models {
                         LoadableView(state: models.state, retry: { Task { await models.reload() } }) { list in
-                            IntakeDeviceForm(models: list, onAdd: add)
+                            IntakeDeviceForm(models: list, onAdd: add,
+                                             isDuplicate: { code in
+                                                 drafts.contains { $0.imei == code || $0.imei2 == code }
+                                             })
                         }
                     } else {
                         LoadingView()
@@ -79,7 +82,12 @@ struct IntakeSheet: View {
     }
 
     private func add(_ draft: IntakeDraft) {
-        guard !drafts.contains(where: { $0.imei == draft.imei }) else {
+        // A new unit collides when either of its IMEIs matches either IMEI of a staged one.
+        let codes = [draft.imei, draft.imei2].compactMap { $0 }
+        let collides = drafts.contains { d in
+            codes.contains(d.imei) || (d.imei2.map(codes.contains) ?? false)
+        }
+        guard !collides else {
             error = i18n.t("shipments.duplicateImei"); return
         }
         drafts.append(draft)

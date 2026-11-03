@@ -95,7 +95,7 @@ struct ConsignmentWriter {
 
     private func device(_ imei: String) -> DeviceEntity? {
         try? context.fetch(
-            FetchDescriptor<DeviceEntity>(predicate: #Predicate { $0.imei == imei })
+            FetchDescriptor<DeviceEntity>(predicate: #Predicate { $0.imei == imei || $0.imei2 == imei })
         ).first
     }
 

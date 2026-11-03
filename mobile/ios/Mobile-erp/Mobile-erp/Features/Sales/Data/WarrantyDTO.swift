@@ -39,6 +39,7 @@ struct ReceiptView: Decodable {
 
     struct Item: Decodable {
         let imei: String
+        let imei2: String?
         let model: String
         let storage: String?
         let color: String?

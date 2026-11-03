@@ -6,6 +6,7 @@ import Foundation
 struct DeviceListItem: Identifiable {
     let id: String
     let imei: String
+    let imei2: String?
     let statusCode: String
     let modelId: String
     let modelLabel: String
@@ -17,6 +18,7 @@ struct DeviceListItem: Identifiable {
     init(_ row: DeviceEntity) {
         id = row.id
         imei = row.imei
+        imei2 = row.imei2
         statusCode = row.statusCode
         modelId = row.modelId
         modelLabel = "\(row.modelBrand) \(row.modelName)".trimmingCharacters(in: .whitespaces)
@@ -30,9 +32,9 @@ struct DeviceListItem: Identifiable {
     }
 
     /// Test seam: build directly without a SwiftData row.
-    init(id: String, imei: String, statusCode: String, modelId: String,
+    init(id: String, imei: String, imei2: String? = nil, statusCode: String, modelId: String,
          modelLabel: String, specs: [String: String], targetPrice: String?) {
-        self.id = id; self.imei = imei; self.statusCode = statusCode
+        self.id = id; self.imei = imei; self.imei2 = imei2; self.statusCode = statusCode
         self.modelId = modelId; self.modelLabel = modelLabel
         self.specs = specs; self.targetPrice = targetPrice
     }
@@ -60,6 +62,7 @@ struct DeviceFilter: Equatable {
         let q = search.trimmingCharacters(in: .whitespaces).lowercased()
         if !q.isEmpty,
            !d.imei.lowercased().contains(q),
+           !(d.imei2?.lowercased().contains(q) ?? false),
            !d.modelLabel.lowercased().contains(q) { return false }
         if let modelId, d.modelId != modelId { return false }
         if let storage, d.storage != storage { return false }
@@ -105,6 +108,12 @@ enum InventorySelfCheck {
         assert(DeviceFilter(search: "7890").matches(a))
         assert(!DeviceFilter(search: "7890").matches(b))
         assert(DeviceFilter(search: "iphone").matches(a))
+        // Search also matches the optional second IMEI.
+        let dual = DeviceListItem(id: "3", imei: "358001111111111", imei2: "358002222222222",
+                                  statusCode: "IN_STOCK", modelId: "m1", modelLabel: "Apple iPhone 15",
+                                  specs: [:], targetPrice: nil)
+        assert(DeviceFilter(search: "2222").matches(dual))
+        assert(!DeviceFilter(search: "2222").matches(a))
         // Exact facet filters.
         assert(DeviceFilter(storage: "128GB").matches(a))
         assert(!DeviceFilter(statusCode: "SOLD").matches(a))

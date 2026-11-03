@@ -20,6 +20,7 @@ struct QcSummary {
 struct DeviceDetail {
     let id: String
     let imei: String
+    let imei2: String?
     let modelId: String
     let modelLabel: String
     let statusCode: String
@@ -37,6 +38,7 @@ struct DeviceDetail {
               let statusCode = json["statusCode"] as? String else { return nil }
         self.id = id
         self.imei = imei
+        self.imei2 = json["imei2"] as? String
         self.modelId = modelId
         self.statusCode = statusCode
         let model = json["model"] as? [String: Any] ?? [:]

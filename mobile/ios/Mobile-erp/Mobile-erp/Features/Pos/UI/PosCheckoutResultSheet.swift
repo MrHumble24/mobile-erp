@@ -38,6 +38,10 @@ struct PosCheckoutResultSheet: View {
                 MoneyText(value: sale.salePrice)
             }
             Text(sale.imei).font(.mono(12)).foregroundStyle(.secondary)
+            if let imei2 = sale.imei2, !imei2.isEmpty {
+                Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
+                    .font(.mono(11)).foregroundStyle(.tertiary)
+            }
             HStack(spacing: 8) {
                 Label(i18n.t("pos.printReceipt"), systemImage: "receipt")
                     .font(.caption).foregroundStyle(Tokens.signalBlue)

@@ -44,6 +44,11 @@ struct SaleDetailSheet: View {
                             }
                             .buttonStyle(.plain)
                         }
+                        if let imei2 = sale.device.imei2, !imei2.isEmpty {
+                            Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
+                                .font(.mono(13, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .padding(.vertical, 4)
                 }

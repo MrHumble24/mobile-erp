@@ -47,6 +47,15 @@ struct PosView: View {
                              set: { if $0 == nil { model.dismissResult() } })) { box in
             PosCheckoutResultSheet(sales: box.sales) { model.dismissResult() }
         }
+        .sheet(item: $model.pendingScan) { scan in
+            ScanConfirmSheet(
+                code: scan.code,
+                content: scanContent(scan),
+                confirmLabel: i18n.t("common.add", default: "Add"),
+                onConfirm: { model.confirmScan() },
+                onDismiss: { model.dismissScan() }
+            )
+        }
         .task {
             model.configure(container)
             consumeRoute()
@@ -55,6 +64,26 @@ struct PosView: View {
             #endif
         }
         .onChange(of: container.router.pending) { _, _ in consumeRoute() }
+    }
+
+    /// Build the confirm sheet's content: the device summary, or the error
+    /// variant for a scan that failed a gate.
+    private func scanContent(_ scan: PendingScan) -> ScanConfirmSheet.Content {
+        if let device = scan.device {
+            // Resolved via the second IMEI → show both so the cashier sees the match.
+            let viaImei2 = device.imei2 != nil && scan.code == device.imei2
+            return .summary(
+                title: device.modelLabel,
+                subtitle: viaImei2
+                    ? "IMEI: \(device.imei) · \(i18n.t("inventory.imei2", default: "IMEI 2")): \(device.imei2!)"
+                    : nil,
+                price: device.targetPrice,
+                statusLabel: i18n.t("inventory.statusInStock", default: "In Stock"),
+                statusColor: Tokens.deviceStatusColor(device.statusCode)
+            )
+        }
+        let key = scan.errorKey ?? "common.error"
+        return .error(title: PosScanError.title(key, i18n), detail: PosScanError.hint(key, i18n))
     }
 
     /// Pick up a cross-feature `.pos(imei:)` route (e.g. inventory's "Sell in

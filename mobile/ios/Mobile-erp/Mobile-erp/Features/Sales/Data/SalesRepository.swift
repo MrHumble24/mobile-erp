@@ -42,7 +42,7 @@ struct SalesRepository {
     /// device is not cached or has never been sold.
     func warrantyOffline(_ imei: String) -> WarrantyLookup? {
         let descriptor = FetchDescriptor<DeviceEntity>(
-            predicate: #Predicate { $0.imei == imei }
+            predicate: #Predicate { $0.imei == imei || $0.imei2 == imei }
         )
         guard let device = try? context.fetch(descriptor).first else { return nil }
         return WarrantyOffline.fromCache(device)

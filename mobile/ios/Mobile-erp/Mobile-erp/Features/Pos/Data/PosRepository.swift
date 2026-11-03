@@ -13,13 +13,13 @@ struct PosRepository {
     /// cache has never seen it (a sync refresh brings new stock in).
     func lookup(_ imei: String) -> ScannedDevice? {
         let descriptor = FetchDescriptor<DeviceEntity>(
-            predicate: #Predicate { $0.imei == imei }
+            predicate: #Predicate { $0.imei == imei || $0.imei2 == imei }
         )
         guard let d = try? context.fetch(descriptor).first else { return nil }
         let label = "\(d.modelBrand) \(d.modelName)"
             .trimmingCharacters(in: .whitespaces)
         return ScannedDevice(
-            id: d.id, imei: d.imei, version: d.version,
+            id: d.id, imei: d.imei, imei2: d.imei2, version: d.version,
             statusCode: d.statusCode, modelLabel: label, targetPrice: d.targetPrice
         )
     }

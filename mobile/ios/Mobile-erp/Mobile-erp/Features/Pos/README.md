@@ -6,7 +6,10 @@ checkout (one sale per device; the server's `CreateSaleDto` takes a single
 
 ## Owns
 - Device scan + gate (exists, IN_STOCK, not already queued offline, not a
-  duplicate of a line already in the cart).
+  duplicate of a line already in the cart). A scan never adds silently: it
+  resolves the device and opens the shared `ScanConfirmSheet`; the line joins
+  the cart only on Confirm (`confirmScan()`). A failed gate opens the sheet's
+  error variant (Close only). Drives via `PosViewModel.pendingScan`.
 - The cart (`PosCart`): lines with price/warranty/notes + one shared customer,
   attached from an existing match (`GET /customers/lookup` typeahead) or added
   inline (name/phone). Existing id and inline name are mutually exclusive.
@@ -41,3 +44,9 @@ checkout (one sale per device; the server's `CreateSaleDto` takes a single
 ## Note
 - Named `Pos.README.md` (not `README.md`) to avoid a synchronized-group bundle
   resource basename collision; see the Sales slice note.
+
+## Dual-SIM (second IMEI)
+- The offline cache lookup matches either IMEI (`imei == x || imei2 == x`).
+  `ScannedDevice`/`CompletedSale` carry `imei2`; when a scan resolves via the
+  second IMEI the `ScanConfirmSheet` subtitle shows both so the cashier sees the
+  match. POS receipt / result rows show IMEI 2 when present.

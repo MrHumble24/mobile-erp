@@ -32,14 +32,14 @@ struct PullService {
             FetchDescriptor<DeviceEntity>(predicate: #Predicate { $0.id == id })
         ).first
         if let e = existing {
-            e.imei = r.imei; e.statusCode = r.statusCode; e.version = r.version
+            e.imei = r.imei; e.imei2 = r.imei2; e.statusCode = r.statusCode; e.version = r.version
             e.targetPrice = r.targetPrice; e.specsJSON = r.specsJSON
             e.modelId = r.modelId; e.modelBrand = r.modelBrand; e.modelName = r.modelName
             e.latestSaleJSON = r.latestSaleJSON; e.gradeCode = r.gradeCode
             e.inspectionNotes = r.inspectionNotes; e.updatedAt = r.updatedAt
         } else {
             context.insert(DeviceEntity(
-                id: r.id, imei: r.imei, statusCode: r.statusCode, version: r.version,
+                id: r.id, imei: r.imei, imei2: r.imei2, statusCode: r.statusCode, version: r.version,
                 targetPrice: r.targetPrice, specsJSON: r.specsJSON, modelId: r.modelId,
                 modelBrand: r.modelBrand, modelName: r.modelName,
                 latestSaleJSON: r.latestSaleJSON, gradeCode: r.gradeCode,

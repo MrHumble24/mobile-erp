@@ -22,9 +22,10 @@ struct DeviceRepository {
         try await api.get("/devices/\(id)/history")
     }
 
-    func update(id: String, specs: [String: Any], targetPrice: Double?) async throws {
+    func update(id: String, specs: [String: Any], targetPrice: Double?, imei2: String?) async throws {
         var body: [String: Any] = ["specs": specs]
         body["targetPrice"] = targetPrice ?? NSNull()
+        body["imei2"] = imei2 ?? NSNull()   // null clears the second IMEI
         try await api.patchJSONVoid("/devices/\(id)", body)
     }
 

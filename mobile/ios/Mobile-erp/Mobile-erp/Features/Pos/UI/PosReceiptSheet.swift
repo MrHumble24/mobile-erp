@@ -79,6 +79,12 @@ struct PosReceiptSheet: View {
                         .font(.mono(11))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
+                    if let imei2 = sale.imei2, !imei2.isEmpty {
+                        Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
+                            .font(.mono(10))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
                 }
                 .padding(.vertical, 4)
 

@@ -7,6 +7,7 @@ import Foundation
 struct ProcDevice: Decodable, Identifiable {
     let id: String
     let imei: String
+    let imei2: String?
     let modelId: String
     let statusCode: String
     let landedCost: String?
@@ -15,12 +16,13 @@ struct ProcDevice: Decodable, Identifiable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
         imei = try c.decode(String.self, forKey: .imei)
+        imei2 = try c.decodeIfPresent(String.self, forKey: .imei2)
         modelId = try c.decode(String.self, forKey: .modelId)
         statusCode = try c.decode(String.self, forKey: .statusCode)
         landedCost = c.decimalString(.landedCost)
     }
 
-    enum CodingKeys: String, CodingKey { case id, imei, modelId, statusCode, landedCost }
+    enum CodingKeys: String, CodingKey { case id, imei, imei2, modelId, statusCode, landedCost }
 }
 
 /// One page of a device query.

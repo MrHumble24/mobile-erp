@@ -56,6 +56,9 @@ struct ReceiptSheet: View {
                 VStack(spacing: 2) {
                     Text(item.model).font(.mono(12))
                     Text(item.imei).font(.mono(10))
+                    if let imei2 = item.imei2, !imei2.isEmpty {
+                        Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)").font(.mono(10))
+                    }
                     row(subtitle(item), MoneyText.format(item.price.string))
                 }
             }

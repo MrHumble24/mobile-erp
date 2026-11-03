@@ -15,6 +15,8 @@ struct EditDeviceSheet: View {
     @State private var attributes: [AttributeDef] = []
     @State private var specs: [String: String] = [:]
     @State private var targetPrice = ""
+    @State private var dualSim = false
+    @State private var imei2 = ""
     @State private var loading = true
     @State private var saving = false
     @State private var error: String?
@@ -32,6 +34,15 @@ struct EditDeviceSheet: View {
                         TextField(i18n.t("inventory.targetPrice"), text: $targetPrice)
                             .keyboardType(.decimalPad)
                             .sanitizeDecimal($targetPrice)
+                    }
+                    Section {
+                        Toggle(i18n.t("inventory.dualSim", default: "Dual SIM"), isOn: $dualSim)
+                            .toggleStyle(AppSwitchStyle())
+                            .onChange(of: dualSim) { if !dualSim { imei2 = "" } }
+                        if dualSim {
+                            ScanOrValueField(text: $imei2,
+                                             placeholder: i18n.t("inventory.imei2", default: "IMEI 2"))
+                        }
                     }
                     if let error {
                         Text(error).font(.footnote).foregroundStyle(Tokens.danger)
@@ -65,6 +76,8 @@ struct EditDeviceSheet: View {
         for attr in attrs { seeded[attr.key] = device.specs[attr.key] ?? "" }
         specs = seeded
         targetPrice = device.targetPrice ?? ""
+        imei2 = device.imei2 ?? ""
+        dualSim = device.imei2 != nil
         loading = false
     }
 
@@ -79,9 +92,20 @@ struct EditDeviceSheet: View {
             payload[attr.key] = attr.type == .number ? (Double(raw) ?? raw) : raw
         }
         let tp = targetPrice.trimmingCharacters(in: .whitespaces)
+        let second = imei2.trimmingCharacters(in: .whitespaces)
+        if dualSim {
+            guard !second.isEmpty else {
+                error = i18n.t("inventory.imei2Required",
+                               default: "Second IMEI is required for dual-SIM devices"); return
+            }
+            guard Imei.isValid(second), second != device.imei else {
+                error = i18n.t("shipments.imeiLength"); return
+            }
+        }
         do {
             try await DeviceRepository(container).update(
-                id: device.id, specs: payload, targetPrice: tp.isEmpty ? nil : Double(tp))
+                id: device.id, specs: payload, targetPrice: tp.isEmpty ? nil : Double(tp),
+                imei2: dualSim ? second : nil)
             container.sync.syncNow()
             onSaved()
             dismiss()

@@ -21,6 +21,7 @@ struct SaleModelRef: Decodable {
 
 struct SaleDevice: Decodable {
     let imei: String
+    let imei2: String?
     let model: SaleModelRef
 }
 

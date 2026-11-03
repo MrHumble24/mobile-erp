@@ -5,6 +5,7 @@ import Foundation
 /// Identity is the IMEI — the draft set rejects duplicates.
 struct IntakeDraft: Identifiable {
     let imei: String
+    let imei2: String?
     let modelId: String
     let specs: [String: String]
     let acquisitionCost: Decimal
@@ -14,7 +15,7 @@ struct IntakeDraft: Identifiable {
     var specsSummary: String { specs.values.sorted().joined(separator: " · ") }
 
     var dto: IntakeDeviceDTO {
-        IntakeDeviceDTO(imei: imei, modelId: modelId, specs: specs,
+        IntakeDeviceDTO(imei: imei, imei2: imei2, modelId: modelId, specs: specs,
                         acquisitionCost: acquisitionCost, targetPrice: targetPrice)
     }
 }

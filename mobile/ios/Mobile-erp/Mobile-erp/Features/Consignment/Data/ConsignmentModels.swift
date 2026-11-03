@@ -8,6 +8,7 @@ struct Consignment: Identifiable, Decodable, Hashable {
     let partnerShopName: String
     let deviceId: String
     let imei: String
+    let imei2: String?
     let agreedPrice: String
     let dueDate: String
     let statusCode: String        // OUT | SETTLED | RETURNED

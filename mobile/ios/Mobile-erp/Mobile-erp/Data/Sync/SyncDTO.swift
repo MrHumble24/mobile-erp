@@ -17,6 +17,7 @@ nonisolated struct ChangesPage {
 
 nonisolated struct DeviceRow {
     let id, imei, statusCode, updatedAt: String
+    let imei2: String?
     let version: Int
     let targetPrice: String?
     let specsJSON: String
@@ -27,6 +28,7 @@ nonisolated struct DeviceRow {
     init(_ d: [String: Any]) {
         id = d["id"] as? String ?? ""
         imei = d["imei"] as? String ?? ""
+        imei2 = d["imei2"] as? String
         statusCode = d["statusCode"] as? String ?? ""
         version = (d["version"] as? NSNumber)?.intValue ?? 0
         targetPrice = Self.string(d["targetPrice"])

@@ -55,6 +55,7 @@ struct ShipmentWriteDTO: Encodable {
 /// One device staged for batch intake, as the server expects it per unit.
 struct IntakeDeviceDTO: Encodable {
     let imei: String
+    let imei2: String?
     let modelId: String
     let specs: [String: String]
     let acquisitionCost: Decimal

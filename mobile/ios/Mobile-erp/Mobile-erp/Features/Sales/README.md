@@ -33,3 +33,8 @@ Completed sales, receipts, returns, and warranty lookup.
   group copies loose `.md` as bundle resources and flattens them by basename,
   so three `README.md` files would collide. Renamed to keep the gate green
   without editing `project.pbxproj`.
+
+## Dual-SIM (second IMEI)
+- `SaleDevice.imei2` / `ReceiptView.Item.imei2` (optional) render under the IMEI
+  in the sale detail sheet and the printable receipt when present. The offline
+  warranty cache lookup matches either IMEI.

@@ -14,6 +14,11 @@ intake, and quality control.
 - `UI/` — one screen/sheet per file: suppliers & shipment lists, shipment/supplier
   forms, shipment detail, device intake (ScannerField loop), QC queue, inspections,
   stats, lookups, grade-device + defects checklist, lookup form.
+- Intake scan confirms before staging: a scan FILLS the next empty IMEI slot and
+  only checks "15 digits". When every required slot plus model + cost is set,
+  `IntakeDeviceForm` opens the shared `ScanConfirmSheet` automatically; the draft
+  joins the batch only on Confirm. A batch duplicate (via the injected
+  `isDuplicate`) opens the sheet's error variant.
 
 ## Cross-feature kit integration
 - Load-more paging (`KitPaginator`) on the QC queue, inspections, and the
@@ -35,6 +40,31 @@ intake, and quality control.
 - Parse money as `Double` (use `MoneyText`); hard-code Uzbek (use `t()`).
 - Show cost fields when absent (redacted) — the landed-cost column and repair-cost
   input appear only when the server returns the value / the user `can` see it.
+
+## Dual-SIM (second IMEI) & scan flow
+- One combined IMEI block: IMEI 1 (shared `ScanOrValueField`) with the "Dual SIM"
+  toggle (`inventory.dualSim`, `AppSwitchStyle`) on its label row; IMEI 2 appears
+  underneath when on. Each field shows the captured value with a clear button, so
+  there is no separate echo line.
+- A scan (camera / HID wedge / typed + return) is routed by `fill` into the next
+  empty slot — IMEI 1, then IMEI 2 when dual — and only checks 15 digits
+  (`Imei.isValid`; bad length → one inline error, nothing else). Scanning IMEI 1
+  in dual mode never errors "IMEI 2 required"; it just waits for the second scan.
+- `stageIfComplete` opens the confirm sheet only once every required slot (IMEI 1,
+  plus IMEI 2 when dual) **and** model + cost are set. If model/cost/specs are
+  missing on a scan it shows a hint instead of erroring; a typed model/cost change
+  re-checks silently. The same scan while the sheet is up is ignored.
+- Confirm clears both IMEI slots and keeps model/specs/cost/dual for the next
+  unit; Cancel keeps the filled slots so the operator can fix them. IMEI 1 is
+  marked `autoFocus` so clearing it (on Confirm) re-shows and re-focuses the
+  scanner for the next scan. Dual-SIM is
+  derived (`imei2 != nil`), never stored — carried on `IntakeDraft`/`IntakeDeviceDTO`.
+  Duplicate detection (`IntakeSheet` + the batch check at confirm time) matches
+  either IMEI against either staged IMEI. QC queue rows show IMEI 2 when present.
+- `ScanOrValueField` gained an optional `onScan` override (route a scan through
+  `fill` instead of writing the binding) and an `autoFocus` flag forwarded to
+  `ScannerField`, whose new `autoFocus: Bool` focuses the field on appear. Both
+  default off, so other callers are unchanged.
 
 ## Open questions
 - None outstanding for the stock wave.

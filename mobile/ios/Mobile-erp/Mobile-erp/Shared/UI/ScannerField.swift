@@ -10,6 +10,11 @@ import VisionKit
 /// is supported and available; on the simulator it's hidden and HID still works.
 struct ScannerField: View {
     var placeholder: String = ""
+    /// When true, the field grabs keyboard focus as it appears — so a caller can
+    /// return focus to it (e.g. the intake IMEI 1 slot after a unit is confirmed,
+    /// which clears and re-shows this field). Default off keeps every other
+    /// caller's behavior unchanged.
+    var autoFocus = false
     let onScan: (String) -> Void
 
     @State private var text = ""
@@ -66,6 +71,12 @@ struct ScannerField: View {
                 .strokeBorder(focused ? Tokens.ring.opacity(0.6) : Tokens.hairline, lineWidth: 1)
         )
         .animation(.snappy(duration: 0.2), value: focused)
+        .onAppear {
+            // Delay past the dismiss animation of any sheet that preceded this
+            // field (the confirm sheet), or FocusState is dropped on iOS.
+            guard autoFocus else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { focused = true }
+        }
         .sheet(isPresented: $showCamera) {
             CameraScanner { code in
                 showCamera = false

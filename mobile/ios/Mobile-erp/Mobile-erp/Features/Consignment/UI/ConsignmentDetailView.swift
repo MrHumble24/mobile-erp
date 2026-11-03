@@ -39,6 +39,9 @@ struct ConsignmentDetailView: View {
             Section {
                 row(i18n.t("consignments.partner"), c.partnerShopName)
                 row(i18n.t("consignments.device"), c.imei, mono: true)
+                if let imei2 = c.imei2, !imei2.isEmpty {
+                    row(i18n.t("inventory.imei2", default: "IMEI 2"), imei2, mono: true)
+                }
                 row(i18n.t("consignments.agreedPrice"), MoneyText.format(c.agreedPrice), mono: true)
                 dueRow(c)
                 row(i18n.t("consignments.consignedAt"), String(c.consignedAt.prefix(10)))

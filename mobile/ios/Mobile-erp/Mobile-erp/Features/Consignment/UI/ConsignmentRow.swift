@@ -31,6 +31,11 @@ struct ConsignmentRow: View {
                             .font(.mono(12, weight: .medium))
                             .foregroundStyle(.secondary)
                     }
+                    if let imei2 = item.imei2, !imei2.isEmpty {
+                        Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
+                            .font(.mono(11, weight: .medium))
+                            .foregroundStyle(.tertiary)
+                    }
                 }
 
                 Spacer()
