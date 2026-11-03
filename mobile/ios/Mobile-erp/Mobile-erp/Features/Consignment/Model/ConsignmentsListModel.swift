@@ -14,6 +14,7 @@ final class ConsignmentsListModel {
 
     private(set) var stats: ConsignmentStats?
     private(set) var offline = false
+    private(set) var isLoading = false
     var error: String?
 
     var search = ""
@@ -23,10 +24,21 @@ final class ConsignmentsListModel {
     var customTo = ""
     let pageSize = 25
 
+    private(set) var pager: KitPaginator<Consignment>!
+
     init(repo: ConsignmentRepository, context: ModelContext, isOnline: @escaping () -> Bool) {
         self.repo = repo
         self.context = context
         self.isOnline = isOnline
+        self.pager = nil
+        self.pager = KitPaginator<Consignment>(pageSize: pageSize) { [weak self] page, size in
+            guard let self, self.isOnline() else { return ([], 0) }
+            var q = self.query
+            q.page = page
+            q.pageSize = size
+            let result = try await self.repo.list(q)
+            return (result.items, result.total)
+        }
     }
 
     /// Server query from the current filters; `page`/`pageSize` are set per page
@@ -41,18 +53,10 @@ final class ConsignmentsListModel {
         return q
     }
 
-    @ObservationIgnored lazy var pager = KitPaginator<Consignment>(pageSize: pageSize) {
-        [weak self] page, size in
-        guard let self, self.isOnline() else { return ([], 0) }
-        var q = self.query
-        q.page = page
-        q.pageSize = size
-        let result = try await self.repo.list(q)
-        return (result.items, result.total)
-    }
-
     func load() async {
         error = nil
+        isLoading = true
+        defer { isLoading = false }
         guard isOnline() else {
             offline = true
             stats = nil

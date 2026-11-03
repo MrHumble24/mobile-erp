@@ -25,13 +25,17 @@ final class UsersListModel {
 
     /// The paginated list. The fetch reads the live filters each page, so a
     /// `refresh()` after a filter change re-queries from page 1.
-    @ObservationIgnored lazy var pager = KitPaginator<UserView>(pageSize: Self.pageSize) {
-        [weak self] page, size in
-        guard let self, let repo = self.repo else { return ([], 0) }
-        let resp = try await repo.listPage(
-            search: self.search, role: self.roleFilter, active: self.activeBool,
-            page: page, pageSize: size)
-        return (resp.items, resp.total)
+    private(set) var pager: KitPaginator<UserView>!
+
+    init() {
+        self.pager = nil
+        self.pager = KitPaginator<UserView>(pageSize: Self.pageSize) { [weak self] page, size in
+            guard let self, let repo = self.repo else { return ([], 0) }
+            let resp = try await repo.listPage(
+                search: self.search, role: self.roleFilter, active: self.activeBool,
+                page: page, pageSize: size)
+            return (resp.items, resp.total)
+        }
     }
 
     func bind(_ c: AppContainer) {

@@ -62,7 +62,11 @@ struct ConsignmentsView: View {
             .searchable(text: $model.search, prompt: i18n.t("consignments.searchPlaceholder"))
             .onSubmit(of: .search) { Task { await model.load() } }
             .refreshable { await model.load() }
-            .overlay { if model.pager.isLoading && model.items.isEmpty { LoadingView() } }
+            .overlay {
+                if (model.isLoading || model.pager.isLoading) && model.items.isEmpty {
+                    LoadingView()
+                }
+            }
             .sheet(isPresented: $showFilters) {
                 ConsignmentsFilterSheet(model: model) { Task { await model.load() } }
             }
@@ -85,7 +89,12 @@ struct ConsignmentsView: View {
                            title: i18n.t("common.offline", default: "Offline"),
                            message: i18n.t("consignments.noConsignmentsFound"))
                 .listRowBackground(Color.clear)
-        } else if model.items.isEmpty && !model.pager.isLoading {
+        } else if let error = model.error, model.items.isEmpty {
+            ErrorStateView(message: error) {
+                Task { await model.load() }
+            }
+            .listRowBackground(Color.clear)
+        } else if model.items.isEmpty && !model.isLoading && !model.pager.isLoading {
             EmptyStateView(systemImage: "arrow.left.arrow.right",
                            title: i18n.t("consignments.noConsignmentsFound"))
                 .listRowBackground(Color.clear)

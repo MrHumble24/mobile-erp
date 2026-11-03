@@ -122,6 +122,7 @@ final class APIClient {
         guard let url = comps?.url else { throw AppError.network }
 
         var req = URLRequest(url: url)
+        req.timeoutInterval = 15
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = token(), !token.isEmpty {
