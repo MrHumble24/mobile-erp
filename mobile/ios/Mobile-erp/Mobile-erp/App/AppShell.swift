@@ -34,15 +34,43 @@ struct AppShell: View {
             }
     }
 
+    private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
+
+    private var overflowIndex: Int {
+        visible.count > 5 ? 4 : 5
+    }
+
     private var tabView: some View {
         TabView(selection: selection) {
-            ForEach(visible) { module in
-                NavigationStack {
-                    PermissionGate(permission: module.permission, content: module.root)
-                        .toolbar { toolbarContent }
+            ForEach(Array(visible.enumerated()), id: \.element.id) { index, module in
+                tabContent(for: module, at: index)
+                    .tabItem { Label(i18n.t(module.labelKey), systemImage: module.systemImage) }
+                    .tag(module.id)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func tabContent(for module: FeatureModule, at index: Int) -> some View {
+        // On iPhone, tabs beyond the 4th (or 5th when total <= 5) are hosted inside
+        // the system "More" navigation controller. Wrapping them in an inner
+        // NavigationStack produces a duplicate navigation bar that displaces the back
+        // button and toolbar buttons onto separate rows.
+        // Omitting the inner NavigationStack lets the More navigation bar host the
+        // back button, title, and action buttons aligned in a single horizontal line.
+        if !isPad && index >= overflowIndex {
+            PermissionGate(permission: module.permission, content: module.root)
+                .toolbar {
+                    ToolbarItem(placement: .principal) {
+                        Text(i18n.t(module.labelKey))
+                            .font(.headline)
+                    }
+                    toolbarContent
                 }
-                .tabItem { Label(i18n.t(module.labelKey), systemImage: module.systemImage) }
-                .tag(module.id)
+        } else {
+            NavigationStack {
+                PermissionGate(permission: module.permission, content: module.root)
+                    .toolbar { toolbarContent }
             }
         }
     }
