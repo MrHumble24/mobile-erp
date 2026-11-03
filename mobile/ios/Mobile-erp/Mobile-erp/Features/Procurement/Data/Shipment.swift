@@ -15,6 +15,16 @@ struct Shipment: Decodable, Identifiable {
     /// Date portion only, for list rows.
     var dateLabel: String { String(shipmentDate.prefix(10)) }
 
+    init(id: String, supplierId: String, shipmentDate: String, expectedCount: Int, deviceCount: Int = 0, overheadCost: String? = nil, notes: String? = nil) {
+        self.id = id
+        self.supplierId = supplierId
+        self.shipmentDate = shipmentDate
+        self.expectedCount = expectedCount
+        self.deviceCount = deviceCount
+        self.overheadCost = overheadCost
+        self.notes = notes
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)

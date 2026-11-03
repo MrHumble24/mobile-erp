@@ -26,11 +26,31 @@ struct CustomerFormSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField(i18n.t("sales.customerName"), text: $name)
-                    TextField(i18n.t("sales.customerPhone"), text: $phone)
-                        .keyboardType(.phonePad)
-                    TextField(i18n.t("sales.customerNotes"), text: $notes, axis: .vertical)
-                        .lineLimit(1...3)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("sales.customerName"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("sales.customerName"), text: $name)
+                    }
+                    .padding(.vertical, 2)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("sales.customerPhone"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("sales.customerPhone"), text: $phone)
+                            .keyboardType(.phonePad)
+                    }
+                    .padding(.vertical, 2)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("sales.customerNotes"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("sales.customerNotes"), text: $notes, axis: .vertical)
+                            .lineLimit(1...3)
+                    }
+                    .padding(.vertical, 2)
                 }
                 if let error {
                     Section { Text(error).foregroundStyle(Tokens.destructive).font(.footnote) }

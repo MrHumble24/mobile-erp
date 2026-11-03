@@ -17,10 +17,16 @@ struct LabeledField: View {
     }
 
     var body: some View {
-        TextField(label, text: $text)
-            .keyboardType(keyboard)
-            .autocorrectionDisabled(mono)
-            .textInputAutocapitalization(mono ? .characters : .sentences)
-            .font(mono ? .mono(15) : .body)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            TextField(label, text: $text)
+                .keyboardType(keyboard)
+                .autocorrectionDisabled(mono)
+                .textInputAutocapitalization(mono ? .characters : .sentences)
+                .font(mono ? .mono(15) : .body)
+        }
+        .padding(.vertical, 2)
     }
 }

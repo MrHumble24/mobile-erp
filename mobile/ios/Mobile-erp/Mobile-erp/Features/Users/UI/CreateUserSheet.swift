@@ -26,15 +26,42 @@ struct CreateUserSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField(i18n.t("users.fullName"), text: $firstName)
-                    TextField(i18n.t("common.phone"), text: $phone)
-                        .keyboardType(.phonePad)
-                    TextField(i18n.t("users.email"), text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .font(.mono(15))
-                    SecureField(i18n.t("users.password"), text: $password)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("users.fullName"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("users.fullName"), text: $firstName)
+                    }
+                    .padding(.vertical, 2)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("common.phone"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("common.phone"), text: $phone)
+                            .keyboardType(.phonePad)
+                    }
+                    .padding(.vertical, 2)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("users.email"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        TextField(i18n.t("users.email"), text: $email)
+                            .keyboardType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .font(.mono(15))
+                    }
+                    .padding(.vertical, 2)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(i18n.t("users.password"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        SecureField(i18n.t("users.password"), text: $password)
+                    }
+                    .padding(.vertical, 2)
                 }
                 Section(i18n.t("users.roles")) {
                     ForEach(catalog.roles) { role in
