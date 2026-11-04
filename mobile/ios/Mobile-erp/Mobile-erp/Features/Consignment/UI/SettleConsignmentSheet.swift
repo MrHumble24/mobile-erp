@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Settle an OUT consignment (`consignment.settle`) — the partner sold it.
-/// Offline-capable via the writer's outbox fallback; the sale price defaults to
-/// the agreed price.
+/// Settle an OUT consignment (`consignment.settle`) — the partner sold it. The
+/// sale price defaults to the agreed price. Offline-capable via the writer's
+/// outbox fallback.
 struct SettleConsignmentSheet: View {
     let consignment: Consignment
     var onDone: () -> Void
@@ -10,113 +10,40 @@ struct SettleConsignmentSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var salePrice = ""
     @State private var notes = ""
     @State private var saving = false
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(consignment.partnerShopName)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(Tokens.ink)
-
-                        HStack {
-                            Text("IMEI: \(consignment.imei)")
-                                .font(.mono(12))
-                                .foregroundStyle(Tokens.muted)
-                            Spacer()
-                            Text(i18n.t("consignments.agreedPrice", default: "Agreed: \(MoneyText.format(consignment.agreedPrice))"))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(Tokens.muted)
-                        }
-                    }
-                    .padding(.vertical, 4)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t("consignments.settle")) { dismiss() }
+                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.imei) {
+                    MoneyText(value: consignment.agreedPrice, size: 15).foregroundStyle(Tokens.muted)
                 }
-
-                Section(i18n.t("consignments.settlePrice", default: "Settlement Price")) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("$")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(Tokens.muted)
-                        TextField("0", text: $salePrice)
-                            .font(.mono(22, weight: .bold))
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                            .sanitizeDecimal($salePrice)
-                        if salePrice != agreedWhole {
-                            Spacer()
-                            Button {
-                                salePrice = agreedWhole
-                                Haptic.tick.play()
-                            } label: {
-                                Text(i18n.t("common.reset", default: "Agreed: $\(agreedWhole)"))
-                                    .font(.caption2.weight(.medium))
-                                    .foregroundStyle(Tokens.signalBlue)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Tokens.infoBg, in: Capsule())
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.vertical, 2)
+                AppFormField(label: i18n.t("consignments.settlePrice")) {
+                    AppTextField(placeholder: "0", text: $salePrice, keyboard: .decimalPad, font: .data(.regular))
+                        .sanitizeDecimal($salePrice)
                 }
-
-                Section {
-                    CaptionedField(i18n.t("common.notes", default: "Notes"), text: $notes)
+                AppFormField(label: i18n.t("common.notes")) {
+                    AppTextField(placeholder: i18n.t("common.notes"), text: $notes)
                 }
-
-                Section {
-                    Label(i18n.t("consignments.settleHint", default: "Settling marks this device as sold and credits the partner's account."),
-                          systemImage: "info.circle")
-                        .font(.footnote)
-                        .foregroundStyle(Tokens.muted)
+                Text(i18n.t("consignments.settleHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                if let errorMessage { FormErrorLine(message: errorMessage) }
+                Button { Task { await settle() } } label: {
+                    Text(i18n.t("consignments.settle")).frame(maxWidth: .infinity)
                 }
-
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(Tokens.danger)
-                    }
-                }
-
-                Section {
-                    Button {
-                        Task { await settle() }
-                    } label: {
-                        if saving {
-                            ProgressView().frame(maxWidth: .infinity)
-                        } else {
-                            Label(i18n.t("consignments.settle", default: "Confirm Settlement"), systemImage: "checkmark.circle.fill")
-                                .font(.headline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 24)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Tokens.success)
-                    .disabled(saving || (Double(salePrice) ?? 0) <= 0)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
+                .buttonStyle(.pillPrimary)
+                .disabled(saving || (Double(salePrice) ?? 0) <= 0)
             }
-            .navigationTitle(i18n.t("consignments.settle", default: "Settle Consignment"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-            }
-            .onAppear {
-                if salePrice.isEmpty { salePrice = agreedWhole }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.medium, .large])
+        .onAppear { if salePrice.isEmpty { salePrice = agreedWhole } }
     }
 
     private var agreedWhole: String { String(Int(Double(consignment.agreedPrice) ?? 0)) }

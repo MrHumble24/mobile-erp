@@ -2,8 +2,13 @@ package uz.malika.erp.features.nasiya.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,10 +18,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -28,8 +32,8 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.AppSwitch
+import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Edit a partner. Loads the full row online first (the mirror lacks
@@ -69,12 +73,12 @@ fun EditPartnerSheet(container: AppContainer, partnerId: String, fallbackName: S
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("partners.editPartner", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(t("partners.editPartner", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
             if (detail == null) {
-                Text(t("common.loading", null), style = MaterialTheme.typography.bodyMedium)
+                Text(t("common.loading", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
                 ActionError(null, offline = !container.connectivity.online.value)
             } else {
                 AppFormField(t("partners.name", null), shopName, { shopName = it })
@@ -83,14 +87,11 @@ fun EditPartnerSheet(container: AppContainer, partnerId: String, fallbackName: S
                 AppFormField(t("partners.telegramHandle", null), telegram, { telegram = it })
                 AppFormField(t("partners.creditLimit", null), creditLimit, { creditLimit = it }, keyboardType = KeyboardType.Number)
                 AppFormField(t("common.notes", null), notes, { notes = it })
-                SegmentedControl(
-                    options = listOf(
-                        SegmentOption(true, t("partners.active", null)),
-                        SegmentOption(false, t("partners.inactive", null)),
-                    ),
-                    selected = isActive,
-                    onSelect = { isActive = it },
-                )
+                Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
+                    Text(t("partners.active", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                    Spacer(Modifier.weight(1f))
+                    AppSwitch(checked = isActive, onCheckedChange = { isActive = it })
+                }
                 ActionError(state.error, state.offline)
                 PillButton(
                     text = if (state.submitting) t("common.loading", null) else t("common.save", null),

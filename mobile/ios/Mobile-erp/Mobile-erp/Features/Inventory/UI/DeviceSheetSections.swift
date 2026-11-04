@@ -42,22 +42,6 @@ struct FactBlock<Content: View>: View {
     }
 }
 
-struct FactRow<V: View>: View {
-    let label: String
-    var last = false
-    @ViewBuilder var value: () -> V
-
-    var body: some View {
-        HStack(spacing: Tokens.Space.sm) {
-            Text(label).font(.ui(.caption)).foregroundStyle(Tokens.muted)
-            Spacer(minLength: Tokens.Space.sm)
-            value().foregroundStyle(Tokens.text)
-        }
-        .frame(minHeight: Tokens.Space.minTouch)
-        if !last { Divider().overlay(Tokens.border) }
-    }
-}
-
 /// Specs block plus the cost / margin block (cost only with `device.cost.view`).
 struct DeviceSpecsGrid: View {
     let device: DeviceDetail

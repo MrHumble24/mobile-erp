@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Partner detail sheet: outstanding header, permission-gated actions (record
-/// payment / edit / new consignment), aging buckets and the running-balance
-/// ledger. Ledger and aging are online-only; offline shows a notice.
+/// Partner detail as a Warm Card sheet: outstanding block + credit bar, the
+/// permission-gated actions (payment = the one orange, consign secondary, edit
+/// ghost), the aging buckets as keyed rows and the running-balance ledger as
+/// hairline rows. Ledger and aging are online-only; offline shows a notice.
 struct PartnerDetailView: View {
     let partner: Partner
     var onChange: () -> Void
@@ -10,7 +11,6 @@ struct PartnerDetailView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var model: PartnerDetailModel?
     @State private var showPayment = false
     @State private var showEdit = false
@@ -19,95 +19,28 @@ struct PartnerDetailView: View {
     private var can: Session { container.session }
 
     var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    heroPartnerCard
-                    actions
-                }
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: partner.shopName) { dismiss() }
+                SubjectBlock(title: i18n.t("partners.outstanding"), line: MoneyText.format(partner.outstanding))
+                CreditBar(limit: partner.creditLimit, used: partner.outstanding)
+                actions
                 if let model, model.error == "offline" {
-                    needsConnection
+                    FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning)
                 } else {
-                    agingSection
-                    ledgerSection
+                    aging
+                    ledger
                 }
             }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .listRowBackground(Tokens.surface)
-            .background(Tokens.bg)
-            .navigationTitle(partner.shopName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(i18n.t("common.close")) { dismiss() }
-                }
-            }
-            .task { if model == nil { let m = container.makePartnerDetailModel(); model = m; await m.load(partnerId: partner.id) } }
-            .sheet(isPresented: $showPayment) {
-                RecordPaymentSheet(partner: partner) { reload() }
-            }
-            .sheet(isPresented: $showEdit) {
-                PartnerFormSheet(mode: .edit(partner)) { reload() }
-            }
-            .sheet(isPresented: $showConsign) {
-                ConsignDeviceSheet(partnerId: partner.id, lockPartner: true) { reload() }
-            }
-        }
-    }
-
-    private var heroPartnerCard: some View {
-        let outstandingVal = Double(partner.outstanding) ?? 0
-        let hasOverdue = (partner.overdueCount ?? 0) > 0
-        let limitVal = Double(partner.creditLimit) ?? 0
-
-        return AppCard(
-            padding: 18,
-            backgroundColor: Tokens.pillTint(hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success)),
-            borderColor: (hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success)).opacity(0.35)
-        ) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Label(
-                        i18n.t("partners.outstanding", default: "Current Outstanding Debt"),
-                        systemImage: hasOverdue ? "exclamationmark.triangle.fill" : "banknote"
-                    )
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.warning : Tokens.success))
-
-                    Spacer()
-
-                    if hasOverdue {
-                        StatusBadge(i18n.t("partners.hasOverdue", default: "Overdue"), color: Tokens.danger)
-                    }
-                }
-
-                MoneyText(value: partner.outstanding, size: 30)
-                    .foregroundStyle(hasOverdue ? Tokens.danger : (outstandingVal > 0 ? Tokens.ink : Tokens.success))
-
-                if limitVal > 0 {
-                    let pct = min(1.0, max(0.0, outstandingVal / limitVal))
-                    VStack(alignment: .leading, spacing: 4) {
-                        ProgressView(value: pct)
-                            .tint(hasOverdue ? Tokens.danger : (pct > 0.85 ? Tokens.warning : Tokens.signalBlue))
-                        HStack {
-                            Text(i18n.t("partners.creditLimit", default: "Limit: \(MoneyText.format(partner.creditLimit))"))
-                                .font(.caption2)
-                                .foregroundStyle(Tokens.muted)
-                            Spacer()
-                            Text("\(Int(pct * 100))% used")
-                                .font(.caption2.weight(.medium))
-                                .foregroundStyle(Tokens.muted)
-                        }
-                    }
-                    .padding(.top, 4)
-                }
-            }
+            .padding(Tokens.Space.gutter)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Tokens.card)
+        .presentationDetents([.large])
+        .task { if model == nil { let m = container.makePartnerDetailModel(); model = m; await m.load(partnerId: partner.id) } }
+        .sheet(isPresented: $showPayment) { RecordPaymentSheet(partner: partner) { reload() } }
+        .sheet(isPresented: $showEdit) { PartnerFormSheet(mode: .edit(partner)) { reload() } }
+        .sheet(isPresented: $showConsign) { ConsignDeviceSheet(partnerId: partner.id, lockPartner: true) { reload() } }
     }
 
     private func reload() {
@@ -116,128 +49,87 @@ struct PartnerDetailView: View {
     }
 
     @ViewBuilder private var actions: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Tokens.Space.sm) {
             if can.can("partner.payment") {
-                Button {
-                    Haptic.tick.play()
-                    showPayment = true
-                } label: {
-                    Label(i18n.t("partners.recordPayment", default: "Record Debt Payment"), systemImage: "creditcard.fill")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
+                Button { Haptic.tick.play(); showPayment = true } label: {
+                    Text(i18n.t("partners.recordPayment")).frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .foregroundStyle(Tokens.onInk)
-                .tint(Tokens.ink)
+                .buttonStyle(.pillPrimary)
             }
-            HStack(spacing: 10) {
-                if can.can("consignment.create") {
-                    Button {
-                        Haptic.tick.play()
-                        showConsign = true
-                    } label: {
-                        Label(i18n.t("partners.newConsignmentForPartner", default: "Consign Unit"), systemImage: "arrow.left.arrow.right")
-                            .font(.subheadline.weight(.medium))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                    }
-                    .buttonStyle(.bordered)
+            if can.can("consignment.create") {
+                Button { Haptic.tick.play(); showConsign = true } label: {
+                    Text(i18n.t("partners.newConsignmentForPartner")).frame(maxWidth: .infinity)
                 }
-                if can.can("partner.manage") {
-                    Button {
-                        Haptic.tick.play()
-                        showEdit = true
-                    } label: {
-                        Label(i18n.t("partners.editPartner", default: "Edit Partner"), systemImage: "pencil")
-                            .font(.subheadline.weight(.medium))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                    }
-                    .buttonStyle(.bordered)
+                .buttonStyle(.pillSecondary)
+            }
+            if can.can("partner.manage") {
+                Button { Haptic.tick.play(); showEdit = true } label: {
+                    Text(i18n.t("partners.editPartner")).frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.pillGhost)
             }
         }
     }
 
-    private var needsConnection: some View {
-        Label(i18n.t("common.offline", default: "Connect to view the ledger."),
-              systemImage: "wifi.slash")
-            .font(.callout).foregroundStyle(Tokens.muted)
-    }
-
-    @ViewBuilder private var agingSection: some View {
+    @ViewBuilder private var aging: some View {
         if let model, model.hasAging {
-            Section(i18n.t("partners.agingTitle", default: "Debt Aging Analysis")) {
-                ForEach(model.aging.filter { $0.count > 0 }) { b in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(i18n.t("partners.aging_\(b.bucket)"))
-                                .font(.body.weight(.medium))
-                                .foregroundStyle(Tokens.ink)
-                            Text("\(b.count) \(i18n.t("partners.openCount", default: "devices"))")
-                                .font(.caption)
-                                .foregroundStyle(Tokens.muted)
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            MoneyText(value: b.amount, size: 16)
-                                .foregroundStyle(b.isOverdue ? Tokens.danger : Tokens.ink)
-                            if b.isOverdue {
-                                Text(i18n.t("partners.statusOverdue", default: "Overdue"))
-                                    .font(.caption2.weight(.bold))
-                                    .foregroundStyle(Tokens.danger)
-                            }
-                        }
+            Text(i18n.t("partners.agingTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+            let buckets = model.aging
+            VStack(spacing: 0) {
+                ForEach(Array(buckets.enumerated()), id: \.offset) { i, b in
+                    FactRow(label: "\(i18n.t("partners.aging_\(b.bucket)")) · \(b.count)", last: i == buckets.count - 1) {
+                        MoneyText(value: b.amount, size: 15).fontWeight(.semibold)
+                            .foregroundStyle(b.isOverdue && b.count > 0 ? Tokens.danger : Tokens.text)
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }
     }
 
-    @ViewBuilder private var ledgerSection: some View {
-        Section(i18n.t("partners.ledgerTitle", default: "Transaction Ledger")) {
-            if let model, model.isLoading {
-                ProgressView()
-            } else if let model, model.ledger.isEmpty {
-                Text(i18n.t("partners.noLedgerEntries", default: "No ledger transactions recorded."))
-                    .font(.callout)
-                    .foregroundStyle(Tokens.muted)
-            } else if let model {
-                ForEach(model.ledger) { LedgerRow(entry: $0) }
+    @ViewBuilder private var ledger: some View {
+        Text(i18n.t("partners.ledgerTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+        if let model, model.isLoading {
+            LoadingView().frame(height: 80)
+        } else if let model, model.ledger.isEmpty {
+            Text(i18n.t("partners.noLedgerEntries")).font(.ui(.body)).foregroundStyle(Tokens.muted)
+        } else if let model {
+            VStack(spacing: 0) {
+                ForEach(Array(model.ledger.enumerated()), id: \.offset) { i, entry in
+                    LedgerRow(entry: entry)
+                    if i < model.ledger.count - 1 { Divider().overlay(Tokens.border) }
+                }
             }
         }
     }
 }
 
-/// One ledger entry: kind badge, signed change, running balance, timestamp.
+/// A ledger line, not a nested card: kind pill + signed mono change, then
+/// date · running balance, then notes.
 private struct LedgerRow: View {
     let entry: LedgerEntry
     @Environment(I18n.self) private var i18n
 
     var body: some View {
         let change = Double(entry.change) ?? 0
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: Tokens.Space.xs) {
             HStack {
-                StatusBadge(
-                    i18n.t(entry.isConsignment ? "partners.kindConsignment" : "partners.kindPayment"),
-                    color: entry.isConsignment ? Tokens.signalBlue : Tokens.success)
+                StatusBadge(i18n.t(entry.isConsignment ? "partners.kindConsignment" : "partners.kindPayment"),
+                            color: entry.isConsignment ? Tokens.info : Tokens.success)
                 Spacer()
                 Text(change > 0 ? "+\(MoneyText.format(entry.change))" : MoneyText.format(entry.change))
-                    .font(.mono(15, weight: .bold))
+                    .font(.mono(15, weight: .semibold))
                     .foregroundStyle(change > 0 ? Tokens.warning : Tokens.success)
             }
             HStack {
-                Text(entry.at.prefix(10)).font(.caption).foregroundStyle(Tokens.muted)
+                Text(KitDate.day(entry.at)).font(.data(.regular)).foregroundStyle(Tokens.muted)
                 Spacer()
                 Text("\(i18n.t("partners.runningBalance")): \(MoneyText.format(entry.runningBalance))")
-                    .font(.caption.weight(.medium)).foregroundStyle(Tokens.ink)
+                    .font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
             if let notes = entry.notes, !notes.isEmpty {
-                Text(notes).font(.caption).italic().foregroundStyle(Tokens.muted)
+                Text(notes).font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Tokens.Space.sm)
     }
 }

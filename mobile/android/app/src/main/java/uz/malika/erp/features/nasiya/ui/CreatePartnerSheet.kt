@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,9 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -27,6 +27,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.ui.theme.Tokens
 
 /** Add a partner. Online-only (no outbox handler); blocks when offline. */
 @Composable
@@ -47,10 +48,10 @@ fun CreatePartnerSheet(container: AppContainer, onDismiss: () -> Unit) {
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("partners.newPartner", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(t("partners.newPartner", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
             AppFormField(t("partners.name", null), shopName, { shopName = it })
             AppFormField(t("partners.contactPerson", null), contactPerson, { contactPerson = it })
             AppFormField(t("partners.phone", null), phone, { phone = it }, keyboardType = KeyboardType.Phone)

@@ -42,8 +42,17 @@ same partner mirror — so there is no cross-slice import to duplicate.
 - Cross-feature nav: the detail sheet opens `Destination.Inventory(imei)` /
   `Destination.Sales(saleId)`; the screen consumes `Destination.Consignments(id)`
   via `featureNav.consumeArg`, fetching that row by id.
-- Reuses kit `AppDateRangeField`/`MetricTile`; `CreditBar`, `PartnerPicker`,
-  `DueDatePicker` (single M3 date) stay slice-local.
+- Reuses kit `AppDateRangeField`/`MetricGrid`/`AppSwitch`; `CreditBar`,
+  `FactRow`, `SubjectBlock`, `PartnerPicker`, `DueDatePicker` (single M3 date)
+  stay slice-local (`NasiyaComponents.kt`).
+- Warm Card (ADR 0022): the status tabs are a scrolling chip row
+  (`ConsignmentsHeader.kt`; Out/Overdue carry live counts) — a fixed
+  `SegmentedControl` inside `horizontalScroll` collapsed. Cards: partner +
+  mono IMEI + due (danger when overdue) left, mono price + status pill right;
+  settle/return are secondary pills on OUT rows, the one orange is `+`.
+  Detail/ledger use keyed `FactRow`s and hairline rows, never nested cards;
+  write sheets open with a surface-2 `SubjectBlock`. Status hues: OUT=info,
+  SETTLED=success, RETURNED=sold. Active / overdue-only are `AppSwitch` rows.
 - Filters live in bottom sheets, not on the screen: Partners keeps search inline
   (`SearchFilterRow`) with active/overdue in `PartnerFilterSheet`; Consignments
   keeps search inline with the date range in `ConsignmentFilterSheet`. The

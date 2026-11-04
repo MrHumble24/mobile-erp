@@ -39,6 +39,23 @@ Add both to `FeatureRegistry.all`. Nothing else in `App/` changes.
 - DEBUG self-check: `consignmentSelfCheck()` (overdue + period bounds), run
   from `ConsignmentsView.task`.
 
+## Warm Card (ADR 0022)
+- Both screens are `ScrollView` + `AppCard` rows on the ground, titled by the
+  nav key (`nav.consignments` / `nav.partners`), with the system search bar and
+  filter / new / CSV in the toolbar. The consignment status tabs are a chip row
+  (`ConsignmentStatusChips`, Out/Overdue with live counts); the period filter
+  is a kit `FilterSheet`; the summary is a `MetricList`.
+- Every sheet (detail, consign, settle, return, payment, partner form, partner
+  detail) is the kit sheet: `SheetTitleRow`, a surface-2 `SubjectBlock`,
+  `AppFormField` + `AppTextField` / `AppSelect` / `SegmentedControl` /
+  `NasiyaDateField`, pill buttons (primary = the money action, destructive =
+  return). Facts and ledger lines are shared `FactRow`s / hairline rows, never
+  nested cards. Status hues: OUT=info, SETTLED=success, RETURNED=sold.
+- Slice-local pieces live in `UI/ConsignmentComponents.swift`. The old stats /
+  summary / filter-bar views and `CaptionedField` are gone.
+- DEBUG screenshot args: `-open consignments|partners`, `-openConsignment first`,
+  `-openPartner first`.
+
 ## Dual-SIM (second IMEI)
 - `Consignment.imei2` (optional) shows under the IMEI in the consignment row and
   detail view when present. The offline device lookup in `ConsignmentWriter`

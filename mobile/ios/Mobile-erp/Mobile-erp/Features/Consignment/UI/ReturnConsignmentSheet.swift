@@ -10,93 +10,38 @@ struct ReturnConsignmentSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var condition = "IN_STOCK"
     @State private var reason = ""
     @State private var saving = false
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(consignment.partnerShopName)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(Tokens.ink)
-
-                        HStack {
-                            Text("IMEI: \(consignment.imei)")
-                                .font(.mono(12))
-                                .foregroundStyle(Tokens.muted)
-                            Spacer()
-                            Text(MoneyText.format(consignment.agreedPrice))
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(Tokens.muted)
-                        }
-                    }
-                    .padding(.vertical, 4)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t("consignments.return")) { dismiss() }
+                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.imei)
+                AppFormField(label: i18n.t("consignments.returnCondition")) {
+                    SegmentedControl(selection: $condition, segments: [
+                        ("IN_STOCK", i18n.t("consignments.conditionInStock")),
+                        ("DEFECTIVE", i18n.t("consignments.conditionDefective")),
+                    ])
                 }
-
-                Section(i18n.t("consignments.returnCondition", default: "Restock Condition")) {
-                    Picker(i18n.t("consignments.returnCondition", default: "Condition"), selection: $condition) {
-                        Text(i18n.t("consignments.conditionInStock", default: "In Stock")).tag("IN_STOCK")
-                        Text(i18n.t("consignments.conditionDefective", default: "Defective")).tag("DEFECTIVE")
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.vertical, 2)
+                AppFormField(label: i18n.t("consignments.returnReason")) {
+                    AppTextField(placeholder: i18n.t("consignments.returnReason"), text: $reason)
                 }
-
-                Section(i18n.t("consignments.returnReason", default: "Return Reason")) {
-                    TextField(i18n.t("consignments.returnReasonPlaceholder", default: "Reason for return (optional)"),
-                              text: $reason, axis: .vertical)
-                        .lineLimit(2...4)
+                if let errorMessage { FormErrorLine(message: errorMessage) }
+                Button { Task { await returnToStock() } } label: {
+                    Text(i18n.t("consignments.return")).frame(maxWidth: .infinity)
                 }
-
-                Section {
-                    Label(i18n.t("consignments.returnHint", default: "This unit will be removed from the partner's liability and returned to inventory."),
-                          systemImage: "arrow.uturn.backward.circle")
-                        .font(.footnote)
-                        .foregroundStyle(Tokens.muted)
-                }
-
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(Tokens.danger)
-                    }
-                }
-
-                Section {
-                    Button {
-                        Task { await returnToStock() }
-                    } label: {
-                        if saving {
-                            ProgressView().frame(maxWidth: .infinity)
-                        } else {
-                            Label(i18n.t("consignments.return", default: "Confirm Return to Stock"), systemImage: "arrow.uturn.backward")
-                                .font(.headline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 24)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundStyle(Tokens.onInk)
-                    .tint(Tokens.ink)
-                    .disabled(saving)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
+                .buttonStyle(.pillDestructive)
+                .disabled(saving)
             }
-            .navigationTitle(i18n.t("consignments.return", default: "Return Consignment"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.medium, .large])
     }
 
     private func returnToStock() async {

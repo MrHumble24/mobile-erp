@@ -14,9 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -27,6 +25,7 @@ import uz.malika.erp.features.nasiya.model.ConsignWriteViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
@@ -47,14 +46,16 @@ fun SettleConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("consignments.settle", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("IMEI: ${item.imei}", style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+            Text(t("consignments.settle", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.imei) {
+                MoneyText(item.agreedPrice.money(), style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.muted))
+            }
             AppFormField(t("consignments.settlePrice", null), salePrice, { salePrice = it }, keyboardType = KeyboardType.Number)
             AppFormField(t("common.notes", null), notes, { notes = it })
-            Text(t("consignments.settleHint", null), style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+            Text(t("consignments.settleHint", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             ActionError(state.error, state.offline)
             PillButton(
                 text = if (state.submitting) t("common.loading", null) else t("consignments.settle", null),

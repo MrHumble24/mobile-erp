@@ -39,6 +39,7 @@ import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.SearchFilterRow
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.ui.theme.Tokens
 import java.math.BigDecimal
 
@@ -73,8 +74,8 @@ fun PartnersScreen(container: AppContainer) {
     ).count { it }
 
     Column(
-        Modifier.fillMaxSize().padding(Tokens.Space.section),
-        verticalArrangement = Arrangement.spacedBy(Tokens.Space.section),
+        Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH, vertical = Tokens.Space.md),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             SearchFilterRow(
@@ -88,7 +89,7 @@ fun PartnersScreen(container: AppContainer) {
             if (can("partner.manage")) {
                 Spacer(Modifier.width(Tokens.Space.gap))
                 IconButton(onClick = { createOpen = true }) {
-                    Icon(Icons.Outlined.PersonAdd, contentDescription = t("partners.newPartner", null), tint = Tokens.foreground)
+                    Icon(Icons.Outlined.PersonAdd, contentDescription = t("partners.newPartner", null), tint = Tokens.text)
                 }
             }
         }
@@ -99,7 +100,7 @@ fun PartnersScreen(container: AppContainer) {
             state.loading -> Loading()
             state.error != null -> ErrorView(state.error!!)
             state.items.isEmpty() -> EmptyView(t("partners.noPartnersFound", null))
-            else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
+            else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
                 items(state.items, key = { it.id }) { partner ->
                     PartnerCard(
                         partner = partner,

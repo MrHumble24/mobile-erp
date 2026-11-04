@@ -14,9 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -30,6 +28,7 @@ import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.ui.theme.Tokens
 
 /** Record a cash/transfer payment against a partner's balance. Online-only. */
 @Composable
@@ -49,14 +48,11 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("partners.recordPayment", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(
-                "${partner.shopName} · ${t("partners.outstanding", null)}: ${formatMoney(partner.outstanding)}",
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Text(t("partners.recordPayment", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            SubjectBlock(partner.shopName, "${t("partners.outstanding", null)}: ${formatMoney(partner.outstanding)}")
             AppFormField(t("partners.paymentAmount", null), amount, { amount = it }, keyboardType = KeyboardType.Number)
             if (outstandingValue > 0.0 && amount != outstandingValue.toInt().toString()) {
                 PillButton(

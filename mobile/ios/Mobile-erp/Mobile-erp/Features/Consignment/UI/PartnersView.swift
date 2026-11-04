@@ -1,17 +1,18 @@
 import SwiftUI
 
-/// Partner directory screen (`partner.read`): offline-aware list with balances,
-/// search / status / overdue filters, summary tiles, and a tap-through detail
-/// sheet. New-partner is gated on `partner.manage`.
+/// Partner directory (`partner.read`): the system search bar, filter + new
+/// partner in the toolbar, the summary list-card (partners, outstanding), then
+/// one card per partner with a record-payment pill (`partner.payment`). Offline
+/// shows the cached mirror with a notice. Title is the tab label
+/// (`nav.partners`), the same string as the Android top bar.
 struct PartnersView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var model: PartnersListModel?
     @State private var detail: Partner?
+    @State private var payFor: Partner?
     @State private var showCreate = false
     @State private var showFilters = false
-    @State private var showStats = false
 
     private var hasActiveFilters: Bool {
         guard let model else { return false }
@@ -20,7 +21,7 @@ struct PartnersView: View {
 
     var body: some View {
         content
-            .navigationTitle(i18n.t("partners.title"))
+            .navigationTitle(i18n.t("nav.partners"))
             .toolbar { toolbar }
             .task { if model == nil { let m = container.makePartnersListModel(); model = m; await m.load() } }
             .sheet(isPresented: $showCreate) {
@@ -29,105 +30,75 @@ struct PartnersView: View {
             .sheet(item: $detail) { partner in
                 PartnerDetailView(partner: partner) { Task { await model?.load() } }
             }
+            .sheet(item: $payFor) { partner in
+                RecordPaymentSheet(partner: partner) { Task { await model?.load() } }
+            }
+            #if DEBUG
+            // Screenshot helper: `-openPartner first` opens the first partner's detail.
+            .onChange(of: model?.partners.count ?? 0) { _, count in
+                guard count > 0, detail == nil,
+                      UserDefaults.standard.string(forKey: "openPartner") == "first" else { return }
+                detail = model?.filtered.first
+            }
+            #endif
     }
 
     @ViewBuilder private var content: some View {
         if let model {
             @Bindable var model = model
-            List {
-                if model.offline {
-                    Label(i18n.t("common.offline", default: "Offline — showing cached balances"),
-                          systemImage: "wifi.slash")
-                        .font(.caption)
-                        .foregroundStyle(Tokens.warning)
-                        .listRowBackground(Color.clear)
+            ScrollView {
+                VStack(spacing: Tokens.Space.lg) {
+                    if model.offline {
+                        StatusBadge(i18n.t("common.offline"), color: Tokens.warning)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    MetricList(rows: [
+                        MetricRow(label: i18n.t("partners.statsPartners"), value: "\(model.filtered.count)"),
+                        MetricRow(label: i18n.t("partners.statsOutstanding"), value: MoneyText.format(model.outstanding)),
+                    ])
+                    list(model)
                 }
-                listBody(model)
+                .padding(.horizontal, Tokens.Space.gutter)
+                .padding(.vertical, Tokens.Space.lg)
             }
-            .listStyle(.plain)
+            .background(Tokens.ground)
             .searchable(text: $model.search, prompt: i18n.t("partners.searchPlaceholder"))
             .refreshable { await model.load() }
-            .overlay { if model.isLoading && model.partners.isEmpty { LoadingView() } }
-            .sheet(isPresented: $showFilters) {
-                PartnersFilterSheet(model: model)
-            }
-            .sheet(isPresented: $showStats) {
-                PartnersStatsView(model: model)
-            }
+            .sheet(isPresented: $showFilters) { PartnersFilterSheet(model: model) }
         } else {
             LoadingView()
         }
     }
 
-    @ViewBuilder private func listBody(_ model: PartnersListModel) -> some View {
-        if model.filtered.isEmpty && !model.isLoading {
-            EmptyStateView(systemImage: "person.2",
-                           title: i18n.t("partners.noPartnersFound"))
-                .listRowBackground(Color.clear)
+    @ViewBuilder private func list(_ model: PartnersListModel) -> some View {
+        if model.filtered.isEmpty {
+            if model.isLoading {
+                AppCard { LoadingView().frame(height: 120) }
+            } else {
+                AppCard { EmptyStateView(systemImage: "person.2", title: i18n.t("partners.noPartnersFound")) }
+            }
         } else {
-            Section {
-                ForEach(model.filtered) { partner in
-                    Button { detail = partner } label: { PartnerListRow(partner: partner) }
-                        .buttonStyle(.plain)
-                }
+            let canPay = container.session.can("partner.payment")
+            ForEach(model.filtered) { partner in
+                PartnerListRow(partner: partner,
+                               onOpen: { detail = partner },
+                               onPay: canPay ? { payFor = partner } : nil)
             }
         }
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        if container.session.can("partner.manage") {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    Haptic.tick.play()
-                    showCreate = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.body.weight(.semibold))
-                }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button { showFilters = true } label: {
+                Label(i18n.t("common.filter"),
+                      systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
             }
         }
-
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button {
-                    Haptic.tick.play()
-                    showFilters = true
-                } label: {
-                    Label(
-                        hasActiveFilters
-                            ? i18n.t("partners.filterActive", default: "Filtrlar (Faol)")
-                            : i18n.t("common.filter", default: "Filtrlar"),
-                        systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease"
-                    )
+        if container.session.can("partner.manage") {
+            ToolbarItem(placement: .primaryAction) {
+                Button { Haptic.tick.play(); showCreate = true } label: {
+                    Label(i18n.t("partners.newPartner"), systemImage: "person.badge.plus")
                 }
-
-                Button {
-                    Haptic.tick.play()
-                    showStats = true
-                } label: {
-                    Label(
-                        i18n.t("partners.statsTitle", default: "Statistika"),
-                        systemImage: "chart.bar.xaxis"
-                    )
-                }
-
-                Divider()
-
-                if let name = container.session.user?.displayName {
-                    Text(name)
-                }
-                LocaleMenu(i18n: i18n)
-
-                Button(role: .destructive) {
-                    container.session.logout()
-                } label: {
-                    Label(i18n.t("auth.logout", default: "Chiqish"),
-                          systemImage: "rectangle.portrait.and.arrow.right")
-                }
-            } label: {
-                Image(systemName: hasActiveFilters ? "ellipsis.circle.fill" : "ellipsis.circle")
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(hasActiveFilters ? Tokens.signalBlue : .primary)
             }
         }
     }

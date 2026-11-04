@@ -1,5 +1,6 @@
 package uz.malika.erp.features.nasiya.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,8 +20,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,6 +37,7 @@ import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.ScannerField
+import uz.malika.erp.ui.theme.Tokens
 
 private class RowInput(imei: String = "") {
     var imei by mutableStateOf(imei)
@@ -72,13 +75,13 @@ fun ConsignDeviceSheet(
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp).heightIn(max = 560.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().padding(Tokens.Space.gutter).heightIn(max = 600.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("consignments.newConsignment", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(t("consignments.newConsignment", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
 
             if (lockedPartnerId != null) {
-                Text("${t("consignments.partner", null)}: ${lockedPartnerName ?: lockedPartnerId}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                SubjectBlock(t("consignments.partner", null), lockedPartnerName ?: lockedPartnerId, mono = false)
             } else {
                 PartnerPicker(
                     partners = partners.map { it.id to it.shopName },
@@ -87,17 +90,23 @@ fun ConsignDeviceSheet(
                 )
             }
 
-            Text(t("consignments.device", null), style = MaterialTheme.typography.labelLarge)
+            Text(t("consignments.devices", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
             ScannerField(
                 onScan = { code, _ -> rows.add(RowInput(code.trim())) },
                 placeholder = t("consignments.searchPlaceholder", null),
                 autofocus = false,
             )
 
+            // Each device is a surface-2 block inside the sheet, never a nested card.
             rows.forEachIndexed { index, row ->
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("${t("consignments.device", null)} #${index + 1}", style = MaterialTheme.typography.labelMedium)
+                Column(
+                    Modifier.fillMaxWidth()
+                        .background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls))
+                        .padding(Tokens.Space.lg),
+                    verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm),
+                ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("${t("consignments.device", null)} #${index + 1}", style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
                         if (rows.size > 1) {
                             PillButton(t("consignments.removeDevice", null), onClick = { rows.removeAt(index) }, variant = ButtonVariant.GHOST)
                         }
@@ -112,7 +121,7 @@ fun ConsignDeviceSheet(
                     AppFormField(t("consignments.agreedPrice", null), row.price, { row.price = it }, keyboardType = KeyboardType.Number)
                 }
             }
-            PillButton(t("consignments.addDevice", null), onClick = { rows.add(RowInput()) }, variant = ButtonVariant.OUTLINE, modifier = Modifier.fillMaxWidth())
+            PillButton(t("consignments.addDevice", null), onClick = { rows.add(RowInput()) }, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())
 
             DueDatePicker(t("consignments.dueDate", null), dueDate, { dueDate = it })
             AppFormField(t("common.notes", null), notes, { notes = it })

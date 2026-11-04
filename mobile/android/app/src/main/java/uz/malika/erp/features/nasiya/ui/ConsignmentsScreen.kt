@@ -1,26 +1,22 @@
 package uz.malika.erp.features.nasiya.ui
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,13 +27,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.Destination
 import uz.malika.erp.app.LocalCan
-import uz.malika.erp.features.nasiya.data.ConsignmentTab
 import uz.malika.erp.features.nasiya.data.ConsignmentViewDto
 import uz.malika.erp.features.nasiya.data.money
 import uz.malika.erp.features.nasiya.model.ConsignmentsViewModel
@@ -46,6 +42,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.Csv
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.shareTextFile
+import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
@@ -53,19 +50,17 @@ import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.SearchFilterRow
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
-import androidx.compose.ui.unit.dp
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Consignments with Out / Overdue / Settled / Returned / All tabs (navigation),
- * inline search, summary tiles and a filter sheet holding the date range. New
- * consignment and CSV export are compact icon actions. Each OUT row offers
- * settle/return; `consignment.create` holders can consign. Offline writes are
- * parked in the outbox (pending marker). The detail sheet links to the device
- * (POS / inventory) and the resulting sale through cross-feature navigation.
+ * Consignments: a status chip row (All / Out / Overdue / Settled / Returned,
+ * the open and overdue chips carrying their live counts), inline search beside
+ * the filter button, new-consignment and CSV as icon actions, the summary
+ * list-card, then one card per row. Each OUT row offers settle/return;
+ * `consignment.create` holders can consign. Offline writes park in the outbox
+ * (pending pill). The detail sheet links to the device and the resulting sale.
  */
 @Composable
 fun ConsignmentsScreen(container: AppContainer) {
@@ -98,21 +93,28 @@ fun ConsignmentsScreen(container: AppContainer) {
 
     val activeFilters = if (range.startMillis != null || range.endMillis != null) 1 else 0
 
-    Column(
-        Modifier.fillMaxSize().padding(Tokens.Space.section),
-        verticalArrangement = Arrangement.spacedBy(Tokens.Space.section),
-    ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (pending > 0) {
-                StatusChip("${t("common.loading", null)} · $pending", color = Tokens.warning)
-            }
-            Spacer(Modifier.weight(1f))
+    Column(Modifier.fillMaxSize()) {
+        Spacer(Modifier.height(Tokens.Space.md))
+        StatusTabChips(tab, state.stats?.openCount, state.stats?.overdueCount, vm::setTab)
+        Spacer(Modifier.height(Tokens.Space.md))
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.screenH),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SearchFilterRow(
+                query = search,
+                onQueryChange = vm::setSearch,
+                placeholder = t("consignments.searchPlaceholder", null),
+                activeCount = activeFilters,
+                onOpenFilters = { showFilters = true },
+                modifier = Modifier.weight(1f),
+            )
             if (can("consignment.create")) {
                 IconButton(onClick = { createOpen = true }) {
-                    Icon(Icons.Outlined.Add, contentDescription = t("consignments.newConsignment", null), tint = Tokens.foreground)
+                    Icon(Icons.Outlined.Add, contentDescription = t("consignments.newConsignment", null), tint = Tokens.text)
                 }
             }
-            OverflowMenu(csvEnabled = state.page.items.isNotEmpty()) {
+            ConsignmentsOverflowMenu(csvEnabled = state.page.items.isNotEmpty()) {
                 val headers = listOf(
                     t("consignments.partner", null),
                     t("consignments.device", null),
@@ -126,62 +128,50 @@ fun ConsignmentsScreen(container: AppContainer) {
             }
         }
 
-        Row(Modifier.horizontalScroll(rememberScrollState())) {
-            SegmentedControl(
-                options = listOf(
-                    SegmentOption(ConsignmentTab.ALL, t("common.all", null)),
-                    SegmentOption(ConsignmentTab.OUT, t("consignments.statusOut", null)),
-                    SegmentOption(ConsignmentTab.OVERDUE, t("consignments.statusOverdue", null)),
-                    SegmentOption(ConsignmentTab.SETTLED, t("consignments.statusSettled", null)),
-                    SegmentOption(ConsignmentTab.RETURNED, t("consignments.statusReturned", null)),
-                ),
-                selected = tab,
-                onSelect = vm::setTab,
-            )
-        }
-
-        SearchFilterRow(
-            query = search,
-            onQueryChange = vm::setSearch,
-            placeholder = t("consignments.searchPlaceholder", null),
-            activeCount = activeFilters,
-            onOpenFilters = { showFilters = true },
-        )
-
-        state.stats?.let { s ->
-            MetricGrid(
-                perRow = 3,
-                tiles = listOf(
-                    { m -> MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), m, money = false) },
-                    { m -> MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), m, money = false) },
-                    { m ->
-                        MetricTile(
-                            t("consignments.statsOverdue", null),
-                            s.overdueCount.toString(),
-                            m,
-                            money = false,
-                            emphasis = if (s.overdueCount > 0) Tokens.destructive else null,
-                        )
-                    },
-                ),
-            )
-        }
-
-        when {
-            state.loading -> Loading()
-            state.error != null -> ErrorView(state.error!!, retryLabel = t("common.retry", null), onRetry = vm::refresh)
-            state.page.items.isEmpty() -> EmptyView(t("consignments.noConsignmentsFound", null))
-            else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
-                items(state.page.items, key = { it.id }) { item ->
-                    ConsignmentCard(
-                        item = item,
-                        onOpenDetail = { detailFor = item },
-                        onSettle = { settleFor = item },
-                        onReturn = { returnFor = item },
+        LazyColumn(
+            contentPadding = PaddingValues(start = Tokens.Space.screenH, end = Tokens.Space.screenH, top = Tokens.Space.md, bottom = Tokens.Space.lg),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
+        ) {
+            if (pending > 0) {
+                item { StatusChip("${t("common.loading", null)} · $pending", color = Tokens.warning) }
+            }
+            state.stats?.let { s ->
+                item {
+                    MetricGrid(
+                        perRow = 3,
+                        tiles = listOf(
+                            { m -> MetricTile(t("consignments.statsOpen", null), s.openCount.toString(), m, money = false) },
+                            { m -> MetricTile(t("consignments.statsOutstanding", null), formatMoney(s.outstanding.money()), m, money = false) },
+                            { m ->
+                                MetricTile(
+                                    t("consignments.statsOverdue", null), s.overdueCount.toString(), m, money = false,
+                                    emphasis = if (s.overdueCount > 0) Tokens.danger else null,
+                                )
+                            },
+                        ),
                     )
                 }
-                item {
-                    LoadMoreFooter(state.page.hasMore, state.page.loading, onLoadMore = vm::loadMore)
+            }
+            when {
+                state.loading -> item { Box(Modifier.fillMaxWidth().height(160.dp)) { Loading() } }
+                state.error != null -> item {
+                    Box(Modifier.fillMaxWidth().height(200.dp)) {
+                        ErrorView(state.error!!, retryLabel = t("common.retry", null), onRetry = vm::refresh)
+                    }
+                }
+                state.page.items.isEmpty() -> item {
+                    AppCard(Modifier.fillMaxWidth()) { EmptyView(t("consignments.noConsignmentsFound", null), compact = true) }
+                }
+                else -> {
+                    items(state.page.items, key = { it.id }) { item ->
+                        ConsignmentCard(
+                            item = item,
+                            onOpenDetail = { detailFor = item },
+                            onSettle = { settleFor = item },
+                            onReturn = { returnFor = item },
+                        )
+                    }
+                    item { LoadMoreFooter(state.page.hasMore, state.page.loading, onLoadMore = vm::loadMore) }
                 }
             }
         }
@@ -212,30 +202,4 @@ fun ConsignmentsScreen(container: AppContainer) {
     }
     settleFor?.let { c -> SettleConsignmentSheet(container, c) { settleFor = null; vm.refresh() } }
     returnFor?.let { c -> ReturnConsignmentSheet(container, c) { returnFor = null; vm.refresh() } }
-}
-
-/** Overflow menu carrying the CSV export (enabled only when there are rows). */
-@Composable
-private fun OverflowMenu(csvEnabled: Boolean, onCsv: () -> Unit) {
-    val t = LocalT.current
-    var menu by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { menu = true }) {
-            Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
-        }
-        DropdownMenu(
-            expanded = menu,
-            onDismissRequest = { menu = false },
-            shape = RoundedCornerShape(Tokens.Radius.cards),
-            containerColor = Tokens.card,
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-        ) {
-            DropdownMenuItem(
-                text = { Text(t("consignments.exportCsv", null)) },
-                enabled = csvEnabled,
-                onClick = { menu = false; onCsv() },
-            )
-        }
-    }
 }

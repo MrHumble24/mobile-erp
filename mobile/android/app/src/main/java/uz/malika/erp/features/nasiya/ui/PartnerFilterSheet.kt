@@ -1,15 +1,20 @@
 package uz.malika.erp.features.nasiya.ui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.nasiya.model.PartnerActive
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.FilterSheet
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
-import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -46,10 +51,10 @@ fun PartnerFilterSheet(
             onSelect = { if (enabled) onActive(it) },
             modifier = Modifier.fillMaxWidth(),
         )
-        StatusChip(
-            label = t("partners.overdueOnly", null),
-            color = if (overdue && enabled) Tokens.destructive else Tokens.slate,
-            modifier = if (enabled) Modifier.clickable { onOverdue(!overdue) } else Modifier,
-        )
+        Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
+            Text(t("partners.overdueOnly", null), style = MaterialTheme.typography.bodyMedium, color = if (enabled) Tokens.text else Tokens.muted)
+            Spacer(Modifier.weight(1f))
+            AppSwitch(checked = overdue && enabled, onCheckedChange = onOverdue, enabled = enabled)
+        }
     }
 }

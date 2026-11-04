@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Create / edit a partner — online-only (`partner.manage`). Blocks with a
-/// needs-connection notice offline. Edit adds the active toggle.
+/// Create / edit a partner as a Warm Card sheet — online-only (`partner.manage`),
+/// blocked with a notice offline. Edit adds the active switch.
 struct PartnerFormSheet: View {
     enum Mode {
         case create
@@ -14,7 +14,6 @@ struct PartnerFormSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var shopName = ""
     @State private var contactPerson = ""
     @State private var phone = ""
@@ -26,44 +25,51 @@ struct PartnerFormSheet: View {
     @State private var errorMessage: String?
 
     private var isEdit: Bool { if case .edit = mode { return true } else { return false } }
+    private var online: Bool { container.connectivity.isOnline }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                if !container.connectivity.isOnline {
-                    Label(i18n.t("common.offline", default: "You're offline. Connect to save."),
-                          systemImage: "wifi.slash")
-                        .foregroundStyle(Tokens.warning)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t(isEdit ? "partners.editPartner" : "partners.newPartner")) { dismiss() }
+                if !online { FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning) }
+                field("partners.name", $shopName)
+                field("partners.contactPerson", $contactPerson)
+                AppFormField(label: i18n.t("partners.phone")) {
+                    AppTextField(placeholder: i18n.t("partners.phone"), text: $phone, keyboard: .phonePad,
+                                 autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                        .sanitizePhone($phone)
                 }
-                Section {
-                    CaptionedField(i18n.t("partners.name"), text: $shopName)
-                    CaptionedField(i18n.t("partners.contactPerson"), text: $contactPerson)
-                    CaptionedField(i18n.t("partners.phone"), text: $phone, phone: true)
-                    CaptionedField(i18n.t("partners.telegramHandle"), text: $telegramHandle)
+                field("partners.telegramHandle", $telegramHandle)
+                AppFormField(label: i18n.t("partners.creditLimit")) {
+                    AppTextField(placeholder: "0", text: $creditLimit, keyboard: .decimalPad,
+                                 autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                        .sanitizeDecimal($creditLimit)
                 }
-                Section {
-                    CaptionedField(i18n.t("partners.creditLimit"), text: $creditLimit, mono: true, number: true)
-                    CaptionedField(i18n.t("common.notes"), text: $notes)
-                    if isEdit { Toggle(i18n.t("partners.active"), isOn: $isActive) }
+                field("common.notes", $notes)
+                if isEdit {
+                    Toggle(isOn: $isActive) {
+                        Text(i18n.t("partners.active")).font(.ui(.body)).foregroundStyle(Tokens.text)
+                    }
+                    .frame(minHeight: Tokens.Space.minTouch)
                 }
-                if let errorMessage {
-                    Text(errorMessage).font(.footnote).foregroundStyle(Tokens.danger)
+                if let errorMessage { FormErrorLine(message: errorMessage) }
+                Button { Task { await save() } } label: {
+                    Text(i18n.t(isEdit ? "common.save" : "common.create")).frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.pillPrimary)
+                .disabled(saving || shopName.trimmingCharacters(in: .whitespaces).isEmpty || !online)
             }
-            .navigationTitle(i18n.t(isEdit ? "partners.editPartner" : "partners.newPartner"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t(isEdit ? "common.save" : "common.create")) { Task { await save() } }
-                        .disabled(saving || shopName.trimmingCharacters(in: .whitespaces).isEmpty
-                                  || !container.connectivity.isOnline)
-                }
-            }
-            .onAppear(perform: prime)
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.large])
+        .onAppear(perform: prime)
+    }
+
+    private func field(_ key: String, _ text: Binding<String>) -> some View {
+        AppFormField(label: i18n.t(key)) { AppTextField(placeholder: i18n.t(key), text: text) }
     }
 
     private func prime() {
@@ -106,51 +112,6 @@ struct PartnerFormSheet: View {
             dismiss()
         } catch {
             errorMessage = (error as? AppError)?.message ?? i18n.t("common.error")
-        }
-    }
-}
-
-/// A labelled single-line field used across this slice's forms.
-struct CaptionedField: View {
-    let label: String
-    @Binding var text: String
-    var mono = false
-    var number = false
-    var phone = false
-
-    init(_ label: String, text: Binding<String>, mono: Bool = false, number: Bool = false, phone: Bool = false) {
-        self.label = label
-        self._text = text
-        self.mono = mono
-        self.number = number
-        self.phone = phone
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(.caption).foregroundStyle(Tokens.muted)
-            TextField(label, text: $text)
-                .font(mono ? .mono(16) : .body)
-                .keyboardType(phone ? .phonePad : (number ? .decimalPad : .default))
-                .textInputAutocapitalization((number || phone) ? .never : .sentences)
-                .autocorrectionDisabled(mono || number || phone)
-        }
-        .modifier(AutoSanitizeCaptioned(phone: phone, number: number, text: $text))
-    }
-}
-
-private struct AutoSanitizeCaptioned: ViewModifier {
-    let phone: Bool
-    let number: Bool
-    @Binding var text: String
-
-    func body(content: Content) -> some View {
-        if phone {
-            content.sanitizePhone($text)
-        } else if number {
-            content.sanitizeDecimal($text)
-        } else {
-            content
         }
     }
 }

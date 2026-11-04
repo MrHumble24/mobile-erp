@@ -14,8 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -47,12 +45,12 @@ fun ReturnConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("consignments.return", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("IMEI: ${item.imei}", style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
-            Text(t("consignments.returnCondition", null), style = MaterialTheme.typography.labelLarge)
+            Text(t("consignments.return", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.imei)
+            Text(t("consignments.returnCondition", null), style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
             SegmentedControl(
                 options = listOf(
                     SegmentOption("IN_STOCK", t("consignments.conditionInStock", null)),

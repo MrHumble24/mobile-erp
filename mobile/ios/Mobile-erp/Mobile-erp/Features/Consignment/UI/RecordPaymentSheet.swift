@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Record a partner payment — online-only (`partner.payment`). Blocks offline.
+/// "Pay in full" is a ghost link that fills the outstanding amount.
 struct RecordPaymentSheet: View {
     let partner: Partner
     var onSaved: () -> Void
@@ -8,112 +9,48 @@ struct RecordPaymentSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var amount = ""
     @State private var notes = ""
     @State private var saving = false
     @State private var errorMessage: String?
 
     private var online: Bool { container.connectivity.isOnline }
+    private var outstanding: Double { Double(partner.outstanding) ?? 0 }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(partner.shopName)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(Tokens.ink)
-
-                        HStack(alignment: .firstTextBaseline) {
-                            Text(i18n.t("partners.outstanding", default: "Outstanding Debt:"))
-                                .font(.subheadline)
-                                .foregroundStyle(Tokens.muted)
-                            Spacer()
-                            MoneyText(value: partner.outstanding, size: 18)
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(Tokens.warning)
-                        }
-
-                        if let outstandingVal = Double(partner.outstanding), outstandingVal > 0, amount != String(Int(outstandingVal)) {
-                            Button {
-                                amount = String(Int(outstandingVal))
-                                Haptic.tick.play()
-                            } label: {
-                                Text(i18n.t("partners.payFull", default: "Fill Full Balance ($\(Int(outstandingVal)))"))
-                                    .font(.caption.weight(.medium))
-                                    .foregroundStyle(Tokens.signalBlue)
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.top, 2)
-                        }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t("partners.recordPayment")) { dismiss() }
+                SubjectBlock(title: partner.shopName,
+                             line: "\(i18n.t("partners.outstanding")): \(MoneyText.format(partner.outstanding))")
+                if !online { FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning) }
+                AppFormField(label: i18n.t("partners.paymentAmount")) {
+                    AppTextField(placeholder: "0", text: $amount, keyboard: .decimalPad, font: .data(.regular))
+                        .sanitizeDecimal($amount)
+                }
+                if outstanding > 0, amount != String(Int(outstanding)) {
+                    Button(i18n.t("partners.payFull", ["amount": MoneyText.format(partner.outstanding)])) {
+                        amount = String(Int(outstanding))
+                        Haptic.tick.play()
                     }
-                    .padding(.vertical, 4)
+                    .buttonStyle(.pillGhost)
                 }
-
-                if !online {
-                    Section {
-                        Label(i18n.t("common.offline", default: "You are offline. Connect to internet to record payments."),
-                              systemImage: "wifi.slash")
-                            .font(.footnote)
-                            .foregroundStyle(Tokens.warning)
-                    }
+                AppFormField(label: i18n.t("common.notes")) {
+                    AppTextField(placeholder: i18n.t("common.notes"), text: $notes)
                 }
-
-                Section(i18n.t("partners.paymentAmount", default: "Payment Amount")) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("$")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(Tokens.muted)
-                        TextField("0", text: $amount)
-                            .font(.mono(22, weight: .bold))
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                            .sanitizeDecimal($amount)
-                    }
-                    .padding(.vertical, 2)
+                if let errorMessage { FormErrorLine(message: errorMessage) }
+                Button { Task { await save() } } label: {
+                    Text(i18n.t("partners.recordPayment")).frame(maxWidth: .infinity)
                 }
-
-                Section {
-                    CaptionedField(i18n.t("common.notes", default: "Notes (payment method / reference)"), text: $notes)
-                }
-
-                if let errorMessage {
-                    Section {
-                        Label(errorMessage, systemImage: "exclamationmark.triangle")
-                            .font(.footnote)
-                            .foregroundStyle(Tokens.danger)
-                    }
-                }
-
-                Section {
-                    Button {
-                        Task { await save() }
-                    } label: {
-                        if saving {
-                            ProgressView().frame(maxWidth: .infinity)
-                        } else {
-                            Label(i18n.t("partners.recordPayment", default: "Confirm Payment"), systemImage: "checkmark.circle.fill")
-                                .font(.headline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 24)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Tokens.success)
-                    .disabled(saving || !online || (Double(amount) ?? 0) <= 0)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
+                .buttonStyle(.pillPrimary)
+                .disabled(saving || !online || (Double(amount) ?? 0) <= 0)
             }
-            .navigationTitle(i18n.t("partners.recordPayment", default: "Record Payment"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.medium, .large])
     }
 
     private func save() async {

@@ -8,13 +8,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -27,10 +28,10 @@ import uz.malika.erp.features.nasiya.data.LedgerEntryDto
 import uz.malika.erp.features.nasiya.data.money
 import uz.malika.erp.features.nasiya.model.LedgerViewModel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
@@ -38,6 +39,7 @@ import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /** Partner ledger + aging + the partner actions (pay / consign / edit). */
@@ -60,25 +62,23 @@ fun PartnerLedgerSheet(
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().padding(20.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            Modifier.fillMaxWidth().padding(Tokens.Space.gutter).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
         ) {
-            Text(partner.shopName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(
-                "${t("partners.outstanding", null)}: ${formatMoney(partner.outstanding)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Tokens.mutedForeground,
-            )
+            Text(partner.shopName, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            SubjectBlock(t("partners.outstanding", null), formatMoney(partner.outstanding))
+            CreditBar(partner.creditLimit, partner.outstanding)
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Payment is the money action (the one orange); consign secondary; edit a ghost link.
+            Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
                 if (can("partner.payment")) {
-                    PillButton(t("partners.recordPayment", null), onClick = onRecordPayment)
+                    PillButton(t("partners.recordPayment", null), onClick = onRecordPayment, modifier = Modifier.fillMaxWidth())
                 }
                 if (can("consignment.create")) {
-                    PillButton(t("partners.newConsignmentForPartner", null), onClick = onNewConsignment, variant = ButtonVariant.OUTLINE)
+                    PillButton(t("partners.newConsignmentForPartner", null), onClick = onNewConsignment, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())
                 }
                 if (can("partner.manage")) {
-                    PillButton(t("partners.editPartner", null), onClick = onEdit, variant = ButtonVariant.OUTLINE)
+                    PillButton(t("partners.editPartner", null), onClick = onEdit, variant = ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
                 }
             }
 
@@ -87,11 +87,16 @@ fun PartnerLedgerSheet(
                 state.error != null -> ErrorView(state.error!!, retryLabel = t("common.retry", null), onRetry = vm::load)
                 else -> {
                     AgingGrid(state.aging)
-                    Text(t("partners.ledgerTitle", null), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(t("partners.ledgerTitle", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
                     if (state.entries.isEmpty()) {
-                        Text(t("partners.noLedgerEntries", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.mutedForeground)
+                        Text(t("partners.noLedgerEntries", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
                     } else {
-                        state.entries.forEach { LedgerRow(it) }
+                        Column {
+                            state.entries.forEachIndexed { i, e ->
+                                LedgerRow(e)
+                                if (i < state.entries.lastIndex) HorizontalDivider(color = Tokens.border)
+                            }
+                        }
                     }
                 }
             }
@@ -103,8 +108,8 @@ fun PartnerLedgerSheet(
 private fun AgingGrid(buckets: List<AgingBucketDto>) {
     val t = LocalT.current
     if (buckets.none { it.count > 0 }) return
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(t("partners.agingTitle", null), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+    Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
+        Text(t("partners.agingTitle", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
         MetricGrid(
             perRow = 4,
             tiles = buckets.map { b ->
@@ -128,28 +133,29 @@ private fun LedgerRow(entry: LedgerEntryDto) {
     val change = parseMoney(entry.change.money())
     val positive = change.signum() >= 0
     val signed = (if (positive) "+" else "-") + formatMoney(change.abs().toPlainString())
-    AppCard(padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    // A ledger line, not a nested card: kind pill + signed mono change, then date · running balance.
+    Column(Modifier.fillMaxWidth().padding(vertical = Tokens.Space.sm)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             StatusChip(
                 if (isConsignment) t("partners.kindConsignment", null) else t("partners.kindPayment", null),
-                color = if (isConsignment) Tokens.brandViolet else Tokens.emerald,
+                color = if (isConsignment) Tokens.info else Tokens.success,
             )
             Text(
                 signed,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.titleSmall.copy(fontFamily = MonoFamily),
                 color = if (positive) Tokens.warning else Tokens.success,
             )
         }
-        Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(entry.at.take(10), style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+        Row(Modifier.fillMaxWidth().padding(top = Tokens.Space.xs), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(formatDate(entry.at), style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
             Text(
                 "${t("partners.runningBalance", null)}: ${formatMoney(entry.runningBalance.money())}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Tokens.mutedForeground,
+                color = Tokens.muted,
             )
         }
-        entry.notes?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground, modifier = Modifier.padding(top = 4.dp))
+        entry.notes?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.muted, modifier = Modifier.padding(top = Tokens.Space.xs))
         }
     }
 }

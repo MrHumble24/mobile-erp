@@ -3,30 +3,34 @@ package uz.malika.erp.features.nasiya.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.nasiya.data.ConsignmentViewDto
 import uz.malika.erp.features.nasiya.data.money
 import uz.malika.erp.features.nasiya.model.daysOverdue
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Read-only consignment detail (from the already-loaded row) + OUT actions.
- * [onViewDevice] opens the device in inventory; [onViewSale] (null unless the
- * consignment resolved into a sale) opens that sale — both via cross-feature nav.
+ * Consignment detail as a Warm Card sheet: partner title + status pill, mono
+ * IMEI lines, keyed facts, then ghost links (device, resulting sale) and — on
+ * an OUT item — settle (the one orange) / return (destructive). Mirrors iOS.
  */
 @Composable
 fun ConsignmentDetailSheet(
@@ -39,52 +43,46 @@ fun ConsignmentDetailSheet(
 ) {
     val t = LocalT.current
     val overdue = daysOverdue(item.dueDate, item.statusCode)
+    val mono = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily, color = Tokens.text)
+    val plain = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text)
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(t("consignments.detailTitle", null), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                StatusChip(item.statusCode, color = consignmentStatusColor(item.statusCode))
-            }
-            DetailRow(t("consignments.partner", null), item.partnerShopName.ifBlank { "—" })
-            DetailRow(t("consignments.device", null), item.imei, mono = true)
-            item.imei2?.takeIf { it.isNotBlank() }?.let {
-                DetailRow(t("inventory.imei2", null), it, mono = true)
-            }
-            DetailRow(t("consignments.agreedPrice", null), formatMoney(item.agreedPrice.money()), mono = true)
-            DetailRow(
-                t("consignments.dueDate", null),
-                item.dueDate.take(10) + if (overdue > 0) " · $overdue ${t("consignments.daysOverdue", null)}" else "",
-            )
-            DetailRow(t("consignments.consignedAt", null), item.consignedAt.take(10))
-            item.resolvedAt?.let { DetailRow(t("consignments.resolvedAt", null), it.take(10)) }
-            item.notes?.let { DetailRow(t("common.notes", null), it) }
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(item.partnerShopName.ifBlank { t("consignments.detailTitle", null) }, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.sm))
+            Text(item.imei, style = mono)
+            item.imei2?.takeIf { it.isNotBlank() }?.let { Text(it, style = mono.copy(color = Tokens.muted)) }
+            Spacer(Modifier.height(Tokens.Space.sm))
+            StatusChip(consignmentStatusLabel(item.statusCode, t), color = consignmentStatusColor(item.statusCode))
+            Spacer(Modifier.height(Tokens.Space.lg))
 
-            Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PillButton(t("consignments.openDevice", null), onClick = onViewDevice, variant = ButtonVariant.OUTLINE)
+            FactRow(t("consignments.agreedPrice", null)) { MoneyText(item.agreedPrice.money(), style = plain) }
+            FactRow(t("consignments.dueDate", null)) {
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(formatDate(item.dueDate), style = mono.copy(color = if (overdue > 0) Tokens.danger else Tokens.text))
+                    if (overdue > 0) {
+                        Text("$overdue ${t("consignments.daysOverdue", null)}", style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
+                    }
+                }
+            }
+            FactRow(t("consignments.consignedAt", null), last = item.resolvedAt == null && item.notes.isNullOrBlank()) {
+                Text(formatDate(item.consignedAt), style = mono)
+            }
+            item.resolvedAt?.let { FactRow(t("consignments.resolvedAt", null), last = item.notes.isNullOrBlank()) { Text(formatDate(it), style = mono) } }
+            item.notes?.takeIf { it.isNotBlank() }?.let { FactRow(t("common.notes", null), last = true) { Text(it, style = plain) } }
+
+            Spacer(Modifier.height(Tokens.Space.lg))
+            Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
+                PillButton(t("consignments.openDevice", null), onClick = onViewDevice, variant = ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
                 onViewSale?.let {
-                    PillButton(t("consignments.resultingSale", null), onClick = it, variant = ButtonVariant.OUTLINE)
+                    PillButton(t("consignments.resultingSale", null), onClick = it, variant = ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
+                }
+                if (item.statusCode == "OUT") {
+                    PillButton(t("consignments.settle", null), onClick = onSettle, modifier = Modifier.fillMaxWidth())
+                    PillButton(t("consignments.return", null), onClick = onReturn, variant = ButtonVariant.DESTRUCTIVE, modifier = Modifier.fillMaxWidth())
                 }
             }
-
-            if (item.statusCode == "OUT") {
-                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PillButton(t("consignments.settle", null), onClick = onSettle)
-                    PillButton(t("consignments.return", null), onClick = onReturn, variant = ButtonVariant.OUTLINE)
-                }
-            }
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
-    }
-}
-
-@Composable
-private fun DetailRow(label: String, value: String, mono: Boolean = false) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Tokens.mutedForeground)
-        val style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
-        Text(value, style = if (mono) style.copy(fontFamily = MonoFamily) else style)
     }
 }
