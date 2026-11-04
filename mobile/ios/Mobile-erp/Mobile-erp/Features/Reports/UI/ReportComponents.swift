@@ -1,8 +1,9 @@
 import SwiftUI
 import Charts
 
-/// Shared presentation pieces for the report tabs: a labelled figure tile, a
-/// responsive hero + 2-column grid layout, and a Swift Charts bar card for breakdowns.
+/// Shared presentation pieces for the report sections: money formatting, the
+/// ranked horizontal breakdown (text bar on the border track — never a hue),
+/// and the small vertical bar card used where a handful of values compare.
 
 /// Formats a numeric aggregate as money via the shared `MoneyText` formatter.
 func reportMoney(_ value: Double?) -> String {
@@ -10,115 +11,34 @@ func reportMoney(_ value: Double?) -> String {
     return MoneyText.format(String(value))
 }
 
-struct MetricTile: View, Identifiable {
-    var id: String { label }
+/// One row of a breakdown: label, preformatted value and 0–1 share.
+struct FinShareRow: Identifiable {
+    let key: String
     let label: String
     let value: String
-    var subtext: String?
-    var emphasis: Color?
-    var icon: String? = nil
-    var iconColor: Color? = nil
-    var badge: String? = nil
-    var badgeColor: Color? = nil
-    var isHero: Bool = false
-    var onTap: (() -> Void)? = nil
+    let share: Double
+    /// A negative magnitude (e.g. a loss) draws its bar in the danger hue.
+    var negative: Bool = false
+    var id: String { key }
+}
+
+/// Ranked horizontal bars inside an `AppCard`: label · value · share on one
+/// line, the magnitude as a text-colour bar on the border track below. Rows
+/// are tappable when `onSelect` is set (drill-down).
+struct FinBreakdownBars: View {
+    let title: String
+    let rows: [FinShareRow]
+    var onSelect: ((String) -> Void)? = nil
+    @Environment(I18n.self) private var i18n
 
     var body: some View {
-        if let onTap {
-            Button(action: {
-                Haptic.tick.play()
-                onTap()
-            }) {
-                card
-            }
-            .buttonStyle(.plain)
-        } else {
-            card
-        }
-    }
-
-    @ViewBuilder private var card: some View {
-        if isHero {
-            heroCard
-        } else {
-            standardCard
-        }
-    }
-
-    private var heroCard: some View {
-        AppCard(padding: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    if let icon {
-                        Image(systemName: icon)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(iconColor ?? Tokens.ink)
-                    }
-                    Text(label)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Tokens.muted)
-                    Spacer()
-                    if let badge {
-                        Text(badge)
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(badgeColor ?? Tokens.ink)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background((badgeColor ?? Tokens.ink).opacity(0.12), in: Capsule())
-                    }
-                    if onTap != nil {
-                        Image(systemName: "chevron.right")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                Text(value)
-                    .font(.system(size: 30, weight: .bold))
-                    .foregroundStyle(emphasis ?? Tokens.ink)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                if let subtext {
-                    Text(subtext)
-                        .font(.caption)
-                        .foregroundStyle(Tokens.muted)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private var standardCard: some View {
-        AppCard(padding: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    if let icon {
-                        Image(systemName: icon)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(iconColor ?? Tokens.ink)
-                    }
-                    Text(label)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(Tokens.muted)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                    if onTap != nil {
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                Text(value)
-                    .font(.system(size: 19, weight: .bold))
-                    .foregroundStyle(emphasis ?? Tokens.ink)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                if let subtext {
-                    Text(subtext)
-                        .font(.caption2)
-                        .foregroundStyle(Tokens.muted)
-                        .lineLimit(1)
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(title).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                if rows.isEmpty {
+                    Text(i18n.t("reports.empty")).font(.ui(.body)).foregroundStyle(Tokens.muted)
+                } else {
+                    FinBreakdownRows(rows: rows, onSelect: onSelect)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -126,31 +46,35 @@ struct MetricTile: View, Identifiable {
     }
 }
 
-/// Responsive grid: renders full-width hero cards on top, and secondary metric tiles
-/// in a balanced 2-column grid for dense, readable mobile presentation.
-struct MetricGrid: View {
-    let tiles: [MetricTile]
+/// The bar rows alone, for a sheet or a composite card (never a nested card).
+struct FinBreakdownRows: View {
+    let rows: [FinShareRow]
+    var onSelect: ((String) -> Void)? = nil
 
     var body: some View {
-        let heroes = tiles.filter(\.isHero)
-        let standard = tiles.filter { !$0.isHero }
-
-        VStack(spacing: 10) {
-            ForEach(heroes) { hero in
-                hero
-            }
-            if !standard.isEmpty {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 10),
-                        GridItem(.flexible(), spacing: 10)
-                    ],
-                    spacing: 10
-                ) {
-                    ForEach(standard) { tile in
-                        tile
+        let maxShare = max(rows.map(\.share).max() ?? 0, 0.0001)
+        VStack(spacing: Tokens.Space.md) {
+            ForEach(rows) { row in
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                    HStack(spacing: Tokens.Space.sm) {
+                        Text(row.label).font(.ui(.body)).foregroundStyle(Tokens.text).lineLimit(1)
+                        Spacer(minLength: Tokens.Space.sm)
+                        Text("\(row.value) · \(String(format: "%.1f", row.share * 100))%")
+                            .font(.mono(12)).foregroundStyle(Tokens.muted)
+                        if onSelect != nil {
+                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(Tokens.muted)
+                        }
                     }
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Tokens.border)
+                            Capsule().fill(row.negative ? Tokens.danger : Tokens.text).frame(width: geo.size.width * CGFloat(row.share / maxShare))
+                        }
+                    }
+                    .frame(height: 6)
                 }
+                .contentShape(Rectangle())
+                .onTapGesture { if let onSelect { Haptic.tick.play(); onSelect(row.key) } }
             }
         }
     }
@@ -163,65 +87,42 @@ struct BarDatum: Identifiable {
     var id: String { label }
 }
 
-/// A bar chart inside an `AppCard`, drawn with Swift Charts. Past six
-/// categories the x labels are dropped — the accompanying list (e.g. the
-/// `FinShareList` below) names the rows, and no labels beat overlapping ones.
+/// A small vertical bar card (Swift Charts) for a handful of comparable
+/// values — closing-day figures, average prices. Bars take the text colour;
+/// negative values the danger hue. Long or many labels are dropped (the rows
+/// or cards below name the bars) rather than overlapping.
 struct BarChartCard: View {
     let title: String
     let data: [BarDatum]
-    private let maxVisibleLabels = 6
+    @Environment(I18n.self) private var i18n
+
+    private var showsLabels: Bool { data.count <= 6 && data.allSatisfy { $0.label.count <= 14 } }
 
     var body: some View {
-        AppCard(padding: 16) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    Text(title)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(Tokens.ink)
-                    Spacer()
-                }
-
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(title).font(.ui(.heading)).foregroundStyle(Tokens.text)
                 if data.isEmpty || data.allSatisfy({ $0.value == 0 }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "chart.bar.xaxis")
-                            .font(.title)
-                            .foregroundStyle(.tertiary)
-                        Text("—")
-                            .font(.caption)
-                            .foregroundStyle(Tokens.muted)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 160)
+                    Text(i18n.t("reports.empty")).font(.ui(.body)).foregroundStyle(Tokens.muted)
+                        .frame(maxWidth: .infinity, minHeight: 120)
                 } else {
                     Chart(data) { datum in
-                        BarMark(
-                            x: .value("category", datum.label),
-                            y: .value("value", datum.value)
-                        )
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Tokens.signalBlue, Tokens.signalBlue.opacity(0.75)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .cornerRadius(6)
+                        BarMark(x: .value("category", datum.label), y: .value("value", datum.value))
+                            .foregroundStyle(datum.value < 0 ? Tokens.danger : Tokens.text)
+                            .cornerRadius(4)
                     }
                     .chartXAxis {
-                        if data.count <= maxVisibleLabels {
-                            AxisMarks { _ in
-                                AxisGridLine()
-                                AxisValueLabel().font(.caption2)
-                            }
-                        } else {
-                            AxisMarks { _ in
-                                AxisGridLine()
-                            }
+                        AxisMarks { _ in
+                            if showsLabels { AxisValueLabel().font(.ui(.caption)).foregroundStyle(Tokens.muted) }
                         }
                     }
                     .chartYAxis {
-                        AxisMarks(format: Decimal.FormatStyle().notation(.compactName))
+                        AxisMarks(values: .automatic(desiredCount: 3)) { _ in
+                            AxisGridLine().foregroundStyle(Tokens.border)
+                            AxisValueLabel(format: Decimal.FormatStyle().notation(.compactName)).font(.mono(11)).foregroundStyle(Tokens.muted)
+                        }
                     }
-                    .frame(height: 220)
+                    .frame(height: 200)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Model pricing & margins over a rolling 90-day window. Acquisition cost is
-/// shown only to users with `device.cost.view` (null → "—" otherwise).
+/// Model pricing & margins over a rolling 90-day window: an average-price bar
+/// card, then one card per model/storage with keyed facts. Acquisition cost
+/// and margin appear only with `device.cost.view`.
 struct ModelPricingTab: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var rows: [ModelPricingRow]?
     @State private var labels: [String: String] = [:]
     @State private var error: String?
@@ -15,28 +15,24 @@ struct ModelPricingTab: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: Tokens.Space.lg) {
                 if let error, rows == nil {
-                    ErrorStateView(message: error) { Task { await load() } }
+                    AppCard { ErrorStateView(message: error) { Task { await load() } } }
                 } else if let rows {
                     if rows.isEmpty {
-                        EmptyStateView(systemImage: "tag", title: i18n.t("reports.empty"))
+                        AppCard { EmptyStateView(systemImage: "tag", title: i18n.t("reports.empty")) }
                     } else {
-                        BarChartCard(
-                            title: i18n.t("dashboard.avgSellingPrice"),
-                            data: rows.prefix(8).map {
-                                BarDatum(label: name($0), value: $0.avgSellingPrice ?? 0)
-                            }
-                        )
+                        BarChartCard(title: i18n.t("dashboard.avgSellingPrice"),
+                                     data: rows.prefix(8).map { BarDatum(label: "\(name($0)) \($0.storage ?? "")", value: $0.avgSellingPrice ?? 0) })
                         ForEach(rows) { row in PricingCard(row: row, name: name(row), canCost: canCost) }
                     }
                 } else {
-                    LoadingView().frame(height: 200)
+                    AppCard { LoadingView().frame(height: 160) }
                 }
             }
-            .padding()
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .background(Tokens.bg)
         .task { await load() }
     }
 
@@ -50,7 +46,7 @@ struct ModelPricingTab: View {
     }
 }
 
-/// One model's pricing row as a card (mobile-friendly vs. a wide table).
+/// One model's pricing: name + mono storage, stock/sold caption, keyed facts.
 private struct PricingCard: View {
     let row: ModelPricingRow
     let name: String
@@ -58,70 +54,32 @@ private struct PricingCard: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        AppCard(padding: 16) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(name)
-                            .font(.headline)
-                            .foregroundStyle(Tokens.ink)
-                        if let storage = row.storage {
-                            Text(storage)
-                                .font(.mono(12))
-                                .foregroundStyle(Tokens.muted)
-                        }
-                    }
-                    Spacer()
-                    HStack(spacing: 8) {
-                        stat(i18n.t("dashboard.unitsInStock", default: "In Stock"), "\(row.unitsInStock)")
-                        stat(i18n.t("dashboard.unitsSold", default: "Sold"), "\(row.unitsSold)")
-                    }
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                    if let storage = row.storage { Text(storage).font(.data(.regular)).foregroundStyle(Tokens.muted) }
+                    Text("\(i18n.t("dashboard.unitsInStock")) \(row.unitsInStock) · \(i18n.t("dashboard.unitsSold")) \(row.unitsSold)")
+                        .font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
-
-                Divider()
-
-                VStack(spacing: 6) {
+                VStack(spacing: 0) {
                     if canCost {
-                        priceRow(i18n.t("dashboard.avgAcquisitionCost", default: "Avg Cost (Landed)"),
-                                 row.avgAcquisitionCost,
-                                 color: .secondary)
+                        FactRow(label: i18n.t("dashboard.avgAcquisitionCost")) { Text(reportMoney(row.avgAcquisitionCost)).font(.data(.regular)) }
                     }
-                    priceRow(i18n.t("dashboard.avgSellingPrice", default: "Avg Selling Price"),
-                             row.avgSellingPrice,
-                             color: Tokens.ink)
-
-                    if canCost, let selling = row.avgSellingPrice, let cost = row.avgAcquisitionCost, selling > 0 {
-                        let spread = selling - cost
-                        let marginPct = (spread / selling) * 100
-                        HStack {
-                            Text(i18n.t("dashboard.grossMargin", default: "Estimated Margin"))
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(spread >= 0 ? Tokens.success : Tokens.danger)
-                            Spacer()
-                            Text("\(reportMoney(spread)) (\(String(format: "%.1f", marginPct))%)")
-                                .font(.mono(14, weight: .bold))
-                                .foregroundStyle(spread >= 0 ? Tokens.success : Tokens.danger)
+                    FactRow(label: i18n.t("dashboard.avgSellingPrice"), last: !canCost) { Text(reportMoney(row.avgSellingPrice)).font(.data(.regular)) }
+                    if canCost {
+                        FactRow(label: i18n.t("reports.margin"), last: true) {
+                            if let selling = row.avgSellingPrice, let cost = row.avgAcquisitionCost, selling > 0 {
+                                let spread = selling - cost
+                                Text("\(reportMoney(spread)) · \(String(format: "%.1f", spread / selling * 100))%")
+                                    .font(.data(.regular)).foregroundStyle(spread >= 0 ? Tokens.success : Tokens.danger)
+                            } else {
+                                Text("—").font(.data(.regular))
+                            }
                         }
-                        .padding(.top, 2)
                     }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .trailing, spacing: 2) {
-            Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(Tokens.muted)
-            Text(value).font(.subheadline.weight(.bold)).monospacedDigit().foregroundStyle(Tokens.ink)
-        }
-    }
-
-    private func priceRow(_ label: String, _ value: Double?, color: Color) -> some View {
-        HStack {
-            Text(label).font(.subheadline).foregroundStyle(Tokens.muted)
-            Spacer()
-            Text(reportMoney(value)).font(.mono(15, weight: .medium)).foregroundStyle(color)
         }
     }
 }

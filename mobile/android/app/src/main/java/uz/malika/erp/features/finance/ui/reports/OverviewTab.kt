@@ -9,7 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import uz.malika.erp.features.finance.data.ProfitReport
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.AsyncContent
@@ -25,7 +25,11 @@ import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.signTint
 import uz.malika.erp.ui.theme.Tokens
 
-/** Overview: P&L tiles (tap → P&L-components drill) + trend chart + channel split. */
+/**
+ * P&L overview: the headline list-card (NOI, revenue, COGS, gross profit,
+ * expenses, returns, units — rows drill down), the trend chart, revenue by
+ * channel, and the sales breakdown card with its own group-by.
+ */
 @Composable
 fun OverviewTab(
     vm: FinanceReadsViewModel,
@@ -40,13 +44,13 @@ fun OverviewTab(
     val profit = rememberAsync(fromIso, toIso) { vm.profit(fromIso, toIso) }
     val trend = rememberAsync(fromIso, toIso, bucket) { vm.trend(fromIso, toIso, bucket) }
     val channel = rememberAsync(fromIso, toIso) { vm.profitBreakdown(fromIso, toIso, "channel") }
-
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(start = Tokens.Space.screenH, end = Tokens.Space.screenH, bottom = Tokens.Space.lg),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
     ) {
         AsyncContent(profit, retryLabel = t("common.retry", null)) { r ->
-            Tiles(r, onDrill, onReturns = { onReturns(fromIso, toIso) }, onNoi = { onNoi(r) })
+            Headline(r, onDrill, onReturns = { onReturns(fromIso, toIso) }, onNoi = { onNoi(r) })
         }
         AsyncContent(trend, retryLabel = t("common.retry", null)) { points ->
             TrendLineChart(t("reports.trendTitle", null), points)
@@ -58,34 +62,34 @@ fun OverviewTab(
                 formatValue = ::moneyOf,
             )
         }
+        SalesBreakdownCard(vm, fromIso, toIso, onDrill)
     }
 }
 
 @Composable
-private fun Tiles(
-    r: ProfitReport,
-    onDrill: (ReportDrill) -> Unit,
-    onReturns: () -> Unit,
-    onNoi: () -> Unit,
-) {
+private fun Headline(r: ProfitReport, onDrill: (ReportDrill) -> Unit, onReturns: () -> Unit, onNoi: () -> Unit) {
     val t = LocalT.current
     val drill = profitDrill(t("reports.breakdownHint", null), r, t)
     fun tile(
         label: String,
         value: String,
-        emphasis: androidx.compose.ui.graphics.Color? = null,
+        emphasis: Color? = null,
         money: Boolean = true,
+        subtext: String? = null,
         onTap: () -> Unit = { onDrill(drill) },
     ): @Composable (Modifier) -> Unit = { m ->
-        MetricTile(label, value, m.clickable(onClick = onTap), emphasis = emphasis, money = money)
+        MetricTile(label, value, m.clickable(onClick = onTap), subtext = subtext, emphasis = emphasis, money = money)
     }
     MetricGrid(
         tiles = listOf(
-            tile(t("dashboard.revenue", null), r.revenue),
+            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signTint(r.netOperatingIncome), onTap = onNoi),
+            tile(
+                t("dashboard.revenue", null), r.revenue,
+                subtext = "${t("dashboard.retail", null)} ${formatMoney(r.byChannel.retail)} · ${t("dashboard.b2b", null)} ${formatMoney(r.byChannel.b2b)}",
+            ),
             tile(t("dashboard.cogs", null), r.cogs),
             tile(t("dashboard.grossProfit", null), r.grossProfit, emphasis = signTint(r.grossProfit)),
             tile(t("dashboard.expenses", null), r.expenses, emphasis = Tokens.danger),
-            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signTint(r.netOperatingIncome), onTap = onNoi),
             tile(t("dashboard.returnsRefunded", null), r.returnsRefunded, onTap = onReturns),
             tile(t("dashboard.unitsSold", null), r.unitsSold.toString(), money = false),
         ),

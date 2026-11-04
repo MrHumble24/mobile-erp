@@ -3,7 +3,6 @@ package uz.malika.erp.features.finance.ui.reports
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,10 +28,13 @@ import uz.malika.erp.features.finance.ui.components.shortNumber
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.RoundedCornerShape
+import uz.malika.erp.shared.ui.FactRow
 
 /** One waterfall step: a signed delta (plus the raw money string), or the total bar. */
 private data class WaterfallStep(val label: String, val amount: Double, val raw: String, val isTotal: Boolean)
@@ -41,7 +43,7 @@ private data class WaterfallStep(val label: String, val amount: Double, val raw:
  * Net-operating-income waterfall (web/iOS `NoiBreakdown`): revenue − COGS −
  * expenses = NOI, drawn with Compose [Canvas] (no chart library). Positive steps
  * use [Tokens.success], negative steps [Tokens.danger], the total bar
- * [Tokens.foreground]; labels in [Tokens.mutedForeground]. Data is the already
+ * [Tokens.text]; labels in [Tokens.muted]. Data is the already
  * loaded `/reports/profit` report — no extra fetch.
  */
 @Composable
@@ -54,14 +56,18 @@ fun NoiWaterfallSheet(report: ProfitReport, onDismiss: () -> Unit) {
         WaterfallStep(t("dashboard.netOperatingIncome", null), parseMoney(report.netOperatingIncome).toDouble(), report.netOperatingIncome, true),
     )
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(t("reports.brkNoi", null), style = MaterialTheme.typography.headlineSmall)
-            AppCard(Modifier.fillMaxWidth()) { WaterfallCanvas(steps) }
-            steps.forEach { step ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Column(Modifier.fillMaxWidth().padding(Tokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(Tokens.Space.md)) {
+            Text(t("reports.brkNoi", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            // The chart sits on a surface-2 block inside the sheet, never a nested card.
+            Box(Modifier.fillMaxWidth().background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls)).padding(Tokens.Space.md)) {
+                WaterfallCanvas(steps)
+            }
+            Column {
+                steps.forEachIndexed { i, step ->
                     val sign = if (!step.isTotal && step.amount < 0) "− " else if (step.isTotal) "= " else ""
-                    Text(sign + step.label, style = MaterialTheme.typography.bodyMedium, color = Tokens.mutedForeground)
-                    MoneyText(step.raw, style = MaterialTheme.typography.bodyMedium)
+                    FactRow(sign + step.label, last = i == steps.lastIndex) {
+                        MoneyText(step.raw, style = (if (step.isTotal) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium).copy(color = Tokens.text))
+                    }
                 }
             }
         }
@@ -73,8 +79,8 @@ private fun WaterfallCanvas(steps: List<WaterfallStep>) {
     val measurer = rememberTextMeasurer()
     val success = Tokens.success
     val danger = Tokens.danger
-    val total = Tokens.foreground
-    val labelColor = Tokens.mutedForeground
+    val total = Tokens.text
+    val labelColor = Tokens.muted
     val valueStyle = TextStyle(fontSize = 10.sp, fontFamily = MonoFamily, color = labelColor)
     val labelStyle = TextStyle(fontSize = 11.sp, color = labelColor)
 

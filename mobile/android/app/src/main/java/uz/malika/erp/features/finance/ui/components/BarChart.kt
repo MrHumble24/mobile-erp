@@ -39,17 +39,18 @@ fun BarChart(
     modifier: Modifier = Modifier,
 ) {
     AppCard(modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.height(16.dp))
+        Text(title, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.md))
         if (data.isEmpty()) {
-            Text("—", style = MaterialTheme.typography.bodyMedium, color = Tokens.slate)
+            Text("—", style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
             return@AppCard
         }
         val maxV = data.maxOf { abs(it.value) }.coerceAtLeast(1.0)
-        val barColor = Tokens.chart[0]
+        val barColor = Tokens.text
+        val negativeColor = Tokens.danger
         val measurer = rememberTextMeasurer()
-        val valueStyle = TextStyle(fontSize = 10.sp, fontFamily = MonoFamily, color = Tokens.slate)
-        val labelStyle = TextStyle(fontSize = 11.sp, color = Tokens.foreground)
+        val valueStyle = TextStyle(fontSize = 10.sp, fontFamily = MonoFamily, color = Tokens.muted)
+        val labelStyle = TextStyle(fontSize = 11.sp, color = Tokens.muted)
 
         Canvas(Modifier.fillMaxWidth().height(220.dp)) {
             val slot = size.width / data.size
@@ -63,7 +64,7 @@ fun BarChart(
                 val x = slot * i + (slot - barW) / 2f
                 val y = topPad + (chartH - h)
                 drawRoundRect(
-                    color = barColor,
+                    color = if (d.value < 0) negativeColor else barColor,
                     topLeft = Offset(x, y),
                     size = Size(barW, h),
                     cornerRadius = CornerRadius(5f, 5f),

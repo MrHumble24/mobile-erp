@@ -1,46 +1,55 @@
 package uz.malika.erp.features.finance.ui.reports
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.app.Destination
 import uz.malika.erp.features.finance.data.BreakdownRow
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.AsyncContent
-import uz.malika.erp.features.finance.ui.components.BreakdownBars
 import uz.malika.erp.features.finance.ui.components.BreakdownDatum
+import uz.malika.erp.features.finance.ui.components.BreakdownRows
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.SegmentOption
+import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.ui.theme.Tokens
 
-/** Sales breakdown by channel / model / cashier / day. Model rows drill down. */
+/**
+ * Sales breakdown by model / channel / cashier / day inside one card: the
+ * group-by segmented control, then ranked bars (the model view ranks on the
+ * gross-profit ↔ units measure toggle). Model rows drill down.
+ */
 @Composable
-fun SalesTab(
-    vm: FinanceReadsViewModel,
-    fromIso: String?,
-    toIso: String?,
-    groupBy: String,
-    onDrill: (ReportDrill) -> Unit,
-) {
+fun SalesBreakdownCard(vm: FinanceReadsViewModel, fromIso: String?, toIso: String?, onDrill: (ReportDrill) -> Unit) {
     val t = LocalT.current
+    var groupBy by remember { mutableStateOf("model") }
     val handle = rememberAsync(fromIso, toIso, groupBy) { vm.profitBreakdown(fromIso, toIso, groupBy) }
-
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+    AppCard(Modifier.fillMaxWidth()) {
+        Text(t("reports.salesBreakdownTitle", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.md))
+        SegmentedControl(
+            options = listOf("model", "channel", "cashier", "day").map { SegmentOption(it, t("reports.group_$it", null)) },
+            selected = groupBy,
+            onSelect = { groupBy = it },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(Tokens.Space.md))
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
             if (groupBy == "model") {
-                ModelMeasureTable(rows = rows, onRow = { onDrill(modelDrill(it, t)) })
+                ModelMeasureRows(rows = rows, onRow = { onDrill(modelDrill(it, t)) })
             } else {
-                BreakdownBars(
-                    title = t("reports.salesBreakdownTitle", null),
+                BreakdownRows(
                     rows = rows.map { BreakdownDatum(it.key, it.label, parseMoney(it.revenue).toDouble(), it.share) },
                     formatValue = ::moneyOf,
                 )

@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.DailyClosingReport
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.model.isoDate
@@ -27,6 +26,7 @@ import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
 import java.util.Date
+import uz.malika.erp.ui.theme.Tokens
 
 /** Daily register closing: pick a date → that day's figures + consignment movement. */
 @Composable
@@ -36,8 +36,9 @@ fun DailyClosingTab(vm: FinanceReadsViewModel) {
     val handle = rememberAsync(date) { vm.dailyClosing(isoDate(date)) }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(start = Tokens.Space.screenH, end = Tokens.Space.screenH, bottom = Tokens.Space.lg),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
     ) {
         DateField(t("reports.selectDate", null), date, onChanged = { date = it })
         AsyncContent(handle, retryLabel = t("common.retry", null)) { r -> Body(r) }

@@ -8,6 +8,8 @@ struct MetricRow: View {
     let value: String
     var subtext: String?
     var emphasis: Color?
+    /// When set the row is tappable and shows a chevron (drill-down).
+    var onTap: (() -> Void)? = nil
 
     var body: some View {
         HStack(alignment: .center, spacing: Tokens.Space.sm) {
@@ -27,10 +29,15 @@ struct MetricRow: View {
                 .foregroundStyle(emphasis ?? Tokens.text)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+            if onTap != nil {
+                Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Tokens.muted)
+            }
         }
         .frame(minHeight: Tokens.Space.rowH)
         .padding(.horizontal, Tokens.Space.cardPad)
         .padding(.vertical, Tokens.Space.sm)
+        .contentShape(Rectangle())
+        .onTapGesture { if let onTap { Haptic.tick.play(); onTap() } }
     }
 }
 

@@ -24,7 +24,7 @@ struct ExpensesView: View {
             if model.summary == nil { await model.load() }
             #if DEBUG
             // Screenshot helper: `-openTab expenses|categories|recurring`.
-            if let raw = KitDebugLaunch.consume("openTab"), let t = ExpenseScreenTab(rawValue: raw) { tab = t }
+            if let raw = KitDebugLaunch.consume("openTab", accept: { ExpenseScreenTab(rawValue: $0) != nil }), let t = ExpenseScreenTab(rawValue: raw) { tab = t }
             #endif
         }
     }

@@ -40,7 +40,7 @@ dressed.
 - **FactRow** — keyed fact row for detail sheets (caption label left, value
   right, hairline unless `last`); promoted from the inventory slice when the
   consignment slice needed the same row.
-- **MetricRow / MetricList** — the compact KPI list-card (muted label + caption
+- **MetricRow / MetricList** (`MetricRow.onTap` makes a row a drill-down with a chevron) — the compact KPI list-card (muted label + caption
   left, mono figure right, hairline dividers), the Android `MetricGrid` phone
   layout; used by the dashboard KPIs and the sales summary.
 - **MoneyTint** (`moneyTint(_:_:)`) — the one rule for tinting a financial

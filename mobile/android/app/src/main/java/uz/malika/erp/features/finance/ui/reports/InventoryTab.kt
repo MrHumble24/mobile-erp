@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.app.Destination
 import uz.malika.erp.features.finance.data.InventoryModelRow
 import uz.malika.erp.features.finance.data.InventoryReport
@@ -22,6 +21,7 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
 import kotlin.math.roundToInt
+import uz.malika.erp.ui.theme.Tokens
 
 /** Inventory snapshot: stock tiles + status / model / aging unit breakdowns. */
 @Composable
@@ -34,8 +34,9 @@ fun InventoryTab(
     val handle = rememberAsync { vm.inventoryReport() }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(start = Tokens.Space.screenH, end = Tokens.Space.screenH, bottom = Tokens.Space.lg),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
     ) {
         AsyncContent(handle, retryLabel = t("common.retry", null)) { r -> Body(r, canCost, onDrill) }
     }

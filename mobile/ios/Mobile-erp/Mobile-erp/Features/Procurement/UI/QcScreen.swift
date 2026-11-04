@@ -60,7 +60,7 @@ struct QcScreen: View {
         #if DEBUG
         // Screenshot helpers: `-openTab inspections|stats`, `-openQcImei <imei>`.
         .onAppear {
-            switch KitDebugLaunch.consume("openTab") {
+            switch KitDebugLaunch.consume("openTab", accept: { ["inspections", "stats"].contains($0) }) {
             case "inspections": tab = .inspections
             case "stats": tab = .stats
             default: break

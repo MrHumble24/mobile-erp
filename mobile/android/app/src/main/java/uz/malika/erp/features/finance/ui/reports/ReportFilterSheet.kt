@@ -38,13 +38,6 @@ fun presetRangeMillis(preset: ReportRangePreset, now: Date = Date()): Pair<Long,
 private fun dayOffset(now: Date, days: Int): Long =
     Calendar.getInstance().apply { time = startOfDay(now); add(Calendar.DAY_OF_YEAR, days) }.timeInMillis
 
-/** One tab's group-by selector, passed in only when the active tab groups. */
-data class GroupBySpec(
-    val options: List<SelectOption<String>>,
-    val selected: String,
-    val onSelect: (String) -> Unit,
-)
-
 /** The compact one-line range label shown beside the reports filter button. */
 @Composable
 fun reportRangeLabel(preset: ReportRangePreset, range: DateRange): String {
@@ -67,9 +60,8 @@ private fun presetLabelKey(preset: ReportRangePreset): String = when (preset) {
 }
 
 /**
- * The single reports filter sheet: period presets (+ a custom range) and, when
- * the active tab groups its data, that tab's group-by selector. Everything
- * applies immediately; reset restores the default range and group-by.
+ * The reports period sheet: presets plus a custom range. Everything applies
+ * immediately; reset restores the default range.
  */
 @Composable
 fun ReportFilterSheet(
@@ -77,14 +69,13 @@ fun ReportFilterSheet(
     range: DateRange,
     onPreset: (ReportRangePreset) -> Unit,
     onCustomRange: (DateRange) -> Unit,
-    groupBy: GroupBySpec?,
     canReset: Boolean,
     onReset: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
     FilterSheet(
-        title = t("common.filter", null),
+        title = t("reports.period", null),
         onDismiss = onDismiss,
         canReset = canReset,
         onReset = onReset,
@@ -107,15 +98,6 @@ fun ReportFilterSheet(
                 label = t("reports.period", null),
                 range = range,
                 onPick = onCustomRange,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        if (groupBy != null) {
-            AppSelectField(
-                label = t("reports.breakdownBy", null),
-                options = groupBy.options,
-                selected = groupBy.selected,
-                onSelect = groupBy.onSelect,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

@@ -1,37 +1,59 @@
 import SwiftUI
 
-/// Financial reports, matching the web tab set: Overview · Sales · Expenses ·
-/// Nasiya · Inventory · Pricing · Closing. A scrolling pill bar switches tabs;
-/// the shared date-range bar applies to the first four (web parity). Tiles and
-/// breakdown rows drill into a detail sheet. All reads gated by `report.finance`.
+/// Financial reports restructured for the phone: six sections on the kit chip
+/// row — P&L overview (with the sales breakdown folded in) · Expenses · Nasiya
+/// · Inventory · Pricing · Closing. The period bar sits under the chips on the
+/// three period sections and opens the kit filter sheet; inventory is a live
+/// snapshot, pricing a rolling window, closing a single day. Tiles and rows
+/// drill into a kit sheet. All reads gated by `report.finance`. Title is the
+/// tab label (`nav.reports`), the same string as the Android top bar.
 struct ReportsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var tab: FinReportTab = .overview
     @State private var range = FinReportRange()
     @State private var breakdown: FinBreakdownRequest?
+    @State private var showFilter = false
 
     private var canViewCost: Bool { container.session.can("device.cost.view") }
     private var onBreakdown: (FinBreakdownRequest) -> Void { { breakdown = $0 } }
 
     var body: some View {
         VStack(spacing: 0) {
-            FinTabBar(tabs: FinReportTab.allCases, selection: $tab)
-            if tab.usesRange {
-                FinRangeBar(range: $range)
-                    .padding(.bottom, 4)
-            }
+            TabChips(selection: $tab, items: FinReportTab.allCases.map { TabChipItem(value: $0, label: i18n.t($0.labelKey)) })
+                .padding(.vertical, Tokens.Space.md)
+            if tab.usesRange { periodBar }
             content
         }
-        .navigationTitle(i18n.t("reports.title"))
-        .navigationBarTitleDisplayMode(.inline)
+        .background(Tokens.ground)
+        .navigationTitle(i18n.t("nav.reports"))
         .sheet(item: $breakdown) { FinBreakdownSheet(request: $0) }
+        .sheet(isPresented: $showFilter) { ReportFilterSheet(range: $range) }
         .task {
             #if DEBUG
             _ = FinanceSelfCheck.run
+            // Screenshot helper: `-openTab overview|expenses|nasiya|inventory|pricing|closing`.
+            if let raw = KitDebugLaunch.consume("openTab", accept: { FinReportTab(rawValue: $0) != nil }), let t = FinReportTab(rawValue: raw) { tab = t }
             #endif
         }
+    }
+
+    /// The active period as a one-line label beside the filter button.
+    private var periodBar: some View {
+        HStack(spacing: Tokens.Space.sm) {
+            Text(range.label(i18n)).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+            Spacer(minLength: Tokens.Space.sm)
+            Button { Haptic.tick.play(); showFilter = true } label: {
+                Image(systemName: range.preset == .thirtyDay ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Tokens.text)
+                    .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(i18n.t("common.filter"))
+        }
+        .padding(.horizontal, Tokens.Space.gutter)
+        .padding(.bottom, Tokens.Space.sm)
     }
 
     @ViewBuilder private var content: some View {
@@ -39,8 +61,6 @@ struct ReportsView: View {
         switch tab {
         case .overview:
             FinOverviewTab(from: dates.from, to: dates.to, bucket: range.bucket, onBreakdown: onBreakdown)
-        case .sales:
-            FinSalesTab(from: dates.from, to: dates.to, onBreakdown: onBreakdown)
         case .expenses:
             ExpensesReportTab(from: dates.from, to: dates.to)
         case .nasiya:
@@ -55,31 +75,45 @@ struct ReportsView: View {
     }
 }
 
-/// The seven report tabs, in web display order.
+/// The six report sections, in display order.
 enum FinReportTab: String, CaseIterable, Identifiable {
-    case overview, sales, expenses, nasiya, inventory, pricing, closing
+    case overview, expenses, nasiya, inventory, pricing, closing
     var id: String { rawValue }
-
     var labelKey: String { "reports.tab_\(rawValue)" }
-
-    var systemImage: String {
-        switch self {
-        case .overview: return "chart.pie.fill"
-        case .sales: return "cart.fill"
-        case .expenses: return "creditcard.fill"
-        case .nasiya: return "banknote.fill"
-        case .inventory: return "shippingbox.fill"
-        case .pricing: return "tag.fill"
-        case .closing: return "lock.fill"
-        }
-    }
-
-    /// The shared date range applies to overview/sales/expenses/nasiya only;
-    /// inventory is a live snapshot, pricing uses a window, closing a single day.
+    /// The shared period applies to overview/expenses/nasiya only.
     var usesRange: Bool {
         switch self {
-        case .overview, .sales, .expenses, .nasiya: true
+        case .overview, .expenses, .nasiya: true
         case .inventory, .pricing, .closing: false
+        }
+    }
+}
+
+/// Period presets as a kit `FilterSheet`; custom reveals two kit date fields.
+private struct ReportFilterSheet: View {
+    @Binding var range: FinReportRange
+    @Environment(I18n.self) private var i18n
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        FilterSheet(
+            title: i18n.t("reports.period"),
+            resetLabel: i18n.t("inventory.clearFilters"),
+            closeLabel: i18n.t("common.close"),
+            onReset: { range = FinReportRange(); dismiss() },
+            onClose: { dismiss() }
+        ) {
+            AppFormField(label: i18n.t("reports.period")) {
+                AppSelect(placeholder: "", selection: $range.preset, options: FinRangePreset.allCases.map { ($0, i18n.t($0.labelKey)) })
+            }
+            if range.preset == .custom {
+                AppFormField(label: i18n.t("reports.dateFrom")) {
+                    AppDateField(date: Binding(get: { range.customFrom ?? Date() }, set: { range.customFrom = $0 }))
+                }
+                AppFormField(label: i18n.t("reports.dateTo")) {
+                    AppDateField(date: Binding(get: { range.customTo ?? Date() }, set: { range.customTo = $0 }))
+                }
+            }
         }
     }
 }

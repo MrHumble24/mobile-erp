@@ -26,11 +26,11 @@ struct AppShell: View {
                     container.router.selection = visible.first?.id ?? ""
                 }
                 #if DEBUG
-                // Screenshot helper: `-open home|pos|sales|inventory|shipments|qc|consignments|partners|customers|expenses|users|more`.
+                // Screenshot helper: `-open home|pos|sales|inventory|shipments|qc|consignments|partners|customers|expenses|users|reports|more`.
                 if let open = UserDefaults.standard.string(forKey: "open"),
                    let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
                              "inventory": "inventory", "shipments": "shipments", "qc": "qc",
-                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "users": "users",
+                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "users": "users", "reports": "reports",
                              "more": MoreTab.id][open] {
                     container.router.selection = id
                 }

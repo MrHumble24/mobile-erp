@@ -1,16 +1,15 @@
 import SwiftUI
 
-/// P&L overview: KPI tiles (gross profit / units / NOI / returns drill down), a
-/// revenue·profit·expense trend chart and a revenue-by-channel breakdown.
+/// P&L overview: the headline list-card (NOI, revenue, COGS, gross profit,
+/// expenses, returns, units — the money rows drill down), the trend chart,
+/// revenue by channel, and the sales breakdown card with its own group-by.
 struct FinOverviewTab: View {
     let from: Date?
     let to: Date?
     let bucket: String
     let onBreakdown: (FinBreakdownRequest) -> Void
-
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var report: ProfitReport?
     @State private var trend: [TrendPoint] = []
     @State private var channel: [FinBreakdownRow] = []
@@ -18,35 +17,27 @@ struct FinOverviewTab: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: Tokens.Space.lg) {
                 if let error, report == nil {
-                    ErrorStateView(message: error) { Task { await load() } }
+                    AppCard { ErrorStateView(message: error) { Task { await load() } } }
                 } else if let report {
-                    MetricGrid(tiles: tiles(report))
+                    MetricList(rows: rows(report))
                     FinTrendChart(title: i18n.t("reports.trendTitle"), bucket: bucket, points: trend)
-                    channelCard
+                    FinBreakdownBars(title: i18n.t("reports.channelSplit"), rows: channel.map {
+                        FinShareRow(key: $0.key, label: $0.label, value: reportMoney($0.revenue), share: $0.share)
+                    })
+                    FinSalesBreakdownCard(from: from, to: to, onBreakdown: onBreakdown)
                 } else {
-                    LoadingView().frame(height: 200)
+                    AppCard { LoadingView().frame(height: 160) }
                 }
             }
-            .padding()
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .background(Tokens.bg)
         .task(id: key) { await load() }
     }
 
     private var key: String { "\(from?.timeIntervalSince1970 ?? 0)-\(to?.timeIntervalSince1970 ?? 0)" }
-
-    @ViewBuilder private var channelCard: some View {
-        let rows = channel.map {
-            FinShareRow(key: $0.key, label: $0.label, value: reportMoney($0.revenue), share: $0.share)
-        }
-        BarChartCard(
-            title: i18n.t("reports.channelSplit"),
-            data: channel.map { BarDatum(label: $0.label, value: $0.revenue) }
-        )
-        if !rows.isEmpty { FinShareList(rows: rows) }
-    }
 
     private func load() async {
         error = nil
@@ -62,72 +53,67 @@ struct FinOverviewTab: View {
         catch { self.error = error.localizedDescription }
     }
 
-    private func tiles(_ r: ProfitReport) -> [MetricTile] {
-        let noi = r.netOperatingIncome ?? 0
-        let isProfit = noi >= 0
-        let grossProfit = r.grossProfit ?? 0
-        let isGrossProfit = grossProfit >= 0
-
-        return [
-            MetricTile(
-                label: i18n.t("dashboard.netOperatingIncome"),
-                value: reportMoney(r.netOperatingIncome),
-                subtext: "\(i18n.t("dashboard.grossProfit")): \(reportMoney(r.grossProfit))  −  \(i18n.t("dashboard.expenses")): \(reportMoney(r.expenses))",
-                emphasis: moneyTint(.profit, r.netOperatingIncome),
-                icon: isProfit ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill",
-                iconColor: isProfit ? Tokens.success : Tokens.danger,
-                badge: isProfit ? i18n.t("reports.profit", default: "Foyda") : i18n.t("reports.loss", default: "Zarar"),
-                badgeColor: isProfit ? Tokens.success : Tokens.danger,
-                isHero: true,
-                onTap: { onBreakdown(.noi(from: from, to: to)) }
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.revenue"),
-                value: reportMoney(r.revenue),
-                subtext: "\(i18n.t("dashboard.retail")): \(reportMoney(r.retail))",
-                icon: "arrow.down.circle.fill",
-                iconColor: Tokens.signalBlue
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.expenses"),
-                value: reportMoney(r.expenses),
-                subtext: i18n.t("reports.tab_expenses", default: "Xarajatlar"),
-                emphasis: moneyTint(.expense, r.expenses),
-                icon: "arrow.up.circle.fill",
-                iconColor: Tokens.danger
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.cogs"),
-                value: reportMoney(r.cogs),
-                subtext: "\(r.unitsSold) \(i18n.t("reports.units", default: "dona"))",
-                icon: "cart.fill",
-                iconColor: Tokens.slate
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.grossProfit"),
-                value: reportMoney(r.grossProfit),
-                subtext: "\(i18n.t("dashboard.revenue")) − \(i18n.t("dashboard.cogs"))",
-                emphasis: moneyTint(.profit, r.grossProfit),
-                icon: "chart.line.uptrend.xyaxis",
-                iconColor: isGrossProfit ? Tokens.success : Tokens.danger,
-                onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.returnsRefunded"),
-                value: reportMoney(r.returnsRefunded),
-                subtext: i18n.t("reports.refund", default: "Qaytarilgan"),
-                icon: "arrow.uturn.backward.circle.fill",
-                iconColor: Tokens.warning,
-                onTap: { onBreakdown(.returns(from: from, to: to)) }
-            ),
-            MetricTile(
-                label: i18n.t("dashboard.unitsSold"),
-                value: "\(r.unitsSold) \(i18n.t("reports.units", default: "dona"))",
-                subtext: i18n.t("reports.byModel", default: "Modellar bo'yicha"),
-                icon: "shippingbox.fill",
-                iconColor: Tokens.ink,
-                onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }
-            ),
+    private func rows(_ r: ProfitReport) -> [MetricRow] {
+        [
+            MetricRow(label: i18n.t("dashboard.netOperatingIncome"), value: reportMoney(r.netOperatingIncome),
+                      emphasis: moneyTint(.profit, r.netOperatingIncome), onTap: { onBreakdown(.noi(from: from, to: to)) }),
+            MetricRow(label: i18n.t("dashboard.revenue"), value: reportMoney(r.revenue),
+                      subtext: "\(i18n.t("dashboard.retail")) \(reportMoney(r.retail)) · \(i18n.t("dashboard.b2b")) \(reportMoney(r.b2b))"),
+            MetricRow(label: i18n.t("dashboard.cogs"), value: reportMoney(r.cogs)),
+            MetricRow(label: i18n.t("dashboard.grossProfit"), value: reportMoney(r.grossProfit),
+                      emphasis: moneyTint(.profit, r.grossProfit), onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }),
+            MetricRow(label: i18n.t("dashboard.expenses"), value: reportMoney(r.expenses), emphasis: moneyTint(.expense, r.expenses)),
+            MetricRow(label: i18n.t("dashboard.returnsRefunded"), value: reportMoney(r.returnsRefunded), onTap: { onBreakdown(.returns(from: from, to: to)) }),
+            MetricRow(label: i18n.t("dashboard.unitsSold"), value: "\(r.unitsSold)", onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }),
         ]
+    }
+}
+
+/// Sales breakdown by model / channel / cashier / day inside one card: the
+/// group-by segmented control, then ranked bars. Model rows drill down.
+struct FinSalesBreakdownCard: View {
+    let from: Date?
+    let to: Date?
+    let onBreakdown: (FinBreakdownRequest) -> Void
+    @Environment(AppContainer.self) private var container
+    @Environment(I18n.self) private var i18n
+    @State private var groupBy = "model"
+    @State private var rows: [FinBreakdownRow]?
+    @State private var error: String?
+    private let groups = ["model", "channel", "cashier", "day"]
+
+    var body: some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("reports.salesBreakdownTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                SegmentedControl(selection: $groupBy, segments: groups.map { ($0, i18n.t("reports.group_\($0)")) })
+                if let error, rows == nil {
+                    ErrorStateView(message: error) { Task { await load() } }
+                } else if let rows {
+                    if rows.isEmpty {
+                        Text(i18n.t("reports.empty")).font(.ui(.body)).foregroundStyle(Tokens.muted)
+                    } else {
+                        FinBreakdownRows(rows: rows.map {
+                            FinShareRow(key: $0.key, label: $0.label, value: reportMoney($0.revenue), share: $0.share)
+                        }, onSelect: groupBy == "model" ? { key in
+                            if let row = rows.first(where: { $0.key == key }) { onBreakdown(.salesRow(row)) }
+                        } : nil)
+                    }
+                } else {
+                    LoadingView().frame(height: 100)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .task(id: key) { await load() }
+    }
+
+    private var key: String { "\(from?.timeIntervalSince1970 ?? 0)-\(to?.timeIntervalSince1970 ?? 0)-\(groupBy)" }
+
+    private func load() async {
+        error = nil
+        do { rows = try await ReportsRepository(api: container.api).profitBreakdown(groupBy: groupBy, from: from, to: to) }
+        catch let e as AppError { error = e.message }
+        catch { self.error = error.localizedDescription }
     }
 }

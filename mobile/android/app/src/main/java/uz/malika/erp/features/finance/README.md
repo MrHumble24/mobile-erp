@@ -19,21 +19,21 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   (`isoRangeFrom` / `isoRangeTo`, `isoInstant`), the same bounds iOS sends. A
   bare `yyyy-MM-dd` is only for single-date payloads: the server parses it as
   UTC midnight, so `from == to == today` was an empty range and "today" read $0.
-- **Reports** (route `reports`, `report.finance`): seven tabs matching web —
-  Overview / Sales / Expenses / Nasiya / Inventory / Pricing / Closing. The tab
-  pills stay inline (navigation); all filters live in one `ReportFilterSheet`
-  opened from a top-right `FilterButton`, with the active range shown as a
-  compact label beside it. The sheet holds the date-range presets (today / 7d /
-  30d / month / custom) and, on Sales/Expenses, that tab's group-by selector
-  (hoisted into the screen). Shown only on the ranged tabs. Charts are
-  Compose-Canvas (no lib):
-  `TrendLineChart` (multi-series) + `BreakdownBars` (ranked horizontal bars with
-  share, top-N capped) + `NoiWaterfall` (Canvas NOI waterfall). Tapping a tile or
-  bar opens a breakdown drill-down: the data-driven `ReportDrillSheet` (model/
-  partner rows jump via `featureNav`); the Overview NOI tile opens
-  `NoiWaterfallSheet`; the returns tile opens the paginated `ReturnsBreakdownSheet`
-  (`/reports/returns`, load-more); the Sales "model" group shows
-  `ModelMeasureTable` (segmented gross-profit ↔ units toggle, ranked by measure).
+- **Reports** (route `reports`, `report.finance`), restructured on the Warm
+  Card kit (ADR 0022): six sections on the shared `TabChips` row — P&L overview
+  (the sales breakdown folded in as a card with its own group-by and the
+  gross-profit ↔ units measure toggle) · Expenses (group-by segmented inside the
+  section, period total list-card) · Nasiya · Inventory · Pricing · Closing. The
+  period bar (label + `FilterButton` → `ReportFilterSheet`, presets + custom
+  range) sits under the chips only on the three period sections. Headline
+  figures are `MetricGrid` list-cards whose rows drill down (`ReportDrillSheet`
+  on `FactRow`s; the NOI row opens `NoiWaterfallSheet`, returns the paginated
+  `ReturnsBreakdownSheet`). Charts are Compose-Canvas on the kit palette only:
+  `TrendLineChart` (revenue = text, gross profit = success, expenses = danger;
+  three gridlines, zero baseline, first/last bucket labels), `BreakdownBars` /
+  `BreakdownRows` (text bar on the border track, danger for a loss, "others"
+  muted), `BarChart` (text bars, danger when negative). Pricing is one card per
+  model/storage with keyed facts (`ModelPricingTable` is gone).
 - **Expenses** (route `expenses`, `expense.read`): list tab — prominent
   new-expense action with categories/CSV in an overflow menu, summary card, an
   inline search field beside a filter button (active-filter count badge) that
@@ -43,17 +43,17 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   (list, create/edit, activate toggle, generate due). Category create / edit /
   deactivate+reassign (`expense.category.manage`). Expense create / edit / delete
   (`expense.manage`).
-
-## Public API
-`FinanceFeature : FeatureModule` — the only export (3 routes).
-
-## Must never
   Warm Card (ADR 0022): new-expense is an icon beside the search row (categories
   and CSV in the overflow); the summary is the `MetricGrid` list-card (period
   total + per-category rows, no hero figure); rows are cards with a recurring
   info pill; detail/forms are kit sheets on shared `FactRow`s with `AppSwitch`
   rows (recurring, category active) and one full-width primary save. The
   recurring tab keeps its two actions (new = the one orange, generate = secondary).
+
+## Public API
+`FinanceFeature : FeatureModule` — the only export (3 routes).
+
+## Must never
 - Edit foundation (`core/ data/ shared/ ui/theme/ app/`) or another slice.
 - Queue writes offline — only `sale.create` / `consignment.*` use the outbox;
   expense / category / recurrence writes block with `common.offline`.

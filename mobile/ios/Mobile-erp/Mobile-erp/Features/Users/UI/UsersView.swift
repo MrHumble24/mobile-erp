@@ -31,7 +31,7 @@ struct UsersView: View {
             await catalog.loadIfNeeded()
             #if DEBUG
             // Screenshot helper: `-openTab users|roles|matrix`.
-            if let raw = KitDebugLaunch.consume("openTab"), let t = Tab(rawValue: raw) { tab = t }
+            if let raw = KitDebugLaunch.consume("openTab", accept: { Tab(rawValue: $0) != nil }), let t = Tab(rawValue: raw) { tab = t }
             #endif
         }
     }

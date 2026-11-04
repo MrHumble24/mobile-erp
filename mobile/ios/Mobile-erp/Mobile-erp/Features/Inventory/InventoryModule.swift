@@ -85,7 +85,7 @@ private struct InventoryTabs: View {
         #if DEBUG
         // Screenshot helper: `-openTab models|alerts` lands on that tab.
         .onAppear {
-            if let raw = KitDebugLaunch.consume("openTab"), let t = InventoryTab(rawValue: raw) { tab = t }
+            if let raw = KitDebugLaunch.consume("openTab", accept: { InventoryTab(rawValue: $0) != nil }), let t = InventoryTab(rawValue: raw) { tab = t }
         }
         #endif
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Paginated refunded-returns list (`/reports/returns`) with load-more — the
-/// web `ReturnsListBreakdown`, using `KitPaginator` + `KitLoadMoreFooter`.
+/// Paginated refunded-returns rows (`/reports/returns`) with load-more, as
+/// hairline rows inside the drill-down sheet.
 struct FinReturnsBreakdown: View {
     let from: Date?
     let to: Date?
@@ -15,19 +15,18 @@ struct FinReturnsBreakdown: View {
                 if let error = pager.error, pager.items.isEmpty {
                     ErrorStateView(message: error) { Task { await pager.first() } }
                 } else if pager.items.isEmpty && !pager.isLoading {
-                    EmptyStateView(systemImage: "arrow.uturn.backward", title: i18n.t("reports.empty"))
+                    Text(i18n.t("reports.empty")).font(.ui(.body)).foregroundStyle(Tokens.muted)
                 } else {
-                    List {
-                        ForEach(pager.items) { row in ReturnRowView(row: row) }
-                        KitLoadMoreFooter(pager: pager)
+                    VStack(spacing: 0) {
+                        ForEach(Array(pager.items.enumerated()), id: \.element.id) { i, row in
+                            ReturnRowView(row: row)
+                            if i < pager.items.count - 1 { Divider().overlay(Tokens.border) }
+                        }
                     }
-                    .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
-                    .listRowBackground(Tokens.surface)
-                    .background(Tokens.bg)
+                    KitLoadMoreFooter(pager: pager)
                 }
             } else {
-                LoadingView().frame(height: 160)
+                LoadingView().frame(height: 120)
             }
         }
         .task { await start() }
@@ -49,20 +48,20 @@ private struct ReturnRowView: View {
     let row: ReturnRow
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(row.model).font(.subheadline)
-                Text(row.imei).font(.mono(12)).foregroundStyle(Tokens.muted)
+        HStack(alignment: .top, spacing: Tokens.Space.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(row.model).font(.ui(.body)).foregroundStyle(Tokens.text)
+                Text(row.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
                 if let reason = row.reason, !reason.isEmpty {
-                    Text(reason).font(.caption).foregroundStyle(Tokens.muted)
+                    Text(reason).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 3) {
-                MoneyText(value: String(row.refundAmount), size: 14)
-                    .foregroundStyle(Tokens.danger)
-                Text(String(row.returnedAt.prefix(10))).font(.caption2).foregroundStyle(Tokens.muted)
+            Spacer(minLength: Tokens.Space.sm)
+            VStack(alignment: .trailing, spacing: 2) {
+                MoneyText(value: String(row.refundAmount), size: 15).fontWeight(.semibold).foregroundStyle(Tokens.danger)
+                Text(KitDate.day(row.returnedAt)).font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
         }
+        .padding(.vertical, Tokens.Space.sm)
     }
 }

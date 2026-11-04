@@ -8,8 +8,10 @@ import Foundation
 enum KitDebugLaunch {
     private static var consumed: Set<String> = []
 
-    static func consume(_ key: String) -> String? {
-        guard !consumed.contains(key), let value = UserDefaults.standard.string(forKey: key) else { return nil }
+    /// Returns the value once; a reader that cannot map it (`accept` false)
+    /// leaves it for the screen that can — several tabs share `openTab`.
+    static func consume(_ key: String, accept: (String) -> Bool = { _ in true }) -> String? {
+        guard !consumed.contains(key), let value = UserDefaults.standard.string(forKey: key), accept(value) else { return nil }
         consumed.insert(key)
         return value
     }

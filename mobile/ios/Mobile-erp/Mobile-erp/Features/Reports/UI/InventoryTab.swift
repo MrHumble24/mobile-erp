@@ -1,64 +1,43 @@
 import SwiftUI
 
-/// Inventory snapshot: stock tiles + by-status, by-model (drill-down) and
-/// stock-aging breakdowns. Landed value is shown only with `device.cost.view`.
+/// Inventory snapshot: stock list-card + by-status, by-model (drill-down) and
+/// stock-aging breakdowns. Landed value only with `device.cost.view`.
 struct FinInventoryTab: View {
     let canViewCost: Bool
     let onBreakdown: (FinBreakdownRequest) -> Void
-
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var report: InventoryReport?
     @State private var error: String?
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: Tokens.Space.lg) {
                 if let error, report == nil {
-                    ErrorStateView(message: error) { Task { await load() } }
+                    AppCard { ErrorStateView(message: error) { Task { await load() } } }
                 } else if let report {
-                    MetricGrid(tiles: tiles(report))
-                    statusCard(report)
-                    modelCard(report)
-                    agingCard(report)
+                    MetricList(rows: rows(report))
+                    FinBreakdownBars(title: i18n.t("reports.byStatus"), rows: share(report.byStatus.map { ($0.statusCode, $0.label, Double($0.count)) }))
+                    FinBreakdownBars(title: i18n.t("reports.byModel"),
+                                     rows: share(report.byModel.map { ($0.modelId, "\($0.label) · \(Int($0.avgDaysInStock.rounded()))\(i18n.t("reports.daysShort"))", Double($0.units)) }),
+                                     onSelect: { id in
+                                         if let row = report.byModel.first(where: { $0.modelId == id }) { onBreakdown(.inventoryModel(row)) }
+                                     })
+                    FinBreakdownBars(title: i18n.t("reports.aging"), rows: share(report.aging.map { ($0.bucket, $0.bucket, Double($0.units)) }))
                 } else {
-                    LoadingView().frame(height: 200)
+                    AppCard { LoadingView().frame(height: 160) }
                 }
             }
-            .padding()
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .background(Tokens.bg)
         .task { await load() }
     }
 
-    @ViewBuilder private func statusCard(_ r: InventoryReport) -> some View {
-        BarChartCard(title: i18n.t("reports.byStatus"),
-                     data: r.byStatus.map { BarDatum(label: $0.label, value: Double($0.count)) })
-    }
-
-    @ViewBuilder private func modelCard(_ r: InventoryReport) -> some View {
-        let total = Double(max(1, r.byModel.reduce(0) { $0 + $1.units }))
-        BarChartCard(title: i18n.t("reports.byModel"),
-                     data: r.byModel.map { BarDatum(label: $0.label, value: Double($0.units)) })
-        if !r.byModel.isEmpty {
-            FinShareList(
-                rows: r.byModel.map {
-                    FinShareRow(key: $0.modelId, label: $0.label,
-                                value: "\($0.units)", share: Double($0.units) / total)
-                },
-                onSelect: { id in
-                    if let row = r.byModel.first(where: { $0.modelId == id }) {
-                        onBreakdown(.inventoryModel(row))
-                    }
-                }
-            )
-        }
-    }
-
-    @ViewBuilder private func agingCard(_ r: InventoryReport) -> some View {
-        BarChartCard(title: i18n.t("reports.aging"),
-                     data: r.aging.map { BarDatum(label: $0.bucket, value: Double($0.units)) })
+    /// Unit series carry no server share — derive it from the values.
+    private func share(_ items: [(String, String, Double)]) -> [FinShareRow] {
+        let total = max(1, items.reduce(0) { $0 + $1.2 })
+        return items.map { FinShareRow(key: $0.0, label: $0.1, value: "\(Int($0.2))", share: $0.2 / total) }
     }
 
     private func load() async {
@@ -68,14 +47,11 @@ struct FinInventoryTab: View {
         catch { self.error = error.localizedDescription }
     }
 
-    private func tiles(_ r: InventoryReport) -> [MetricTile] {
-        var tiles = [MetricTile(label: i18n.t("dashboard.unitsInStock"), value: "\(r.inStockUnits)")]
-        if canViewCost {
-            tiles.append(MetricTile(label: i18n.t("reports.landedValue"),
-                                    value: reportMoney(r.inStockLandedValue), emphasis: Tokens.ink))
-        }
-        tiles.append(MetricTile(label: i18n.t("reports.defective"), value: "\(r.defectiveUnits)"))
-        tiles.append(MetricTile(label: i18n.t("reports.consigned"), value: "\(r.consignedUnits)"))
-        return tiles
+    private func rows(_ r: InventoryReport) -> [MetricRow] {
+        var rows = [MetricRow(label: i18n.t("dashboard.unitsInStock"), value: "\(r.inStockUnits)")]
+        if canViewCost { rows.append(MetricRow(label: i18n.t("reports.landedValue"), value: reportMoney(r.inStockLandedValue))) }
+        rows.append(MetricRow(label: i18n.t("reports.defective"), value: "\(r.defectiveUnits)", emphasis: r.defectiveUnits > 0 ? Tokens.warning : nil))
+        rows.append(MetricRow(label: i18n.t("reports.consigned"), value: "\(r.consignedUnits)"))
+        return rows
     }
 }

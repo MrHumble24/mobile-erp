@@ -1,8 +1,6 @@
 package uz.malika.erp.features.finance.ui.reports
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,12 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.app.Destination
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
+import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.FactRow
+import uz.malika.erp.ui.theme.MonoFamily
 
 /** One label/value line inside a [ReportDrill]. */
 data class DrillLine(val label: String, val value: String)
@@ -42,26 +42,24 @@ fun ReportDrillSheet(
 ) {
     val t = LocalT.current
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(
-            Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(drill.title, style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(4.dp))
-            drill.lines.forEach { line ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(line.label, style = MaterialTheme.typography.bodyMedium, color = Tokens.mutedForeground)
-                    Text(line.value, style = MaterialTheme.typography.bodyMedium)
+        Column(Modifier.fillMaxWidth().padding(Tokens.Space.gutter)) {
+            Text(drill.title, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.lg))
+            drill.lines.forEachIndexed { i, line ->
+                FactRow(line.label, last = i == drill.lines.lastIndex) {
+                    Text(line.value, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 }
             }
             if (drill.destination != null && drill.actionLabel != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.lg))
                 PillButton(
                     drill.actionLabel,
                     onClick = { onOpen(drill.destination); onDismiss() },
+                    variant = ButtonVariant.SECONDARY,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
     }
 }

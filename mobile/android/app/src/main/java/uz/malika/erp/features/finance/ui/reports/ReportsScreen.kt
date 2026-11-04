@@ -1,15 +1,13 @@
 package uz.malika.erp.features.finance.ui.reports
 
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,25 +17,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
+import uz.malika.erp.features.finance.data.ProfitReport
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.model.bucketForRange
 import uz.malika.erp.features.finance.model.isoRangeFrom
 import uz.malika.erp.features.finance.model.isoRangeTo
-import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.features.finance.ui.components.financeViewModel
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.FilterButton
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.TabChipItem
+import uz.malika.erp.shared.ui.TabChips
 import uz.malika.erp.ui.theme.Tokens
 
-private enum class ReportTab(val labelKey: String, val ranged: Boolean) {
+private enum class ReportSection(val labelKey: String, val ranged: Boolean) {
     OVERVIEW("reports.tab_overview", true),
-    SALES("reports.tab_sales", true),
     EXPENSES("reports.tab_expenses", true),
     NASIYA("reports.tab_nasiya", true),
     INVENTORY("reports.tab_inventory", false),
@@ -46,97 +42,67 @@ private enum class ReportTab(val labelKey: String, val ranged: Boolean) {
 }
 
 /**
- * Financial reports (perm `report.finance`): Overview / Sales / Expenses /
- * Nasiya / Inventory / Pricing / Closing, matching the web tabs. The date range
- * (presets + custom) and each tab's group-by live in one [ReportFilterSheet]
- * opened from the top-right filter button; the active range shows as a compact
- * label beside it. Tapping a tile or bar opens a [ReportDrillSheet] drill-down.
+ * Financial reports (perm `report.finance`), restructured for the phone: six
+ * sections on the kit chip row — P&L overview (with the sales breakdown folded
+ * in) · Expenses · Nasiya · Inventory · Pricing · Closing. The period bar sits
+ * under the chips on the three period sections and opens [ReportFilterSheet];
+ * inventory is a live snapshot, pricing a rolling window, closing a single day.
+ * Tapping a row or bar opens a [ReportDrillSheet] drill-down.
  */
 @Composable
 fun ReportsScreen(container: AppContainer) {
     val t = LocalT.current
     val vm = financeViewModel(container) { FinanceReadsViewModel(it) }
     val canCost = LocalCan.current("device.cost.view")
-    var tab by remember { mutableStateOf(ReportTab.OVERVIEW) }
+    var section by remember { mutableStateOf(ReportSection.OVERVIEW) }
     val default = remember { presetRangeMillis(DEFAULT_REPORT_PRESET) }
     var preset by remember { mutableStateOf(DEFAULT_REPORT_PRESET) }
     var range by remember { mutableStateOf(DateRange(default.first, default.second)) }
-    var salesGroupBy by remember { mutableStateOf("model") }
-    var expensesGroupBy by remember { mutableStateOf("category") }
     var showFilters by remember { mutableStateOf(false) }
     var drill by remember { mutableStateOf<ReportDrill?>(null) }
     var returnsRange by remember { mutableStateOf<Pair<String?, String?>?>(null) }
-    var noi by remember { mutableStateOf<uz.malika.erp.features.finance.data.ProfitReport?>(null) }
+    var noi by remember { mutableStateOf<ProfitReport?>(null) }
 
     val fromIso = isoRangeFrom(range.startMillis)
     val toIso = isoRangeTo(range.endMillis)
     val bucket = bucketForRange(range.startMillis, range.endMillis)
     val openDrill: (ReportDrill) -> Unit = { drill = it }
-
-    val groupSpec = when (tab) {
-        ReportTab.SALES -> GroupBySpec(
-            options = listOf("model", "channel", "cashier", "day").map { SelectOption(it, t("reports.group_$it", null)) },
-            selected = salesGroupBy,
-            onSelect = { salesGroupBy = it },
-        )
-        ReportTab.EXPENSES -> GroupBySpec(
-            options = listOf(
-                SelectOption("category", t("reports.groupByCategory", null)),
-                SelectOption("month", t("reports.groupByMonth", null)),
-            ),
-            selected = expensesGroupBy,
-            onSelect = { expensesGroupBy = it },
-        )
-        else -> null
-    }
-    val activeCount = (if (preset != DEFAULT_REPORT_PRESET) 1 else 0) +
-        (if (groupSpec != null && groupSpec.selected != groupSpec.options.first().value) 1 else 0)
+    val activeCount = if (preset != DEFAULT_REPORT_PRESET) 1 else 0
 
     Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            ReportTab.entries.forEach { entry ->
-                PillButton(
-                    t(entry.labelKey, null),
-                    onClick = { tab = entry },
-                    variant = if (tab == entry) ButtonVariant.DEFAULT else ButtonVariant.GHOST,
-                )
-            }
-        }
-        HorizontalDivider(color = Tokens.border)
-        if (tab.ranged) {
+        Spacer(Modifier.height(Tokens.Space.md))
+        TabChips(
+            items = ReportSection.entries.map { TabChipItem(it, t(it.labelKey, null)) },
+            selected = section,
+            onSelect = { section = it },
+        )
+        Spacer(Modifier.height(Tokens.Space.md))
+        if (section.ranged) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().padding(start = Tokens.Space.screenH, end = Tokens.Space.sm, bottom = Tokens.Space.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    reportRangeLabel(preset, range),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                )
+                Text(reportRangeLabel(preset, range), style = MaterialTheme.typography.titleSmall, color = Tokens.text, modifier = Modifier.weight(1f))
                 FilterButton(activeCount = activeCount, onClick = { showFilters = true })
             }
         }
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (tab) {
-                ReportTab.OVERVIEW -> OverviewTab(
+            when (section) {
+                ReportSection.OVERVIEW -> OverviewTab(
                     vm, fromIso, toIso, bucket, openDrill,
                     onReturns = { f, to -> returnsRange = f to to },
                     onNoi = { noi = it },
                 )
-                ReportTab.SALES -> SalesTab(vm, fromIso, toIso, salesGroupBy, openDrill)
-                ReportTab.EXPENSES -> ExpensesReportTab(vm, fromIso, toIso, expensesGroupBy, openDrill)
-                ReportTab.NASIYA -> NasiyaTab(vm, fromIso, toIso, openDrill)
-                ReportTab.INVENTORY -> InventoryTab(vm, canCost, openDrill)
-                ReportTab.PRICING -> ModelPricingTab(vm)
-                ReportTab.CLOSING -> DailyClosingTab(vm)
+                ReportSection.EXPENSES -> ExpensesReportTab(vm, fromIso, toIso, openDrill)
+                ReportSection.NASIYA -> NasiyaTab(vm, fromIso, toIso, openDrill)
+                ReportSection.INVENTORY -> InventoryTab(vm, canCost, openDrill)
+                ReportSection.PRICING -> ModelPricingTab(vm)
+                ReportSection.CLOSING -> DailyClosingTab(vm)
             }
         }
     }
 
-    if (showFilters && tab.ranged) {
+    if (showFilters && section.ranged) {
         ReportFilterSheet(
             preset = preset,
             range = range,
@@ -148,30 +114,18 @@ fun ReportsScreen(container: AppContainer) {
                 }
             },
             onCustomRange = { range = it },
-            groupBy = groupSpec,
             canReset = activeCount > 0,
             onReset = {
                 preset = DEFAULT_REPORT_PRESET
                 val (s, e) = presetRangeMillis(DEFAULT_REPORT_PRESET)
                 range = DateRange(s, e)
-                salesGroupBy = "model"
-                expensesGroupBy = "category"
             },
             onDismiss = { showFilters = false },
         )
     }
-
     drill?.let { current ->
-        ReportDrillSheet(
-            drill = current,
-            onOpen = { container.featureNav.open(it) },
-            onDismiss = { drill = null },
-        )
+        ReportDrillSheet(drill = current, onOpen = { container.featureNav.open(it) }, onDismiss = { drill = null })
     }
-    returnsRange?.let { (f, to) ->
-        ReturnsBreakdownSheet(vm, f, to, onDismiss = { returnsRange = null })
-    }
-    noi?.let { report ->
-        NoiWaterfallSheet(report, onDismiss = { noi = null })
-    }
+    returnsRange?.let { (f, to) -> ReturnsBreakdownSheet(vm, f, to, onDismiss = { returnsRange = null }) }
+    noi?.let { report -> NoiWaterfallSheet(report, onDismiss = { noi = null }) }
 }

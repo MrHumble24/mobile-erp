@@ -49,6 +49,14 @@ struct FinReportRange {
         }
     }
 
+    /// One-line label for the period bar: the preset name, or the custom bounds.
+    func label(_ i18n: I18n) -> String {
+        if preset == .custom, let from = customFrom, let to = customTo {
+            return "\(KitDate.day(ISO8601DateFormatter().string(from: from))) – \(KitDate.day(ISO8601DateFormatter().string(from: to)))"
+        }
+        return i18n.t(preset.labelKey)
+    }
+
     /// Trend bucket from the span (≤31d → day, ≤180d → week, else month).
     var bucket: String {
         let (from, to) = dates

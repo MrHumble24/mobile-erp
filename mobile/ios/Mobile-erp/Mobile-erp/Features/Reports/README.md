@@ -1,19 +1,27 @@
 # Reports slice
 
-Financial reports matching the web tab set: **Overview · Sales · Expenses ·
-Nasiya · Inventory · Pricing · Closing** (`FinTabBar`). A shared date-range bar
-(`FinRangeBar`, presets + `KitDateRangeField` for custom) drives the first four;
-inventory is a live snapshot, pricing a rolling window, closing a single day.
+Financial reports restructured for the phone on the Warm Card kit (ADR 0022):
+six sections on the shared `TabChips` row — **P&L overview · Expenses · Nasiya
+· Inventory · Pricing · Closing**. The sales breakdown lives inside the overview
+as a card with its own group-by (`FinSalesBreakdownCard`). The period bar
+(label + filter button → kit `FilterSheet` with presets and two `AppDateField`s
+for custom) sits under the chips on the three period sections; inventory is a
+live snapshot, pricing a rolling window, closing a single day. Title is
+`nav.reports`, the same string as Android.
 
 ## Owns
 - All `/reports/*` reads (perm `report.finance`) + best-effort `/device-models`
-  labels. Charts are **Swift Charts**: `FinTrendChart` (revenue / gross-profit /
-  expense bars on a temporal day/week/month axis — tap a bar to pin the dashed
-  rule + value capsule) and `BarChartCard` breakdowns (x labels drop past six
-  crowded categories; the `FinShareList` rows name them).
-- Drill-downs (`FinBreakdownSheet`): NOI waterfall, paginated returns
-  (`KitPaginator`), by-model gross-profit/units, and zero-fetch detail for a
-  sales-model / partner / inventory-model row.
+  labels. Headline figures are `MetricList` rows (`MetricRow.onTap` drills
+  down). Charts stay on the kit palette: `FinTrendChart` (one series at a time
+  behind the kit `SegmentedControl`; revenue = text, profit = success/danger,
+  expenses = danger; Swift Charts bars on a temporal axis), `FinBreakdownBars` /
+  `FinBreakdownRows` (text bar on the border track, danger for a loss) and
+  `BarChartCard` (text bars) for the closing-day and average-price comparisons.
+- Drill-downs (`FinBreakdownSheet`, a kit sheet on `FactRow`s): NOI rows,
+  paginated returns (`KitPaginator`), by-model gross-profit/units ranking, and
+  zero-fetch facts for a sales-model / partner / inventory-model row.
+- Pricing is one card per model/storage with keyed facts (margin only with
+  `device.cost.view`).
 
 ## Public API
 - `ReportsModule.feature` — one line in `FeatureRegistry`. Nav `nav.reports`.
@@ -26,9 +34,11 @@ inventory is a live snapshot, pricing a rolling window, closing a single day.
 ## Must never
 - Import another feature slice (DTOs are duplicated by design). All reads,
   online only; the slice performs no writes.
+- Colour a chart with the action orange or an arbitrary hue — text on the
+  border track, success/danger for signed money only.
 
 ## Notes / deferred
 - Web's cross-entity line-item breakdowns (raw sales lines, device lists,
-  partner ledger) need other slices' endpoints → out of scope here; the
-  reports-owned drill-downs above stand in.
+  partner ledger) need other slices' endpoints → out of scope here.
 - Slice-local types are `Fin…`-prefixed (one Swift module).
+- DEBUG screenshot args: `-open reports`, `-openTab overview|expenses|nasiya|inventory|pricing|closing`.

@@ -6,12 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.finance.data.ReturnRow
@@ -39,6 +37,10 @@ import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
+import uz.malika.erp.shared.lib.formatDate
+import uz.malika.erp.shared.ui.Loading
 
 /**
  * Paginated refunded-returns list (`/reports/returns`) — the Compose analogue of
@@ -75,14 +77,14 @@ fun ReturnsBreakdownSheet(
     LaunchedEffect(fromIso, toIso) { page = PageState(); load(1) }
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(t("reports.brkReturns", null), style = MaterialTheme.typography.headlineSmall)
+        Column(Modifier.fillMaxWidth().padding(Tokens.Space.gutter), verticalArrangement = Arrangement.spacedBy(Tokens.Space.md)) {
+            Text(t("reports.brkReturns", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
             val items = page.items
             when {
                 page.loading && items.isEmpty() -> Box(
                     Modifier.fillMaxWidth().height(160.dp),
                     contentAlignment = Alignment.Center,
-                ) { CircularProgressIndicator(color = Tokens.primary) }
+                ) { Loading() }
 
                 error != null && items.isEmpty() ->
                     ErrorView(error!!, retryLabel = t("common.retry", null), onRetry = { load(1) })
@@ -91,9 +93,11 @@ fun ReturnsBreakdownSheet(
 
                 else -> LazyColumn(
                     Modifier.fillMaxWidth().heightIn(max = 480.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(items) { row -> ReturnRowView(row) }
+                    itemsIndexed(items) { i, row ->
+                        ReturnRowView(row)
+                        if (i < items.lastIndex) HorizontalDivider(color = Tokens.border)
+                    }
                     item { LoadMoreFooter(page.hasMore, page.loading, { load(page.nextPage) }) }
                 }
             }
@@ -104,22 +108,21 @@ fun ReturnsBreakdownSheet(
 @Composable
 private fun ReturnRowView(row: ReturnRow) {
     val t = LocalT.current
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Column(Modifier.weight(1f).padding(end = 8.dp)) {
-            Text(row.model, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Row(Modifier.fillMaxWidth().padding(vertical = Tokens.Space.sm), horizontalArrangement = Arrangement.SpaceBetween) {
+        Column(Modifier.weight(1f).padding(end = Tokens.Space.sm)) {
+            Text(row.model, style = MaterialTheme.typography.bodyMedium, color = Tokens.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 row.imei,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
-                color = Tokens.mutedForeground,
+                color = Tokens.muted,
             )
             if (!row.reason.isNullOrBlank()) {
-                Text(row.reason, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                Text(row.reason, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
         }
         Column(horizontalAlignment = Alignment.End) {
-            MoneyText(row.refundAmount, style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.danger))
-            Spacer(Modifier.height(2.dp))
-            Text(row.returnedAt.take(10), style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+            MoneyText(row.refundAmount, style = MaterialTheme.typography.titleSmall.copy(color = Tokens.danger))
+            Text(formatDate(row.returnedAt), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         }
     }
 }
