@@ -22,8 +22,8 @@ struct ConsignmentsFilterSheet: View {
                           options: RangePreset.allCases.map { ($0, $0.labelKey.map { i18n.t($0) } ?? i18n.t("common.all")) })
             }
             if model.preset == .custom {
-                AppFormField(label: i18n.t("reports.dateFrom")) { NasiyaDateField(date: dateBinding($model.customFrom)) }
-                AppFormField(label: i18n.t("reports.dateTo")) { NasiyaDateField(date: dateBinding($model.customTo)) }
+                AppFormField(label: i18n.t("reports.dateFrom")) { AppDateField(date: dateBinding($model.customFrom)) }
+                AppFormField(label: i18n.t("reports.dateTo")) { AppDateField(date: dateBinding($model.customTo)) }
             }
         }
     }

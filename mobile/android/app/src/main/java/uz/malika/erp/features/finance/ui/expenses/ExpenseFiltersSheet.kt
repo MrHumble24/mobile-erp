@@ -57,8 +57,8 @@ fun ExpenseFiltersSheet(
             label = t("expenses.filterRecurring", null),
             options = listOf(
                 SelectOption<Boolean?>(null, t("common.all", null)),
-                SelectOption(true, t("common.yes", null)),
-                SelectOption(false, t("common.no", null)),
+                SelectOption(true, t("expenses.recurringOnly", null)),
+                SelectOption(false, t("expenses.oneOff", null)),
             ),
             selected = filter.isRecurring,
             onSelect = onRecurring,

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.data.UpdateCategoryBody
 import uz.malika.erp.features.finance.model.ExpensesViewModel
@@ -28,10 +27,8 @@ import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
-import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -67,10 +64,10 @@ fun EditCategorySheet(
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("expenses.editCategory", null), style = MaterialTheme.typography.headlineSmall)
+            Text(t("expenses.editCategory", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
             AppFormField(label = t("expenses.categoryName", null), value = name, onValueChange = { name = it })
             AppFormField(label = t("expenses.description", null), value = description, onValueChange = { description = it })
             AppFormField(
@@ -79,17 +76,10 @@ fun EditCategorySheet(
                 onValueChange = { sortOrder = it },
                 keyboardType = KeyboardType.Number,
             )
-            Column {
-                Text(t("expenses.categoryActive", null), style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(6.dp))
-                SegmentedControl(
-                    options = listOf(
-                        SegmentOption(true, t("common.yes", null)),
-                        SegmentOption(false, t("common.no", null)),
-                    ),
-                    selected = active,
-                    onSelect = { active = it; if (it) reassignError = false },
-                )
+            Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
+                Text(t("expenses.categoryActive", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                Spacer(Modifier.weight(1f))
+                AppSwitch(checked = active, onCheckedChange = { active = it; if (it) reassignError = false })
             }
             if (!active) {
                 AppSelectField(
@@ -99,14 +89,10 @@ fun EditCategorySheet(
                     onSelect = { reassignTo = it; reassignError = false },
                 )
                 if (reassignError) {
-                    Text(t("expenses.reassignRequired", null), style = MaterialTheme.typography.bodySmall, color = Tokens.destructive)
+                    Text(t("expenses.reassignRequired", null), style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
                 }
             }
-            Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End)) {
-                PillButton(t("common.cancel", null), onClick = onDismiss, variant = ButtonVariant.OUTLINE)
-                PillButton(t("common.save", null), onClick = ::submit)
-            }
+            PillButton(t("common.save", null), onClick = ::submit, modifier = Modifier.fillMaxWidth())
         }
     }
 }

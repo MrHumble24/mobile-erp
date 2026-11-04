@@ -24,6 +24,20 @@ Shop expenses in three tabs (web parity): **Expenses · Categories · Recurring*
 - Queue writes offline — expenses are **not** outbox types. Every write checks
   `connectivity.isOnline` first and shows `common.offline` otherwise.
 
+## Warm Card (ADR 0022)
+- `ExpensesView` switches its three tabs with the kit `SegmentedControl` and is
+  titled by `nav.expenses`. The list tab is `ScrollView` + `AppCard` rows with the
+  system search bar, filter / new / CSV in the toolbar and a `MetricList` summary
+  (period total, count, per-category rows). Categories are one card of hairline
+  rows; recurring templates are cards with edit / pause pills.
+- Every sheet (detail, log/edit, recurrence, category) is the kit sheet:
+  `SheetTitleRow`, `AppFormField` + `AppTextField` / `AppSelect` /
+  `SegmentedControl` / `AppDateField` / `Toggle`, pill buttons (delete =
+  destructive). The filter sheet is a kit `FilterSheet`. The old
+  `ExpensesSummaryCard` and `ExpenseDate` helper are gone (`KitDate` instead).
+- DEBUG screenshot args: `-open expenses`, `-openTab expenses|categories|recurring`,
+  `-openExpense first`.
+
 ## Notes / deferred
 - Write feedback goes through the kit's global `container.toasts`.
 - The web "recorded by" filter needs `/users` (Users slice) → deferred to keep

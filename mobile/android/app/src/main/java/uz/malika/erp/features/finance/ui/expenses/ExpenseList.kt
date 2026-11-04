@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,47 +18,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.Expense
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.FactRow
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
-private fun dayOf(iso: String?): String = iso?.substringBefore('T') ?: "—"
-
-/** One expense as a tappable card (date, category + recurring chip, amount). */
+/** One expense card: category + recurring pill, mono date, description left; mono amount right. */
 @Composable
 fun ExpenseRow(expense: Expense, onClick: () -> Unit) {
     val t = LocalT.current
     AppCard(Modifier.fillMaxWidth(), onClick = onClick) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(expense.categoryName, style = MaterialTheme.typography.titleMedium)
-                    if (expense.isRecurring) {
-                        Spacer(Modifier.width(8.dp))
-                        StatusChip(t("expenses.isRecurring", null), color = Tokens.success)
-                    }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(expense.categoryName, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                Text(formatDate(expense.incurredAt), style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
+                expense.description?.takeIf { it.isNotBlank() }?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                 }
-                Spacer(Modifier.height(2.dp))
-                Text(dayOf(expense.incurredAt), style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
-                if (!expense.description.isNullOrBlank()) {
+                if (expense.isRecurring) {
                     Spacer(Modifier.height(2.dp))
-                    Text(expense.description, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                    StatusChip(t("expenses.tabRecurring", null), color = Tokens.info)
                 }
             }
-            MoneyText(expense.amount, style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.width(Tokens.Space.gap))
+            MoneyText(expense.amount, style = MaterialTheme.typography.titleSmall.copy(color = Tokens.text))
         }
     }
 }
 
-/** Expense detail sheet with online-only edit/delete for users with `expense.manage`. */
+/** Expense detail: keyed fact rows, then edit (secondary) and delete (destructive) for `expense.manage`. */
 @Composable
 fun ExpenseDetailSheet(
     expense: Expense,
@@ -66,44 +62,28 @@ fun ExpenseDetailSheet(
     onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
+    val mono = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily, color = Tokens.text)
+    val plain = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text)
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(t("expenses.detailTitle", null), style = MaterialTheme.typography.headlineSmall)
-            DetailLine(t("expenses.category", null), expense.categoryName)
-            DetailLine(t("common.amount", null), null) { MoneyText(expense.amount, style = MaterialTheme.typography.bodyLarge) }
-            DetailLine(t("expenses.incurredAt", null), dayOf(expense.incurredAt))
-            DetailLine(t("expenses.vendor", null), expense.vendor?.ifBlank { null })
-            DetailLine(t("expenses.isRecurring", null), if (expense.isRecurring) t("common.yes", null) else t("common.no", null))
-            if (!expense.description.isNullOrBlank()) {
-                DetailLine(t("expenses.description", null), expense.description)
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(expense.categoryName.ifBlank { t("expenses.detailTitle", null) }, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.lg))
+            FactRow(t("expenses.amount", null)) { MoneyText(expense.amount, style = plain) }
+            FactRow(t("expenses.incurredAt", null)) { Text(formatDate(expense.incurredAt), style = mono) }
+            FactRow(t("expenses.vendor", null)) { Text(expense.vendor?.ifBlank { null } ?: "—", style = plain) }
+            FactRow(t("expenses.isRecurring", null)) { Text(t(if (expense.isRecurring) "common.yes" else "common.no", null), style = plain) }
+            expense.description?.takeIf { it.isNotBlank() }?.let {
+                FactRow(t("expenses.description", null)) { Text(it, style = plain) }
             }
-            DetailLine(t("expenses.recordedBy", null), expense.createdBy?.displayName?.ifBlank { null })
-            DetailLine(t("common.date", null), dayOf(expense.createdAt))
+            FactRow(t("expenses.recordedBy", null), last = true) { Text(expense.createdBy?.displayName?.ifBlank { null } ?: "—", style = plain) }
             if (canManage) {
-                Spacer(Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    PillButton(
-                        t("common.edit", null),
-                        onClick = onEdit,
-                        variant = ButtonVariant.OUTLINE,
-                        modifier = Modifier.weight(1f),
-                    )
-                    PillButton(
-                        t("expenses.deleteExpense", null),
-                        onClick = onDelete,
-                        variant = ButtonVariant.DESTRUCTIVE,
-                        modifier = Modifier.weight(1f),
-                    )
+                Spacer(Modifier.height(Tokens.Space.lg))
+                Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
+                    PillButton(t("expenses.editExpense", null), onClick = onEdit, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())
+                    PillButton(t("expenses.deleteExpense", null), onClick = onDelete, variant = ButtonVariant.DESTRUCTIVE, modifier = Modifier.fillMaxWidth())
                 }
             }
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
-    }
-}
-
-@Composable
-private fun DetailLine(label: String, value: String?, trailing: @Composable (() -> Unit)? = null) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Tokens.mutedForeground)
-        if (trailing != null) trailing() else Text(value ?: "—", style = MaterialTheme.typography.bodyMedium)
     }
 }

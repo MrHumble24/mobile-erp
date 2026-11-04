@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -19,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.i18n.LocalT
@@ -48,37 +48,34 @@ fun ExpenseCategoriesSheet(
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
+            verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
-            Text(t("expenses.categories", null), style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(4.dp))
-            categories.forEach { category ->
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(category.name, style = MaterialTheme.typography.bodyLarge)
-                            if (!category.isActive) {
-                                StatusChip(t("common.no", null), color = Tokens.slate)
+            Text(t("expenses.categories", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Column {
+                categories.forEachIndexed { i, category ->
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch).padding(vertical = Tokens.Space.xs),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(category.name, style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                            if (!category.description.isNullOrBlank()) {
+                                Text(category.description, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                             }
                         }
-                        if (!category.description.isNullOrBlank()) {
-                            Text(category.description, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                        if (!category.isActive) {
+                            StatusChip(t("expenses.markInactive", null), color = Tokens.sold)
+                        }
+                        if (canManage) {
+                            PillButton(t("common.edit", null), onClick = { editing = category }, variant = ButtonVariant.GHOST)
                         }
                     }
-                    if (canManage) {
-                        PillButton(t("common.edit", null), onClick = { editing = category }, variant = ButtonVariant.GHOST)
-                    }
+                    if (i < categories.lastIndex) HorizontalDivider(color = Tokens.border)
                 }
-                HorizontalDivider(color = Tokens.border)
             }
             if (canManage) {
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm), verticalAlignment = Alignment.Bottom) {
                     AppFormField(
                         label = t("expenses.newCategory", null),
                         value = name,
@@ -88,8 +85,7 @@ fun ExpenseCategoriesSheet(
                     PillButton(t("common.add", null), onClick = { if (name.isNotBlank()) vm.addCategory(name.trim()) { name = "" } })
                 }
             }
-            Spacer(Modifier.height(8.dp))
-            PillButton(t("common.close", null), onClick = onDismiss, variant = ButtonVariant.GHOST, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
     }
 

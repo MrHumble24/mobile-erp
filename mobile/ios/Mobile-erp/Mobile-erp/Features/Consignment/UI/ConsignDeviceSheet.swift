@@ -56,7 +56,7 @@ struct ConsignDeviceSheet: View {
         }
         .buttonStyle(.pillSecondary)
 
-        AppFormField(label: i18n.t("consignments.dueDate")) { NasiyaDateField(date: $model.dueDate) }
+        AppFormField(label: i18n.t("consignments.dueDate")) { AppDateField(date: $model.dueDate) }
         AppFormField(label: i18n.t("common.notes")) {
             AppTextField(placeholder: i18n.t("common.notes"), text: $model.notes)
         }

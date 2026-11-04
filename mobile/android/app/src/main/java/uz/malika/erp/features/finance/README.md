@@ -48,6 +48,12 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
 `FinanceFeature : FeatureModule` — the only export (3 routes).
 
 ## Must never
+  Warm Card (ADR 0022): new-expense is an icon beside the search row (categories
+  and CSV in the overflow); the summary is the `MetricGrid` list-card (period
+  total + per-category rows, no hero figure); rows are cards with a recurring
+  info pill; detail/forms are kit sheets on shared `FactRow`s with `AppSwitch`
+  rows (recurring, category active) and one full-width primary save. The
+  recurring tab keeps its two actions (new = the one orange, generate = secondary).
 - Edit foundation (`core/ data/ shared/ ui/theme/ app/`) or another slice.
 - Queue writes offline — only `sale.create` / `consignment.*` use the outbox;
   expense / category / recurrence writes block with `common.offline`.

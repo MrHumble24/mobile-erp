@@ -1,13 +1,12 @@
 import SwiftUI
 
-/// Recurring expense templates: list, create/edit, pause/resume and
-/// generate-due (web `ExpenseRecurringTab`). All writes online-only, gated by
-/// `expense.manage`.
+/// Recurring expense templates: one card per template (category, cadence ·
+/// next due, amount, active pill) with edit / pause pills, plus new and
+/// generate-due in the toolbar. All writes online-only, `expense.manage`.
 struct ExpenseRecurringTab: View {
     let categories: [ExpenseCategory]
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var rows: [ExpenseRecurrence] = []
     @State private var error: String?
     @State private var loaded = false
@@ -18,29 +17,32 @@ struct ExpenseRecurringTab: View {
     private var repo: ExpenseRecurrencesRepository { ExpenseRecurrencesRepository(api: container.api) }
 
     var body: some View {
-        List {
-            if let error, rows.isEmpty {
-                ErrorStateView(message: error) { Task { await load() } }
-            } else if rows.isEmpty && loaded {
-                EmptyStateView(systemImage: "repeat", title: i18n.t("expenses.noRecurrences"))
-            } else {
-                ForEach(rows) { row in RecurrenceRow(row: row, canManage: canManage,
-                                                     onEdit: { editing = row }, onToggle: { toggle(row) }) }
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                if let error, rows.isEmpty {
+                    AppCard { ErrorStateView(message: error) { Task { await load() } } }
+                } else if rows.isEmpty && loaded {
+                    AppCard { EmptyStateView(systemImage: "repeat", title: i18n.t("expenses.noRecurrences")) }
+                } else if !loaded {
+                    AppCard { LoadingView().frame(height: 120) }
+                } else {
+                    ForEach(rows) { row in
+                        RecurrenceCard(row: row, canManage: canManage, onEdit: { editing = row }, onToggle: { toggle(row) })
+                    }
+                }
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
         .toolbar {
             if canManage {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { Task { await generate() } } label: { Image(systemName: "arrow.clockwise") }
-                        .accessibilityLabel(i18n.t("expenses.generateDue"))
+                    Button { Task { await generate() } } label: {
+                        Label(i18n.t("expenses.generateDue"), systemImage: "arrow.clockwise")
+                    }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showNew = true } label: { Image(systemName: "plus") }
-                        .accessibilityLabel(i18n.t("expenses.newRecurrence"))
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showNew = true } label: { Label(i18n.t("expenses.newRecurrence"), systemImage: "plus") }
                 }
             }
         }
@@ -66,9 +68,7 @@ struct ExpenseRecurringTab: View {
     }
 
     private func generate() async {
-        guard container.connectivity.isOnline else {
-            container.toasts.info(i18n.t("common.offline", default: "No connection.")); return
-        }
+        guard container.connectivity.isOnline else { container.toasts.info(i18n.t("common.offline")); return }
         do {
             let result = try await repo.generateDue()
             container.toasts.success(i18n.t("expenses.generated", ["count": String(result.generated)]))
@@ -78,9 +78,7 @@ struct ExpenseRecurringTab: View {
     }
 
     private func toggle(_ row: ExpenseRecurrence) {
-        guard container.connectivity.isOnline else {
-            container.toasts.info(i18n.t("common.offline", default: "No connection.")); return
-        }
+        guard container.connectivity.isOnline else { container.toasts.info(i18n.t("common.offline")); return }
         Task {
             do {
                 try await repo.update(id: row.id, UpdateExpenseRecurrenceDto(
@@ -93,7 +91,7 @@ struct ExpenseRecurringTab: View {
     }
 }
 
-private struct RecurrenceRow: View {
+private struct RecurrenceCard: View {
     let row: ExpenseRecurrence
     let canManage: Bool
     let onEdit: () -> Void
@@ -101,25 +99,36 @@ private struct RecurrenceRow: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(row.categoryName).font(.body)
-                Text("\(i18n.t(freqKey)) · \(i18n.t("expenses.nextDueAt")): \(ExpenseDate.display(row.nextDueAt))")
-                    .font(.caption).foregroundStyle(Tokens.muted)
-            }
-            Spacer()
-            MoneyText(value: row.amount, size: 15)
-            if canManage {
-                Button(action: onToggle) {
-                    Image(systemName: row.isActive ? "pause.circle" : "play.circle")
-                }.buttonStyle(.plain).foregroundStyle(Tokens.slate)
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(row.categoryName).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                        Text("\(i18n.t(freqKey)) · \(KitDate.day(row.nextDueAt))").font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                        if let d = row.description, !d.isEmpty {
+                            Text(d).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                        }
+                    }
+                    Spacer(minLength: Tokens.Space.sm)
+                    VStack(alignment: .trailing, spacing: Tokens.Space.xs) {
+                        MoneyText(value: row.amount, size: 15).fontWeight(.semibold).foregroundStyle(Tokens.text)
+                        StatusBadge(i18n.t(row.isActive ? "expenses.recurrenceActive" : "expenses.markInactive"),
+                                    color: row.isActive ? Tokens.success : Tokens.sold)
+                    }
+                }
+                if canManage {
+                    HStack(spacing: Tokens.Space.sm) {
+                        Button(action: onEdit) { Text(i18n.t("common.edit")).frame(maxWidth: .infinity) }
+                            .buttonStyle(.pillSecondary)
+                        Button(action: onToggle) {
+                            Text(i18n.t(row.isActive ? "expenses.markInactive" : "expenses.markActive")).frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.pillGhost)
+                    }
+                }
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture { if canManage { onEdit() } }
     }
 
-    private var freqKey: String {
-        row.frequency == "weekly" ? "expenses.frequencyWeekly" : "expenses.frequencyMonthly"
-    }
+    private var freqKey: String { row.frequency == "weekly" ? "expenses.frequencyWeekly" : "expenses.frequencyMonthly" }
 }

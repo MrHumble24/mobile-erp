@@ -107,21 +107,3 @@ struct UpdateExpenseCategoryDto: Encodable {
     let isActive: Bool?
     let reassignToId: String?
 }
-
-/// `dd.MM.yyyy` for an ISO timestamp string; echoes the raw input on failure.
-enum ExpenseDate {
-    static func display(_ iso: String) -> String {
-        guard let date = parse(iso) else { return iso }
-        return out.string(from: date)
-    }
-    private static func parse(_ iso: String) -> Date? {
-        isoFull.date(from: iso) ?? isoPlain.date(from: iso)
-    }
-    private static let isoFull: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter(); f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]; return f
-    }()
-    private static let isoPlain = ISO8601DateFormatter()
-    private static let out: DateFormatter = {
-        let f = DateFormatter(); f.dateFormat = "dd.MM.yyyy"; return f
-    }()
-}

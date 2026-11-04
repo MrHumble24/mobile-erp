@@ -1,52 +1,39 @@
 import SwiftUI
 
-/// Expense categories: list with active state, plus add / edit / deactivate /
-/// reassign for `expense.category.manage` users (web `ExpensesCategoriesTab`).
+/// Expense categories as one card of hairline rows (name, description,
+/// inactive pill), plus add / edit for `expense.category.manage` users.
 struct ExpenseCategoriesTab: View {
     let model: ExpensesModel
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
-
     @State private var editing: ExpenseCategory?
     @State private var showNew = false
 
     private var canManage: Bool { container.session.can("expense.category.manage") }
 
     var body: some View {
-        List {
-            ForEach(model.categories) { category in
-                Button {
-                    if canManage { editing = category }
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(category.name).foregroundStyle(Tokens.ink)
-                            if let d = category.description, !d.isEmpty {
-                                Text(d).font(.caption).foregroundStyle(Tokens.muted)
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                if model.categories.isEmpty {
+                    AppCard { EmptyStateView(systemImage: "tag", title: i18n.t("common.notFound")) }
+                } else {
+                    AppCard(padding: 0) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(model.categories.enumerated()), id: \.element.id) { i, category in
+                                row(category)
+                                if i < model.categories.count - 1 { Divider().overlay(Tokens.border) }
                             }
                         }
-                        Spacer()
-                        StatusBadge(
-                            category.isActive ? i18n.t("expenses.categoryActive") : i18n.t("common.no"),
-                            color: category.isActive ? Tokens.success : Tokens.slate)
                     }
                 }
-                .buttonStyle(.plain)
-                .disabled(!canManage)
             }
-            if model.categories.isEmpty {
-                Text(i18n.t("common.notFound")).foregroundStyle(Tokens.muted)
-            }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
         .toolbar {
             if canManage {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showNew = true } label: { Image(systemName: "plus") }
-                        .accessibilityLabel(i18n.t("expenses.newCategory"))
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showNew = true } label: { Label(i18n.t("expenses.newCategory"), systemImage: "plus") }
                 }
             }
         }
@@ -56,5 +43,28 @@ struct ExpenseCategoriesTab: View {
         .sheet(item: $editing) { category in
             ExpenseCategorySheet(model: model, category: category) { container.toasts.info($0) }
         }
+    }
+
+    private func row(_ category: ExpenseCategory) -> some View {
+        HStack(spacing: Tokens.Space.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(category.name).font(.ui(.body)).foregroundStyle(Tokens.text)
+                if let d = category.description, !d.isEmpty {
+                    Text(d).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+            }
+            Spacer(minLength: Tokens.Space.sm)
+            if !category.isActive {
+                StatusBadge(i18n.t("expenses.markInactive"), color: Tokens.sold)
+            }
+            if canManage {
+                Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Tokens.muted)
+            }
+        }
+        .frame(minHeight: Tokens.Space.rowH)
+        .padding(.horizontal, Tokens.Space.cardPad)
+        .padding(.vertical, Tokens.Space.sm)
+        .contentShape(Rectangle())
+        .onTapGesture { if canManage { editing = category } }
     }
 }

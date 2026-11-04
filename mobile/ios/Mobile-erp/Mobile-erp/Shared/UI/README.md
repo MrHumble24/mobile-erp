@@ -28,6 +28,8 @@ dressed.
   codes map `IN_STOCK→success`, `DEFECTIVE→danger`, `CONSIGNED→info`,
   `SOLD→sold`.
 - **SummaryTile / SummaryTileGrid** — stat tile on a card, value in mono.
+- **AppDateField** — a `DatePicker` in the kit field chrome (card fill, hairline,
+  52 pt). Promoted from the consignment slice when the expense forms needed it.
 - **SheetTitleRow / SubjectBlock / FormErrorLine** (`SheetChrome.swift`) — the
   write-sheet chrome: title + 44 pt close circle, the surface-2 subject block, the
   inline error / offline line. Promoted from the consignment slice when customers

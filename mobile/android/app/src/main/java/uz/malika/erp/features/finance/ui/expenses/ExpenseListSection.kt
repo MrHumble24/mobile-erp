@@ -2,18 +2,17 @@ package uz.malika.erp.features.finance.ui.expenses
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -43,8 +42,10 @@ import uz.malika.erp.shared.lib.shareTextFile
 import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
+import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.LoadMoreFooter
-import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.Loading
+import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.ui.theme.Tokens
 
@@ -79,42 +80,45 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
     ).count { it }
 
     LazyColumn(
-        modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = Tokens.Space.screenH, end = Tokens.Space.screenH, bottom = listBottomPadding().calculateBottomPadding()),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
     ) {
         item {
-            Header(
-                canManage = can("expense.manage"),
-                onCategories = { showCategories = true },
-                onNew = { editing = null; showLog = true },
-                onCsv = {
-                    val name = "expenses-${System.currentTimeMillis()}.csv"
-                    shareTextFile(context, name, buildExpensesCsv(state.page.items), chooserTitle = t("expenses.exportCsv", null))
-                },
-                csvEnabled = state.page.items.isNotEmpty(),
-            )
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                SearchFilterRow(
+                    query = search,
+                    onQueryChange = { search = it; vm.setSearch(it) },
+                    placeholder = t("expenses.searchPlaceholder", null),
+                    activeCount = activeFilters,
+                    onOpenFilters = { showFilters = true },
+                    modifier = Modifier.weight(1f),
+                )
+                if (can("expense.manage")) {
+                    IconButton(onClick = { editing = null; showLog = true }) {
+                        Icon(Icons.Outlined.Add, contentDescription = t("expenses.newExpense", null), tint = Tokens.text)
+                    }
+                }
+                OverflowMenu(
+                    onCategories = { showCategories = true },
+                    onCsv = {
+                        val name = "expenses-${System.currentTimeMillis()}.csv"
+                        shareTextFile(context, name, buildExpensesCsv(state.page.items), chooserTitle = t("expenses.exportCsv", null))
+                    },
+                    csvEnabled = state.page.items.isNotEmpty(),
+                )
+            }
         }
         item { ExpenseSummaryCard(state.summary) }
-        item {
-            SearchFilterRow(
-                query = search,
-                onQueryChange = { search = it; vm.setSearch(it) },
-                placeholder = t("expenses.searchPlaceholder", null),
-                activeCount = activeFilters,
-                onOpenFilters = { showFilters = true },
-            )
-        }
         val items = state.page.items
         when {
             state.page.loading && items.isEmpty() -> item {
-                Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Tokens.primary)
-                }
+                Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) { Loading() }
             }
             state.error != null && items.isEmpty() -> item {
                 ErrorView(state.error!!, retryLabel = t("common.retry", null), onRetry = vm::reload)
             }
-            items.isEmpty() -> item { EmptyView(t("expenses.noExpensesFound", null)) }
+            items.isEmpty() -> item { AppCard(Modifier.fillMaxWidth()) { EmptyView(t("expenses.noExpensesFound", null), compact = true) } }
             else -> {
                 items(items) { expense -> ExpenseRow(expense) { detail = expense } }
                 item { LoadMoreFooter(state.page.hasMore, state.page.loading, vm::loadMore) }
@@ -170,21 +174,14 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
     }
 }
 
-/** Prominent new-expense action with secondary actions (categories, CSV) in an overflow menu. */
+/** Secondary actions (categories, CSV) behind an overflow menu. */
 @Composable
-private fun Header(canManage: Boolean, onCategories: () -> Unit, onNew: () -> Unit, onCsv: () -> Unit, csvEnabled: Boolean) {
+private fun OverflowMenu(onCategories: () -> Unit, onCsv: () -> Unit, csvEnabled: Boolean) {
     val t = LocalT.current
     var menu by remember { mutableStateOf(false) }
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        if (canManage) {
-            PillButton(t("expenses.newExpense", null), onClick = onNew, modifier = Modifier.weight(1f))
-            Spacer(Modifier.width(8.dp))
-        } else {
-            Spacer(Modifier.weight(1f))
-        }
-        Box {
+    Box {
             IconButton(onClick = { menu = true }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
+                Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.text)
             }
             DropdownMenu(
                 expanded = menu,
@@ -204,6 +201,5 @@ private fun Header(canManage: Boolean, onCategories: () -> Unit, onNew: () -> Un
                     onClick = { menu = false; onCsv() },
                 )
             }
-        }
     }
 }

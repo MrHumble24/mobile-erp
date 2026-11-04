@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Create or edit a recurring expense template (web `ExpenseRecurrenceDialog`).
+/// Create or edit a recurring expense template as a Warm Card sheet.
 /// Online-only; calls back with a result message after a successful save.
 struct ExpenseRecurrenceSheet: View {
     let categories: [ExpenseCategory]
@@ -10,7 +10,6 @@ struct ExpenseRecurrenceSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var categoryId: String?
     @State private var amount: String
     @State private var frequency: String
@@ -19,15 +18,14 @@ struct ExpenseRecurrenceSheet: View {
     @State private var description: String
     @State private var saving = false
 
-    init(categories: [ExpenseCategory], recurrence: ExpenseRecurrence?,
-         onDone: @escaping (String?) async -> Void) {
+    init(categories: [ExpenseCategory], recurrence: ExpenseRecurrence?, onDone: @escaping (String?) async -> Void) {
         self.categories = categories
         self.recurrence = recurrence
         self.onDone = onDone
         _categoryId = State(initialValue: recurrence?.categoryId)
         _amount = State(initialValue: recurrence?.amount ?? "")
         _frequency = State(initialValue: recurrence?.frequency ?? "monthly")
-        _nextDueAt = State(initialValue: recurrence.flatMap { ISO8601DateFormatter().date(from: $0.nextDueAt) } ?? Date())
+        _nextDueAt = State(initialValue: recurrence.flatMap { KitDate.parse($0.nextDueAt) } ?? Date())
         _vendor = State(initialValue: recurrence?.vendor ?? "")
         _description = State(initialValue: recurrence?.description ?? "")
     }
@@ -39,45 +37,48 @@ struct ExpenseRecurrenceSheet: View {
     private var canSave: Bool { categoryId != nil && amountValue != nil && !saving }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Picker(i18n.t("expenses.category"), selection: $categoryId) {
-                    Text(i18n.t("common.select")).tag(String?.none)
-                    ForEach(categories) { c in Text(c.name).tag(String?.some(c.id)) }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t(recurrence == nil ? "expenses.newRecurrence" : "expenses.editRecurrence")) { dismiss() }
+                AppFormField(label: i18n.t("expenses.category")) {
+                    AppSelect(placeholder: i18n.t("common.select"), selection: $categoryId,
+                              options: categories.map { (String?.some($0.id), $0.name) })
                 }
-                Section {
-                    TextField(i18n.t("expenses.amount"), text: $amount)
-                        .keyboardType(.decimalPad).font(.mono(16))
+                AppFormField(label: i18n.t("expenses.amount")) {
+                    AppTextField(placeholder: "0", text: $amount, keyboard: .decimalPad, font: .data(.regular))
                         .sanitizeDecimal($amount)
-                    Picker(i18n.t("expenses.frequency"), selection: $frequency) {
-                        Text(i18n.t("expenses.frequencyMonthly")).tag("monthly")
-                        Text(i18n.t("expenses.frequencyWeekly")).tag("weekly")
-                    }
-                    DatePicker(i18n.t("expenses.nextDueAt"), selection: $nextDueAt,
-                               displayedComponents: .date)
                 }
-                Section {
-                    TextField(i18n.t("expenses.vendor"), text: $vendor)
-                    TextField(i18n.t("expenses.description"), text: $description)
+                AppFormField(label: i18n.t("expenses.vendor")) {
+                    AppTextField(placeholder: i18n.t("expenses.vendorPlaceholder"), text: $vendor)
                 }
+                AppFormField(label: i18n.t("expenses.description")) {
+                    AppTextField(placeholder: i18n.t("expenses.descriptionPlaceholder"), text: $description)
+                }
+                AppFormField(label: i18n.t("expenses.frequency")) {
+                    SegmentedControl(selection: $frequency, segments: [
+                        ("monthly", i18n.t("expenses.frequencyMonthly")),
+                        ("weekly", i18n.t("expenses.frequencyWeekly")),
+                    ])
+                }
+                AppFormField(label: i18n.t("expenses.nextDueAt")) { AppDateField(date: $nextDueAt) }
+                Button(action: submit) {
+                    Text(i18n.t("common.save")).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(!canSave)
             }
-            .navigationTitle(i18n.t(recurrence == nil ? "expenses.newRecurrence" : "expenses.editRecurrence"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.save"), action: submit).disabled(!canSave)
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.large])
     }
 
     private func submit() {
         guard let categoryId, let amountValue else { return }
         guard container.connectivity.isOnline else {
-            Task { await onDone(i18n.t("common.offline", default: "No connection — reconnect to save.")) }
+            Task { await onDone(i18n.t("common.offline")) }
             dismiss(); return
         }
         saving = true

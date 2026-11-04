@@ -63,7 +63,7 @@ fun ExpensesScreen(container: AppContainer) {
                 ),
                 selected = tab,
                 onSelect = { tab = it },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(horizontal = Tokens.Space.screenH, vertical = Tokens.Space.md),
             )
             when (tab) {
                 ExpenseTab.EXPENSES -> ExpenseListSection(vm, container, Modifier.weight(1f))

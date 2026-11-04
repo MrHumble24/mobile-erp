@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Online-only log / edit expense form. When offline it refuses (expenses are
-/// not in the offline outbox) and tells the user to reconnect.
-/// Roomy, clear single-column input flow.
+/// Online-only log / edit expense form as a Warm Card sheet. When offline it
+/// refuses (expenses are not in the offline outbox) and says to reconnect.
 struct LogExpenseSheet: View {
     let model: ExpensesModel
     var expense: Expense?
@@ -11,7 +10,6 @@ struct LogExpenseSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var categoryId: String?
     @State private var amount: String
     @State private var description: String
@@ -29,7 +27,7 @@ struct LogExpenseSheet: View {
         _description = State(initialValue: expense?.description ?? "")
         _vendor = State(initialValue: expense?.vendor ?? "")
         _isRecurring = State(initialValue: expense?.isRecurring ?? false)
-        _incurredAt = State(initialValue: expense.flatMap { ISO8601DateFormatter().date(from: $0.incurredAt) } ?? Date())
+        _incurredAt = State(initialValue: expense.flatMap { KitDate.parse($0.incurredAt) } ?? Date())
     }
 
     private var amountValue: Double? {
@@ -39,78 +37,47 @@ struct LogExpenseSheet: View {
     private var canSave: Bool { categoryId != nil && amountValue != nil && !saving }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(i18n.t("expenses.category", default: "Expense Category")) {
-                    Picker(i18n.t("expenses.category", default: "Category"), selection: $categoryId) {
-                        Text(i18n.t("common.select", default: "Select Category")).tag(String?.none)
-                        ForEach(model.categories) { c in
-                            Text(c.name).tag(String?.some(c.id))
-                        }
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t(expense == nil ? "expenses.newExpense" : "expenses.editExpense")) { dismiss() }
+                if !container.connectivity.isOnline { FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning) }
+                AppFormField(label: i18n.t("expenses.category")) {
+                    AppSelect(placeholder: i18n.t("common.select"), selection: $categoryId,
+                              options: model.activeCategories.map { (String?.some($0.id), $0.name) })
                 }
-
-                Section(i18n.t("expenses.amount", default: "Expense Amount")) {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("$")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(Tokens.muted)
-                        TextField("0", text: $amount)
-                            .font(.mono(24, weight: .bold))
-                            .keyboardType(.decimalPad)
-                            .monospacedDigit()
-                            .sanitizeDecimal($amount)
-                    }
-                    .padding(.vertical, 2)
-
-                    TextField(i18n.t("expenses.vendor"), text: $vendor)
-                    TextField(i18n.t("expenses.description", default: "Description (what was purchased)"),
-                              text: $description)
+                AppFormField(label: i18n.t("expenses.amount")) {
+                    AppTextField(placeholder: "0", text: $amount, keyboard: .decimalPad, font: .data(.regular))
+                        .sanitizeDecimal($amount)
                 }
-
-                Section(i18n.t("expenses.details", default: "Schedule & Date")) {
-                    Toggle(i18n.t("expenses.isRecurring", default: "Monthly Recurring Expense"), isOn: $isRecurring)
-                    DatePicker(i18n.t("expenses.incurredAt", default: "Date Incurred"),
-                               selection: $incurredAt,
-                               in: ...Date(), displayedComponents: .date)
+                AppFormField(label: i18n.t("expenses.vendor")) {
+                    AppTextField(placeholder: i18n.t("expenses.vendorPlaceholder"), text: $vendor)
                 }
-
-                Section {
-                    Button(action: submit) {
-                        if saving {
-                            ProgressView().frame(maxWidth: .infinity)
-                        } else {
-                            Label(i18n.t("expenses.logExpense", default: "Save Expense"), systemImage: "checkmark.circle.fill")
-                                .font(.headline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 24)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundStyle(Tokens.onInk)
-                    .tint(Tokens.ink)
-                    .disabled(!canSave)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
+                AppFormField(label: i18n.t("expenses.description")) {
+                    AppTextField(placeholder: i18n.t("expenses.descriptionPlaceholder"), text: $description)
                 }
+                AppFormField(label: i18n.t("expenses.incurredAt")) { AppDateField(date: $incurredAt) }
+                Toggle(isOn: $isRecurring) {
+                    Text(i18n.t("expenses.isRecurring")).font(.ui(.body)).foregroundStyle(Tokens.text)
+                }
+                .frame(minHeight: Tokens.Space.minTouch)
+                Button(action: submit) {
+                    if saving { ProgressView().tint(Tokens.onAction).frame(maxWidth: .infinity) }
+                    else { Text(i18n.t("common.save")).frame(maxWidth: .infinity) }
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(!canSave)
             }
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle(i18n.t(expense == nil ? "expenses.newExpense" : "expenses.editExpense"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.large])
     }
 
     private func submit() {
         guard let categoryId, let amountValue else { return }
-        guard container.connectivity.isOnline else {
-            onResult(i18n.t("common.offline", default: "No connection — reconnect to save."))
-            return
-        }
+        guard container.connectivity.isOnline else { onResult(i18n.t("common.offline")); return }
         saving = true
         Haptic.tick.play()
         let desc = description.isEmpty ? nil : description
