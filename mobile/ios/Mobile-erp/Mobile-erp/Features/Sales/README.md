@@ -6,11 +6,17 @@ Completed sales, receipts, returns, and warranty lookup.
 - Sales list (`GET /sales`) with channel / status / warranty / cashier / search
   filters + a `KitDateRangeField` range, paginated via `KitPaginator` (load
   more) with CSV export (`KitCSVShareButton`).
-- Summary tiles (`GET /sales/stats`): count, revenue, avg price, returns +
-  refunded, net profit (shown only when the server includes it).
-- Sale detail sheet → printable receipt (`GET /sales/:id/receipt`), the return
-  flow (`POST /sales/:id/return`, gated on `sale.return`, toasts on success),
-  and `KitRouter` links to the device (inventory) and consignment.
+- Summary card (`GET /sales/stats`, shared `MetricList` at the top of the list):
+  count, revenue, avg price, returns + refunded, net profit tinted by sign
+  (shown only when the server includes it).
+- Sale detail as a Warm Card sheet (`appSheet`): model title, `CopyableIMEI`
+  lines, channel / returned pills, keyed facts (price, profit by sign, customer,
+  phone link, cashier, time, warranty days, returned at), then ghost links to the
+  device / consignment, a secondary Receipt pill and a destructive Return pill
+  (hidden once `returnedAt` is set). Receipt: `GET /sales/:id/receipt`; return:
+  `POST /sales/:id/return`, gated on `sale.return`, toasts on success.
+- Screen title is `nav.sales` (the tab label) so it matches the tab and the
+  Android top bar; `sales.title` is the web page heading.
 - Warranty lookup by IMEI: online `GET /sales/warranty/:imei`, else rebuilt
   offline from the cached `DeviceEntity` + its latest sale.
 - Cashier options for the sold-by filter via `GET /users` (gated on `user.read`).

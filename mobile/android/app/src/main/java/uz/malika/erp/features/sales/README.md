@@ -30,7 +30,10 @@ three permission-gated routes.
   warranty, and cashier (`/users`, shown only with `user.read`) — live in
   `SalesFilterSheet` (a shared `FilterSheet`); each applies immediately and reset
   clears everything (`SalesViewModel.clearFilters`). CSV export (`Csv` + share
-  sheet). Detail sheet with an **Open
+  sheet). Detail sheet (Warm Card, scrolls: model title, mono IMEI lines with
+  copy, channel / returned pills, keyed fact rows with hairlines, then the
+  actions — ghost links, secondary Receipt, **destructive** Return, hidden once
+  returned; mirrors the iOS `SaleDetailSheet`) with an **Open
   device** link (`featureNav → Destination.Inventory`), a **View consignment**
   link on B2B sales (`featureNav → Destination.Consignments`), **copy IMEI** and
   a **tappable customer phone** (opens the dialer), server receipt + print,

@@ -21,6 +21,7 @@ private struct PillButtonBody: View {
     let kind: PillButton.Kind
     let configuration: ButtonStyle.Configuration
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         configuration.label
@@ -40,7 +41,10 @@ private struct PillButtonBody: View {
     private var foreground: Color {
         guard isEnabled else { return Tokens.muted }
         switch kind {
-        case .primary, .destructive: return Tokens.onAction
+        case .primary: return Tokens.onAction
+        // Dark lifts `danger` to a pink text hue, so a white label would fail AA;
+        // the dark destructive pill is the status pair instead (dangerBg + danger).
+        case .destructive: return colorScheme == .dark ? Tokens.danger : Tokens.onAction
         case .secondary, .ghost: return Tokens.text
         }
     }
@@ -50,7 +54,7 @@ private struct PillButtonBody: View {
         switch kind {
         case .primary: return pressed ? Tokens.actionPressed : Tokens.action
         // No `dangerPressed` token; the 0.98 scale carries the press feedback.
-        case .destructive: return Tokens.danger
+        case .destructive: return colorScheme == .dark ? Tokens.dangerBg : Tokens.danger
         case .secondary: return pressed ? Tokens.border : Tokens.surface2
         case .ghost: return pressed ? Tokens.surface2 : .clear
         }

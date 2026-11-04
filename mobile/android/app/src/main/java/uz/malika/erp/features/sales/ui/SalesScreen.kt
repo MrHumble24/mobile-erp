@@ -1,5 +1,6 @@
 package uz.malika.erp.features.sales.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -115,7 +116,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
         // list as item 0, so tall stat/filter blocks never push the rows off-screen.
         LazyColumn(mod.fillMaxSize(), contentPadding = listBottomPadding(fab = true)) {
             item {
-                Column(Modifier.padding(Tokens.Space.section)) {
+                Column(Modifier.padding(horizontal = Tokens.Space.screenH, vertical = Tokens.Space.section)) {
                     stats?.let { SalesSummary(it); Spacer(Modifier.height(Tokens.Space.section)) }
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         SearchFilterRow(
@@ -151,10 +152,10 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                     item { EmptyView(t("sales.noSalesFound", null)) }
                 else -> {
                     items(items) { sale ->
-                        Box(Modifier.padding(horizontal = 16.dp)) { SaleRow(sale, t) { selected = sale } }
+                        Box(Modifier.padding(horizontal = Tokens.Space.screenH)) { SaleRow(sale, t) { selected = sale } }
                     }
                     item {
-                        Box(Modifier.padding(horizontal = 16.dp)) {
+                        Box(Modifier.padding(horizontal = Tokens.Space.screenH)) {
                             LoadMoreFooter(listUi.state.hasMore, listUi.state.loading, vm::loadMore)
                         }
                     }
@@ -240,33 +241,33 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     }
 }
 
+/** One sale card: model, mono IMEI(s), customer · day left; mono price and the
+ *  channel / returned pills right — the same anatomy as the iOS `SaleRow`. */
 @Composable
 private fun SaleRow(sale: Sale, t: uz.malika.erp.i18n.Translate, onClick: () -> Unit) {
     val retail = sale.channel == SaleChannel.RETAIL
-    AppCard(Modifier.fillMaxWidth().padding(vertical = 6.dp), onClick = onClick) {
+    AppCard(Modifier.fillMaxWidth().padding(vertical = Tokens.Space.gap), onClick = onClick) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
-                Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall)
-                Text(sale.imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+                Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                Text(sale.imei, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 sale.imei2?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.mutedForeground)
+                    Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
                 }
                 Text(
                     "${sale.customerName ?: t("pos.walkIn", null)} · ${formatDate(sale.soldAt)}",
                     style = MaterialTheme.typography.bodySmall,
+                    color = Tokens.muted,
                 )
             }
-            Column(horizontalAlignment = Alignment.End) {
-                MoneyText(sale.salePrice, style = MaterialTheme.typography.titleSmall)
-                Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.width(Tokens.Space.gap))
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(Tokens.Space.xs)) {
+                MoneyText(sale.salePrice, style = MaterialTheme.typography.titleSmall.copy(color = Tokens.text))
                 StatusChip(
                     if (retail) t("sales.channelRetail", null) else t("sales.channelB2B", null),
-                    color = if (retail) Tokens.signalBlue else Tokens.warning,
+                    color = if (retail) Tokens.info else Tokens.warning,
                 )
-                if (sale.returnedAt != null) {
-                    Spacer(Modifier.height(4.dp))
-                    StatusChip(t("sales.returned", null), color = Tokens.danger)
-                }
+                if (sale.returnedAt != null) StatusChip(t("sales.returned", null), color = Tokens.danger)
             }
         }
     }

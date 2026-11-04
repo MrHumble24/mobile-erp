@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Detail for one sale. Links to the printable receipt and the return flow.
-/// Cost/profit rows appear only when the server included them (redacted for
-/// under-privileged users).
+/// Detail for one sale as a Warm Card sheet: the device block (model, IMEIs with
+/// copy, channel / returned pills), keyed facts, then the actions. Links to the
+/// printable receipt and the return flow. Cost/profit rows appear only when the
+/// server included them (redacted for under-privileged users).
 struct SaleDetailSheet: View {
     let sale: SaleView
     let onChanged: () -> Void
@@ -12,152 +13,125 @@ struct SaleDetailSheet: View {
 
     @State private var showReceipt = false
     @State private var showReturn = false
-    @State private var copied = false
 
-    private var canReturn: Bool { container.session.can("sale.return") }
+    private var canReturn: Bool { container.session.can("sale.return") && !sale.isReturned }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                // 1. Device Section
-                Section(i18n.t("sales.deviceSection", default: "Sold Device")) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(sale.device.model.label)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(Tokens.ink)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.gutter) {
+                header
+                facts
+                actions
+            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .background(Tokens.card)
+        .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id) }
+        .sheet(isPresented: $showReturn) {
+            ReturnSheet(saleId: sale.id) {
+                container.toasts.success(i18n.t("sales.returnSuccess"))
+                onChanged()
+                dismiss()
+            }
+        }
+    }
 
-                        HStack(spacing: 8) {
-                            Text("IMEI: \(sale.device.imei)")
-                                .font(.mono(13, weight: .medium))
-                                .foregroundStyle(Tokens.muted)
-                            Button {
-                                UIPasteboard.general.string = sale.device.imei
-                                Haptic.tick.play()
-                                withAnimation(.snappy(duration: 0.2)) { copied = true }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                    withAnimation { copied = false }
-                                }
-                            } label: {
-                                Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(copied ? Tokens.success : .secondary)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        if let imei2 = sale.device.imei2, !imei2.isEmpty {
-                            Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
-                                .font(.mono(13, weight: .medium))
-                                .foregroundStyle(Tokens.muted)
-                        }
-                    }
-                    .padding(.vertical, 4)
+    private var header: some View {
+        VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+            HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                Text(sale.device.model.label)
+                    .font(.ui(.title))
+                    .foregroundStyle(Tokens.text)
+                Spacer(minLength: Tokens.Space.sm)
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Tokens.text)
+                        .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+                        .background(Tokens.surface2, in: Circle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(i18n.t("common.close"))
+            }
+            CopyableIMEI(label: "IMEI", value: sale.device.imei, accessibilityLabel: i18n.t("inventory.copyImei"))
+            if let imei2 = sale.device.imei2, !imei2.isEmpty {
+                CopyableIMEI(label: i18n.t("inventory.imei2"), value: imei2, accessibilityLabel: i18n.t("inventory.copyImei"))
+            }
+            HStack(spacing: Tokens.Space.sm) {
+                StatusBadge(sale.isB2B ? i18n.t("sales.channelB2B") : i18n.t("sales.channelRetail"),
+                            color: sale.isB2B ? Tokens.warning : Tokens.info)
+                if sale.isReturned { StatusBadge(i18n.t("sales.returned"), color: Tokens.danger) }
+            }
+        }
+    }
 
-                // 2. Financial & Sale Information
-                Section(i18n.t("sales.moneySection", default: "Financial Summary")) {
-                    LabeledContent(i18n.t("sales.salePrice", default: "Sale Price")) {
-                        MoneyText(value: sale.salePrice.string, size: 18)
-                            .foregroundStyle(Tokens.ink)
-                    }
-
-                    if let net = sale.netProfit {
-                        LabeledContent(i18n.t("sales.netProfit", default: "Net Margin")) {
-                            MoneyText(value: net.string, size: 16)
-                                .foregroundStyle(Tokens.success)
-                        }
-                    }
-
-                    LabeledContent(i18n.t("sales.soldBy", default: "Cashier"), value: sale.soldBy.name)
-                    LabeledContent(i18n.t("sales.soldAt", default: "Date/Time"), value: SaleDate.dayTime(sale.soldAt))
-
-                    if let warranty = sale.warranty {
-                        HStack {
-                            Label(i18n.t("sales.warranty", default: "Warranty Coverage"), systemImage: "shield.fill")
-                                .foregroundStyle(Tokens.success)
-                            Spacer()
-                            Text(i18n.t("sales.daysShort", ["count": String(warranty.days)]))
-                                .font(.subheadline.weight(.medium))
-                        }
-                    }
+    private var facts: some View {
+        VStack(spacing: 0) {
+            fact(i18n.t("sales.salePrice")) {
+                MoneyText(value: sale.salePrice.string, size: 15).foregroundStyle(Tokens.text)
+            }
+            if let net = sale.netProfit {
+                fact(i18n.t("sales.netProfit")) {
+                    MoneyText(value: net.string, size: 15)
+                        .foregroundStyle(moneyTint(.profit, Double(net.string)))
                 }
-
-                // 3. Customer Information (if present)
-                if let customer = sale.customer {
-                    Section(i18n.t("sales.customerSection", default: "Customer")) {
-                        LabeledContent(i18n.t("sales.customer", default: "Name"), value: customer.name)
-                        if let phone = customer.phone {
-                            HStack {
-                                Text(i18n.t("common.phone", default: "Phone"))
-                                Spacer()
-                                Link(phone, destination: URL(string: "tel:\(phone)")!)
-                                    .font(.subheadline.weight(.medium))
-                            }
-                        }
-                    }
-                }
-
-                // 4. Actions
-                Section {
-                    Button {
-                        container.router.open(.inventory(imei: sale.device.imei))
-                        dismiss()
-                    } label: {
-                        Label(i18n.t("sales.openDevice"), systemImage: "externaldrive")
-                    }
-                    if let consignmentId = sale.consignmentId {
-                        Button {
-                            container.router.open(.consignments(id: consignmentId))
-                            dismiss()
-                        } label: {
-                            Label(i18n.t("sales.viewConsignment"), systemImage: "arrow.left.arrow.right")
-                        }
-                    }
-                    Button {
-                        showReceipt = true
-                    } label: {
-                        Label(i18n.t("sales.receipt", default: "View & Print Receipt"), systemImage: "receipt")
-                            .font(.headline.weight(.medium))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 24)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundStyle(Tokens.onInk)
-                    .tint(Tokens.ink)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-
-                    if canReturn {
-                        Button(role: .destructive) {
-                            showReturn = true
-                        } label: {
-                            Label(i18n.t("sales.returnDevice", default: "Process Return / Refund"), systemImage: "arrow.uturn.backward")
-                                .font(.subheadline.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 22)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(Tokens.danger)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .padding(.top, 4)
+            }
+            if let customer = sale.customer {
+                fact(i18n.t("sales.customer")) { Text(customer.name).font(.ui(.body)) }
+                if let phone = customer.phone, !phone.isEmpty, let url = URL(string: "tel:\(phone)") {
+                    fact(i18n.t("common.phone")) {
+                        Link(phone, destination: url).font(.ui(.bodyStrong)).foregroundStyle(Tokens.info)
                     }
                 }
             }
-            .navigationTitle(i18n.t("sales.detailTitle", default: "Sale Details"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.close", default: "Close")) { dismiss() }
-                }
+            fact(i18n.t("sales.soldBy")) { Text(sale.soldBy.name).font(.ui(.body)) }
+            fact(i18n.t("sales.soldAt")) { Text(SaleDate.dayTime(sale.soldAt)).font(.data(.regular)) }
+            if let warranty = sale.warranty {
+                fact(i18n.t("pos.warrantyDays")) { Text("\(warranty.days)").font(.data(.regular)) }
             }
-            .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id) }
-            .sheet(isPresented: $showReturn) {
-                ReturnSheet(saleId: sale.id) {
-                    container.toasts.success(i18n.t("sales.returnSuccess"))
-                    onChanged()
+            if let returnedAt = sale.returnedAt {
+                fact(i18n.t("sales.returnedAt")) { Text(SaleDate.dayTime(returnedAt)).font(.data(.regular)) }
+            }
+        }
+    }
+
+    /// Keyed row: muted label left, value right, hairline below.
+    private func fact<V: View>(_ label: String, @ViewBuilder value: () -> V) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: Tokens.Space.sm) {
+                Text(label).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                Spacer(minLength: Tokens.Space.sm)
+                value().foregroundStyle(Tokens.text)
+            }
+            .frame(minHeight: Tokens.Space.rowH)
+            Divider().overlay(Tokens.border)
+        }
+    }
+
+    private var actions: some View {
+        VStack(spacing: Tokens.Space.sm) {
+            pill(i18n.t("sales.openDevice"), .pillGhost) {
+                container.router.open(.inventory(imei: sale.device.imei))
+                dismiss()
+            }
+            if let consignmentId = sale.consignmentId {
+                pill(i18n.t("sales.viewConsignment"), .pillGhost) {
+                    container.router.open(.consignments(id: consignmentId))
                     dismiss()
                 }
             }
+            pill(i18n.t("sales.receipt"), .pillSecondary) { showReceipt = true }
+            if canReturn {
+                pill(i18n.t("sales.returnDevice"), .pillDestructive) { showReturn = true }
+            }
         }
+    }
+
+    /// Full-width pill: the frame sits on the label so the fill spans the sheet.
+    private func pill(_ title: String, _ style: PillButton, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Text(title).frame(maxWidth: .infinity) }
+            .buttonStyle(style)
     }
 }

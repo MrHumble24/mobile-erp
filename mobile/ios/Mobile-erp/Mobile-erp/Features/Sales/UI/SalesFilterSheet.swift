@@ -12,14 +12,6 @@ struct SalesFilterSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                if let stats = model.stats {
-                    Section(i18n.t("sales.statsOverview", default: "Sales Overview")) {
-                        SalesSummary(stats: stats)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
-                            .listRowBackground(Color.clear)
-                    }
-                }
-
                 Section(i18n.t("sales.filterChannel", default: "Sales Channel")) {
                     Picker(i18n.t("sales.filterChannel", default: "Channel"), selection: channelBinding) {
                         Text(i18n.t("common.all", default: "All Channels")).tag(String?.none)

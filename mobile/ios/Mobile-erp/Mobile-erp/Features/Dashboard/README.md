@@ -31,5 +31,5 @@ endpoint's permission, so a cashier sees nothing finance-related.
   glyph, no heading, no card — the Android shortcut row.
 - Screen title is `nav.dashboard` (the tab label), not `dashboard.title`, so the
   title, the tab and the Android top bar all read the same string.
-- KPI rows (`DashMetricList`) use only keys that exist in the shared Uzbek
+- KPI rows (shared `MetricList`) use only keys that exist in the shared Uzbek
   bundle; the earlier English subtitles were untranslated fallbacks.

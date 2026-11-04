@@ -12,7 +12,7 @@ fun parseMoney(value: String?): BigDecimal = value?.trim()?.toBigDecimalOrNull()
 
 private val CENT_THRESHOLD = BigDecimal("0.005")
 
-/** Group-formatted USD amount, e.g. `$1,250` or `$1,250.50`. */
+/** Group-formatted USD amount, e.g. `$1,250`, `$1,250.50` or `-$133.33` (sign before the symbol, as on iOS/web). */
 fun formatMoney(value: String?, suffix: String? = null): String {
     val amount = parseMoney(value)
     val hasCents = amount.remainder(BigDecimal.ONE).abs() >= CENT_THRESHOLD
@@ -20,6 +20,7 @@ fun formatMoney(value: String?, suffix: String? = null): String {
         minimumFractionDigits = if (hasCents) 2 else 0
         maximumFractionDigits = if (hasCents) 2 else 0
     }
-    val formatted = "$" + nf.format(amount)
+    val sign = if (amount.signum() < 0) "-" else ""
+    val formatted = sign + "$" + nf.format(amount.abs())
     return if (!suffix.isNullOrEmpty()) "$formatted $suffix" else formatted
 }

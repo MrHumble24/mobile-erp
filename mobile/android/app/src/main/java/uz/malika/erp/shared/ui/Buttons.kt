@@ -1,5 +1,6 @@
 package uz.malika.erp.shared.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -65,7 +66,10 @@ fun PillButton(
 private fun ButtonVariant.colors(enabled: Boolean): Pair<Color, Color> {
     if (!enabled) return Tokens.surface2 to Tokens.muted
     return when (this) {
-        ButtonVariant.DESTRUCTIVE -> Tokens.danger to Tokens.onAction
+        // Dark lifts `danger` to a pink text hue, so a white label would fail AA;
+        // the dark destructive pill is the status pair instead (dangerBg + danger).
+        ButtonVariant.DESTRUCTIVE ->
+            if (isSystemInDarkTheme()) Tokens.dangerBg to Tokens.danger else Tokens.danger to Tokens.onAction
         ButtonVariant.SECONDARY, ButtonVariant.OUTLINE -> Tokens.surface2 to Tokens.text
         ButtonVariant.GHOST -> Color.Transparent to Tokens.text
         ButtonVariant.DEFAULT -> Tokens.action to Tokens.onAction

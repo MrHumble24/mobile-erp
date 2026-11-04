@@ -28,6 +28,9 @@ dressed.
   codes map `IN_STOCK→success`, `DEFECTIVE→danger`, `CONSIGNED→info`,
   `SOLD→sold`.
 - **SummaryTile / SummaryTileGrid** — stat tile on a card, value in mono.
+- **MetricRow / MetricList** — the compact KPI list-card (muted label + caption
+  left, mono figure right, hairline dividers), the Android `MetricGrid` phone
+  layout; used by the dashboard KPIs and the sales summary.
 - **MoneyTint** (`moneyTint(_:_:)`) — the one rule for tinting a financial
   figure by meaning + sign: profit green when ≥ 0 / red when negative, revenue
   `text`, expenses red. Used by the dashboard and reports tiles.

@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,16 +33,22 @@ import androidx.core.net.toUri
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
-import uz.malika.erp.features.sales.lib.formatDate
+import uz.malika.erp.features.sales.lib.formatDateTime
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.signTint
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
-/** Detail view for one sale: facts, the printable receipt, the device link, and the return flow. */
+/**
+ * Detail view for one sale as a Warm Card sheet: the device block (model,
+ * IMEIs with copy, channel / returned pills), keyed facts, then the actions —
+ * the same anatomy as the iOS `SaleDetailSheet`. Return is a destructive pill;
+ * the one orange stays on the list's warranty action.
+ */
 @Composable
 fun SaleDetailSheet(
     sale: Sale,
@@ -49,67 +60,98 @@ fun SaleDetailSheet(
 ) {
     val t = LocalT.current
     val context = LocalContext.current
-    val clipboard = LocalClipboardManager.current
     val retail = sale.channel == SaleChannel.RETAIL
-    Column(Modifier.fillMaxWidth().padding(20.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("${sale.modelLabel} · ${sale.imei}", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            IconButton(onClick = {
-                clipboard.setText(AnnotatedString(sale.imei))
-                Toast.makeText(context, "${t("inventory.imeiCopied", null)}: ${sale.imei}", Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null))
-            }
+    // Facts + four actions can exceed a phone sheet: the sheet column scrolls.
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+        Text(sale.modelLabel, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.sm))
+        ImeiLine("IMEI", sale.imei)
+        sale.imei2?.takeIf { it.isNotBlank() }?.let { ImeiLine(t("inventory.imei2", null), it) }
+        Spacer(Modifier.height(Tokens.Space.sm))
+        Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
             StatusChip(
                 if (retail) t("sales.channelRetail", null) else t("sales.channelB2B", null),
-                color = if (retail) Tokens.signalBlue else Tokens.warning,
+                color = if (retail) Tokens.info else Tokens.warning,
             )
+            if (sale.returnedAt != null) StatusChip(t("sales.returned", null), color = Tokens.danger)
         }
-        sale.imei2?.takeIf { it.isNotBlank() }?.let {
-            Text(
-                "${t("inventory.imei2", null)}: $it",
-                style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
-                color = Tokens.mutedForeground,
-            )
+        Spacer(Modifier.height(Tokens.Space.lg))
+
+        Fact(t("sales.salePrice", null)) { MoneyText(sale.salePrice, style = valueStyle()) }
+        sale.netProfit?.let { net ->
+            Fact(t("sales.netProfit", null)) { MoneyText(net, style = valueStyle().copy(color = signTint(net))) }
         }
-        Spacer(Modifier.height(12.dp))
-        Kv(t("sales.salePrice", null), formatMoney(sale.salePrice))
-        sale.netProfit?.let { Kv(t("sales.netProfit", null), formatMoney(it)) }
-        sale.customerName?.let { Kv(t("sales.customer", null), it) }
+        sale.customerName?.let { Fact(t("sales.customer", null)) { Text(it, style = valueStyle()) } }
         sale.customerPhone?.takeIf { it.isNotBlank() }?.let { phone ->
-            Row(
-                Modifier.fillMaxWidth()
-                    .clickable { context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri())) }
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(t("common.phone", null), style = MaterialTheme.typography.bodyMedium)
+            Fact(t("common.phone", null)) {
                 Text(
                     phone,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                    color = Tokens.signalBlue,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = Tokens.info,
+                    modifier = Modifier.clickable {
+                        context.startActivity(Intent(Intent.ACTION_DIAL, "tel:$phone".toUri()))
+                    },
                 )
             }
         }
-        Kv(t("sales.soldBy", null), sale.soldByName)
-        sale.soldAt?.let { Kv(t("sales.soldAt", null), formatDate(it)) }
-        sale.warrantyDays?.let { Kv(t("pos.warrantyDays", null), it.toString()) }
-        sale.returnedAt?.let { Kv(t("sales.returnedAt", null), formatDate(it)) }
-        Spacer(Modifier.height(16.dp))
+        Fact(t("sales.soldBy", null)) { Text(sale.soldByName, style = valueStyle()) }
+        sale.soldAt?.let { Fact(t("sales.soldAt", null)) { Text(formatDateTime(it), style = monoStyle()) } }
+        sale.warrantyDays?.let { Fact(t("pos.warrantyDays", null)) { Text(it.toString(), style = monoStyle()) } }
+        sale.returnedAt?.let { Fact(t("sales.returnedAt", null)) { Text(formatDateTime(it), style = monoStyle()) } }
+
+        Spacer(Modifier.height(Tokens.Space.lg))
         PillButton(t("sales.openDevice", null), onOpenDevice, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
         if (sale.consignmentId != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.sm))
             PillButton(t("sales.viewConsignment", null), onOpenConsignment, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
         }
-        Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PillButton(t("sales.receipt", null), onReceipt, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
-            if (canReturn && sale.returnedAt == null) {
-                PillButton(t("sales.returnDevice", null), onReturn, Modifier.weight(1f))
-            }
+        Spacer(Modifier.height(Tokens.Space.sm))
+        PillButton(t("sales.receipt", null), onReceipt, Modifier.fillMaxWidth(), variant = ButtonVariant.SECONDARY)
+        if (canReturn && sale.returnedAt == null) {
+            Spacer(Modifier.height(Tokens.Space.sm))
+            PillButton(t("sales.returnDevice", null), onReturn, Modifier.fillMaxWidth(), variant = ButtonVariant.DESTRUCTIVE)
         }
     }
 }
+
+/** `label: imei` in mono with a copy action (the iOS `CopyableIMEI`). */
+@Composable
+private fun ImeiLine(label: String, imei: String) {
+    val t = LocalT.current
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("$label: $imei", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+        IconButton(onClick = {
+            clipboard.setText(AnnotatedString(imei))
+            Toast.makeText(context, "${t("inventory.imeiCopied", null)}: $imei", Toast.LENGTH_SHORT).show()
+        }) {
+            Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null), tint = Tokens.muted, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+/** Keyed fact row: muted label left, value right, hairline below. */
+@Composable
+private fun Fact(label: String, value: @Composable () -> Unit) {
+    Column {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            Spacer(Modifier.weight(1f))
+            value()
+        }
+        HorizontalDivider(color = Tokens.border)
+    }
+}
+
+@Composable
+private fun valueStyle() = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text)
+
+@Composable
+private fun monoStyle() = valueStyle().copy(fontFamily = MonoFamily)
 
 /** The printable receipt (server copy) with copy + print actions. */
 @Composable
@@ -136,10 +178,3 @@ fun ReceiptSheet(data: ReceiptData, onClose: () -> Unit) {
     }
 }
 
-@Composable
-private fun Kv(label: String, value: String) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(value, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
-    }
-}

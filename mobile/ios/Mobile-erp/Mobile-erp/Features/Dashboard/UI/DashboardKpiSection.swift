@@ -21,7 +21,7 @@ struct DashboardKpiSection: View {
             if let error, profit == nil {
                 AppCard { ErrorStateView(message: error) { Task { await load() } } }
             } else if let profit {
-                DashMetricList(rows: rows(profit))
+                MetricList(rows: rows(profit))
             } else {
                 AppCard { LoadingView().frame(height: 80) }
             }
@@ -39,20 +39,20 @@ struct DashboardKpiSection: View {
         catch { self.error = error.localizedDescription }
     }
 
-    private func rows(_ p: DashProfit) -> [DashMetricRow] {
+    private func rows(_ p: DashProfit) -> [MetricRow] {
         [
-            DashMetricRow(label: i18n.t("dashboard.grossProfit"),
+            MetricRow(label: i18n.t("dashboard.grossProfit"),
                           value: dashMoney(p.grossProfit),
                           subtext: "\(p.unitsSold) \(i18n.t("dashboard.unitsSold"))",
                           emphasis: moneyTint(.profit, p.grossProfit)),
-            DashMetricRow(label: i18n.t("dashboard.netOperatingIncome"),
+            MetricRow(label: i18n.t("dashboard.netOperatingIncome"),
                           value: dashMoney(p.netOperatingIncome),
                           emphasis: moneyTint(.profit, p.netOperatingIncome)),
-            DashMetricRow(label: i18n.t("dashboard.revenue"),
+            MetricRow(label: i18n.t("dashboard.revenue"),
                           value: dashMoney(p.revenue),
                           subtext: "\(i18n.t("dashboard.retail")): \(dashMoney(p.retail))",
                           emphasis: moneyTint(.revenue, p.revenue)),
-            DashMetricRow(label: i18n.t("dashboard.expenses"),
+            MetricRow(label: i18n.t("dashboard.expenses"),
                           value: dashMoney(p.expenses),
                           emphasis: moneyTint(.expense, p.expenses)),
         ]

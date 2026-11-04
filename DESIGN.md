@@ -249,7 +249,7 @@ Both platforms ship the same primitives with the same anatomy; structure stays n
 - **Shape:** 14 dp pill, 52 dp tall, zero elevation; label is Body-strong (16/600).
 - **Primary:** action orange fill, white label — the one orange on the screen. Pressed fill `#E64D15` plus scale 0.98.
 - **Secondary / Ghost:** surface-2 fill (ghost is transparent), text-colour label; never orange. Pressed secondary darkens to border colour.
-- **Destructive:** danger fill, white label; press feedback is the 0.98 scale only (no pressed-tint token).
+- **Destructive:** danger fill, white label in light; in dark the danger hue is the lifted pink text step, so the pill flips to the status pair (danger-bg fill, danger label, 4.52:1). Press feedback is the 0.98 scale only (no pressed-tint token).
 - **Disabled:** loses the fill entirely — surface-2 background, muted label.
 
 ### Cards / Containers

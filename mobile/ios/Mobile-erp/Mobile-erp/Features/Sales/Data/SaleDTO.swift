@@ -56,8 +56,11 @@ struct SaleView: Decodable, Identifiable {
     let soldBy: SalePerson
     let warranty: SaleWarranty?
     let consignmentId: String?
+    /// Set once the device came back; the return action hides when present.
+    let returnedAt: String?
 
     var isB2B: Bool { consignmentId != nil }
+    var isReturned: Bool { returnedAt != nil }
 }
 
 struct SalesPage: Decodable {
