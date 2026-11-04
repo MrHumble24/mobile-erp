@@ -28,6 +28,7 @@ import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SubjectBlock
 import uz.malika.erp.ui.theme.Tokens
 
 /** Record a cash/transfer payment against a partner's balance. Online-only. */

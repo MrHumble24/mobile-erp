@@ -25,6 +25,15 @@ Customer directory, detail, and purchase history.
 - The `customers` i18n namespace is now loaded by the foundation `I18n`; stat
   tiles use `customers.stat*`. Older list labels still reuse `sales.*`/`common.*`.
 
+## Warm Card (ADR 0022)
+- `CustomersView` is a `ScrollView` of `AppCard` rows on the ground, titled by
+  `nav.customers`, with the system search bar and filter / new / CSV in the
+  toolbar; the summary is a `MetricList`. Detail and the form are kit sheets
+  (`SheetTitleRow`, `AppFormField`, shared `FactRow`s, hairline history rows,
+  pill buttons); the filter is a kit `FilterSheet`. `CustomersSummary` is gone.
+- Labels use the `customers.*` namespace throughout.
+- DEBUG screenshot args: `-open customers`, `-openCustomer first`.
+
 ## Note
 - Named `Customers.README.md` (not `README.md`) to avoid a synchronized-group bundle
   resource basename collision; see the Sales slice note.

@@ -37,6 +37,7 @@ import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.ScannerField
+import uz.malika.erp.shared.ui.SubjectBlock
 import uz.malika.erp.ui.theme.Tokens
 
 private class RowInput(imei: String = "") {

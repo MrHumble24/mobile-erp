@@ -27,6 +27,7 @@ import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.SubjectBlock
 import uz.malika.erp.ui.theme.Tokens
 
 /** Return an OUT consignment to stock or defective (offline-capable). */

@@ -1,35 +1,31 @@
 package uz.malika.erp.features.sales.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.PersonAdd
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,26 +45,32 @@ import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.shareTextFile
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppBottomSheet
+import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
-import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.SearchFilterRow
+import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.listBottomPadding
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
-/** Searchable customer directory with aggregates, detail, and online-only create/edit. */
+/**
+ * Customer directory on the Warm Card ground: inline search beside the filter
+ * button, new-customer and CSV as icon actions, the summary list-card, then
+ * one card per customer (name, mono phone, purchase count; total spent and a
+ * warranty pill right). Rows open the detail sheet; create/edit are
+ * online-only (`customer.manage`).
+ */
 @Composable
 fun CustomersScreen(container: AppContainer, api: SalesApi) {
     val t = LocalT.current
     val online by container.connectivity.online.collectAsState()
     val canManage = LocalCan.current("customer.manage")
     val vm: CustomersViewModel = viewModel(
-        factory = viewModelFactory {
-            initializer { CustomersViewModel(CustomersRepository(api)) }
-        },
+        factory = viewModelFactory { initializer { CustomersViewModel(CustomersRepository(api)) } },
     )
     val ui by vm.list.collectAsState()
     val filters by vm.filters.collectAsState()
@@ -89,66 +91,45 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     }
     val activeFilters = listOf(filters.hasPurchases != null, filters.sort != "recent").count { it }
 
-    Scaffold(
-        // AppShell already reserves system-bar insets; zero this nested Scaffold's
-        // so the content is not padded twice.
-        contentWindowInsets = WindowInsets(0),
-        floatingActionButton = {
-            if (canManage) ExtendedFloatingActionButton(
-                onClick = { formFor = FormTarget(null, "", null, null) },
-                icon = { Icon(Icons.Outlined.PersonAdd, contentDescription = null) },
-                text = { Text(t("sales.newCustomer", null)) },
-                containerColor = Tokens.primary,
-                contentColor = Tokens.primaryForeground,
-                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
-                shape = RoundedCornerShape(14.dp),
-            )
-        },
-    ) { pad ->
-        // Whole screen scrolls: header (CSV + stats + search + filters) rides in
-        // the list as item 0, so it never pushes the rows off-screen as it grows.
-        LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = listBottomPadding(fab = true)) {
-            item {
-                Column(Modifier.padding(Tokens.Space.section)) {
-                    stats?.let { CustomerSummary(it); Spacer(Modifier.height(Tokens.Space.section)) }
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        SearchFilterRow(
-                            query = search,
-                            onQueryChange = { search = it },
-                            placeholder = t("common.search", null),
-                            activeCount = activeFilters,
-                            onOpenFilters = { showFilters = true },
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(Modifier.width(Tokens.Space.gap))
-                        IconButton(
-                            onClick = {
-                                shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems))
-                            },
-                            enabled = listItems.isNotEmpty(),
-                        ) {
-                            Icon(Icons.Outlined.FileDownload, contentDescription = t("customers.exportCsv", null), tint = Tokens.foreground)
-                        }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = Tokens.Space.screenH, end = Tokens.Space.screenH, top = Tokens.Space.md, bottom = listBottomPadding().calculateBottomPadding()),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
+    ) {
+        item {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                SearchFilterRow(
+                    query = search,
+                    onQueryChange = { search = it },
+                    placeholder = t("customers.searchPlaceholder", null),
+                    activeCount = activeFilters,
+                    onOpenFilters = { showFilters = true },
+                    modifier = Modifier.weight(1f),
+                )
+                if (canManage) {
+                    IconButton(onClick = { formFor = FormTarget(null, "", null, null) }) {
+                        Icon(Icons.Outlined.PersonAdd, contentDescription = t("customers.newCustomer", null), tint = Tokens.text)
                     }
+                }
+                IconButton(
+                    onClick = { shareTextFile(context, "customers-${nowIso().take(10)}.csv", customersCsv(listItems)) },
+                    enabled = listItems.isNotEmpty(),
+                ) {
+                    Icon(Icons.Outlined.FileDownload, contentDescription = t("customers.exportCsv", null), tint = Tokens.text)
                 }
             }
-            when {
-                ui.state.loading && listItems.isEmpty() ->
-                    item { Box(Modifier.fillParentMaxWidth().padding(vertical = 64.dp), contentAlignment = Alignment.Center) { Loading() } }
-                ui.error != null ->
-                    item { ErrorView(ui.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null)) }
-                listItems.isEmpty() ->
-                    item { EmptyView(t("sales.noCustomersFound", null)) }
-                else -> {
-                    items(listItems) { c ->
-                        Box(Modifier.padding(horizontal = 16.dp)) { CustomerRow(c, t) { selected = c } }
-                    }
-                    item {
-                        Box(Modifier.padding(horizontal = 16.dp)) {
-                            LoadMoreFooter(ui.state.hasMore, ui.state.loading, vm::loadMore)
-                        }
-                    }
-                }
+        }
+        stats?.let { s -> item { CustomerSummary(s) } }
+        when {
+            ui.state.loading && listItems.isEmpty() ->
+                item { Box(Modifier.fillMaxWidth().height(160.dp), contentAlignment = Alignment.Center) { Loading() } }
+            ui.error != null ->
+                item { ErrorView(ui.error!!, onRetry = vm::refresh, retryLabel = t("common.retry", null)) }
+            listItems.isEmpty() ->
+                item { AppCard(Modifier.fillMaxWidth()) { EmptyView(t("customers.empty", null), compact = true) } }
+            else -> {
+                items(listItems, key = { it.id }) { c -> CustomerCard(c) { selected = c } }
+                item { LoadMoreFooter(ui.state.hasMore, ui.state.loading, vm::loadMore) }
             }
         }
     }
@@ -163,11 +144,7 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
             )
         }
     }
-
-    formFor?.let { target ->
-        CustomerFormDialog(vm, target, online) { formFor = null }
-    }
-
+    formFor?.let { target -> CustomerFormSheet(vm, target, online) { formFor = null } }
     if (showFilters) {
         CustomerFilterSheet(
             hasPurchases = hasPurchases,
@@ -182,15 +159,26 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
 }
 
 @Composable
-private fun CustomerRow(c: CustomerListItem, t: uz.malika.erp.i18n.Translate, onClick: () -> Unit) {
-    AppCard(Modifier.fillMaxWidth().padding(vertical = 6.dp), onClick = onClick) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun CustomerCard(c: CustomerListItem, onClick: () -> Unit) {
+    val t = LocalT.current
+    AppCard(Modifier.fillMaxWidth(), onClick = onClick) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
-                Text(c.name, style = MaterialTheme.typography.titleSmall)
-                c.phone?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                Text(t("pos.purchaseCount", mapOf("count" to c.purchaseCount)), style = MaterialTheme.typography.bodySmall)
+                Text(c.name, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                c.phone?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted) }
+                Text(t("pos.purchaseCount", mapOf("count" to c.purchaseCount)), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Text(formatMoney(c.totalSpent.toString()), style = MaterialTheme.typography.titleSmall)
+            Spacer(Modifier.width(Tokens.Space.gap))
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(Tokens.Space.xs)) {
+                Text(
+                    formatMoney(c.totalSpent.toString()),
+                    style = MaterialTheme.typography.titleSmall.copy(fontFamily = MonoFamily),
+                    color = Tokens.text,
+                )
+                if (c.activeWarranties > 0) {
+                    StatusChip(t("pos.warrantyCount", mapOf("count" to c.activeWarranties)), color = Tokens.success)
+                }
+            }
         }
     }
 }

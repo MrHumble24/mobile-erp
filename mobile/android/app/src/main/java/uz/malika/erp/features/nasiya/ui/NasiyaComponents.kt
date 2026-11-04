@@ -7,11 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +24,8 @@ import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Slice-local Warm Card pieces: the partner credit bar, the consignment status
- * hue + label, keyed fact rows, the surface-2 subject block that heads every
- * write sheet, and the action-sheet error line.
+ * hue + label and the action-sheet error line. `FactRow` / `SubjectBlock`
+ * live in `shared/ui/DetailBlocks.kt`.
  */
 
 /** Outstanding-vs-limit bar; shows "unlimited" when the partner has no limit. */
@@ -74,35 +70,6 @@ fun consignmentStatusLabel(code: String, t: Translate): String = when (code) {
     "SETTLED" -> t("consignments.statusSettled", null)
     "RETURNED" -> t("consignments.statusReturned", null)
     else -> code
-}
-
-/** Keyed fact row: muted label left, value right, hairline below unless [last]. */
-@Composable
-fun FactRow(label: String, last: Boolean = false, value: @Composable () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = Tokens.muted, modifier = Modifier.weight(1f))
-        Spacer(Modifier.width(Tokens.Space.md))
-        value()
-    }
-    if (!last) HorizontalDivider(color = Tokens.border)
-}
-
-/** The subject of a write sheet (partner + mono IMEI / amount): a surface-2 block, never a nested card. */
-@Composable
-fun SubjectBlock(title: String, line: String, mono: Boolean = true, trailing: (@Composable () -> Unit)? = null) {
-    Row(
-        Modifier.fillMaxWidth()
-            .background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls))
-            .padding(Tokens.Space.lg),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-            val base = MaterialTheme.typography.bodyMedium
-            Text(line, style = if (mono) base.copy(fontFamily = MonoFamily) else base, color = Tokens.text)
-        }
-        trailing?.invoke()
-    }
 }
 
 /** Inline error/offline line for the action sheets. */

@@ -54,6 +54,9 @@ side by side in columns; each piece stacks as a full-width row. Wide windows
 - `StatusChip` — pill, labelMedium 12/600, a soft tint of the passed status hue as
   the background with the hue as the label (one argument carries both). Status
   meaning is owned by `DeviceStatusMeta.color` and the status tokens.
+- `FactRow` / `SubjectBlock` (`DetailBlocks.kt`) — keyed fact row with a hairline, and
+  the surface-2 subject block that heads a write sheet. Promoted from the nasiya slice
+  when customers needed the same rows.
 - `MetricTile` — a tall stacked card on wide (reserves the subtitle line so a
   `MetricGrid` row stays equal height); a slim ~44dp horizontal row (label +
   subtext left, value right, emphasis kept) on compact. `MetricGrid` lays

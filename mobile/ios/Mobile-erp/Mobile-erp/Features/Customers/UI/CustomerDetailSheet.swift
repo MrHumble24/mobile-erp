@@ -1,86 +1,89 @@
 import SwiftUI
 
-/// Customer detail: profile + purchase aggregates, and the purchase history
-/// (`GET /customers/:id/sales`, online).
+/// Customer detail as a Warm Card sheet: name + mono phone + notes, keyed
+/// facts (purchases, total spent, warranties, returns), the purchase history
+/// as hairline rows (`GET /customers/:id/sales`, online) and edit as a
+/// secondary pill for `customer.manage`.
 struct CustomerDetailSheet: View {
     let customer: CustomerListItem
     let model: CustomersModel
+
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var sales: [CustomerSale]?
     @State private var error: String?
     @State private var showEdit = false
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    LabeledContent(i18n.t("common.name"), value: customer.name)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: customer.name) { dismiss() }
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                     if let phone = customer.phone {
-                        LabeledContent(i18n.t("common.phone"), value: phone)
+                        Text(phone).font(.data(.regular)).foregroundStyle(Tokens.text)
                     }
                     if let notes = customer.notes, !notes.isEmpty {
-                        LabeledContent(i18n.t("common.notes"), value: notes)
+                        Text(notes).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                     }
                 }
-                Section {
-                    LabeledContent(i18n.t("pos.lineCount"), value: String(customer.purchaseCount))
-                    LabeledContent(i18n.t("sales.statsRevenue")) {
-                        MoneyText(value: customer.totalSpentString)
-                    }
-                    LabeledContent(i18n.t("sales.warranty"), value: String(customer.activeWarranties))
-                    LabeledContent(i18n.t("sales.returned"), value: String(customer.returnsCount))
+                VStack(spacing: 0) {
+                    FactRow(label: i18n.t("customers.statPurchases")) { Text("\(customer.purchaseCount)").font(.data(.regular)) }
+                    FactRow(label: i18n.t("customers.statTotalSpent")) { MoneyText(value: customer.totalSpentString, size: 15) }
+                    FactRow(label: i18n.t("customers.statActiveWarranties")) { Text("\(customer.activeWarranties)").font(.data(.regular)) }
+                    FactRow(label: i18n.t("customers.statReturns"), last: true) { Text("\(customer.returnsCount)").font(.data(.regular)) }
                 }
-                Section(i18n.t("sales.customerSalesHistory")) { history }
-            }
-            .navigationTitle(customer.name)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.close")) { dismiss() }
-                }
+                Text(i18n.t("customers.purchaseHistory")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                history
                 if model.canManage {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button(i18n.t("common.edit", default: "Edit")) { showEdit = true }
+                    Button { showEdit = true } label: {
+                        Text(i18n.t("customers.edit")).frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.pillSecondary)
                 }
             }
-            .sheet(isPresented: $showEdit) {
-                CustomerFormSheet(model: model, editing: customer)
-            }
-            .task { if sales == nil { load() } }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .background(Tokens.card)
+        .presentationDetents([.large])
+        .sheet(isPresented: $showEdit) { CustomerFormSheet(model: model, editing: customer) }
+        .task { if sales == nil { load() } }
     }
 
     @ViewBuilder private var history: some View {
         if let sales {
             if sales.isEmpty {
-                Text(i18n.t("sales.noSalesFound")).foregroundStyle(Tokens.muted)
+                Text(i18n.t("customers.noPurchases")).font(.ui(.body)).foregroundStyle(Tokens.muted)
             } else {
-                ForEach(sales) { sale in
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack {
-                            Text(sale.modelLabel).font(.body.weight(.medium))
-                            Spacer()
-                            MoneyText(value: sale.salePrice)
+                VStack(spacing: 0) {
+                    ForEach(Array(sales.enumerated()), id: \.offset) { i, sale in
+                        HStack(alignment: .center, spacing: Tokens.Space.sm) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(sale.modelLabel).font(.ui(.body)).foregroundStyle(Tokens.text)
+                                Text(sale.device.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                                if let at = sale.soldAt {
+                                    Text(KitDate.day(at)).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                                }
+                            }
+                            Spacer(minLength: Tokens.Space.sm)
+                            MoneyText(value: sale.salePrice, size: 15).fontWeight(.semibold).foregroundStyle(Tokens.text)
                         }
-                        Text(sale.device.imei).font(.mono(12)).foregroundStyle(Tokens.muted)
+                        .padding(.vertical, Tokens.Space.sm)
+                        if i < sales.count - 1 { Divider().overlay(Tokens.border) }
                     }
-                    .padding(.vertical, 2)
                 }
             }
         } else if let error {
-            Text(error).foregroundStyle(Tokens.destructive).font(.footnote)
+            FormErrorLine(message: error)
         } else {
-            ProgressView()
+            LoadingView().frame(height: 80)
         }
     }
 
     private func load() {
         guard container.connectivity.isOnline else {
-            error = i18n.t("common.offline", default: "Offline — history needs a connection.")
+            error = i18n.t("common.offline")
             return
         }
         error = nil

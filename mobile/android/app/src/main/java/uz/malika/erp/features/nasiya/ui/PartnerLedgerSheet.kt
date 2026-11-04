@@ -40,6 +40,7 @@ import uz.malika.erp.shared.ui.MetricTile
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
+import uz.malika.erp.shared.ui.SubjectBlock
 import uz.malika.erp.ui.theme.Tokens
 
 /** Partner ledger + aging + the partner actions (pay / consign / edit). */

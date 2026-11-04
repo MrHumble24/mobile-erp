@@ -27,6 +27,7 @@ import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.SubjectBlock
 import uz.malika.erp.ui.theme.Tokens
 
 /** Settle an OUT consignment into a sale (offline-capable via the outbox). */

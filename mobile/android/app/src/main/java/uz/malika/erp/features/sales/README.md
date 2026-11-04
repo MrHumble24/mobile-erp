@@ -48,6 +48,11 @@ three permission-gated routes.
   and the list; has-purchases and sort live in `CustomerFilterSheet` (a shared
   `FilterSheet`), applying immediately with reset via `CustomersViewModel.clearFilters`.
   CSV export, detail + purchase history, create/edit (`customer.manage`, online-only).
+  Warm Card (ADR 0022): new-customer and CSV are icon actions beside the search
+  row (no FAB); the summary is the `MetricGrid` list-card; rows are cards (name,
+  mono phone, purchase count; mono total + warranty pill). Detail and the
+  create/edit form are bottom sheets built on shared `FactRow` / hairline rows
+  (`CustomerFormSheet` replaced the M3 dialog); labels use `customers.*` keys.
 
 ## Public API
 `SalesFeature` (a `FeatureModule`). Nothing else is imported by other slices.

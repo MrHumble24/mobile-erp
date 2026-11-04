@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Create or edit a customer (`POST` / `PATCH /customers/:id`, online-only;
-/// blocked offline). Pass `editing` to edit an existing customer.
+/// Create or edit a customer as a Warm Card sheet (`POST` / `PATCH
+/// /customers/:id`, online-only; blocked offline). Pass `editing` to edit.
 struct CustomerFormSheet: View {
     let model: CustomersModel
     var editing: CustomerListItem?
+
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
-
     @State private var name: String
     @State private var phone: String
     @State private var notes: String
@@ -23,65 +23,40 @@ struct CustomerFormSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(i18n.t("sales.customerName"))
-                            .font(.caption)
-                            .foregroundStyle(Tokens.muted)
-                        TextField(i18n.t("sales.customerName"), text: $name)
-                    }
-                    .padding(.vertical, 2)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(i18n.t("sales.customerPhone"))
-                            .font(.caption)
-                            .foregroundStyle(Tokens.muted)
-                        TextField(i18n.t("sales.customerPhone"), text: $phone)
-                            .keyboardType(.phonePad)
-                            .sanitizePhone($phone)
-                    }
-                    .padding(.vertical, 2)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(i18n.t("sales.customerNotes"))
-                            .font(.caption)
-                            .foregroundStyle(Tokens.muted)
-                        TextField(i18n.t("sales.customerNotes"), text: $notes, axis: .vertical)
-                            .lineLimit(1...3)
-                    }
-                    .padding(.vertical, 2)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SheetTitleRow(title: i18n.t(editing == nil ? "customers.newTitle" : "customers.editTitle")) { dismiss() }
+                if !model.isOnline { FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning) }
+                AppFormField(label: i18n.t("customers.name")) {
+                    AppTextField(placeholder: i18n.t("customers.name"), text: $name, autocapitalization: .words)
                 }
-                if let error {
-                    Section { Text(error).foregroundStyle(Tokens.destructive).font(.footnote) }
+                AppFormField(label: i18n.t("customers.phone")) {
+                    AppTextField(placeholder: i18n.t("customers.phone"), text: $phone, keyboard: .phonePad,
+                                 autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                        .sanitizePhone($phone)
                 }
+                AppFormField(label: i18n.t("customers.notes")) {
+                    AppTextField(placeholder: i18n.t("customers.notesPlaceholder"), text: $notes)
+                }
+                if let error { FormErrorLine(message: error) }
+                Button(action: submit) {
+                    if busy { ProgressView().tint(Tokens.onAction).frame(maxWidth: .infinity) }
+                    else { Text(i18n.t("common.save")).frame(maxWidth: .infinity) }
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(busy || CustomersInput.orNil(name) == nil || !model.isOnline)
             }
-            .navigationTitle(editing == nil
-                ? i18n.t("sales.newCustomer")
-                : i18n.t("sales.editCustomer", default: "Edit customer"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if busy { ProgressView() }
-                    else {
-                        Button(i18n.t("common.save"), action: submit)
-                            .disabled(CustomersInput.orNil(name) == nil)
-                    }
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.medium, .large])
     }
 
     private func submit() {
         guard CustomersInput.orNil(name) != nil, !busy else { return }
-        guard model.isOnline else {
-            error = i18n.t("common.offline", default: "You are offline. This needs a connection.")
-            return
-        }
+        guard model.isOnline else { error = i18n.t("common.offline"); return }
         busy = true
         error = nil
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
@@ -90,16 +65,13 @@ struct CustomerFormSheet: View {
         Task {
             let message: String?
             if let editing {
-                message = await model.update(id: editing.id, name: trimmedName,
-                                             phone: phoneValue, notes: notesValue)
+                message = await model.update(id: editing.id, name: trimmedName, phone: phoneValue, notes: notesValue)
             } else {
                 message = await model.create(name: trimmedName, phone: phoneValue, notes: notesValue)
             }
             busy = false
             if let message {
-                error = message == "offline"
-                    ? i18n.t("common.offline", default: "You are offline. This needs a connection.")
-                    : message
+                error = message == "offline" ? i18n.t("common.offline") : message
             } else {
                 dismiss()
             }

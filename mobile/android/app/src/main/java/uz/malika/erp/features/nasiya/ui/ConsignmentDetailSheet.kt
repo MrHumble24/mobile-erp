@@ -25,6 +25,7 @@ import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
+import uz.malika.erp.shared.ui.FactRow
 import uz.malika.erp.ui.theme.Tokens
 
 /**
