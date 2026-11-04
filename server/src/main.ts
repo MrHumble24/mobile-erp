@@ -16,7 +16,7 @@ async function bootstrap() {
   const corsOrigins = (
     process.env.CORS_ORIGINS ??
     (process.env.NODE_ENV === 'production'
-      ? ''
+      ? 'https://luminous-gratitude-production-50bf.up.railway.app'
       : 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174')
   )
     .split(',')
