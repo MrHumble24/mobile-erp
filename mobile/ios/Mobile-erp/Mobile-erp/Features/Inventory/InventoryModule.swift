@@ -82,5 +82,11 @@ private struct InventoryTabs: View {
         }
         .navigationTitle(i18n.t("nav.inventory"))
         .background(Tokens.ground)
+        #if DEBUG
+        // Screenshot helper: `-openTab models|alerts` lands on that tab.
+        .onAppear {
+            if let raw = UserDefaults.standard.string(forKey: "openTab"), let t = InventoryTab(rawValue: raw) { tab = t }
+        }
+        #endif
     }
 }

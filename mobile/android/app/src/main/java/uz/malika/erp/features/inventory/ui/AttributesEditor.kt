@@ -1,12 +1,15 @@
 package uz.malika.erp.features.inventory.ui
-import uz.malika.erp.shared.ui.AppSelect
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -18,22 +21,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.KeyboardType
 import uz.malika.erp.features.inventory.data.AttributeDef
 import uz.malika.erp.features.inventory.data.AttributeType
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AdaptiveInputs
-import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.AppSelect
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Controlled editor for a model's spec schema: add / remove / reorder
  * [AttributeDef] rows. The parent owns the list; this emits the next list.
  * Keys already persisted are locked (renaming would orphan stored specs).
+ * Each attribute is a surface-2 block inside the sheet (never a nested card).
  */
 @Composable
 fun AttributesEditor(
@@ -58,12 +62,12 @@ fun AttributesEditor(
 
     Column(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(t("inventory.attrSectionTitle", null), style = MaterialTheme.typography.labelLarge)
-            PillButton(text = t("inventory.attrAdd", null), onClick = { add() }, variant = ButtonVariant.OUTLINE)
+            Text(t("inventory.attrSectionTitle", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+            PillButton(text = t("inventory.attrAdd", null), onClick = { add() }, variant = ButtonVariant.SECONDARY)
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         attributes.forEachIndexed { i, attr ->
-            AttributeRow(
+            AttributeBlock(
                 attr = attr,
                 keyLocked = savedKeys.contains(attr.key),
                 isFirst = i == 0,
@@ -73,13 +77,13 @@ fun AttributesEditor(
                 onMoveDown = { move(i, 1) },
                 onRemove = { remove(i) },
             )
-            Spacer(Modifier.height(10.dp))
+            if (i < attributes.lastIndex) Spacer(Modifier.height(Tokens.Space.md))
         }
     }
 }
 
 @Composable
-private fun AttributeRow(
+private fun AttributeBlock(
     attr: AttributeDef,
     keyLocked: Boolean,
     isFirst: Boolean,
@@ -90,7 +94,12 @@ private fun AttributeRow(
     onRemove: () -> Unit,
 ) {
     val t = LocalT.current
-    AppCard {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls))
+            .padding(Tokens.Space.lg),
+    ) {
         AdaptiveInputs(
             fields = listOf(
                 { m ->
@@ -107,13 +116,14 @@ private fun AttributeRow(
                         value = attr.key,
                         onValueChange = { onChanged(attr.copy(key = it)) },
                         enabled = !keyLocked,
+                        keyboardType = KeyboardType.Ascii,
                         modifier = m,
                     )
                 },
             ),
-            spacing = 8.dp,
+            spacing = Tokens.Space.md,
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppSelect(
             value = attr.type,
             options = listOf(AttributeType.TEXT, AttributeType.NUMBER, AttributeType.SELECT),
@@ -127,33 +137,28 @@ private fun AttributeRow(
             onSelect = { onChanged(attr.copy(type = it ?: AttributeType.TEXT)) },
             label = t("inventory.attrType", null),
         )
-        Spacer(Modifier.height(8.dp))
-        Text(t("inventory.attrRequired", null), style = MaterialTheme.typography.labelMedium)
-        Spacer(Modifier.height(4.dp))
-        SegmentedControl(
-            options = listOf(
-                SegmentOption(true, t("common.yes", null)),
-                SegmentOption(false, t("common.no", null)),
-            ),
-            selected = attr.required,
-            onSelect = { onChanged(attr.copy(required = it)) },
-        )
         if (attr.type == AttributeType.SELECT) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             OptionsChipsEditor(
                 options = attr.options,
                 onChanged = { onChanged(attr.copy(options = it)) },
             )
         }
+        Spacer(Modifier.height(Tokens.Space.sm))
+        Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
+            Text(t("inventory.attrRequired", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+            Spacer(Modifier.weight(1f))
+            AppSwitch(checked = attr.required, onCheckedChange = { onChanged(attr.copy(required = it)) })
+        }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(onClick = onMoveUp, enabled = !isFirst) {
-                Icon(Icons.Outlined.ArrowUpward, contentDescription = null)
+                Icon(Icons.Outlined.ArrowUpward, contentDescription = null, tint = if (isFirst) Tokens.border else Tokens.muted)
             }
             IconButton(onClick = onMoveDown, enabled = !isLast) {
-                Icon(Icons.Outlined.ArrowDownward, contentDescription = null)
+                Icon(Icons.Outlined.ArrowDownward, contentDescription = null, tint = if (isLast) Tokens.border else Tokens.muted)
             }
             IconButton(onClick = onRemove) {
-                Icon(Icons.Outlined.DeleteOutline, contentDescription = null)
+                Icon(Icons.Outlined.DeleteOutline, contentDescription = null, tint = Tokens.danger)
             }
         }
     }

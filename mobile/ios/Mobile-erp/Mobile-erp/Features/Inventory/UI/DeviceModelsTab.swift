@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Models tab: searchable model list with create / edit (ADR 0013). Only shown
-/// when the user has `device.update`, so writes are always allowed here.
+/// Models tab: searchable model list as white cards on the ground, with create
+/// (toolbar +) / edit (tap a row) — ADR 0013. Only shown when the user has
+/// `device.update`, so writes are always allowed here.
 struct DeviceModelsTab: View {
     let store: InventoryStore
     @Environment(I18n.self) private var i18n
@@ -15,36 +16,26 @@ struct DeviceModelsTab: View {
     }
 
     var body: some View {
-        List {
-            if let error = store.modelsError {
-                Section { ErrorStateView(message: error, retry: { Task { await store.loadModels() } }) }
-            }
-            Section {
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                if let error = store.modelsError {
+                    AppCard { ErrorStateView(message: error, retry: { Task { await store.loadModels() } }) }
+                }
                 if shown.isEmpty {
-                    EmptyStateView(systemImage: "square.stack.3d.up", title: i18n.t("inventory.empty"))
+                    AppCard { EmptyStateView(systemImage: "square.stack.3d.up", title: i18n.t("inventory.empty")) }
                 } else {
                     ForEach(shown) { model in
                         Button { editing = ModelTarget(model: model) } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(model.label).font(.body.weight(.medium)).foregroundStyle(Tokens.ink)
-                                    Text("\(model.attributes.count) \(i18n.t("inventory.attrSectionTitle").lowercased())")
-                                        .font(.caption).foregroundStyle(Tokens.muted)
-                                }
-                                Spacer()
-                                StatusBadge(model.isActive ? i18n.t("common.yes") : i18n.t("common.no"),
-                                            color: model.isActive ? Tokens.success : Tokens.slate)
-                            }
+                            AppCard { ModelRow(model: model) }
                         }
-                        .tint(.primary)
+                        .buttonStyle(.plain)
                     }
                 }
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
+        .background(Tokens.ground)
         .searchable(text: $query, prompt: "\(i18n.t("inventory.brand")) / \(i18n.t("inventory.model"))")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -53,8 +44,35 @@ struct DeviceModelsTab: View {
                 }
             }
         }
-        .sheet(item: $editing) { target in
+        .appSheet(item: $editing) { target in
             ModelFormSheet(model: target.model, store: store)
+        }
+        #if DEBUG
+        // Screenshot helper: `-openModel new|<id>` opens the form once models are loaded.
+        .onChange(of: store.deviceModels.count, initial: true) { _, _ in
+            guard editing == nil, let arg = UserDefaults.standard.string(forKey: "openModel") else { return }
+            if arg == "new" { editing = ModelTarget(model: nil) }
+            else if let m = store.deviceModels.first(where: { $0.id == arg }) { editing = ModelTarget(model: m) }
+        }
+        #endif
+    }
+}
+
+/// One model card: label, attribute count, active pill — the Android `ModelRow`.
+private struct ModelRow: View {
+    let model: DeviceModelView
+    @Environment(I18n.self) private var i18n
+
+    var body: some View {
+        HStack(spacing: Tokens.Space.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.label).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                Text("\(model.attributes.count) \(i18n.t("inventory.attrSectionTitle").lowercased())")
+                    .font(.ui(.caption)).foregroundStyle(Tokens.muted)
+            }
+            Spacer(minLength: Tokens.Space.sm)
+            StatusBadge(model.isActive ? i18n.t("inventory.modelActive") : i18n.t("common.no"),
+                        color: model.isActive ? Tokens.success : Tokens.sold)
         }
     }
 }

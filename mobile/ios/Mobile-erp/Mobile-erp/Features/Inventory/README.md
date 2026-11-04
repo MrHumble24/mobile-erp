@@ -29,7 +29,15 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
   via `container.router`. The devices tab also *consumes* an incoming
   `.inventory(imei:)` route and opens that device. Write results toast via
   `container.toasts`.
-- Device models + dynamic attribute schema editor (ADR 0013).
+- Device models (white cards, "Faol" pill, toolbar +) + create/edit in a Warm
+  Card sheet with the dynamic attribute schema editor (ADR 0013): each attribute
+  a surface-2 block of kit fields (label / key / type `AppSelect` / options chips
+  / required toggle / reorder-delete). Options commit on Return **or** the ghost
+  add pill (a Button inside a Form row used to swallow the tap). Debug:
+  `-openTab models`, `-openModel new|<id>`.
+- Option-less `select`: a `select` attribute with no options renders as a text
+  field in `DynamicSpecFields` — the server accepts any value for it, and a
+  picker offering only "—" used to block adding or updating a device.
 - Stock-alert rules + low-stock list.
 
 ## Public API

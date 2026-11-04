@@ -14,7 +14,11 @@ import uz.malika.erp.shared.ui.AppFormField
 
 /**
  * One input per model attribute (sorted by order), bound to a `specs` map the
- * caller owns. `select` → [AppSelect], `number` → numeric field, else text.
+ * caller owns. `select` with options → [AppSelect]; a `select` whose option list
+ * is still empty (the server's default storage/color scaffold, or a list the
+ * owner has not filled yet) falls back to a text field — the server accepts any
+ * value for an option-less select, and an empty dropdown would block the save.
+ * `number` → numeric field, else text.
  */
 @Composable
 fun DynamicSpecFields(
@@ -27,7 +31,7 @@ fun DynamicSpecFields(
         sorted.forEach { attr ->
             val label = if (attr.required) "${attr.label} *" else attr.label
             val value = values[attr.key] ?: ""
-            if (attr.type == AttributeType.SELECT) {
+            if (attr.type == AttributeType.SELECT && attr.options.isNotEmpty()) {
                 AppSelect(
                     value = value.ifEmpty { null },
                     options = attr.options,

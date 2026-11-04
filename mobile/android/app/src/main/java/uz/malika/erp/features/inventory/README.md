@@ -35,8 +35,15 @@ gated by `device.read`).
     `featureNav.open`; copy-IMEI and status change toast `container.toaster`.
     Incoming `inventory` arg opens the sheet via `consumeArg`. On tablets
     (≥720dp) the detail is a master-detail side pane, not a bottom sheet.
-- **Models**: device-model list + create/edit with the dynamic attribute schema
-  (ADR 0013). Shown only with `device.update`.
+- **Models**: device-model list (white cards, "Faol" pill) + create/edit in a
+  Warm Card sheet with the dynamic attribute schema (ADR 0013): each attribute is
+  a surface-2 block (label / key / type select / options chips / required
+  switch / reorder-delete). Options commit on IME Done **or** the explicit ghost
+  add pill. Shown only with `device.update`.
+- **Option-less `select`**: a `select` attribute whose option list is empty (the
+  server's default storage/color scaffold, or a list the owner has not filled)
+  renders as a free-text field in `DynamicSpecFields` — the server accepts any
+  value for it, and an empty dropdown used to block adding or updating a device.
 - **Alerts**: low-stock list + alert-rule create/edit; writes need `settings.manage`.
 
 ## Public API

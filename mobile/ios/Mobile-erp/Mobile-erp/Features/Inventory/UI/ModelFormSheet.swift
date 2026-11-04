@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Create / edit a device model with its dynamic attribute schema (ADR 0013).
-/// On edit the model is fixed-key; brand/name/active/attributes change.
+/// Create / edit a device model with its dynamic attribute schema (ADR 0013), as
+/// a Warm Card sheet. On edit the model is fixed-key; brand / name / active /
+/// attributes change. Online-only; a 409 means a duplicate brand+name.
 struct ModelFormSheet: View {
     let model: DeviceModelView?
     let store: InventoryStore
@@ -19,6 +20,7 @@ struct ModelFormSheet: View {
 
     private let savedKeys: Set<String>
     private var isEdit: Bool { model != nil }
+    private var online: Bool { container.connectivity.isOnline }
 
     init(model: DeviceModelView?, store: InventoryStore) {
         self.model = model
@@ -31,32 +33,58 @@ struct ModelFormSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(i18n.t("inventory.brand"), text: $brand)
-                    TextField(i18n.t("inventory.model"), text: $name)
-                    if isEdit {
-                        Toggle(i18n.t("inventory.modelActive"), isOn: $isActive)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                    Text(i18n.t(isEdit ? "inventory.editModel" : "inventory.newModel"))
+                        .font(.ui(.title))
+                        .foregroundStyle(Tokens.text)
+                    Spacer(minLength: Tokens.Space.sm)
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Tokens.text)
+                            .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+                            .background(Tokens.surface2, in: Circle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("common.cancel"))
+                }
+                AppFormField(label: i18n.t("inventory.brand")) {
+                    AppTextField(placeholder: i18n.t("inventory.brand"), text: $brand, autocapitalization: .words)
+                }
+                AppFormField(label: i18n.t("inventory.model")) {
+                    AppTextField(placeholder: i18n.t("inventory.model"), text: $name, autocapitalization: .words)
+                }
+                if isEdit {
+                    Toggle(i18n.t("inventory.modelActive"), isOn: $isActive)
+                        .font(.ui(.body))
+                        .foregroundStyle(Tokens.text)
+                        .frame(minHeight: Tokens.Space.minTouch)
                 }
                 AttributesEditor(attributes: $attributes, savedKeys: savedKeys)
                 if let error {
-                    Section { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }
+                    Text(error).font(.ui(.caption)).foregroundStyle(Tokens.danger)
                 }
+                if !online {
+                    Label(i18n.t("common.offline", default: "Offline"), systemImage: "wifi.slash")
+                        .font(.ui(.caption)).foregroundStyle(Tokens.warning)
+                }
+                Button {
+                    Task { await save() }
+                } label: {
+                    Text(saving ? i18n.t("common.loading") : i18n.t("common.save"))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(saving || !online)
             }
-            .navigationTitle(i18n.t(isEdit ? "inventory.editModel" : "inventory.newModel"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.save")) { Task { await save() } }
-                        .disabled(saving || !container.connectivity.isOnline)
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.large])
     }
 
     private func save() async {
@@ -78,6 +106,7 @@ struct ModelFormSheet: View {
                 try await repo.create(brand: b, name: n, attributes: reindexed)
             }
             await store.loadModels()
+            container.toasts.success(i18n.t("common.success"))
             dismiss()
         } catch let e as AppError {
             error = e.statusCode == 409 ? i18n.t("inventory.modelDuplicate") : e.message

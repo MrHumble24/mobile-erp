@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.inventory.data.DeviceModelView
 import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
@@ -49,7 +48,6 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
     var creating by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH)) {
-        Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppTextField(
                 value = query,
@@ -57,10 +55,10 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
                 placeholder = "${t("inventory.brand", null)} / ${t("inventory.model", null)}...",
                 modifier = Modifier.weight(1f),
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(Tokens.Space.gap))
             PillButton(text = t("inventory.newModel", null), onClick = { creating = true })
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (val s = state) {
                 is Async.Loading -> Loading()
@@ -70,7 +68,7 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
                     if (list.isEmpty()) {
                         EmptyView(message = t("inventory.empty", null))
                     } else {
-                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
                             items(list, key = { it.id }) { m -> ModelRow(m) { editing = m } }
                         }
                     }
@@ -97,15 +95,17 @@ private fun ModelRow(model: DeviceModelView, onClick: () -> Unit) {
     AppCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(model.label, style = MaterialTheme.typography.titleMedium)
+                Text(model.label, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 Text(
                     "${model.attributes.size} ${t("inventory.attrSectionTitle", null).lowercase()}",
                     style = MaterialTheme.typography.bodySmall,
+                    color = Tokens.muted,
                 )
             }
+            Spacer(Modifier.width(Tokens.Space.gap))
             StatusChip(
-                label = if (model.isActive) t("common.yes", null) else t("common.no", null),
-                color = if (model.isActive) Tokens.success else Tokens.ash,
+                label = if (model.isActive) t("inventory.modelActive", null) else t("common.no", null),
+                color = if (model.isActive) Tokens.success else Tokens.sold,
             )
         }
     }

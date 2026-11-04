@@ -1,6 +1,8 @@
 package uz.malika.erp.features.inventory.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,8 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.AttributeDef
@@ -25,8 +27,7 @@ import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -73,43 +74,42 @@ fun ModelFormSheet(
         }
     }
 
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(
             t(if (isEdit) "inventory.editModel" else "inventory.newModel", null),
             style = MaterialTheme.typography.titleLarge,
+            color = Tokens.text,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         AppFormField(label = t("inventory.brand", null), value = brand, onValueChange = { brand = it })
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(label = t("inventory.model", null), value = name, onValueChange = { name = it })
         if (isEdit) {
-            Spacer(Modifier.height(12.dp))
-            Text(t("inventory.modelActive", null), style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(6.dp))
-            SegmentedControl(
-                options = listOf(
-                    SegmentOption(true, t("common.yes", null)),
-                    SegmentOption(false, t("common.no", null)),
-                ),
-                selected = active,
-                onSelect = { active = it },
-            )
+            Spacer(Modifier.height(Tokens.Space.md))
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(t("inventory.modelActive", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                Spacer(Modifier.weight(1f))
+                AppSwitch(checked = active, onCheckedChange = { active = it })
+            }
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         AttributesEditor(
             attributes = attributes,
             savedKeys = savedKeys,
             onChanged = { attributes = it },
         )
         error?.let {
-            Spacer(Modifier.height(12.dp))
-            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.destructive)
+            Spacer(Modifier.height(Tokens.Space.md))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
         }
         if (!online) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.gutter))
         PillButton(
             text = if (saving) t("common.loading", null) else t("common.save", null),
             onClick = { save() },
