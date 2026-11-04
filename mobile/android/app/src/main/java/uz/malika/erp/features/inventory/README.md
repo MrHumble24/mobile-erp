@@ -44,7 +44,11 @@ gated by `device.read`).
   server's default storage/color scaffold, or a list the owner has not filled)
   renders as a free-text field in `DynamicSpecFields` — the server accepts any
   value for it, and an empty dropdown used to block adding or updating a device.
-- **Alerts**: low-stock list + alert-rule create/edit; writes need `settings.manage`.
+- **Alerts**: "Kam qolgan modellar" cards (model + storage, live count against
+  the minimum as a danger / success pill), then "Ogohlantirish qoidalari" cards
+  (threshold in mono, labelled once) with "Yangi qoida" as the one orange; the
+  rule form is a Warm Card sheet (model select fixed on edit, storage select from
+  the model's storage options, numeric threshold). Writes need `settings.manage`.
 
 ## Public API
 `InventoryFeature` (the module object) only. No other slice imports from here.

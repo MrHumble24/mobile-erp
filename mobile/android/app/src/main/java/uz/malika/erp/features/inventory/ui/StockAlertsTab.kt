@@ -2,31 +2,27 @@ package uz.malika.erp.features.inventory.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import uz.malika.erp.features.inventory.data.DeviceModelView
 import uz.malika.erp.features.inventory.data.LowStockView
 import uz.malika.erp.features.inventory.data.StockAlertRuleView
 import uz.malika.erp.features.inventory.model.Async
@@ -34,14 +30,21 @@ import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.StockAlertsViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.shared.ui.listBottomPadding
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
-/** Alerts tab: low-stock list + alert-rule management (writes need `settings.manage`). */
+/**
+ * Alerts tab: the models currently under their minimum (danger count pill),
+ * then the alert rules as cards; the one orange is "Yangi qoida". Rule writes
+ * need `settings.manage`.
+ */
 @Composable
 fun StockAlertsTab(
     alertsVm: StockAlertsViewModel,
@@ -59,15 +62,15 @@ fun StockAlertsTab(
     fun nameOf(id: String) = models.firstOrNull { it.id == id }?.label ?: id
 
     Box(Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH)) {
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
             if (lowStock.isNotEmpty()) {
-                item { LowStockHeader() }
-                items(lowStock, key = { "low-${it.id}" }) { r -> LowStockRow(r, ::nameOf) }
-                item { Spacer(Modifier.height(8.dp)) }
+                item { SectionHeading(t("inventory.lowStock", null)) }
+                items(lowStock, key = { "low-${it.id}" }) { r -> LowStockRow(r, nameOf(r.modelId)) }
+                item { Spacer(Modifier.height(Tokens.Space.xs)) }
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(t("inventory.rulesTitle", null), style = MaterialTheme.typography.labelLarge)
+                    SectionHeading(t("inventory.rulesTitle", null))
                     if (canManage) PillButton(text = t("inventory.newRule", null), onClick = { creating = true })
                 }
             }
@@ -79,10 +82,10 @@ fun StockAlertsTab(
                     }
                 }
                 is Async.Data -> if (s.value.isEmpty()) {
-                    item { Text(t("inventory.empty", null), style = MaterialTheme.typography.bodyMedium) }
+                    item { AppCard(Modifier.fillMaxWidth()) { EmptyView(t("common.notFound", null), compact = true) } }
                 } else {
                     items(s.value, key = { "rule-${it.id}" }) { r ->
-                        RuleRow(r, ::nameOf, onClick = if (canManage) ({ editing = r }) else null)
+                        RuleRow(r, nameOf(r.modelId), onClick = if (canManage) ({ editing = r }) else null)
                     }
                 }
             }
@@ -102,35 +105,49 @@ fun StockAlertsTab(
 }
 
 @Composable
-private fun LowStockHeader() {
-    val t = LocalT.current
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Outlined.WarningAmber, contentDescription = null, tint = Tokens.danger, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(6.dp))
-        Text(t("inventory.lowStock", null), style = MaterialTheme.typography.labelLarge, color = Tokens.danger)
-    }
+private fun SectionHeading(text: String) {
+    Text(text, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
 }
 
+/** Model + storage left; the live count against its minimum as a danger pill right. */
 @Composable
-private fun LowStockRow(row: LowStockView, nameOf: (String) -> String) {
-    AppCard {
+private fun LowStockRow(row: LowStockView, name: String) {
+    AppCard(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("${nameOf(row.modelId)} · ${row.storage}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            Text(
+            ModelLine(name, row.storage, Modifier.weight(1f))
+            Spacer(Modifier.width(Tokens.Space.gap))
+            StatusChip(
                 "${row.currentCount} / ${row.threshold}",
-                style = MaterialTheme.typography.titleMedium,
-                color = if (row.isBelow) Tokens.danger else Tokens.foreground,
+                color = if (row.isBelow) Tokens.danger else Tokens.success,
             )
         }
     }
 }
 
+/** Model + storage left; the minimum threshold in mono right, labelled once. */
 @Composable
-private fun RuleRow(rule: StockAlertRuleView, nameOf: (String) -> String, onClick: (() -> Unit)?) {
-    AppCard(onClick = onClick) {
+private fun RuleRow(rule: StockAlertRuleView, name: String, onClick: (() -> Unit)?) {
+    val t = LocalT.current
+    AppCard(Modifier.fillMaxWidth(), onClick = onClick) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("${nameOf(rule.modelId)} · ${rule.storage}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-            Text("${rule.threshold}", style = MaterialTheme.typography.titleMedium)
+            ModelLine(name, rule.storage, Modifier.weight(1f))
+            Spacer(Modifier.width(Tokens.Space.gap))
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    "${rule.threshold}",
+                    style = MaterialTheme.typography.titleMedium.copy(fontFamily = MonoFamily),
+                    color = Tokens.text,
+                )
+                Text(t("inventory.threshold", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            }
         }
+    }
+}
+
+@Composable
+private fun ModelLine(name: String, storage: String, modifier: Modifier) {
+    Column(modifier) {
+        Text(name, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+        Text(storage, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
     }
 }

@@ -38,7 +38,12 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
 - Option-less `select`: a `select` attribute with no options renders as a text
   field in `DynamicSpecFields` — the server accepts any value for it, and a
   picker offering only "—" used to block adding or updating a device.
-- Stock-alert rules + low-stock list.
+- Alerts: "Kam qolgan modellar" cards (model + storage, live count against the
+  minimum as a danger / success pill), then rule cards (threshold in mono,
+  labelled once) with an inline "Yangi qoida" primary pill (no toolbar +); the
+  rule form is a Warm Card sheet of kit fields (model `AppSelect` fixed on
+  edit, storage from the model's options, numeric threshold). Debug:
+  `-openTab alerts`, `-openRule new`.
 
 ## Public API
 - `InventoryModule.feature` — register with one line in `FeatureRegistry`.

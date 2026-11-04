@@ -18,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.DeviceModelView
@@ -78,29 +77,32 @@ fun AlertRuleForm(
         }
     }
 
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(
             t(if (isEdit) "inventory.editRule" else "inventory.newRule", null),
             style = MaterialTheme.typography.titleLarge,
+            color = Tokens.text,
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         AppSelect(
             value = models.firstOrNull { it.id == modelId },
             options = models,
             optionLabel = { it.label },
             onSelect = { modelId = it?.id },
             label = t("inventory.model", null),
+            placeholder = t("inventory.model", null),
             enabled = !isEdit,
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppSelect(
             value = storage?.takeIf { it in storages },
             options = storages,
             optionLabel = { it },
             onSelect = { storage = it },
             label = t("inventory.storage", null),
+            placeholder = t("inventory.storage", null),
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(
             label = t("inventory.threshold", null),
             value = threshold,
@@ -108,14 +110,14 @@ fun AlertRuleForm(
             keyboardType = KeyboardType.Number,
         )
         error?.let {
-            Spacer(Modifier.height(12.dp))
-            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.destructive)
+            Spacer(Modifier.height(Tokens.Space.md))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
         }
         if (!online) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.gutter))
         PillButton(
             text = if (saving) t("common.loading", null) else t("common.save", null),
             onClick = { save() },

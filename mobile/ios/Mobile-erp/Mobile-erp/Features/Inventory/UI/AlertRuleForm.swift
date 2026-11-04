@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Create / edit a stock-alert rule. On edit the model is fixed (the server
-/// PATCH only changes storage + threshold). Online-only.
+/// Create / edit a stock-alert rule as a Warm Card sheet. On edit the model is
+/// fixed (the server PATCH only changes storage + threshold). Online-only.
 struct AlertRuleForm: View {
     let rule: StockAlertRuleView?
     let store: InventoryStore
@@ -19,6 +19,7 @@ struct AlertRuleForm: View {
 
     private let fallbackStorages = ["64GB", "128GB", "256GB", "512GB", "1TB"]
     private var isEdit: Bool { rule != nil }
+    private var online: Bool { container.connectivity.isOnline }
 
     init(rule: StockAlertRuleView?, store: InventoryStore, onSaved: @escaping () async -> Void) {
         self.rule = rule
@@ -36,40 +37,59 @@ struct AlertRuleForm: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    Picker(i18n.t("inventory.model"), selection: $modelId) {
-                        Text("—").tag("")
-                        ForEach(store.deviceModels) { Text($0.label).tag($0.id) }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                    Text(i18n.t(isEdit ? "inventory.editRule" : "inventory.newRule"))
+                        .font(.ui(.title))
+                        .foregroundStyle(Tokens.text)
+                    Spacer(minLength: Tokens.Space.sm)
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Tokens.text)
+                            .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+                            .background(Tokens.surface2, in: Circle())
                     }
-                    .disabled(isEdit)
-
-                    Picker(i18n.t("inventory.storage"), selection: $storage) {
-                        Text("—").tag("")
-                        ForEach(storages, id: \.self) { Text($0).tag($0) }
-                    }
-
-                    TextField(i18n.t("inventory.threshold"), text: $threshold)
-                        .keyboardType(.numberPad)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("common.cancel"))
+                }
+                AppFormField(label: i18n.t("inventory.model")) {
+                    AppSelect(placeholder: i18n.t("inventory.model"), selection: $modelId,
+                              options: store.deviceModels.map { ($0.id, $0.label) })
+                        .disabled(isEdit)
+                        .opacity(isEdit ? 0.6 : 1)
+                }
+                AppFormField(label: i18n.t("inventory.storage")) {
+                    AppSelect(placeholder: i18n.t("inventory.storage"), selection: $storage,
+                              options: storages.map { ($0, $0) })
+                }
+                AppFormField(label: i18n.t("inventory.threshold")) {
+                    AppTextField(placeholder: i18n.t("inventory.threshold"), text: $threshold,
+                                 keyboard: .numberPad, font: .data(.regular))
                         .sanitizeDigits($threshold)
                 }
                 if let error {
-                    Section { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }
+                    Text(error).font(.ui(.caption)).foregroundStyle(Tokens.danger)
                 }
+                if !online {
+                    Label(i18n.t("common.offline", default: "Offline"), systemImage: "wifi.slash")
+                        .font(.ui(.caption)).foregroundStyle(Tokens.warning)
+                }
+                Button {
+                    Task { await save() }
+                } label: {
+                    Text(saving ? i18n.t("common.loading") : i18n.t("common.save"))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(saving || !online)
             }
-            .navigationTitle(i18n.t(isEdit ? "inventory.editRule" : "inventory.newRule"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.save")) { Task { await save() } }
-                        .disabled(saving || !container.connectivity.isOnline)
-                }
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
     }
 
     private func save() async {
@@ -88,6 +108,7 @@ struct AlertRuleForm: View {
                 try await repo.create(modelId: modelId, storage: storage, threshold: value)
             }
             await onSaved()
+            container.toasts.success(i18n.t("common.success"))
             dismiss()
         } catch let e as AppError {
             error = e.message

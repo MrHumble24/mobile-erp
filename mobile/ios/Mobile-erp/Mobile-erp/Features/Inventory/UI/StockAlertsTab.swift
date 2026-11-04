@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Alerts tab: low-stock list + alert-rule management. Rule writes need
-/// `settings.manage`; reads need `device.read` (the section gate).
+/// Alerts tab: the models currently under their minimum (danger count pill),
+/// then the alert rules as cards; the one orange is "Yangi qoida". Rule writes
+/// need `settings.manage`; reads need `device.read` (the section gate). Same
+/// anatomy as the Android `StockAlertsTab`.
 struct StockAlertsTab: View {
     let store: InventoryStore
     @Environment(AppContainer.self) private var container
@@ -15,77 +17,85 @@ struct StockAlertsTab: View {
     private var repo: StockAlertRepository { StockAlertRepository(container) }
 
     var body: some View {
-        List {
-            if !store.lowStock.isEmpty {
-                Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                if !store.lowStock.isEmpty {
+                    heading(i18n.t("inventory.lowStock"))
                     ForEach(store.lowStock) { row in
-                        HStack(alignment: .center) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("\(store.modelLabel(row.modelId)) · \(row.storage)")
-                                    .font(.body.weight(.semibold))
-                                    .foregroundStyle(Tokens.ink)
-                                Text(i18n.t("inventory.lowStockWarning", default: "Below minimum safety threshold"))
-                                    .font(.caption)
-                                    .foregroundStyle(Tokens.danger)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(row.currentCount) / \(row.threshold)")
-                                    .font(.mono(16, weight: .bold))
-                                    .foregroundStyle(Tokens.danger)
-                                Text(i18n.t("inventory.remainingUnits", default: "units left"))
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundStyle(Tokens.danger.opacity(0.85))
+                        AppCard {
+                            HStack(spacing: Tokens.Space.sm) {
+                                modelLine(store.modelLabel(row.modelId), row.storage)
+                                Spacer(minLength: Tokens.Space.sm)
+                                StatusBadge("\(row.currentCount) / \(row.threshold)",
+                                            color: row.isBelow ? Tokens.danger : Tokens.success)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
-                } header: {
-                    Label(i18n.t("inventory.lowStock"), systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(Tokens.danger)
                 }
-            }
-            Section {
+                HStack {
+                    heading(i18n.t("inventory.rulesTitle"))
+                    Spacer()
+                    if canManage {
+                        Button(i18n.t("inventory.newRule")) { editing = RuleTarget(rule: nil) }
+                            .buttonStyle(.pillPrimary)
+                    }
+                }
                 if loading {
-                    LoadingView()
+                    AppCard { LoadingView().frame(height: 120) }
                 } else if rules.isEmpty {
-                    EmptyStateView(systemImage: "bell.slash", title: i18n.t("inventory.empty"))
+                    AppCard {
+                        EmptyStateView(systemImage: "bell.slash", title: i18n.t("common.notFound"))
+                    }
                 } else {
-                    ForEach(rules) { rule in
-                        ruleRow(rule)
-                    }
-                }
-            } header: {
-                Text(i18n.t("inventory.rulesTitle"))
-            }
-        }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
-        .toolbar {
-            if canManage {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { editing = RuleTarget(rule: nil) } label: {
-                        Label(i18n.t("inventory.newRule"), systemImage: "plus")
-                    }
+                    ForEach(rules) { rule in ruleRow(rule) }
                 }
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .sheet(item: $editing) { target in
+        .background(Tokens.ground)
+        .appSheet(item: $editing) { target in
             AlertRuleForm(rule: target.rule, store: store, onSaved: { await reload() })
         }
         .task { await reload() }
+        #if DEBUG
+        // Screenshot helper: `-openRule new` opens the form.
+        .onAppear {
+            if editing == nil, UserDefaults.standard.string(forKey: "openRule") == "new" {
+                editing = RuleTarget(rule: nil)
+            }
+        }
+        #endif
     }
 
+    private func heading(_ text: String) -> some View {
+        Text(text).font(.ui(.heading)).foregroundStyle(Tokens.text)
+    }
+
+    private func modelLine(_ name: String, _ storage: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(name).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+            Text(storage).font(.data(.regular)).foregroundStyle(Tokens.muted)
+        }
+    }
+
+    /// Model + storage left; the minimum threshold in mono right, labelled once.
     @ViewBuilder private func ruleRow(_ rule: StockAlertRuleView) -> some View {
-        let content = LabeledContent("\(store.modelLabel(rule.modelId)) · \(rule.storage)") {
-            Text("\(rule.threshold)").font(.mono(14))
+        let card = AppCard {
+            HStack(spacing: Tokens.Space.sm) {
+                modelLine(store.modelLabel(rule.modelId), rule.storage)
+                Spacer(minLength: Tokens.Space.sm)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(rule.threshold)").font(.mono(17, weight: .semibold)).foregroundStyle(Tokens.text)
+                    Text(i18n.t("inventory.threshold")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+            }
         }
         if canManage {
-            Button { editing = RuleTarget(rule: rule) } label: { content }.tint(.primary)
+            Button { editing = RuleTarget(rule: rule) } label: { card }.buttonStyle(.plain)
         } else {
-            content
+            card
         }
     }
 
