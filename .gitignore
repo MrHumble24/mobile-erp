@@ -29,3 +29,6 @@ graphify-cache/
 # Agent worktrees
 .worktrees/
 .claude/worktrees/
+
+# Impeccable launcher binaries (downloaded on first run, 17 MB each)
+**/skills/impeccable/scripts/bin/

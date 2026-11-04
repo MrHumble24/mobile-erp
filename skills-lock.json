@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "skills": {
+    "articulate": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/articulate/SKILL.md",
+      "computedHash": "2b2ce660b87ce4e11c7ade8347dee8aab16ce2149f54f561bf51c36db86d4b44"
+    },
+    "blueprint": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/blueprint/SKILL.md",
+      "computedHash": "ef2caf378c36a792bed382d94603c17b86662c5ef0e3d57cc20e3095a35efdc1"
+    },
+    "evaluate": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/evaluate/SKILL.md",
+      "computedHash": "e805d3e334f1857a9a41dcedadac5ab833532e8cb62f33744130836233b6d77c"
+    },
+    "fortify": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/fortify/SKILL.md",
+      "computedHash": "94aed5f4bffcac9c3b269748e1af51e95e1553da148be0612bdf5f2d63664519"
+    },
+    "include": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/include/SKILL.md",
+      "computedHash": "8524e70207b361b1574f86a97b8803a2053ba30f259b52bd6d3d712bfc2d6581"
+    },
+    "intent": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/intent/SKILL.md",
+      "computedHash": "6f1cb536780b776acd109ce6df89d2373eb4dd3f8b5fb12f751c92ec7989e883"
+    },
+    "investigate": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/investigate/SKILL.md",
+      "computedHash": "abb6bf0ed4e40e470d395c14221582cb750170fcef873f0828427941c8f8bf04"
+    },
+    "journey": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/journey/SKILL.md",
+      "computedHash": "eca7a0b93bebfe2f56671bdbb1d0993768ded50909df8629e1b8ce5939db8960"
+    },
+    "localize": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/localize/SKILL.md",
+      "computedHash": "c837eb3bbd9948cfb1268b8ed71fd4fcf722a21b3f56aea207853e7720148e3b"
+    },
+    "measure": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/measure/SKILL.md",
+      "computedHash": "88b5e9f481f16aa15864570e7677fecf57bfc7688ce9173ec92a961d854d3bcf"
+    },
+    "organize": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/organize/SKILL.md",
+      "computedHash": "d3bc644031b12bda881838feb86e68fbcda94113883d5e95deaab51eb708fda9"
+    },
+    "philosopher": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/philosopher/SKILL.md",
+      "computedHash": "6d0b150423072514f0506e44a7a5c37bc1d84633552f79f17cbd706f39aefce0"
+    },
+    "present": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/present/SKILL.md",
+      "computedHash": "7a7da2920d3869b341fb9101c8d2b802b472a36ffdaa44237d7d9788d3c3aefc"
+    },
+    "specify": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/specify/SKILL.md",
+      "computedHash": "ac0164c2e9a036f8cefecc469815f4f1d436d2f2bb9e7c4b070c2aa2c74c7e2a"
+    },
+    "storytelling": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/storytelling/SKILL.md",
+      "computedHash": "e476fc86ed68fe5338c7b8c9479993a9d00e51686841440a06fb83988523cd21"
+    },
+    "strategize": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/strategize/SKILL.md",
+      "computedHash": "29613aa14ab60065bdfbbbee622f74287aa3586bcd5de89315df856a11f24edc"
+    },
+    "transpose": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/transpose/SKILL.md",
+      "computedHash": "36954248c7aed95f872ded6c3e8606905df617cf9c61715ea71648fbbe01e6e1"
+    },
+    "wireframe": {
+      "source": "ghaida/intent",
+      "sourceType": "github",
+      "skillPath": "skills/wireframe/SKILL.md",
+      "computedHash": "bee8894dabf8026962b172a67571fd5e512b0ffbb1ffe81964b4a2d2df88ea67"
+    }
+  }
+}
