@@ -37,7 +37,7 @@ struct PartnersView: View {
             // Screenshot helper: `-openPartner first` opens the first partner's detail.
             .onChange(of: model?.partners.count ?? 0) { _, count in
                 guard count > 0, detail == nil,
-                      UserDefaults.standard.string(forKey: "openPartner") == "first" else { return }
+                      KitDebugLaunch.consume("openPartner") == "first" else { return }
                 detail = model?.filtered.first
             }
             #endif

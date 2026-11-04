@@ -52,7 +52,7 @@ struct ConsignmentsView: View {
             // Screenshot helper: `-openConsignment first` opens the first row's detail.
             .onChange(of: model?.items.count ?? 0) { _, count in
                 guard count > 0, detailId == nil,
-                      UserDefaults.standard.string(forKey: "openConsignment") == "first" else { return }
+                      KitDebugLaunch.consume("openConsignment") == "first" else { return }
                 detailId = model?.items.first?.id
             }
             #endif

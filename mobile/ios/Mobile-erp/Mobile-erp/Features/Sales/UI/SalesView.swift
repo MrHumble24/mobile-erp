@@ -67,7 +67,7 @@ struct SalesView: View {
         // loaded; `-openSale stats` expands the summary.
         .onChange(of: model.pager?.items.count ?? 0) { _, count in
             guard count > 0 else { return }
-            switch UserDefaults.standard.string(forKey: "openSale") {
+            switch KitDebugLaunch.consume("openSale") {
             case "first": if selected == nil { selected = model.pager?.items.first }
             case "stats": showStats = true
             default: break

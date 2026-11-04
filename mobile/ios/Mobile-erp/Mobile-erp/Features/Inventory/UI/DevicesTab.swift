@@ -80,7 +80,7 @@ struct DevicesTab: View {
         #if DEBUG
         // Screenshot helper: `-openDevice <imei>` opens that device's detail.
         .onAppear {
-            if let imei = UserDefaults.standard.string(forKey: "openDevice"), selected == nil {
+            if let imei = KitDebugLaunch.consume("openDevice"), selected == nil {
                 selected = ImeiTarget(imei: imei)
             }
         }

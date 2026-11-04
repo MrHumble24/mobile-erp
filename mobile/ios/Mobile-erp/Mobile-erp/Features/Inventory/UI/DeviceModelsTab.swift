@@ -50,7 +50,7 @@ struct DeviceModelsTab: View {
         #if DEBUG
         // Screenshot helper: `-openModel new|<id>` opens the form once models are loaded.
         .onChange(of: store.deviceModels.count, initial: true) { _, _ in
-            guard editing == nil, let arg = UserDefaults.standard.string(forKey: "openModel") else { return }
+            guard editing == nil, let arg = KitDebugLaunch.consume("openModel") else { return }
             if arg == "new" { editing = ModelTarget(model: nil) }
             else if let m = store.deviceModels.first(where: { $0.id == arg }) { editing = ModelTarget(model: m) }
         }

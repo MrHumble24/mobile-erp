@@ -62,7 +62,7 @@ struct StockAlertsTab: View {
         #if DEBUG
         // Screenshot helper: `-openRule new` opens the form.
         .onAppear {
-            if editing == nil, UserDefaults.standard.string(forKey: "openRule") == "new" {
+            if editing == nil, KitDebugLaunch.consume("openRule") == "new" {
                 editing = RuleTarget(rule: nil)
             }
         }

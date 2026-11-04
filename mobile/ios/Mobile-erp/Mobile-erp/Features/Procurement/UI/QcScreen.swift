@@ -60,12 +60,12 @@ struct QcScreen: View {
         #if DEBUG
         // Screenshot helpers: `-openTab inspections|stats`, `-openQcImei <imei>`.
         .onAppear {
-            switch UserDefaults.standard.string(forKey: "openTab") {
+            switch KitDebugLaunch.consume("openTab") {
             case "inspections": tab = .inspections
             case "stats": tab = .stats
             default: break
             }
-            if let imei = UserDefaults.standard.string(forKey: "openQcImei"), scanned == nil {
+            if let imei = KitDebugLaunch.consume("openQcImei"), scanned == nil {
                 scanned = ScannedImei(imei: imei)
             }
         }

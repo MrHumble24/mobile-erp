@@ -63,7 +63,7 @@ struct CustomersView: View {
         // Screenshot helper: `-openCustomer first` opens the first row's detail.
         .onChange(of: model.pager?.items.count ?? 0) { _, count in
             guard count > 0, selected == nil,
-                  UserDefaults.standard.string(forKey: "openCustomer") == "first" else { return }
+                  KitDebugLaunch.consume("openCustomer") == "first" else { return }
             selected = model.pager?.items.first
         }
         #endif
