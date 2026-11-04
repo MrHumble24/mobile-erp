@@ -40,8 +40,8 @@ fun UserRolesSection(
 
     Column(Modifier.fillMaxWidth()) {
         if (isSelf) {
-            Text(t("users.selfRolesLocked", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
-            Spacer(Modifier.height(8.dp))
+            Text(t("users.selfRolesLocked", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
         RoleCheckboxes(accessVm, selected.value, onToggle = { c ->
             if (!isSelf) {
@@ -49,14 +49,14 @@ fun UserRolesSection(
             }
         })
         if (error != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.sm))
             Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
         }
         if (!online) {
-            Spacer(Modifier.height(8.dp))
-            Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+            Spacer(Modifier.height(Tokens.Space.sm))
+            Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         PillButton(
             text = t("users.saveRoles", null),
             enabled = online && !busy && !isSelf,

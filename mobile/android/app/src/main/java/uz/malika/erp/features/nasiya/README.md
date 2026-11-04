@@ -46,7 +46,7 @@ same partner mirror — so there is no cross-slice import to duplicate.
   `FactRow`, `SubjectBlock`, `PartnerPicker`, `DueDatePicker` (single M3 date)
   stay slice-local (`NasiyaComponents.kt`).
 - Warm Card (ADR 0022): the status tabs are a scrolling chip row
-  (`ConsignmentsHeader.kt`; Out/Overdue carry live counts) — a fixed
+  (shared `TabChips`, wired in `ConsignmentsHeader.kt`; Out/Overdue carry live counts) — a fixed
   `SegmentedControl` inside `horizontalScroll` collapsed. Cards: partner +
   mono IMEI + due (danger when overdue) left, mono price + status pill right;
   settle/return are secondary pills on OUT rows, the one orange is `+`.

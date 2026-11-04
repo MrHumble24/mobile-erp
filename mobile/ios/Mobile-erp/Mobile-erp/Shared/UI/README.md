@@ -28,6 +28,9 @@ dressed.
   codes map `IN_STOCK→success`, `DEFECTIVE→danger`, `CONSIGNED→info`,
   `SOLD→sold`.
 - **SummaryTile / SummaryTileGrid** — stat tile on a card, value in mono.
+- **TabChips / TabChipItem** — tabs as a scrolling chip row (optional mono count
+  and hue per chip) where a fixed `SegmentedControl` would truncate three or more
+  labels. Promoted from the consignment slice when the users screen needed it.
 - **AppDateField** — a `DatePicker` in the kit field chrome (card fill, hairline,
   52 pt). Promoted from the consignment slice when the expense forms needed it.
 - **SheetTitleRow / SubjectBlock / FormErrorLine** (`SheetChrome.swift`) — the

@@ -15,6 +15,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppDataTable
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.Loading
+import uz.malika.erp.ui.theme.Tokens
 
 /** Read-only roles × permissions grid; a cell is checked when the role carries it. */
 @Composable
@@ -40,7 +41,7 @@ fun PermissionMatrixTab(accessVm: AccessViewModel) {
             if (col == 0) perm.code
             else if (roles[col - 1].permissionCodes.contains(perm.code)) "✓" else "—"
         },
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = Tokens.Space.screenH),
         stackOnCompact = false,
     )
 }

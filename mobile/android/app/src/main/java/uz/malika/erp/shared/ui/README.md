@@ -54,6 +54,9 @@ side by side in columns; each piece stacks as a full-width row. Wide windows
 - `StatusChip` — pill, labelMedium 12/600, a soft tint of the passed status hue as
   the background with the hue as the label (one argument carries both). Status
   meaning is owned by `DeviceStatusMeta.color` and the status tokens.
+- `TabChips` (`TabChips.kt`) — tabs as a scrolling chip row (optional mono count and
+  hue per chip) for the places a fixed `SegmentedControl` would truncate three or
+  more labels. Promoted from the nasiya slice when the users screen needed it.
 - `FactRow` / `SubjectBlock` (`DetailBlocks.kt`) — keyed fact row with a hairline, and
   the surface-2 subject block that heads a write sheet. Promoted from the nasiya slice
   when customers needed the same rows.

@@ -1,92 +1,57 @@
 import SwiftUI
 
-/// Roles tab: the role list with create / rename / delete. System roles are
-/// locked from deletion. Permission editing lives in the matrix tab. All writes
-/// need `role.manage` and are online-only.
+/// Roles tab: one card per role (name, mono code, description, permission
+/// count; system/custom pill). Tapping opens the edit sheet, which also holds
+/// delete for custom roles. Permission editing lives in the matrix tab. All
+/// writes need `role.manage` and are online-only.
 struct RolesListView: View {
     @Environment(I18n.self) private var i18n
     @Bindable var catalog: UsersCatalog
-
     @State private var createOpen = false
     @State private var editing: RoleView?
-    @State private var pendingDelete: RoleView?
 
     var body: some View {
-        List {
-            if let err = catalog.actionError {
-                Section {
-                    Label(err, systemImage: "exclamationmark.triangle")
-                        .font(.footnote).foregroundStyle(Tokens.danger)
-                }
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                if let err = catalog.actionError { FormErrorLine(message: err) }
+                ForEach(catalog.roles) { role in RoleCard(role: role) { editing = role } }
             }
-            Section {
-                ForEach(catalog.roles) { role in
-                    Button { editing = role } label: { RoleRow(role: role) }
-                        .buttonStyle(.plain)
-                        .swipeActions {
-                            if !role.isSystem {
-                                Button(i18n.t("common.delete"), role: .destructive) {
-                                    pendingDelete = role
-                                }
-                            }
-                        }
-                }
-            }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button { createOpen = true } label: { Image(systemName: "plus") }
+            ToolbarItem(placement: .primaryAction) {
+                Button { createOpen = true } label: { Label(i18n.t("users.newRole"), systemImage: "plus") }
             }
         }
         .sheet(isPresented: $createOpen) { CreateRoleSheet(catalog: catalog) }
         .sheet(item: $editing) { role in EditRoleSheet(catalog: catalog, role: role) }
-        .confirmationDialog(
-            i18n.t("users.confirmDeleteRole", ["role": pendingDelete?.name ?? ""]),
-            isPresented: Binding(get: { pendingDelete != nil },
-                                 set: { if !$0 { pendingDelete = nil } }),
-            titleVisibility: .visible
-        ) {
-            Button(i18n.t("common.delete"), role: .destructive) {
-                if let code = pendingDelete?.code { Task { await catalog.deleteRole(code) } }
-                pendingDelete = nil
-            }
-            Button(i18n.t("common.cancel"), role: .cancel) { pendingDelete = nil }
-        }
     }
 }
 
-/// One role row: code (mono), name, type badge, permission count.
-private struct RoleRow: View {
+private struct RoleCard: View {
     @Environment(I18n.self) private var i18n
     let role: RoleView
+    var onOpen: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(role.name)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(Tokens.ink)
-                Spacer()
-                StatusBadge(
-                    role.isSystem ? i18n.t("users.systemRole") : i18n.t("users.customRole"),
-                    color: role.isSystem ? Tokens.slate : Tokens.signalBlue)
-            }
-            Text(role.code)
-                .font(.mono(12))
-                .foregroundStyle(Tokens.muted)
-            if let description = role.description, !description.isEmpty {
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(Tokens.muted)
-            }
-            HStack {
-                Label("\(role.permissionCodes.count) \(i18n.t("users.permissionsCount", default: "permissions"))",
-                      systemImage: "lock.shield")
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(Tokens.muted)
+        AppCard {
+            HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(role.name).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                    Text(role.code).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    if let d = role.description, !d.isEmpty {
+                        Text(d).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                    }
+                    Text("\(i18n.t("users.permissionsCount")): \(role.permissionCodes.count)")
+                        .font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+                Spacer(minLength: Tokens.Space.sm)
+                StatusBadge(i18n.t(role.isSystem ? "users.systemRole" : "users.customRole"),
+                            color: role.isSystem ? Tokens.sold : Tokens.info)
             }
         }
-        .padding(.vertical, 4)
         .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
     }
 }

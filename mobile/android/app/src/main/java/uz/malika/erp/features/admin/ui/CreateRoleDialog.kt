@@ -1,6 +1,8 @@
 package uz.malika.erp.features.admin.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,23 +40,23 @@ fun CreateRoleDialog(accessVm: AccessViewModel, online: Boolean, onDismiss: () -
     val valid = code.isNotBlank() && name.isNotBlank()
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(t("users.newRole", null), style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(16.dp))
-            AppFormField(t("users.roleCode", null), code, { code = it }, placeholder = "CASHIER")
-            Spacer(Modifier.height(12.dp))
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(t("users.newRole", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.lg))
+            AppFormField(t("users.roleCode", null), code, { code = it.uppercase() }, placeholder = "CASHIER")
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("users.roleName", null), name, { name = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("users.description", null), description, { description = it })
             if (error != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.sm))
                 Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
             }
             if (!online) {
-                Spacer(Modifier.height(8.dp))
-                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+                Spacer(Modifier.height(Tokens.Space.sm))
+                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
             PillButton(
                 text = t("common.create", null),
                 enabled = valid && online && !busy,

@@ -37,6 +37,9 @@ import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.shared.ui.StatusChip
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /** Users list: summary, inline search + filter sheet, create, and a tappable card per user → detail sheet. */
@@ -54,12 +57,14 @@ fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessV
 
     val activeFilters = listOf(filters.role != null, filters.active != null).count { it }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = listBottomPadding()) {
-        item { UsersSummary(usersVm) }
-        item { Spacer(Modifier.height(Tokens.Space.section)) }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = listBottomPadding().calculateBottomPadding()),
+        verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg),
+    ) {
         item {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.section),
+                Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.screenH),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SearchFilterRow(
@@ -70,13 +75,12 @@ fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessV
                     onOpenFilters = { showFilters = true },
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(Modifier.width(Tokens.Space.gap))
                 IconButton(onClick = { createOpen = true }, enabled = online) {
-                    Icon(Icons.Outlined.PersonAddAlt1, contentDescription = t("users.newUser", null), tint = Tokens.foreground)
+                    Icon(Icons.Outlined.PersonAddAlt1, contentDescription = t("users.newUser", null), tint = Tokens.text)
                 }
             }
         }
-        item { Spacer(Modifier.height(Tokens.Space.gap)) }
+        item { UsersSummary(usersVm) }
         item {
             AsyncContent(users, onRetry = usersVm::load) { page ->
                 UsersList(page.items, onOpen = { detail = it })
@@ -109,10 +113,10 @@ fun UsersTab(container: AppContainer, usersVm: UsersViewModel, accessVm: AccessV
 private fun UsersList(list: List<UserDto>, onOpen: (UserDto) -> Unit) {
     val t = LocalT.current
     if (list.isEmpty()) {
-        EmptyView(t("common.notFound", null))
+        Box(Modifier.padding(horizontal = Tokens.Space.screenH)) { AppCard(Modifier.fillMaxWidth()) { EmptyView(t("common.notFound", null), compact = true) } }
         return
     }
-    Column(Modifier.padding(horizontal = Tokens.Space.section), verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
+    Column(Modifier.padding(horizontal = Tokens.Space.screenH), verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg)) {
         list.forEach { user -> UserCard(user, onClick = { onOpen(user) }) }
     }
 }
@@ -120,19 +124,19 @@ private fun UsersList(list: List<UserDto>, onOpen: (UserDto) -> Unit) {
 @Composable
 private fun UserCard(user: UserDto, onClick: () -> Unit) {
     val t = LocalT.current
-    AppCard(onClick = onClick) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    AppCard(Modifier.fillMaxWidth(), onClick = onClick) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
-                Text(user.displayName, style = MaterialTheme.typography.titleMedium)
-                Text(user.email, style = MaterialTheme.typography.bodySmall)
+                Text(user.displayName, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                Text(user.email, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
                 if (user.roles.isNotEmpty()) {
-                    Spacer(Modifier.height(Tokens.Space.rowV))
-                    Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.rowV)) {
-                        user.roles.take(3).forEach { StatusChip(it, color = Tokens.slate) }
+                    Spacer(Modifier.height(Tokens.Space.xs))
+                    Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.xs)) {
+                        user.roles.take(3).forEach { StatusChip(it, color = Tokens.sold) }
                     }
                 }
             }
-            Spacer(Modifier.width(Tokens.Space.section))
+            Spacer(Modifier.width(Tokens.Space.gap))
             StatusChip(
                 label = if (user.isActive) t("users.statusActive", null) else t("users.statusInactive", null),
                 color = if (user.isActive) Tokens.success else Tokens.danger,

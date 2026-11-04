@@ -1,16 +1,12 @@
 package uz.malika.erp.features.admin.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +20,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.admin.data.OverrideBody
@@ -34,8 +29,12 @@ import uz.malika.erp.features.admin.model.Async
 import uz.malika.erp.features.admin.model.UsersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import uz.malika.erp.shared.ui.SegmentOption
+import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.ui.theme.MonoFamily
 
 private enum class Choice { INHERIT, GRANT, REVOKE }
 
@@ -47,9 +46,9 @@ private fun sourceLabel(
     t: (String, Map<String, Any?>?) -> String,
 ): Pair<String, androidx.compose.ui.graphics.Color> = when {
     choice == Choice.GRANT -> t("users.sourceUserGrant", null) to Tokens.success
-    choice == Choice.REVOKE -> t("users.sourceUserRevoke", null) to Tokens.slate
-    roleCodes.isNotEmpty() -> t("users.sourceRoles", mapOf("roles" to roleCodes.joinToString(", "))) to Tokens.primary
-    else -> t("users.sourceNone", null) to Tokens.slate
+    choice == Choice.REVOKE -> t("users.sourceUserRevoke", null) to Tokens.danger
+    roleCodes.isNotEmpty() -> t("users.sourceRoles", mapOf("roles" to roleCodes.joinToString(", "))) to Tokens.info
+    else -> t("users.sourceNone", null) to Tokens.muted
 }
 
 /**
@@ -84,34 +83,41 @@ fun UserOverridesSection(
 
     Column(Modifier.fillMaxWidth()) {
         if (isSelf) {
-            Text(t("users.selfPermsLocked", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
-            Spacer(Modifier.height(8.dp))
+            Text(t("users.selfPermsLocked", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
         val perms = (permissions as? Async.Ok)?.value.orEmpty()
-        Column(Modifier.heightIn(max = 340.dp).verticalScroll(rememberScrollState())) {
+        // One surface-2 block per permission: mono code, its source, the three-way control.
+        Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
             perms.forEach { p ->
                 val choice = choices[p.code] ?: Choice.INHERIT
                 val source = sourceLabel(choice, roleGrants[p.code].orEmpty(), t)
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Column(
+                    Modifier.fillMaxWidth()
+                        .background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls))
+                        .padding(Tokens.Space.md),
+                    verticalArrangement = Arrangement.spacedBy(Tokens.Space.sm),
                 ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(p.code, style = MaterialTheme.typography.bodySmall)
-                        StatusChip(source.first, color = source.second)
-                    }
-                    ChoiceChip(t("users.overrideInherit", null), choice == Choice.INHERIT, Tokens.slate, isSelf) { choices[p.code] = Choice.INHERIT }
-                    ChoiceChip(t("users.overrideGrant", null), choice == Choice.GRANT, Tokens.success, isSelf) { choices[p.code] = Choice.GRANT }
-                    ChoiceChip(t("users.overrideRevoke", null), choice == Choice.REVOKE, Tokens.danger, isSelf) { choices[p.code] = Choice.REVOKE }
+                    Text(p.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                    Text(source.first, style = MaterialTheme.typography.bodySmall, color = source.second)
+                    SegmentedControl(
+                        options = listOf(
+                            SegmentOption(Choice.INHERIT, t("users.overrideInherit", null)),
+                            SegmentOption(Choice.GRANT, t("users.overrideGrant", null)),
+                            SegmentOption(Choice.REVOKE, t("users.overrideRevoke", null)),
+                        ),
+                        selected = choice,
+                        onSelect = { if (!isSelf) choices[p.code] = it },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
         }
         if (error != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.sm))
             Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         PillButton(
             text = t("users.saveMatrix", null),
             enabled = online && !busy && !isSelf,
@@ -135,11 +141,4 @@ fun UserOverridesSection(
     }
 }
 
-@Composable
-private fun ChoiceChip(label: String, selected: Boolean, color: androidx.compose.ui.graphics.Color, locked: Boolean, onClick: () -> Unit) {
-    StatusChip(
-        label = label,
-        color = if (selected) color else Tokens.border,
-        modifier = if (locked) Modifier else Modifier.clickable(onClick = onClick),
-    )
-}
+

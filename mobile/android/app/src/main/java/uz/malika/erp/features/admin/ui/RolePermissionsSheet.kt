@@ -31,6 +31,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
+import uz.malika.erp.ui.theme.MonoFamily
 
 /** Checkbox grid of all permissions (grouped by resource) for one role. Save replaces. */
 @Composable
@@ -43,25 +44,24 @@ fun RolePermissionsSheet(accessVm: AccessViewModel, role: RoleDto, online: Boole
     var error by remember { mutableStateOf<String?>(null) }
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(role.name, style = MaterialTheme.typography.titleMedium)
-            Text(role.code, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(12.dp))
-
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(role.name, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Text(role.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
+            Spacer(Modifier.height(Tokens.Space.md))
             val perms = (permissions as? Async.Ok)?.value.orEmpty()
-            Column(Modifier.heightIn(max = 380.dp).verticalScroll(rememberScrollState())) {
+            Column {
                 perms.groupBy { it.resource }.forEach { (resource, group) ->
-                    Text(resource.uppercase(), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+                    Text(resource.uppercase(), style = MaterialTheme.typography.labelLarge, color = Tokens.muted, modifier = Modifier.padding(top = Tokens.Space.md, bottom = Tokens.Space.xs))
                     group.forEach { p ->
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
                             AdminCheckbox(
                                 checked = selected[p.code] == true,
                                 onCheckedChange = { on -> selected[p.code] = on },
                             )
                             Column {
-                                Text(p.code, style = MaterialTheme.typography.bodyMedium)
+                                Text(p.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                                 p.description?.takeIf { it.isNotBlank() }?.let {
-                                    Text(it, style = MaterialTheme.typography.bodySmall)
+                                    Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                                 }
                             }
                         }
@@ -69,14 +69,14 @@ fun RolePermissionsSheet(accessVm: AccessViewModel, role: RoleDto, online: Boole
                 }
             }
             if (error != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.sm))
                 Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
             }
             if (!online) {
-                Spacer(Modifier.height(8.dp))
-                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+                Spacer(Modifier.height(Tokens.Space.sm))
+                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             PillButton(
                 text = t("users.saveMatrix", null),
                 enabled = online && !busy,

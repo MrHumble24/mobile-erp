@@ -1,6 +1,8 @@
 package uz.malika.erp.features.admin.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +28,7 @@ import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
+import uz.malika.erp.ui.theme.MonoFamily
 
 /** Reset a user's password (min 8, confirm must match). Online-only POST. */
 @Composable
@@ -40,30 +43,30 @@ fun ResetPasswordDialog(usersVm: UsersViewModel, user: UserDto, online: Boolean,
     val valid = password.length >= 8 && password == confirm
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(t("users.resetPassword", null), style = MaterialTheme.typography.titleMedium)
-            Text(user.email, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(16.dp))
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(t("users.resetPassword", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Text(user.email, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
+            Spacer(Modifier.height(Tokens.Space.lg))
             AppFormField(
                 t("users.newPassword", null), password, { password = it },
                 keyboardType = KeyboardType.Password,
                 visualTransformation = PasswordVisualTransformation(),
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(
                 t("users.confirmPassword", null), confirm, { confirm = it },
                 keyboardType = KeyboardType.Password,
                 visualTransformation = PasswordVisualTransformation(),
             )
             if (error != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.sm))
                 Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
             }
             if (!online) {
-                Spacer(Modifier.height(8.dp))
-                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+                Spacer(Modifier.height(Tokens.Space.sm))
+                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
             PillButton(
                 text = t("users.resetPassword", null),
                 enabled = valid && online && !busy,

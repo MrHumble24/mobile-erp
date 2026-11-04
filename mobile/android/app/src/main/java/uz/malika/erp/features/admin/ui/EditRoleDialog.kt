@@ -24,6 +24,11 @@ import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import uz.malika.erp.shared.ui.AppConfirmDialog
+import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.SubjectBlock
 
 /** Rename a role (name + description). The code is immutable. Online-only PATCH. */
 @Composable
@@ -34,24 +39,25 @@ fun EditRoleDialog(accessVm: AccessViewModel, role: RoleDto, online: Boolean, on
     var description by remember { mutableStateOf(role.description ?: "") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-
+    var confirmDelete by remember { mutableStateOf(false) }
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(t("users.editRole", null), style = MaterialTheme.typography.titleMedium)
-            Text(role.code, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(16.dp))
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(t("users.editRole", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.lg))
+            SubjectBlock(t("users.roleCode", null), role.code)
+            Spacer(Modifier.height(Tokens.Space.lg))
             AppFormField(t("users.roleName", null), name, { name = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("users.description", null), description, { description = it })
             if (error != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.sm))
                 Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
             }
             if (!online) {
-                Spacer(Modifier.height(8.dp))
-                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+                Spacer(Modifier.height(Tokens.Space.sm))
+                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
             PillButton(
                 text = t("common.save", null),
                 enabled = name.isNotBlank() && online && !busy,
@@ -70,6 +76,43 @@ fun EditRoleDialog(accessVm: AccessViewModel, role: RoleDto, online: Boolean, on
                     }
                 },
             )
+            Spacer(Modifier.height(Tokens.Space.sm))
+            if (role.isSystem) {
+                Text(t("users.systemRoleLocked", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            } else {
+                PillButton(
+                    text = t("common.delete", null),
+                    variant = ButtonVariant.DESTRUCTIVE,
+                    enabled = online && !busy,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { confirmDelete = true },
+                )
+            }
         }
+    }
+    if (confirmDelete) {
+        AppConfirmDialog(
+            title = t("common.delete", null),
+            message = t("users.confirmDeleteRole", mapOf("role" to role.name)),
+            confirmLabel = t("common.delete", null),
+            cancelLabel = t("common.cancel", null),
+            destructive = true,
+            onConfirm = {
+                confirmDelete = false
+                scope.launch {
+                    try {
+                        accessVm.delete(role.code)
+                        onDismiss()
+                    } catch (e: AppException) {
+                        // ponytail: scrape the count from the 409 message ("assigned to N user(s)");
+                        // upgrade to a structured error field if the envelope ever exposes one.
+                        error = if (e.statusCode == 409) {
+                            t("users.roleInUse", mapOf("count" to (Regex("\\d+").find(e.message)?.value ?: "0")))
+                        } else e.message
+                    }
+                }
+            },
+            onDismiss = { confirmDelete = false },
+        )
     }
 }

@@ -153,9 +153,7 @@ struct ConsignmentsView: View {
     }
 }
 
-/// The status tabs as a scrolling chip row (five labels would truncate in a
-/// segmented control). Selected = status hue pair; Out and Overdue carry their
-/// live counts in mono.
+/// The status tabs on the kit chip row; Out and Overdue carry their live counts.
 private struct ConsignmentStatusChips: View {
     @Environment(I18n.self) private var i18n
     @Binding var selection: ConsignmentStatusFilter
@@ -164,37 +162,10 @@ private struct ConsignmentStatusChips: View {
     let onChange: () -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Tokens.Space.sm) {
-                ForEach(ConsignmentStatusFilter.allCases) { status in
-                    chip(status)
-                }
-            }
-            .padding(.horizontal, Tokens.Space.gutter)
-        }
-    }
-
-    private func chip(_ status: ConsignmentStatusFilter) -> some View {
-        let selected = status == selection
-        let hue = hue(status)
-        let count: Int? = status == .out ? open : status == .overdue ? overdue : nil
-        return Button {
-            guard !selected else { return }
-            Haptic.tick.play()
-            selection = status
-            onChange()
-        } label: {
-            HStack(spacing: Tokens.Space.sm) {
-                Text(i18n.t(status.labelKey)).font(.ui(.label)).foregroundStyle(selected ? hue : Tokens.muted).lineLimit(1)
-                if let count {
-                    Text("\(count)").font(.mono(12, weight: .semibold)).foregroundStyle(selected ? hue : Tokens.text)
-                }
-            }
-            .padding(.horizontal, Tokens.Space.lg)
-            .frame(height: 40)
-            .background(selected ? hue.opacity(0.14) : Tokens.card, in: Capsule())
-        }
-        .buttonStyle(.plain)
+        TabChips(selection: $selection, items: ConsignmentStatusFilter.allCases.map { status in
+            TabChipItem(value: status, label: i18n.t(status.labelKey),
+                        count: status == .out ? open : status == .overdue ? overdue : nil, hue: hue(status))
+        }, onChange: onChange)
     }
 
     private func hue(_ status: ConsignmentStatusFilter) -> Color {

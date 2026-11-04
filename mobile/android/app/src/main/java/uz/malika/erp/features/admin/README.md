@@ -41,3 +41,16 @@ all three nav items and routes.
   `UserFilterSheet` (built on the kit `FilterSheet`), not on the screen. New-user
   is a single icon action. The filter badge counts non-default facets; reset
   (`UsersViewModel.reset`) clears search + facets. (`UserFilters.kt` was removed.)
+
+## Warm Card (ADR 0022) — Users
+- `UsersScreen` switches Users / Roles / Permission matrix with the shared
+  `TabChips` row (the three labels truncate in a segmented control). The users
+  tab is search + new-user icon, the `MetricGrid` list-card and user cards
+  (name, mono email, sold-tint role pills, status pill). The detail sheet is
+  title + mono email + status pill, deactivate (destructive) / reactivate
+  (secondary) / reset password (ghost), then Profile / Roles / Overrides under a
+  `SegmentedControl` (`users.tabRoles`); each override is a surface-2 block with
+  a three-way `SegmentedControl`. Role delete moved from the role card into
+  `EditRoleDialog` (destructive pill + confirm); role cards keep perms + edit as
+  secondary pills and a system/custom pill. The filter sheet's role facet is an
+  `AppSelect`. All sheets use gutter padding, titleLarge titles and kit tokens.

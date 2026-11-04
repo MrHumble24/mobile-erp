@@ -43,7 +43,7 @@ Add both to `FeatureRegistry.all`. Nothing else in `App/` changes.
 - Both screens are `ScrollView` + `AppCard` rows on the ground, titled by the
   nav key (`nav.consignments` / `nav.partners`), with the system search bar and
   filter / new / CSV in the toolbar. The consignment status tabs are a chip row
-  (`ConsignmentStatusChips`, Out/Overdue with live counts); the period filter
+  (`ConsignmentStatusChips` on the shared `TabChips`, Out/Overdue with live counts); the period filter
   is a kit `FilterSheet`; the summary is a `MetricList`.
 - Every sheet (detail, consign, settle, return, payment, partner form, partner
   detail) is the kit sheet: `SheetTitleRow`, a surface-2 `SubjectBlock`,

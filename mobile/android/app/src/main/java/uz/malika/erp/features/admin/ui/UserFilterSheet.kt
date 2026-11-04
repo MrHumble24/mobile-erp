@@ -1,11 +1,6 @@
 package uz.malika.erp.features.admin.ui
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.admin.data.RoleDto
@@ -13,8 +8,8 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.FilterSheet
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
-import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
+import uz.malika.erp.shared.ui.AppSelect
 
 private enum class ActiveFilter { ALL, ACTIVE, INACTIVE }
 
@@ -65,22 +60,15 @@ fun UserFilterSheet(
             modifier = Modifier.fillMaxWidth(),
         )
         if (roles.isNotEmpty()) {
-            Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(Tokens.Space.gap),
-            ) {
-                RoleFilterChip(t("common.all", null), role == null) { onRole(null) }
-                roles.forEach { r -> RoleFilterChip(r.name, role == r.code) { onRole(r.code) } }
-            }
+            AppSelect(
+                value = roles.firstOrNull { it.code == role },
+                options = roles,
+                optionLabel = { it.name },
+                onSelect = { onRole(it?.code) },
+                label = t("users.filterRole", null),
+                placeholder = t("common.all", null),
+                nullOption = t("common.all", null),
+            )
         }
     }
-}
-
-@Composable
-private fun RoleFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    StatusChip(
-        label = label,
-        color = if (selected) Tokens.primary else Tokens.slate,
-        modifier = Modifier.clickable(onClick = onClick),
-    )
 }

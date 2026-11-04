@@ -31,6 +31,10 @@ import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.ui.theme.MonoFamily
 
 private enum class DetailSection { PROFILE, ROLES, PERMISSIONS }
 
@@ -54,26 +58,29 @@ fun UserDetailSheet(
     var resetOpen by remember { mutableStateOf(false) }
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
-            Text(user.displayName, style = MaterialTheme.typography.titleMedium)
-            Text(user.email, style = MaterialTheme.typography.bodySmall)
-            Spacer(Modifier.height(12.dp))
-
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(user.displayName, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Text(user.email, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.sm))
+            StatusChip(
+                label = if (user.isActive) t("users.statusActive", null) else t("users.statusInactive", null),
+                color = if (user.isActive) Tokens.success else Tokens.danger,
+            )
+            Spacer(Modifier.height(Tokens.Space.lg))
             StatusActions(usersVm, user, isSelf, online, onResetPassword = { resetOpen = true })
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
 
             SegmentedControl(
                 options = listOf(
                     SegmentOption(DetailSection.PROFILE, t("users.tabProfile", null)),
-                    SegmentOption(DetailSection.ROLES, t("users.roles", null)),
+                    SegmentOption(DetailSection.ROLES, t("users.tabRoles", null)),
                     SegmentOption(DetailSection.PERMISSIONS, t("users.tabOverrides", null)),
                 ),
                 selected = section,
                 onSelect = { section = it },
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(16.dp))
-
+            Spacer(Modifier.height(Tokens.Space.lg))
             when (section) {
                 DetailSection.PROFILE -> UserProfileSection(usersVm, user, online)
                 DetailSection.ROLES -> UserRolesSection(usersVm, accessVm, user, isSelf, online)
@@ -100,10 +107,11 @@ private fun StatusActions(
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
         PillButton(
             text = if (user.isActive) t("users.deactivate", null) else t("users.reactivate", null),
-            variant = if (user.isActive) ButtonVariant.DESTRUCTIVE else ButtonVariant.OUTLINE,
+            variant = if (user.isActive) ButtonVariant.DESTRUCTIVE else ButtonVariant.SECONDARY,
+            modifier = Modifier.weight(1f),
             // self-lock: cannot deactivate your own active account
             enabled = online && !busy && !(isSelf && user.isActive),
             onClick = {
@@ -121,13 +129,14 @@ private fun StatusActions(
         )
         PillButton(
             text = t("users.resetPassword", null),
-            variant = ButtonVariant.OUTLINE,
+            variant = ButtonVariant.GHOST,
             enabled = online,
             onClick = onResetPassword,
+            modifier = Modifier.weight(1f),
         )
     }
     if (error != null) {
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(Tokens.Space.sm))
         Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
     }
 }

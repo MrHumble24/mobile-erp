@@ -16,8 +16,9 @@ import uz.malika.erp.features.admin.model.AccessViewModel
 import uz.malika.erp.features.admin.model.UsersViewModel
 import uz.malika.erp.features.admin.model.adminViewModelFactory
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.TabChipItem
+import uz.malika.erp.shared.ui.TabChips
+import uz.malika.erp.ui.theme.Tokens
 
 private enum class UsersSection { USERS, ROLES, MATRIX }
 
@@ -35,15 +36,15 @@ fun UsersScreen(container: AppContainer) {
     var section by remember { mutableStateOf(UsersSection.USERS) }
 
     Column(Modifier.fillMaxSize()) {
-        SegmentedControl(
-            options = listOf(
-                SegmentOption(UsersSection.USERS, t("users.tabUsers", null)),
-                SegmentOption(UsersSection.ROLES, t("users.tabRoles", null)),
-                SegmentOption(UsersSection.MATRIX, t("users.tabPermissions", null)),
+        TabChips(
+            items = listOf(
+                TabChipItem(UsersSection.USERS, t("users.tabUsers", null)),
+                TabChipItem(UsersSection.ROLES, t("users.tabRoles", null)),
+                TabChipItem(UsersSection.MATRIX, t("users.tabPermissions", null)),
             ),
             selected = section,
             onSelect = { section = it },
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(vertical = Tokens.Space.md),
         )
         when (section) {
             UsersSection.USERS -> UsersTab(container, usersVm, accessVm)

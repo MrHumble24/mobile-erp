@@ -12,6 +12,7 @@ import uz.malika.erp.features.admin.model.UsersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
+import uz.malika.erp.ui.theme.Tokens
 
 /** Summary metric cards for the users list (total / active / inactive). */
 @Composable
@@ -21,7 +22,7 @@ fun UsersSummary(vm: UsersViewModel) {
     val data = (stats as? Async.Ok)?.value ?: return
 
     MetricGrid(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.screenH),
         perRow = 3,
         tiles = listOf(
             { m -> MetricTile(t("users.statTotal", null), data.total.toString(), m, money = false) },

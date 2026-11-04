@@ -41,21 +41,21 @@ fun UserProfileSection(usersVm: UsersViewModel, user: UserDto, online: Boolean) 
 
     Column(Modifier.fillMaxWidth()) {
         AppFormField(t("users.firstName", null), firstName, { firstName = it })
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(t("users.lastName", null), lastName, { lastName = it })
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(t("common.phone", null), phone, { phone = it }, keyboardType = KeyboardType.Phone)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(t("users.telegramHandle", null), telegram, { telegram = it })
         if (message != null) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.sm))
             Text(message!!, style = MaterialTheme.typography.bodySmall, color = if (isError) Tokens.danger else Tokens.success)
         }
         if (!online) {
-            Spacer(Modifier.height(8.dp))
-            Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+            Spacer(Modifier.height(Tokens.Space.sm))
+            Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         PillButton(
             text = t("users.saveProfile", null),
             enabled = online && !busy && firstName.isNotBlank(),

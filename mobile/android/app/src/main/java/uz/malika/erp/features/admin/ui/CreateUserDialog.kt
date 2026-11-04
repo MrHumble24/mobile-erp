@@ -53,33 +53,33 @@ fun CreateUserDialog(
     val valid = firstName.isNotBlank() && email.isNotBlank() && password.length >= 8
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
-            Text(t("users.newUser", null), style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(16.dp))
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
+            Text(t("users.newUser", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.lg))
             AppFormField(t("users.fullName", null), firstName, { firstName = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("common.phone", null), phone, { phone = it }, placeholder = "+99890...", keyboardType = KeyboardType.Phone)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("users.email", null), email, { email = it }, keyboardType = KeyboardType.Email)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(
                 t("users.password", null), password, { password = it },
                 keyboardType = KeyboardType.Password,
                 visualTransformation = PasswordVisualTransformation(),
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
             RoleCheckboxes(accessVm, roles.value, onToggle = { c ->
                 roles.value = if (roles.value.contains(c)) roles.value - c else roles.value + c
             })
             if (error != null) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Tokens.Space.sm))
                 Text(error!!, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)
             }
             if (!online) {
-                Spacer(Modifier.height(8.dp))
-                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+                Spacer(Modifier.height(Tokens.Space.sm))
+                Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
             PillButton(
                 text = t("common.create", null),
                 enabled = valid && online && !busy,
