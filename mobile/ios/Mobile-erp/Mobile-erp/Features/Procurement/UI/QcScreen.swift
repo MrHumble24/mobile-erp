@@ -1,64 +1,55 @@
 import SwiftUI
 
-/// `/qc` root — dedicated hub for Quality Control.
-/// Provides a fast IMEI scanner and dedicated sub-pages for Queue, Inspections History,
-/// QC Statistics, and Reference Data (Lookups).
+/// `/qc` root: the scan field, then three segments (queue / inspections /
+/// stats) rendered inline — the Android `QcScreen`. The reference data
+/// (grades, defect types) is a manager-only sub-page reached from a link card
+/// under the queue, not a fourth segment: four labels truncate at phone width.
 /// Mounted behind `qc.read` by the shell.
 struct QcScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @State private var scanned: ScannedImei?
     @State private var refresh = UUID()
+    @State private var tab: QcTab = .queue
+
+    private enum QcTab: Hashable { case queue, inspections, stats }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Quick Scan Header
-                ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { scanned = ScannedImei(imei: $0) }
-
-                // Dedicated Sub-Pages Navigation
-                VStack(spacing: 12) {
-                    QcNavCard(
-                        title: i18n.t("qc.tabQueue", default: "Tekshiruv navbati"),
-                        subtitle: i18n.t("qc.queueSubtitle", default: "Tekshirilishi kerak bo'lgan yangi qurilmalar"),
-                        icon: "clock.badge.checkmark",
-                        iconColor: Tokens.signalBlue,
-                        destination: QcQueueView(refresh: refresh) { refresh = UUID() }
-                    )
-
-                    QcNavCard(
-                        title: i18n.t("qc.tabInspections", default: "Tekshiruvlar tarixi"),
-                        subtitle: i18n.t("qc.inspectionsSubtitle", default: "O'tkazilgan tekshiruvlar va ularning natijalari"),
-                        icon: "doc.text.magnifyingglass",
-                        iconColor: Tokens.success,
-                        destination: QcInspectionsView(refresh: refresh)
-                    )
-
-                    QcNavCard(
-                        title: i18n.t("qc.tabStats", default: "QC Statistikasi"),
-                        subtitle: i18n.t("qc.statsSubtitle", default: "Sifat ko'rsatkichlari va nuqsonlar tahlili"),
-                        icon: "chart.bar.xaxis",
-                        iconColor: Tokens.info,
-                        destination: QcStatsView(refresh: refresh)
-                    )
-
+        VStack(spacing: Tokens.Space.md) {
+            ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { scanned = ScannedImei(imei: $0) }
+            SegmentedControl(selection: $tab, segments: [
+                (.queue, i18n.t("qc.tabQueue")),
+                (.inspections, i18n.t("qc.tabInspections")),
+                (.stats, i18n.t("qc.tabStats")),
+            ])
+            switch tab {
+            case .queue:
+                QcQueueView(refresh: refresh, onGraded: { refresh = UUID() }) {
                     if container.session.can("settings.manage") {
-                        QcNavCard(
-                            title: i18n.t("qc.tabLookups", default: "Ma'lumotnomalar"),
-                            subtitle: i18n.t("qc.lookupsSubtitle", default: "Holat darajalari va nuqson turlari boshqaruvi"),
-                            icon: "slider.horizontal.3",
-                            iconColor: Tokens.warning,
-                            destination: QcLookupsView()
-                        )
+                        NavigationLink { QcLookupsView() } label: {
+                            AppCard {
+                                HStack(spacing: Tokens.Space.sm) {
+                                    Text(i18n.t("qc.tabLookups")).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                                    Spacer(minLength: Tokens.Space.sm)
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Tokens.muted)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
+            case .inspections:
+                QcInspectionsView(refresh: refresh)
+            case .stats:
+                QcStatsView(refresh: refresh)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 12)
         }
-        .background(Tokens.bg)
+        .padding(.horizontal, Tokens.Space.gutter)
+        .padding(.top, Tokens.Space.md)
+        .background(Tokens.ground)
         .navigationTitle(i18n.t("nav.qc"))
-        .navigationBarTitleDisplayMode(.inline)
         .task {
             #if DEBUG
             ProcurementSelfCheck.runOnce()
@@ -66,7 +57,20 @@ struct QcScreen: View {
         }
         .onAppear(perform: consumeRoute)
         .onChange(of: container.router.pending) { consumeRoute() }
-        .sheet(item: $scanned) { s in
+        #if DEBUG
+        // Screenshot helpers: `-openTab inspections|stats`, `-openQcImei <imei>`.
+        .onAppear {
+            switch UserDefaults.standard.string(forKey: "openTab") {
+            case "inspections": tab = .inspections
+            case "stats": tab = .stats
+            default: break
+            }
+            if let imei = UserDefaults.standard.string(forKey: "openQcImei"), scanned == nil {
+                scanned = ScannedImei(imei: imei)
+            }
+        }
+        #endif
+        .appSheet(item: $scanned) { s in
             GradeDeviceSheet(imei: s.imei) { refresh = UUID() }
         }
     }
@@ -76,46 +80,6 @@ struct QcScreen: View {
         if case let .qc(imei)? = container.router.consume("qc"), let imei {
             scanned = ScannedImei(imei: imei)
         }
-    }
-}
-
-/// A roomy, single-column navigation card linking to a dedicated sub-page.
-private struct QcNavCard<Destination: View>: View {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let iconColor: Color
-    let destination: Destination
-
-    var body: some View {
-        NavigationLink(destination: destination) {
-            AppCard(padding: 16) {
-                HStack(spacing: 14) {
-                    Image(systemName: icon)
-                        .font(.title2.weight(.medium))
-                        .foregroundStyle(iconColor)
-                        .frame(width: 48, height: 48)
-                        .background(iconColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(title)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(Tokens.ink)
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(Tokens.muted)
-                            .lineLimit(2)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Color(.tertiaryLabel))
-                }
-            }
-        }
-        .buttonStyle(.plain)
     }
 }
 

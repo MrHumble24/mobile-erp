@@ -29,7 +29,7 @@ struct AppShell: View {
                 // Screenshot helper: `-open home|pos|sales|inventory|shipments|more`.
                 if let open = UserDefaults.standard.string(forKey: "open"),
                    let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
-                             "inventory": "inventory", "shipments": "shipments",
+                             "inventory": "inventory", "shipments": "shipments", "qc": "qc",
                              "more": MoreTab.id][open] {
                     container.router.selection = id
                 }

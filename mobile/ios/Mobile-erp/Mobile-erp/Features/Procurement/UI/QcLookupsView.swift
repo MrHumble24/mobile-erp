@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// Manage QC grades and defect types (ADR 0014). Writes need `settings.manage`;
-/// the active-only toggle filters inactive rows.
+/// Manage QC grades and defect types (ADR 0014): two card sections of rows
+/// (label, mono code, sold-grey pill when inactive), each with a secondary add
+/// pill; tap a row to edit. Writes need `settings.manage`. The active-only /
+/// all switch is an inline segmented control.
 struct QcLookupsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -13,34 +15,31 @@ struct QcLookupsView: View {
     private var canManage: Bool { container.session.can("settings.manage") }
 
     var body: some View {
-        List {
-            LookupSection(kind: "grades", title: i18n.t("qc.grades"),
-                          includeInactive: includeInactive, canManage: canManage,
-                          reloadToken: reloadToken,
-                          onAdd: { form = LookupFormTarget(kind: "grades", existing: nil) },
-                          onEdit: { form = LookupFormTarget(kind: "grades", existing: $0) })
-            LookupSection(kind: "defect-types", title: i18n.t("qc.defectTypes"),
-                          includeInactive: includeInactive, canManage: canManage,
-                          reloadToken: reloadToken,
-                          onAdd: { form = LookupFormTarget(kind: "defect-types", existing: nil) },
-                          onEdit: { form = LookupFormTarget(kind: "defect-types", existing: $0) })
-        }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
-        .navigationTitle(i18n.t("qc.tabLookups", default: "Ma'lumotnomalar"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Toggle(i18n.t("qc.showInactive", default: "Show Inactive"), isOn: $includeInactive)
-                } label: {
-                    Image(systemName: includeInactive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-                }
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                SegmentedControl(selection: $includeInactive, segments: [
+                    (false, i18n.t("qc.active")),
+                    (true, i18n.t("common.all")),
+                ])
+                LookupSection(kind: "grades", title: i18n.t("qc.grades"),
+                              includeInactive: includeInactive, canManage: canManage,
+                              reloadToken: reloadToken,
+                              onAdd: { form = LookupFormTarget(kind: "grades", existing: nil) },
+                              onEdit: { form = LookupFormTarget(kind: "grades", existing: $0) })
+                LookupSection(kind: "defect-types", title: i18n.t("qc.defectTypes"),
+                              includeInactive: includeInactive, canManage: canManage,
+                              reloadToken: reloadToken,
+                              onAdd: { form = LookupFormTarget(kind: "defect-types", existing: nil) },
+                              onEdit: { form = LookupFormTarget(kind: "defect-types", existing: $0) })
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.vertical, Tokens.Space.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .sheet(item: $form, onDismiss: { reloadToken = UUID() }) { target in
+        .background(Tokens.ground)
+        .navigationTitle(i18n.t("qc.tabLookups"))
+        .navigationBarTitleDisplayMode(.inline)
+        .appSheet(item: $form, onDismiss: { reloadToken = UUID() }) { target in
             LookupFormSheet(kind: target.kind, existing: target.existing)
         }
     }
@@ -68,25 +67,31 @@ private struct LookupSection: View {
     @State private var store: AsyncStore<[Lookup]>?
 
     var body: some View {
-        Section {
-            if let store {
-                LoadableView(state: store.state, retry: reload) { rows in
-                    if rows.isEmpty {
-                        Text(i18n.t("common.notFound")).foregroundStyle(Tokens.muted)
-                    } else {
-                        ForEach(rows) { row in LookupRow(row: row, canManage: canManage) { onEdit(row) } }
-                    }
-                }
-            } else {
-                LoadingView()
-            }
-        } header: {
+        VStack(alignment: .leading, spacing: Tokens.Space.md) {
             HStack {
-                Text(title)
+                Text(title).font(.ui(.heading)).foregroundStyle(Tokens.text)
                 Spacer()
                 if canManage {
-                    Button(action: onAdd) { Label(i18n.t("common.add"), systemImage: "plus") }
-                        .font(.caption)
+                    Button(i18n.t("common.add"), action: onAdd).buttonStyle(.pillSecondary)
+                }
+            }
+            AppCard(padding: 0) {
+                if let store {
+                    LoadableView(state: store.state, retry: reload) { rows in
+                        if rows.isEmpty {
+                            Text(i18n.t("common.notFound")).font(.ui(.body)).foregroundStyle(Tokens.muted)
+                                .padding(Tokens.Space.cardPad)
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(Array(rows.enumerated()), id: \.element.id) { i, row in
+                                    LookupRow(row: row, canManage: canManage) { onEdit(row) }
+                                    if i < rows.count - 1 { Divider().overlay(Tokens.border).padding(.horizontal, Tokens.Space.cardPad) }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LoadingView().frame(height: 80)
                 }
             }
         }
@@ -114,24 +119,24 @@ private struct LookupRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(row.label)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(Tokens.ink)
-                Text(row.code)
-                    .font(.mono(12))
-                    .foregroundStyle(Tokens.muted)
+        Button(action: { if canManage { onTap() } }) {
+            HStack(spacing: Tokens.Space.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(row.label).font(.ui(.body)).foregroundStyle(Tokens.text)
+                    Text(row.code).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                }
+                Spacer(minLength: Tokens.Space.sm)
+                if !row.isActive {
+                    StatusBadge(i18n.t("common.no"), color: Tokens.sold)
+                } else if canManage {
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Tokens.muted)
+                }
             }
-            Spacer()
-            if !row.isActive {
-                StatusBadge(i18n.t("common.no", default: "Inactive"), color: Tokens.ash)
-            } else if canManage {
-                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
-            }
+            .frame(minHeight: Tokens.Space.minTouch)
+            .padding(.horizontal, Tokens.Space.cardPad)
+            .padding(.vertical, Tokens.Space.sm)
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, 3)
-        .contentShape(Rectangle())
-        .onTapGesture { if canManage { onTap() } }
+        .buttonStyle(.plain)
     }
 }

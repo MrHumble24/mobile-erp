@@ -1,19 +1,18 @@
 package uz.malika.erp.features.procurement.ui
 import uz.malika.erp.shared.ui.AppSelect
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckBox
-import androidx.compose.material.icons.outlined.CheckBoxOutlineBlank
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +39,7 @@ import uz.malika.erp.features.procurement.model.AsyncContent
 import uz.malika.erp.features.procurement.model.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.AppCheckbox
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
@@ -64,7 +63,7 @@ fun GradeDeviceSheet(
         GradeInputs(repo.deviceByImei(imei), repo.lookups("grades", false), repo.lookups("defect-types", false))
     }
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(Tokens.Space.gutter)) {
             AsyncContent(loaded) { GradeForm(it, online, repo, toaster, onSaved, onDismiss) }
         }
     }
@@ -121,13 +120,18 @@ private fun GradeForm(
     }
 
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        Text(t("qc.runInspection", null), style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.height(8.dp))
-        AppCard {
+        Text(t("qc.runInspection", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.md))
+        // The unit under inspection: a surface-2 block, never a card nested in the sheet.
+        Column(
+            Modifier.fillMaxWidth()
+                .background(Tokens.surface2, RoundedCornerShape(Tokens.Radius.controls))
+                .padding(Tokens.Space.lg),
+        ) {
+            Text(inputs.device.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
             ImeiText(inputs.device.imei, style = MaterialTheme.typography.bodyMedium)
-            Text(inputs.device.modelLabel, style = MaterialTheme.typography.bodySmall)
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         SegmentedControl(
             options = listOf(
                 SegmentOption(true, t("qc.passed", null)),
@@ -136,7 +140,7 @@ private fun GradeForm(
             selected = passed,
             onSelect = { passed = it },
         )
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         AppSelect(
             label = t("qc.grade", null),
             value = grade,
@@ -145,15 +149,15 @@ private fun GradeForm(
             onSelect = { grade = it },
             placeholder = t("qc.selectGrade", null),
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(t("qc.batteryHealth", null), battery, { battery = it }, keyboardType = KeyboardType.Number)
         if (canCost) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("qc.repairCostEstimate", null), repairCost, { repairCost = it }, keyboardType = KeyboardType.Decimal)
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(t("common.notes", null), notes, { notes = it })
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         DefectsChecklist(
             defects = inputs.defects,
             selected = selected,
@@ -165,17 +169,17 @@ private fun GradeForm(
             },
         )
         error?.let {
-            Spacer(Modifier.height(12.dp))
-            Text(it, color = Tokens.destructive, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(Tokens.Space.md))
+            Text(it, color = Tokens.danger, style = MaterialTheme.typography.bodySmall)
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(Tokens.Space.gutter))
         PillButton(
             text = t(if (busy) "common.loading" else "common.save", null),
             onClick = ::submit,
             enabled = !busy,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.sm))
     }
 }
 
@@ -189,36 +193,34 @@ private fun DefectsChecklist(
 ) {
     val t = LocalT.current
     if (defects.isEmpty()) return
-    val color = if (hasError) Tokens.destructive else Tokens.foreground
     Column {
-        Text(t("qc.defects", null), style = MaterialTheme.typography.labelLarge, color = color)
-        Spacer(Modifier.height(6.dp))
+        Text(
+            t("qc.defects", null),
+            style = MaterialTheme.typography.titleMedium,
+            color = if (hasError) Tokens.danger else Tokens.text,
+        )
+        Spacer(Modifier.height(Tokens.Space.xs))
         defects.forEach { d ->
             val checked = selected.contains(d.code)
             Row(
-                Modifier.fillMaxWidth().clickable { onToggle(d.code, !checked) }.padding(vertical = 6.dp),
+                Modifier.fillMaxWidth().clickable { onToggle(d.code, !checked) }.heightIn(min = Tokens.minTouch),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    if (checked) Icons.Outlined.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
-                    contentDescription = null,
-                    tint = if (checked) Tokens.primary else Tokens.ash,
-                )
-                Spacer(Modifier.height(0.dp))
-                Text("  " + d.label, style = MaterialTheme.typography.bodyMedium)
+                AppCheckbox(checked = checked, onCheckedChange = { onToggle(d.code, it) })
+                Text(d.label, style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
             }
             if (checked) {
                 AppFormField(
                     label = t("qc.defectNotes", null),
                     value = notes[d.code] ?: "",
                     onValueChange = { notes[d.code] = it },
-                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp),
+                    modifier = Modifier.padding(start = 48.dp, bottom = Tokens.Space.sm),
                 )
             }
         }
         if (hasError) {
-            Spacer(Modifier.height(4.dp))
-            Text(t("qc.failNeedsDefect", null), color = Tokens.destructive, style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.height(Tokens.Space.xs))
+            Text(t("qc.failNeedsDefect", null), color = Tokens.danger, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

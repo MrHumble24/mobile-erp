@@ -1,6 +1,8 @@
 package uz.malika.erp.features.procurement.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,9 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.LookupBody
@@ -28,8 +30,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.SegmentOption
-import uz.malika.erp.shared.ui.SegmentedControl
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.ui.theme.Tokens
 
 /** Create or edit a QC lookup (`kind` = `grades` | `defect-types`). Online-only. */
@@ -78,42 +79,38 @@ fun LookupFormSheet(
     }
 
     AppBottomSheet(onDismiss = onDismiss) {
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
             Text(
                 t(if (kind == "grades") "qc.grades" else "qc.defectTypes", null),
                 style = MaterialTheme.typography.titleLarge,
+                color = Tokens.text,
             )
-            Spacer(Modifier.height(16.dp))
-            AppFormField(t("qc.lookupCode", null), code, { code = it.uppercase() }, enabled = !editing)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.lg))
+            AppFormField(t("qc.lookupCode", null), code, { code = it.uppercase() }, enabled = !editing, keyboardType = KeyboardType.Ascii)
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("qc.lookupLabel", null), label, { label = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("qc.sortOrder", null), sortOrder, { sortOrder = it }, keyboardType = KeyboardType.Number)
             if (editing) {
-                Spacer(Modifier.height(16.dp))
-                Text(t("qc.active", null), style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.height(6.dp))
-                SegmentedControl(
-                    options = listOf(
-                        SegmentOption(true, t("qc.active", null)),
-                        SegmentOption(false, t("common.no", null)),
-                    ),
-                    selected = active,
-                    onSelect = { active = it },
-                )
+                Spacer(Modifier.height(Tokens.Space.md))
+                Row(Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch), verticalAlignment = Alignment.CenterVertically) {
+                    Text(t("qc.active", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                    Spacer(Modifier.weight(1f))
+                    AppSwitch(checked = active, onCheckedChange = { active = it })
+                }
             }
             error?.let {
-                Spacer(Modifier.height(12.dp))
-                Text(it, color = Tokens.destructive, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(Tokens.Space.md))
+                Text(it, color = Tokens.danger, style = MaterialTheme.typography.bodySmall)
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(Tokens.Space.gutter))
             PillButton(
                 text = t(if (busy) "common.loading" else "common.save", null),
                 onClick = ::submit,
                 enabled = !busy,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Tokens.Space.sm))
         }
     }
 }

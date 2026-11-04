@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Grade a device: fetch it by IMEI, load grades + defect types, then record an
-/// inspection. Opened by a queue tap or a scan. Online-only write.
+/// Grade a device as a Warm Card sheet: fetch it by IMEI, load grades + defect
+/// types, then record an inspection. Opened by a queue tap or a scan.
+/// Online-only write.
 struct GradeDeviceSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -13,27 +14,38 @@ struct GradeDeviceSheet: View {
     @State private var store: AsyncStore<GradeData>?
 
     var body: some View {
-        NavigationStack {
-            Group {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                    Text(i18n.t("qc.runInspection")).font(.ui(.title)).foregroundStyle(Tokens.text)
+                    Spacer(minLength: Tokens.Space.sm)
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Tokens.text)
+                            .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+                            .background(Tokens.surface2, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("common.cancel"))
+                }
                 if let store {
                     LoadableView(state: store.state, retry: { Task { await store.reload() } }) { data in
                         GradeForm(data: data, imei: imei, onSaved: onSaved)
                     }
                 } else {
-                    LoadingView()
+                    LoadingView().frame(height: 160)
                 }
             }
-            .navigationTitle(i18n.t("qc.runInspection"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-            }
-            .task {
-                if store == nil { store = makeStore() }
-                await store?.reload()
-            }
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .presentationDetents([.large])
+        .task {
+            if store == nil { store = makeStore() }
+            await store?.reload()
         }
     }
 
@@ -79,42 +91,47 @@ private struct GradeForm: View {
     private var canCost: Bool { container.session.can("device.cost.view") }
 
     var body: some View {
-        Form {
-            Section {
-                Text(data.device.imei).font(.mono(15))
-                Text(data.device.modelLabel).font(.caption).foregroundStyle(Tokens.muted)
+        VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+            // The unit under inspection: a surface-2 block, never a card nested in the sheet.
+            VStack(alignment: .leading, spacing: 2) {
+                Text(data.device.modelLabel).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                Text(data.device.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
             }
-            Section {
-                Picker(i18n.t("qc.result"), selection: $passed) {
-                    Text(i18n.t("qc.passed")).tag(true)
-                    Text(i18n.t("qc.failed")).tag(false)
-                }
-                .pickerStyle(.segmented)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Tokens.Space.lg)
+            .background(Tokens.surface2, in: RoundedRectangle(cornerRadius: Tokens.Radius.controls, style: .continuous))
 
-                Picker(i18n.t("qc.grade"), selection: $gradeCode) {
-                    Text("—").tag(String?.none)
-                    ForEach(data.grades) { g in Text(g.label).tag(String?.some(g.code)) }
-                }
-                LabeledField(i18n.t("qc.batteryHealth"), text: $battery, keyboard: .numberPad)
-                if canCost {
-                    LabeledField(i18n.t("qc.repairCostEstimate"), text: $repairCost, keyboard: .decimalPad)
-                }
-                LabeledField(i18n.t("common.notes"), text: $notes)
+            SegmentedControl(selection: $passed, segments: [(true, i18n.t("qc.passed")), (false, i18n.t("qc.failed"))])
+
+            AppFormField(label: i18n.t("qc.grade")) {
+                AppSelect(placeholder: i18n.t("qc.selectGrade"), selection: $gradeCode,
+                          options: data.grades.map { (String?.some($0.code), $0.label) })
             }
-            Section {
-                DefectsChecklist(defectTypes: data.defectTypes, selected: $selected,
-                                 notes: $defectNotes, hasError: defectError)
+            AppFormField(label: i18n.t("qc.batteryHealth")) {
+                AppTextField(placeholder: i18n.t("qc.batteryHealth"), text: $battery, keyboard: .numberPad, font: .data(.regular))
+                    .sanitizeDigits($battery)
             }
+            if canCost {
+                AppFormField(label: i18n.t("qc.repairCostEstimate")) {
+                    AppTextField(placeholder: i18n.t("qc.repairCostEstimate"), text: $repairCost, keyboard: .decimalPad, font: .data(.regular))
+                        .sanitizeDecimal($repairCost)
+                }
+            }
+            AppFormField(label: i18n.t("common.notes")) {
+                AppTextField(placeholder: i18n.t("common.notes"), text: $notes)
+            }
+            DefectsChecklist(defectTypes: data.defectTypes, selected: $selected,
+                             notes: $defectNotes, hasError: defectError)
             if let error {
-                Section { Text(error).foregroundStyle(Tokens.danger).font(.footnote) }
+                Text(error).font(.ui(.caption)).foregroundStyle(Tokens.danger)
             }
-            Section {
-                Button(i18n.t("common.save")) { Task { await submit() } }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundStyle(Tokens.onInk)
-                    .tint(Tokens.ink)
-                    .disabled(busy)
+            Button {
+                Task { await submit() }
+            } label: {
+                Text(busy ? i18n.t("common.loading") : i18n.t("common.save")).frame(maxWidth: .infinity)
             }
+            .buttonStyle(.pillPrimary)
+            .disabled(busy)
         }
         .onChange(of: selected) { defectError = false }
     }

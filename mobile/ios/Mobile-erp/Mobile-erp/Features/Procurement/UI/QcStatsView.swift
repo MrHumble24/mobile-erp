@@ -1,102 +1,75 @@
 import SwiftUI
 
-/// QC statistics with quick date-range presets plus a custom from/to range
-/// (`KitDateRangeField`). An active custom range overrides the preset.
-/// Strictly avoids multi-column grids for crystal-clear readability.
+/// QC statistics for a period: the preset (today / 7 / 30 days) or a custom
+/// from/to range, chosen in a kit `FilterSheet`; the active period shows as the
+/// heading with a ghost "Filtr" pill. An active custom range overrides the preset.
 struct QcStatsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
 
     let refresh: UUID
-    @State private var preset = "7d"
+    @State private var preset: Preset = .sevenDays
     @State private var range = KitDateRange.all
     @State private var store: AsyncStore<QcStats>?
     @State private var showPeriodSheet = false
 
+    enum Preset: Hashable { case today, sevenDays, thirtyDays, custom }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                 HStack {
-                    Label(periodSummary, systemImage: "calendar")
-                        .font(.footnote.weight(.medium))
-                        .foregroundStyle(Tokens.ink)
+                    Text(periodLabel).font(.ui(.heading)).foregroundStyle(Tokens.text)
                     Spacer()
-                    Button(i18n.t("common.edit", default: "O'zgartirish")) {
-                        showPeriodSheet = true
+                    Button { showPeriodSheet = true } label: {
+                        Label(i18n.t("common.filter"), systemImage: preset == .sevenDays ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
                     }
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Tokens.signalBlue)
+                    .buttonStyle(.pillGhost)
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Tokens.surface, in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Tokens.hairline, lineWidth: 1))
-
                 if let store {
                     LoadableView(state: store.state, retry: reload) { stats in
                         QcStatsBody(stats: stats)
                     }
                 } else {
-                    LoadingView().frame(height: 180)
+                    AppCard { LoadingView().frame(height: 180) }
                 }
             }
-            .padding()
+            .padding(.bottom, Tokens.Space.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Tokens.bg)
-        .navigationTitle(i18n.t("qc.tabStats", default: "QC Statistikasi"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showPeriodSheet = true
-                } label: {
-                    Image(systemName: "calendar")
-                        .foregroundStyle(Tokens.signalBlue)
-                }
-            }
-        }
-        .sheet(isPresented: $showPeriodSheet) {
-            periodSheet
-        }
+        .sheet(isPresented: $showPeriodSheet) { periodSheet }
         .task(id: refresh) { await load() }
-        .onChange(of: preset) { Task { await load(force: true) } }
+        .onChange(of: preset) { if preset != .custom { range = .all }; Task { await load(force: true) } }
         .onChange(of: range) { Task { await load(force: true) } }
     }
 
-    private var periodSummary: String {
-        if range.isActive { return i18n.t("reports.customRange", default: "Maxsus muddat") }
+    private var periodLabel: String {
         switch preset {
-        case "today": return i18n.t("reports.today", default: "Bugun")
-        case "30d": return "30 \(i18n.t("reports.days", default: "Kun"))"
-        default: return "7 \(i18n.t("reports.days", default: "Kun"))"
+        case .today: return i18n.t("qc.preset_today")
+        case .sevenDays: return i18n.t("qc.preset_7d")
+        case .thirtyDays: return i18n.t("qc.preset_30d")
+        case .custom: return i18n.t("qc.preset_custom")
         }
     }
 
     private var periodSheet: some View {
-        NavigationStack {
-            Form {
-                Section(i18n.t("reports.period", default: "Muddat")) {
-                    Picker(i18n.t("reports.period", default: "Period"), selection: $preset) {
-                        Text(i18n.t("reports.today", default: "Today")).tag("today")
-                        Text("7 \(i18n.t("reports.days", default: "Days"))").tag("7d")
-                        Text("30 \(i18n.t("reports.days", default: "Days"))").tag("30d")
-                    }
-                    .pickerStyle(.segmented)
-                    .disabled(range.isActive)
-                }
-                Section(i18n.t("reports.customRange", default: "Maxsus muddat")) {
-                    KitDateRangeField(range: $range)
-                }
-            }
-            .navigationTitle(i18n.t("reports.period", default: "Muddatni tanlash"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.done", default: "Tayyor")) { showPeriodSheet = false }
-                }
+        FilterSheet(
+            title: i18n.t("common.filter"),
+            resetLabel: i18n.t("inventory.clearFilters"),
+            closeLabel: i18n.t("common.close"),
+            onReset: { preset = .sevenDays },
+            onClose: { showPeriodSheet = false }
+        ) {
+            SegmentedControl(selection: $preset, segments: [
+                (.today, i18n.t("qc.preset_today")),
+                (.sevenDays, i18n.t("qc.preset_7d")),
+                (.thirtyDays, i18n.t("qc.preset_30d")),
+                (.custom, i18n.t("qc.preset_custom")),
+            ])
+            if preset == .custom {
+                KitDateRangeField(range: $range)
             }
         }
-        .presentationDetents([.height(300)])
     }
 
     private func load(force: Bool = false) async {
@@ -112,25 +85,20 @@ struct QcStatsView: View {
 
     /// Custom range when active, otherwise the selected preset.
     private var bounds: (from: String?, to: String?) {
-        if range.isActive {
+        if preset == .custom {
             let fmt = ISO8601DateFormatter()
             return (range.from.map(fmt.string(from:)), range.to.map(fmt.string(from:)))
         }
-        let r = Self.range(for: preset)
-        return (r.from, r.to)
-    }
-
-    private func reload() { Task { await store?.reload() } }
-
-    static func range(for preset: String) -> (from: String, to: String) {
         let now = Date()
         let from: Date
         switch preset {
-        case "today": from = Calendar.current.startOfDay(for: now)
-        case "30d": from = now.addingTimeInterval(-30 * 86_400)
+        case .today: from = Calendar.current.startOfDay(for: now)
+        case .thirtyDays: from = now.addingTimeInterval(-30 * 86_400)
         default: from = now.addingTimeInterval(-7 * 86_400)
         }
         let fmt = ISO8601DateFormatter()
         return (fmt.string(from: from), fmt.string(from: now))
     }
+
+    private func reload() { Task { await store?.reload() } }
 }

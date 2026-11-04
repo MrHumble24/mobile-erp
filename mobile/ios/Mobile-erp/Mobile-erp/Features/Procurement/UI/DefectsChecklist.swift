@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Checklist of defect types: tick the present ones, add an optional note per
-/// ticked defect. Parent owns the selection + notes.
+/// ticked defect. Kit toggle rows; parent owns the selection + notes.
 struct DefectsChecklist: View {
     @Environment(I18n.self) private var i18n
     let defectTypes: [Lookup]
@@ -11,20 +11,25 @@ struct DefectsChecklist: View {
 
     var body: some View {
         if !defectTypes.isEmpty {
-            Text(i18n.t("qc.defects"))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(hasError ? Tokens.danger : .secondary)
-
-            ForEach(defectTypes) { defect in
-                Toggle(defect.label, isOn: binding(for: defect.code))
-                if selected.contains(defect.code) {
-                    LabeledField(i18n.t("qc.defectNotes"), text: noteBinding(for: defect.code))
-                        .font(.footnote)
+            VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                Text(i18n.t("qc.defects"))
+                    .font(.ui(.heading))
+                    .foregroundStyle(hasError ? Tokens.danger : Tokens.text)
+                ForEach(defectTypes) { defect in
+                    Toggle(defect.label, isOn: binding(for: defect.code))
+                        .font(.ui(.body))
+                        .foregroundStyle(Tokens.text)
+                        .frame(minHeight: Tokens.Space.minTouch)
+                    if selected.contains(defect.code) {
+                        AppFormField(label: i18n.t("qc.defectNotes")) {
+                            AppTextField(placeholder: i18n.t("qc.defectNotes"), text: noteBinding(for: defect.code))
+                        }
+                        .padding(.bottom, Tokens.Space.xs)
+                    }
                 }
-            }
-
-            if hasError {
-                Text(i18n.t("qc.failNeedsDefect")).font(.footnote).foregroundStyle(Tokens.danger)
+                if hasError {
+                    Text(i18n.t("qc.failNeedsDefect")).font(.ui(.caption)).foregroundStyle(Tokens.danger)
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Create or edit a QC lookup (`kind` = `grades` | `defect-types`). The code is
-/// immutable once created; online-only write.
+/// Create or edit a QC lookup (`kind` = `grades` | `defect-types`) as a Warm
+/// Card sheet. The code is immutable once created; online-only write.
 struct LookupFormSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -20,31 +20,57 @@ struct LookupFormSheet: View {
     private var editing: Bool { existing != nil }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    LabeledField(i18n.t("qc.lookupCode"), text: $code, mono: true)
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
+                HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                    Text(i18n.t(kind == "grades" ? "qc.grades" : "qc.defectTypes")).font(.ui(.title)).foregroundStyle(Tokens.text)
+                    Spacer(minLength: Tokens.Space.sm)
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Tokens.text)
+                            .frame(width: Tokens.Space.minTouch, height: Tokens.Space.minTouch)
+                            .background(Tokens.surface2, in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("common.cancel"))
+                }
+                AppFormField(label: i18n.t("qc.lookupCode")) {
+                    AppTextField(placeholder: i18n.t("qc.lookupCode"), text: $code,
+                                 keyboard: .asciiCapable, autocapitalization: .characters, disableAutocorrection: true,
+                                 font: .data(.regular))
                         .disabled(editing)
-                    LabeledField(i18n.t("qc.lookupLabel"), text: $label)
-                    LabeledField(i18n.t("qc.sortOrder"), text: $sortOrder, keyboard: .numberPad)
-                    if editing { Toggle(i18n.t("qc.active"), isOn: $isActive) }
+                        .opacity(editing ? 0.6 : 1)
+                }
+                AppFormField(label: i18n.t("qc.lookupLabel")) {
+                    AppTextField(placeholder: i18n.t("qc.lookupLabel"), text: $label)
+                }
+                AppFormField(label: i18n.t("qc.sortOrder")) {
+                    AppTextField(placeholder: i18n.t("qc.sortOrder"), text: $sortOrder, keyboard: .numberPad, font: .data(.regular))
+                        .sanitizeDigits($sortOrder)
+                }
+                if editing {
+                    Toggle(i18n.t("qc.active"), isOn: $isActive)
+                        .font(.ui(.body)).foregroundStyle(Tokens.text)
+                        .frame(minHeight: Tokens.Space.minTouch)
                 }
                 if let error {
-                    Section { Text(error).foregroundStyle(Tokens.danger).font(.footnote) }
+                    Text(error).font(.ui(.caption)).foregroundStyle(Tokens.danger)
                 }
+                Button {
+                    Task { await submit() }
+                } label: {
+                    Text(busy ? i18n.t("common.loading") : i18n.t("common.save")).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(busy)
             }
-            .navigationTitle(i18n.t(kind == "grades" ? "qc.grades" : "qc.defectTypes"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(i18n.t("common.cancel", default: "Cancel")) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.save")) { Task { await submit() } }.disabled(busy)
-                }
-            }
-            .onAppear(perform: hydrate)
+            .padding(Tokens.Space.gutter)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Tokens.card)
+        .onAppear(perform: hydrate)
     }
 
     private func hydrate() {

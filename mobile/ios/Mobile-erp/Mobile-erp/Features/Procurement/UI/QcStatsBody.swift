@@ -1,167 +1,59 @@
 import SwiftUI
 
-/// Single-column, roomy stats overview card layout.
+/// The QC figures as one `MetricList` (inspected, pass rate, failed, awaiting,
+/// average battery) and two breakdown cards — the Android `QcStatsTab`.
 struct QcStatsBody: View {
     @Environment(I18n.self) private var i18n
     let stats: QcStats
 
-    private var passPercentage: Int {
-        Int((stats.passRate * 100).rounded())
-    }
-
     var body: some View {
-        VStack(spacing: 14) {
-            // 1. Hero Card: Pass Rate
-            AppCard(padding: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Label(i18n.t("qc.statPassRate", default: "QC Pass Rate"),
-                              systemImage: "checkmark.seal.fill")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(passPercentage >= 90 ? Tokens.success : Tokens.warning)
-                        Spacer()
-                        StatusBadge(
-                            passPercentage >= 90
-                                ? i18n.t("qc.passHigh", default: "Good Quality")
-                                : i18n.t("qc.passAttention", default: "Needs Attention"),
-                            color: passPercentage >= 90 ? Tokens.success : Tokens.warning
-                        )
-                    }
-
-                    Text("\(passPercentage)%")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(Tokens.ink)
-
-                    Text(i18n.t("qc.passRateDesc", default: "Percentage of received devices cleared for sale without critical hardware defects."))
-                        .font(.caption)
-                        .foregroundStyle(Tokens.muted)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            // 2. Queue Alert (when units are awaiting inspection)
-            if stats.awaitingInspection > 0 {
-                AppCard(
-                    padding: 14,
-                    backgroundColor: Tokens.warnBg,
-                    borderColor: Tokens.warning.opacity(0.35)
-                ) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "clock.badge.exclamationmark")
-                            .font(.title2)
-                            .foregroundStyle(Tokens.warning)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(stats.awaitingInspection) \(i18n.t("qc.awaitingInspection", default: "Devices in Inspection Queue"))")
-                                .font(.subheadline.weight(.bold))
-                                .foregroundStyle(Tokens.ink)
-
-                            Text(i18n.t("qc.awaitingDesc", default: "Units waiting for cosmetic & hardware grading."))
-                                .font(.caption)
-                                .foregroundStyle(Tokens.muted)
-                        }
-                        Spacer()
-                    }
-                }
-            }
-
-            // 3. Inspection Volume & Battery Overview
-            AppCard(padding: 16) {
-                VStack(spacing: 12) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(i18n.t("qc.statInspected", default: "Total Devices Inspected"))
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(Tokens.ink)
-                            Text(i18n.t("qc.inspectedDesc", default: "Completed unit inspections"))
-                                .font(.caption)
-                                .foregroundStyle(Tokens.muted)
-                        }
-                        Spacer()
-                        Text("\(stats.inspected)")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(Tokens.ink)
-                    }
-
-                    Divider()
-
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(i18n.t("qc.statFailed", default: "Defective / Failed Units"))
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(Tokens.ink)
-                            Text(i18n.t("qc.failedDesc", default: "Units isolated for repair or return"))
-                                .font(.caption)
-                                .foregroundStyle(Tokens.muted)
-                        }
-                        Spacer()
-                        Text("\(stats.failed)")
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(stats.failed > 0 ? Tokens.danger : Tokens.ink)
-                    }
-
-                    if let avgBattery = stats.avgBatteryHealth {
-                        Divider()
-
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(i18n.t("qc.statAvgBattery", default: "Average Battery Health"))
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(Tokens.ink)
-                                Text(i18n.t("qc.batteryDesc", default: "Average battery capacity across inspected stock"))
-                                    .font(.caption)
-                                    .foregroundStyle(Tokens.muted)
-                            }
-                            Spacer()
-                            Text("\(avgBattery)%")
-                                .font(.title3.weight(.bold))
-                                .foregroundStyle(Tokens.ink)
-                        }
-                    }
-                }
-            }
-
-            // 4. Breakdown Cards
-            QcBreakdownCard(title: i18n.t("qc.byGrade", default: "Distribution by Grade"), rows: stats.byGrade)
-            QcBreakdownCard(title: i18n.t("qc.topDefects", default: "Most Common Defects"), rows: stats.topDefects)
+        VStack(spacing: Tokens.Space.lg) {
+            MetricList(rows: [
+                MetricRow(label: i18n.t("qc.statInspected"), value: "\(stats.inspected)"),
+                MetricRow(label: i18n.t("qc.statPassRate"), value: "\(Int((stats.passRate * 100).rounded()))%",
+                          emphasis: stats.inspected == 0 ? nil : (stats.passRate >= 0.9 ? Tokens.success : Tokens.warning)),
+                MetricRow(label: i18n.t("qc.statFailed"), value: "\(stats.failed)",
+                          emphasis: stats.failed > 0 ? Tokens.danger : nil),
+                MetricRow(label: i18n.t("qc.awaitingInspection"), value: "\(stats.awaitingInspection)"),
+                MetricRow(label: i18n.t("qc.statAvgBattery"), value: stats.avgBatteryHealth.map { "\($0)%" } ?? "—"),
+            ])
+            QcBreakdownCard(title: i18n.t("qc.byGrade"), rows: stats.byGrade)
+            QcBreakdownCard(title: i18n.t("qc.topDefects"), rows: stats.topDefects)
         }
     }
 }
 
-/// A breakdown card for grade distribution and top defect types.
+/// A breakdown card: label, mono count and a bar in the text colour on the
+/// warm border track — charts never take the orange.
 struct QcBreakdownCard: View {
     @Environment(I18n.self) private var i18n
     let title: String
     let rows: [QcCount]
 
     var body: some View {
-        AppCard(padding: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(Tokens.ink)
-
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(title).font(.ui(.heading)).foregroundStyle(Tokens.text)
                 if rows.isEmpty {
-                    Text(i18n.t("common.notFound", default: "No records found."))
-                        .font(.caption)
-                        .foregroundStyle(Tokens.muted)
+                    Text(i18n.t("common.notFound")).font(.ui(.body)).foregroundStyle(Tokens.muted)
                 } else {
                     let maxCount = max(rows.map(\.count).max() ?? 1, 1)
                     ForEach(rows) { row in
-                        VStack(spacing: 4) {
+                        VStack(spacing: Tokens.Space.xs) {
                             HStack {
-                                Text(row.label)
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(Tokens.ink)
+                                Text(row.label).font(.ui(.body)).foregroundStyle(Tokens.text)
                                 Spacer()
-                                Text("\(row.count)")
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(Tokens.muted)
+                                Text("\(row.count)").font(.data(.regular)).foregroundStyle(Tokens.text)
                             }
-                            ProgressView(value: Double(row.count), total: Double(maxCount))
-                                .tint(Tokens.ink)
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(Tokens.border)
+                                    Capsule().fill(Tokens.text)
+                                        .frame(width: geo.size.width * CGFloat(row.count) / CGFloat(maxCount))
+                                }
+                            }
+                            .frame(height: 6)
                         }
-                        .padding(.vertical, 2)
                     }
                 }
             }
@@ -169,4 +61,3 @@ struct QcBreakdownCard: View {
         }
     }
 }
-

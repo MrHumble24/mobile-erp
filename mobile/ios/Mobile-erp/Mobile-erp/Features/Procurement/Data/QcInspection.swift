@@ -9,12 +9,14 @@ struct QcInspection: Decodable, Identifiable {
     let modelLabel: String
     let inspectorName: String
     let gradeCode: String?
+    let inspectedAt: String?
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
         passed = (try? c.decodeIfPresent(Bool.self, forKey: .passed)) ?? false
         gradeCode = try? c.decodeIfPresent(String.self, forKey: .gradeCode)
+        inspectedAt = try? c.decodeIfPresent(String.self, forKey: .inspectedAt)
         let device = try? c.decodeIfPresent(DeviceRef.self, forKey: .device)
         imei = device?.imei ?? ""
         if let m = device?.model { modelLabel = "\(m.brand) \(m.name)" } else { modelLabel = "" }
@@ -25,7 +27,7 @@ struct QcInspection: Decodable, Identifiable {
     private struct ModelRef: Decodable { let brand: String; let name: String }
     private struct InspectorRef: Decodable { let name: String? }
 
-    enum CodingKeys: String, CodingKey { case id, passed, gradeCode, device, inspectedBy }
+    enum CodingKeys: String, CodingKey { case id, passed, gradeCode, inspectedAt, device, inspectedBy }
 }
 
 /// One page of inspections.

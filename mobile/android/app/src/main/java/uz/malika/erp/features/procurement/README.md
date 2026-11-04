@@ -44,8 +44,14 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
   clears that shipment's drafts on success. The duplicate check reads the VM list.
   The intake offline guard uses `sync.offline` (the kit `OfflineBanner` shows at
   the top of the sheet and submit is disabled while offline).
-- QC: queue (`/devices?inspected=false`), grade-device inspections (defects,
-  battery, redaction-gated repair cost), stats, and lookup management (ADR 0014).
+- QC: scan field over three segments — queue (`/devices?inspected=false`, cards
+  with model / mono IMEI / status pill), inspections (cards with grade + result
+  pills, inspector · time) and stats (one `MetricGrid` list-card + breakdown bars
+  in the text colour, never orange). Reference data (grades, defect types, ADR
+  0014) is a manager-only sub-page behind a link card under the queue — a
+  fourth segment truncated at phone width; system Back returns. The grade sheet
+  and lookup form are Warm Card sheets (surface-2 device block, kit checkbox
+  rows for defects, `AppSwitch` for active).
 - Pagination (load-more via the kit `PageState`/`LoadMoreFooter`) on the QC
   queue, inspections and shipment devices. Every QC filter lives in a per-tab
   bottom sheet (kit `FilterSheet`/`FilterButton`): inspections pass/fail

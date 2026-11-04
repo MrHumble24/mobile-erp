@@ -30,6 +30,7 @@ import uz.malika.erp.shared.ui.DateRange
 import uz.malika.erp.shared.ui.FilterButton
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /** QC statistics; the period presets and custom range live in the filter sheet. */
@@ -43,11 +44,12 @@ fun QcStatsTab(
 ) {
     val t = LocalT.current
     var showFilters by remember { mutableStateOf(false) }
-    Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
+    Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Tokens.Space.screenH, vertical = Tokens.Space.md)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 t(statsPresetLabelKey(preset), null),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleMedium,
+                color = Tokens.text,
                 modifier = Modifier.weight(1f),
             )
             FilterButton(
@@ -55,7 +57,7 @@ fun QcStatsTab(
                 onClick = { showFilters = true },
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         MetricGrid(
             perRow = 3,
             tiles = listOf(
@@ -66,9 +68,9 @@ fun QcStatsTab(
                 { m -> MetricTile(t("qc.statAvgBattery", null), stats.avgBatteryHealth?.let { "$it%" } ?: "-", m, money = false) },
             ),
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         Breakdown(t("qc.byGrade", null), stats.byGrade.map { it.gradeCode to it.count })
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         Breakdown(t("qc.topDefects", null), stats.topDefects.map { it.display to it.count })
     }
 
@@ -89,24 +91,25 @@ private fun Breakdown(title: String, rows: List<Pair<String, Int>>) {
     val t = LocalT.current
     val max = rows.maxOfOrNull { it.second }?.coerceAtLeast(1) ?: 1
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(10.dp))
+        Text(title, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.md))
         if (rows.isEmpty()) {
-            Text(t("common.notFound", null), style = MaterialTheme.typography.bodySmall)
+            Text(t("common.notFound", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         } else {
+            // Bars are the text colour on the warm border track: charts never take the orange.
             rows.forEach { (label, count) ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(label, style = MaterialTheme.typography.bodyMedium)
-                    Text("$count", style = MaterialTheme.typography.bodySmall)
+                    Text(label, style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+                    Text("$count", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 }
-                Spacer(Modifier.height(4.dp))
-                Box(Modifier.fillMaxWidth().height(6.dp).background(Tokens.bone, RoundedCornerShape(3.dp))) {
+                Spacer(Modifier.height(Tokens.Space.xs))
+                Box(Modifier.fillMaxWidth().height(6.dp).background(Tokens.border, RoundedCornerShape(3.dp))) {
                     Box(
                         Modifier.fillMaxWidth(count.toFloat() / max).height(6.dp)
-                            .background(Tokens.primary, RoundedCornerShape(3.dp)),
+                            .background(Tokens.text, RoundedCornerShape(3.dp)),
                     )
                 }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(Tokens.Space.md))
             }
         }
     }

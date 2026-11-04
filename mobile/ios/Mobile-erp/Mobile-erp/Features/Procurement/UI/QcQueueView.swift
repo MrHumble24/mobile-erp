@@ -1,36 +1,35 @@
 import SwiftUI
 
-/// Devices awaiting inspection (`GET /devices?inspected=false`), paged with
-/// load-more. Tap a row to grade that unit. Reloads when `refresh` changes
-/// (external) or after a grade.
-struct QcQueueView: View {
+/// Devices awaiting inspection (`GET /devices?inspected=false`) as white cards
+/// (model, mono IMEI, status pill), paged with load-more. Tap a row to grade
+/// that unit. Reloads when `refresh` changes (external) or after a grade.
+/// `footer` renders after the list — the manager's reference-data link.
+struct QcQueueView<Footer: View>: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
 
     let refresh: UUID
     let onGraded: () -> Void
+    @ViewBuilder var footer: () -> Footer
 
     @State private var pager: KitPaginator<ProcDevice>?
     @State private var modelNames: [String: String] = [:]
     @State private var grading: ScannedImei?
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScannerField(placeholder: i18n.t("qc.scanPlaceholder")) { grading = ScannedImei(imei: $0) }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
-            content
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                content
+                footer()
+            }
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .background(Tokens.bg)
-        .navigationTitle(i18n.t("qc.tabQueue", default: "Tekshiruv navbati"))
-        .navigationBarTitleDisplayMode(.inline)
         .task(id: refresh) {
             if pager == nil { pager = makePager() }
             await loadModels()
             await pager?.first()
         }
-        .sheet(item: $grading, onDismiss: reload) { s in
+        .appSheet(item: $grading, onDismiss: reload) { s in
             GradeDeviceSheet(imei: s.imei) { onGraded() }
         }
     }
@@ -39,25 +38,33 @@ struct QcQueueView: View {
     private var content: some View {
         if let pager {
             if let error = pager.error, pager.items.isEmpty {
-                ErrorStateView(message: error, retry: reload)
+                AppCard { ErrorStateView(message: error, retry: reload) }
             } else if pager.items.isEmpty, !pager.isLoading {
-                EmptyStateView(systemImage: "checkmark.seal", title: i18n.t("qc.queueEmpty"))
+                AppCard { EmptyStateView(systemImage: "checkmark.seal", title: i18n.t("qc.queueEmpty")) }
             } else {
-                List {
-                    ForEach(pager.items) { d in
-                        QueueRow(device: d, modelName: modelNames[d.modelId] ?? d.modelId)
-                            .contentShape(Rectangle())
-                            .onTapGesture { grading = ScannedImei(imei: d.imei) }
+                ForEach(pager.items) { d in
+                    Button { grading = ScannedImei(imei: d.imei) } label: {
+                        AppCard {
+                            HStack(spacing: Tokens.Space.sm) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(modelNames[d.modelId] ?? d.modelId).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                                    Text(d.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                                    if let imei2 = d.imei2, !imei2.isEmpty {
+                                        Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                                    }
+                                }
+                                Spacer(minLength: Tokens.Space.sm)
+                                StatusBadge(deviceStatus: d.statusCode,
+                                            label: i18n.t(DeviceStatusMeta.labelKey(d.statusCode)))
+                            }
+                        }
                     }
-                    KitLoadMoreFooter(pager: pager)
+                    .buttonStyle(.plain)
                 }
-                .listStyle(.insetGrouped)
-                .scrollContentBackground(.hidden)
-                .listRowBackground(Tokens.surface)
-                .background(Tokens.bg)
+                KitLoadMoreFooter(pager: pager)
             }
         } else {
-            LoadingView()
+            AppCard { LoadingView().frame(height: 120) }
         }
     }
 
@@ -76,23 +83,4 @@ struct QcQueueView: View {
     }
 
     private func reload() { Task { await pager?.first() } }
-}
-
-private struct QueueRow: View {
-    let device: ProcDevice
-    let modelName: String
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(device.imei).font(.mono(13))
-                if let imei2 = device.imei2, !imei2.isEmpty {
-                    Text(imei2).font(.mono(11)).foregroundStyle(.tertiary)
-                }
-                Text("\(modelName) · \(device.statusCode)").font(.caption).foregroundStyle(Tokens.muted)
-            }
-            Spacer()
-            Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
-        }
-    }
 }

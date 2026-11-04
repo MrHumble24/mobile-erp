@@ -26,6 +26,13 @@ intake, and quality control.
 - Inspections pass/fail filter; QC stats custom range (`KitDateRangeField`,
   overrides the presets); post-intake landed-cost summary (cost-gated).
 - QC consumes an incoming `.qc(imei:)` route → opens the grade sheet.
+- QC root (`QcScreen`) is the Android anatomy: scan field, kit `SegmentedControl`
+  (queue / inspections / stats) with the bodies inline as white cards, and a
+  manager-only link card to `QcLookupsView` (grades, defect types) — not a hub
+  of pushed sub-pages. Inspections and stats filters are kit `FilterSheet`s
+  behind a ghost "Filtr" pill; stats is a `MetricList` + breakdown bars in the
+  text colour. Grade and lookup forms are Warm Card sheets of kit fields (no
+  stock Form). Debug: `-open qc`, `-openTab inspections|stats`, `-openQcImei`.
 - iPad master-detail (`NavigationSplitView`) for shipments; writes toast on success.
 
 ## Public API

@@ -1,6 +1,8 @@
 import SwiftUI
 
-/// Past inspections, newest first, with a pass/fail filter and load-more paging.
+/// Past inspections, newest first, as white cards with a result pill; the
+/// pass/fail filter lives in a kit `FilterSheet` behind a ghost pill. Load-more
+/// paging.
 struct QcInspectionsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -22,47 +24,38 @@ struct QcInspectionsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            if filter != .all {
-                HStack(spacing: 8) {
-                    Text(i18n.t(filter == .passed ? "qc.passed" : "qc.failed"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(filter == .passed ? Tokens.success : Tokens.danger)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            Tokens.pillTint(filter == .passed ? Tokens.success : Tokens.danger),
-                            in: Capsule()
-                        )
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                HStack {
                     Spacer()
-                    Button(i18n.t("common.reset", default: "Tozalash")) {
-                        filter = .all
+                    Button {
+                        showFilterSheet = true
+                    } label: {
+                        Label(
+                            filter == .all ? i18n.t("common.filter") : i18n.t(filter == .passed ? "qc.passed" : "qc.failed"),
+                            systemImage: filter == .all ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill"
+                        )
                     }
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(Tokens.signalBlue)
+                    .buttonStyle(.pillGhost)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Tokens.surface2)
+                content
             }
-
-            content
-        }
-        .background(Tokens.bg)
-        .navigationTitle(i18n.t("qc.tabInspections", default: "Tekshiruvlar"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showFilterSheet = true
-                } label: {
-                    Image(systemName: filter == .all ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-                        .foregroundStyle(filter == .all ? .primary : Tokens.signalBlue)
-                }
-            }
+            .padding(.bottom, Tokens.Space.lg)
         }
         .sheet(isPresented: $showFilterSheet) {
-            QcInspectionsFilterSheet(filter: $filter)
+            FilterSheet(
+                title: i18n.t("common.filter"),
+                resetLabel: i18n.t("inventory.clearFilters"),
+                closeLabel: i18n.t("common.close"),
+                onReset: { filter = .all },
+                onClose: { showFilterSheet = false }
+            ) {
+                SegmentedControl(selection: $filter, segments: [
+                    (.all, i18n.t("common.all")),
+                    (.passed, i18n.t("qc.passed")),
+                    (.failed, i18n.t("qc.failed")),
+                ])
+            }
         }
         .task(id: refresh) {
             if pager == nil { pager = makePager() }
@@ -78,21 +71,15 @@ struct QcInspectionsView: View {
     private var content: some View {
         if let pager {
             if let error = pager.error, pager.items.isEmpty {
-                ErrorStateView(message: error, retry: { Task { await pager.first() } })
+                AppCard { ErrorStateView(message: error, retry: { Task { await pager.first() } }) }
             } else if pager.items.isEmpty, !pager.isLoading {
-                EmptyStateView(systemImage: "doc.text.magnifyingglass", title: i18n.t("qc.queueEmpty"))
+                AppCard { EmptyStateView(systemImage: "doc.text.magnifyingglass", title: i18n.t("common.notFound")) }
             } else {
-                List {
-                    ForEach(pager.items) { item in InspectionRow(item: item) }
-                    KitLoadMoreFooter(pager: pager)
-                }
-                .listStyle(.insetGrouped)
-                .scrollContentBackground(.hidden)
-                .listRowBackground(Tokens.surface)
-                .background(Tokens.bg)
+                ForEach(pager.items) { item in InspectionRow(item: item) }
+                KitLoadMoreFooter(pager: pager)
             }
         } else {
-            LoadingView()
+            AppCard { LoadingView().frame(height: 120) }
         }
     }
 
@@ -106,74 +93,32 @@ struct QcInspectionsView: View {
     }
 }
 
+/// Model + mono IMEI, then grade · inspector · time; the result pill right.
 private struct InspectionRow: View {
     @Environment(I18n.self) private var i18n
     let item: QcInspection
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.imei).font(.mono(13))
-                Text(subtitle).font(.caption).foregroundStyle(Tokens.muted)
-            }
-            Spacer()
-            StatusBadge(
-                i18n.t(item.passed ? "qc.passed" : "qc.failed"),
-                color: item.passed ? Tokens.success : Tokens.danger
-            )
-        }
-    }
-
-    private var subtitle: String {
-        [item.modelLabel,
-         item.gradeCode.map { "\(i18n.t("qc.grade")): \($0)" },
-         item.inspectorName]
-            .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
-    }
-}
-
-/// Bottom sheet for selecting inspection pass/fail filter.
-private struct QcInspectionsFilterSheet: View {
-    @Binding var filter: QcInspectionsView.PassFilter
-    @Environment(I18n.self) private var i18n
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    filterRow(title: i18n.t("common.all"), target: .all)
-                    filterRow(title: i18n.t("qc.passed"), target: .passed)
-                    filterRow(title: i18n.t("qc.failed"), target: .failed)
+        AppCard {
+            HStack(spacing: Tokens.Space.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.modelLabel.isEmpty ? item.imei : item.modelLabel).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                    Text(item.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                    Text(meta).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
-            }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .listRowBackground(Tokens.surface)
-            .background(Tokens.bg)
-            .navigationTitle(i18n.t("common.filter", default: "Filtrlash"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(i18n.t("common.done", default: "Tayyor")) { dismiss() }
+                Spacer(minLength: Tokens.Space.sm)
+                HStack(spacing: Tokens.Space.xs) {
+                    if let grade = item.gradeCode { StatusBadge(grade, color: Tokens.sold) }
+                    StatusBadge(i18n.t(item.passed ? "qc.passed" : "qc.failed"),
+                                color: item.passed ? Tokens.success : Tokens.danger)
                 }
             }
         }
-        .presentationDetents([.height(260)])
     }
 
-    private func filterRow(title: String, target: QcInspectionsView.PassFilter) -> some View {
-        Button {
-            filter = target
-            dismiss()
-        } label: {
-            HStack {
-                Text(title).foregroundStyle(Tokens.ink)
-                Spacer()
-                if filter == target {
-                    Image(systemName: "checkmark").foregroundStyle(Tokens.signalBlue)
-                }
-            }
-        }
+    private var meta: String {
+        [item.inspectorName.isEmpty ? nil : item.inspectorName,
+         KitDate.dayTime(item.inspectedAt)]
+            .compactMap { $0 }.joined(separator: " · ")
     }
 }
