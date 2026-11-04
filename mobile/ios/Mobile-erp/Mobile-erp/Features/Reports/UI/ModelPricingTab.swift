@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Model pricing & margins over a rolling 90-day window: an average-price bar
-/// card, then one card per model/storage with keyed facts. Acquisition cost
+/// Model pricing & margins over a rolling 90-day window: models ranked by
+/// average selling price as labelled bars, then one card per model/storage
+/// with keyed facts. Acquisition cost
 /// and margin appear only with `device.cost.view`.
 struct ModelPricingTab: View {
     @Environment(AppContainer.self) private var container
@@ -22,8 +23,12 @@ struct ModelPricingTab: View {
                     if rows.isEmpty {
                         AppCard { EmptyStateView(systemImage: "tag", title: i18n.t("reports.empty")) }
                     } else {
-                        BarChartCard(title: i18n.t("dashboard.avgSellingPrice"),
-                                     data: rows.prefix(8).map { BarDatum(label: "\(name($0)) \($0.storage ?? "")", value: $0.avgSellingPrice ?? 0) })
+                        // Ranked by average selling price; the bar is the price against the dearest model.
+                        let top = rows.map { $0.avgSellingPrice ?? 0 }.max() ?? 1
+                        FinBreakdownBars(title: i18n.t("dashboard.avgSellingPrice"), rows: rows.sorted { ($0.avgSellingPrice ?? 0) > ($1.avgSellingPrice ?? 0) }.prefix(8).map {
+                            FinShareRow(key: $0.id, label: "\(name($0)) \($0.storage ?? "")", value: reportMoney($0.avgSellingPrice),
+                                        share: ($0.avgSellingPrice ?? 0) / max(top, 1))
+                        }, showsShare: false)
                         ForEach(rows) { row in PricingCard(row: row, name: name(row), canCost: canCost) }
                     }
                 } else {

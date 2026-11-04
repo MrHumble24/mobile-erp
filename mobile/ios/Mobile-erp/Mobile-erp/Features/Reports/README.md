@@ -20,8 +20,9 @@ live snapshot, pricing a rolling window, closing a single day. Title is
 - Drill-downs (`FinBreakdownSheet`, a kit sheet on `FactRow`s): NOI rows,
   paginated returns (`KitPaginator`), by-model gross-profit/units ranking, and
   zero-fetch facts for a sales-model / partner / inventory-model row.
-- Pricing is one card per model/storage with keyed facts (margin only with
-  `device.cost.view`).
+- Pricing ranks the models as labelled `FinBreakdownBars` (`showsShare: false`,
+  price against the dearest), then one card per model/storage with keyed facts
+  (margin only with `device.cost.view`). Unlabelled vertical bars read as nothing.
 
 ## Public API
 - `ReportsModule.feature` — one line in `FeatureRegistry`. Nav `nav.reports`.

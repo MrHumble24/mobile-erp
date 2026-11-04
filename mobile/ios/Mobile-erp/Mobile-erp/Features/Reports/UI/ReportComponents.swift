@@ -29,6 +29,8 @@ struct FinBreakdownBars: View {
     let title: String
     let rows: [FinShareRow]
     var onSelect: ((String) -> Void)? = nil
+    /// Off for magnitudes that are not shares of a whole (e.g. average prices).
+    var showsShare = true
     @Environment(I18n.self) private var i18n
 
     var body: some View {
@@ -38,7 +40,7 @@ struct FinBreakdownBars: View {
                 if rows.isEmpty {
                     Text(i18n.t("reports.empty")).font(.ui(.body)).foregroundStyle(Tokens.muted)
                 } else {
-                    FinBreakdownRows(rows: rows, onSelect: onSelect)
+                    FinBreakdownRows(rows: rows, onSelect: onSelect, showsShare: showsShare)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -50,6 +52,7 @@ struct FinBreakdownBars: View {
 struct FinBreakdownRows: View {
     let rows: [FinShareRow]
     var onSelect: ((String) -> Void)? = nil
+    var showsShare = true
 
     var body: some View {
         let maxShare = max(rows.map(\.share).max() ?? 0, 0.0001)
@@ -59,7 +62,7 @@ struct FinBreakdownRows: View {
                     HStack(spacing: Tokens.Space.sm) {
                         Text(row.label).font(.ui(.body)).foregroundStyle(Tokens.text).lineLimit(1)
                         Spacer(minLength: Tokens.Space.sm)
-                        Text("\(row.value) · \(String(format: "%.1f", row.share * 100))%")
+                        Text(showsShare ? "\(row.value) · \(String(format: "%.1f", row.share * 100))%" : row.value)
                             .font(.mono(12)).foregroundStyle(Tokens.muted)
                         if onSelect != nil {
                             Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(Tokens.muted)

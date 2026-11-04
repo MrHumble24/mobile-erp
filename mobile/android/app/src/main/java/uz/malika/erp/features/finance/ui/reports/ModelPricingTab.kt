@@ -18,8 +18,8 @@ import uz.malika.erp.features.finance.data.ModelPricingRow
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.Async
 import uz.malika.erp.features.finance.ui.components.AsyncContent
-import uz.malika.erp.features.finance.ui.components.BarChart
-import uz.malika.erp.features.finance.ui.components.BarDatum
+import uz.malika.erp.features.finance.ui.components.BreakdownBars
+import uz.malika.erp.features.finance.ui.components.BreakdownDatum
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
@@ -31,8 +31,9 @@ import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Model pricing & margins over the rolling 90-day window: an average-price
- * bar card, then one card per model/storage with keyed facts. Acquisition
+ * Model pricing & margins over the rolling 90-day window: models ranked by
+ * average selling price as labelled bars, then one card per model/storage
+ * with keyed facts. Acquisition
  * cost and margin appear only with `device.cost.view`.
  */
 @Composable
@@ -51,9 +52,14 @@ fun ModelPricingTab(vm: FinanceReadsViewModel) {
             if (rows.isEmpty()) {
                 AppCard(Modifier.fillMaxWidth()) { EmptyView(t("reports.empty", null), compact = true) }
             } else {
-                BarChart(
+                // Ranked by average selling price; the bar is the price against the dearest model.
+                val priced = rows.map { it to parseMoney(it.avgSellingPrice ?: "0").toDouble() }.sortedByDescending { it.second }.take(8)
+                val top = (priced.firstOrNull()?.second ?: 1.0).coerceAtLeast(1.0)
+                BreakdownBars(
                     title = t("dashboard.avgSellingPrice", null),
-                    data = rows.take(8).map { r -> BarDatum("${labels[r.modelId] ?: r.modelId} ${r.storage.orEmpty()}", parseMoney(r.avgSellingPrice ?: "0").toDouble()) },
+                    rows = priced.map { (r, price) -> BreakdownDatum("${r.modelId}/${r.storage}", "${labels[r.modelId] ?: r.modelId} ${r.storage.orEmpty()}", price, price / top) },
+                    formatValue = ::moneyOf,
+                    showShare = false,
                 )
                 rows.forEach { r -> PricingCard(r, labels[r.modelId] ?: r.modelId, canCost) }
             }

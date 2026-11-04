@@ -38,6 +38,8 @@ fun BreakdownBars(
     modifier: Modifier = Modifier,
     limit: Int = 10,
     onSelect: ((BreakdownDatum) -> Unit)? = null,
+    /** Off for magnitudes that are not shares of a whole (e.g. average prices). */
+    showShare: Boolean = true,
 ) {
     val t = LocalT.current
     AppCard(modifier.fillMaxWidth()) {
@@ -46,7 +48,7 @@ fun BreakdownBars(
         if (rows.isEmpty()) {
             Text(t("reports.empty", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
         } else {
-            BreakdownRows(rows, formatValue, limit, onSelect)
+            BreakdownRows(rows, formatValue, limit, onSelect, showShare)
         }
     }
 }
@@ -58,12 +60,13 @@ fun BreakdownRows(
     formatValue: (Double) -> String,
     limit: Int = 10,
     onSelect: ((BreakdownDatum) -> Unit)? = null,
+    showShare: Boolean = true,
 ) {
     val t = LocalT.current
     val capped = capWithOther(rows, limit, t("reports.other", null))
     val max = capped.maxOf { abs(it.value) }.coerceAtLeast(1.0)
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.md)) {
-        capped.forEach { row -> BreakdownRowView(row, max, formatValue, onSelect) }
+        capped.forEach { row -> BreakdownRowView(row, max, formatValue, onSelect, showShare) }
     }
 }
 
@@ -73,6 +76,7 @@ private fun BreakdownRowView(
     max: Double,
     formatValue: (Double) -> String,
     onSelect: ((BreakdownDatum) -> Unit)?,
+    showShare: Boolean,
 ) {
     val clickable = onSelect != null && row.key != OTHER_KEY
     val base = Modifier.fillMaxWidth()
@@ -87,7 +91,7 @@ private fun BreakdownRowView(
                 modifier = Modifier.weight(1f).padding(end = Tokens.Space.sm),
             )
             Text(
-                "${formatValue(row.value)} · ${"%.1f".format(row.share * 100)}%",
+                if (showShare) "${formatValue(row.value)} · ${"%.1f".format(row.share * 100)}%" else formatValue(row.value),
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
                 color = Tokens.muted,
             )

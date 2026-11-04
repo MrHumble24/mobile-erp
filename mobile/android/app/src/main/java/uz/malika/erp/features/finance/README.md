@@ -32,8 +32,9 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   `TrendLineChart` (revenue = text, gross profit = success, expenses = danger;
   three gridlines, zero baseline, first/last bucket labels), `BreakdownBars` /
   `BreakdownRows` (text bar on the border track, danger for a loss, "others"
-  muted), `BarChart` (text bars, danger when negative). Pricing is one card per
-  model/storage with keyed facts (`ModelPricingTable` is gone).
+  muted), `BarChart` (text bars, danger when negative). Pricing ranks the models as
+  labelled `BreakdownBars` (no share, price against the dearest), then one card
+  per model/storage with keyed facts (`ModelPricingTable` is gone).
 - **Expenses** (route `expenses`, `expense.read`): list tab — prominent
   new-expense action with categories/CSV in an overflow menu, summary card, an
   inline search field beside a filter button (active-filter count badge) that
