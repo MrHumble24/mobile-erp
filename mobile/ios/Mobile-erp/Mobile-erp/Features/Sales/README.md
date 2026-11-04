@@ -6,9 +6,11 @@ Completed sales, receipts, returns, and warranty lookup.
 - Sales list (`GET /sales`) with channel / status / warranty / cashier / search
   filters + a `KitDateRangeField` range, paginated via `KitPaginator` (load
   more) with CSV export (`KitCSVShareButton`).
-- Summary card (`GET /sales/stats`, shared `MetricList` at the top of the list):
-  count, revenue, avg price, returns + refunded, net profit tinted by sign
-  (shown only when the server includes it).
+- Summary (`GET /sales/stats`) collapsed by default behind one header row
+  ("Umumiy sharh" + revenue + chevron) at the top of the list; tapping expands
+  the shared `MetricList` (count, revenue, avg price, returns + refunded, net
+  profit tinted by sign, shown only when the server includes it). Collapsed so
+  the first sale is above the fold.
 - Sale detail as a Warm Card sheet (`appSheet`): model title, `CopyableIMEI`
   lines, channel / returned pills, keyed facts (price, profit by sign, customer,
   phone link, cashier, time, warranty days, returned at), then ghost links to the

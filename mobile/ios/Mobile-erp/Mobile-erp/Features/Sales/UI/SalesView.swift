@@ -11,6 +11,7 @@ struct SalesView: View {
     @State private var selected: SaleView?
     @State private var showWarranty = false
     @State private var showFilters = false
+    @State private var showStats = false
 
     private var hasActiveFilters: Bool { model.filters.isActive }
 
@@ -62,10 +63,14 @@ struct SalesView: View {
             #endif
         }
         #if DEBUG
-        // Screenshot helper: `-openSale first` opens the first sale's detail once loaded.
+        // Screenshot helpers: `-openSale first` opens the first sale's detail once
+        // loaded; `-openSale stats` expands the summary.
         .onChange(of: model.pager?.items.count ?? 0) { _, count in
-            if count > 0, selected == nil, UserDefaults.standard.string(forKey: "openSale") == "first" {
-                selected = model.pager?.items.first
+            guard count > 0 else { return }
+            switch UserDefaults.standard.string(forKey: "openSale") {
+            case "first": if selected == nil { selected = model.pager?.items.first }
+            case "stats": showStats = true
+            default: break
             }
         }
         #endif
@@ -89,7 +94,7 @@ struct SalesView: View {
                 EmptyStateView(systemImage: "doc.text.magnifyingglass", title: i18n.t("sales.noSalesFound"))
             }
         } else {
-            if let stats = model.stats { SalesSummary(stats: stats) }
+            if let stats = model.stats { SalesSummary(stats: stats, expanded: $showStats) }
             ForEach(pager.items) { sale in
                 Button { selected = sale } label: { SaleRow(sale: sale) }
                     .buttonStyle(.plain)

@@ -23,7 +23,9 @@ three permission-gated routes.
   which now also opens the confirm sheet.
   Local 58mm receipt (all lines) + print. Toaster on the result.
 - **Sales** (`sales`, `sale.read`): paginated list (`PageState` + load more),
-  compact stats tiles (`/sales/stats`). The main screen carries only the tiles,
+  stats (`/sales/stats`) collapsed by default behind one header row ("Umumiy
+  sharh" + revenue + chevron, `rememberSaveable`) so the first sale stays above
+  the fold. The main screen carries only that header (tiles when expanded),
   an inline `SearchFilterRow` (search + a filter button badged with the active
   non-default filter count) + a CSV-export icon, the list, and a warranty FAB.
   All other filters — date range (`AppDateRangeField`), channel, returned-status,

@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -95,6 +96,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     var showFilters by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
     var range by remember { mutableStateOf(DateRange()) }
+    var statsExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(canReadUsers) { if (canReadUsers) vm.loadCashiers() }
     LaunchedEffect(search) {
@@ -117,7 +119,10 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
         LazyColumn(mod.fillMaxSize(), contentPadding = listBottomPadding(fab = true)) {
             item {
                 Column(Modifier.padding(horizontal = Tokens.Space.screenH, vertical = Tokens.Space.section)) {
-                    stats?.let { SalesSummary(it); Spacer(Modifier.height(Tokens.Space.section)) }
+                    stats?.let {
+                        SalesSummary(it, expanded = statsExpanded, onToggle = { statsExpanded = !statsExpanded })
+                        Spacer(Modifier.height(Tokens.Space.section))
+                    }
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         SearchFilterRow(
                             query = search,
