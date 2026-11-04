@@ -5,7 +5,10 @@ the native port of the web `pages/settings`.
 
 ## Owns
 - `SettingsModule.feature` — nav + route, gated `settings.manage`.
-- `SettingsView` — one `Form` with the four web sections.
+- `SettingsView` — the four web sections as Warm Card section cards (heading +
+  muted description, `AppFormField` + `AppTextField`, mono for numbers and the
+  chat id, the fixed-currency `FactRow`), one primary save pill, saved / error
+  lines, last-updated caption. Title is `nav.settings`. DEBUG: `-open settings`.
 - `SettingsModel` — load / edit draft / save; `SettingsValidation` mirrors the
   server `UpdateSettingsDto` ranges (DEBUG self-check in `SettingsValidation`).
 - `SettingsRepository` — `GET /settings` (open) + `PUT /settings` (`settings.manage`).

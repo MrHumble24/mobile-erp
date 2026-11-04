@@ -15,3 +15,7 @@ feature modules.
 ## Never
 - Put business logic or feature-specific code here.
 - Re-render the screen title inside feature screens (the shell owns it).
+
+## Warm Card (ADR 0022) — More
+- `MoreScreen` is one `AppCard` (padding 0) of 52 dp icon + label + chevron rows split
+  by inset hairlines, on the ground with no border; kit tokens only.

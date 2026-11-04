@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Store settings form: identity, sales, Nasiya and Telegram sections. Mirrors
-/// the web Settings page. Stock `Form`/`TextField`/`Picker` so iOS chrome and
-/// Dark Mode come for free; the save action is online-only and blocks offline.
+/// Store settings as four Warm Card section cards (identity, sales, Nasiya,
+/// Telegram) with kit fields, one primary save and the last-updated caption.
+/// Mirrors the web Settings page; the save is online-only and blocks offline.
+/// Title is the tab label (`nav.settings`), the same string as Android.
 struct SettingsView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -10,8 +11,8 @@ struct SettingsView: View {
 
     var body: some View {
         content
-            .navigationTitle(i18n.t("settings.title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .background(Tokens.ground)
+            .navigationTitle(i18n.t("nav.settings"))
             .task {
                 model.bind(container)
                 if model.loading { await model.load() }
@@ -29,125 +30,90 @@ struct SettingsView: View {
     }
 
     private var form: some View {
-        Form {
-            identity
-            sales
-            nasiya
-            telegram
-            footer
+        @Bindable var model = model
+        return ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
+                if !container.connectivity.isOnline { FormErrorLine(message: i18n.t("common.offline"), color: Tokens.warning) }
+                section("settings.sectionIdentity", "settings.sectionIdentityDesc") {
+                    field("settings.storeName", $model.form.storeName)
+                    AppFormField(label: i18n.t("settings.storePhone")) {
+                        AppTextField(placeholder: i18n.t("settings.storePhone"), text: $model.form.storePhone, keyboard: .phonePad,
+                                     autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                            .sanitizePhone($model.form.storePhone)
+                    }
+                    field("settings.storeAddress", $model.form.storeAddress)
+                    field("settings.receiptFooter", $model.form.receiptFooter)
+                }
+                section("settings.sectionSales", "settings.sectionSalesDesc") {
+                    number("settings.defaultWarrantyDays", $model.form.defaultWarrantyDays, "defaultWarrantyDays")
+                    number("settings.minMarginPercent", $model.form.minMarginPercent, "minMarginPercent", decimal: true)
+                    number("settings.lowStockThreshold", $model.form.lowStockThreshold, "lowStockThreshold")
+                    FactRow(label: i18n.t("settings.currency"), last: true) { Text("USD").font(.data(.regular)) }
+                    Text(i18n.t("settings.currencyFixed")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+                section("settings.sectionNasiya", "settings.sectionNasiyaDesc") {
+                    number("settings.defaultNasiyaDueDays", $model.form.defaultNasiyaDueDays, "defaultNasiyaDueDays")
+                    number("settings.overdueReminderDays", $model.form.overdueReminderDays, "overdueReminderDays")
+                }
+                section("settings.sectionTelegram", "settings.sectionTelegramDesc") {
+                    AppFormField(label: i18n.t("settings.telegramChatId")) {
+                        AppTextField(placeholder: "-1001234567890", text: $model.form.telegramChatId,
+                                     autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                    }
+                    number("settings.closingTime", $model.form.closingTime, "closingTime", placeholder: "20:00")
+                }
+                if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
+                if let err = model.saveError { FormErrorLine(message: err) }
+                Button {
+                    Haptic.tick.play()
+                    Task { await model.save() }
+                } label: {
+                    if model.saving { ProgressView().tint(Tokens.onAction).frame(maxWidth: .infinity) }
+                    else { Text(i18n.t("common.save")).frame(maxWidth: .infinity) }
+                }
+                .buttonStyle(.pillPrimary)
+                .disabled(model.saving || !model.isDirty || !model.invalidFields.isEmpty)
+                if !model.updatedAt.isEmpty {
+                    Text("\(i18n.t("settings.lastUpdated")): \(model.updatedAt)").font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+            }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.vertical, Tokens.Space.md)
         }
         .scrollDismissesKeyboard(.interactively)
     }
 
-    private var identity: some View {
-        Section(i18n.t("settings.sectionIdentity")) {
-            labeled("settings.storeName", $model.form.storeName)
-            labeled("settings.storePhone", $model.form.storePhone, keyboard: .phonePad)
-            labeled("settings.storeAddress", $model.form.storeAddress)
-            labeled("settings.receiptFooter", $model.form.receiptFooter)
-        }
-    }
-
-    private var sales: some View {
-        Section(i18n.t("settings.sectionSales")) {
-            number("settings.defaultWarrantyDays", $model.form.defaultWarrantyDays, "defaultWarrantyDays")
-            number("settings.minMarginPercent", $model.form.minMarginPercent, "minMarginPercent", decimal: true)
-            number("settings.lowStockThreshold", $model.form.lowStockThreshold, "lowStockThreshold")
-            LabeledContent(i18n.t("settings.currency"), value: "USD")
-        }
-    }
-
-    private var nasiya: some View {
-        Section(i18n.t("settings.sectionNasiya")) {
-            number("settings.defaultNasiyaDueDays", $model.form.defaultNasiyaDueDays, "defaultNasiyaDueDays")
-            number("settings.overdueReminderDays", $model.form.overdueReminderDays, "overdueReminderDays")
-        }
-    }
-
-    private var telegram: some View {
-        Section(i18n.t("settings.sectionTelegram")) {
-            labeled("settings.telegramChatId", $model.form.telegramChatId, mono: true)
-            number("settings.closingTime", $model.form.closingTime, "closingTime", placeholder: "HH:mm")
-        }
-    }
-
-    @ViewBuilder private var footer: some View {
-        Section {
-            Button {
-                Haptic.tick.play()
-                Task { await model.save() }
-            } label: {
-                HStack(spacing: 8) {
-                    if model.saving {
-                        ProgressView().tint(Color(.systemBackground))
-                    }
-                    Text(model.saving ? i18n.t("settings.saving") : i18n.t("common.save"))
-                        .font(.headline)
+    /// One section card: heading + description, then the fields.
+    private func section<Content: View>(_ titleKey: String, _ descKey: String, @ViewBuilder content: () -> Content) -> some View {
+        let body = content()
+        return AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(i18n.t(titleKey)).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                    Text(i18n.t(descKey)).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
+                body
             }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(Tokens.onInk)
-            .tint(Tokens.ink)
-            .disabled(model.saving || !model.isDirty || !model.invalidFields.isEmpty)
-            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-            .listRowBackground(Color.clear)
-
-            if model.saved {
-                Label(i18n.t("settings.settingsSaved"), systemImage: "checkmark.circle.fill")
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(Tokens.success)
-            }
-            if let err = model.saveError {
-                Label(err, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(Tokens.danger)
-            }
-        } footer: {
-            if !model.updatedAt.isEmpty {
-                Text("\(i18n.t("settings.lastUpdated")): \(model.updatedAt)")
-                    .font(.caption2)
-                    .foregroundStyle(Tokens.muted)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    // MARK: field builders that carry their own validation key
+    private func field(_ key: String, _ binding: Binding<String>) -> some View {
+        AppFormField(label: i18n.t(key)) { AppTextField(placeholder: i18n.t(key), text: binding) }
+    }
 
     @ViewBuilder
-    private func labeled(_ key: String, _ binding: Binding<String>,
-                         keyboard: UIKeyboardType = .default, mono: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(key)).font(.caption).foregroundStyle(Tokens.muted)
-            let field = TextField(i18n.t(key), text: binding)
-                .keyboardType(keyboard)
-                .font(mono ? .mono(16) : .body)
-                .autocorrectionDisabled(mono)
-                .textInputAutocapitalization(mono ? .never : .sentences)
-            if keyboard == .phonePad {
-                field.sanitizePhone(binding)
-            } else {
-                field
-            }
-        }
-    }
-
     private func number(_ key: String, _ binding: Binding<String>, _ validationKey: String,
-                        decimal: Bool = false, placeholder: String = "") -> some View {
+                        decimal: Bool = false, placeholder: String = "0") -> some View {
         let invalid = model.invalidFields.contains(validationKey)
         let isTime = validationKey == "closingTime"
-        return VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(key)).font(.caption).foregroundStyle(Tokens.muted)
-            TextField(placeholder, text: binding)
-                .keyboardType(isTime ? .numbersAndPunctuation : (decimal ? .decimalPad : .numberPad))
-                .font(.mono(16))
-            if invalid {
-                Text(i18n.t("common.required", default: "Invalid value"))
-                    .font(.caption2).foregroundStyle(Tokens.danger)
-            }
+        AppFormField(label: i18n.t(key)) {
+            AppTextField(placeholder: placeholder, text: binding,
+                         keyboard: isTime ? .numbersAndPunctuation : (decimal ? .decimalPad : .numberPad),
+                         autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
+                .modifier(SettingFieldSanitizer(binding: binding, decimal: decimal, isTime: isTime))
+            if invalid { FormErrorLine(message: i18n.t("common.required")) }
         }
-        .modifier(SettingFieldSanitizer(binding: binding, decimal: decimal, isTime: isTime))
     }
 }
 

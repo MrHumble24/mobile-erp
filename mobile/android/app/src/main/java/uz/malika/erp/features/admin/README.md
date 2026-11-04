@@ -54,3 +54,10 @@ all three nav items and routes.
   `EditRoleDialog` (destructive pill + confirm); role cards keep perms + edit as
   secondary pills and a system/custom pill. The filter sheet's role facet is an
   `AppSelect`. All sheets use gutter padding, titleLarge titles and kit tokens.
+
+## Warm Card (ADR 0022) — Settings
+- `SettingsScreen` drops its page heading (the shell title is the heading) and
+  stacks the four section cards (heading + muted description + kit fields) at
+  the card gap; the offline notice sits on top, save is the one orange pill at
+  the bottom. The sales card gains the fixed-currency `FactRow` (USD) for parity
+  with iOS.

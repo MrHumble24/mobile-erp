@@ -8,21 +8,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.admin.model.SettingsErrors
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.ui.theme.Tokens
+import androidx.compose.foundation.layout.fillMaxWidth
+import uz.malika.erp.shared.ui.FactRow
+import uz.malika.erp.ui.theme.MonoFamily
 
 /** The four store-settings field groups (identity / sales / nasiya / telegram). */
 
 @Composable
 private fun SectionCard(title: String, description: String, content: @Composable () -> Unit) {
-    AppCard {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Text(description, style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
-        Spacer(Modifier.height(12.dp))
+    AppCard(Modifier.fillMaxWidth()) {
+        Text(title, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Text(description, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+        Spacer(Modifier.height(Tokens.Space.lg))
         content()
     }
 }
@@ -33,11 +35,11 @@ fun StoreIdentitySection(form: SettingsFormState) {
     SectionCard(t("settings.sectionIdentity", null), t("settings.sectionIdentityDesc", null)) {
         Column {
             AppFormField(t("settings.storeName", null), form.storeName, { form.storeName = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("settings.storePhone", null), form.storePhone, { form.storePhone = it }, keyboardType = KeyboardType.Phone)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("settings.storeAddress", null), form.storeAddress, { form.storeAddress = it })
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(t("settings.receiptFooter", null), form.receiptFooter, { form.receiptFooter = it })
         }
     }
@@ -49,10 +51,15 @@ fun SalesSection(form: SettingsFormState, errors: SettingsErrors) {
     SectionCard(t("settings.sectionSales", null), t("settings.sectionSalesDesc", null)) {
         Column {
             NumField(t("settings.defaultWarrantyDays", null), form.defaultWarrantyDays, { form.defaultWarrantyDays = it }, errors.defaultWarrantyDays)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             NumField(t("settings.minMarginPercent", null), form.minMarginPercent, { form.minMarginPercent = it }, errors.minMarginPercent, decimal = true)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             NumField(t("settings.lowStockThreshold", null), form.lowStockThreshold, { form.lowStockThreshold = it }, errors.lowStockThreshold)
+            Spacer(Modifier.height(Tokens.Space.md))
+            FactRow(t("settings.currency", null), last = true) {
+                Text("USD", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+            }
+            Text(t("settings.currencyFixed", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         }
     }
 }
@@ -63,7 +70,7 @@ fun NasiyaSection(form: SettingsFormState, errors: SettingsErrors) {
     SectionCard(t("settings.sectionNasiya", null), t("settings.sectionNasiyaDesc", null)) {
         Column {
             NumField(t("settings.defaultNasiyaDueDays", null), form.defaultNasiyaDueDays, { form.defaultNasiyaDueDays = it }, errors.defaultNasiyaDueDays)
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             NumField(t("settings.overdueReminderDays", null), form.overdueReminderDays, { form.overdueReminderDays = it }, errors.overdueReminderDays)
         }
     }
@@ -75,7 +82,7 @@ fun TelegramSection(form: SettingsFormState, errors: SettingsErrors) {
     SectionCard(t("settings.sectionTelegram", null), t("settings.sectionTelegramDesc", null)) {
         Column {
             AppFormField(t("settings.telegramChatId", null), form.telegramChatId, { form.telegramChatId = it }, placeholder = "-1001234567890")
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(
                 t("settings.closingTime", null), form.closingTime, { form.closingTime = it },
                 placeholder = "20:00",
