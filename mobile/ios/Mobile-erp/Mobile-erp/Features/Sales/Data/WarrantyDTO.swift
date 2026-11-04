@@ -97,14 +97,8 @@ enum WarrantyOffline {
     }
 }
 
-/// Parse an ISO-8601 instant, with or without fractional seconds.
-func parseDate(_ value: String?) -> Date? {
-    guard let value else { return nil }
-    let withFraction = ISO8601DateFormatter()
-    withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    if let d = withFraction.date(from: value) { return d }
-    return ISO8601DateFormatter().date(from: value)
-}
+/// Parse an ISO-8601 instant (the kit's `KitDate.parse`; the sales name stays).
+func parseDate(_ value: String?) -> Date? { KitDate.parse(value) }
 
 #if DEBUG
 enum SalesSelfCheck {

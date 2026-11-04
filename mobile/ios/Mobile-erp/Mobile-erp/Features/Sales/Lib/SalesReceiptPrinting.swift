@@ -41,18 +41,5 @@ enum SalesInput {
 }
 
 /// Short date helpers for sales views.
-enum SaleDate {
-    static func day(_ iso: String?) -> String {
-        guard let iso, let date = parseDate(iso) else { return "—" }
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
-    }
-
-    static func dayTime(_ iso: String?) -> String {
-        guard let iso, let date = parseDate(iso) else { return "—" }
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd HH:mm"
-        return f.string(from: date)
-    }
-}
+/// Date display lives in the kit (`KitDate`); the old name stays for the sales call sites.
+typealias SaleDate = KitDate

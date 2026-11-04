@@ -37,6 +37,11 @@ dressed.
 - **ScannerField**, **AppSwitchStyle** (`action` tint), **StateViews** (spinner
   and glyphs in muted, never action), **KitToast** (token tints, radius 14).
 
+## Dates (`Shared/Kit/KitDate.swift`)
+- **KitDate** — `parse` (ISO-8601 with or without fractions), `day`
+  (`yyyy-MM-dd`), `dayTime` (`yyyy-MM-dd HH:mm`, local). Sales and inventory
+  both read it.
+
 ## Motion & haptics (`Shared/Kit/`)
 - **Haptic** (`Haptics.swift`) — the vocabulary: `tick` (captured scan),
   `success` (completed sale / submitted batch), `error` (duplicate or rejected

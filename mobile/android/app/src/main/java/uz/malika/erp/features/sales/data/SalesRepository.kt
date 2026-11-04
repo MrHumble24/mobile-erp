@@ -69,7 +69,7 @@ class SalesRepository(
         val saleJson = device.latestSale ?: return null
         val sale = runCatching { json.decodeFromString(CachedSaleDto.serializer(), saleJson) }
             .getOrNull() ?: return null
-        val endsMillis = uz.malika.erp.features.sales.lib.parseIsoMillis(sale.warrantyEndsAt)
+        val endsMillis = uz.malika.erp.shared.lib.parseIsoMillis(sale.warrantyEndsAt)
         val remaining = endsMillis?.let { remainingWarrantyDays(it, System.currentTimeMillis()) } ?: 0
         return Warranty(
             imei = device.imei,

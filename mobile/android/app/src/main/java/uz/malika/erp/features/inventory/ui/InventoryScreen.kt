@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
@@ -54,14 +53,14 @@ fun InventoryScreen(container: AppContainer) {
     if (tabs.none { it.value == selected }) selected = InventoryTab.DEVICES
 
     Column(Modifier.fillMaxSize()) {
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         SegmentedControl(
             options = tabs,
             selected = selected,
             onSelect = { selected = it },
             modifier = Modifier.padding(horizontal = Tokens.Space.screenH),
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.md))
         when (selected) {
             InventoryTab.DEVICES -> DevicesTab(
                 devicesVm = devicesVm,

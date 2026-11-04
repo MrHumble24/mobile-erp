@@ -1,37 +1,34 @@
 package uz.malika.erp.features.inventory.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.background
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.inventory.model.DeviceMetrics
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Metrics strip above the device list. Status cards toggle the list filter; the
- * low-stock card jumps to the Alerts tab. Scrolls edge-to-edge with a screen-gutter
- * content padding so the first/last tile sit on the 16dp margin (never clipped).
+ * Status filter chips above the device list — one row of pills, each a status
+ * with its count in mono. Tapping a status toggles the list filter; the selected
+ * chip wears the status pill pair (hue on tint), the rest sit as white cards.
+ * The low-stock chip is a jump to the Alerts tab, not a filter. Scrolls
+ * edge-to-edge with the screen gutter as content padding.
  */
 @Composable
 fun InventoryMetricsBar(
@@ -45,62 +42,59 @@ fun InventoryMetricsBar(
     val t = LocalT.current
     LazyRow(
         Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm),
         contentPadding = PaddingValues(horizontal = Tokens.Space.screenH),
     ) {
         item {
-            MetricCard(t("inventory.metricsTotal", null), metrics.total, Tokens.onyx,
-                active = selectedStatus == null) { onSelectStatus(null) }
+            StatusCountChip(t("inventory.metricsTotal", null), metrics.total, Tokens.text,
+                selected = selectedStatus == null) { onSelectStatus(null) }
         }
         item {
-            MetricCard(t("inventory.metricsInStock", null), metrics.inStock, Tokens.success,
-                active = selectedStatus == "IN_STOCK") { onToggleStatus("IN_STOCK") }
+            StatusCountChip(t("inventory.metricsInStock", null), metrics.inStock, Tokens.success,
+                selected = selectedStatus == "IN_STOCK") { onToggleStatus("IN_STOCK") }
         }
         item {
-            MetricCard(t("inventory.metricsDefective", null), metrics.defective, Tokens.danger,
-                active = selectedStatus == "DEFECTIVE") { onToggleStatus("DEFECTIVE") }
+            StatusCountChip(t("inventory.metricsDefective", null), metrics.defective, Tokens.danger,
+                selected = selectedStatus == "DEFECTIVE") { onToggleStatus("DEFECTIVE") }
         }
         item {
-            MetricCard(t("inventory.metricsConsigned", null), metrics.consigned, Tokens.signalBlue,
-                active = selectedStatus == "CONSIGNED") { onToggleStatus("CONSIGNED") }
+            StatusCountChip(t("inventory.metricsConsigned", null), metrics.consigned, Tokens.info,
+                selected = selectedStatus == "CONSIGNED") { onToggleStatus("CONSIGNED") }
         }
         item {
-            MetricCard(t("inventory.metricsLowStock", null), lowStockCount, Tokens.warning,
-                active = false, onTap = onShowAlerts)
+            StatusCountChip(t("inventory.metricsLowStock", null), lowStockCount, Tokens.warning,
+                selected = false, onTap = onShowAlerts)
         }
     }
 }
 
 @Composable
-private fun MetricCard(
+private fun StatusCountChip(
     label: String,
     value: Int?,
-    dot: Color,
-    active: Boolean,
+    hue: Color,
+    selected: Boolean,
     onTap: () -> Unit,
 ) {
-    // Warm Card: no border. The selected tile is a surface-2 fill with
-    // text-colour label; unselected is a white card with a muted label.
-    Surface(
-        onClick = onTap,
-        shape = RoundedCornerShape(Tokens.Radius.cards),
-        color = if (active) Tokens.surface2 else Tokens.card,
-        modifier = Modifier.width(130.dp),
+    val fill = if (selected) hue.copy(alpha = 0.14f) else Tokens.card
+    val labelColor = if (selected) hue else Tokens.muted
+    val countColor = if (selected) hue else Tokens.text
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(Tokens.Radius.pill))
+            .background(fill)
+            .clickable(onClick = onTap)
+            .height(40.dp)
+            .padding(horizontal = Tokens.Space.lg),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm),
     ) {
-        Column(Modifier.padding(Tokens.Space.md)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (active) Tokens.text else Tokens.muted,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                Box(Modifier.size(10.dp).background(dot, CircleShape))
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(value?.toString() ?: "—", style = MaterialTheme.typography.headlineSmall, color = Tokens.text)
-        }
+        Text(label, style = MaterialTheme.typography.labelMedium, color = labelColor, maxLines = 1)
+        Text(
+            value?.toString() ?: "—",
+            style = MaterialTheme.typography.labelMedium.copy(fontFamily = MonoFamily),
+            color = countColor,
+            maxLines = 1,
+        )
     }
 }

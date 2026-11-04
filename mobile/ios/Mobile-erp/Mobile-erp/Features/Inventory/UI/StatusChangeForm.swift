@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Manual status-change form inside the device sheet. Online-only (not an
-/// outbox mutation): blocked with a connection message when offline. Surfaces
-/// the 409 version conflict (ADR 0012). Rendered as List sections.
+/// Manual status-change form at the foot of the device sheet. Online-only (not
+/// an outbox mutation): blocked with a connection message when offline.
+/// Surfaces the 409 version conflict (ADR 0012). Kit fields, not a Form.
 struct StatusChangeForm: View {
     let device: DeviceDetail
     let store: InventoryStore
@@ -21,20 +21,24 @@ struct StatusChangeForm: View {
 
     var body: some View {
         if !transitions.isEmpty {
-            Section {
-                Picker(i18n.t("inventory.newStatus"), selection: $target) {
-                    ForEach(transitions, id: \.self) { s in
-                        Text(i18n.t(DeviceStatusMeta.labelKey(s))).tag(s)
-                    }
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                    Text(i18n.t("inventory.changeStatus")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                    Text(i18n.t("inventory.statusManualHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
-                TextField(i18n.t("inventory.reason"), text: $reason)
-                if !online {
-                    Label(i18n.t("common.offline", default: "No connection to the server."),
-                          systemImage: "wifi.slash")
-                        .font(.caption).foregroundStyle(Tokens.warning)
+                AppFormField(label: i18n.t("inventory.newStatus")) {
+                    AppSelect(placeholder: i18n.t("inventory.newStatus"), selection: $target,
+                              options: transitions.map { ($0, i18n.t(DeviceStatusMeta.labelKey($0))) })
+                }
+                AppFormField(label: i18n.t("inventory.reason")) {
+                    AppTextField(placeholder: i18n.t("inventory.reason"), text: $reason)
                 }
                 if let message {
-                    Text(message).font(.caption).foregroundStyle(Tokens.danger)
+                    Text(message).font(.ui(.caption)).foregroundStyle(Tokens.danger)
+                }
+                if !online {
+                    Label(i18n.t("common.offline", default: "Offline"), systemImage: "wifi.slash")
+                        .font(.ui(.caption)).foregroundStyle(Tokens.warning)
                 }
                 Button {
                     Task { await submit() }
@@ -42,14 +46,10 @@ struct StatusChangeForm: View {
                     Text(saving ? i18n.t("common.loading") : i18n.t("common.save"))
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .foregroundStyle(Tokens.onInk)
+                .buttonStyle(.pillSecondary)
                 .disabled(saving || !online || target.isEmpty)
-            } header: {
-                Text(i18n.t("inventory.changeStatus"))
-            } footer: {
-                Text(i18n.t("inventory.statusManualHint"))
             }
+            .padding(.top, Tokens.Space.sm)
             .onAppear { if target.isEmpty { target = transitions.first ?? "" } }
         }
     }

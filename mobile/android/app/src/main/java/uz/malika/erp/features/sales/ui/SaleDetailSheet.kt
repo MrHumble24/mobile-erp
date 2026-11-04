@@ -33,7 +33,7 @@ import androidx.core.net.toUri
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
-import uz.malika.erp.features.sales.lib.formatDateTime
+import uz.malika.erp.shared.lib.formatDateTime
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.MoneyText

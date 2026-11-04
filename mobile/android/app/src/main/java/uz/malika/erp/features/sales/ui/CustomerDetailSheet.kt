@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomerSale
-import uz.malika.erp.features.sales.lib.formatDate
+import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney

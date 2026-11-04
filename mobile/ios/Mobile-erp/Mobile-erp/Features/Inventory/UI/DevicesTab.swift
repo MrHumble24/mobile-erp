@@ -24,9 +24,8 @@ struct DevicesTab: View {
     private var shown: [DeviceListItem] { all.filter(filter.matches) }
     private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
-    private var hasActiveFilters: Bool {
-        !filter.isEmpty || filter.statusCode != nil
-    }
+    /// Sheet filters only: status is the inline chip row, search the search bar.
+    private var hasActiveFilters: Bool { filter.modelId != nil || filter.storage != nil }
 
     private var cameraSupported: Bool {
         DataScannerViewController.isSupported && DataScannerViewController.isAvailable
@@ -43,32 +42,49 @@ struct DevicesTab: View {
     // MARK: iPhone — list + detail sheet
 
     private var compactBody: some View {
-        List {
-            Section {
+        ScrollView {
+            VStack(spacing: Tokens.Space.lg) {
                 if shown.isEmpty {
-                    EmptyStateView(systemImage: "iphone.slash", title: i18n.t("inventory.empty"))
-                        .listRowBackground(Color.clear)
+                    AppCard { EmptyStateView(systemImage: "iphone.slash", title: i18n.t("inventory.empty")) }
                 } else {
                     ForEach(shown) { device in
                         Button { selected = ImeiTarget(imei: device.imei) } label: {
-                            DeviceListRow(device: device)
+                            AppCard { DeviceListRow(device: device) }
                         }
-                        .tint(.primary)
+                        .buttonStyle(.plain)
                     }
                 }
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.bottom, Tokens.Space.lg)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .listRowBackground(Tokens.surface)
-        .background(Tokens.bg)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            InventoryMetricsBar(
+                metrics: DeviceMetrics(all),
+                lowStockCount: store.lowStock.count,
+                selectedStatus: filter.statusCode,
+                onSelectStatus: { filter.statusCode = $0 },
+                onShowAlerts: onShowAlerts
+            )
+            .padding(.bottom, Tokens.Space.md)
+            .background(Tokens.ground)
+        }
+        .background(Tokens.ground)
         .searchable(text: $filter.search, prompt: i18n.t("inventory.scanOrSearch"))
         .toolbar { toolbarItems }
         .sheet(isPresented: $showFilters) { filterSheet }
-        .sheet(item: $selected) { target in
+        .appSheet(item: $selected) { target in
             DeviceSheet(imei: target.imei, store: store)
         }
         .sheet(isPresented: $showCamera) { camera }
+        #if DEBUG
+        // Screenshot helper: `-openDevice <imei>` opens that device's detail.
+        .onAppear {
+            if let imei = UserDefaults.standard.string(forKey: "openDevice"), selected == nil {
+                selected = ImeiTarget(imei: imei)
+            }
+        }
+        #endif
     }
 
     // MARK: iPad — master-detail
@@ -107,23 +123,14 @@ struct DevicesTab: View {
     }
 
     private var filterSheet: some View {
-        DeviceFilterSheet(
-            filter: $filter,
-            metrics: DeviceMetrics(all),
-            lowStockCount: store.lowStock.count,
-            models: store.deviceModels,
-            onShowAlerts: onShowAlerts
-        )
+        DeviceFilterSheet(filter: $filter, models: store.deviceModels)
     }
 
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                Haptic.tick.play()
-                showFilters = true
-            } label: {
-                Label(i18n.t("common.filter", default: "Filters & Overview"),
+            Button { showFilters = true } label: {
+                Label(i18n.t("common.filter"),
                       systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
             }
         }
@@ -154,30 +161,29 @@ struct DevicesTab: View {
     }
 }
 
+/// One device card: model, mono "IMEI · storage", optional IMEI 2, status pill —
+/// the Android `DeviceRow`.
 private struct DeviceListRow: View {
     let device: DeviceListItem
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        HStack {
+        HStack(spacing: Tokens.Space.sm) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(device.modelLabel.isEmpty ? device.imei : device.modelLabel)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(Tokens.ink)
+                    .font(.ui(.bodyStrong))
+                    .foregroundStyle(Tokens.text)
                 Text(device.storage.map { "\(device.imei) · \($0)" } ?? device.imei)
-                    .font(.mono(12))
-                    .foregroundStyle(Tokens.muted)
+                    .font(.data(.regular))
+                    .foregroundStyle(Tokens.text)
                 if let imei2 = device.imei2, !imei2.isEmpty {
-                    Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
-                        .font(.mono(11))
-                        .foregroundStyle(.tertiary)
+                    Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
                 }
             }
-            Spacer()
+            Spacer(minLength: Tokens.Space.sm)
             StatusBadge(deviceStatus: device.statusCode,
                         label: i18n.t(DeviceStatusMeta.labelKey(device.statusCode)))
         }
-        .padding(.vertical, 2)
     }
 }
 

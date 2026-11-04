@@ -67,13 +67,9 @@ private struct InventoryTabs: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $tab) {
-                ForEach(tabs) { Text(i18n.t($0.labelKey)).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.bottom, 8)
+        VStack(spacing: Tokens.Space.md) {
+            SegmentedControl(selection: $tab, segments: tabs.map { ($0, i18n.t($0.labelKey)) })
+                .padding(.horizontal, Tokens.Space.gutter)
 
             switch tab {
             case .devices:
@@ -84,8 +80,7 @@ private struct InventoryTabs: View {
                 StockAlertsTab(store: store)
             }
         }
-        .navigationTitle(i18n.t("inventory.title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .background(Tokens.bg)
+        .navigationTitle(i18n.t("nav.inventory"))
+        .background(Tokens.ground)
     }
 }

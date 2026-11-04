@@ -1,6 +1,5 @@
 package uz.malika.erp.features.inventory.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -33,6 +33,7 @@ import uz.malika.erp.i18n.Translate
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.DeviceDetail
 import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
+import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.DevicesViewModel
@@ -45,8 +46,10 @@ import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.shared.ui.Toaster
 import uz.malika.erp.ui.theme.MonoFamily
+import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Device detail: resolves the full device online by IMEI (the offline list
@@ -75,7 +78,7 @@ fun DeviceSheet(
         }
     }
 
-    Column(Modifier.fillMaxWidth().heightIn(max = 640.dp).padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().heightIn(max = 640.dp).padding(Tokens.Space.gutter)) {
         when (val d = detail) {
             is Async.Loading -> Loading()
             is Async.Error -> EmptyView(message = t("inventory.imeiNotFound", null))
@@ -120,56 +123,59 @@ private fun DeviceSheetBody(
     }
 
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        Row(verticalAlignment = Alignment.Top) {
-            Column(Modifier.weight(1f)) {
-                Text(
-                    device.modelLabel.ifEmpty { t("inventory.imeiDetails", null) },
-                    style = MaterialTheme.typography.titleLarge,
+        Text(
+            device.modelLabel.ifEmpty { t("inventory.imeiDetails", null) },
+            style = MaterialTheme.typography.titleLarge,
+            color = Tokens.text,
+        )
+        Spacer(Modifier.height(Tokens.Space.sm))
+        ImeiCopyRow("IMEI", device.imei, clipboard, toaster, t)
+        device.imei2?.takeIf { it.isNotBlank() }?.let {
+            ImeiCopyRow(t("inventory.imei2", null), it, clipboard, toaster, t)
+        }
+        Spacer(Modifier.height(Tokens.Space.sm))
+        StatusChip(
+            label = t(DeviceStatusMeta.labelKey(device.statusCode), null),
+            color = DeviceStatusMeta.color(device.statusCode),
+        )
+        if (canSell || canInspect || canUpdate) {
+            Spacer(Modifier.height(Tokens.Space.lg))
+            // Sell is the one orange; QC is secondary; edit is a ghost link.
+            if (canSell) {
+                PillButton(
+                    text = t("inventory.sellInPos", null),
+                    onClick = { featureNav.open(Destination.Pos(device.imei)); onClose() },
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                ImeiCopyRow("IMEI", device.imei, clipboard, toaster, t)
-                device.imei2?.takeIf { it.isNotBlank() }?.let {
-                    ImeiCopyRow(t("inventory.imei2", null), it, clipboard, toaster, t)
-                }
+                Spacer(Modifier.height(Tokens.Space.sm))
+            }
+            if (canInspect) {
+                PillButton(
+                    text = t("qc.runInspection", null),
+                    onClick = { featureNav.open(Destination.Qc(device.imei)); onClose() },
+                    variant = ButtonVariant.SECONDARY,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(Tokens.Space.sm))
             }
             if (canUpdate) {
                 PillButton(
                     text = t("inventory.editDevice", null),
                     onClick = { showEdit = true },
-                    variant = ButtonVariant.OUTLINE,
+                    variant = ButtonVariant.GHOST,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
-        if (canSell || canInspect) {
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (canSell) {
-                    PillButton(
-                        text = t("inventory.sellInPos", null),
-                        onClick = { featureNav.open(Destination.Pos(device.imei)); onClose() },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                if (canInspect) {
-                    PillButton(
-                        text = t("qc.runInspection", null),
-                        onClick = { featureNav.open(Destination.Qc(device.imei)); onClose() },
-                        variant = ButtonVariant.OUTLINE,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         DeviceBarcode(imei = device.imei)
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(Tokens.Space.lg))
         DeviceSpecsGrid(device = device)
-        Spacer(Modifier.height(16.dp))
-        Text(t("inventory.qcInspection", null), style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.gutter))
+        SectionTitle(t("inventory.qcInspection", null))
         QcSummarySection(qc = device.latestInspection)
-        Spacer(Modifier.height(16.dp))
-        Text(t("inventory.history", null), style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.gutter))
+        SectionTitle(t("inventory.history", null))
         DeviceHistoryList(history = history)
         if (canChangeStatus) {
             StatusChangeForm(
@@ -180,7 +186,7 @@ private fun DeviceSheetBody(
                 onChanged = onChanged,
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(Tokens.Space.sm))
     }
 
     if (showEdit) {
@@ -196,6 +202,13 @@ private fun DeviceSheetBody(
     }
 }
 
+/** Section heading inside the sheet (Heading step, same as the dashboard cards). */
+@Composable
+private fun SectionTitle(text: String) {
+    Text(text, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+    Spacer(Modifier.height(Tokens.Space.sm))
+}
+
 /** One labelled IMEI line in the mono face with a copy-to-clipboard button. */
 @Composable
 private fun ImeiCopyRow(
@@ -208,13 +221,14 @@ private fun ImeiCopyRow(
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             "$label: $value",
-            style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+            color = Tokens.text,
         )
         IconButton(onClick = {
             clipboard.setText(AnnotatedString(value))
             toaster.success("${t("inventory.imeiCopied", null)}: $value")
         }) {
-            Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null))
+            Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null), tint = Tokens.muted, modifier = Modifier.size(18.dp))
         }
     }
 }

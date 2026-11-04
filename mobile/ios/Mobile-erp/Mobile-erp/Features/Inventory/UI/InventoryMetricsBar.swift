@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// Roomy, horizontal scrolling metrics strip above the devices list.
-/// Strictly avoids multi-column grids so labels are uncompressed and
-/// filter cards are effortless to tap with one thumb.
+/// Status filter chips above the devices list — one row of pills, each a status
+/// with its count in mono. Tapping a status toggles the list filter; the
+/// selected chip wears the status pill pair (hue on tint), the rest sit as
+/// white cards. The low-stock chip jumps to the Alerts tab. Same anatomy as the
+/// Android `InventoryMetricsBar`.
 struct InventoryMetricsBar: View {
     let metrics: DeviceMetrics
     let lowStockCount: Int
@@ -14,52 +16,41 @@ struct InventoryMetricsBar: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                card("inventory.metricsTotal", metrics.total, Tokens.ink,
-                     active: selectedStatus == nil) { onSelectStatus(nil) }
-                card("inventory.metricsInStock", metrics.inStock, Tokens.success,
-                     active: selectedStatus == "IN_STOCK") { toggle("IN_STOCK") }
-                card("inventory.metricsDefective", metrics.defective, Tokens.danger,
-                     active: selectedStatus == "DEFECTIVE") { toggle("DEFECTIVE") }
-                card("inventory.metricsConsigned", metrics.consigned, Tokens.signalBlue,
-                     active: selectedStatus == "CONSIGNED") { toggle("CONSIGNED") }
-                card("inventory.metricsLowStock", lowStockCount, Tokens.warning,
-                     active: false, action: onShowAlerts)
+            HStack(spacing: Tokens.Space.sm) {
+                chip("inventory.metricsTotal", metrics.total, Tokens.text,
+                     selected: selectedStatus == nil) { onSelectStatus(nil) }
+                chip("inventory.metricsInStock", metrics.inStock, Tokens.success,
+                     selected: selectedStatus == "IN_STOCK") { toggle("IN_STOCK") }
+                chip("inventory.metricsDefective", metrics.defective, Tokens.danger,
+                     selected: selectedStatus == "DEFECTIVE") { toggle("DEFECTIVE") }
+                chip("inventory.metricsConsigned", metrics.consigned, Tokens.info,
+                     selected: selectedStatus == "CONSIGNED") { toggle("CONSIGNED") }
+                chip("inventory.metricsLowStock", lowStockCount, Tokens.warning,
+                     selected: false, action: onShowAlerts)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Tokens.Space.gutter)
         }
     }
 
     private func toggle(_ code: String) {
-        Haptic.tick.play()
         onSelectStatus(selectedStatus == code ? nil : code)
     }
 
-    private func card(_ labelKey: String, _ value: Int, _ color: Color,
-                      active: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(_ labelKey: String, _ value: Int, _ hue: Color,
+                      selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Circle().fill(color).frame(width: 8, height: 8)
-                    Text(i18n.t(labelKey))
-                        .font(.caption.weight(active ? .semibold : .regular))
-                        .foregroundStyle(active ? Tokens.ink : .secondary)
-                        .lineLimit(1)
-                    Spacer()
-                }
+            HStack(spacing: Tokens.Space.sm) {
+                Text(i18n.t(labelKey))
+                    .font(.ui(.label))
+                    .foregroundStyle(selected ? hue : Tokens.muted)
                 Text("\(value)")
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(Tokens.ink)
+                    .font(.mono(12, weight: .semibold))
+                    .foregroundStyle(selected ? hue : Tokens.text)
             }
-            .frame(width: 125, alignment: .leading)
-            .padding(12)
-            .background(Tokens.surface,
-                        in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
-                    .strokeBorder(active ? Tokens.ink : Tokens.hairline, lineWidth: active ? 2 : 1)
-            )
+            .lineLimit(1)
+            .padding(.horizontal, Tokens.Space.lg)
+            .frame(height: Tokens.Space.minTouch)
+            .background(selected ? Tokens.pillTint(hue) : Tokens.card, in: Capsule())
         }
         .buttonStyle(.plain)
     }

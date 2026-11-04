@@ -13,7 +13,7 @@ import uz.malika.erp.features.sales.data.ReceiptLineItem
 import uz.malika.erp.features.sales.data.SaleCreate
 import uz.malika.erp.features.sales.data.ScannedDevice
 import uz.malika.erp.features.sales.data.totalPrice
-import uz.malika.erp.features.sales.lib.formatDateTime
+import uz.malika.erp.shared.lib.formatDateTime
 
 /**
  * A resolved scan awaiting the cashier's confirmation. [device] is the looked-up

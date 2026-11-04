@@ -1,6 +1,8 @@
 import SwiftUI
 
 /// A deterministic faux-barcode drawn from the IMEI (mirrors the web client).
+/// Fixed white plate + black bars in both appearances: cashiers scan this, so it
+/// must stay high-contrast and never invert in dark mode (same as Android).
 struct DeviceBarcode: View {
     let imei: String
 
@@ -12,75 +14,83 @@ struct DeviceBarcode: View {
     }
 
     var body: some View {
-        VStack(spacing: 4) {
-            HStack(alignment: .center, spacing: 2) {
-                ForEach(Array(bars.enumerated()), id: \.offset) { _, w in
-                    Rectangle().fill(Tokens.ink)
-                        .frame(width: CGFloat(w) * 1.5, height: 36)
+        if !imei.isEmpty {
+            VStack(spacing: Tokens.Space.xs) {
+                HStack(alignment: .center, spacing: 2) {
+                    ForEach(Array(bars.enumerated()), id: \.offset) { _, w in
+                        Rectangle().fill(Color.black)
+                            .frame(width: CGFloat(w) * 1.5, height: 36)
+                    }
                 }
+                Text(imei).font(.mono(12)).foregroundStyle(Color.black)
             }
-            Text(imei).font(.mono(11)).tracking(2).foregroundStyle(Tokens.muted)
+            .frame(maxWidth: .infinity)
+            .padding(Tokens.Space.md)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: Tokens.Radius.controls, style: .continuous))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
     }
 }
 
-/// Single-column, roomy specs view plus the cost / margin row.
+/// A surface-2 block of keyed rows: label muted left, value right, hairlines, no border.
+struct FactBlock<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) { content() }
+            .padding(.horizontal, Tokens.Space.lg)
+            .background(Tokens.surface2, in: RoundedRectangle(cornerRadius: Tokens.Radius.controls, style: .continuous))
+    }
+}
+
+struct FactRow<V: View>: View {
+    let label: String
+    var last = false
+    @ViewBuilder var value: () -> V
+
+    var body: some View {
+        HStack(spacing: Tokens.Space.sm) {
+            Text(label).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+            Spacer(minLength: Tokens.Space.sm)
+            value().foregroundStyle(Tokens.text)
+        }
+        .frame(minHeight: Tokens.Space.minTouch)
+        if !last { Divider().overlay(Tokens.border) }
+    }
+}
+
+/// Specs block plus the cost / margin block (cost only with `device.cost.view`).
 struct DeviceSpecsGrid: View {
     let device: DeviceDetail
     let canViewCost: Bool
     @Environment(I18n.self) private var i18n
 
-    var body: some View {
-        VStack(spacing: 10) {
-            VStack(spacing: 0) {
-                specRow(icon: "internaldrive", label: i18n.t("inventory.storage", default: "Storage"), value: device.specs["storage"])
-                Divider()
-                specRow(icon: "paintpalette", label: i18n.t("inventory.color", default: "Color"), value: device.specs["color"])
-                Divider()
-                specRow(icon: "sparkles", label: i18n.t("inventory.condition", default: "Condition"), value: device.specs["condition"])
-                Divider()
-                specRow(icon: "memorychip", label: i18n.t("inventory.ram", default: "RAM"), value: device.specs["ram"])
-                Divider()
-                specRow(icon: "tag", label: i18n.t("inventory.targetPrice", default: "Target Price"), value: MoneyText.format(device.targetPrice))
-                Divider()
-                specRow(icon: "calendar", label: i18n.t("inventory.intakeDate", default: "Intake Date"), value: device.intakeDate.isEmpty ? "—" : device.intakeDate)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 4)
-            .background(Tokens.surface)
-            .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
-                    .strokeBorder(Tokens.hairline, lineWidth: 1)
-            )
-
-            if canViewCost, let landed = device.landedCost {
-                MarginRow(targetPrice: device.targetPrice, landedCost: landed)
-            }
-        }
+    private func spec(_ key: String) -> String {
+        let v = device.specs[key] ?? ""
+        return v.isEmpty ? "—" : v
     }
 
-    private func specRow(icon: String, label: String, value: String?) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 14))
-                .foregroundStyle(Tokens.muted)
-                .frame(width: 20)
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(Tokens.muted)
-            Spacer()
-            Text(value?.isEmpty == false ? value! : "—")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Tokens.ink)
+    var body: some View {
+        VStack(spacing: Tokens.Space.sm) {
+            FactBlock {
+                FactRow(label: i18n.t("inventory.storage")) { Text(spec("storage")).font(.ui(.body)) }
+                FactRow(label: i18n.t("inventory.color")) { Text(spec("color")).font(.ui(.body)) }
+                FactRow(label: i18n.t("inventory.condition")) { Text(spec("condition")).font(.ui(.body)) }
+                FactRow(label: i18n.t("inventory.ram")) { Text(spec("ram")).font(.ui(.body)) }
+                FactRow(label: i18n.t("inventory.targetPrice")) {
+                    Text(MoneyText.format(device.targetPrice)).font(.data(.regular))
+                }
+                FactRow(label: i18n.t("inventory.intakeDate"), last: true) {
+                    Text(KitDate.day(device.intakeDate)).font(.data(.regular))
+                }
+            }
+            if canViewCost, let landed = device.landedCost {
+                MarginBlock(targetPrice: device.targetPrice, landedCost: landed)
+            }
         }
-        .padding(.vertical, 10)
     }
 }
 
-private struct MarginRow: View {
+private struct MarginBlock: View {
     let targetPrice: String?
     let landedCost: String
     @Environment(I18n.self) private var i18n
@@ -93,17 +103,16 @@ private struct MarginRow: View {
         let percent: Double = cost > .zero
             ? (NSDecimalNumber(decimal: margin).doubleValue / NSDecimalNumber(decimal: cost).doubleValue) * 100
             : 0
-        return HStack {
-            Text("\(i18n.t("inventory.landedCost")): \(MoneyText.format(landedCost))")
-                .font(.caption).foregroundStyle(Tokens.muted)
-            Spacer()
-            Text("\(i18n.t("inventory.margin")): \(positive ? "+" : "")\(MoneyText.format(NSDecimalNumber(decimal: margin).stringValue)) (\(String(format: "%.1f", percent))%)")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(positive ? Tokens.success : Tokens.danger)
+        FactBlock {
+            FactRow(label: i18n.t("inventory.landedCost")) {
+                Text(MoneyText.format(landedCost)).font(.data(.regular))
+            }
+            FactRow(label: i18n.t("inventory.margin"), last: true) {
+                Text("\(positive ? "+" : "")\(MoneyText.format(NSDecimalNumber(decimal: margin).stringValue)) (\(String(format: "%.1f", percent))%)")
+                    .font(.data(.regular))
+                    .foregroundStyle(positive ? Tokens.success : Tokens.danger)
+            }
         }
-        .padding(10)
-        .background(Color(.tertiarySystemGroupedBackground),
-                    in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous))
     }
 }
 
@@ -114,39 +123,50 @@ struct QcSummarySection: View {
 
     var body: some View {
         if let qc {
-            LabeledContent(i18n.t("qc.result")) {
-                Text(qc.passed ? i18n.t("qc.passed") : i18n.t("qc.failed"))
-                    .foregroundStyle(qc.passed ? Tokens.success : Tokens.danger)
-                    .fontWeight(.semibold)
-            }
-            if let grade = qc.gradeCode {
-                LabeledContent(i18n.t("qc.grade"), value: grade)
-            }
-            if let battery = qc.batteryHealth {
-                LabeledContent(i18n.t("qc.batteryHealth"), value: "\(battery)%")
+            FactBlock {
+                FactRow(label: i18n.t("qc.result"), last: qc.gradeCode == nil && qc.batteryHealth == nil) {
+                    Text(qc.passed ? i18n.t("qc.passed") : i18n.t("qc.failed"))
+                        .font(.ui(.bodyStrong))
+                        .foregroundStyle(qc.passed ? Tokens.success : Tokens.danger)
+                }
+                if let grade = qc.gradeCode {
+                    FactRow(label: i18n.t("qc.grade"), last: qc.batteryHealth == nil) { Text(grade).font(.ui(.body)) }
+                }
+                if let battery = qc.batteryHealth {
+                    FactRow(label: i18n.t("qc.batteryHealth"), last: true) { Text("\(battery)%").font(.data(.regular)) }
+                }
             }
         } else {
-            Text(i18n.t("inventory.noQc")).foregroundStyle(Tokens.muted)
+            Text(i18n.t("inventory.noQc")).font(.ui(.body)).foregroundStyle(Tokens.muted)
         }
     }
 }
 
-/// Scrollable status-history list.
+/// Status-history list: translated transition, reason, mono timestamp.
 struct DeviceHistoryList: View {
     let history: [DeviceHistoryEntry]
+    @Environment(I18n.self) private var i18n
+
+    private func label(_ code: String) -> String { i18n.t(DeviceStatusMeta.labelKey(code)) }
 
     var body: some View {
         if history.isEmpty {
-            Text("—").foregroundStyle(Tokens.muted)
+            Text("—").font(.ui(.body)).foregroundStyle(Tokens.muted)
         } else {
-            ForEach(history) { h in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(h.fromStatusCode.map { "\($0) → \(h.toStatusCode)" } ?? h.toStatusCode)
-                        .font(.subheadline.weight(.semibold))
-                    if let reason = h.reason, !reason.isEmpty {
-                        Text("\"\(reason)\"").font(.caption).italic().foregroundStyle(Tokens.muted)
+            VStack(spacing: 0) {
+                ForEach(Array(history.enumerated()), id: \.element.id) { i, h in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(h.fromStatusCode.map { "\(label($0)) → \(label(h.toStatusCode))" } ?? label(h.toStatusCode))
+                            .font(.ui(.bodyStrong))
+                            .foregroundStyle(Tokens.text)
+                        if let reason = h.reason, !reason.isEmpty {
+                            Text(reason).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                        }
+                        Text(KitDate.dayTime(h.changedAt)).font(.data(.regular)).foregroundStyle(Tokens.muted)
                     }
-                    Text(h.changedAt).font(.caption2).foregroundStyle(Tokens.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, Tokens.Space.sm)
+                    if i < history.count - 1 { Divider().overlay(Tokens.border) }
                 }
             }
         }

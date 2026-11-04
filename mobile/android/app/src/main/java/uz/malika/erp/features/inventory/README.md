@@ -7,8 +7,9 @@ gated by `device.read`).
 
 ## Owns
 - **Devices**: offline-first list (Room mirror). The main screen stays uncluttered:
-  the metrics bar (each card is a status filter when tapped), an inline scan/search
-  field beside a `FilterButton` (shared `SearchFilterRow` pattern — the scanner keeps
+  a row of status chips (`InventoryMetricsBar`: label + mono count; a tap toggles
+  the status filter, the selected chip wears the status pill pair; low-stock jumps
+  to Alerts), an inline scan/search field beside a `FilterButton` (shared `SearchFilterRow` pattern — the scanner keeps
   its camera affordance, so the row is hand-built), and the list. Model + storage
   filters live in `DeviceFilterSheet` (shared `FilterSheet`); the button badge counts
   non-default sheet filters and reset calls `DevicesViewModel.clearFilters()`. There is
@@ -23,7 +24,11 @@ gated by `device.read`).
   The device cache carries `imei2` (Room schema v2, `MIGRATION_1_2` — a plain ALTER
   so the outbox survives) and `DeviceDao.findByImei` matches `imei OR imei2`, so a
   scan of the second number resolves the device everywhere (POS, warranty,
-  consignment). Margin row shows only when landed cost is present
+  consignment). The detail sheet is a Warm Card sheet mirroring iOS: title, mono
+  IMEI lines with copy, status pill, then Sell (the one orange) / Run QC
+  (secondary) / Edit (ghost) full width, the white barcode plate, surface-2
+  fact blocks (specs + intake date, cost + margin, QC) and the history list with
+  `shared/lib/DateFmt` dates. Margin block shows only when landed cost is present
   (cost is redacted → null for under-privileged users).
   - Detail actions: "Sell in POS" (`IN_STOCK` + `sale.create`) and "Run QC"
     (`IN_STOCK`/`DEFECTIVE` + `qc.create`) hand off to POS/QC via

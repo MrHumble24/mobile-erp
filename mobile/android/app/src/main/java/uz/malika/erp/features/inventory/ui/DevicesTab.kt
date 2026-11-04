@@ -97,7 +97,7 @@ fun DevicesTab(
                 onToggleStatus = devicesVm::toggleStatus,
                 onShowAlerts = onShowAlerts,
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(Tokens.Space.md))
             Column(Modifier.weight(1f).padding(horizontal = Tokens.Space.screenH)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.weight(1f)) {
@@ -157,7 +157,7 @@ private fun DeviceList(list: List<DeviceListItem>, emptyMessage: String, onOpen:
         EmptyView(message = emptyMessage)
         return
     }
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = listBottomPadding()) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
         items(list, key = { it.id }) { device ->
             DeviceRow(device = device, onClick = { onOpen(device.imei) })
         }
@@ -170,16 +170,18 @@ private fun DeviceRow(device: DeviceListItem, onClick: () -> Unit) {
     AppCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(device.modelLabel, style = MaterialTheme.typography.titleMedium)
+                Text(device.modelLabel.ifEmpty { device.imei }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 val suffix = device.storage?.let { " · $it" } ?: ""
                 Text(
                     device.imei + suffix,
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+                    color = Tokens.text,
                 )
                 device.imei2?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.slate)
+                    Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
                 }
             }
+            Spacer(Modifier.width(Tokens.Space.gap))
             StatusChip(
                 label = t(DeviceStatusMeta.labelKey(device.statusCode), null),
                 color = DeviceStatusMeta.color(device.statusCode),

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,12 +66,10 @@ fun StatusChangeForm(
     }
 
     Column(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(12.dp))
-        HorizontalDivider(color = Tokens.border)
-        Spacer(Modifier.height(12.dp))
-        Text(t("inventory.changeStatus", null), style = MaterialTheme.typography.titleSmall)
+        Spacer(Modifier.height(Tokens.Space.gutter))
+        Text(t("inventory.changeStatus", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
         Spacer(Modifier.height(4.dp))
-        Text(t("inventory.statusManualHint", null), style = MaterialTheme.typography.bodySmall)
+        Text(t("inventory.statusManualHint", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         Spacer(Modifier.height(12.dp))
         AppSelect(
             value = target,

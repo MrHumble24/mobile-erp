@@ -5,10 +5,17 @@ attributes, stock-alert rules. One `device.read` nav entry, three tabs.
 
 ## Owns
 - `InventoryModule` — the single `FeatureModule` (nav: `nav.inventory`).
-- Devices: offline list (SwiftData cache via `@Query`) with search / model /
-  storage / status filters; online detail sheet, edit, and manual status
-  transitions (ADR 0012). iPad shows a `NavigationSplitView` master-detail;
-  iPhone opens the detail as a sheet.
+- Devices: offline list (SwiftData cache via `@Query`) as white cards on the
+  ground, a status chip row (`InventoryMetricsBar`: label + mono count, tap to
+  filter, low-stock jumps to Alerts), system search, and a kit `FilterSheet`
+  for model / storage. Tabs are the kit `SegmentedControl`; the title is
+  `nav.inventory` like the tab and the Android top bar. Online detail as a Warm
+  Card sheet (`appSheet`): title + close, `CopyableIMEI` lines, status pill,
+  Sell (primary) / Run QC (secondary) / Edit (ghost), white barcode plate,
+  surface-2 fact blocks (specs + intake date, cost + margin, QC), translated
+  history with `KitDate` timestamps, then the kit-field status-change form.
+  iPad shows a `NavigationSplitView` master-detail with the same sheet body.
+  Debug: `-openDevice <imei>` opens a device for screenshots.
 - Optional second IMEI (dual-SIM): `DeviceDetail.imei2` / `DeviceListItem.imei2`
   (cached via `DeviceEntity.imei2`). List rows and the detail sheet show it when
   present (detail uses `CopyableIMEI` for both lines); list search and the POS /

@@ -76,3 +76,7 @@ The not-in-stock scan reuses the existing `pos.deviceConflict` key (it was
 
 Missing i18n keys (need Gemini): `common.loadMore` (both locales — used by the
 kit `LoadMoreFooter`). Raw key shows until added.
+
+## Notes
+- Date display (`formatDate` / `formatDateTime` / `parseIsoMillis`) moved to
+  `shared/lib/DateFmt.kt` so inventory shares it; the slice imports from there.

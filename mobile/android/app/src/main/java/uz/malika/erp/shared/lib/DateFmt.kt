@@ -1,4 +1,4 @@
-package uz.malika.erp.features.sales.lib
+package uz.malika.erp.shared.lib
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -6,7 +6,8 @@ import java.util.Locale
 import java.util.TimeZone
 
 /**
- * Display + parse helpers for the ISO-8601 timestamps the server returns.
+ * Display + parse helpers for the ISO-8601 timestamps the server returns
+ * (shared by sales and inventory — promoted from features/sales/lib).
  * `SimpleDateFormat` (not java.time) because minSdk 24 ships no desugaring.
  * Display is in device-local time; parsing treats the wire value as UTC.
  */

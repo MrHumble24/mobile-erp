@@ -51,7 +51,7 @@ import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.SalesRepository
-import uz.malika.erp.features.sales.lib.formatDate
+import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.features.sales.lib.salesCsv
 import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
