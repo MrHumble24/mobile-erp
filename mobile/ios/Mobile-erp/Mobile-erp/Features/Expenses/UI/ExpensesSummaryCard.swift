@@ -27,7 +27,7 @@ struct ExpensesSummaryCard: View {
                     HStack {
                         Text(i18n.t("expenses.metricTotal"))
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         Spacer()
                         if summary.previousTotal > 0 {
                             Text(delta)
@@ -49,7 +49,7 @@ struct ExpensesSummaryCard: View {
                     if summary.previousTotal > 0 {
                         Text("\(i18n.t("expenses.metricVsPrevious")): \(MoneyText.format(String(summary.previousTotal)))")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -62,7 +62,7 @@ struct ExpensesSummaryCard: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(i18n.t("expenses.metricTopCategory"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Text(summary.topCategory?.name ?? "—")
                                 .font(.headline)
                                 .foregroundStyle(Tokens.ink)
@@ -81,7 +81,7 @@ struct ExpensesSummaryCard: View {
                     HStack {
                         Text(i18n.t("expenses.metricCount"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         Spacer()
                         Text("\(summary.count)")
                             .font(.subheadline.weight(.semibold))

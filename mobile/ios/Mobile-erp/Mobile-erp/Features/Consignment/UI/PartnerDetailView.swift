@@ -96,11 +96,11 @@ struct PartnerDetailView: View {
                         HStack {
                             Text(i18n.t("partners.creditLimit", default: "Limit: \(MoneyText.format(partner.creditLimit))"))
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Spacer()
                             Text("\(Int(pct * 100))% used")
                                 .font(.caption2.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     .padding(.top, 4)
@@ -119,7 +119,7 @@ struct PartnerDetailView: View {
         VStack(spacing: 10) {
             if can.can("partner.payment") {
                 Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    Haptic.tick.play()
                     showPayment = true
                 } label: {
                     Label(i18n.t("partners.recordPayment", default: "Record Debt Payment"), systemImage: "creditcard.fill")
@@ -134,7 +134,7 @@ struct PartnerDetailView: View {
             HStack(spacing: 10) {
                 if can.can("consignment.create") {
                     Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        Haptic.tick.play()
                         showConsign = true
                     } label: {
                         Label(i18n.t("partners.newConsignmentForPartner", default: "Consign Unit"), systemImage: "arrow.left.arrow.right")
@@ -146,7 +146,7 @@ struct PartnerDetailView: View {
                 }
                 if can.can("partner.manage") {
                     Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        Haptic.tick.play()
                         showEdit = true
                     } label: {
                         Label(i18n.t("partners.editPartner", default: "Edit Partner"), systemImage: "pencil")
@@ -163,7 +163,7 @@ struct PartnerDetailView: View {
     private var needsConnection: some View {
         Label(i18n.t("common.offline", default: "Connect to view the ledger."),
               systemImage: "wifi.slash")
-            .font(.callout).foregroundStyle(.secondary)
+            .font(.callout).foregroundStyle(Tokens.muted)
     }
 
     @ViewBuilder private var agingSection: some View {
@@ -177,7 +177,7 @@ struct PartnerDetailView: View {
                                 .foregroundStyle(Tokens.ink)
                             Text("\(b.count) \(i18n.t("partners.openCount", default: "devices"))")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
@@ -203,7 +203,7 @@ struct PartnerDetailView: View {
             } else if let model, model.ledger.isEmpty {
                 Text(i18n.t("partners.noLedgerEntries", default: "No ledger transactions recorded."))
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             } else if let model {
                 ForEach(model.ledger) { LedgerRow(entry: $0) }
             }
@@ -229,13 +229,13 @@ private struct LedgerRow: View {
                     .foregroundStyle(change > 0 ? Tokens.warning : Tokens.success)
             }
             HStack {
-                Text(entry.at.prefix(10)).font(.caption).foregroundStyle(.secondary)
+                Text(entry.at.prefix(10)).font(.caption).foregroundStyle(Tokens.muted)
                 Spacer()
                 Text("\(i18n.t("partners.runningBalance")): \(MoneyText.format(entry.runningBalance))")
                     .font(.caption.weight(.medium)).foregroundStyle(Tokens.ink)
             }
             if let notes = entry.notes, !notes.isEmpty {
-                Text(notes).font(.caption).italic().foregroundStyle(.secondary)
+                Text(notes).font(.caption).italic().foregroundStyle(Tokens.muted)
             }
         }
         .padding(.vertical, 4)

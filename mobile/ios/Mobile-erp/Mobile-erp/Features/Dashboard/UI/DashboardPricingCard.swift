@@ -16,38 +16,42 @@ struct DashboardPricingCard: View {
         DashSection(title: i18n.t("dashboard.modelPricingTitle"), state: state,
                     retry: { Task { await load() } }) {
             if rows.isEmpty {
-                Text(i18n.t("common.notFound")).font(.subheadline).foregroundStyle(.secondary)
+                DashEmptyRow()
             } else {
                 ForEach(rows) { row in
-                    VStack(spacing: 4) {
-                        HStack {
+                    VStack(spacing: Tokens.Space.xs) {
+                        HStack(spacing: Tokens.Space.sm) {
                             Text(labels[row.modelId] ?? row.modelId)
+                                .font(.ui(.body))
+                                .foregroundStyle(Tokens.text)
+                                .lineLimit(1)
                             if let s = row.storage, !s.isEmpty {
-                                Text(s).font(.caption).foregroundStyle(.secondary)
+                                Text(s).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                             }
-                            Spacer()
+                            Spacer(minLength: Tokens.Space.sm)
                             Text("\(row.unitsInStock) / \(row.unitsSold)")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.data(.regular)).foregroundStyle(Tokens.muted)
                         }
-                        HStack {
-                            if canCost {
-                                label(i18n.t("dashboard.avgAcquisitionCost"), row.avgAcquisitionCost)
-                                Spacer()
-                            }
-                            label(i18n.t("dashboard.avgSellingPrice"), row.avgSellingPrice)
+                        if canCost {
+                            figure(i18n.t("dashboard.avgAcquisitionCost"), row.avgAcquisitionCost)
                         }
+                        figure(i18n.t("dashboard.avgSellingPrice"), row.avgSellingPrice)
                     }
-                    if row.id != rows.last?.id { Divider() }
+                    .padding(.vertical, Tokens.Space.xs)
+                    if row.id != rows.last?.id { Divider().overlay(Tokens.border) }
                 }
             }
         }
         .task { await load() }
     }
 
-    private func label(_ title: String, _ value: Double?) -> some View {
-        HStack(spacing: 4) {
-            Text(title).font(.caption2).foregroundStyle(.secondary)
-            Text(dashMoney(value)).font(.mono(13))
+    /// One keyed figure per line (label left, mono value right) so a long Uzbek
+    /// label never forces the amount to wrap mid-number.
+    private func figure(_ title: String, _ value: Double?) -> some View {
+        HStack(spacing: Tokens.Space.sm) {
+            Text(title).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+            Spacer(minLength: Tokens.Space.sm)
+            Text(dashMoney(value)).font(.data(.regular)).foregroundStyle(Tokens.text)
         }
     }
 

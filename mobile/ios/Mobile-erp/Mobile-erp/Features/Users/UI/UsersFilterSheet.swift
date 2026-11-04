@@ -25,7 +25,7 @@ struct UsersFilterSheet: View {
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(i18n.t("users.statTotal", default: "Total Staff Accounts"))
                                             .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Tokens.muted)
                                         Text("\(stats.total)")
                                             .font(.system(size: 28, weight: .bold))
                                             .foregroundStyle(Tokens.ink)
@@ -45,7 +45,7 @@ struct UsersFilterSheet: View {
                                                 Circle().fill(Tokens.success).frame(width: 8, height: 8)
                                                 Text(i18n.t("users.statActive", default: "Active"))
                                                     .font(.caption.weight(.medium))
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(Tokens.muted)
                                             }
                                             Text("\(stats.active)")
                                                 .font(.title3.weight(.bold))
@@ -66,7 +66,7 @@ struct UsersFilterSheet: View {
                                                 Circle().fill(Tokens.slate).frame(width: 8, height: 8)
                                                 Text(i18n.t("users.statInactive", default: "Inactive"))
                                                     .font(.caption.weight(.medium))
-                                                    .foregroundStyle(.secondary)
+                                                    .foregroundStyle(Tokens.muted)
                                             }
                                             Text("\(inactiveCount)")
                                                 .font(.title3.weight(.bold))
@@ -90,7 +90,7 @@ struct UsersFilterSheet: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(i18n.t("users.filterRole", default: "Assigned Role"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
 
                             Picker(i18n.t("users.filterRole"), selection: $model.roleFilter) {
                                 Text(i18n.t("common.all", default: "All Roles")).tag("")
@@ -111,7 +111,7 @@ struct UsersFilterSheet: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(i18n.t("users.filterStatus", default: "Account Status"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
 
                             Picker(i18n.t("users.filterStatus"), selection: $model.activeFilter) {
                                 Text(i18n.t("common.all", default: "All Statuses")).tag("")
@@ -124,7 +124,7 @@ struct UsersFilterSheet: View {
 
                         if hasActiveFilters {
                             Button(role: .destructive) {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                Haptic.tick.play()
                                 model.roleFilter = ""
                                 model.activeFilter = ""
                                 model.onFilterChange()
@@ -152,7 +152,7 @@ struct UsersFilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.done", default: "Done")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         dismiss()
                     }
                     .font(.headline)

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Light, no action bar. Compose draws the Caldera chrome itself; this is
-         only the window background / status-bar base before Compose mounts. -->
+    <!-- Light, no action bar. Compose draws the Warm Card chrome itself; this is
+         only the window background / bar bases before Compose mounts. Edge-to-edge
+         is enabled in MainActivity, so the bars are transparent and the ground
+         tint runs under them. -->
     <style name="Theme.MalikaErp" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/caldera_canvas</item>
-        <item name="android:statusBarColor">@color/caldera_canvas</item>
+        <item name="android:windowBackground">@color/warm_ground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

@@ -46,7 +46,7 @@ struct ConsignDeviceSheet: View {
         Form {
             Section(i18n.t("consignments.partner")) {
                 if lockPartner {
-                    Text(partnerName(model, model.partnerId)).foregroundStyle(.secondary)
+                    Text(partnerName(model, model.partnerId)).foregroundStyle(Tokens.muted)
                 } else {
                     Picker(i18n.t("consignments.selectPartner"), selection: $model.partnerId) {
                         Text(i18n.t("consignments.selectPartner")).tag("")

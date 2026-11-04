@@ -1,34 +1,40 @@
 package uz.malika.erp.shared.ui
 
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.ui.theme.Tokens
 
 /** One choice in a [SegmentedControl]. */
 data class SegmentOption<T>(val value: T, val label: String, val icon: ImageVector? = null)
 
+private val TrackHeight = 44.dp
+private val TrackShape = RoundedCornerShape(Tokens.Radius.controls) // 12
+private val SegmentShape = RoundedCornerShape(10.dp)
+
 /**
- * A pill segmented control (shadcn Tabs parity) for small, mutually-exclusive
- * sets. Labels are single-line and segments share one height; when the labels
- * do not fit the available width the whole row drops one type step (labelLarge
- * → bodySmall), matching iOS `Picker(.segmented)` auto-fit, so a segment never
- * clips (ellipsis is the last resort if even the smaller step overflows).
+ * A Warm Card segmented control for small, mutually-exclusive sets: a surface-2
+ * track, the selected segment a white card with text-colour label, the rest
+ * muted. No Material border, no selection check-mark, press feedback from the
+ * theme indication. Labels are single-line and ellipsize if a segment is narrow.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> SegmentedControl(
     options: List<SegmentOption<T>>,
@@ -36,41 +42,52 @@ fun <T> SegmentedControl(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val base = MaterialTheme.typography.labelLarge
-    val small = MaterialTheme.typography.bodySmall
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-
-    BoxWithConstraints(modifier) {
-        // Segments share the width equally; a label fits if it + its chrome
-        // (padding, optional icon) stays inside one equal share.
-        val chromePx = with(density) { 24.dp.toPx() }
-        val iconPx = with(density) { 24.dp.toPx() }
-        val sharePx = with(density) { maxWidth.toPx() } / options.size
-        fun fits(style: TextStyle): Boolean = options.all { opt ->
-            val w = measurer.measure(opt.label, style, maxLines = 1, softWrap = false).size.width
-            w + chromePx + (if (opt.icon != null) iconPx else 0f) <= sharePx
+    Row(
+        modifier
+            .fillMaxWidth()
+            .height(TrackHeight)
+            .clip(TrackShape)
+            .background(Tokens.surface2)
+            .padding(Tokens.Space.xs),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Space.xs),
+    ) {
+        options.forEach { option ->
+            Segment(
+                option = option,
+                selected = option.value == selected,
+                onClick = { onSelect(option.value) },
+                modifier = Modifier.weight(1f),
+            )
         }
-        val style = if (fits(base)) base else small
+    }
+}
 
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            options.forEachIndexed { index, option ->
-                SegmentedButton(
-                    selected = option.value == selected,
-                    onClick = { onSelect(option.value) },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    icon = { option.icon?.let { Icon(it, contentDescription = null) } },
-                    label = {
-                        Text(
-                            option.label,
-                            style = style,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                )
-            }
-        }
+@Composable
+private fun <T> Segment(
+    option: SegmentOption<T>,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier,
+) {
+    val content = if (selected) Tokens.text else Tokens.muted
+    Row(
+        modifier
+            .fillMaxHeight()
+            .clip(SegmentShape)
+            .background(if (selected) Tokens.card else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = Tokens.Space.sm),
+        horizontalArrangement = Arrangement.spacedBy(Tokens.Space.xs, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        option.icon?.let { Icon(it, contentDescription = null, tint = content) }
+        Text(
+            option.label,
+            style = MaterialTheme.typography.labelLarge,
+            color = content,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

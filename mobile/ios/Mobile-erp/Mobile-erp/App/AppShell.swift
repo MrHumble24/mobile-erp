@@ -25,6 +25,15 @@ struct AppShell: View {
                 if container.router.selection.isEmpty {
                     container.router.selection = visible.first?.id ?? ""
                 }
+                #if DEBUG
+                // Screenshot helper: `-open home|pos|sales|inventory|shipments|more`.
+                if let open = UserDefaults.standard.string(forKey: "open"),
+                   let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
+                             "inventory": "inventory", "shipments": "shipments",
+                             "more": MoreTab.id][open] {
+                    container.router.selection = id
+                }
+                #endif
             }
     }
 
@@ -54,6 +63,14 @@ struct AppShell: View {
             ForEach(tabs) { module in
                 NavigationStack {
                     PermissionGate(permission: module.permission, content: module.root)
+                        .scrollContentBackground(.hidden)
+                        .background(Tokens.ground)
+                        // Toolbar icons (and stray stock controls) read as `text`,
+                        // not the orange app tint. The one orange lives on
+                        // PillButton primaries and the active tab, which set it
+                        // explicitly and are unaffected by this.
+                        .tint(Tokens.text)
+                        .toolbarBackground(Tokens.ground, for: .navigationBar)
                         .toolbar { toolbarContent }
                 }
                 .tabItem { Label(i18n.t(module.labelKey), systemImage: module.systemImage) }
@@ -91,6 +108,7 @@ struct AppShell: View {
                 }
             } label: {
                 Image(systemName: "person.crop.circle")
+                    .foregroundStyle(Tokens.text)
             }
         }
     }

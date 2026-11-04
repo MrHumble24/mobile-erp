@@ -87,7 +87,7 @@ struct ConsignmentDetailView: View {
             ? "\(c.dueDate.prefix(10)) · \(overdue) \(i18n.t("consignments.daysOverdue"))"
             : String(c.dueDate.prefix(10))
         return HStack {
-            Text(i18n.t("consignments.dueDate")).foregroundStyle(.secondary)
+            Text(i18n.t("consignments.dueDate")).foregroundStyle(Tokens.muted)
             Spacer()
             Text(text).foregroundStyle(overdue > 0 ? Tokens.danger : .primary)
         }
@@ -96,7 +96,7 @@ struct ConsignmentDetailView: View {
 
     private func row(_ label: String, _ value: String, mono: Bool = false) -> some View {
         HStack {
-            Text(label).foregroundStyle(.secondary)
+            Text(label).foregroundStyle(Tokens.muted)
             Spacer()
             Text(value).font(mono ? .mono(14) : .subheadline).multilineTextAlignment(.trailing)
         }

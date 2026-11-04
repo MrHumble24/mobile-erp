@@ -20,7 +20,7 @@ struct LabeledField: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             TextField(label, text: $text)
                 .keyboardType(keyboard)
                 .autocorrectionDisabled(mono || keyboard != .default)

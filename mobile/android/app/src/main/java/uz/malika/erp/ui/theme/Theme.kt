@@ -1,95 +1,122 @@
 package uz.malika.erp.ui.theme
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import uz.malika.erp.shared.ui.PressIndication
 
 /**
- * Ink theme. Dynamic color is deliberately NOT used — the pure monochrome palette
- * is the brand. Light/dark are picked by [isSystemInDarkTheme]; both are built from
- * the raw [Tokens.Light] / [Tokens.Dark] values (the adaptive `Tokens.*` getters are
- * composable and can't run in these top-level scheme initializers). Feature screens
- * read the adaptive `Tokens.*`, so they flip with the scheme.
+ * Warm Card theme. Dynamic Color is deliberately NOT used — the warm palette and
+ * its one orange are the brand. Light/dark are picked by [isSystemInDarkTheme];
+ * both are built from the raw [Tokens.Light] / [Tokens.Dark] values. Feature
+ * screens read the adaptive `Tokens.*`, so they flip with the scheme.
+ *
+ * [LocalIndication] is the Warm Card [PressIndication] (scale 0.98 + surface-2
+ * wash), used by every `clickable` surface and the kit's [PressIndication]-based
+ * PillButton. Material internals that ignore `LocalIndication` (IconButton,
+ * Switch, Checkbox, DropdownMenuItem, NavigationRailItem, ExtendedFAB) keep a
+ * ripple, but a muted monochrome one: [LocalRippleConfiguration] is retinted to
+ * [Tokens.text] at low alpha so it reads as a quiet state layer, never the loud
+ * default (see README for the exact exception).
  */
-private val InkLight = lightColorScheme(
-    primary = Tokens.Light.accent,
-    onPrimary = Tokens.Light.onAccent,
+private val WarmLight = lightColorScheme(
+    primary = Tokens.Light.action,
+    onPrimary = Tokens.Light.onAction,
     secondary = Tokens.Light.surface2,
-    onSecondary = Tokens.Light.fg,
+    onSecondary = Tokens.Light.text,
     secondaryContainer = Tokens.Light.surface2,
-    onSecondaryContainer = Tokens.Light.fg,
-    tertiary = Tokens.Light.accent,
-    onTertiary = Tokens.Light.onAccent,
-    background = Tokens.Light.bg,
-    onBackground = Tokens.Light.fg,
-    surface = Tokens.Light.surface,
-    onSurface = Tokens.Light.fg,
+    onSecondaryContainer = Tokens.Light.text,
+    tertiary = Tokens.Light.action,
+    onTertiary = Tokens.Light.onAction,
+    background = Tokens.Light.ground,
+    onBackground = Tokens.Light.text,
+    surface = Tokens.Light.card,
+    onSurface = Tokens.Light.text,
     surfaceVariant = Tokens.Light.surface2,
     onSurfaceVariant = Tokens.Light.muted,
-    surfaceContainerLowest = Tokens.Light.bg,
-    surfaceContainerLow = Tokens.Light.surface,
+    surfaceContainerLowest = Tokens.Light.ground,
+    surfaceContainerLow = Tokens.Light.card,
     surfaceContainer = Tokens.Light.surface2,
     surfaceContainerHigh = Tokens.Light.surface2,
     error = Tokens.Light.danger,
-    onError = Tokens.Light.onAccent,
+    onError = Tokens.Light.onAction,
     errorContainer = Tokens.Light.dangerBg,
     onErrorContainer = Tokens.Light.danger,
-    outline = Tokens.Light.hairline,
-    outlineVariant = Tokens.Light.hairline,
+    outline = Tokens.Light.border,
+    outlineVariant = Tokens.Light.border,
 )
 
-private val InkDark = darkColorScheme(
-    primary = Tokens.Dark.accent,
-    onPrimary = Tokens.Dark.onAccent,
+private val WarmDark = darkColorScheme(
+    primary = Tokens.Dark.action,
+    onPrimary = Tokens.Dark.onAction,
     secondary = Tokens.Dark.surface2,
-    onSecondary = Tokens.Dark.fg,
+    onSecondary = Tokens.Dark.text,
     secondaryContainer = Tokens.Dark.surface2,
-    onSecondaryContainer = Tokens.Dark.fg,
-    tertiary = Tokens.Dark.accent,
-    onTertiary = Tokens.Dark.onAccent,
-    background = Tokens.Dark.bg,
-    onBackground = Tokens.Dark.fg,
-    surface = Tokens.Dark.surface,
-    onSurface = Tokens.Dark.fg,
+    onSecondaryContainer = Tokens.Dark.text,
+    tertiary = Tokens.Dark.action,
+    onTertiary = Tokens.Dark.onAction,
+    background = Tokens.Dark.ground,
+    onBackground = Tokens.Dark.text,
+    surface = Tokens.Dark.card,
+    onSurface = Tokens.Dark.text,
     surfaceVariant = Tokens.Dark.surface2,
     onSurfaceVariant = Tokens.Dark.muted,
-    surfaceContainerLowest = Tokens.Dark.bg,
-    surfaceContainerLow = Tokens.Dark.surface,
+    surfaceContainerLowest = Tokens.Dark.ground,
+    surfaceContainerLow = Tokens.Dark.card,
     surfaceContainer = Tokens.Dark.surface2,
     surfaceContainerHigh = Tokens.Dark.surface2,
     error = Tokens.Dark.danger,
-    onError = Tokens.Dark.onAccent,
+    onError = Tokens.Dark.onAction,
     errorContainer = Tokens.Dark.dangerBg,
     onErrorContainer = Tokens.Dark.danger,
-    outline = Tokens.Dark.hairline,
-    outlineVariant = Tokens.Dark.hairline,
+    outline = Tokens.Dark.border,
+    outlineVariant = Tokens.Dark.border,
 )
 
-private val InkShapes = Shapes(
-    small = RoundedCornerShape(10.dp), // inputs, controls
-    medium = RoundedCornerShape(12.dp), // cards, lists
-    large = RoundedCornerShape(20.dp), // large cards
+private val WarmShapes = Shapes(
+    small = RoundedCornerShape(Tokens.Radius.inputs),  // inputs, controls (12)
+    medium = RoundedCornerShape(Tokens.Radius.cards),  // cards (16)
+    large = RoundedCornerShape(Tokens.Radius.large),   // sheets, large cards (20)
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MalikaTheme(content: @Composable () -> Unit) {
+    val surface2 = Tokens.surface2
+    val indication = remember(surface2) { PressIndication(surface2) }
+    val rippleColor = Tokens.text
+    val ripple = remember(rippleColor) {
+        RippleConfiguration(
+            color = rippleColor,
+            rippleAlpha = RippleAlpha(
+                pressedAlpha = 0.10f,
+                focusedAlpha = 0.08f,
+                draggedAlpha = 0.10f,
+                hoveredAlpha = 0.06f,
+            ),
+        )
+    }
     MaterialTheme(
-        colorScheme = if (isSystemInDarkTheme()) InkDark else InkLight,
+        colorScheme = if (isSystemInDarkTheme()) WarmDark else WarmLight,
         typography = calderaTypography,
-        shapes = InkShapes,
+        shapes = WarmShapes,
     ) {
-        // Material defaults inflate every control to a 48dp touch target, which is
-        // what makes rows, buttons, segments and pickers read looser than iOS.
-        // Drop to 40dp (still accessible) so controls match the iOS density.
         CompositionLocalProvider(
             LocalMinimumInteractiveComponentSize provides Tokens.minTouch,
+            LocalIndication provides indication,
+            LocalRippleConfiguration provides ripple,
             content = content,
         )
     }

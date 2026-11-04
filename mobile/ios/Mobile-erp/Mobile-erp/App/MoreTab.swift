@@ -39,5 +39,9 @@ struct MoreTab: View {
                 }
             }
         }
+        // Toolbar icons on More-pushed screens read as `text`, not the orange app
+        // tint (same shared cause as the primary tabs). PillButton primaries and
+        // the active tab keep their explicit orange.
+        .tint(Tokens.text)
     }
 }

@@ -27,7 +27,7 @@ struct ReturnSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("$")
                             .font(.title3.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField("0", text: $refund)
                             .font(.mono(24, weight: .bold))
                             .keyboardType(.decimalPad)
@@ -98,7 +98,7 @@ struct ReturnSheet: View {
         }
         busy = true
         error = nil
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        Haptic.tick.play()
         let repo = SalesRepository(api: container.api, context: container.modelContext)
         Task {
             do {

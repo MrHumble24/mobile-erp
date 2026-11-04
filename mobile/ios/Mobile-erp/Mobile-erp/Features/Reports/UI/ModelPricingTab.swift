@@ -68,7 +68,7 @@ private struct PricingCard: View {
                         if let storage = row.storage {
                             Text(storage)
                                 .font(.mono(12))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     Spacer()
@@ -112,14 +112,14 @@ private struct PricingCard: View {
 
     private func stat(_ label: String, _ value: String) -> some View {
         VStack(alignment: .trailing, spacing: 2) {
-            Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+            Text(label).font(.system(size: 10, weight: .medium)).foregroundStyle(Tokens.muted)
             Text(value).font(.subheadline.weight(.bold)).monospacedDigit().foregroundStyle(Tokens.ink)
         }
     }
 
     private func priceRow(_ label: String, _ value: Double?, color: Color) -> some View {
         HStack {
-            Text(label).font(.subheadline).foregroundStyle(.secondary)
+            Text(label).font(.subheadline).foregroundStyle(Tokens.muted)
             Spacer()
             Text(reportMoney(value)).font(.mono(15, weight: .medium)).foregroundStyle(color)
         }

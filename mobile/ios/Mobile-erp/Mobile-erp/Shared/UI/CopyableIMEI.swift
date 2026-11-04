@@ -27,7 +27,7 @@ struct CopyableIMEI: View {
 
     private func copy() {
         UIPasteboard.general.string = value
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.tick.play()
         withAnimation(.snappy(duration: 0.2)) { copied = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             withAnimation { copied = false }

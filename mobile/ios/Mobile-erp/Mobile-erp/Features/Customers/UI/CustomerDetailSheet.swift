@@ -57,7 +57,7 @@ struct CustomerDetailSheet: View {
     @ViewBuilder private var history: some View {
         if let sales {
             if sales.isEmpty {
-                Text(i18n.t("sales.noSalesFound")).foregroundStyle(.secondary)
+                Text(i18n.t("sales.noSalesFound")).foregroundStyle(Tokens.muted)
             } else {
                 ForEach(sales) { sale in
                     VStack(alignment: .leading, spacing: 2) {
@@ -66,7 +66,7 @@ struct CustomerDetailSheet: View {
                             Spacer()
                             MoneyText(value: sale.salePrice)
                         }
-                        Text(sale.device.imei).font(.mono(12)).foregroundStyle(.secondary)
+                        Text(sale.device.imei).font(.mono(12)).foregroundStyle(Tokens.muted)
                     }
                     .padding(.vertical, 2)
                 }

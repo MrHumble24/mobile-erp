@@ -36,7 +36,7 @@ fun WarrantyPanel(vm: SalesViewModel, online: Boolean, onReturn: (saleId: String
     Column(Modifier.fillMaxSize()) {
         Text(t("sales.warrantyLookup", null), style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(12.dp))
-        ScannerField(onScan = { vm.lookupWarranty(it, online) }, placeholder = t("sales.imeiPlaceholder", null))
+        ScannerField(onScan = { code, _ -> vm.lookupWarranty(code, online) }, placeholder = t("sales.imeiPlaceholder", null))
         Spacer(Modifier.height(16.dp))
         Box(Modifier.fillMaxSize()) {
             when {

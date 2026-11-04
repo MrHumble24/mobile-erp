@@ -28,7 +28,7 @@ struct RecordPaymentSheet: View {
                         HStack(alignment: .firstTextBaseline) {
                             Text(i18n.t("partners.outstanding", default: "Outstanding Debt:"))
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Spacer()
                             MoneyText(value: partner.outstanding, size: 18)
                                 .font(.headline.weight(.bold))
@@ -38,7 +38,7 @@ struct RecordPaymentSheet: View {
                         if let outstandingVal = Double(partner.outstanding), outstandingVal > 0, amount != String(Int(outstandingVal)) {
                             Button {
                                 amount = String(Int(outstandingVal))
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                Haptic.tick.play()
                             } label: {
                                 Text(i18n.t("partners.payFull", default: "Fill Full Balance ($\(Int(outstandingVal)))"))
                                     .font(.caption.weight(.medium))
@@ -64,7 +64,7 @@ struct RecordPaymentSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("$")
                             .font(.title3.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField("0", text: $amount)
                             .font(.mono(22, weight: .bold))
                             .keyboardType(.decimalPad)
@@ -122,7 +122,7 @@ struct RecordPaymentSheet: View {
         defer { saving = false }
         let t = notes.trimmingCharacters(in: .whitespaces)
         do {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            Haptic.tick.play()
             try await container.partnerRepository.recordPayment(partner.id, RecordPaymentDto(
                 amount: Double(amount) ?? 0, consignmentId: nil, paidAt: nil,
                 notes: t.isEmpty ? nil : t))

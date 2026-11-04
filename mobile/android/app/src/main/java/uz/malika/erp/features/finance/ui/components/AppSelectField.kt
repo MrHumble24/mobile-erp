@@ -47,25 +47,32 @@ fun <T> AppSelectField(
     var expanded by remember { mutableStateOf(false) }
     val current = options.firstOrNull { it.value == selected }?.label ?: ""
     Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
         Spacer(Modifier.height(6.dp))
         Box {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .border(BorderStroke(1.dp, Tokens.border), RoundedCornerShape(9.dp))
+                    .border(BorderStroke(1.dp, Tokens.border), RoundedCornerShape(Tokens.Radius.inputs))
                     .clickable { expanded = true }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(current, style = MaterialTheme.typography.bodyMedium)
-                Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, tint = Tokens.slate)
+                Icon(Icons.Outlined.ArrowDropDown, contentDescription = null, tint = Tokens.muted)
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                shape = RoundedCornerShape(Tokens.Radius.cards),
+                containerColor = Tokens.card,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+            ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option.label) },
+                        text = { Text(option.label, style = MaterialTheme.typography.bodyLarge) },
                         onClick = { onSelect(option.value); expanded = false },
                     )
                 }

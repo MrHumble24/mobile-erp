@@ -73,7 +73,7 @@ struct FinOverviewTab: View {
                 label: i18n.t("dashboard.netOperatingIncome"),
                 value: reportMoney(r.netOperatingIncome),
                 subtext: "\(i18n.t("dashboard.grossProfit")): \(reportMoney(r.grossProfit))  −  \(i18n.t("dashboard.expenses")): \(reportMoney(r.expenses))",
-                emphasis: isProfit ? Tokens.success : Tokens.danger,
+                emphasis: moneyTint(.profit, r.netOperatingIncome),
                 icon: isProfit ? "arrow.up.right.circle.fill" : "arrow.down.right.circle.fill",
                 iconColor: isProfit ? Tokens.success : Tokens.danger,
                 badge: isProfit ? i18n.t("reports.profit", default: "Foyda") : i18n.t("reports.loss", default: "Zarar"),
@@ -92,7 +92,7 @@ struct FinOverviewTab: View {
                 label: i18n.t("dashboard.expenses"),
                 value: reportMoney(r.expenses),
                 subtext: i18n.t("reports.tab_expenses", default: "Xarajatlar"),
-                emphasis: Tokens.danger,
+                emphasis: moneyTint(.expense, r.expenses),
                 icon: "arrow.up.circle.fill",
                 iconColor: Tokens.danger
             ),
@@ -107,7 +107,7 @@ struct FinOverviewTab: View {
                 label: i18n.t("dashboard.grossProfit"),
                 value: reportMoney(r.grossProfit),
                 subtext: "\(i18n.t("dashboard.revenue")) − \(i18n.t("dashboard.cogs"))",
-                emphasis: isGrossProfit ? Tokens.ink : Tokens.danger,
+                emphasis: moneyTint(.profit, r.grossProfit),
                 icon: "chart.line.uptrend.xyaxis",
                 iconColor: isGrossProfit ? Tokens.success : Tokens.danger,
                 onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }

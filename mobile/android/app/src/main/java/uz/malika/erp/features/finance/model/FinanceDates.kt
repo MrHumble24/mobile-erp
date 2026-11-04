@@ -4,12 +4,16 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Date helpers for the finance slice (Calendar-based, so they work on the
- * minSdk-24 floor without java.time desugaring). Query params go out as
- * `yyyy-MM-dd` (the server's `new Date(value)` accepts it); the UI shows
- * `dd.MM.yyyy`.
+ * minSdk-24 floor without java.time desugaring). Single-date payloads go out as
+ * `yyyy-MM-dd`; a date *range* goes out as UTC instants bounding the local days
+ * ([isoRangeFrom] / [isoRangeTo]) — the server's `new Date(value)` reads a bare
+ * `yyyy-MM-dd` as UTC midnight, so `from == to == today` would be an empty
+ * range and "today" would always show $0. iOS sends the same local-day bounds.
+ * The UI shows `dd.MM.yyyy`.
  */
 enum class DashPeriod { TODAY, WEEK, MONTH }
 
@@ -41,6 +45,22 @@ fun displayDate(d: Date): String = SimpleDateFormat("dd.MM.yyyy", Locale.US).for
 
 /** `yyyy-MM-dd` for an epoch-millis instant (nullable → null). */
 fun isoDate(millis: Long?): String? = millis?.let { isoDate(Date(it)) }
+
+/** ISO-8601 UTC instant (`2026-11-04T19:00:00.000Z`) — what `new Date()` parses losslessly. */
+fun isoInstant(d: Date): String =
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+        .apply { timeZone = TimeZone.getTimeZone("UTC") }
+        .format(d)
+
+/** Local 23:59:59.999 of the day containing [d]. */
+fun endOfDay(d: Date): Date =
+    calOf(d).apply { add(Calendar.DAY_OF_MONTH, 1); add(Calendar.MILLISECOND, -1) }.time
+
+/** Range query lower bound: local midnight of the picked day, as a UTC instant. */
+fun isoRangeFrom(millis: Long?): String? = millis?.let { isoInstant(startOfDay(Date(it))) }
+
+/** Range query upper bound: local end of the picked day, as a UTC instant (inclusive). */
+fun isoRangeTo(millis: Long?): String? = millis?.let { isoInstant(endOfDay(Date(it))) }
 
 /**
  * Trend bucket for a date range, matching the web `bucketFor`: ≤31 days → day,

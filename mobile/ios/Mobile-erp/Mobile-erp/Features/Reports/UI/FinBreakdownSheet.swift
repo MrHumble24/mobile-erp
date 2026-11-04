@@ -75,7 +75,7 @@ struct FinDetailCard: View {
                 Divider()
                 ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                     HStack {
-                        Text(item.0).font(.subheadline).foregroundStyle(.secondary)
+                        Text(item.0).font(.subheadline).foregroundStyle(Tokens.muted)
                         Spacer()
                         Text(item.1).font(.mono(15))
                     }

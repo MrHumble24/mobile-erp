@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import uz.malika.erp.features.procurement.data.DeviceModelDto
+import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.features.procurement.data.SupplierDto
@@ -32,7 +33,7 @@ data class ShipmentFilters(
 }
 
 /** Overview counts for the summary tiles, computed from the full loaded list. */
-data class ShipmentSummary(val total: Int, val open: Int, val receivedUnits: Int)
+data class ShipmentSummary(val total: Int, val open: Int, val receivedUnits: Int, val expectedUnits: Int)
 
 /**
  * State for the Shipments screen (both tabs). Owns the shipments list, the
@@ -82,6 +83,26 @@ class ShipmentsViewModel(private val repo: ProcurementRepository) : ViewModel() 
 
     fun refreshShipments() = _shipments.reload(viewModelScope) { repo.shipments() }
     fun refreshSuppliers() = _suppliers.reload(viewModelScope) { repo.suppliers() }
+
+    // Devices staged in the intake loop, keyed by shipment id. Held here (not in
+    // the sheet) so dismissing and reopening the intake sheet restores the batch;
+    // submit() clears the shipment's drafts on success.
+    private val _drafts = MutableStateFlow<Map<String, List<IntakeDraft>>>(emptyMap())
+    val drafts: StateFlow<Map<String, List<IntakeDraft>>> = _drafts.asStateFlow()
+
+    private fun draftsList(shipmentId: String) = _drafts.value[shipmentId].orEmpty()
+
+    fun stageDraft(shipmentId: String, draft: IntakeDraft) {
+        _drafts.value = _drafts.value + (shipmentId to (draftsList(shipmentId) + draft))
+    }
+
+    fun removeDraft(shipmentId: String, index: Int) {
+        val list = draftsList(shipmentId)
+        if (index !in list.indices) return
+        _drafts.value = _drafts.value + (shipmentId to (list.filterIndexed { i, _ -> i != index }))
+    }
+
+    fun clearDrafts(shipmentId: String) { _drafts.value = _drafts.value - shipmentId }
 
     fun setShipmentQuery(q: String) { _shipmentQuery.value = q }
     fun setSupplierQuery(q: String) { _supplierQuery.value = q }
@@ -139,4 +160,5 @@ private fun summarize(list: List<ShipmentDto>) = ShipmentSummary(
     total = list.size,
     open = list.count { !it.isComplete },
     receivedUnits = list.sumOf { it.deviceCount },
+    expectedUnits = list.sumOf { it.expectedCount },
 )

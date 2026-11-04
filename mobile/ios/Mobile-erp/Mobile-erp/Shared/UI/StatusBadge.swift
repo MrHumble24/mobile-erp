@@ -20,10 +20,10 @@ struct StatusBadge: View {
 
     var body: some View {
         Text(label)
-            .font(.caption.weight(.semibold))
+            .font(.ui(.label))
             .foregroundStyle(color)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
             .background(Tokens.pillTint(color), in: Capsule())
     }
 }

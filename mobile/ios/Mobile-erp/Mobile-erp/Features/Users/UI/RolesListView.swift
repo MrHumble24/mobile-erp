@@ -73,17 +73,17 @@ private struct RoleRow: View {
             }
             Text(role.code)
                 .font(.mono(12))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             if let description = role.description, !description.isEmpty {
                 Text(description)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
             HStack {
                 Label("\(role.permissionCodes.count) \(i18n.t("users.permissionsCount", default: "permissions"))",
                       systemImage: "lock.shield")
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
         .padding(.vertical, 4)

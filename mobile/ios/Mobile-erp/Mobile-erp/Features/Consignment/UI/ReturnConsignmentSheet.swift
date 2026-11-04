@@ -28,11 +28,11 @@ struct ReturnConsignmentSheet: View {
                         HStack {
                             Text("IMEI: \(consignment.imei)")
                                 .font(.mono(12))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Spacer()
                             Text(MoneyText.format(consignment.agreedPrice))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     .padding(.vertical, 4)
@@ -57,7 +57,7 @@ struct ReturnConsignmentSheet: View {
                     Label(i18n.t("consignments.returnHint", default: "This unit will be removed from the partner's liability and returned to inventory."),
                           systemImage: "arrow.uturn.backward.circle")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
 
                 if let errorMessage {
@@ -105,7 +105,7 @@ struct ReturnConsignmentSheet: View {
         defer { saving = false }
         let t = reason.trimmingCharacters(in: .whitespaces)
         do {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            Haptic.tick.play()
             _ = try await container.consignmentWriter.returnToStock(
                 consignmentId: consignment.id, imei: consignment.imei,
                 reason: t.isEmpty ? nil : t, condition: condition)

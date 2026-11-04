@@ -30,7 +30,7 @@ struct UserRolesEditor: View {
     }
 
     private func note(_ text: String) -> some View {
-        Text(text).font(.footnote).foregroundStyle(.secondary)
+        Text(text).font(.footnote).foregroundStyle(Tokens.muted)
     }
 }
 
@@ -44,7 +44,7 @@ struct UserOverridesEditor: View {
 
     var body: some View {
         if model.isSelf {
-            Section { Text(i18n.t("users.selfPermsLocked")).font(.footnote).foregroundStyle(.secondary) }
+            Section { Text(i18n.t("users.selfPermsLocked")).font(.footnote).foregroundStyle(Tokens.muted) }
         }
         ForEach(groupByResource(catalog.permissions), id: \.resource) { group in
             Section(group.resource.uppercased()) {
@@ -86,7 +86,7 @@ private struct OverrideRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(permission.code).font(.mono(13, weight: .medium))
-            Text(sourceLabel).font(.caption2).foregroundStyle(.secondary)
+            Text(sourceLabel).font(.caption2).foregroundStyle(Tokens.muted)
             Picker("", selection: $state) {
                 Text(i18n.t("users.overrideInherit")).tag(OverrideState.inherit)
                 Text(i18n.t("users.overrideGrant")).tag(OverrideState.grant)

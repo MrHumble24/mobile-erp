@@ -89,7 +89,7 @@ private struct QueueRow: View {
                 if let imei2 = device.imei2, !imei2.isEmpty {
                     Text(imei2).font(.mono(11)).foregroundStyle(.tertiary)
                 }
-                Text("\(modelName) · \(device.statusCode)").font(.caption).foregroundStyle(.secondary)
+                Text("\(modelName) · \(device.statusCode)").font(.caption).foregroundStyle(Tokens.muted)
             }
             Spacer()
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)

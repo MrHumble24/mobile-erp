@@ -77,7 +77,7 @@ struct DeviceFilterSheet: View {
                                             .foregroundStyle(Tokens.ink)
                                         Text(i18n.t("inventory.viewAlertRules", default: "Tap to review threshold rules"))
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Tokens.muted)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
@@ -106,7 +106,7 @@ struct DeviceFilterSheet: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(i18n.t("inventory.filterModel", default: "Device Model"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
 
                             Picker(i18n.t("inventory.filterModel"), selection: $filter.modelId) {
                                 Text(i18n.t("inventory.allModels", default: "All Models")).tag(String?.none)
@@ -124,7 +124,7 @@ struct DeviceFilterSheet: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(i18n.t("inventory.filterStorage", default: "Storage Capacity"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
 
                             Picker(i18n.t("inventory.filterStorage"), selection: $filter.storage) {
                                 Text(i18n.t("inventory.allStorages", default: "All Capacities")).tag(String?.none)
@@ -140,7 +140,7 @@ struct DeviceFilterSheet: View {
 
                         if !filter.isEmpty {
                             Button(role: .destructive) {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                Haptic.tick.play()
                                 filter = DeviceFilter()
                                 dismiss()
                             } label: {
@@ -166,7 +166,7 @@ struct DeviceFilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.done", default: "Done")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         dismiss()
                     }
                     .font(.headline)
@@ -178,7 +178,7 @@ struct DeviceFilterSheet: View {
     }
 
     private func toggleStatus(_ code: String) {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.tick.play()
         filter.statusCode = (filter.statusCode == code) ? nil : code
     }
 

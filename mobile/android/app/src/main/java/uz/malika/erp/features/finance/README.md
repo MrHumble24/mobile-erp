@@ -7,11 +7,18 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
   `container.featureNav` rendered as a One UI shortcut row (rounded-square icon
   tile + label; icons mirror the nav registry per route — POS, inventory, QC,
   sales, consignments, each gated by its permission), KPI period toggle
-  (`report.finance`; net income tinted via `signedEmphasis`), low-stock
-  (`device.read`), overdue consignments (`consignment.read`), model pricing as a
-  two-line row list mirroring iOS so it fits the card with no clipped header
-  (acquisition cost `device.cost.view`). The shared `ModelPricingTable` stays for
-  the wide reports Pricing tab.
+  (`report.finance`; profit figures tinted by sign via `signTint`), low-stock
+  (`device.read`), overdue consignments (`consignment.read`) and model pricing
+  (acquisition cost `device.cost.view`). All three section cards are vertical
+  row lists mirroring iOS (no horizontal table inside a phone card); pricing
+  averages sit one per line so a long Uzbek label never wraps the amount. The
+  shared `ModelPricingTable` stays for the wide reports Pricing tab. A role
+  with none of the dashboard permissions sees the shared empty state (iOS parity).
+- **Date ranges** (`model/FinanceDates.kt`): a range query (dashboard period,
+  reports, expenses filter) goes out as UTC instants bounding the *local* days
+  (`isoRangeFrom` / `isoRangeTo`, `isoInstant`), the same bounds iOS sends. A
+  bare `yyyy-MM-dd` is only for single-date payloads: the server parses it as
+  UTC midnight, so `from == to == today` was an empty range and "today" read $0.
 - **Reports** (route `reports`, `report.finance`): seven tabs matching web —
   Overview / Sales / Expenses / Nasiya / Inventory / Pricing / Closing. The tab
   pills stay inline (navigation); all filters live in one `ReportFilterSheet`

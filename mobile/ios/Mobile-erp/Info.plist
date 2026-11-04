@@ -17,10 +17,12 @@
 		<true/>
 	</dict>
 
-	<!-- IBM Plex Mono (Ink theme mono face) for IMEI, money and count columns. -->
+	<!-- Warm Card faces (DESIGN.md): Onest for UI, Sometype Mono for IMEI,
+	     money and count columns. Both are variable TTFs (wght axis). -->
 	<key>UIAppFonts</key>
 	<array>
-		<string>IBMPlexMono-Regular.ttf</string>
+		<string>Onest.ttf</string>
+		<string>SometypeMono.ttf</string>
 	</array>
 </dict>
 </plist>

@@ -29,7 +29,7 @@ struct CustomerFormSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("sales.customerName"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("sales.customerName"), text: $name)
                     }
                     .padding(.vertical, 2)
@@ -37,7 +37,7 @@ struct CustomerFormSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("sales.customerPhone"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("sales.customerPhone"), text: $phone)
                             .keyboardType(.phonePad)
                             .sanitizePhone($phone)
@@ -47,7 +47,7 @@ struct CustomerFormSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("sales.customerNotes"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("sales.customerNotes"), text: $notes, axis: .vertical)
                             .lineLimit(1...3)
                     }

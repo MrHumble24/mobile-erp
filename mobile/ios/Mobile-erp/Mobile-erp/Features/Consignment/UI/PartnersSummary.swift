@@ -16,7 +16,7 @@ struct PartnersSummary: View {
                         Label(i18n.t("partners.statsOutstanding", default: "Total Partner Receivables"),
                               systemImage: "creditcard")
                             .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         Spacer()
                     }
 
@@ -26,7 +26,7 @@ struct PartnersSummary: View {
 
                     Text(i18n.t("partners.outstandingSubtitle", default: "Total unpaid balances owed across all bazaar partner shops."))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -67,7 +67,7 @@ struct PartnersSummary: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(i18n.t("partners.partnersSubtitle", default: "Active trading partners in Malika Bazaar"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                         Text("\(model.filtered.count)")
@@ -84,7 +84,7 @@ struct PartnersSummary: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(i18n.t("partners.devicesOutSubtitle", default: "Units currently with partners"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                         Text("\(model.devicesOut)")

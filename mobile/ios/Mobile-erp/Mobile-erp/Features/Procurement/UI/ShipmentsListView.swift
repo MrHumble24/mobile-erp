@@ -166,7 +166,7 @@ private struct ShipmentRow: View {
                     "registered": "\(shipment.deviceCount)", "expected": "\(shipment.expectedCount)",
                 ]))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             }
             Spacer()
             StatusBadge(

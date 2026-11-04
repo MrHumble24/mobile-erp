@@ -32,7 +32,7 @@ struct InventoryMetricsBar: View {
     }
 
     private func toggle(_ code: String) {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.tick.play()
         onSelectStatus(selectedStatus == code ? nil : code)
     }
 

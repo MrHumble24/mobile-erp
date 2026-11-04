@@ -29,7 +29,7 @@ struct UsersListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     filterOpen = true
                 } label: {
                     Label(
@@ -104,7 +104,7 @@ private struct UserRowView: View {
                         .foregroundStyle(Tokens.ink)
                     Text(user.email)
                         .font(.mono(13))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 Spacer()
                 StatusBadge(
@@ -119,7 +119,7 @@ private struct UserRowView: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Tokens.surface2, in: RoundedRectangle(cornerRadius: 4))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                 }
                 .padding(.top, 2)

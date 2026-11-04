@@ -27,7 +27,7 @@ struct ScanOrValueField: View {
                 Spacer()
                 Button { text = "" } label: { Image(systemName: "xmark.circle.fill") }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
     }

@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,6 +31,7 @@ import uz.malika.erp.features.inventory.model.DevicesViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.isImei
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.ScannerField
 import uz.malika.erp.ui.theme.MonoFamily
@@ -109,14 +108,9 @@ fun EditDeviceSheet(
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.weight(1f),
             )
-            Switch(
+            AppSwitch(
                 checked = dualSim,
                 onCheckedChange = { dualSim = it; if (!it) imei2 = "" },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Tokens.primaryForeground,
-                    checkedTrackColor = Tokens.primary,
-                    uncheckedTrackColor = Tokens.border,
-                ),
             )
         }
         if (dualSim) {
@@ -124,7 +118,7 @@ fun EditDeviceSheet(
             Text(t("inventory.imei2", null), style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.height(6.dp))
             ScannerField(
-                onScan = { imei2 = it.trim() },
+                onScan = { code, _ -> imei2 = code.trim() },
                 placeholder = t("inventory.imei2Hint", null),
                 autofocus = false,
             )

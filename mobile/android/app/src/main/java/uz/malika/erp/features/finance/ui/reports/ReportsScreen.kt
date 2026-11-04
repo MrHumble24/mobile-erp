@@ -24,7 +24,8 @@ import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.model.bucketForRange
-import uz.malika.erp.features.finance.model.isoDate
+import uz.malika.erp.features.finance.model.isoRangeFrom
+import uz.malika.erp.features.finance.model.isoRangeTo
 import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.features.finance.ui.components.financeViewModel
 import uz.malika.erp.i18n.LocalT
@@ -67,8 +68,8 @@ fun ReportsScreen(container: AppContainer) {
     var returnsRange by remember { mutableStateOf<Pair<String?, String?>?>(null) }
     var noi by remember { mutableStateOf<uz.malika.erp.features.finance.data.ProfitReport?>(null) }
 
-    val fromIso = isoDate(range.startMillis)
-    val toIso = isoDate(range.endMillis)
+    val fromIso = isoRangeFrom(range.startMillis)
+    val toIso = isoRangeTo(range.endMillis)
     val bucket = bucketForRange(range.startMillis, range.endMillis)
     val openDrill: (ReportDrill) -> Unit = { drill = it }
 

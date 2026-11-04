@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -55,6 +56,7 @@ import uz.malika.erp.shared.ui.SearchFilterRow
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.shared.ui.StatusChip
+import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -221,7 +223,14 @@ private fun OverflowMenu(csvEnabled: Boolean, onCsv: () -> Unit) {
         IconButton(onClick = { menu = true }) {
             Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
         }
-        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+        DropdownMenu(
+            expanded = menu,
+            onDismissRequest = { menu = false },
+            shape = RoundedCornerShape(Tokens.Radius.cards),
+            containerColor = Tokens.card,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+        ) {
             DropdownMenuItem(
                 text = { Text(t("consignments.exportCsv", null)) },
                 enabled = csvEnabled,

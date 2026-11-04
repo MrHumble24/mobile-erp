@@ -50,7 +50,7 @@ struct DevNetworkDetailView: View {
                 Text(entry.durationMs.map { "\($0) ms" } ?? "—")
                 Text(DevTime.string(entry.start))
             }
-            .font(.caption).foregroundStyle(.secondary)
+            .font(.caption).foregroundStyle(Tokens.muted)
             if let error = entry.error {
                 Text(error).font(.caption).foregroundStyle(Tokens.danger)
             }

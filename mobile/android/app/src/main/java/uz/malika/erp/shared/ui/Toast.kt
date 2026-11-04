@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import uz.malika.erp.ui.theme.Tokens
@@ -59,15 +58,21 @@ fun ToastHost(toasts: SharedFlow<Toast>, modifier: Modifier = Modifier) {
     }
 
     SnackbarHost(hostState, modifier) { data ->
+        val container = when (kind) {
+            ToastKind.SUCCESS -> Tokens.successBg
+            ToastKind.ERROR -> Tokens.dangerBg
+            ToastKind.INFO -> Tokens.infoBg
+        }
+        val content = when (kind) {
+            ToastKind.SUCCESS -> Tokens.success
+            ToastKind.ERROR -> Tokens.danger
+            ToastKind.INFO -> Tokens.info
+        }
         Snackbar(
-            modifier = Modifier.padding(12.dp),
-            shape = RoundedCornerShape(Tokens.radiusCards),
-            containerColor = when (kind) {
-                ToastKind.SUCCESS -> Tokens.success
-                ToastKind.ERROR -> Tokens.destructive
-                ToastKind.INFO -> Tokens.inkBlack
-            },
-            contentColor = Tokens.signalWhite,
+            modifier = Modifier.padding(Tokens.Space.md),
+            shape = RoundedCornerShape(Tokens.Radius.buttons),
+            containerColor = container,
+            contentColor = content,
         ) { Text(data.visuals.message) }
     }
 }

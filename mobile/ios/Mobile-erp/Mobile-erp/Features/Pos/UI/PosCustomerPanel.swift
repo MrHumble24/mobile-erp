@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Cart customer: attach an existing one via typeahead, add an inline new one,
-/// or leave it a walk-in. Writes to `cart.customer` (an existing id and an
+/// Cart customer card: attach an existing one via typeahead, add an inline new
+/// one, or leave it a walk-in. Writes to `cart.customer` (an existing id and an
 /// inline name are mutually exclusive).
 struct PosCustomerPanel: View {
     let model: PosViewModel
@@ -12,27 +12,26 @@ struct PosCustomerPanel: View {
     private var cart: PosCart { model.cart }
 
     var body: some View {
-        Section(i18n.t("pos.customer")) {
-            if let customer = cart.customer {
-                LabeledContent(customer.name) {
-                    Button(i18n.t("common.clear", default: "Clear"), role: .destructive) {
-                        cart.customer = nil
-                        addNew = false
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("pos.customer"))
+                    .font(.ui(.heading))
+                    .foregroundStyle(Tokens.text)
+                if let customer = cart.customer {
+                    attached(customer)
+                } else {
+                    Button {
+                        model.searchCustomers("")
+                        showSearch = true
+                    } label: {
+                        Label(i18n.t("pos.searchCustomer"), systemImage: "magnifyingglass")
+                            .frame(maxWidth: .infinity)
                     }
-                    .font(.subheadline)
+                    .buttonStyle(.pillSecondary)
+                    Toggle(i18n.t("pos.newCustomer"), isOn: $addNew.animation())
+                        .font(.ui(.body))
+                    if addNew { newCustomerFields }
                 }
-                if let phone = customer.phone, !phone.isEmpty {
-                    Text(phone).font(.mono(13)).foregroundStyle(.secondary)
-                }
-            } else {
-                Button {
-                    model.searchCustomers("")
-                    showSearch = true
-                } label: {
-                    Label(i18n.t("pos.searchCustomer"), systemImage: "magnifyingglass")
-                }
-                Toggle(i18n.t("pos.newCustomer"), isOn: $addNew.animation())
-                if addNew { newCustomerFields }
             }
         }
         .sheet(isPresented: $showSearch) {
@@ -43,12 +42,28 @@ struct PosCustomerPanel: View {
         }
     }
 
+    private func attached(_ customer: PosCartCustomer) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                Text(customer.name).font(.ui(.body)).foregroundStyle(Tokens.text)
+                if let phone = customer.phone, !phone.isEmpty {
+                    Text(phone).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                }
+            }
+            Spacer()
+            Button(i18n.t("common.clear", default: "Clear"), role: .destructive) {
+                cart.customer = nil
+                addNew = false
+            }
+            .buttonStyle(.pillGhost)
+        }
+    }
+
     @ViewBuilder private var newCustomerFields: some View {
-        TextField(i18n.t("pos.customerName"), text: Binding(
+        AppTextField(placeholder: i18n.t("pos.customerName"), text: Binding(
             get: { cart.customer?.name ?? "" },
             set: { cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone) }))
-        TextField(i18n.t("pos.customerPhone"), text: customerPhoneBinding)
-            .keyboardType(.phonePad)
+        AppTextField(placeholder: i18n.t("pos.customerPhone"), text: customerPhoneBinding, keyboard: .phonePad)
             .sanitizePhone(customerPhoneBinding)
     }
 
@@ -73,7 +88,7 @@ private struct PosCustomerSearchSheet: View {
         NavigationStack {
             List {
                 if model.customerHits.isEmpty {
-                    Text(i18n.t("common.notFound")).foregroundStyle(.secondary)
+                    Text(i18n.t("common.notFound")).foregroundStyle(Tokens.muted)
                 }
                 ForEach(model.customerHits) { hit in
                     Button { onSelect(hit) } label: {
@@ -81,13 +96,15 @@ private struct PosCustomerSearchSheet: View {
                             Text(hit.name)
                             Spacer()
                             if let phone = hit.phone {
-                                Text(phone).font(.mono(12)).foregroundStyle(.secondary)
+                                Text(phone).font(.mono(12)).foregroundStyle(Tokens.muted)
                             }
                         }
                     }
                     .buttonStyle(.plain)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Tokens.ground)
             .searchable(text: $query)
             .onChange(of: query) { _, q in model.searchCustomers(q) }
             .navigationTitle(i18n.t("pos.searchCustomer"))

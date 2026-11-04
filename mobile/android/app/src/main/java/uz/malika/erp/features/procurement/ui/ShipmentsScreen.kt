@@ -170,6 +170,7 @@ fun ShipmentsScreen(container: AppContainer) {
     ShipmentSheets(
         sheet = sheet,
         suppliers = supplierList,
+        supplierNames = supplierNames,
         modelNames = modelNames,
         deviceModels = (models as? AsyncValue.Data)?.value ?: emptyList(),
         canManage = canManage,
@@ -182,9 +183,10 @@ fun ShipmentsScreen(container: AppContainer) {
 }
 
 /**
- * Overview tiles computed from the full loaded list. The web shows "pending
- * intake" units (expected − received), but no i18n label for that exists yet, so
- * the third tile shows received units (`shipments.receivedCount`) instead.
+ * Overview tiles computed from the full loaded list. The first two tiles count
+ * batches (total, open); the third counts units, so it shows received over
+ * expected (`receivedUnits / expectedUnits`) to signal it is a unit figure, not
+ * another batch count.
  */
 @Composable
 private fun ShipmentsSummary(summary: ShipmentSummary) {
@@ -194,7 +196,7 @@ private fun ShipmentsSummary(summary: ShipmentSummary) {
         tiles = listOf(
             { m -> MetricTile(t("common.total", null), summary.total.toString(), m, money = false) },
             { m -> MetricTile(t("shipments.statusOpen", null), summary.open.toString(), m, money = false) },
-            { m -> MetricTile(t("shipments.receivedCount", null), summary.receivedUnits.toString(), m, money = false) },
+            { m -> MetricTile(t("shipments.receivedCount", null), "${summary.receivedUnits} / ${summary.expectedUnits}", m, money = false) },
         ),
     )
 }
@@ -203,6 +205,7 @@ private fun ShipmentsSummary(summary: ShipmentSummary) {
 private fun ShipmentSheets(
     sheet: Sheet?,
     suppliers: List<SupplierDto>,
+    supplierNames: Map<String, String>,
     modelNames: Map<String, String>,
     deviceModels: List<uz.malika.erp.features.procurement.data.DeviceModelDto>,
     canManage: Boolean,
@@ -227,14 +230,16 @@ private fun ShipmentSheets(
             onSaved = { vm.refreshShipments() }, onDismiss = dismiss,
         )
         is Sheet.Detail -> ShipmentDetailSheet(
-            shipment = sheet.shipment, modelNames = modelNames,
+            shipment = sheet.shipment,
+            supplierName = supplierNames[sheet.shipment.supplierId] ?: sheet.shipment.supplierId,
+            modelNames = modelNames,
             canManage = canManage, canCreate = canCreate, repo = repo,
             onEdit = { setSheet(Sheet.EditShipment(sheet.shipment)) },
             onContinueIntake = { setSheet(Sheet.Intake(sheet.shipment)) },
             onDismiss = dismiss,
         )
         is Sheet.Intake -> IntakeSheet(
-            shipment = sheet.shipment, models = deviceModels, online = online, repo = repo,
+            shipment = sheet.shipment, models = deviceModels, online = online, repo = repo, vm = vm,
             onSaved = { vm.refreshShipments() }, onDismiss = dismiss,
         )
     }

@@ -38,7 +38,7 @@ struct QcScreen: View {
                         title: i18n.t("qc.tabStats", default: "QC Statistikasi"),
                         subtitle: i18n.t("qc.statsSubtitle", default: "Sifat ko'rsatkichlari va nuqsonlar tahlili"),
                         icon: "chart.bar.xaxis",
-                        iconColor: Color(red: 0.55, green: 0.35, blue: 0.95),
+                        iconColor: Tokens.info,
                         destination: QcStatsView(refresh: refresh)
                     )
 
@@ -103,7 +103,7 @@ private struct QcNavCard<Destination: View>: View {
                             .foregroundStyle(Tokens.ink)
                         Text(subtitle)
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                             .lineLimit(2)
                     }
 

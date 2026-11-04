@@ -13,9 +13,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,7 +63,7 @@ fun AppShell(
 
     val barActions: @Composable RowScope.() -> Unit = {
         if (!online) {
-            Icon(Icons.Outlined.CloudOff, contentDescription = t("common.offline", null), tint = Tokens.slate)
+            Icon(Icons.Outlined.CloudOff, contentDescription = t("common.offline", null), tint = Tokens.muted)
         }
         IconButton(onClick = { confirmLogout = true }) {
             Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = t("auth.logout", null))
@@ -69,31 +71,47 @@ fun AppShell(
     }
 
     val topBar: @Composable () -> Unit = {
-        TopAppBar(title = { Text(titleText) }, actions = barActions)
+        TopAppBar(
+            title = { Text(titleText) },
+            actions = barActions,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Tokens.ground,
+                titleContentColor = Tokens.text,
+                actionIconContentColor = Tokens.text,
+            ),
+        )
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth.value >= WIDE_BREAKPOINT
         when {
-            navItems.size < 2 -> Scaffold(topBar = topBar) { pad -> content(Modifier.padding(pad)) }
+            navItems.size < 2 -> Scaffold(topBar = topBar, containerColor = Tokens.ground) { pad -> content(Modifier.padding(pad)) }
 
             wide -> Row(Modifier.fillMaxSize()) {
-                NavigationRail {
+                NavigationRail(containerColor = Tokens.card) {
                     navItems.forEach { item ->
                         NavigationRailItem(
                             selected = currentRoute == item.route,
                             onClick = { onSelect(item.route) },
                             icon = { Icon(item.icon, contentDescription = null) },
                             label = { Text(t(item.labelKey, null)) },
+                            colors = NavigationRailItemDefaults.colors(
+                                selectedIconColor = Tokens.action,
+                                selectedTextColor = Tokens.action,
+                                unselectedIconColor = Tokens.muted,
+                                unselectedTextColor = Tokens.muted,
+                                indicatorColor = Tokens.surface2,
+                            ),
                         )
                     }
                 }
-                Scaffold(topBar = topBar) { pad -> content(Modifier.padding(pad)) }
+                Scaffold(topBar = topBar, containerColor = Tokens.ground) { pad -> content(Modifier.padding(pad)) }
             }
 
             else -> Scaffold(
                 topBar = topBar,
                 bottomBar = { OneUiBottomBar(tabs, overflow, currentRoute, onSelect) },
+                containerColor = Tokens.ground,
             ) { pad -> content(Modifier.padding(pad)) }
         }
     }

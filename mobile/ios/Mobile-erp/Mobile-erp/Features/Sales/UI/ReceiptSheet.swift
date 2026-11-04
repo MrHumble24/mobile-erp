@@ -68,7 +68,7 @@ struct ReceiptSheet: View {
                 row(i18n.t("pos.warrantyUntil"), SaleDate.day(endsAt))
             }
             Text(i18n.t("pos.thankYou")).font(.mono(11)).padding(.top, 6)
-            Text(i18n.t("pos.warrantyNotice")).font(.mono(9)).foregroundStyle(.secondary)
+            Text(i18n.t("pos.warrantyNotice")).font(.mono(9)).foregroundStyle(Tokens.muted)
         }
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)

@@ -13,6 +13,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,10 @@ import uz.malika.erp.features.sales.data.CartLine
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.CaptureSpringItem
+import uz.malika.erp.shared.ui.isNew
+import uz.malika.erp.shared.ui.rememberCaptureTracker
+import uz.malika.erp.shared.ui.rememberReduceMotion
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
@@ -37,11 +42,21 @@ fun PosCartList(
     enabled: Boolean,
 ) {
     val t = LocalT.current
+    val tracker = rememberCaptureTracker()
+    val reduceMotion = rememberReduceMotion()
     Column(Modifier.fillMaxWidth()) {
         Text(t("pos.lineCount", mapOf("count" to lines.size)), style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(8.dp))
         lines.forEach { line ->
-            CartLineCard(line, onPrice, onWarranty, onRemove, enabled)
+            key(line.device.imei) {
+                CaptureSpringItem(
+                    isNew = tracker.isNew(line.device.imei),
+                    pulse = lines.size,
+                    reduceMotion = reduceMotion,
+                ) {
+                    CartLineCard(line, onPrice, onWarranty, onRemove, enabled)
+                }
+            }
             Spacer(Modifier.height(8.dp))
         }
     }

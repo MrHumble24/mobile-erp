@@ -81,7 +81,7 @@ struct ExpensesListTab: View {
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                Haptic.tick.play()
                 showFilters = true
             } label: {
                 Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
@@ -145,11 +145,11 @@ private struct ExpenseRow: View {
                 }
                 Text(ExpenseDate.display(expense.incurredAt))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                 if let d = expense.description, !d.isEmpty {
                     Text(d)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
             }
             Spacer()

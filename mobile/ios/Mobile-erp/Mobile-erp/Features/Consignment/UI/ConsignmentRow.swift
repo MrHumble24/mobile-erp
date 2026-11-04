@@ -26,10 +26,10 @@ struct ConsignmentRow: View {
                     HStack(spacing: 4) {
                         Image(systemName: "barcode.viewfinder")
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         Text(item.imei)
                             .font(.mono(12, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                     if let imei2 = item.imei2, !imei2.isEmpty {
                         Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
@@ -54,7 +54,7 @@ struct ConsignmentRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(i18n.t("consignments.dueDate", default: "Muddati"))
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
 
                     HStack(spacing: 5) {
                         Image(systemName: "calendar")
@@ -80,7 +80,7 @@ struct ConsignmentRow: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(i18n.t("consignments.agreedPrice", default: "Kelishilgan narx"))
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
 
                     MoneyText(value: item.agreedPrice, size: 17)
                         .foregroundStyle(Tokens.ink)
@@ -96,10 +96,10 @@ struct ConsignmentRow: View {
                 HStack(spacing: 4) {
                     Image(systemName: "text.bubble")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                     Text(notes)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .lineLimit(2)
                 }
             }
@@ -108,7 +108,7 @@ struct ConsignmentRow: View {
             if item.isOut {
                 HStack(spacing: 10) {
                     Button {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         onSettle()
                     } label: {
                         Label(i18n.t("consignments.settle", default: "Settle Sale"), systemImage: "checkmark.circle.fill")
@@ -121,7 +121,7 @@ struct ConsignmentRow: View {
                     .buttonBorderShape(.capsule)
 
                     Button {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         onReturn()
                     } label: {
                         Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")

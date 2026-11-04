@@ -26,7 +26,7 @@ struct ShipmentDetailSheet: View {
                     Text(i18n.t("shipments.registeredProgress", [
                         "registered": "\(shipment.deviceCount)", "expected": "\(shipment.expectedCount)",
                     ]))
-                    .font(.subheadline).foregroundStyle(.secondary)
+                    .font(.subheadline).foregroundStyle(Tokens.muted)
                     actions
                 }
                 Section(i18n.t("shipments.deviceList")) {
@@ -80,7 +80,7 @@ struct ShipmentDetailSheet: View {
             if let error = pager.error, pager.items.isEmpty {
                 ErrorStateView(message: error, retry: reload)
             } else if pager.items.isEmpty, !pager.isLoading {
-                Text(i18n.t("shipments.noDevices")).foregroundStyle(.secondary)
+                Text(i18n.t("shipments.noDevices")).foregroundStyle(Tokens.muted)
             } else {
                 let showCost = pager.items.contains { $0.landedCost != nil }
                 ForEach(pager.items) { d in
@@ -123,7 +123,7 @@ private struct DeviceTableRow: View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.imei).font(.mono(13))
-                Text(modelName).font(.caption).foregroundStyle(.secondary)
+                Text(modelName).font(.caption).foregroundStyle(Tokens.muted)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {

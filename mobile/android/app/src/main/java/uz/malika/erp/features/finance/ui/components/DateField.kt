@@ -32,6 +32,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.warmDatePickerColors
 import uz.malika.erp.ui.theme.Tokens
 import java.util.Date
 
@@ -48,19 +49,19 @@ fun DateField(
 ) {
     var open by remember { mutableStateOf(false) }
     Column(modifier.width(170.dp)) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
         Spacer(Modifier.height(6.dp))
         Row(
             Modifier
                 .fillMaxWidth()
-                .border(BorderStroke(1.dp, Tokens.border), RoundedCornerShape(9.dp))
+                .border(BorderStroke(1.dp, Tokens.border), RoundedCornerShape(Tokens.Radius.inputs))
                 .clickable { open = true }
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(value?.let { displayDate(it) } ?: "—", style = MaterialTheme.typography.bodyMedium)
-            Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = Tokens.slate)
+            Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = Tokens.muted)
         }
     }
     if (open) {
@@ -80,7 +81,7 @@ private fun DatePickerSheet(initial: Date?, onDismiss: () -> Unit, onPick: (Date
         initialSelectedDateMillis = (initial ?: Date()).time,
     )
     AppBottomSheet(onDismiss = onDismiss) {
-        DatePicker(state = pickerState, showModeToggle = false)
+        DatePicker(state = pickerState, showModeToggle = false, colors = warmDatePickerColors())
         Row(
             Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),

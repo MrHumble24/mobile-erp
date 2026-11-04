@@ -32,7 +32,9 @@ import uz.malika.erp.features.procurement.lib.dateToMillis
 import uz.malika.erp.features.procurement.lib.millisToDate
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.DatePickerDialogShape
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.warmDatePickerColors
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -46,13 +48,13 @@ import uz.malika.erp.ui.theme.Tokens
 fun AppDateField(label: String, value: String, onPick: (String) -> Unit, modifier: Modifier = Modifier) {
     val t = LocalT.current
     var open by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(9.dp)
+    val shape = RoundedCornerShape(Tokens.Radius.inputs)
     Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
         Spacer(Modifier.height(6.dp))
         Surface(
             shape = shape,
-            color = Tokens.surfaceCanvas,
+            color = Tokens.card,
             modifier = Modifier.fillMaxWidth().border(BorderStroke(1.dp, Tokens.border), shape).clickable { open = true },
         ) {
             Row(
@@ -60,15 +62,18 @@ fun AppDateField(label: String, value: String, onPick: (String) -> Unit, modifie
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(value, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = Tokens.slate)
+                Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = Tokens.muted)
             }
         }
     }
 
     if (open) {
         val state = rememberDatePickerState(initialSelectedDateMillis = dateToMillis(value))
+        val colors = warmDatePickerColors()
         DatePickerDialog(
             onDismissRequest = { open = false },
+            shape = DatePickerDialogShape,
+            colors = colors,
             confirmButton = {
                 PillButton(
                     text = t("common.save", null),
@@ -82,7 +87,7 @@ fun AppDateField(label: String, value: String, onPick: (String) -> Unit, modifie
                 PillButton(t("common.cancel", null), { open = false }, variant = ButtonVariant.GHOST)
             },
         ) {
-            DatePicker(state = state)
+            DatePicker(state = state, colors = colors)
         }
     }
 }

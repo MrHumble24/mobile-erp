@@ -72,7 +72,7 @@ private struct LookupSection: View {
             if let store {
                 LoadableView(state: store.state, retry: reload) { rows in
                     if rows.isEmpty {
-                        Text(i18n.t("common.notFound")).foregroundStyle(.secondary)
+                        Text(i18n.t("common.notFound")).foregroundStyle(Tokens.muted)
                     } else {
                         ForEach(rows) { row in LookupRow(row: row, canManage: canManage) { onEdit(row) } }
                     }
@@ -121,7 +121,7 @@ private struct LookupRow: View {
                     .foregroundStyle(Tokens.ink)
                 Text(row.code)
                     .font(.mono(12))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
             Spacer()
             if !row.isActive {

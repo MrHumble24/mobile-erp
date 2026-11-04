@@ -102,7 +102,7 @@ fun DevicesTab(
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.weight(1f)) {
                         ScannerField(
-                            onScan = devicesVm::setSearch,
+                            onScan = { code, _ -> devicesVm.setSearch(code) },
                             placeholder = t("inventory.scanOrSearch", null),
                             autofocus = false,
                         )

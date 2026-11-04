@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// Quick jumps to the busiest screens (POS, inventory, QC, sales, nasiya) via
-/// `KitRouter` — the kit's cross-feature navigation. Each action shows only if
-/// the user holds the destination's permission.
+/// `KitRouter`. A row of equal-width shortcut tiles — surface-2 squircle with
+/// the feature's own nav glyph, label below — the same anatomy as the Android
+/// `QuickActions` row. Each shows only if the user holds the permission.
 struct DashboardQuickActions: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -16,7 +17,7 @@ struct DashboardQuickActions: View {
     }
 
     private let actions: [Action] = [
-        Action(route: .pos(), labelKey: "nav.quickPos", icon: "creditcard", permission: "sale.create"),
+        Action(route: .pos(), labelKey: "nav.pos", icon: "creditcard", permission: "sale.create"),
         Action(route: .inventory(), labelKey: "nav.inventory", icon: "iphone", permission: "device.read"),
         Action(route: .qc(), labelKey: "nav.qc", icon: "checkmark.seal", permission: "qc.read"),
         Action(route: .sales(), labelKey: "nav.sales", icon: "chart.bar.doc.horizontal", permission: "sale.read"),
@@ -28,38 +29,40 @@ struct DashboardQuickActions: View {
 
     var body: some View {
         if !visible.isEmpty {
-            AppCard {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(i18n.t("dashboard.quickActions", default: "Quick Actions"))
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(visible) { action in
-                                Button {
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                    container.router.open(action.route)
-                                } label: {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: action.icon)
-                                            .font(.body.weight(.semibold))
-                                        Text(i18n.t(action.labelKey))
-                                            .font(.subheadline.weight(.medium))
-                                    }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 10)
-                                    .background(Tokens.mist, in: RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous))
-                                    .foregroundStyle(Tokens.ink)
-                                }
-                                .buttonStyle(.plain)
-                            }
+            HStack(alignment: .top, spacing: Tokens.Space.sm) {
+                ForEach(visible) { action in
+                    Button { container.router.open(action.route) } label: {
+                        VStack(spacing: Tokens.Space.sm) {
+                            Image(systemName: action.icon)
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundStyle(Tokens.text)
+                                .frame(width: 52, height: 52)
+                                .background(
+                                    Tokens.surface2,
+                                    in: RoundedRectangle(cornerRadius: Tokens.Radius.buttons, style: .continuous)
+                                )
+                            Text(i18n.t(action.labelKey))
+                                .font(.ui(.label))
+                                .foregroundStyle(Tokens.text)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
                         }
-                        .padding(.vertical, 2)
+                        .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(ShortcutTileStyle())
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+    }
+}
+
+/// Press feedback for a shortcut tile: the Warm Card press (scale 0.98, 120 ms),
+/// no highlight on the label.
+private struct ShortcutTileStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

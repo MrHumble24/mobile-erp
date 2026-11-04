@@ -37,7 +37,7 @@ struct PermissionMatrixView: View {
                                     .foregroundStyle(Tokens.ink)
                                 Text(i18n.t("users.systemRoleMatrixLocked", default: "System roles have fixed standard permissions and cannot be modified."))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                         }
                         .padding(.vertical, 4)
@@ -75,7 +75,7 @@ struct PermissionMatrixView: View {
                             if let d = permission.description, !d.isEmpty {
                                 Text(d)
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                         }
                         .padding(.vertical, 2)
@@ -88,7 +88,7 @@ struct PermissionMatrixView: View {
                     Spacer()
                     Text("\(grantedInGroup)/\(group.items.count)")
                         .font(.caption2.weight(.bold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
             }
         }
@@ -98,7 +98,7 @@ struct PermissionMatrixView: View {
         if let role, !role.isSystem, dirty {
             HStack(spacing: 12) {
                 Button(i18n.t("common.cancel", default: "Discard")) {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     selected = baseline
                 }
                 .buttonStyle(.bordered)
@@ -106,7 +106,7 @@ struct PermissionMatrixView: View {
                 Spacer()
 
                 Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    Haptic.tick.play()
                     Task {
                         let ok = await catalog.setRolePermissions(role.code, permissionCodes: Array(selected))
                         if ok { baseline = selected }
@@ -132,6 +132,6 @@ struct PermissionMatrixView: View {
     }
 
     private func note(_ text: String) -> some View {
-        Text(text).font(.footnote).foregroundStyle(.secondary)
+        Text(text).font(.footnote).foregroundStyle(Tokens.muted)
     }
 }

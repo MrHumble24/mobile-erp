@@ -11,7 +11,7 @@ struct FinRangeBar: View {
             Menu {
                 ForEach(FinRangePreset.allCases) { preset in
                     Button(i18n.t(preset.labelKey)) {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        Haptic.tick.play()
                         range.preset = preset
                     }
                 }
@@ -25,7 +25,7 @@ struct FinRangeBar: View {
                         .foregroundStyle(Tokens.ink)
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)

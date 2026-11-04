@@ -68,18 +68,18 @@ fun AppDateRangeField(
     val shape = RoundedCornerShape(Tokens.radiusInputs)
 
     Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
         Spacer(Modifier.height(6.dp))
         Surface(
             shape = shape,
-            color = Tokens.surfaceCanvas,
+            color = Tokens.card,
             modifier = Modifier
                 .fillMaxWidth()
                 .border(BorderStroke(1.dp, Tokens.border), shape)
                 .clickable { open = true },
         ) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+                Modifier.fillMaxWidth().padding(horizontal = Tokens.Space.lg, vertical = Tokens.Space.lg),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -87,7 +87,7 @@ fun AppDateRangeField(
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                 )
-                Icon(Icons.Outlined.DateRange, contentDescription = null, tint = Tokens.slate)
+                Icon(Icons.Outlined.DateRange, contentDescription = null, tint = Tokens.muted)
             }
         }
     }
@@ -97,8 +97,11 @@ fun AppDateRangeField(
             initialSelectedStartDateMillis = range.startMillis,
             initialSelectedEndDateMillis = range.endMillis,
         )
+        val colors = warmDatePickerColors()
         DatePickerDialog(
             onDismissRequest = { open = false },
+            shape = DatePickerDialogShape,
+            colors = colors,
             confirmButton = {
                 PillButton(
                     text = t("common.save", null),
@@ -112,7 +115,7 @@ fun AppDateRangeField(
                 PillButton(t("common.cancel", null), { open = false }, variant = ButtonVariant.GHOST)
             },
         ) {
-            DateRangePicker(state = state)
+            DateRangePicker(state = state, colors = colors)
         }
     }
 }

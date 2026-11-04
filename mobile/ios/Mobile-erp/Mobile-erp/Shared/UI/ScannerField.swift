@@ -32,10 +32,12 @@ struct ScannerField: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "barcode.viewfinder")
-                .font(.system(size: 18))
-                .foregroundStyle(focused ? Tokens.ring : .secondary)
+                .font(.system(size: 20))
+                .foregroundStyle(Tokens.muted)
             TextField(placeholder, text: $text)
-                .font(.mono(15, weight: .medium))
+                // Placeholder reads as prose (Onest); only entered digits are mono.
+                .font(text.isEmpty ? .ui(.body) : .mono(15, weight: .medium))
+                .foregroundStyle(Tokens.text)
                 .textInputAutocapitalization(.characters)
                 .autocorrectionDisabled()
                 .focused($focused)
@@ -47,7 +49,7 @@ struct ScannerField: View {
                     focused = true
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear text")
@@ -55,20 +57,22 @@ struct ScannerField: View {
             if cameraSupported {
                 Button { showCamera = true } label: {
                     Image(systemName: "camera")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Tokens.muted)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.plain)
                 .accessibilityLabel("Scan with camera")
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Tokens.Space.gutter)
+        .frame(minHeight: 56)
         .background(
-            RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
-                .fill(Tokens.surface)
+            RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
+                .fill(Tokens.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: Tokens.Radius.inputs, style: .continuous)
-                .strokeBorder(focused ? Tokens.ring.opacity(0.6) : Tokens.hairline, lineWidth: 1)
+            RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
+                .strokeBorder(focused ? Tokens.text : .clear, lineWidth: 2)
         )
         .animation(.snappy(duration: 0.2), value: focused)
         .onAppear {
@@ -97,7 +101,7 @@ struct ScannerField: View {
         }
         lastCode = code
         lastAt = now
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        Haptic.tick.play()
         onScan(code)
     }
 }

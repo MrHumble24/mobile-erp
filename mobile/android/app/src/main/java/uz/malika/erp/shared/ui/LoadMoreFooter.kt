@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Footer for a paginated list: a "load more" button while [hasMore], a spinner
@@ -30,7 +31,7 @@ fun LoadMoreFooter(
         contentAlignment = Alignment.Center,
     ) {
         if (loading) {
-            CircularProgressIndicator(strokeWidth = 2.dp)
+            CircularProgressIndicator(strokeWidth = 2.dp, color = Tokens.text)
         } else {
             PillButton(
                 text = t("common.loadMore", null),

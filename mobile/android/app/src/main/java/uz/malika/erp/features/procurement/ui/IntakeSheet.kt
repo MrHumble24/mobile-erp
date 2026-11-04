@@ -1,32 +1,21 @@
 package uz.malika.erp.features.procurement.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -37,15 +26,20 @@ import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.RegisteredDeviceDto
 import uz.malika.erp.features.procurement.data.ShipmentDto
+import uz.malika.erp.features.procurement.model.ShipmentsViewModel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.rememberHaptics
 import uz.malika.erp.shared.ui.AppBottomSheet
-import uz.malika.erp.shared.ui.MoneyText
+import uz.malika.erp.shared.ui.OfflineBanner
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Loop-add devices to [shipment] then POST the batch (online-only). Duplicate
- * IMEIs are blocked client-side before the staged list and again on the 409.
+ * Scan-first device intake for [shipment]: the scanning station leads, the batch
+ * defaults follow, and the staged units sit below. Drafts live in [vm] (keyed by
+ * shipment id) so dismissing and reopening the sheet restores the batch; submit
+ * POSTs the batch (online-only) and clears them. Duplicate IMEIs are blocked
+ * client-side before staging and again on the 409.
  */
 @Composable
 fun IntakeSheet(
@@ -53,13 +47,17 @@ fun IntakeSheet(
     models: List<DeviceModelDto>,
     online: Boolean,
     repo: ProcurementRepository,
+    vm: ShipmentsViewModel,
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val t = LocalT.current
     val scope = rememberCoroutineScope()
+    val haptics = rememberHaptics()
     val canCost = LocalCan.current("device.cost.view")
-    val drafts = remember { mutableStateListOf<IntakeDraft>() }
+    val allDrafts by vm.drafts.collectAsState()
+    val drafts = allDrafts[shipment.id].orEmpty()
+    val modelNames = remember(models) { models.associate { it.id to it.label } }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var results by remember { mutableStateOf<List<RegisteredDeviceDto>>(emptyList()) }
@@ -69,19 +67,24 @@ fun IntakeSheet(
         // of an already-staged unit.
         val newCodes = listOfNotNull(draft.imei, draft.imei2?.takeIf { it.isNotBlank() })
         val staged = drafts.flatMap { listOfNotNull(it.imei, it.imei2?.takeIf { c -> c.isNotBlank() }) }
-        if (newCodes.any { it in staged }) { error = t("shipments.duplicateImei", null); return }
-        drafts.add(draft); error = null
+        if (newCodes.any { it in staged }) {
+            error = t("shipments.duplicateImei", null)
+            haptics.error() // duplicate IMEI rejected
+            return
+        }
+        vm.stageDraft(shipment.id, draft); error = null
     }
 
     fun submit() {
         if (drafts.isEmpty()) return
-        if (!online) { error = t("common.offline", null); return }
+        if (!online) { error = t("sync.offline", null); return }
         busy = true; error = null
         scope.launch {
             try {
                 // Keep the registered units' landed costs so the summary matches the web.
                 results = repo.addDevices(shipment.id, drafts.toList())
-                drafts.clear()
+                vm.clearDrafts(shipment.id)
+                haptics.success() // batch submitted
                 onSaved()
             } catch (e: AppException) {
                 error = if (e.statusCode == 409) t("shipments.duplicateImei", null) else e.message
@@ -94,70 +97,47 @@ fun IntakeSheet(
     AppBottomSheet(onDismiss = onDismiss) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
             Text(t("shipments.intakeDevices", null), style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Tokens.Space.rowV))
             Text(
-                t("shipments.registeredProgress", mapOf("registered" to drafts.size, "expected" to shipment.expectedCount)),
+                t(
+                    "shipments.registeredProgress",
+                    mapOf(
+                        "registered" to shipment.deviceCount + drafts.size,
+                        "expected" to shipment.expectedCount,
+                    ),
+                ),
                 style = MaterialTheme.typography.bodySmall,
             )
-            Spacer(Modifier.height(16.dp))
+            if (!online) {
+                Spacer(Modifier.height(Tokens.Space.section))
+                OfflineBanner(t("sync.offline", null))
+            }
+            Spacer(Modifier.height(Tokens.Space.section))
             IntakeDeviceForm(models = models, onAdd = ::add)
             if (drafts.isNotEmpty()) {
-                Spacer(Modifier.height(20.dp))
-                Text(t("shipments.deviceList", null), style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                drafts.forEachIndexed { i, draft ->
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            ImeiText(draft.imei, style = MaterialTheme.typography.bodyMedium)
-                            if (draft.specs.isNotEmpty()) {
-                                Text(draft.specs.values.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                        IconButton(onClick = { drafts.removeAt(i) }) {
-                            Icon(Icons.Outlined.Close, contentDescription = null)
-                        }
-                    }
-                }
+                Spacer(Modifier.height(Tokens.Space.section))
+                IntakeStagedList(
+                    drafts = drafts,
+                    modelNames = modelNames,
+                    onRemove = { vm.removeDraft(shipment.id, it) },
+                )
             }
             error?.let {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Tokens.Space.gap))
                 Text(it, color = Tokens.destructive, style = MaterialTheme.typography.bodyMedium)
             }
             if (canCost && results.isNotEmpty()) {
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(Tokens.Space.section))
                 LandedResults(results)
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(Tokens.Space.section))
             PillButton(
                 text = t(if (busy) "common.loading" else "shipments.submitBatch", null),
                 onClick = ::submit,
-                enabled = !busy && drafts.isNotEmpty(),
+                enabled = !busy && drafts.isNotEmpty() && online,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-}
-
-/** Per-device landed cost returned by the server after a batch is registered. */
-@Composable
-private fun LandedResults(results: List<RegisteredDeviceDto>) {
-    val t = LocalT.current
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .background(Tokens.mist, RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, Tokens.bone), RoundedCornerShape(12.dp))
-            .padding(12.dp),
-    ) {
-        Text(t("shipments.landedCostResults", null), style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.height(8.dp))
-        results.forEach { r ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ImeiText(r.imei, style = MaterialTheme.typography.bodySmall)
-                MoneyText(r.landedCost, style = MaterialTheme.typography.bodySmall)
-            }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Tokens.Space.gap))
         }
     }
 }

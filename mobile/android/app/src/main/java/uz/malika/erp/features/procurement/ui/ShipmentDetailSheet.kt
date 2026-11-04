@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,17 +28,18 @@ import uz.malika.erp.shared.lib.PageState
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
+import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
-import uz.malika.erp.shared.ui.isCompactWidth
 import uz.malika.erp.ui.theme.Tokens
 
 /** Shipment summary + its registered devices (paginated), as a phone bottom sheet. */
 @Composable
 fun ShipmentDetailSheet(
     shipment: ShipmentDto,
+    supplierName: String,
     modelNames: Map<String, String>,
     canManage: Boolean,
     canCreate: Boolean,
@@ -51,6 +51,7 @@ fun ShipmentDetailSheet(
     AppBottomSheet(onDismiss = onDismiss) {
         ShipmentDetailContent(
             shipment = shipment,
+            supplierName = supplierName,
             modelNames = modelNames,
             canManage = canManage,
             canCreate = canCreate,
@@ -64,12 +65,14 @@ fun ShipmentDetailSheet(
 
 /**
  * The detail body itself — reused as a phone bottom sheet ([ShipmentDetailSheet])
- * and as the tablet master-detail pane. Loads the registered devices one page
- * at a time (load-more).
+ * and as the tablet master-detail pane. The batch is its own identity (supplier,
+ * date, intake progress, overhead, notes); the registered devices load one page
+ * at a time (load-more), surfacing a retriable error if a page fails.
  */
 @Composable
 fun ShipmentDetailContent(
     shipment: ShipmentDto,
+    supplierName: String,
     modelNames: Map<String, String>,
     canManage: Boolean,
     canCreate: Boolean,
@@ -82,14 +85,17 @@ fun ShipmentDetailContent(
     val scope = rememberCoroutineScope()
     var devices by remember(shipment.id) { mutableStateOf(PageState<DeviceRowDto>()) }
     var loaded by remember(shipment.id) { mutableStateOf(false) }
+    var error by remember(shipment.id) { mutableStateOf<String?>(null) }
 
     suspend fun load(page: Int) {
         devices = devices.copy(loading = true)
-        devices = try {
+        error = null
+        try {
             val dto = repo.devices(shipmentId = shipment.id, page = page)
-            devices.append(dto.items, dto.total, page)
-        } catch (_: AppException) {
-            devices.copy(loading = false)
+            devices = devices.append(dto.items, dto.total, page)
+        } catch (e: AppException) {
+            devices = devices.copy(loading = false)
+            error = e.message
         }
         loaded = true
     }
@@ -97,27 +103,40 @@ fun ShipmentDetailContent(
     LaunchedEffect(shipment.id) { load(1) }
 
     Column(modifier) {
-        Text(t("shipments.detailTitle", null), style = MaterialTheme.typography.titleLarge)
+        Text(supplierName, style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(4.dp))
+        Text(shipment.dateLabel, style = MaterialTheme.typography.bodyMedium)
         Spacer(Modifier.height(4.dp))
         Text(
             t("shipments.registeredProgress", mapOf("registered" to shipment.deviceCount, "expected" to shipment.expectedCount)),
             style = MaterialTheme.typography.bodySmall,
+            color = Tokens.mutedForeground,
         )
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (canManage) {
-                PillButton(t("shipments.editShipment", null), onEdit, variant = ButtonVariant.OUTLINE, modifier = Modifier.weight(1f))
-            }
-            if (canCreate) {
-                PillButton(t("shipments.continueIntake", null), onContinueIntake, modifier = Modifier.weight(1f))
-            }
-        }
+
+        ShipmentMeta(shipment)
+
         Spacer(Modifier.height(16.dp))
+        if (canCreate || canManage) {
+            if (canCreate) {
+                PillButton(t("shipments.continueIntake", null), onContinueIntake, Modifier.fillMaxWidth())
+            }
+            if (canCreate && canManage) Spacer(Modifier.height(Tokens.Space.gap))
+            if (canManage) {
+                PillButton(t("shipments.editShipment", null), onEdit, Modifier.fillMaxWidth(), ButtonVariant.OUTLINE)
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
         when {
             !loaded -> Loading()
+            error != null -> ErrorView(
+                message = error!!,
+                retryLabel = t("common.retry", null),
+                onRetry = { scope.launch { load(1) } },
+            )
             devices.items.isEmpty() -> EmptyView(t("shipments.noDevices", null))
             else -> {
-                DevicesTable(devices.items, modelNames)
+                ShipmentDevicesTable(devices.items, modelNames)
                 LoadMoreFooter(
                     hasMore = devices.hasMore,
                     loading = devices.loading,
@@ -129,73 +148,36 @@ fun ShipmentDetailContent(
     }
 }
 
+/** Overhead and notes rows, each shown only when the batch carries that value. */
 @Composable
-private fun DevicesTable(rows: List<DeviceRowDto>, modelNames: Map<String, String>) {
+private fun ShipmentMeta(shipment: ShipmentDto) {
     val t = LocalT.current
-    val showCost = rows.any { it.landedCost != null }
-    if (isCompactWidth()) {
-        Column {
-            rows.forEach { d ->
-                Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-                    ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
-                    d.imei2?.takeIf { it.isNotBlank() }?.let {
-                        ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
-                    }
-                    Text(
-                        modelNames[d.modelId] ?: d.modelId,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Tokens.mutedForeground,
-                    )
-                    Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Text(
-                            "${t("common.status", null)}: ${d.statusCode}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Tokens.mutedForeground,
-                        )
-                        if (showCost && d.landedCost != null) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(
-                                    "${t("shipments.avgLandedPerUnit", null)}:",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Tokens.mutedForeground,
-                                )
-                                MoneyText(
-                                    d.landedCost,
-                                    style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground),
-                                )
-                            }
-                        }
-                    }
-                }
-                HorizontalDivider(color = Tokens.border)
+    val overhead = shipment.overheadCost
+    val notes = shipment.notes?.takeIf { it.isNotBlank() }
+    if (overhead == null && notes == null) return
+    Spacer(Modifier.height(12.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.rowV)) {
+        if (overhead != null) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(
+                    t("shipments.overheadCost", null),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Tokens.mutedForeground,
+                    modifier = Modifier.weight(1f),
+                )
+                MoneyText(overhead, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        return
-    }
-    Column {
-        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("IMEI", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1.4f))
-            Text(t("common.status", null), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-            if (showCost) {
-                Text(t("shipments.avgLandedPerUnit", null), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+        if (notes != null) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(
+                    t("common.notes", null),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Tokens.mutedForeground,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(notes, style = MaterialTheme.typography.bodyMedium)
             }
-        }
-        HorizontalDivider(color = Tokens.border)
-        rows.forEach { d ->
-            Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1.4f)) {
-                    ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
-                    d.imei2?.takeIf { it.isNotBlank() }?.let {
-                        ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
-                    }
-                    Text(modelNames[d.modelId] ?: d.modelId, style = MaterialTheme.typography.bodySmall)
-                }
-                Text(d.statusCode, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                if (showCost) {
-                    MoneyText(d.landedCost, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                }
-            }
-            HorizontalDivider(color = Tokens.border)
         }
     }
 }

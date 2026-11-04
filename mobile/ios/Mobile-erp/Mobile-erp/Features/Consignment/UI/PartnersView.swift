@@ -78,7 +78,7 @@ struct PartnersView: View {
         if container.session.can("partner.manage") {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showCreate = true
                 } label: {
                     Image(systemName: "plus")
@@ -90,7 +90,7 @@ struct PartnersView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showFilters = true
                 } label: {
                     Label(
@@ -102,7 +102,7 @@ struct PartnersView: View {
                 }
 
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showStats = true
                 } label: {
                     Label(

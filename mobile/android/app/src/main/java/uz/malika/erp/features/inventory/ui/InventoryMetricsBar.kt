@@ -1,8 +1,5 @@
 package uz.malika.erp.features.inventory.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -82,22 +79,20 @@ private fun MetricCard(
     active: Boolean,
     onTap: () -> Unit,
 ) {
+    // Warm Card: no border. The selected tile is a surface-2 fill with
+    // text-colour label; unselected is a white card with a muted label.
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Tokens.surfaceCanvas,
-        modifier = Modifier
-            .width(130.dp)
-            .border(
-                BorderStroke(if (active) 1.5.dp else 1.dp, if (active) Tokens.onyx else Tokens.border),
-                RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onTap),
+        onClick = onTap,
+        shape = RoundedCornerShape(Tokens.Radius.cards),
+        color = if (active) Tokens.surface2 else Tokens.card,
+        modifier = Modifier.width(130.dp),
     ) {
-        Column(Modifier.padding(12.dp)) {
+        Column(Modifier.padding(Tokens.Space.md)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     label,
                     style = MaterialTheme.typography.labelSmall,
+                    color = if (active) Tokens.text else Tokens.muted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
@@ -105,7 +100,7 @@ private fun MetricCard(
                 Box(Modifier.size(10.dp).background(dot, CircleShape))
             }
             Spacer(Modifier.height(6.dp))
-            Text(value?.toString() ?: "—", style = MaterialTheme.typography.headlineSmall)
+            Text(value?.toString() ?: "—", style = MaterialTheme.typography.headlineSmall, color = Tokens.text)
         }
     }
 }

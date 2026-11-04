@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Revenue / profit KPI tiles with a today/week/month toggle (`/reports/profit`,
-/// perm `report.finance`).
+/// Revenue / profit KPI rows with a today/week/month toggle (`/reports/profit`,
+/// perm `report.finance`). Row order and captions match the Android `KpiSection`.
 struct DashboardKpiSection: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -11,18 +11,17 @@ struct DashboardKpiSection: View {
     @State private var error: String?
 
     var body: some View {
-        VStack(spacing: 12) {
-            Picker(i18n.t("reports.period"), selection: $period) {
-                Text(i18n.t("dashboard.periodToday")).tag(DashPeriod.today)
-                Text(i18n.t("dashboard.periodWeek")).tag(DashPeriod.week)
-                Text(i18n.t("dashboard.periodMonth")).tag(DashPeriod.month)
-            }
-            .pickerStyle(.segmented)
+        VStack(spacing: Tokens.Space.sm) {
+            SegmentedControl(selection: $period, segments: [
+                (.today, i18n.t("dashboard.periodToday")),
+                (.week, i18n.t("dashboard.periodWeek")),
+                (.month, i18n.t("dashboard.periodMonth")),
+            ])
 
             if let error, profit == nil {
                 AppCard { ErrorStateView(message: error) { Task { await load() } } }
             } else if let profit {
-                DashTileGrid(tiles: tiles(profit))
+                DashMetricList(rows: rows(profit))
             } else {
                 AppCard { LoadingView().frame(height: 80) }
             }
@@ -40,22 +39,22 @@ struct DashboardKpiSection: View {
         catch { self.error = error.localizedDescription }
     }
 
-    private func tiles(_ p: DashProfit) -> [DashTile] {
+    private func rows(_ p: DashProfit) -> [DashMetricRow] {
         [
-            DashTile(label: i18n.t("dashboard.netOperatingIncome", default: "Net Operating Profit"),
-                     value: dashMoney(p.netOperatingIncome),
-                     subtext: i18n.t("dashboard.netProfitSubtitle", default: "Store profit after operating expenses"),
-                     emphasis: Tokens.success),
-            DashTile(label: i18n.t("dashboard.revenue", default: "Total Sales Revenue"),
-                     value: dashMoney(p.revenue),
-                     subtext: "\(p.unitsSold) \(i18n.t("dashboard.unitsSold", default: "units sold")) · \(dashMoney(p.retail)) \(i18n.t("dashboard.retail", default: "retail"))"),
-            DashTile(label: i18n.t("dashboard.grossProfit", default: "Gross Sales Profit"),
-                     value: dashMoney(p.grossProfit),
-                     subtext: i18n.t("dashboard.grossProfitSubtitle", default: "Revenue minus phone unit costs")),
-            DashTile(label: i18n.t("dashboard.expenses", default: "Operating Expenses"),
-                     value: dashMoney(p.expenses),
-                     subtext: i18n.t("dashboard.expensesSubtitle", default: "Rent, bills, and shop overhead"),
-                     emphasis: Tokens.danger),
+            DashMetricRow(label: i18n.t("dashboard.grossProfit"),
+                          value: dashMoney(p.grossProfit),
+                          subtext: "\(p.unitsSold) \(i18n.t("dashboard.unitsSold"))",
+                          emphasis: moneyTint(.profit, p.grossProfit)),
+            DashMetricRow(label: i18n.t("dashboard.netOperatingIncome"),
+                          value: dashMoney(p.netOperatingIncome),
+                          emphasis: moneyTint(.profit, p.netOperatingIncome)),
+            DashMetricRow(label: i18n.t("dashboard.revenue"),
+                          value: dashMoney(p.revenue),
+                          subtext: "\(i18n.t("dashboard.retail")): \(dashMoney(p.retail))",
+                          emphasis: moneyTint(.revenue, p.revenue)),
+            DashMetricRow(label: i18n.t("dashboard.expenses"),
+                          value: dashMoney(p.expenses),
+                          emphasis: moneyTint(.expense, p.expenses)),
         ]
     }
 }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kassa — Box Face</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; background: #777; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: "Albert Sans", sans-serif; }
+  #frame { width: 390px; height: 844px; overflow: hidden; background: #FFFFFF; position: relative; color: #1D1D1F; display: flex; flex-direction: column; }
+
+  .statusbar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .statusbar .glyphs { display: flex; gap: 6px; align-items: center; }
+
+  .content { flex: 1; overflow: hidden; padding: 0 24px; }
+
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 20px; }
+
+  .scan { height: 48px; background: #F5F5F7; border-radius: 12px; display: flex; align-items: center; gap: 10px; padding: 0 16px; margin-bottom: 20px; }
+  .scan span { font-size: 15px; font-weight: 400; color: #86868B; }
+
+  .caption { font-size: 13px; color: #86868B; margin-bottom: 20px; }
+
+  .card { padding: 20px 0; }
+  .card + .card { border-top: 1px solid #E8E8ED; }
+  .card .model { font-size: 24px; font-weight: 300; letter-spacing: -0.01em; }
+  .card .spec { font-size: 13px; color: #86868B; margin-top: 4px; }
+  .card .air { height: 28px; }
+  .card .strip { border-top: 1px solid #E8E8ED; padding-top: 12px; display: flex; align-items: baseline; justify-content: space-between; }
+  .card .imei { font-family: "Geist Mono", "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.04em; color: #86868B; }
+  .card .price { font-size: 15px; font-weight: 600; }
+
+  .totals { border-top: 1px solid #E8E8ED; padding: 20px 0 16px; }
+  .totals .label { font-size: 13px; color: #86868B; }
+  .totals .sum { font-size: 32px; font-weight: 300; letter-spacing: -0.02em; margin-top: 2px; }
+
+  .customer { font-size: 15px; color: #86868B; padding-bottom: 20px; }
+
+  .pay { height: 50px; background: #1D1D1F; border-radius: 25px; display: flex; align-items: center; justify-content: center; }
+  .pay span { color: #FFFFFF; font-size: 15px; font-weight: 500; }
+
+  .tabbar { height: 72px; display: flex; flex-shrink: 0; padding-bottom: 8px; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #86868B; }
+  .tab.active { color: #1D1D1F; }
+  .tab span { font-size: 11px; }
+  .tab svg { width: 22px; height: 22px; }
+</style>
+</head>
+<body>
+  <div id="frame">
+    <div class="statusbar">
+      <span>12:47</span>
+      <span class="glyphs">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="#1D1D1F"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="#1D1D1F" stroke-width="1.3"><path d="M1 4.2a10 10 0 0 1 14 0M3.5 6.6a6.5 6.5 0 0 1 9 0"/><circle cx="8" cy="9.3" r="1" fill="#1D1D1F" stroke="none"/></svg>
+        <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="0.5" y="0.5" width="20" height="11" rx="3" stroke="#1D1D1F" opacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#1D1D1F"/><rect x="21.5" y="4" width="1.5" height="4" rx="0.75" fill="#1D1D1F" opacity="0.4"/></svg>
+      </span>
+    </div>
+
+    <div class="content">
+      <h1>Kassa</h1>
+
+      <div class="scan">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#86868B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V6a2 2 0 0 1 2-2h2M17 4h2a2 2 0 0 1 2 2v2M21 16v2a2 2 0 0 1-2 2h-2M7 20H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>IMEI skanerlang yoki kiriting (15 xona)</span>
+      </div>
+
+      <div class="caption">Tanlangan qurilma</div>
+
+      <div class="card">
+        <div class="model">Galaxy S23 Ultra</div>
+        <div class="spec">Samsung · 256 GB · Qora</div>
+        <div class="air"></div>
+        <div class="strip">
+          <span class="imei">358511020749606</span>
+          <span class="price">$1,250</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="model">iPhone 15 Pro</div>
+        <div class="spec">Apple · 128 GB · Oq</div>
+        <div class="air"></div>
+        <div class="strip">
+          <span class="imei">357111000222333</span>
+          <span class="price">$1,100</span>
+        </div>
+      </div>
+
+      <div class="totals">
+        <div class="label">Jami</div>
+        <div class="sum">$2,350</div>
+      </div>
+
+      <div class="customer">Mijoz · Oddiy xaridor</div>
+
+      <div class="pay"><span>Sotuvni yakunlash</span></div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5"/></svg>
+        <span>Bosh sahifa</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 14h4"/></svg>
+        <span>Kassa</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        <span>Savdolar</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4 9 4-9 4-9-4zM3 8v8l9 4 9-4V8"/></svg>
+        <span>Ombor</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+        <span>Yana</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

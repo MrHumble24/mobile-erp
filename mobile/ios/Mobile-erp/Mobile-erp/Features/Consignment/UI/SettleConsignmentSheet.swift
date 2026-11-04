@@ -28,11 +28,11 @@ struct SettleConsignmentSheet: View {
                         HStack {
                             Text("IMEI: \(consignment.imei)")
                                 .font(.mono(12))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Spacer()
                             Text(i18n.t("consignments.agreedPrice", default: "Agreed: \(MoneyText.format(consignment.agreedPrice))"))
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     .padding(.vertical, 4)
@@ -42,7 +42,7 @@ struct SettleConsignmentSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("$")
                             .font(.title3.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField("0", text: $salePrice)
                             .font(.mono(22, weight: .bold))
                             .keyboardType(.decimalPad)
@@ -52,7 +52,7 @@ struct SettleConsignmentSheet: View {
                             Spacer()
                             Button {
                                 salePrice = agreedWhole
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                Haptic.tick.play()
                             } label: {
                                 Text(i18n.t("common.reset", default: "Agreed: $\(agreedWhole)"))
                                     .font(.caption2.weight(.medium))
@@ -75,7 +75,7 @@ struct SettleConsignmentSheet: View {
                     Label(i18n.t("consignments.settleHint", default: "Settling marks this device as sold and credits the partner's account."),
                           systemImage: "info.circle")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
 
                 if let errorMessage {
@@ -127,7 +127,7 @@ struct SettleConsignmentSheet: View {
         defer { saving = false }
         let t = notes.trimmingCharacters(in: .whitespaces)
         do {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            Haptic.tick.play()
             _ = try await container.consignmentWriter.settle(
                 consignmentId: consignment.id, imei: consignment.imei,
                 salePrice: Double(salePrice), notes: t.isEmpty ? nil : t)

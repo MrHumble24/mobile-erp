@@ -82,7 +82,7 @@ private struct GradeForm: View {
         Form {
             Section {
                 Text(data.device.imei).font(.mono(15))
-                Text(data.device.modelLabel).font(.caption).foregroundStyle(.secondary)
+                Text(data.device.modelLabel).font(.caption).foregroundStyle(Tokens.muted)
             }
             Section {
                 Picker(i18n.t("qc.result"), selection: $passed) {

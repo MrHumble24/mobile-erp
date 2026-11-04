@@ -1,28 +1,37 @@
 package uz.malika.erp.shared.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
-/** Caldera button variants (shadcn parity). */
+/**
+ * Button variants. OUTLINE keeps its name but is now a borderless surface-2
+ * button (Warm Card has no borders except inputs); only PRIMARY/DESTRUCTIVE
+ * carry a fill the eye reads as pressable, and only PRIMARY is the one orange.
+ */
 enum class ButtonVariant { DEFAULT, SECONDARY, OUTLINE, GHOST, DESTRUCTIVE }
 
-private val PillShape = RoundedCornerShape(50)
-private val Pad = PaddingValues(horizontal = Tokens.Space.buttonH, vertical = Tokens.Space.buttonV)
+private val ButtonShape = RoundedCornerShape(Tokens.Radius.buttons) // 14
+private val ControlHeight = 52.dp
 
 /**
- * The one button. Pill-shaped (radius-full), 6 Caldera variants. Feature screens
- * use this — never a raw Material [Button] with default styling.
+ * The one button. Radius 14, 52 dp tall, zero elevation. Built on a clickable
+ * [Surface] so it takes the theme's press feedback (scale + surface-2 wash via
+ * `LocalIndication`) — Material `Button` ignores `LocalIndication`, so the kit
+ * owns the surface instead. Feature screens use this, never a raw Material button.
  */
 @Composable
 fun PillButton(
@@ -32,49 +41,33 @@ fun PillButton(
     variant: ButtonVariant = ButtonVariant.DEFAULT,
     enabled: Boolean = true,
 ) {
-    when (variant) {
-        ButtonVariant.OUTLINE -> OutlinedButton(
-            onClick = onClick,
-            modifier = modifier,
-            enabled = enabled,
-            shape = PillShape,
-            contentPadding = Pad,
-            border = BorderStroke(1.dp, Tokens.border),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Tokens.foreground),
-        ) { Text(text) }
-
-        ButtonVariant.GHOST -> TextButton(
-            onClick = onClick,
-            modifier = modifier,
-            enabled = enabled,
-            shape = PillShape,
-            contentPadding = Pad,
-            colors = ButtonDefaults.textButtonColors(contentColor = Tokens.foreground),
-        ) { Text(text) }
-
-        else -> Button(
-            onClick = onClick,
-            modifier = modifier,
-            enabled = enabled,
-            shape = PillShape,
-            contentPadding = Pad,
-            colors = variant.filledColors(),
-        ) { Text(text) }
+    val (container, content) = variant.colors(enabled)
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        shape = ButtonShape,
+        color = container,
+        contentColor = content,
+        modifier = modifier.semantics { role = Role.Button },
+    ) {
+        Box(
+            Modifier
+                .defaultMinSize(minHeight = ControlHeight)
+                .padding(horizontal = Tokens.Space.buttonH, vertical = Tokens.Space.buttonV),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text, style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
 
 @Composable
-private fun ButtonVariant.filledColors(): ButtonColors = when (this) {
-    ButtonVariant.SECONDARY -> ButtonDefaults.buttonColors(
-        containerColor = Tokens.secondary,
-        contentColor = Tokens.secondaryForeground,
-    )
-    ButtonVariant.DESTRUCTIVE -> ButtonDefaults.buttonColors(
-        containerColor = Tokens.destructive,
-        contentColor = Tokens.signalWhite,
-    )
-    else -> ButtonDefaults.buttonColors(
-        containerColor = Tokens.primary,
-        contentColor = Tokens.primaryForeground,
-    )
+private fun ButtonVariant.colors(enabled: Boolean): Pair<Color, Color> {
+    if (!enabled) return Tokens.surface2 to Tokens.muted
+    return when (this) {
+        ButtonVariant.DESTRUCTIVE -> Tokens.danger to Tokens.onAction
+        ButtonVariant.SECONDARY, ButtonVariant.OUTLINE -> Tokens.surface2 to Tokens.text
+        ButtonVariant.GHOST -> Color.Transparent to Tokens.text
+        ButtonVariant.DEFAULT -> Tokens.action to Tokens.onAction
+    }
 }

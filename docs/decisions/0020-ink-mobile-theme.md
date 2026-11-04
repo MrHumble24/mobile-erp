@@ -1,7 +1,7 @@
 # 0020 — Ink mobile theme
 
 Date: 2026-11-03
-Status: Accepted
+Status: Superseded by 0022 (2026-11-03)
 
 ## Context
 

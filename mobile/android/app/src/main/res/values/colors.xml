@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Ink window-chrome bases. The full token set lives in Tokens.kt. -->
-    <color name="caldera_canvas">#FFFFFFFF</color>
-    <color name="ink_bg">#FF0A0A0A</color>
+    <!-- Warm Card window-chrome bases (DESIGN.md ground). The full token set lives in Tokens.kt. -->
+    <color name="warm_ground">#FFFBF6EE</color>
+    <color name="warm_ground_dark">#FF1C1713</color>
 </resources>

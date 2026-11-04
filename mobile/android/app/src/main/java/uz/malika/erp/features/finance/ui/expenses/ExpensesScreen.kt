@@ -6,19 +6,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.features.finance.model.FinanceEvent
@@ -39,17 +35,11 @@ private enum class ExpenseTab { EXPENSES, RECURRING }
 fun ExpensesScreen(container: AppContainer) {
     val t = LocalT.current
     val vm = financeViewModel(container) { ExpensesViewModel(it) }
-    val snackbar = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val notify: (FinanceEvent) -> Unit = { event ->
-        scope.launch {
-            snackbar.showSnackbar(
-                when (event) {
-                    is FinanceEvent.Message -> t(event.key, null)
-                    is FinanceEvent.Failure -> event.text
-                    is FinanceEvent.Count -> t(event.key, mapOf("count" to event.count))
-                },
-            )
+        when (event) {
+            is FinanceEvent.Message -> container.toaster.success(t(event.key, null))
+            is FinanceEvent.Failure -> container.toaster.error(event.text)
+            is FinanceEvent.Count -> container.toaster.success(t(event.key, mapOf("count" to event.count)))
         }
     }
 
@@ -59,10 +49,10 @@ fun ExpensesScreen(container: AppContainer) {
     var tab by remember { mutableStateOf(ExpenseTab.EXPENSES) }
 
     // The AppShell Scaffold already reserves status/navigation-bar insets; zero this
-    // nested Scaffold's own so the top gutter and bottom are not padded twice.
+    // nested Scaffold's own so the top gutter and bottom are not padded twice. The
+    // app-wide ToastHost (MalikaApp) renders events from the shared Toaster.
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbar) },
-        containerColor = Tokens.background,
+        containerColor = Tokens.ground,
         contentWindowInsets = WindowInsets(0),
     ) { pad ->
         Column(Modifier.fillMaxSize().padding(pad)) {

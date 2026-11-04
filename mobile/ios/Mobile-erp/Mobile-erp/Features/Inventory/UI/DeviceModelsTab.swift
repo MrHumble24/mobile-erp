@@ -29,7 +29,7 @@ struct DeviceModelsTab: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(model.label).font(.body.weight(.medium)).foregroundStyle(Tokens.ink)
                                     Text("\(model.attributes.count) \(i18n.t("inventory.attrSectionTitle").lowercased())")
-                                        .font(.caption).foregroundStyle(.secondary)
+                                        .font(.caption).foregroundStyle(Tokens.muted)
                                 }
                                 Spacer()
                                 StatusBadge(model.isActive ? i18n.t("common.yes") : i18n.t("common.no"),

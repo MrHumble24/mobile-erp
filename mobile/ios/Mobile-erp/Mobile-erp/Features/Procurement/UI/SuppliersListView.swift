@@ -85,7 +85,7 @@ private struct SupplierRow: View {
                 let subtitle = [supplier.country, supplier.contact]
                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
                 if !subtitle.isEmpty {
-                    Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                    Text(subtitle).font(.caption).foregroundStyle(Tokens.muted)
                 }
             }
             Spacer()

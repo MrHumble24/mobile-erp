@@ -26,7 +26,7 @@ struct MetricTile: View, Identifiable {
     var body: some View {
         if let onTap {
             Button(action: {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                Haptic.tick.play()
                 onTap()
             }) {
                 card
@@ -56,7 +56,7 @@ struct MetricTile: View, Identifiable {
                     }
                     Text(label)
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                     Spacer()
                     if let badge {
                         Text(badge)
@@ -81,7 +81,7 @@ struct MetricTile: View, Identifiable {
                 if let subtext {
                     Text(subtext)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,7 +99,7 @@ struct MetricTile: View, Identifiable {
                     }
                     Text(label)
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .lineLimit(1)
                     Spacer(minLength: 0)
                     if onTap != nil {
@@ -117,7 +117,7 @@ struct MetricTile: View, Identifiable {
                 if let subtext {
                     Text(subtext)
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .lineLimit(1)
                 }
             }
@@ -188,7 +188,7 @@ struct BarChartCard: View {
                             .foregroundStyle(.tertiary)
                         Text("—")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                     .frame(maxWidth: .infinity, minHeight: 160)
                 } else {

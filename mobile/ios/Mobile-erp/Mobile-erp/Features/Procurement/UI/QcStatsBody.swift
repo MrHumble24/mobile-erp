@@ -34,7 +34,7 @@ struct QcStatsBody: View {
 
                     Text(i18n.t("qc.passRateDesc", default: "Percentage of received devices cleared for sale without critical hardware defects."))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -58,7 +58,7 @@ struct QcStatsBody: View {
 
                             Text(i18n.t("qc.awaitingDesc", default: "Units waiting for cosmetic & hardware grading."))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                     }
@@ -75,7 +75,7 @@ struct QcStatsBody: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(i18n.t("qc.inspectedDesc", default: "Completed unit inspections"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                         Text("\(stats.inspected)")
@@ -92,7 +92,7 @@ struct QcStatsBody: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(i18n.t("qc.failedDesc", default: "Units isolated for repair or return"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         Spacer()
                         Text("\(stats.failed)")
@@ -110,7 +110,7 @@ struct QcStatsBody: View {
                                     .foregroundStyle(Tokens.ink)
                                 Text(i18n.t("qc.batteryDesc", default: "Average battery capacity across inspected stock"))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                             Spacer()
                             Text("\(avgBattery)%")
@@ -144,7 +144,7 @@ struct QcBreakdownCard: View {
                 if rows.isEmpty {
                     Text(i18n.t("common.notFound", default: "No records found."))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 } else {
                     let maxCount = max(rows.map(\.count).max() ?? 1, 1)
                     ForEach(rows) { row in
@@ -156,7 +156,7 @@ struct QcBreakdownCard: View {
                                 Spacer()
                                 Text("\(row.count)")
                                     .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                             ProgressView(value: Double(row.count), total: Double(maxCount))
                                 .tint(Tokens.ink)

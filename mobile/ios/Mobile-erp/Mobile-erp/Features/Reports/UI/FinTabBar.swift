@@ -13,7 +13,7 @@ struct FinTabBar: View {
                 ForEach(tabs) { tab in
                     Button {
                         if selection != tab {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            Haptic.tick.play()
                             selection = tab
                         }
                     } label: {

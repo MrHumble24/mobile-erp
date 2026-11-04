@@ -54,7 +54,7 @@ struct LogExpenseSheet: View {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("$")
                             .font(.title3.weight(.bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField("0", text: $amount)
                             .font(.mono(24, weight: .bold))
                             .keyboardType(.decimalPad)
@@ -112,7 +112,7 @@ struct LogExpenseSheet: View {
             return
         }
         saving = true
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        Haptic.tick.play()
         let desc = description.isEmpty ? nil : description
         let payeeVendor = vendor.isEmpty ? nil : vendor
         let iso = ISO8601DateFormatter().string(from: incurredAt)

@@ -74,7 +74,7 @@ struct SettingsView: View {
     @ViewBuilder private var footer: some View {
         Section {
             Button {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                Haptic.tick.play()
                 Task { await model.save() }
             } label: {
                 HStack(spacing: 8) {
@@ -108,7 +108,7 @@ struct SettingsView: View {
             if !model.updatedAt.isEmpty {
                 Text("\(i18n.t("settings.lastUpdated")): \(model.updatedAt)")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
     }
@@ -119,7 +119,7 @@ struct SettingsView: View {
     private func labeled(_ key: String, _ binding: Binding<String>,
                          keyboard: UIKeyboardType = .default, mono: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
+            Text(i18n.t(key)).font(.caption).foregroundStyle(Tokens.muted)
             let field = TextField(i18n.t(key), text: binding)
                 .keyboardType(keyboard)
                 .font(mono ? .mono(16) : .body)
@@ -138,7 +138,7 @@ struct SettingsView: View {
         let invalid = model.invalidFields.contains(validationKey)
         let isTime = validationKey == "closingTime"
         return VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
+            Text(i18n.t(key)).font(.caption).foregroundStyle(Tokens.muted)
             TextField(placeholder, text: binding)
                 .keyboardType(isTime ? .numbersAndPunctuation : (decimal ? .decimalPad : .numberPad))
                 .font(.mono(16))

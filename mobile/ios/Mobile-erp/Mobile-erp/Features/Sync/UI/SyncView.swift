@@ -46,7 +46,7 @@ struct SyncView: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(model.isOnline ? i18n.t("common.syncReady", default: "All operations sync directly to central ERP") : i18n.t("common.syncQueued", default: "Transactions are stored securely in local database"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
 
                         Spacer()
@@ -56,7 +56,7 @@ struct SyncView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(i18n.t("common.pendingSync", default: "Pending Sync"))
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Text("\(model.queue.count)")
                                 .font(.title3.weight(.bold))
                                 .foregroundStyle(Tokens.ink)
@@ -66,7 +66,7 @@ struct SyncView: View {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text(i18n.t("common.conflicts", default: "Conflicts"))
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Text("\(model.conflicts.count)")
                                 .font(.title3.weight(.bold))
                                 .foregroundStyle(model.conflicts.isEmpty ? Tokens.ink : Tokens.danger)
@@ -77,7 +77,7 @@ struct SyncView: View {
                     .background(Color(.systemBackground).opacity(0.6), in: RoundedRectangle(cornerRadius: Tokens.Radius.inputs))
 
                     Button {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         Task { await model.syncNow() }
                     } label: {
                         Label(i18n.t("common.syncNow", default: "Sync Now"), systemImage: "arrow.triangle.2.circlepath")
@@ -106,7 +106,7 @@ struct SyncView: View {
         Section(i18n.t("common.syncQueue", default: "Offline queue")) {
             if model.queue.isEmpty {
                 Text(i18n.t("common.noQueue", default: "Nothing waiting to sync."))
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(Tokens.muted)
             } else {
                 ForEach(model.queue, id: \.id) { QueueRowView(entry: $0) }
             }
@@ -122,7 +122,7 @@ struct SyncView: View {
             } else if model.conflicts.isEmpty {
                 Label(i18n.t("common.noConflicts", default: "No conflicts."),
                       systemImage: "checkmark.circle")
-                    .font(.footnote).foregroundStyle(.secondary)
+                    .font(.footnote).foregroundStyle(Tokens.muted)
             } else {
                 ForEach(model.conflicts) { row in
                     ConflictRowView(row: row, disabled: !model.isOnline) { resolution in
@@ -147,7 +147,7 @@ private struct QueueRowView: View {
                 StatusBadge(statusLabel, color: statusColor)
             }
             if let error = entry.lastError, !error.isEmpty {
-                Text(error).font(.caption).foregroundStyle(.secondary)
+                Text(error).font(.caption).foregroundStyle(Tokens.muted)
             }
         }
         .padding(.vertical, 2)
@@ -180,7 +180,7 @@ private struct ConflictRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(row.type).font(.subheadline.weight(.semibold))
-            Text(row.imei).font(.mono(13)).foregroundStyle(.secondary)
+            Text(row.imei).font(.mono(13)).foregroundStyle(Tokens.muted)
             HStack {
                 Button(i18n.t("common.keepServer", default: "Keep server")) {
                     onResolve("keep-server")

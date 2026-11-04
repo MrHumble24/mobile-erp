@@ -9,7 +9,7 @@ struct PartnersFilterBar: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(Tokens.muted)
                 TextField(i18n.t("partners.searchPlaceholder"), text: $model.search)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -28,7 +28,7 @@ struct PartnersFilterBar: View {
                 Spacer()
                 Toggle(i18n.t("partners.overdueOnly"), isOn: $model.overdueOnly)
                     .labelsHidden()
-                Text(i18n.t("partners.overdueOnly")).font(.caption).foregroundStyle(.secondary)
+                Text(i18n.t("partners.overdueOnly")).font(.caption).foregroundStyle(Tokens.muted)
             }
         }
     }

@@ -27,6 +27,8 @@
 				Features/Sync/README.md,
 				Features/Users/README.md,
 				FOUNDATION.md,
+				Shared/UI/README.md,
+				Theme/README.md,
 			);
 			target = E3CADEA63098A5FC003C7EC5 /* Mobile-erp */;
 		};

@@ -7,7 +7,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
-import uz.malika.erp.shared.ui.signedEmphasis
+import uz.malika.erp.shared.ui.signTint
 
 /** Stats tiles for the sales list (mirrors the web SalesSummary). Profit is shown only when present (not redacted). */
 @Composable
@@ -27,7 +27,7 @@ fun SalesSummary(stats: SaleStats, modifier: Modifier = Modifier) {
             )
         }
         stats.netProfit?.let { profit ->
-            add { m -> MetricTile(t("sales.statsNetProfit", null), profit, m, emphasis = signedEmphasis(profit)) }
+            add { m -> MetricTile(t("sales.statsNetProfit", null), profit, m, emphasis = signTint(profit)) }
         }
     }
     MetricGrid(tiles, modifier, perRow = 2)

@@ -28,7 +28,7 @@ struct PartnersFilterSheet: View {
                                 .font(.subheadline.weight(.medium))
                             Text(i18n.t("partners.overdueDesc", default: "Muddati o'tgan qarzdorligi bor hamkorlar"))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     .tint(Tokens.danger)
@@ -37,7 +37,7 @@ struct PartnersFilterSheet: View {
                 if hasActiveFilters {
                     Section {
                         Button(role: .destructive) {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            Haptic.tick.play()
                             model.active = .all
                             model.overdueOnly = false
                             dismiss()
@@ -55,7 +55,7 @@ struct PartnersFilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.done", default: "Done")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         dismiss()
                     }
                     .font(.headline)

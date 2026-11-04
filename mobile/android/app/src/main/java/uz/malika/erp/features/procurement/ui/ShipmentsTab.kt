@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.ShipmentDto
@@ -36,6 +39,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.listBottomPadding
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /** Below this width the detail opens as a bottom sheet; at/above it, a side pane. */
@@ -78,6 +82,7 @@ fun ShipmentsMasterDetail(
                 } else {
                     ShipmentDetailContent(
                         shipment = selected,
+                        supplierName = supplierNames[selected.supplierId] ?: selected.supplierId,
                         modelNames = modelNames,
                         canManage = canManage,
                         canCreate = canCreate,
@@ -103,7 +108,7 @@ private fun ShipmentsList(
     val t = LocalT.current
     AsyncContent(state, onRetry = onRetry) { list ->
         if (list.isEmpty()) {
-            EmptyView(t("common.notFound", null), compact = true)
+            EmptyView(t("shipments.empty", null), compact = true)
         } else {
             LazyColumn(
                 contentPadding = listBottomPadding(),
@@ -119,22 +124,35 @@ private fun ShipmentsList(
 
 @Composable
 private fun ShipmentCard(shipment: ShipmentDto, supplierName: String, onOpen: (ShipmentDto) -> Unit) {
-    val t = LocalT.current
     AppCard(onClick = { onOpen(shipment) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(
-                    shipment.dateLabel + " · " + t(
-                        "shipments.registeredProgress",
-                        mapOf("registered" to shipment.deviceCount, "expected" to shipment.expectedCount),
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                Text(supplierName, style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(4.dp))
-                Text(supplierName, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                Text(shipment.dateLabel, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
             }
+            Text(
+                "${shipment.deviceCount} / ${shipment.expectedCount}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+            )
+            Spacer(Modifier.width(Tokens.Space.gap))
             ShipmentStatusChip(shipment)
             Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Tokens.ash)
         }
+        Spacer(Modifier.height(Tokens.Space.gap))
+        val progress = if (shipment.expectedCount <= 0) {
+            0f
+        } else {
+            (shipment.deviceCount.toFloat() / shipment.expectedCount).coerceIn(0f, 1f)
+        }
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxWidth().height(3.dp),
+            color = shipmentStatusColor(shipmentStatus(shipment)),
+            trackColor = Tokens.surface2,
+            strokeCap = StrokeCap.Square,
+            gapSize = 0.dp,
+            drawStopIndicator = {},
+        )
     }
 }

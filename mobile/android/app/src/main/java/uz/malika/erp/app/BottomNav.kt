@@ -15,15 +15,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.malika.erp.i18n.LocalT
@@ -34,7 +35,6 @@ const val MAX_BOTTOM_BAR_ITEMS = 5
 private const val MAX_TABS = 4
 private val BAR_HEIGHT = 56.dp
 private val ICON_SIZE = 24.dp
-private val LABEL_SIZE = 11.sp
 
 /**
  * Phone bottom-bar split, mirroring iOS: up to 5 destinations all fit the bar;
@@ -59,9 +59,9 @@ fun OneUiBottomBar(
     onSelect: (String) -> Unit,
 ) {
     val t = LocalT.current
-    Surface(color = Tokens.surfaceCanvas, tonalElevation = 0.dp) {
+    Surface(color = Tokens.card, tonalElevation = 0.dp) {
         Column(Modifier.navigationBarsPadding()) {
-            HorizontalDivider(thickness = 1.dp, color = Tokens.hairline)
+            HorizontalDivider(thickness = 1.dp, color = Tokens.border)
             Row(Modifier.fillMaxWidth().height(BAR_HEIGHT), verticalAlignment = Alignment.CenterVertically) {
                 tabs.forEach { item ->
                     BarItem(
@@ -95,7 +95,7 @@ private fun BarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val tint = if (selected) Tokens.foreground else Tokens.mutedForeground
+    val tint = if (selected) Tokens.action else Tokens.muted
     Column(
         modifier.fillMaxHeight().clickable(onClick = onClick).padding(horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,12 +106,12 @@ private fun BarItem(
         Text(
             label,
             color = tint,
-            fontSize = LABEL_SIZE,
-            fontWeight = FontWeight.Medium,
+            style = MaterialTheme.typography.labelSmall,
             maxLines = 1,
-            softWrap = false,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
+            // Shrinks to 9sp before it ellipsizes, so "Bosh sahifa" survives 1.3x.
+            autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = 11.sp, stepSize = 0.5.sp),
         )
     }
 }

@@ -30,7 +30,7 @@ import uz.malika.erp.ui.theme.Tokens
 @Composable
 fun Loading(modifier: Modifier = Modifier) {
     Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(color = Tokens.primary)
+        CircularProgressIndicator(color = Tokens.text)
     }
 }
 

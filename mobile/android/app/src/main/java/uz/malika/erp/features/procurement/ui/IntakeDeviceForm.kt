@@ -1,5 +1,4 @@
 package uz.malika.erp.features.procurement.ui
-import uz.malika.erp.shared.ui.AppSelect
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,9 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,29 +19,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import uz.malika.erp.ui.theme.Tokens
-import uz.malika.erp.features.procurement.data.AttributeDefDto
+import androidx.compose.ui.semantics.Role
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.lib.imeiSlotsFilled
 import uz.malika.erp.features.procurement.lib.isValidImei
 import uz.malika.erp.features.procurement.lib.validateIntake
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.ui.AdaptiveInputs
-import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.lib.rememberHaptics
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.shared.ui.ScanConfirmSheet
 import uz.malika.erp.shared.ui.ScannerField
+import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Sticky model + specs + cost, with one or two [ScannerField]s. A scan never
- * submits a unit: it only FILLS the next empty IMEI slot (IMEI 1, then IMEI 2
- * when Dual SIM is on), checking length alone. Once every required slot is
- * filled and model + cost are set, a [ScanConfirmSheet] opens so a mis-read can
- * be rejected; confirm calls [onAdd] and clears the IMEI slots for the next unit
- * while keeping the batch defaults (Dual SIM / model / cost). A missing model or
- * cost shows an inline hint instead of an error — the user is never told "IMEI 2
- * required" while scanning IMEI 1.
+ * The scanning station (hero of the intake sheet) plus the batch defaults below
+ * it. A scan only FILLS the next empty IMEI slot (IMEI 1, then IMEI 2 when Dual
+ * SIM is on), checking length alone. Once every required slot is filled and
+ * model + cost are set, the unit stages: a HID/typed scan (or completing the
+ * batch defaults) calls [onAdd] directly and clears the IMEI slots for the next
+ * unit; only a camera read opens a [ScanConfirmSheet] first, so a mis-read can be
+ * rejected before it is added. A missing model/cost/spec shows an inline hint in
+ * the batch-defaults block under the field it names — never an error under the
+ * scanner — so the operator is not told "select model" while scanning.
  */
 @Composable
 fun IntakeDeviceForm(
@@ -62,33 +60,45 @@ fun IntakeDeviceForm(
     var imei2 by remember { mutableStateOf("") }
     var slot1Error by remember { mutableStateOf<String?>(null) }
     var slot2Error by remember { mutableStateOf<String?>(null) }
-    var hint by remember { mutableStateOf<String?>(null) }
+    // The i18n KEY of the field that blocked staging; routed to its field below.
+    var hintKey by remember { mutableStateOf<String?>(null) }
     var pending by remember { mutableStateOf<IntakeDraft?>(null) }
-    // Bumped on confirm to remount the scanners → clears + refocuses IMEI 1.
+    // Bumped after a unit is added to remount the scanners → clears + refocuses IMEI 1.
     var resetKey by remember { mutableIntStateOf(0) }
+    val haptics = rememberHaptics()
 
-    fun stageIfComplete() {
+    fun commit(draft: IntakeDraft) {
+        onAdd(draft)
+        imei1 = ""; imei2 = ""
+        slot1Error = null; slot2Error = null; hintKey = null
+        resetKey++
+    }
+
+    fun stageIfComplete(fromCamera: Boolean) {
         if (!imeiSlotsFilled(imei1, imei2, dualSim)) return
-        val m = model ?: run { hint = t("shipments.selectModel", null); return }
+        val m = model ?: run { hintKey = "shipments.selectModel"; return }
         val costNum = cost.trim().toDoubleOrNull()
-        if (costNum == null || costNum < 0) { hint = t("shipments.acquisitionCost", null); return }
+        if (costNum == null || costNum < 0) { hintKey = "shipments.acquisitionCost"; return }
         val second = if (dualSim) imei2.trim() else null
         val key = validateIntake(imei1.trim(), true, costNum, m.attributes, specs, second, dualSim)
         if (key != null) {
-            if (key == "inventory.imei2Mismatch") slot2Error = t(key, null) else hint = t(key, null)
+            if (key == "inventory.imei2Mismatch") slot2Error = t(key, null) else hintKey = key
             return
         }
-        hint = null
-        pending = IntakeDraft(imei1.trim(), m.id, specs.toMap(), costNum, target.trim().toDoubleOrNull(), second)
+        hintKey = null
+        val draft = IntakeDraft(imei1.trim(), m.id, specs.toMap(), costNum, target.trim().toDoubleOrNull(), second)
+        // Camera reads are confirmed first; a wedge/typed scan stages straight away.
+        if (fromCamera) pending = draft else commit(draft)
     }
 
-    fun fillNextSlot(raw: String) {
+    fun fillNextSlot(raw: String, fromCamera: Boolean) {
         if (pending != null) return // ignore scans while the confirm sheet is open
         val code = raw.trim()
         val fillingSecond = imei1.isNotBlank() && dualSim && imei2.isBlank()
         if (!isValidImei(code)) {
             val msg = t("shipments.imeiLength", null)
             if (fillingSecond) slot2Error = msg else slot1Error = msg
+            haptics.error() // rejected scan: bad IMEI length
             return
         }
         when {
@@ -97,48 +107,10 @@ fun IntakeDeviceForm(
             // No empty slot (both filled after a cancel) → restart the pair.
             else -> { imei1 = code; imei2 = ""; slot1Error = null; slot2Error = null }
         }
-        stageIfComplete()
-    }
-
-    fun confirm() {
-        pending?.let(onAdd)
-        pending = null
-        imei1 = ""; imei2 = ""
-        slot1Error = null; slot2Error = null; hint = null
-        resetKey++
+        stageIfComplete(fromCamera)
     }
 
     Column(modifier) {
-        AppSelect(
-            label = t("shipments.selectModel", null),
-            value = model,
-            options = models,
-            optionLabel = { it.label },
-            onSelect = { model = it; specs.clear(); stageIfComplete() },
-        )
-        model?.attributes?.forEach { attr ->
-            Spacer(Modifier.height(Tokens.Space.section))
-            SpecField(attr, specs[attr.key] ?: "") { specs[attr.key] = it }
-        }
-        Spacer(Modifier.height(Tokens.Space.section))
-        AdaptiveInputs(
-            fields = listOf(
-                { m ->
-                    AppFormField(
-                        t("shipments.acquisitionCost", null), cost, { cost = it; stageIfComplete() },
-                        keyboardType = KeyboardType.Decimal, modifier = m,
-                    )
-                },
-                { m ->
-                    AppFormField(
-                        t("shipments.targetPrice", null), target, { target = it },
-                        keyboardType = KeyboardType.Decimal, modifier = m,
-                    )
-                },
-            ),
-            spacing = Tokens.Space.section,
-        )
-        Spacer(Modifier.height(Tokens.Space.section))
         key(resetKey) {
             Column {
                 ImeiSlotLabel(
@@ -163,10 +135,19 @@ fun IntakeDeviceForm(
                 }
             }
         }
-        hint?.let {
-            Spacer(Modifier.height(Tokens.Space.rowV))
-            Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
-        }
+        Spacer(Modifier.height(Tokens.Space.section))
+        IntakeBatchDefaults(
+            models = models,
+            model = model,
+            onModelSelect = { model = it; specs.clear(); stageIfComplete(false) },
+            specs = specs,
+            onSpecChange = { k, v -> specs[k] = v; stageIfComplete(false) },
+            cost = cost,
+            onCostChange = { cost = it; stageIfComplete(false) },
+            target = target,
+            onTargetChange = { target = it },
+            hintKey = hintKey,
+        )
     }
 
     pending?.let { d ->
@@ -175,7 +156,7 @@ fun IntakeDeviceForm(
             confirmLabel = t("shipments.addDevice", null),
             cancelLabel = t("common.cancel", null),
             closeLabel = t("common.close", null),
-            onConfirm = ::confirm,
+            onConfirm = { commit(d); pending = null },
             onDismiss = { pending = null }, // cancel keeps the filled slots so they can be fixed
             title = models.firstOrNull { it.id == d.modelId }?.label,
             price = d.acquisitionCost.toString(),
@@ -184,7 +165,11 @@ fun IntakeDeviceForm(
     }
 }
 
-/** IMEI 1 label row with the Dual SIM switch inline on the right. */
+/**
+ * IMEI 1 heading with the Dual SIM toggle on the right. The label + switch are a
+ * single `toggleable` target with `Role.Switch`, so TalkBack announces one
+ * named switch (the "Dual SIM" label) instead of an unlabeled control.
+ */
 @Composable
 private fun ImeiSlotLabel(
     label: String,
@@ -194,17 +179,14 @@ private fun ImeiSlotLabel(
 ) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-        Text(dualLabel, style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.width(Tokens.Space.gap))
-        Switch(
-            checked = dualSim,
-            onCheckedChange = onDualChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Tokens.primaryForeground,
-                checkedTrackColor = Tokens.primary,
-                uncheckedTrackColor = Tokens.border,
-            ),
-        )
+        Row(
+            modifier = Modifier.toggleable(value = dualSim, onValueChange = onDualChange, role = Role.Switch),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(dualLabel, style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.width(Tokens.Space.gap))
+            AppSwitch(checked = dualSim, onCheckedChange = null)
+        }
     }
 }
 
@@ -220,27 +202,5 @@ private fun SlotHint(value: String, error: String?) {
             Spacer(Modifier.height(Tokens.Space.rowV))
             ImeiText(value, style = MaterialTheme.typography.bodySmall)
         }
-    }
-}
-
-/** One spec input, chosen by attribute type (select → dropdown, else text). */
-@Composable
-private fun SpecField(attr: AttributeDefDto, value: String, onChange: (String) -> Unit) {
-    val label = if (attr.required) "${attr.label} *" else attr.label
-    if (attr.type == "select" && attr.options.isNotEmpty()) {
-        AppSelect(
-            label = label,
-            value = attr.options.firstOrNull { it == value },
-            options = attr.options,
-            optionLabel = { it },
-            onSelect = { it?.let(onChange) },
-        )
-    } else {
-        AppFormField(
-            label = label,
-            value = value,
-            onValueChange = onChange,
-            keyboardType = if (attr.type == "number") KeyboardType.Number else KeyboardType.Text,
-        )
     }
 }

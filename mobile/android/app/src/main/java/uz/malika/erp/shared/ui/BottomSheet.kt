@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * A themed modal bottom sheet (radius-large-cards top corners) for detail panes,
- * pickers, and the camera scanner. Caller shows it conditionally and handles
- * [onDismiss].
+ * A Warm Card modal bottom sheet: a white card that rises from the ground with
+ * no drag handle, 20 dp top corners, zero tonal elevation and a 40%-of-text
+ * scrim (DESIGN.md). Caller shows it conditionally and handles [onDismiss].
  *
  * Safe-area insets are handled here once for every call site: the content column
  * keeps clear of the gesture / navigation bar and lifts above the keyboard when a
@@ -31,8 +31,11 @@ fun AppBottomSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = Tokens.surfaceCanvas,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        containerColor = Tokens.card,
+        scrimColor = Tokens.text.copy(alpha = 0.4f),
+        tonalElevation = 0.dp,
+        dragHandle = null,
+        shape = RoundedCornerShape(topStart = Tokens.Radius.large, topEnd = Tokens.Radius.large),
     ) {
         Column(
             modifier = Modifier.navigationBarsPadding().imePadding(),

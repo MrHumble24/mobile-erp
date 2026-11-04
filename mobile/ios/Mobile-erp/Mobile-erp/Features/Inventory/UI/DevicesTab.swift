@@ -120,7 +120,7 @@ struct DevicesTab: View {
     private var toolbarItems: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                Haptic.tick.play()
                 showFilters = true
             } label: {
                 Label(i18n.t("common.filter", default: "Filters & Overview"),
@@ -166,7 +166,7 @@ private struct DeviceListRow: View {
                     .foregroundStyle(Tokens.ink)
                 Text(device.storage.map { "\(device.imei) · \($0)" } ?? device.imei)
                     .font(.mono(12))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                 if let imei2 = device.imei2, !imei2.isEmpty {
                     Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
                         .font(.mono(11))

@@ -132,8 +132,8 @@ object DeviceStatusMeta {
         "IN_STOCK" -> Tokens.success
         "DEFECTIVE" -> Tokens.danger
         "CONSIGNED" -> Tokens.info
-        "SOLD" -> Tokens.mutedForeground
-        else -> Tokens.ash
+        "SOLD" -> Tokens.sold
+        else -> Tokens.sold
     }
 
     fun transitionsFor(code: String): List<String> = manualTransitions[code] ?: emptyList()

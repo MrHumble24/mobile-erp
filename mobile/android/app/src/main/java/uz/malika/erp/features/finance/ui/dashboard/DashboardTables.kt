@@ -1,11 +1,11 @@
 package uz.malika.erp.features.finance.ui.dashboard
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
@@ -24,16 +24,20 @@ import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.AsyncContent
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
-import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.AppCard
-import uz.malika.erp.shared.ui.AppDataTable
 import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.MoneyText
+import uz.malika.erp.shared.ui.StatusChip
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 private fun dayOf(iso: String): String = iso.substringBefore('T')
 
-/** Low-stock alerts (`/stock-alert-rules/low-stock`, perm `device.read`). */
+/**
+ * Low-stock alerts (`/stock-alert-rules/low-stock`, perm `device.read`). A row
+ * list (mirrors iOS): model + storage left, the count as a danger pill against
+ * its threshold right — nothing scrolls sideways inside the card.
+ */
 @Composable
 fun LowStockCard(vm: FinanceReadsViewModel, labels: Map<String, String>) {
     val t = LocalT.current
@@ -41,23 +45,26 @@ fun LowStockCard(vm: FinanceReadsViewModel, labels: Map<String, String>) {
         val handle = rememberAsync { vm.lowStock() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
             if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
-            else AppDataTable(
-                columns = listOf(
-                    t("inventory.model", null), t("inventory.storage", null),
-                    t("dashboard.currentCount", null), t("dashboard.threshold", null),
-                ),
-                rows = rows,
-                columnWidths = listOf(150, 90, 90, 80),
-                cell = { r: LowStockItem, c ->
-                    when (c) {
-                        0 -> labels[r.modelId] ?: r.modelId
-                        1 -> r.storage
-                        2 -> r.currentCount.toString()
-                        else -> r.threshold.toString()
-                    }
-                },
-            )
+            else RowList(rows) { r -> LowStockRow(r, labels[r.modelId] ?: r.modelId) }
         }
+    }
+}
+
+@Composable
+private fun LowStockRow(r: LowStockItem, name: String) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TitleWithCaption(name, r.storage, Modifier.weight(1f))
+        Spacer(Modifier.width(Tokens.Space.gap))
+        StatusChip(r.currentCount.toString(), color = Tokens.danger)
+        Spacer(Modifier.width(Tokens.Space.xs))
+        Text(
+            "/ ${r.threshold}",
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+            color = Tokens.muted,
+        )
     }
 }
 
@@ -69,23 +76,22 @@ fun OverdueCard(vm: FinanceReadsViewModel) {
         val handle = rememberAsync { vm.overdue() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
             if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
-            else AppDataTable(
-                columns = listOf(
-                    t("consignments.partner", null), t("consignments.device", null),
-                    t("consignments.agreedPrice", null), t("consignments.dueDate", null),
-                ),
-                rows = rows,
-                columnWidths = listOf(150, 150, 120, 120),
-                cell = { r: OverdueConsignment, c ->
-                    when (c) {
-                        0 -> r.partnerShopName
-                        1 -> r.imei
-                        2 -> formatMoney(r.agreedPrice)
-                        else -> dayOf(r.dueDate)
-                    }
-                },
-            )
+            else RowList(rows) { r -> OverdueRow(r) }
         }
+    }
+}
+
+@Composable
+private fun OverdueRow(r: OverdueConsignment) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TitleWithCaption(r.partnerShopName, r.imei, Modifier.weight(1f), mono = true)
+        Spacer(Modifier.width(Tokens.Space.gap))
+        MoneyText(r.agreedPrice, style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text))
+        Spacer(Modifier.width(Tokens.Space.gap))
+        StatusChip(dayOf(r.dueDate), color = Tokens.danger)
     }
 }
 
@@ -102,12 +108,7 @@ fun ModelPricingCard(vm: FinanceReadsViewModel, labels: Map<String, String>) {
         val handle = rememberAsync { vm.modelPricing() }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { rows ->
             if (rows.isEmpty()) EmptyView(t("common.notFound", null), compact = true)
-            else Column(Modifier.fillMaxWidth()) {
-                rows.forEachIndexed { i, r ->
-                    PricingRow(r, labels[r.modelId] ?: r.modelId, canCost)
-                    if (i < rows.lastIndex) HorizontalDivider(color = Tokens.border)
-                }
-            }
+            else RowList(rows) { r -> PricingRow(r, labels[r.modelId] ?: r.modelId, canCost) }
         }
     }
 }
@@ -120,48 +121,79 @@ private fun PricingRow(r: ModelPricingRow, name: String, canCost: Boolean) {
             Text(
                 name,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Tokens.foreground,
+                color = Tokens.text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             r.storage?.takeIf { it.isNotEmpty() }?.let { s ->
                 Spacer(Modifier.width(Tokens.Space.gap))
-                Text(s, style = MaterialTheme.typography.labelSmall, color = Tokens.mutedForeground, maxLines = 1)
+                Text(s, style = MaterialTheme.typography.bodySmall, color = Tokens.muted, maxLines = 1)
             }
             Spacer(Modifier.width(Tokens.Space.gap))
             Text(
                 "${r.unitsInStock} / ${r.unitsSold}",
-                style = MaterialTheme.typography.labelSmall,
-                color = Tokens.mutedForeground,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+                color = Tokens.muted,
                 maxLines = 1,
             )
         }
-        Spacer(Modifier.height(4.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Tokens.Space.section)) {
-            if (canCost) PricingFigure(t("dashboard.avgAcquisitionCost", null), r.avgAcquisitionCost)
-            PricingFigure(t("dashboard.avgSellingPrice", null), r.avgSellingPrice)
-        }
+        Spacer(Modifier.height(Tokens.Space.xs))
+        if (canCost) PricingFigure(t("dashboard.avgAcquisitionCost", null), r.avgAcquisitionCost)
+        PricingFigure(t("dashboard.avgSellingPrice", null), r.avgSellingPrice)
     }
 }
 
+/** One keyed figure per line (label left, mono value right) so a long Uzbek
+ *  label never forces the amount to wrap mid-number. */
 @Composable
 private fun PricingFigure(label: String, value: String?) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = Tokens.mutedForeground)
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = Tokens.muted, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(Tokens.Space.gap))
         if (value == null) {
-            Text("—", style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+            Text("—", style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         } else {
-            MoneyText(value, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.foreground))
+            MoneyText(value, style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text))
         }
     }
 }
 
+/** Primary line in body, optional caption below (mono for an IMEI). */
+@Composable
+private fun TitleWithCaption(title: String, caption: String?, modifier: Modifier, mono: Boolean = false) {
+    Column(modifier) {
+        Text(
+            title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Tokens.text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        caption?.takeIf { it.isNotEmpty() }?.let { c ->
+            val base = MaterialTheme.typography.bodySmall
+            Text(c, style = if (mono) base.copy(fontFamily = MonoFamily) else base, color = Tokens.muted, maxLines = 1)
+        }
+    }
+}
+
+/** Rows split by hairline dividers inside a section card. */
+@Composable
+private fun <T> RowList(rows: List<T>, row: @Composable (T) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        rows.forEachIndexed { i, r ->
+            row(r)
+            if (i < rows.lastIndex) HorizontalDivider(color = Tokens.border)
+        }
+    }
+}
+
+/** Section card: Heading (titleMedium 17/600) over the content, same as iOS `DashSection`. */
 @Composable
 private fun SectionCard(title: String, content: @Composable () -> Unit) {
     AppCard(Modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.labelLarge)
-        Spacer(Modifier.height(Tokens.Space.cardInner))
+        Text(title, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Spacer(Modifier.height(Tokens.Space.md))
         content()
     }
 }

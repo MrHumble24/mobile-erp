@@ -3,6 +3,8 @@ import SwiftUI
 /// Management dashboard. Auth-only; each data card is gated by the permission
 /// its endpoint needs, so a cashier sees nothing finance-related. Device-model
 /// labels load once here and pass down (one shared read, not per card).
+/// The screen title is the nav label (`nav.dashboard`), the same string as its
+/// tab and as the Android top bar.
 struct DashboardView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -13,7 +15,7 @@ struct DashboardView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: Tokens.Space.lg) {
                 DashboardQuickActions()
                 if can("report.finance") { DashboardKpiSection() }
                 if can("device.read") { LowStockCard(labels: labels) }
@@ -21,14 +23,14 @@ struct DashboardView: View {
                 if can("report.finance") { DashboardPricingCard(labels: labels) }
                 if !canSeeAnything {
                     EmptyStateView(systemImage: "square.grid.2x2",
-                                   title: i18n.t("dashboard.title"),
+                                   title: i18n.t("nav.dashboard"),
                                    message: i18n.t("common.notFound"))
                 }
             }
-            .padding()
+            .padding(Tokens.Space.gutter)
         }
-        .navigationTitle(i18n.t("dashboard.title"))
-        .background(Tokens.bg)
+        .navigationTitle(i18n.t("nav.dashboard"))
+        .background(Tokens.ground)
         .task {
             if labels.isEmpty {
                 labels = await DashboardRepository(api: container.api).deviceModelLabels()

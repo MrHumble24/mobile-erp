@@ -22,7 +22,7 @@ struct ExpenseCategoriesTab: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(category.name).foregroundStyle(Tokens.ink)
                             if let d = category.description, !d.isEmpty {
-                                Text(d).font(.caption).foregroundStyle(.secondary)
+                                Text(d).font(.caption).foregroundStyle(Tokens.muted)
                             }
                         }
                         Spacer()
@@ -35,7 +35,7 @@ struct ExpenseCategoriesTab: View {
                 .disabled(!canManage)
             }
             if model.categories.isEmpty {
-                Text(i18n.t("common.notFound")).foregroundStyle(.secondary)
+                Text(i18n.t("common.notFound")).foregroundStyle(Tokens.muted)
             }
         }
         .listStyle(.insetGrouped)

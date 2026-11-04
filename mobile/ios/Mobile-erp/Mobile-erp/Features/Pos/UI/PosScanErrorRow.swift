@@ -47,13 +47,13 @@ struct PosScanErrorRow: View {
                     .foregroundStyle(Tokens.danger)
                 Text(PosScanError.hint(key, i18n))
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
             Spacer()
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                     .padding(8)
                     .background(Circle().fill(Color(.tertiarySystemFill)))
             }

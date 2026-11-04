@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kassa — Metro Marble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Geist+Mono:wght@400&family=JetBrains+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --marble:#F3F0EA; --cobalt:#1F3A8A; --brass:#B08D57;
+    --charcoal:#1F1F1F; --muted:#6B6B66; --hair:#E3DED4; --green:#15803D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{margin:0;background:#777;font-family:"Golos Text",sans-serif;
+    display:flex;justify-content:center;align-items:center;min-height:100vh}
+  #frame{width:390px;height:844px;overflow:hidden;position:relative;
+    background:var(--marble);font-size:16px;line-height:1.3;
+    -webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+  .mono{font-family:"Geist Mono","JetBrains Mono",monospace}
+  /* status bar */
+  .status{height:44px;background:var(--cobalt);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:13px;font-weight:500}
+  .status .sig{display:flex;gap:6px;align-items:center;font-size:12px;opacity:.9}
+  /* cobalt band */
+  .band{background:var(--cobalt);height:96px;padding:0 20px;
+    display:flex;align-items:center;justify-content:space-between}
+  .band h1{color:#fff;font-size:22px;font-weight:600}
+  .takings{text-align:right}
+  .takings .lbl{color:rgba(255,255,255,.6);font-size:13px}
+  .takings .amt{color:var(--brass);font-size:20px;margin-top:2px}
+  /* content */
+  .content{padding:16px 20px 0}
+  /* turnstile scan row */
+  .scan{height:52px;background:#fff;border:1px solid var(--hair);border-radius:12px;
+    display:flex;align-items:center;gap:12px;padding:0 16px}
+  .ring{width:22px;height:22px;border-radius:50%;background:var(--brass);
+    display:flex;align-items:center;justify-content:center;flex:0 0 22px}
+  .ring svg{display:block}
+  .scan .imei{font-size:15px;color:var(--charcoal);letter-spacing:.5px}
+  /* cart heading */
+  .heading{font-size:13px;color:var(--muted);margin:20px 0 12px}
+  /* cards */
+  .card{background:#fff;border:1px solid var(--hair);border-radius:12px;
+    padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;gap:12px}
+  .card .info{min-width:0}
+  .card .nm{font-size:16px;font-weight:500;color:var(--charcoal)}
+  .card .spec{font-size:13px;color:var(--muted);margin-top:2px}
+  .card .imei{font-size:13px;color:var(--muted);margin-top:6px}
+  .card .right{text-align:right;flex:0 0 auto;display:flex;
+    flex-direction:column;align-items:flex-end;justify-content:space-between}
+  .card .price{font-size:16px;color:var(--charcoal)}
+  .card .stock{font-size:12px;color:var(--green);margin-top:6px}
+  /* totals */
+  .totals{display:flex;justify-content:space-between;align-items:baseline;
+    padding:4px 2px 2px}
+  .totals .lbl{font-size:16px;color:var(--charcoal);font-weight:500}
+  .totals .sum{font-size:22px;font-weight:500;color:var(--charcoal)}
+  .cust{font-size:13px;color:var(--muted);margin:10px 2px 16px}
+  /* pay button */
+  .pay{height:52px;background:var(--cobalt);color:#fff;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:500;letter-spacing:.2px}
+  /* tab bar */
+  .tabs{position:absolute;bottom:0;left:0;right:0;height:72px;background:#fff;
+    border-top:1px solid var(--hair);display:flex;padding-bottom:8px}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:4px;color:var(--muted)}
+  .tab.active{color:var(--brass)}
+  .tab span{font-size:11px;font-weight:500}
+  .tab svg{display:block}
+</style>
+</head>
+<body>
+<div id="frame">
+  <div class="status">
+    <span>12:47</span>
+    <span class="sig">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#fff" stroke-width="1.4"><path d="M1 3.5a9 9 0 0 1 13 0M3.5 6a5.5 5.5 0 0 1 8 0"/><circle cx="7.5" cy="9" r="1" fill="#fff" stroke="none"/></svg>
+      <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="#fff" stroke-width="1.2"/><rect x="3" y="3" width="15" height="6" rx="1" fill="#fff"/><rect x="22" y="4" width="1.5" height="4" rx=".75" fill="#fff"/></svg>
+    </span>
+  </div>
+
+  <div class="band">
+    <h1>Kassa</h1>
+    <div class="takings">
+      <div class="lbl">Bugungi tushum</div>
+      <div class="amt mono">$5,450</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="scan">
+      <span class="ring">
+        <svg width="12" height="9" viewBox="0 0 12 9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4.5 4.5 8 11 1"/></svg>
+      </span>
+      <span class="imei mono">358511020749606</span>
+    </div>
+
+    <div class="heading">Tanlangan qurilma</div>
+
+    <div class="card">
+      <div class="info">
+        <div class="nm">Samsung Galaxy S23 Ultra</div>
+        <div class="spec">256 GB · Qora</div>
+        <div class="imei mono">358511020749606</div>
+      </div>
+      <div class="right">
+        <div class="price mono">$1,250</div>
+        <div class="stock">Omborda</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="info">
+        <div class="nm">Apple iPhone 15 Pro</div>
+        <div class="spec">128 GB · Oq</div>
+        <div class="imei mono">357111000222333</div>
+      </div>
+      <div class="right">
+        <div class="price mono">$1,100</div>
+        <div class="stock">Omborda</div>
+      </div>
+    </div>
+
+    <div class="totals">
+      <span class="lbl">Jami</span>
+      <span class="sum mono">$2,350</span>
+    </div>
+    <div class="cust">Oddiy xaridor · 14 kun kafolat</div>
+
+    <div class="pay">Sotuvni yakunlash</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      <span>Bosh sahifa</span>
+    </div>
+    <div class="tab active">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+      <span>Kassa</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span>Savdolar</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4 9 4-9 4-9-4Z"/><path d="M3 8v8l9 4 9-4V8"/><path d="M12 12v8"/></svg>
+      <span>Ombor</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>Yana</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

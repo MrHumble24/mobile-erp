@@ -1,7 +1,8 @@
 # Dashboard slice
 
-Management dashboard: KPI tiles (today/week/month), low-stock alerts, overdue
-consignments and model pricing. Auth-only; each card is gated by its own
+Management dashboard: a shortcut tile row, one KPI list-card (today/week/month),
+low-stock alerts, overdue consignments and model pricing — the same anatomy,
+row order and captions as the Android `features/finance` dashboard. Auth-only; each card is gated by its own
 endpoint's permission, so a cashier sees nothing finance-related.
 
 ## Owns
@@ -26,4 +27,9 @@ endpoint's permission, so a cashier sees nothing finance-related.
   stable within the day and the offline cache can serve it on the next launch.
 - Quick actions (`DashboardQuickActions`) jump to POS / inventory / QC / sales /
   nasiya via the kit's `KitRouter`; each shows only with its destination's
-  permission. (Earlier deferral resolved now the kit ships cross-tab nav.)
+  permission. Rendered as equal-width surface-2 tiles with the feature's nav
+  glyph, no heading, no card — the Android shortcut row.
+- Screen title is `nav.dashboard` (the tab label), not `dashboard.title`, so the
+  title, the tab and the Android top bar all read the same string.
+- KPI rows (`DashMetricList`) use only keys that exist in the shared Uzbek
+  bundle; the earlier English subtitles were untranslated fallbacks.

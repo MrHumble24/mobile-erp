@@ -30,7 +30,7 @@ struct ConsignmentsStatsView: View {
                                 Text(i18n.t("consignments.outstandingDesc",
                                             default: "Hamkor do'konlardan qaytarilishi kerak bo'lgan jami qarz balansi."))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -137,7 +137,7 @@ struct ConsignmentsStatsView: View {
                     .foregroundStyle(Tokens.ink)
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
 
             Spacer()

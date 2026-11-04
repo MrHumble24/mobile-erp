@@ -19,7 +19,7 @@ struct DevQuickLoginView: View {
                             .foregroundStyle(Tokens.ink)
                         Text("Display 1-tap role chips on the terminal sign-in screen for rapid testing.")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                 }
                 .tint(Tokens.success)
@@ -37,7 +37,7 @@ struct DevQuickLoginView: View {
             } footer: {
                 Text("Credentials correspond to local development seed data in Malika Bazaar test database.")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
         .listStyle(.insetGrouped)
@@ -75,7 +75,7 @@ private struct DevAccountCard: View {
                 HStack {
                     Text("Email:")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .frame(width: 65, alignment: .leading)
                     Text(account.email)
                         .font(.mono(13))
@@ -95,7 +95,7 @@ private struct DevAccountCard: View {
                 HStack {
                     Text("Password:")
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .frame(width: 65, alignment: .leading)
                     Text(showPassword ? account.password : String(repeating: "•", count: 12))
                         .font(.mono(13))
@@ -106,7 +106,7 @@ private struct DevAccountCard: View {
                     } label: {
                         Image(systemName: showPassword ? "eye.slash" : "eye")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                     .buttonStyle(.plain)
                     .padding(.trailing, 6)
@@ -129,7 +129,7 @@ private struct DevAccountCard: View {
 
     private func copy(_ text: String, id: String) {
         UIPasteboard.general.string = text
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        Haptic.tick.play()
         copiedId = id
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             if copiedId == id { copiedId = nil }

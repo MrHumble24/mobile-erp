@@ -5,6 +5,7 @@ struct LoadingView: View {
     var body: some View {
         ProgressView()
             .controlSize(.large)
+            .tint(Tokens.muted)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
@@ -18,14 +19,18 @@ struct EmptyStateView: View {
     var body: some View {
         ContentUnavailableView {
             Label(title, systemImage: systemImage)
+                .foregroundStyle(Tokens.muted)
         } description: {
             if let message { Text(message) }
         }
     }
 }
 
-/// Error state with the failure message and an optional retry.
+/// Error state with the failure message and an optional retry. The retry label
+/// comes from `common.retry` and sits on the kit's secondary pill, never a stock
+/// bordered button.
 struct ErrorStateView: View {
+    @Environment(I18n.self) private var i18n
     let message: String
     var retry: (() -> Void)?
 
@@ -37,8 +42,8 @@ struct ErrorStateView: View {
             Text(message)
         } actions: {
             if let retry {
-                Button("Try again", action: retry)
-                    .buttonStyle(.bordered)
+                Button(i18n.t("common.retry"), action: retry)
+                    .buttonStyle(.pillSecondary)
             }
         }
     }
@@ -51,7 +56,7 @@ struct ForbiddenPanel: View {
     var body: some View {
         ContentUnavailableView {
             Label(message, systemImage: "lock")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
         }
     }
 }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kassa — Warm Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; background: #777; font-family: "Nunito Sans", sans-serif; font-feature-settings: "tnum"; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+  #frame { width: 390px; height: 844px; overflow: hidden; background: #FBF6EE; position: relative; color: #2B2B2B; display: flex; flex-direction: column; }
+  .mono { font-family: "Geist Mono", "JetBrains Mono", monospace; }
+  .muted { color: #8A8378; }
+  /* status bar */
+  .status { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-size: 14px; font-weight: 600; }
+  .status .sys { display: flex; align-items: center; gap: 6px; }
+  .status .sys svg { display: block; }
+  /* scroll body */
+  .body { flex: 1; overflow: hidden; padding: 4px 20px 0; }
+  .title { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  .scan { height: 56px; background: #FFFFFF; border-radius: 16px; display: flex; align-items: center; gap: 12px; padding: 0 20px; margin-bottom: 20px; }
+  .scan .ph { font-size: 16px; color: #8A8378; }
+  .heading { font-size: 13px; color: #8A8378; margin-bottom: 12px; }
+  .card { background: #FFFFFF; border-radius: 16px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; }
+  .card .name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .card .spec { font-size: 13px; color: #8A8378; margin-bottom: 8px; }
+  .card .imei { font-size: 13px; color: #2B2B2B; }
+  .card .right { text-align: right; display: flex; flex-direction: column; justify-content: space-between; }
+  .card .price { font-size: 16px; font-weight: 700; }
+  .card .stock { font-size: 12px; color: #1E9E5A; font-weight: 600; }
+  .totals { background: #FFFFFF; border-radius: 16px; padding: 20px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .totals .lbl { font-size: 16px; color: #8A8378; }
+  .totals .sum { font-size: 24px; font-weight: 700; }
+  .custline { font-size: 13px; color: #8A8378; margin-bottom: 16px; padding: 0 4px; }
+  .pay { height: 52px; background: #FF5A1F; border-radius: 26px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 16px; font-weight: 700; }
+  /* tab bar */
+  .tabs { height: 72px; background: #FFFFFF; display: flex; align-items: flex-start; padding-top: 10px; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #8A8378; }
+  .tab.active { color: #FF5A1F; }
+  .tab .lbl { font-size: 11px; font-weight: 600; }
+  .tab svg { display: block; }
+</style>
+</head>
+<body>
+<div id="frame">
+
+  <div class="status">
+    <span>12:47</span>
+    <span class="sys">
+      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#2B2B2B" stroke-width="1.5"><path d="M1 4.5C4.5 1.5 11.5 1.5 15 4.5M3.5 7C6 5 10 5 12.5 7M6 9.5c1.3-1 2.7-1 4 0"/></svg>
+      <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="1" width="20" height="10" rx="2.5" fill="none" stroke="#2B2B2B" stroke-width="1"/><rect x="2" y="2.5" width="15" height="7" rx="1" fill="#2B2B2B"/><rect x="21.5" y="4" width="1.5" height="4" rx="0.75" fill="#2B2B2B"/></svg>
+    </span>
+  </div>
+
+  <div class="body">
+    <div class="title">Kassa</div>
+
+    <div class="scan">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A8378" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span class="ph">IMEI skanerlang yoki kiriting (15 xona)</span>
+    </div>
+
+    <div class="heading">Tanlangan qurilma</div>
+
+    <div class="card">
+      <div class="left">
+        <div class="name">Samsung Galaxy S23 Ultra</div>
+        <div class="spec">256 GB · Qora</div>
+        <div class="imei mono">358511020749606</div>
+      </div>
+      <div class="right">
+        <div class="price">$1,250</div>
+        <div class="stock">Omborda</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="left">
+        <div class="name">Apple iPhone 15 Pro</div>
+        <div class="spec">128 GB · Oq</div>
+        <div class="imei mono">357111000222333</div>
+      </div>
+      <div class="right">
+        <div class="price">$1,100</div>
+        <div class="stock">Omborda</div>
+      </div>
+    </div>
+
+    <div class="totals">
+      <span class="lbl">Jami</span>
+      <span class="sum">$2,350</span>
+    </div>
+
+    <div class="custline">Mijoz · Oddiy xaridor</div>
+
+    <div class="pay">Sotuvni yakunlash</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span class="lbl">Bosh sahifa</span>
+    </div>
+    <div class="tab active">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 14h4"/></svg>
+      <span class="lbl">Kassa</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span class="lbl">Savdolar</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+      <span class="lbl">Ombor</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+      <span class="lbl">Yana</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

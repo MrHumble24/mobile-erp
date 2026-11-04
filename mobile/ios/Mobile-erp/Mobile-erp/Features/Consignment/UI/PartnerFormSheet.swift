@@ -128,7 +128,7 @@ struct CaptionedField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(label).font(.caption).foregroundStyle(Tokens.muted)
             TextField(label, text: $text)
                 .font(mono ? .mono(16) : .body)
                 .keyboardType(phone ? .phonePad : (number ? .decimalPad : .default))

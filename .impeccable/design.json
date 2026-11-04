@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T00:00:00Z",
+  "title": "Design System: Malika ERP Mobile",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Warm Ground",
+        "canonical": "oklch(97.5% 0.014 80)",
+        "tonalRamp": [
+          "#1C1713",
+          "#352C24",
+          "#5A4D40",
+          "#8A7A68",
+          "#B8A994",
+          "#DACDB8",
+          "#F4ECDF",
+          "#FBF6EE"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "#2A231D",
+          "#3A312A",
+          "#5C5048",
+          "#8A8378",
+          "#B5ADA2",
+          "#D9D2C8",
+          "#F2EEE8",
+          "#FFFFFF"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(25% 0 0)",
+        "tonalRamp": [
+          "#141414",
+          "#2B2B2B",
+          "#444444",
+          "#5E5E5E",
+          "#8A8378",
+          "#B5ADA2",
+          "#DDD6CB",
+          "#F4EDE4"
+        ]
+      },
+      "action": {
+        "role": "primary",
+        "displayName": "Action Orange",
+        "canonical": "oklch(68% 0.21 38)",
+        "tonalRamp": [
+          "#5A1E09",
+          "#8A2E0E",
+          "#B83D12",
+          "#E64D15",
+          "#FF5A1F",
+          "#FF8A5C",
+          "#FFC2A8",
+          "#FFE3D6"
+        ]
+      },
+      "success": {
+        "role": "status",
+        "displayName": "In Stock Green (deep step for text)",
+        "canonical": "oklch(60% 0.15 155)",
+        "tonalRamp": [
+          "#0B3F24",
+          "#12603A",
+          "#16804A",
+          "#1B9E5A",
+          "#3DB876",
+          "#7FD3A3",
+          "#BDE9CF",
+          "#E3F5EA"
+        ]
+      },
+      "danger": {
+        "role": "status",
+        "displayName": "Defective Red",
+        "canonical": "oklch(55% 0.21 20)",
+        "tonalRamp": [
+          "#520F18",
+          "#7E1626",
+          "#AB1E30",
+          "#D7263D",
+          "#E85A6C",
+          "#F28F9B",
+          "#F8C5CC",
+          "#FBE3E6"
+        ]
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Attention Amber",
+        "canonical": "oklch(66% 0.16 75)",
+        "tonalRamp": [
+          "#4D3100",
+          "#7A4D00",
+          "#A86B00",
+          "#D98A00",
+          "#F0A633",
+          "#F6C675",
+          "#FAE0B3",
+          "#FCEFD6"
+        ]
+      },
+      "info": {
+        "role": "status",
+        "displayName": "Consigned Blue",
+        "canonical": "oklch(55% 0.17 262)",
+        "tonalRamp": [
+          "#10264F",
+          "#1A3D7F",
+          "#2455AD",
+          "#2F6FDB",
+          "#5C8FE5",
+          "#93B4EE",
+          "#C6D7F6",
+          "#E4ECFB"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Title",
+        "purpose": "Screen titles only."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Card and section heads."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Everything a person reads or taps."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Secondary lines under a body line."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Status pills, keyed labels, tab labels."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "IMEI, money, counts; tabular; IMEI grouped 8-6-1."
+      },
+      "data-large": {
+        "displayName": "Data Large",
+        "purpose": "Totals and headline amounts."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "capture-spring",
+        "value": "350ms cubic-bezier(0.34, 1.3, 0.64, 1)",
+        "purpose": "Signature: a scanned unit springs into its list from the scan field; list dims to 60% for one beat; light haptic."
+      },
+      {
+        "name": "press",
+        "value": "120ms cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Scale to 0.98 and tint on press; no bounce on entry."
+      },
+      {
+        "name": "fade-reduced",
+        "value": "150ms linear",
+        "purpose": "Replaces the spring under reduce-motion."
+      }
+    ],
+    "haptics": [
+      {
+        "name": "tick",
+        "purpose": "Scan captured.",
+        "android": "HapticFeedbackConstants.CONFIRM",
+        "ios": "sensoryFeedback(.impact(weight: .light))"
+      },
+      {
+        "name": "success",
+        "purpose": "Sale completed, batch submitted.",
+        "android": "HapticFeedbackConstants.CONFIRM twice",
+        "ios": "sensoryFeedback(.success)"
+      },
+      {
+        "name": "error",
+        "purpose": "Duplicate IMEI, rejected scan.",
+        "android": "HapticFeedbackConstants.REJECT",
+        "ios": "sensoryFeedback(.error)"
+      }
+    ],
+    "platformAnatomy": {
+      "android": "Material 3 structure themed from tokens: shapes 16/12/14, colour roles mapped, elevation 0, ripple replaced by press spring, bottom-sheet drag handle hidden, NavigationBar indicator in surface-2, DatePicker colours from tokens.",
+      "ios": "HIG structure: tab bar, navigation stack, sheets; cards instead of grouped lists for content; kit PillButton, AppTextField, SegmentedControl, FilterSheet built from tokens; Dynamic Type via relativeTo."
+    },
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "720dp"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one orange on the screen; the primary action.",
+      "html": "<button class=\"ds-btn-primary\">Sotuvni yakunlash</button>",
+      "css": ".ds-btn-primary { font-family: Onest, system-ui, sans-serif; font-size: 16px; font-weight: 600; color: #FFFFFF; background: #FF5A1F; border: 0; border-radius: 14px; height: 52px; padding: 0 20px; width: 100%; transition: transform 120ms cubic-bezier(0.2,0,0,1), background 120ms; } .ds-btn-primary:hover { background: #F2531A; } .ds-btn-primary:active { transform: scale(0.98); background: #E64D15; } .ds-btn-primary:focus-visible { outline: 2px solid #FF5A1F; outline-offset: 3px; } .ds-btn-primary:disabled { background: #F4ECDF; color: #8A8378; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Any other action; surface-2 fill, never orange.",
+      "html": "<button class=\"ds-btn-secondary\">Bekor qilish</button>",
+      "css": ".ds-btn-secondary { font-family: Onest, system-ui, sans-serif; font-size: 16px; font-weight: 600; color: #2B2B2B; background: #F4ECDF; border: 0; border-radius: 14px; height: 52px; padding: 0 20px; transition: transform 120ms, background 120ms; } .ds-btn-secondary:hover { background: #EEE4D3; } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:focus-visible { outline: 2px solid #FF5A1F; outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field with a 1px warm border; orange ring on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">IMEI</span><input class=\"ds-input\" placeholder=\"IMEI skanerlang yoki kiriting (15 xona)\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font-family: Onest, system-ui, sans-serif; } .ds-field-label { font-size: 12px; font-weight: 600; color: #8A8378; } .ds-input { font: 16px Onest, system-ui, sans-serif; color: #2B2B2B; background: #FFFFFF; border: 1px solid #E7DACB; border-radius: 12px; height: 52px; padding: 0 16px; } .ds-input::placeholder { color: #8A8378; } .ds-input:focus-visible { outline: 2px solid #2B2B2B; outline-offset: 0; border-color: transparent; }"
+    },
+    {
+      "name": "Device Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A unit: model, specs, mono IMEI, mono price, status pill. White on the warm ground, no border, no shadow.",
+      "html": "<div class=\"ds-card\"><div><div class=\"ds-card-name\">Samsung Galaxy S23 Ultra</div><div class=\"ds-card-spec\">256 GB · Qora</div><div class=\"ds-card-imei\">35851102 074960 6</div></div><div class=\"ds-card-right\"><div class=\"ds-card-price\">$1,250</div><span class=\"ds-pill ds-pill-ok\">Omborda</span></div></div>",
+      "css": ".ds-card { display: flex; justify-content: space-between; gap: 16px; background: #FFFFFF; border-radius: 16px; padding: 20px; font-family: Onest, system-ui, sans-serif; color: #2B2B2B; transition: background 120ms; } .ds-card:active { background: #F4ECDF; } .ds-card-name { font-size: 16px; font-weight: 600; } .ds-card-spec { font-size: 13px; color: #8A8378; margin-top: 2px; } .ds-card-imei { font-family: 'Sometype Mono', ui-monospace, monospace; font-size: 15px; margin-top: 8px; font-variant-numeric: tabular-nums; } .ds-card-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; } .ds-card-price { font-family: 'Sometype Mono', ui-monospace, monospace; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; } .ds-pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 10px; } .ds-pill-ok { color: #12603A; background: #E3F5EA; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "One hue per meaning: in stock, defective, consigned, sold, warning.",
+      "html": "<span class=\"ds-pill ds-ok\">Omborda</span> <span class=\"ds-pill ds-bad\">Nuqsonli</span> <span class=\"ds-pill ds-info\">Nasiyada</span> <span class=\"ds-pill ds-sold\">Sotildi</span>",
+      "css": ".ds-pill { display: inline-block; font-family: Onest, system-ui, sans-serif; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 4px 10px; margin-right: 6px; } .ds-ok { color: #12603A; background: #E3F5EA; } .ds-bad { color: #AB1E30; background: #FBE3E6; } .ds-info { color: #2455AD; background: #E4ECFB; } .ds-sold { color: #8A8378; background: #EFEAE2; }"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "card",
+      "description": "Persistent bottom bar; the active tab is the second place orange may appear.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\">Bosh sahifa</a><a class=\"ds-tab ds-tab-active\">Kassa</a><a class=\"ds-tab\">Savdolar</a><a class=\"ds-tab\">Ombor</a><a class=\"ds-tab\">Yana</a></nav>",
+      "css": ".ds-tabs { display: flex; background: #FFFFFF; height: 72px; align-items: center; font-family: Onest, system-ui, sans-serif; } .ds-tab { flex: 1; text-align: center; font-size: 11px; font-weight: 600; color: #8A8378; text-decoration: none; padding: 10px 0; } .ds-tab-active { color: #FF5A1F; } .ds-tab:focus-visible { outline: 2px solid #FF5A1F; outline-offset: -2px; border-radius: 8px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "One orange, always pressable.",
+    "overview": "The mobile apps serve a phone-retail booth in Malika Bazaar: a cashier scanning IMEIs under daylight glare, a QC specialist receiving a batch, an owner reading the day's takings. The screen is a warm tinted ground with soft white cards, so the eye reads the cards, not the chrome. Colour has one job: the single orange marks what can be pressed right now. Status hues are the only other colour and keep their meaning on every screen. This replaces the Ink theme (ADR 0020), a palette without a voice.",
+    "keyCharacteristics": [
+      "Warm tinted ground, white cards, no borders on cards, no shadows anywhere.",
+      "One action colour, reserved for pressable things; disabled actions lose it entirely.",
+      "Onest for UI, Sometype Mono with tabular figures for IMEI, money and counts.",
+      "Generous density tuned to a thumb: 52 dp controls, 48 dp rows, 20 dp gutters.",
+      "Signature move: the capture spring with a light haptic.",
+      "Shared tokens on both platforms; component anatomy stays native to each."
+    ],
+    "rules": [
+      {
+        "name": "The Pressable Rule",
+        "body": "If it is orange, tapping it does something. If tapping it does nothing, it is not orange.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Meaning Rule",
+        "body": "Each status hue has exactly one meaning across all screens; the brand colour never doubles as a status.",
+        "section": "colors"
+      },
+      {
+        "name": "The Daylight Rule",
+        "body": "Light mode leads; dark mode is a warm dark, never grey-black, and ships fully tested.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Sizes Rule",
+        "body": "A screen uses at most three text sizes above caption. Hierarchy comes from size and muted colour, not from bolding everything.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono-for-Numbers Rule",
+        "body": "A number a cashier compares or copies is mono and tabular. Prose numbers stay in Onest.",
+        "section": "typography"
+      },
+      {
+        "name": "The Money Sign Rule",
+        "body": "A money figure is tinted by meaning and sign, not by metric identity: profit is green at zero-or-above and red when negative, revenue stays the plain text colour, expenses are always danger red. One helper owns this (signTint on Android, moneyTint on iOS) so a loss never reads green.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. The only depth cue is the press response (scale down plus a surface-2 wash); nothing floats.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Keep the ground warm and flat and the cards white; let contrast be the edge.",
+      "Put orange only on the one thing to press on this screen.",
+      "Set every IMEI, amount and count in Sometype Mono with tabular figures.",
+      "Tint money by sign through the one helper, so a loss never reads green.",
+      "Ship light and dark together, tested in bazaar daylight and at 1.3x font scale."
+    ],
+    "donts": [
+      "Don't add borders or shadows to cards; don't add textures to the ground.",
+      "Don't use orange for icons, headings, charts, or status.",
+      "Don't bold to create hierarchy; change size or mute instead.",
+      "Don't let Material or stock-iOS parts show through untinted (ripple, calendar, drag handle, elevated menus)."
+    ]
+  }
+}

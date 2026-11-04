@@ -1,8 +1,11 @@
 # shared/ui — stack-level Compose kit
 
-Ink-themed primitives with no business meaning (cards, buttons, fields, chips,
-sheets, scanner). Feature screens compose these; colours come from `Tokens.*`
-getters and spacing from `Tokens.Space.*` — never ad-hoc literals.
+Warm Card primitives (DESIGN.md) with no business meaning (cards, buttons,
+fields, chips, sheets, toggles, date pickers, scanner). Feature screens compose
+these; colours come from `Tokens.*` getters, spacing from `Tokens.Space.*`, radii
+from `Tokens.Radius.*` — never ad-hoc literals. Press feedback is the theme's
+`PressIndication` (scale + surface-2 wash); Material internals that ignore
+`LocalIndication` fall back to a muted monochrome ripple, never the loud default.
 
 ## Compact-width rule (phones < 600dp)
 
@@ -24,18 +27,41 @@ side by side in columns; each piece stacks as a full-width row. Wide windows
 
 ## Component contracts
 
-- `SegmentedControl` — labels are single-line (equal segment heights); when they
-  overflow the available width the row auto-fits by dropping one type step
-  (labelLarge → bodySmall), ellipsis only as last resort. Never clips; callers
-  must not wrap it in `horizontalScroll`.
+- `PillButton` — the one button: radius 14 (`Tokens.Radius.buttons`), 52 dp tall,
+  zero elevation in every state. Variants: PRIMARY (the one orange, action fill),
+  SECONDARY / OUTLINE (both borderless surface-2 — Warm Card has no borders except
+  inputs; OUTLINE keeps its name only), GHOST (transparent), DESTRUCTIVE (danger).
+  Disabled is surface-2 / muted. Press feedback is the theme indication.
+- `AppTextField` / `AppFormField` / `AppSelect` — white card container, radius 12,
+  1 dp warm border thickening to a 2 dp action ring on focus, action cursor, muted
+  placeholder, danger error border; field label 13/600 muted above with a 6 dp
+  gap. `AppSelect`'s menu is themed (card, radius 16, zero elevation, selected item
+  tinted surface-2).
+- `SegmentedControl` — a surface-2 track; the selected segment is a white card with
+  a text-colour label, the rest muted; radius 12, height 44, no Material border or
+  selection check-mark. Labels are single-line and ellipsize on a narrow segment.
+- `AppBottomSheet` — white card, no drag handle, 20 dp top corners, zero tonal
+  elevation, 40%-of-text scrim.
+- `AppConfirmDialog` — white card, radius 20, zero tonal elevation, titleMedium
+  over bodyLarge, `PillButton`s (primary / secondary) for the choices.
+- `AppSwitch` / `AppCheckbox` (`Toggles.kt`) — the shared toggles: checked uses the
+  action orange, unchecked rests on a surface-2 track with a warm border. One
+  definition for admin, procurement and inventory.
+- `warmDatePickerColors()` / `DatePickerDialogShape` (`DatePickerTheme.kt`) — one
+  Warm Card palette (white container, action-orange selected day + today ring,
+  neutral text, surface-2 year chip) and the 20 dp dialog shape, passed to every
+  date-picker site so none shows a stock Material calendar.
+- `StatusChip` — pill, labelMedium 12/600, a soft tint of the passed status hue as
+  the background with the hue as the label (one argument carries both). Status
+  meaning is owned by `DeviceStatusMeta.color` and the status tokens.
 - `MetricTile` — a tall stacked card on wide (reserves the subtitle line so a
   `MetricGrid` row stays equal height); a slim ~44dp horizontal row (label +
   subtext left, value right, emphasis kept) on compact. `MetricGrid` lays
   `perRow` separate tile cards per row on wide, but on compact collapses them
-  into ONE list-card (`Tokens.surfaceCanvas`, hairline border, radius 12) with
-  the rows split by 1dp `Tokens.hairline` dividers — the One UI "list card"
-  look, so a KPI block is one tidy card, not N tall ones. Every KPI/summary
-  block uses `MetricGrid`, not a hand-rolled `Row` of weighted tiles.
+  into ONE list-card (`Tokens.card`, radius 16, no border) with the rows split by
+  1dp `Tokens.border` dividers — the One UI "list card" look, so a KPI block is
+  one tidy card, not N tall ones. Every KPI/summary block uses `MetricGrid`, not a
+  hand-rolled `Row` of weighted tiles.
 - `EmptyView(compact = true)` — single ~56dp icon+text row (wrap height) for an
   inline card empty state; the default stays full-screen centered.
 - `FilterButton` — 40dp filter icon button; a primary-tinted count badge shows only when `activeCount > 0`.
@@ -43,6 +69,10 @@ side by side in columns; each piece stacks as a full-width row. Wide windows
 - `FilterSheet` — scrolling bottom sheet: title + optional ghost reset in the header, caller's spaced `content`, full-width close button.
 - `ScanConfirmSheet` — a confirmation step between a scan and the action it fires: mono `code`, an optional resolved summary (`title`, `price` via `MoneyText`, status chip) with confirm (primary) + cancel (ghost), or, when `error` is set, the error row with a single close action. Generic — only strings, an optional status label/colour and callbacks; the caller resolves the code and maps the status label/colour (e.g. POS via `DeviceStatusMeta`).
 - `listBottomPadding(fab)` — bottom-only `contentPadding` for a scrolling list so its last row clears a FAB (`fab = true` → `Tokens.Space.fabClearance`) or the bottom bar (`fab = false` → `Tokens.Space.listBottom`). Bottom-only on purpose, so callers keep their own horizontal gutter.
+- `ScannerField` — HID keyboard-wedge + camera scan input. `onScan: (code: String, fromCamera: Boolean) -> Unit`: `false` for a wedge/typed submit, `true` for a camera detection, so a caller can confirm camera reads but stage wedge scans straight through. Autofocus keeps the field ready for a wedge, but the soft keyboard is actively dismissed on the programmatic focus: `SoftwareKeyboardController.hide()` runs after a 50ms settle in the autofocus effect and again on every `onFocusChanged` while the user has not pressed the field, and `submit()` refocuses + hides so the IME never lingers between scans. The IME comes up only when the user presses the field (a `PressInteraction.Press` on the shared `interactionSource` sets `userTapped` and calls `show()`), so manual entry still works. The hide route is needed because the legacy value/onValueChange `OutlinedTextField` inside a `ModalBottomSheet` ignores `showKeyboardOnFocus` (that flag is still passed as a no-cost extra for newer fields). Verified on emulator via `dumpsys input_method` (`mInputShown=false` on open, `true` after tapping the field). Duplicate scans within 1.2s are dropped.
+- `OfflineBanner` — the "you are offline" strip (surface-2 strip radius 12, cloud-off glyph, caller-supplied localized `message`). Pure presentation; the caller decides when `!online`. Used by the login screen and the device-intake sheet.
+- `CaptureSpring.kt` — the signature capture spring (DESIGN.md Motion). `rememberCaptureTracker()` + `tracker.isNew(key)` mark only rows that arrive after the screen opens (never the initial set); wrap each row in `CaptureSpringItem(isNew, pulse = list.size, reduceMotion)` and a new row springs in from the scan field (translationY −24 dp, scale 0.96, 350 ms `spring(0.75f, StiffnessMediumLow)`) while the rest dims to 60% for one beat. `rememberReduceMotion()` (reads `ANIMATOR_DURATION_SCALE == 0`) swaps the spring for a 150 ms fade and drops the dim. Used by the POS cart (`PosCartList`) and intake drafts (`IntakeStagedList`). The capture spring is the ONE authored motion; press feedback is the separate `PressIndication`, and there are no entrance animations on screens.
+- Haptics live in `shared/lib/Haptics.kt` (platform helper): `rememberHaptics()` → `tick()` (a scan landed — fired once inside `ScannerField`, HID + camera), `success()` (sale/batch completed — CONFIRM twice 120 ms apart), `error()` (duplicate / rejected scan). Built on `View.performHapticFeedback` (honours the system haptic setting); CONFIRM/REJECT with KEYBOARD_TAP/LONG_PRESS fallbacks below API 30.
 
 ## Safe-area / inset contract
 

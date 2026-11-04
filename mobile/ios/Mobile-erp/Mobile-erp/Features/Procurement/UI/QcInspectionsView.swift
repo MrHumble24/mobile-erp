@@ -114,7 +114,7 @@ private struct InspectionRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.imei).font(.mono(13))
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(subtitle).font(.caption).foregroundStyle(Tokens.muted)
             }
             Spacer()
             StatusBadge(

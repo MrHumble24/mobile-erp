@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390, initial-scale=1">
+<title>Kassa — Dense Module Mosaic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#777; font-family:"Noto Sans",sans-serif; }
+  #frame { width:390px; height:844px; overflow:hidden; background:#FFFFFF; color:#111111;
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; font-size:12px; line-height:1.25; }
+  /* status bar */
+  .status { height:24px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 14px; font-size:12px; font-weight:700; }
+  .status .ic { display:flex; gap:5px; align-items:center; }
+  /* title */
+  .title { padding:6px 10px 2px; font-size:13px; font-weight:700; }
+  /* mosaic */
+  .mosaic { flex:1; display:flex; flex-direction:column; gap:6px; padding:4px 6px 6px; }
+  .row { display:flex; gap:6px; }
+  .mod { border:1px solid #E5E7EB; background:#FFFFFF; position:relative;
+    display:flex; flex-direction:column; }
+  .tab { height:16px; background:#D7000F; color:#FFFFFF; font-size:10px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.4px; display:flex; align-items:center;
+    padding:0 7px; align-self:flex-start; }
+  .mod .body { flex:1; display:flex; flex-direction:column; justify-content:center; }
+  /* imei */
+  .imei { height:56px; }
+  .imei .inp { display:flex; align-items:center; justify-content:space-between;
+    border:1px solid #E5E7EB; background:#F3F4F6; margin:6px; padding:6px 8px; }
+  .imei .ph { font-size:12px; color:#111111; opacity:.55; }
+  /* cart rows */
+  .line { height:32px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 8px; border-top:1px solid #E5E7EB; }
+  .line:first-child { border-top:none; }
+  .line .meta { font-size:11px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding-right:8px; }
+  .line .meta b { font-weight:700; }
+  .price { color:#D7000F; font-weight:700; font-size:12px; white-space:nowrap; }
+  /* half modules */
+  .half { flex:1; }
+  .jami .amt { color:#D7000F; font-weight:700; font-size:20px; padding:8px; }
+  .mijoz .txt { font-size:11px; padding:8px; }
+  .mijoz .txt .sub { color:#111111; opacity:.6; }
+  /* today sales */
+  .srow { height:24px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 8px; font-size:11px; border-top:1px solid #E5E7EB; }
+  .srow:first-child { border-top:none; }
+  /* pay */
+  .pay { height:44px; background:#D7000F; color:#FFFFFF; font-size:13px; font-weight:700;
+    border-radius:2px; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+  /* tab bar */
+  .tabbar { height:64px; border-top:1px solid #E5E7EB; display:flex; }
+  .tabbar a { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:3px; font-size:11px; color:#111111; opacity:.55; text-decoration:none; }
+  .tabbar a.active { color:#D7000F; opacity:1; }
+</style>
+</head>
+<body>
+<div id="frame">
+
+  <div class="status">
+    <span>12:47</span>
+    <span class="ic">
+      <svg width="16" height="11" viewBox="0 0 16 11"><rect x="0" y="7" width="3" height="4" fill="#111"/><rect x="4" y="5" width="3" height="6" fill="#111"/><rect x="8" y="2" width="3" height="9" fill="#111"/><rect x="12" y="0" width="3" height="11" fill="#111"/></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#111" stroke-width="1.3"><path d="M1 4 A9 9 0 0 1 14 4"/><path d="M3.5 6.5 A5.5 5.5 0 0 1 11.5 6.5"/><path d="M6 9 A2 2 0 0 1 9 9"/></svg>
+      <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0.5" y="0.5" width="18" height="10" rx="2" fill="none" stroke="#111"/><rect x="2" y="2" width="13" height="7" fill="#111"/><rect x="19.5" y="3.5" width="2" height="4" rx="1" fill="#111"/></svg>
+    </span>
+  </div>
+
+  <div class="title">Kassa</div>
+
+  <div class="mosaic">
+
+    <div class="mod imei">
+      <div class="tab">IMEI</div>
+      <div class="inp">
+        <span class="ph">IMEI skanerlang yoki kiriting (15 xona)</span>
+        <svg width="18" height="16" viewBox="0 0 18 16" fill="none" stroke="#111" stroke-width="1.3"><rect x="1" y="3.5" width="16" height="11" rx="1.5"/><path d="M6 3.5 7 1.5h4L12 3.5"/><circle cx="9" cy="9" r="3"/></svg>
+      </div>
+    </div>
+
+    <div class="mod">
+      <div class="tab">Savat</div>
+      <div class="line">
+        <span class="meta"><b>Samsung Galaxy S23 Ultra 256GB</b> · 358511020749606</span>
+        <span class="price">$1,250</span>
+      </div>
+      <div class="line">
+        <span class="meta"><b>Apple iPhone 15 Pro 128GB</b> · 357111000222333</span>
+        <span class="price">$1,100</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="mod half jami">
+        <div class="tab">Jami</div>
+        <div class="amt">$2,350</div>
+      </div>
+      <div class="mod half mijoz">
+        <div class="tab">Mijoz</div>
+        <div class="txt">Oddiy xaridor<br><span class="sub">14 kun kafolat</span></div>
+      </div>
+    </div>
+
+    <div class="mod">
+      <div class="tab">Bugungi savdolar</div>
+      <div class="srow"><span>Galaxy S23 Ultra</span><span class="price">$1,500</span></div>
+      <div class="srow"><span>iPhone 18 pro max</span><span class="price">$1,200</span></div>
+      <div class="srow"><span>iPhone 18 pro max</span><span class="price">$1,500</span></div>
+    </div>
+
+    <div class="pay">Sotuvni yakunlash</div>
+
+  </div>
+
+  <div class="tabbar">
+    <a>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9 11 3l8 6v9a1 1 0 0 1-1 1h-4v-6H8v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span>Bosh sahifa</span>
+    </a>
+    <a class="active">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="16" height="12" rx="1.5"/><path d="M3 10h16M7 14h4"/></svg>
+      <span>Kassa</span>
+    </a>
+    <a>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h12v16l-2.5-1.5L12 19l-2.5-1.5L7 19l-2-1.5z"/><path d="M8 7h6M8 10h6"/></svg>
+      <span>Savdolar</span>
+    </a>
+    <a>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7 11 3l8 4v8l-8 4-8-4z"/><path d="M3 7l8 4 8-4M11 11v8"/></svg>
+      <span>Ombor</span>
+    </a>
+    <a>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="11" r="1.4"/><circle cx="11" cy="11" r="1.4"/><circle cx="17" cy="11" r="1.4"/></svg>
+      <span>Yana</span>
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

@@ -8,34 +8,31 @@ struct SummaryTile: View {
     let label: String
     let value: String
     var subtext: String?
+    /// Retained for call-site compatibility. Warm Card does not invert tiles
+    /// (orange is for pressables only); emphasis is a later adoption pass.
     var highlight = false
 
     var body: some View {
-        AppCard(padding: 14) {
-            VStack(alignment: .leading, spacing: 6) {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.sm) {
                 Text(label)
-                    .font(.caption)
-                    .foregroundStyle(highlight ? Tokens.onInk.opacity(0.75) : .secondary)
+                    .font(.ui(.caption))
+                    .foregroundStyle(Tokens.muted)
                     .lineLimit(1)
                 Text(value)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(highlight ? Tokens.onInk : Tokens.ink)
-                    .monospacedDigit()
+                    .font(.data(.large))
+                    .foregroundStyle(Tokens.text)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 if let subtext {
                     Text(subtext)
-                        .font(.caption2)
-                        .foregroundStyle(highlight ? Tokens.onInk.opacity(0.75) : .secondary)
+                        .font(.ui(.caption))
+                        .foregroundStyle(Tokens.muted)
                         .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(
-            highlight
-                ? RoundedRectangle(cornerRadius: Tokens.Radius.cards, style: .continuous)
-                    .fill(Tokens.ink)
-                : nil
-        )
     }
 }
 
@@ -47,6 +44,6 @@ struct SummaryTileGrid<Content: View>: View {
     init(@ViewBuilder content: () -> Content) { self.content = content() }
 
     var body: some View {
-        VStack(spacing: 10) { content }
+        VStack(spacing: Tokens.Space.md) { content }
     }
 }

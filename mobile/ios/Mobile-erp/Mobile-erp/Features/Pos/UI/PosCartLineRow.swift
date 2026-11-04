@@ -1,44 +1,50 @@
 import SwiftUI
 
-/// One editable cart line: device + IMEI header, sale price, warranty days,
-/// optional notes, and a remove button. Edits write back through the cart so a
-/// struct line stays the single source of truth.
+/// One editable cart line as a Warm Card: device + mono IMEI header with a
+/// remove button, then sale price, warranty days and optional notes. Edits write
+/// back through the cart so a struct line stays the single source of truth.
 struct PosCartLineRow: View {
     let cart: PosCart
     let line: PosCartLine
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(line.device.modelLabel).font(.body.weight(.medium))
-                    Text(line.device.imei).font(.mono(12)).foregroundStyle(.secondary)
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+                        Text(line.device.modelLabel)
+                            .font(.ui(.bodyStrong))
+                            .foregroundStyle(Tokens.text)
+                        Text(line.device.imei)
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.muted)
+                    }
+                    Spacer(minLength: Tokens.Space.md)
+                    Button(role: .destructive) { cart.remove(line.id) } label: {
+                        Image(systemName: "trash").foregroundStyle(Tokens.muted)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(i18n.t("pos.removeLine"))
                 }
-                Spacer()
-                Button(role: .destructive) {
-                    cart.remove(line.id)
-                } label: {
-                    Image(systemName: "trash")
+                HStack(alignment: .bottom, spacing: Tokens.Space.md) {
+                    AppFormField(label: i18n.t("pos.salePrice")) {
+                        AppTextField(placeholder: i18n.t("pos.salePrice"), text: price,
+                                     keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                            .sanitizeDecimal(price)
+                    }
+                    AppFormField(label: i18n.t("pos.warrantyDays")) {
+                        AppTextField(placeholder: i18n.t("pos.warrantyDays"), text: warranty,
+                                     keyboard: .numberPad, font: .mono(15, weight: .medium))
+                            .sanitizeDigits(warranty)
+                    }
+                    .frame(width: 120)
                 }
-                .buttonStyle(.borderless)
-                .accessibilityLabel(i18n.t("pos.removeLine"))
+                AppFormField(label: i18n.t("pos.notes")) {
+                    AppTextField(placeholder: i18n.t("pos.notes"), text: notes)
+                }
             }
-            HStack(spacing: 12) {
-                TextField(i18n.t("pos.salePrice"), text: price)
-                    .keyboardType(.decimalPad)
-                    .font(.mono(15))
-                    .sanitizeDecimal(price)
-                TextField(i18n.t("pos.warrantyDays"), text: warranty)
-                    .keyboardType(.numberPad)
-                    .frame(width: 110)
-                    .sanitizeDigits(warranty)
-            }
-            TextField(i18n.t("pos.notes"), text: notes, axis: .vertical)
-                .lineLimit(1...2)
-                .font(.subheadline)
         }
-        .padding(.vertical, 4)
     }
 
     private var price: Binding<String> {

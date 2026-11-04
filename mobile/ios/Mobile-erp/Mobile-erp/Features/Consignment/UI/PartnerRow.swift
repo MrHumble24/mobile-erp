@@ -25,7 +25,7 @@ struct PartnerListRow: View {
                     if let contact = contactLine {
                         Text(contact)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                 }
                 Spacer()
@@ -43,7 +43,7 @@ struct PartnerListRow: View {
             if let open = partner.openCount {
                 HStack(spacing: 8) {
                     Text("\(open) \(i18n.t("partners.openCount", default: "devices out"))")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(Tokens.muted)
                     if let over = partner.overdueCount, over > 0 {
                         StatusBadge("\(over) \(i18n.t("partners.overdueCount", default: "overdue"))", color: Tokens.danger)
                     }
@@ -70,14 +70,14 @@ private struct CreditBar: View {
         let limitN = Double(limit) ?? 0
         let usedN = Double(used) ?? 0
         if limitN <= 0 {
-            Text(i18n.t("partners.creditUnlimited")).font(.caption2).foregroundStyle(.secondary)
+            Text(i18n.t("partners.creditUnlimited")).font(.caption2).foregroundStyle(Tokens.muted)
         } else {
             let pct = min(1, max(0, usedN / limitN))
             VStack(spacing: 3) {
                 HStack {
-                    MoneyText(value: used, size: 11).foregroundStyle(.secondary)
+                    MoneyText(value: used, size: 11).foregroundStyle(Tokens.muted)
                     Spacer()
-                    MoneyText(value: limit, size: 11).foregroundStyle(.secondary)
+                    MoneyText(value: limit, size: 11).foregroundStyle(Tokens.muted)
                 }
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {

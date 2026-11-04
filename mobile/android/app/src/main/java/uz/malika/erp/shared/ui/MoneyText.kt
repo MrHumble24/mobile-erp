@@ -25,8 +25,13 @@ fun MoneyText(
     Text(formatMoney(value), modifier = modifier, style = style.copy(fontFamily = MonoFamily))
 }
 
-/** Emphasis colour for a signed money figure: danger when negative, success otherwise. */
+/**
+ * Emphasis colour for a profit figure, tinted by SIGN not by metric identity:
+ * negative → [Tokens.danger], zero or positive → [Tokens.success]. The one helper
+ * for every profit/net figure (gross profit, net operating income, net profit).
+ * Revenue stays the plain text colour; expenses are always danger.
+ */
 @Composable
 @ReadOnlyComposable
-fun signedEmphasis(value: String?): Color =
+fun signTint(value: String?): Color =
     if (parseMoney(value).signum() < 0) Tokens.danger else Tokens.success

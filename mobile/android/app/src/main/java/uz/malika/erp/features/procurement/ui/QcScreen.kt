@@ -69,7 +69,7 @@ fun QcScreen(container: AppContainer) {
 
     Column(Modifier.fillMaxSize()) {
         ScannerField(
-            onScan = { sheet = QcSheet.Grade(it) },
+            onScan = { code, _ -> sheet = QcSheet.Grade(code) },
             placeholder = t("qc.scanPlaceholder", null),
             modifier = Modifier.fillMaxWidth().padding(16.dp),
         )

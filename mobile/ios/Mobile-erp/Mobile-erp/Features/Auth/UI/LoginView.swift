@@ -34,7 +34,7 @@ struct LoginView: View {
                             .foregroundStyle(Tokens.ink)
                         Text(i18n.t("auth.loginSubtitle", default: "Enter your staff credentials to begin your sales shift."))
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                     .padding(.vertical, 8)
                     .listRowBackground(Color.clear)
@@ -56,7 +56,7 @@ struct LoginView: View {
                             HStack {
                                 Label("Quick Fill (Dev)", systemImage: "sparkles")
                                     .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                                 Spacer()
                                 Button {
                                     showDevConsole = true
@@ -70,7 +70,7 @@ struct LoginView: View {
                                 HStack(spacing: 8) {
                                     ForEach(DevAccounts.all) { acc in
                                         Button {
-                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                            Haptic.tick.play()
                                             email = acc.email
                                             password = acc.password
                                         } label: {

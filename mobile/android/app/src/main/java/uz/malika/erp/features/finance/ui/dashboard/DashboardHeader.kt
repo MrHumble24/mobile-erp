@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.malika.erp.app.Destination
@@ -38,7 +39,8 @@ import uz.malika.erp.app.LocalCan
 import uz.malika.erp.features.finance.data.ProfitReport
 import uz.malika.erp.features.finance.model.DashPeriod
 import uz.malika.erp.features.finance.model.FinanceReadsViewModel
-import uz.malika.erp.features.finance.model.isoDate
+import uz.malika.erp.features.finance.model.endOfDay
+import uz.malika.erp.features.finance.model.isoInstant
 import uz.malika.erp.features.finance.model.periodStart
 import uz.malika.erp.features.finance.ui.components.AsyncContent
 import uz.malika.erp.shared.ui.MetricGrid
@@ -48,7 +50,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
-import uz.malika.erp.shared.ui.signedEmphasis
+import uz.malika.erp.shared.ui.signTint
 import uz.malika.erp.ui.theme.Tokens
 import java.util.Date
 
@@ -87,23 +89,25 @@ fun QuickActions(onOpen: (Destination) -> Unit) {
 @Composable
 private fun ShortcutTile(label: String, icon: ImageVector, modifier: Modifier, onClick: () -> Unit) {
     Column(
-        modifier.clip(RoundedCornerShape(14.dp)).clickable(onClick = onClick),
+        modifier.clip(RoundedCornerShape(Tokens.Radius.buttons)).clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Tokens.Space.gap),
     ) {
         Box(
-            Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(Tokens.surface2),
+            Modifier.size(52.dp).clip(RoundedCornerShape(Tokens.Radius.buttons)).background(Tokens.surface2),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(icon, contentDescription = null, tint = Tokens.foreground, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription = null, tint = Tokens.text, modifier = Modifier.size(24.dp))
         }
         Text(
             label,
-            style = MaterialTheme.typography.labelMedium.copy(fontSize = 12.sp),
-            color = Tokens.foreground,
+            style = MaterialTheme.typography.labelMedium,
+            color = Tokens.text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
+            // Shrinks to 10sp before it ellipsizes, so "Tekshiruv" survives 1.3x.
+            autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 12.sp, stepSize = 0.5.sp),
         )
     }
 }
@@ -124,9 +128,11 @@ fun KpiSection(vm: FinanceReadsViewModel) {
             onSelect = { period = it },
         )
         Spacer(Modifier.height(Tokens.Space.gap))
+        // Upper bound is local end-of-today (not `now`): same data, but the URL is
+        // stable within the day so the offline response cache can serve it.
         val now = remember { Date() }
-        val from = isoDate(periodStart(period, now))
-        val to = isoDate(now)
+        val from = isoInstant(periodStart(period, now))
+        val to = isoInstant(endOfDay(now))
         val handle = rememberAsync(period) { vm.profit(from, to) }
         AsyncContent(handle, retryLabel = t("common.retry", null)) { p -> KpiTiles(p) }
     }
@@ -141,12 +147,13 @@ private fun KpiTiles(p: ProfitReport) {
                 MetricTile(
                     t("dashboard.grossProfit", null), p.grossProfit, m,
                     subtext = "${p.unitsSold} ${t("dashboard.unitsSold", null)}",
+                    emphasis = signTint(p.grossProfit),
                 )
             },
             { m ->
                 MetricTile(
                     t("dashboard.netOperatingIncome", null), p.netOperatingIncome, m,
-                    emphasis = signedEmphasis(p.netOperatingIncome),
+                    emphasis = signTint(p.netOperatingIncome),
                 )
             },
             { m ->

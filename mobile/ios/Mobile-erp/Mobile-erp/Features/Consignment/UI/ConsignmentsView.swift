@@ -131,7 +131,7 @@ struct ConsignmentsView: View {
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if item.isOut {
                             Button {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                Haptic.tick.play()
                                 settleItem = item
                             } label: {
                                 Label(i18n.t("consignments.settle", default: "Settle"), systemImage: "checkmark.circle.fill")
@@ -139,7 +139,7 @@ struct ConsignmentsView: View {
                             .tint(Tokens.success)
 
                             Button {
-                                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                Haptic.tick.play()
                                 returnItem = item
                             } label: {
                                 Label(i18n.t("consignments.return", default: "Return"), systemImage: "arrow.uturn.backward")
@@ -178,7 +178,7 @@ struct ConsignmentsView: View {
             Spacer()
 
             Button {
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                Haptic.tick.play()
                 model.reset()
                 Task { await model.load() }
             } label: {
@@ -187,7 +187,7 @@ struct ConsignmentsView: View {
                     Text(i18n.t("common.reset", default: "Tozalash"))
                 }
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             }
         }
         .padding(.horizontal, 16)
@@ -206,7 +206,7 @@ struct ConsignmentsView: View {
         if container.session.can("consignment.create") {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showCreate = true
                 } label: {
                     Image(systemName: "plus")
@@ -219,7 +219,7 @@ struct ConsignmentsView: View {
             Menu {
                 // 1. Filtrlar
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showFilters = true
                 } label: {
                     Label(
@@ -232,7 +232,7 @@ struct ConsignmentsView: View {
 
                 // 2. Statistika
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showStats = true
                 } label: {
                     Label(

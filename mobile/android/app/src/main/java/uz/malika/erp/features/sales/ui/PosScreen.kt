@@ -34,6 +34,7 @@ import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.rememberHaptics
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
@@ -58,6 +59,7 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
         },
     )
     val state by vm.state.collectAsState()
+    val haptics = rememberHaptics()
 
     // Cross-feature preload: inventory/QC "Sell in POS" hands us an IMEI to scan.
     LaunchedEffect(Unit) {
@@ -66,13 +68,21 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     // Toast the checkout result once the receipt is built.
     LaunchedEffect(state.completed?.receiptId) {
         state.completed?.let {
-            if (it.pending) container.toaster.info(t("common.offline", null))
-            else container.toaster.success(t("pos.saleSuccess", null))
+            if (it.pending) {
+                container.toaster.info(t("common.offline", null))
+            } else {
+                container.toaster.success(t("pos.saleSuccess", null))
+                haptics.success() // sale completed
+            }
         }
+    }
+    // A scan that resolved to an error (not found / not sellable) is a rejected scan.
+    LaunchedEffect(state.prompt?.errorKey) {
+        if (state.prompt?.errorKey != null) haptics.error()
     }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        ScannerField(onScan = { vm.scan(it, online) }, placeholder = t("pos.scanPrompt", null))
+        ScannerField(onScan = { code, _ -> vm.scan(code, online) }, placeholder = t("pos.scanPrompt", null))
         state.errorKey?.let {
             Spacer(Modifier.height(8.dp))
             Text(t(it, null), style = MaterialTheme.typography.bodyMedium, color = Tokens.destructive)

@@ -13,20 +13,25 @@ struct LowStockCard: View {
         DashSection(title: i18n.t("dashboard.lowStockTitle"), state: state,
                     retry: { Task { await load() } }) {
             if rows.isEmpty {
-                Text(i18n.t("common.notFound")).font(.subheadline).foregroundStyle(.secondary)
+                DashEmptyRow()
             } else {
                 ForEach(rows) { row in
-                    HStack {
+                    HStack(spacing: Tokens.Space.sm) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(labels[row.modelId] ?? row.modelId)
+                                .font(.ui(.body))
+                                .foregroundStyle(Tokens.text)
                             if let s = row.storage, !s.isEmpty {
-                                Text(s).font(.caption).foregroundStyle(.secondary)
+                                Text(s).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                             }
                         }
-                        Spacer()
+                        Spacer(minLength: Tokens.Space.sm)
                         StatusBadge("\(row.currentCount)", color: Tokens.danger)
-                        Text("/ \(row.threshold)").font(.caption).foregroundStyle(.secondary)
+                        Text("/ \(row.threshold)")
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.muted)
                     }
+                    .frame(minHeight: Tokens.Space.rowH)
                 }
             }
         }
@@ -52,18 +57,22 @@ struct OverdueCard: View {
         DashSection(title: i18n.t("dashboard.overdueConsignmentsTitle"), state: state,
                     retry: { Task { await load() } }) {
             if rows.isEmpty {
-                Text(i18n.t("common.notFound")).font(.subheadline).foregroundStyle(.secondary)
+                DashEmptyRow()
             } else {
                 ForEach(rows) { row in
-                    HStack {
+                    HStack(spacing: Tokens.Space.sm) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(row.partnerShopName)
-                            Text(row.imei).font(.mono(12)).foregroundStyle(.secondary)
+                                .font(.ui(.body))
+                                .foregroundStyle(Tokens.text)
+                            Text(row.imei).font(.data(.regular)).foregroundStyle(Tokens.muted)
                         }
-                        Spacer()
-                        MoneyText(value: row.agreedPrice, size: 14)
+                        Spacer(minLength: Tokens.Space.sm)
+                        MoneyText(value: row.agreedPrice, size: 15)
+                            .foregroundStyle(Tokens.text)
                         StatusBadge(row.dueDisplay, color: Tokens.danger)
                     }
+                    .frame(minHeight: Tokens.Space.rowH)
                 }
             }
         }

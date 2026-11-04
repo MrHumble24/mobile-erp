@@ -38,7 +38,7 @@ struct FinShareList: View {
             Spacer()
             Text(row.value).font(.mono(14))
             Text("\(Int((row.share * 100).rounded()))%")
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(.caption2).foregroundStyle(Tokens.muted)
                 .frame(width: 38, alignment: .trailing)
             if onSelect != nil {
                 Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)

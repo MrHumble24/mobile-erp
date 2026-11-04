@@ -83,7 +83,7 @@ private struct OptionsChipsEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(i18n.t("inventory.attrOptions")).font(.caption).foregroundStyle(.secondary)
+            Text(i18n.t("inventory.attrOptions")).font(.caption).foregroundStyle(Tokens.muted)
             if !options.isEmpty {
                 WrapChips(options: options, onRemove: { opt in options.removeAll { $0 == opt } })
             }

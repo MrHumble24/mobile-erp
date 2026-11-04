@@ -52,16 +52,16 @@ private struct ReturnRowView: View {
         HStack {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.model).font(.subheadline)
-                Text(row.imei).font(.mono(12)).foregroundStyle(.secondary)
+                Text(row.imei).font(.mono(12)).foregroundStyle(Tokens.muted)
                 if let reason = row.reason, !reason.isEmpty {
-                    Text(reason).font(.caption).foregroundStyle(.secondary)
+                    Text(reason).font(.caption).foregroundStyle(Tokens.muted)
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 3) {
                 MoneyText(value: String(row.refundAmount), size: 14)
                     .foregroundStyle(Tokens.danger)
-                Text(String(row.returnedAt.prefix(10))).font(.caption2).foregroundStyle(.secondary)
+                Text(String(row.returnedAt.prefix(10))).font(.caption2).foregroundStyle(Tokens.muted)
             }
         }
     }

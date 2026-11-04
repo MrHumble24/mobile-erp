@@ -22,7 +22,7 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
-import uz.malika.erp.shared.ui.signedEmphasis
+import uz.malika.erp.shared.ui.signTint
 import uz.malika.erp.ui.theme.Tokens
 
 /** Overview: P&L tiles (tap → P&L-components drill) + trend chart + channel split. */
@@ -83,9 +83,9 @@ private fun Tiles(
         tiles = listOf(
             tile(t("dashboard.revenue", null), r.revenue),
             tile(t("dashboard.cogs", null), r.cogs),
-            tile(t("dashboard.grossProfit", null), r.grossProfit),
+            tile(t("dashboard.grossProfit", null), r.grossProfit, emphasis = signTint(r.grossProfit)),
             tile(t("dashboard.expenses", null), r.expenses, emphasis = Tokens.danger),
-            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signedEmphasis(r.netOperatingIncome), onTap = onNoi),
+            tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signTint(r.netOperatingIncome), onTap = onNoi),
             tile(t("dashboard.returnsRefunded", null), r.returnsRefunded, onTap = onReturns),
             tile(t("dashboard.unitsSold", null), r.unitsSold.toString(), money = false),
         ),

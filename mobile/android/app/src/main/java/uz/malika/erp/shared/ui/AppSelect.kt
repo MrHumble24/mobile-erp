@@ -1,5 +1,6 @@
 package uz.malika.erp.shared.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,11 +25,11 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.ui.theme.Tokens
 
 /**
- * Caldera single-select — the shared kit's dropdown, built from a read-only
- * [OutlinedTextField] + [ExposedDropdownMenuBox] with Tokens styling (radius-9,
- * bone border, signal-blue ring), matching [AppTextField]. Promoted from the
- * inventory/procurement slices (DRY). When [nullOption] is set, a leading
- * "clear" entry maps to null; `onSelect` therefore carries a nullable value.
+ * Warm Card single-select — a read-only [AppTextField]-styled anchor plus an
+ * [androidx.compose.material3.ExposedDropdownMenuBoxScope.ExposedDropdownMenu]
+ * themed to the card (radius 16, white container, zero elevation, 48 dp items,
+ * selected item tinted surface-2). When [nullOption] is set a leading "clear"
+ * entry maps to null, so `onSelect` carries a nullable value.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,15 +42,14 @@ fun <T> AppSelect(
     label: String? = null,
     placeholder: String? = null,
     enabled: Boolean = true,
-    nullOption: String? = null, // when set, a leading "clear" entry mapping to null
+    nullOption: String? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(9.dp)
     val display = value?.let(optionLabel) ?: (nullOption ?: "")
 
     Column(modifier) {
         if (label != null) {
-            Text(label, style = MaterialTheme.typography.labelLarge)
+            Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
             Spacer(Modifier.height(6.dp))
         }
         ExposedDropdownMenuBox(
@@ -62,33 +62,49 @@ fun <T> AppSelect(
                 readOnly = true,
                 enabled = enabled,
                 singleLine = true,
-                shape = shape,
+                shape = RoundedCornerShape(Tokens.Radius.inputs),
                 placeholder = placeholder?.let { { Text(it) } },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .height(52.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Tokens.ring,
+                    focusedBorderColor = Tokens.text,
                     unfocusedBorderColor = Tokens.border,
-                    focusedContainerColor = Tokens.surfaceCanvas,
-                    unfocusedContainerColor = Tokens.surfaceCanvas,
+                    cursorColor = Tokens.text,
+                    focusedContainerColor = Tokens.card,
+                    unfocusedContainerColor = Tokens.card,
+                    focusedPlaceholderColor = Tokens.muted,
+                    unfocusedPlaceholderColor = Tokens.muted,
                 ),
             )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                shape = RoundedCornerShape(Tokens.Radius.cards),
+                containerColor = Tokens.card,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+            ) {
                 if (nullOption != null) {
-                    DropdownMenuItem(
-                        text = { Text(nullOption) },
-                        onClick = { onSelect(null); expanded = false },
-                    )
+                    SelectItem(nullOption, selected = value == null) { onSelect(null); expanded = false }
                 }
                 options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(optionLabel(option)) },
-                        onClick = { onSelect(option); expanded = false },
-                    )
+                    SelectItem(optionLabel(option), selected = option == value) {
+                        onSelect(option); expanded = false
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun SelectItem(label: String, selected: Boolean, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(label, style = MaterialTheme.typography.bodyLarge) },
+        onClick = onClick,
+        modifier = if (selected) Modifier.background(Tokens.surface2) else Modifier,
+    )
 }

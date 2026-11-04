@@ -70,7 +70,7 @@ struct ExpenseDetailSheet: View {
     private func row(_ label: String, _ value: String, last: Bool = false) -> some View {
         VStack(spacing: 0) {
             HStack(alignment: .top) {
-                Text(label).font(.caption).foregroundStyle(.secondary)
+                Text(label).font(.caption).foregroundStyle(Tokens.muted)
                 Spacer()
                 Text(value).font(.subheadline).multilineTextAlignment(.trailing)
             }

@@ -19,7 +19,7 @@ struct DevNetworkView: View {
         List {
             filterRow
             if rows.isEmpty {
-                Text("No requests captured.").foregroundStyle(.secondary)
+                Text("No requests captured.").foregroundStyle(Tokens.muted)
             }
             ForEach(rows) { entry in
                 NavigationLink { DevNetworkDetailView(entry: entry) } label: { row(entry) }
@@ -50,10 +50,10 @@ struct DevNetworkView: View {
                 DevCapsule(text: e.status.map(String.init) ?? "FAIL", color: e.outcome.color)
                 Spacer()
                 Text(e.durationMs.map { "\($0) ms" } ?? "—")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(.caption2).foregroundStyle(Tokens.muted)
             }
             Text(path(e.url)).font(.mono(12)).lineLimit(1).truncationMode(.middle)
-            Text(DevTime.string(e.start)).font(.caption2).foregroundStyle(.secondary)
+            Text(DevTime.string(e.start)).font(.caption2).foregroundStyle(Tokens.muted)
         }
     }
 

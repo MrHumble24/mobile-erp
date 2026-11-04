@@ -43,9 +43,10 @@ struct DailyClosingTab: View {
         [
             MetricTile(label: i18n.t("dashboard.revenue"), value: reportMoney(r.revenue),
                        subtext: "\(r.unitsSold) \(i18n.t("dashboard.unitsSold"))"),
-            MetricTile(label: i18n.t("dashboard.grossProfit"), value: reportMoney(r.grossProfit)),
+            MetricTile(label: i18n.t("dashboard.grossProfit"), value: reportMoney(r.grossProfit),
+                       emphasis: moneyTint(.profit, r.grossProfit)),
             MetricTile(label: i18n.t("dashboard.expenses"), value: reportMoney(r.expenses),
-                       emphasis: Tokens.danger),
+                       emphasis: moneyTint(.expense, r.expenses)),
             MetricTile(label: i18n.t("nav.consignments"),
                        value: "+\(r.newConsignments) / -\(r.settledConsignments)"),
         ]

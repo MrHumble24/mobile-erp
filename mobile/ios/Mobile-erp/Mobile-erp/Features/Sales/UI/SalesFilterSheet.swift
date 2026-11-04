@@ -83,7 +83,7 @@ struct SalesFilterSheet: View {
                 if hasFilters {
                     Section {
                         Button(role: .destructive) {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            Haptic.tick.play()
                             model.filters = SaleFilters()
                             useRange = false
                             model.reload()
@@ -100,7 +100,7 @@ struct SalesFilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.apply", default: "Apply")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         model.reload()
                         dismiss()
                     }

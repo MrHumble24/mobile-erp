@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Cart totals + the checkout action. Disabled until every line has a positive
-/// price. One tap checks out all lines (one sale per device).
+/// Cart total + the single checkout action. The total is a 24 pt mono figure on
+/// a white card; the full-width orange pay button is the one `action` on the
+/// screen. Disabled until every line has a positive price.
 struct PosCheckoutBar: View {
     let model: PosViewModel
     @Environment(I18n.self) private var i18n
@@ -12,30 +13,29 @@ struct PosCheckoutBar: View {
     }
 
     var body: some View {
-        Section {
-            LabeledContent(i18n.t("pos.lineCount")) { Text("\(cart.count)") }
-            LabeledContent(i18n.t("pos.subtotal")) {
-                MoneyText(value: NSDecimalNumber(decimal: cart.subtotal).stringValue)
-            }
-            Button(action: {
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                model.checkout()
-            }) {
-                if model.busy {
-                    ProgressView().frame(maxWidth: .infinity).frame(height: 24)
-                } else {
-                    Label(i18n.t("pos.checkoutButton"), systemImage: "checkmark.circle.fill")
-                        .font(.headline.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 24)
+        VStack(spacing: Tokens.Space.lg) {
+            AppCard {
+                HStack {
+                    Text(i18n.t("pos.subtotal"))
+                        .font(.ui(.body))
+                        .foregroundStyle(Tokens.muted)
+                    Spacer()
+                    Text(MoneyText.format(NSDecimalNumber(decimal: cart.subtotal).stringValue))
+                        .font(.data(.large))
+                        .foregroundStyle(Tokens.text)
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(Tokens.onInk)
-            .tint(Tokens.ink)
+            Button {
+                model.checkout()
+            } label: {
+                if model.busy {
+                    ProgressView().tint(Tokens.onAction).frame(maxWidth: .infinity)
+                } else {
+                    Text(i18n.t("pos.checkoutButton")).frame(maxWidth: .infinity)
+                }
+            }
+            .buttonStyle(.pillPrimary)
             .disabled(model.busy || !allPriced)
-            .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-            .listRowBackground(Color.clear)
         }
     }
 }

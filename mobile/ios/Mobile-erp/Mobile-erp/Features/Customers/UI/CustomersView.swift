@@ -29,7 +29,7 @@ struct CustomersView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showFilters = true
                 } label: {
                     Label(
@@ -107,7 +107,7 @@ private struct CustomerRow: View {
                     if let phone = customer.phone {
                         Text(phone)
                             .font(.mono(12))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                 }
                 Spacer()
@@ -117,7 +117,7 @@ private struct CustomerRow: View {
             HStack(spacing: 8) {
                 Text(i18n.t("pos.purchaseCount", ["count": String(customer.purchaseCount)]))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                 Spacer()
                 if customer.activeWarranties > 0 {
                     StatusBadge(i18n.t("pos.warrantyCount", ["count": String(customer.activeWarranties)]),

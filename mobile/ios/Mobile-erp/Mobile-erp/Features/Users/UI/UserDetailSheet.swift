@@ -113,7 +113,7 @@ struct UserDetailSheet: View {
     private func labeled(_ key: String, _ binding: Binding<String>,
                          keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(i18n.t(key)).font(.caption).foregroundStyle(.secondary)
+            Text(i18n.t(key)).font(.caption).foregroundStyle(Tokens.muted)
             TextField(i18n.t(key), text: binding)
                 .keyboardType(keyboard)
                 .modifier(UserFieldSanitizer(keyboard: keyboard, text: binding))

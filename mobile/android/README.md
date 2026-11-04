@@ -51,10 +51,40 @@ into assets by `app/build.gradle.kts` — a single source, never copied here. De
 locale is Uzbek, falling back to English.
 
 ## Theme
-The Caldera design system (near-monochrome, `client/src/app/styles/index.css`) is
-mirrored 1:1 in `ui/theme/Tokens.kt`. Fonts (Plus Jakarta Sans, Inter, Sometype
-Mono) are bundled as OFL variable TTFs in `res/font/`. Light theme only; dynamic
-color is disabled. Feature screens use the `shared/ui` kit, never raw Material styling.
+The **Warm Card** design system is the source of truth in `DESIGN.md` (repo root)
+and is mirrored in `ui/theme/` — see `ui/theme/README.md` for what owns what. A
+warm tinted ground with white, borderless, shadowless cards; one action orange
+that only ever marks something pressable; status hues the only other colour. Both
+light and dark ship (dark status values resolved to WCAG AA on the dark card).
+Dynamic Color is disabled — the warm palette is the brand.
+
+- **Fonts** (OFL variable TTFs in `res/font/`): **Onest** for all UI text,
+  **Sometype Mono** for IMEI / money / counts (tabular figures). Each weight loads
+  the one variable TTF via a `wght` `FontVariation` setting. Variation settings
+  apply on API 26+; on API 24–25 (the `minSdk` floor) the variable font falls back
+  to its default instance — the ramp still renders at the right sizes/spacing.
+  License texts live in `mobile/android/licenses/{onest,sometype_mono}_ofl.txt`
+  (they can't sit in `res/font/`, which aapt only allows font resources in).
+- **Press feedback, not a loud ripple.** `MalikaTheme` provides a custom
+  `shared/ui/PressIndication` as `LocalIndication`: on press a node scales to 0.98
+  and a surface-2 wash fades in over 120 ms, easing back with no bounce. Every
+  `clickable` surface and the kit's `PillButton` (built on `Surface(onClick)`) pick
+  it up. Material internals that ignore `LocalIndication` (IconButton, Switch,
+  Checkbox, DropdownMenuItem, NavigationRailItem, ExtendedFAB) keep a ripple, but a
+  muted monochrome one — `LocalRippleConfiguration` is retinted to `Tokens.text` at
+  low alpha, so no loud default ripple and no orange ripple remain.
+
+- **Motion & haptics** (DESIGN.md). The one authored motion is the **capture
+  spring**: a scanned unit springs into the POS cart / intake draft list from the
+  scan field while the rest dims for a beat (`shared/ui/CaptureSpring.kt`). Nav
+  transitions are Material shared-axis X (30 dp slide + fade, 220 ms). Both honour
+  reduce motion (`ANIMATOR_DURATION_SCALE == 0` → a 150 ms fade/crossfade). No
+  other entrance or per-section animation. Haptics (`shared/lib/Haptics.kt`,
+  `rememberHaptics()`): `tick` on a landed scan, `success` on a completed
+  sale/batch, `error` on a duplicate or rejected scan.
+
+Feature screens use the `shared/ui` kit and read `Tokens.*`, never raw Material
+styling or hex. The old Ink palette (ADR 0020) is replaced by ADR 0022.
 
 ## Launcher icon
 Ported from the iOS brand icon (`mobile/ios/Mobile-erp/Mobile-erp/AppIcon.icon`): a

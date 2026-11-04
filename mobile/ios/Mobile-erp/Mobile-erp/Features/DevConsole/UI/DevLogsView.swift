@@ -26,7 +26,7 @@ struct DevLogsView: View {
             .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
 
             if rows.isEmpty {
-                Text("No log lines.").foregroundStyle(.secondary)
+                Text("No log lines.").foregroundStyle(Tokens.muted)
             }
             ForEach(rows) { row($0) }
         }
@@ -47,9 +47,9 @@ struct DevLogsView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 DevCapsule(text: e.level.label, color: e.level.color)
-                Text(e.tag).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(e.tag).font(.caption.weight(.semibold)).foregroundStyle(Tokens.muted)
                 Spacer()
-                Text(DevTime.string(e.date)).font(.caption2).foregroundStyle(.secondary)
+                Text(DevTime.string(e.date)).font(.caption2).foregroundStyle(Tokens.muted)
             }
             Text(e.message).font(.callout)
         }

@@ -47,7 +47,7 @@ struct FinTrendChart: View {
             HStack {
                 Text(title)
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                 Spacer()
                 if let selected = activePoint {
                     Text("\(formatDate(selected.bucket)): \(reportMoney(valueFor(selected)))")
@@ -66,7 +66,7 @@ struct FinTrendChart: View {
                     .monospacedDigit()
                 Text(modeLabel)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
     }
@@ -75,7 +75,7 @@ struct FinTrendChart: View {
         HStack(spacing: 6) {
             ForEach(MetricMode.allCases) { m in
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     mode = m
                     selectedBucket = nil
                 } label: {
@@ -140,7 +140,7 @@ struct FinTrendChart: View {
                 .foregroundStyle(.tertiary)
             Text(i18n.t("reports.empty", default: "No data for this period"))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
         }
         .frame(maxWidth: .infinity, minHeight: 160)
     }

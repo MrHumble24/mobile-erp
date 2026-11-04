@@ -13,10 +13,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +37,7 @@ import uz.malika.erp.features.devconsole.ui.DevQuickLogin
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.OfflineBanner
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
@@ -133,20 +132,5 @@ fun LoginScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun OfflineBanner(message: String) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(Tokens.plaster, RoundedCornerShape(9.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(Icons.Outlined.CloudOff, contentDescription = null, tint = Tokens.slate)
-        Spacer(Modifier.height(0.dp))
-        Text("  $message", style = MaterialTheme.typography.bodySmall)
     }
 }

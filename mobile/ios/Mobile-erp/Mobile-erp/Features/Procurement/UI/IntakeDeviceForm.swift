@@ -54,7 +54,7 @@ struct IntakeDeviceForm: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text(i18n.t("inventory.imei1", default: "IMEI 1"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(Tokens.muted)
                 Spacer()
                 Toggle(i18n.t("inventory.dualSim", default: "Dual SIM"), isOn: $dualSim)
                     .toggleStyle(AppSwitchStyle())
@@ -65,7 +65,7 @@ struct IntakeDeviceForm: View {
 
             if dualSim {
                 Text(i18n.t("inventory.imei2", default: "IMEI 2"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(Tokens.muted)
                 ScanOrValueField(text: $imei2,
                                  placeholder: i18n.t("inventory.imei2", default: "IMEI 2"),
                                  onScan: fill)

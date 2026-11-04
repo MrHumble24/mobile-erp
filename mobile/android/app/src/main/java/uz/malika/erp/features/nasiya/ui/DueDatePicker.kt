@@ -32,7 +32,9 @@ import uz.malika.erp.features.nasiya.model.isoDateMillis
 import uz.malika.erp.features.nasiya.model.isoDayUtc
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.ButtonVariant
+import uz.malika.erp.shared.ui.DatePickerDialogShape
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.warmDatePickerColors
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -55,11 +57,11 @@ fun DueDatePicker(
     val shape = RoundedCornerShape(Tokens.radiusInputs)
 
     Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
         Spacer(Modifier.height(6.dp))
         Surface(
             shape = shape,
-            color = Tokens.surfaceCanvas,
+            color = Tokens.card,
             modifier = Modifier
                 .fillMaxWidth()
                 .border(BorderStroke(1.dp, Tokens.border), shape)
@@ -74,15 +76,18 @@ fun DueDatePicker(
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                 )
-                Icon(Icons.Outlined.DateRange, contentDescription = null, tint = Tokens.slate)
+                Icon(Icons.Outlined.DateRange, contentDescription = null, tint = Tokens.muted)
             }
         }
     }
 
     if (open) {
         val state = rememberDatePickerState(initialSelectedDateMillis = isoDateMillis(value))
+        val colors = warmDatePickerColors()
         DatePickerDialog(
             onDismissRequest = { open = false },
+            shape = DatePickerDialogShape,
+            colors = colors,
             confirmButton = {
                 PillButton(
                     text = t("common.save", null),
@@ -96,7 +101,7 @@ fun DueDatePicker(
                 PillButton(t("common.cancel", null), { open = false }, variant = ButtonVariant.GHOST)
             },
         ) {
-            DatePicker(state = state)
+            DatePicker(state = state, colors = colors)
         }
     }
 }

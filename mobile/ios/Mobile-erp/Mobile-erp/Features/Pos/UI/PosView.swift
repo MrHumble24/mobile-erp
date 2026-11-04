@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// POS terminal: scan IMEIs into a multi-device cart, set each line's price and
-/// warranty, attach a customer, then check out (one sale per device). Works
-/// offline — lookups come from the cache and each sale queues to the outbox.
-/// Completed sales open the receipt result sheet.
+/// POS terminal (Kassa) — the Warm Card first viewport: a warm ground, the white
+/// scan card, each unit a white card, a mono total, and the one orange pay
+/// button. Scan IMEIs into a multi-device cart, price and warrant each line,
+/// attach a customer, then check out (one sale per device). Works offline —
+/// lookups come from the cache and each sale queues to the outbox.
 struct PosView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -11,38 +12,44 @@ struct PosView: View {
 
     var body: some View {
         @Bindable var model = model
-        Form {
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                 ScannerField(placeholder: i18n.t("pos.scanPrompt")) { model.scan($0) }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
-            }
 
-            if let key = model.errorKey {
-                Section {
-                    PosScanErrorRow(key: key) { model.clearError() }
+                if let key = model.errorKey {
+                    AppCard { PosScanErrorRow(key: key) { model.clearError() } }
                 }
-            }
 
-            if model.cart.isEmpty {
-                Section {
+                if model.cart.isEmpty {
                     PosEmptyScanLanding()
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
-                }
-                .listRowBackground(Color.clear)
-            } else {
-                Section(i18n.t("pos.lineCount")) {
-                    ForEach(model.cart.lines) { line in
-                        PosCartLineRow(cart: model.cart, line: line)
+                } else {
+                    Text(i18n.t("pos.lineCount"))
+                        .font(.ui(.caption))
+                        .foregroundStyle(Tokens.muted)
+                    VStack(spacing: Tokens.Space.lg) {
+                        ForEach(model.cart.lines) { line in
+                            PosCartLineRow(cart: model.cart, line: line)
+                                .captureSpringRow()
+                        }
                     }
+                    .captureSpringList(model.cart.lines.map(\.id), count: model.cart.count)
+                    PosCustomerPanel(model: model)
+                    PosCheckoutBar(model: model)
                 }
-                PosCustomerPanel(model: model)
-                PosCheckoutBar(model: model)
             }
+            .padding(.horizontal, Tokens.Space.gutter)
+            .padding(.vertical, Tokens.Space.lg)
         }
         .scrollDismissesKeyboard(.interactively)
-        .animation(.snappy(duration: 0.25), value: model.cart.isEmpty)
+        .background(Tokens.ground)
         .navigationTitle(i18n.t("pos.title"))
+        // Capture spring (list insertions) + the haptic vocabulary: a completed
+        // sale is success, a rejected/duplicate scan is error. The scan itself
+        // ticks in ScannerField.
+        .sensoryFeedback(trigger: model.completed?.count ?? 0) { old, new in new > old ? .success : nil }
+        .sensoryFeedback(trigger: model.pendingScan?.errorKey) { _, new in new != nil ? .error : nil }
         .sheet(item: Binding(get: { model.completed.map(CompletedSalesBox.init) },
                              set: { if $0 == nil { model.dismissResult() } })) { box in
             PosCheckoutResultSheet(sales: box.sales) { model.dismissResult() }

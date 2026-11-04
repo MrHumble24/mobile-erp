@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Ink dark: window background / status-bar base before Compose mounts.
-         Dark status bar means light icons, so windowLightStatusBar is false. -->
+    <!-- Warm dark: window background / bar bases before Compose mounts. Dark bars
+         mean light icons, so windowLightStatusBar is false; the bars are
+         transparent so the warm-dark ground runs under them. -->
     <style name="Theme.MalikaErp" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/ink_bg</item>
-        <item name="android:statusBarColor">@color/ink_bg</item>
+        <item name="android:windowBackground">@color/warm_ground_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

@@ -105,7 +105,7 @@ private struct RecurrenceRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.categoryName).font(.body)
                 Text("\(i18n.t(freqKey)) · \(i18n.t("expenses.nextDueAt")): \(ExpenseDate.display(row.nextDueAt))")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(Tokens.muted)
             }
             Spacer()
             MoneyText(value: row.amount, size: 15)

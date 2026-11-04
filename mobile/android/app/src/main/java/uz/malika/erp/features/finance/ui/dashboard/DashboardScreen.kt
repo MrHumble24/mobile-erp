@@ -18,16 +18,25 @@ import uz.malika.erp.features.finance.model.FinanceReadsViewModel
 import uz.malika.erp.features.finance.ui.components.Async
 import uz.malika.erp.features.finance.ui.components.financeViewModel
 import uz.malika.erp.features.finance.ui.components.rememberAsync
+import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Management dashboard (route `dashboard`, auth-only). Each section is gated by
  * the permission its endpoint needs, so a cashier sees only its quick actions,
- * not the finance KPIs. Tables sit side-by-side on tablet widths.
+ * not the finance KPIs. Tables sit side-by-side on tablet widths. A role that
+ * may see none of it gets the shared empty state, not a blank ground (iOS parity).
  */
+private val DASHBOARD_PERMISSIONS =
+    listOf("report.finance", "device.read", "consignment.read", "sale.create", "sale.read", "qc.read")
 @Composable
 fun DashboardScreen(container: AppContainer) {
     val can = LocalCan.current
+    if (DASHBOARD_PERMISSIONS.none(can)) {
+        EmptyView(LocalT.current("common.notFound", null))
+        return
+    }
     val vm = financeViewModel(container) { FinanceReadsViewModel(it) }
 
     val labelsHandle = rememberAsync { vm.deviceModelLabels() }

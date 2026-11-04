@@ -29,10 +29,10 @@ struct SaleDetailSheet: View {
                         HStack(spacing: 8) {
                             Text("IMEI: \(sale.device.imei)")
                                 .font(.mono(13, weight: .medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Button {
                                 UIPasteboard.general.string = sale.device.imei
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                Haptic.tick.play()
                                 withAnimation(.snappy(duration: 0.2)) { copied = true }
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                     withAnimation { copied = false }
@@ -47,7 +47,7 @@ struct SaleDetailSheet: View {
                         if let imei2 = sale.device.imei2, !imei2.isEmpty {
                             Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
                                 .font(.mono(13, weight: .medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                     .padding(.vertical, 4)

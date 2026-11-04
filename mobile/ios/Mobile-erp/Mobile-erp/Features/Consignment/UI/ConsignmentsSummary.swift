@@ -17,7 +17,7 @@ struct ConsignmentsSummary: View {
                             Label(i18n.t("consignments.statsOutstanding", default: "Outstanding Partner Debt"),
                                   systemImage: "banknote")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                             Spacer()
                         }
 
@@ -27,7 +27,7 @@ struct ConsignmentsSummary: View {
 
                         Text(i18n.t("consignments.outstandingDesc", default: "Total unpaid balance currently due from partner shops."))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -68,7 +68,7 @@ struct ConsignmentsSummary: View {
                                     .foregroundStyle(Tokens.ink)
                                 Text(i18n.t("consignments.openSubtitle", default: "Active consignment inventory"))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                             Spacer()
                             Text("\(s.openCount)")
@@ -82,12 +82,12 @@ struct ConsignmentsSummary: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(i18n.t("consignments.statsTotal", default: "Total Consignments Recorded"))
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Tokens.muted)
                             }
                             Spacer()
                             Text("\(s.total)")
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                 }

@@ -19,7 +19,7 @@ struct DeviceBarcode: View {
                         .frame(width: CGFloat(w) * 1.5, height: 36)
                 }
             }
-            Text(imei).font(.mono(11)).tracking(2).foregroundStyle(.secondary)
+            Text(imei).font(.mono(11)).tracking(2).foregroundStyle(Tokens.muted)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -66,11 +66,11 @@ struct DeviceSpecsGrid: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 14))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
                 .frame(width: 20)
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             Spacer()
             Text(value?.isEmpty == false ? value! : "—")
                 .font(.subheadline.weight(.semibold))
@@ -95,7 +95,7 @@ private struct MarginRow: View {
             : 0
         return HStack {
             Text("\(i18n.t("inventory.landedCost")): \(MoneyText.format(landedCost))")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(Tokens.muted)
             Spacer()
             Text("\(i18n.t("inventory.margin")): \(positive ? "+" : "")\(MoneyText.format(NSDecimalNumber(decimal: margin).stringValue)) (\(String(format: "%.1f", percent))%)")
                 .font(.caption.weight(.bold))
@@ -126,7 +126,7 @@ struct QcSummarySection: View {
                 LabeledContent(i18n.t("qc.batteryHealth"), value: "\(battery)%")
             }
         } else {
-            Text(i18n.t("inventory.noQc")).foregroundStyle(.secondary)
+            Text(i18n.t("inventory.noQc")).foregroundStyle(Tokens.muted)
         }
     }
 }
@@ -137,16 +137,16 @@ struct DeviceHistoryList: View {
 
     var body: some View {
         if history.isEmpty {
-            Text("—").foregroundStyle(.secondary)
+            Text("—").foregroundStyle(Tokens.muted)
         } else {
             ForEach(history) { h in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(h.fromStatusCode.map { "\($0) → \(h.toStatusCode)" } ?? h.toStatusCode)
                         .font(.subheadline.weight(.semibold))
                     if let reason = h.reason, !reason.isEmpty {
-                        Text("\"\(reason)\"").font(.caption).italic().foregroundStyle(.secondary)
+                        Text("\"\(reason)\"").font(.caption).italic().foregroundStyle(Tokens.muted)
                     }
-                    Text(h.changedAt).font(.caption2).foregroundStyle(.secondary)
+                    Text(h.changedAt).font(.caption2).foregroundStyle(Tokens.muted)
                 }
             }
         }

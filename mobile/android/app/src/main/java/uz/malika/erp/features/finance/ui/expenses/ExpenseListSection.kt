@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import uz.malika.erp.AppContainer
 import uz.malika.erp.app.LocalCan
@@ -35,7 +36,8 @@ import uz.malika.erp.features.finance.data.Expense
 import uz.malika.erp.features.finance.data.ExpenseSort
 import uz.malika.erp.features.finance.model.ExpensesViewModel
 import uz.malika.erp.features.finance.model.buildExpensesCsv
-import uz.malika.erp.features.finance.model.isoDate
+import uz.malika.erp.features.finance.model.isoRangeFrom
+import uz.malika.erp.features.finance.model.isoRangeTo
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.shareTextFile
 import uz.malika.erp.shared.ui.DateRange
@@ -132,7 +134,7 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
             onSort = vm::setSort,
             onMin = { min = it; vm.setAmount(min.toDoubleOrNull(), max.toDoubleOrNull()) },
             onMax = { max = it; vm.setAmount(min.toDoubleOrNull(), max.toDoubleOrNull()) },
-            onRange = { range = it; vm.setRange(isoDate(it.startMillis), isoDate(it.endMillis)) },
+            onRange = { range = it; vm.setRange(isoRangeFrom(it.startMillis), isoRangeTo(it.endMillis)) },
             canReset = activeFilters > 0 || search.isNotBlank(),
             onReset = {
                 search = ""; min = ""; max = ""; range = DateRange()
@@ -184,7 +186,14 @@ private fun Header(canManage: Boolean, onCategories: () -> Unit, onNew: () -> Un
             IconButton(onClick = { menu = true }) {
                 Icon(Icons.Filled.MoreVert, contentDescription = t("common.actions", null), tint = Tokens.foreground)
             }
-            DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            DropdownMenu(
+                expanded = menu,
+                onDismissRequest = { menu = false },
+                shape = RoundedCornerShape(Tokens.Radius.cards),
+                containerColor = Tokens.card,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+            ) {
                 DropdownMenuItem(
                     text = { Text(t("expenses.categories", null)) },
                     onClick = { menu = false; onCategories() },

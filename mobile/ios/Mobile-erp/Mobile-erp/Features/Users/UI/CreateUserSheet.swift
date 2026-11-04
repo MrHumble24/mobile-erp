@@ -29,7 +29,7 @@ struct CreateUserSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("users.fullName"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("users.fullName"), text: $firstName)
                     }
                     .padding(.vertical, 2)
@@ -37,7 +37,7 @@ struct CreateUserSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("common.phone"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("common.phone"), text: $phone)
                             .keyboardType(.phonePad)
                             .sanitizePhone($phone)
@@ -47,7 +47,7 @@ struct CreateUserSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("users.email"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         TextField(i18n.t("users.email"), text: $email)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
@@ -59,7 +59,7 @@ struct CreateUserSheet: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(i18n.t("users.password"))
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                         SecureField(i18n.t("users.password"), text: $password)
                     }
                     .padding(.vertical, 2)

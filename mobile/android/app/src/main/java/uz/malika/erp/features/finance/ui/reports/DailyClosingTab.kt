@@ -22,6 +22,7 @@ import uz.malika.erp.features.finance.ui.components.BarDatum
 import uz.malika.erp.features.finance.ui.components.DateField
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
+import uz.malika.erp.shared.ui.signTint
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
@@ -54,7 +55,7 @@ private fun Body(r: DailyClosingReport) {
                     subtext = "${r.unitsSold} ${t("dashboard.unitsSold", null)}",
                 )
             },
-            { m -> MetricTile(t("dashboard.grossProfit", null), r.grossProfit, m) },
+            { m -> MetricTile(t("dashboard.grossProfit", null), r.grossProfit, m, emphasis = signTint(r.grossProfit)) },
             { m -> MetricTile(t("dashboard.expenses", null), r.expenses, m) },
             { m ->
                 MetricTile(

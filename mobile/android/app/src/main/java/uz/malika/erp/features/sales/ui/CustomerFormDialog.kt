@@ -10,7 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
@@ -55,9 +55,15 @@ fun CustomerFormDialog(vm: CustomersViewModel, target: FormTarget, online: Boole
 
     AlertDialog(
         onDismissRequest = { if (!ui.busy) { vm.resetForm(); onClose() } },
-        shape = RoundedCornerShape(20.dp),
-        containerColor = Tokens.surfaceCanvas,
-        title = { Text(t(if (target.id == null) "sales.newCustomer" else "common.edit", null)) },
+        shape = RoundedCornerShape(Tokens.Radius.large),
+        containerColor = Tokens.card,
+        tonalElevation = 0.dp,
+        title = {
+            Text(
+                t(if (target.id == null) "sales.newCustomer" else "common.edit", null),
+                style = MaterialTheme.typography.titleMedium,
+            )
+        },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 AppFormField(t("sales.customerName", null), name, { name = it; nameError = null }, enabled = !ui.busy, error = nameError)
@@ -82,9 +88,12 @@ fun CustomerFormDialog(vm: CustomersViewModel, target: FormTarget, online: Boole
             )
         },
         dismissButton = {
-            TextButton(onClick = { vm.resetForm(); onClose() }, enabled = !ui.busy) {
-                Text(t("common.cancel", null))
-            }
+            PillButton(
+                text = t("common.cancel", null),
+                onClick = { vm.resetForm(); onClose() },
+                variant = ButtonVariant.SECONDARY,
+                enabled = !ui.busy,
+            )
         },
     )
 }

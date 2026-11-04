@@ -12,7 +12,7 @@ struct ConsignmentsFilterBar: View {
     var body: some View {
         VStack(spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(Tokens.muted)
                 TextField(i18n.t("consignments.searchPlaceholder"), text: $model.search)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -74,7 +74,7 @@ private struct DateField: View {
             get: { Self.fmt.date(from: value) ?? Date() },
             set: { value = Self.fmt.string(from: $0); onCommit() })
         VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(label).font(.caption).foregroundStyle(Tokens.muted)
             DatePicker("", selection: binding, displayedComponents: .date)
                 .labelsHidden()
         }

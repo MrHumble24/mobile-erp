@@ -51,7 +51,7 @@ struct PosReceiptSheet: View {
                         .foregroundStyle(Tokens.ink)
                     Text(i18n.t("pos.storeLocation"))
                         .font(.mono(11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .padding(.bottom, 6)
 
@@ -77,12 +77,12 @@ struct PosReceiptSheet: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                     Text(sale.imei)
                         .font(.mono(11))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                         .frame(maxWidth: .infinity, alignment: .center)
                     if let imei2 = sale.imei2, !imei2.isEmpty {
                         Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
                             .font(.mono(10))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Tokens.muted)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
@@ -110,7 +110,7 @@ struct PosReceiptSheet: View {
 
                 Text(i18n.t("pos.thankYou", default: "Thank you for your purchase!"))
                     .font(.mono(11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                     .padding(.top, 4)
             }
             .padding(20)
@@ -149,7 +149,7 @@ struct PosReceiptSheet: View {
             HStack(spacing: 12) {
                 Button {
                     ReceiptPrinting.copy(receiptText)
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     withAnimation(.snappy(duration: 0.2)) { copied = true }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         withAnimation { copied = false }
@@ -166,7 +166,7 @@ struct PosReceiptSheet: View {
 
                 Button {
                     ReceiptPrinting.print(receiptText, jobName: i18n.t("pos.receiptTitle", default: "Receipt"))
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                 } label: {
                     Label(i18n.t("pos.printCheque", default: "Print 58mm"), systemImage: "printer")
                         .font(.subheadline.weight(.medium))
@@ -193,7 +193,7 @@ struct PosReceiptSheet: View {
         HStack(alignment: .top) {
             Text(label)
                 .font(.mono(11))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Tokens.muted)
             Spacer(minLength: 8)
             Text(value)
                 .font(.mono(11, weight: bold ? .bold : .medium))

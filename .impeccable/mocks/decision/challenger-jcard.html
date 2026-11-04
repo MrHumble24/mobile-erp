@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kassa — Ballpoint Tracklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { margin: 0; background: #777; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: "Work Sans", sans-serif; }
+  #frame {
+    width: 390px; height: 844px; overflow: hidden; position: relative;
+    background-color: #FFFFFF;
+    background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 39px, #BFD3EA 39px, #BFD3EA 40px);
+    background-position: 0 72px;
+  }
+  .status { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 13px; font-weight: 500; color: #1F3A93; }
+  .status .glyphs { display: flex; gap: 5px; align-items: center; }
+  .status .glyphs svg { stroke: #1F3A93; fill: none; stroke-width: 2; }
+  .title { font-family: "Patrick Hand SC", cursive; font-size: 26px; color: #1F3A93; padding: 6px 16px 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .stripe { height: 6px; background: #D81E05; margin: 0 16px 10px; }
+  .row { height: 40px; display: flex; align-items: center; padding: 0 16px; }
+  .scan { justify-content: space-between; border-bottom: 2px solid #1F3A93; margin: 0 16px; width: auto; padding: 0; }
+  .scan span { font-family: "Work Sans"; font-size: 13px; color: #9A9A9A; }
+  .scan svg { stroke: #1F3A93; fill: none; stroke-width: 1.6; }
+  .head { font-family: "Patrick Hand SC", cursive; font-size: 18px; color: #1F3A93; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #1F3A93; margin: 14px 16px 0; padding-bottom: 2px; }
+  .unit { padding: 0 16px; }
+  .unit .line { height: 40px; display: flex; align-items: center; justify-content: space-between; }
+  .unit .name { font-family: "Patrick Hand SC", cursive; font-size: 17px; color: #1F3A93; text-transform: uppercase; letter-spacing: 0.5px; }
+  .unit .price { font-family: "Patrick Hand SC", cursive; font-size: 17px; color: #1F3A93; }
+  .unit .imei { font-family: "Work Sans"; font-size: 11px; color: #9A9A9A; margin-top: -8px; margin-bottom: 4px; }
+  .unit.tentative .name, .unit.tentative .price { color: #9A9A9A; }
+  .total { height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-top: 4px; }
+  .total .label { font-family: "Patrick Hand SC", cursive; font-size: 20px; color: #1F3A93; text-transform: uppercase; letter-spacing: 1px; }
+  .total .amt { font-family: "Patrick Hand SC", cursive; font-size: 20px; color: #1F3A93; }
+  .customer { padding: 2px 16px 0; font-family: "Work Sans"; font-size: 12px; color: #9A9A9A; }
+  .pay { position: absolute; left: 16px; right: 16px; bottom: 96px; height: 46px; background: #D81E05; color: #FFFFFF; font-family: "Work Sans"; font-weight: 500; font-size: 15px; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+  .tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 72px; background: #FFFFFF; border-top: 2px solid #1F3A93; display: flex; }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .tab svg { stroke: #9A9A9A; fill: none; stroke-width: 1.8; }
+  .tab span { font-family: "Work Sans"; font-size: 11px; color: #9A9A9A; }
+  .tab.active svg { stroke: #1F3A93; }
+  .tab.active span { color: #1F3A93; font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="frame">
+  <div class="status">
+    <span>12:47</span>
+    <span class="glyphs">
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M1 11h2M5 8h2v3H5zM9 5h2v6H9zM13 2h2v9h-2z"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 10l0 0M3 6a7 7 0 0110 0M5.5 8a4 4 0 015 0"/></svg>
+      <svg width="22" height="12" viewBox="0 0 22 12"><rect x="1" y="2" width="17" height="8" rx="1.5"/><rect x="3" y="4" width="11" height="4" fill="#1F3A93" stroke="none"/><path d="M20 4v4"/></svg>
+    </span>
+  </div>
+
+  <div class="title">Kassa</div>
+  <div class="stripe"></div>
+
+  <div class="row scan">
+    <span>IMEI skanerlang yoki kiriting (15 xona)</span>
+    <svg width="20" height="18" viewBox="0 0 20 18"><rect x="1" y="4" width="18" height="12" rx="2"/><path d="M6 4l2-3h4l2 3"/><circle cx="10" cy="10" r="3.2"/></svg>
+  </div>
+
+  <div class="head">Tanlangan qurilma</div>
+
+  <div class="unit">
+    <div class="line"><span class="name">Samsung Galaxy S23 Ultra 256GB</span><span class="price">$1,250</span></div>
+    <div class="imei">IMEI 358511020749606</div>
+    <div class="line"><span class="name">Apple iPhone 15 Pro 128GB</span><span class="price">$1,100</span></div>
+    <div class="imei">IMEI 357111000222333</div>
+  </div>
+
+  <div class="unit tentative">
+    <div class="line"><span class="name">Apple iPhone 18 Pro Max</span><span class="price">...</span></div>
+  </div>
+
+  <div class="total">
+    <span class="label">Jami</span>
+    <span class="amt">$2,350</span>
+  </div>
+  <div class="customer">Oddiy xaridor · 14 kun kafolat</div>
+
+  <div class="pay">Sotuvni yakunlash</div>
+
+  <div class="tabbar">
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10"/></svg>
+      <span>Bosh sahifa</span>
+    </div>
+    <div class="tab active">
+      <svg width="22" height="22" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 14h4"/></svg>
+      <span>Kassa</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+      <span>Savdolar</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7M12 11v10"/></svg>
+      <span>Ombor</span>
+    </div>
+    <div class="tab">
+      <svg width="22" height="22" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+      <span>Yana</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

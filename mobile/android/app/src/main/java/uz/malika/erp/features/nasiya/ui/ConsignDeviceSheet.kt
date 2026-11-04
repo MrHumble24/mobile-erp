@@ -89,7 +89,7 @@ fun ConsignDeviceSheet(
 
             Text(t("consignments.device", null), style = MaterialTheme.typography.labelLarge)
             ScannerField(
-                onScan = { code -> rows.add(RowInput(code.trim())) },
+                onScan = { code, _ -> rows.add(RowInput(code.trim())) },
                 placeholder = t("consignments.searchPlaceholder", null),
                 autofocus = false,
             )

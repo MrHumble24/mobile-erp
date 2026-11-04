@@ -9,7 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +23,7 @@ import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.SegmentOption
 import uz.malika.erp.shared.ui.SegmentedControl
@@ -49,9 +49,10 @@ fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, toaster: T
 
     AlertDialog(
         onDismissRequest = { if (!ui.busy) { vm.resetReturn(); onClose() } },
-        shape = RoundedCornerShape(20.dp),
-        containerColor = Tokens.surfaceCanvas,
-        title = { Text(t("sales.returnDevice", null)) },
+        shape = RoundedCornerShape(Tokens.Radius.large),
+        containerColor = Tokens.card,
+        tonalElevation = 0.dp,
+        title = { Text(t("sales.returnDevice", null), style = MaterialTheme.typography.titleMedium) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 AppFormField(
@@ -95,9 +96,12 @@ fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, toaster: T
             )
         },
         dismissButton = {
-            TextButton(onClick = { vm.resetReturn(); onClose() }, enabled = !ui.busy) {
-                Text(t("common.cancel", null))
-            }
+            PillButton(
+                text = t("common.cancel", null),
+                onClick = { vm.resetReturn(); onClose() },
+                variant = ButtonVariant.SECONDARY,
+                enabled = !ui.busy,
+            )
         },
     )
 }

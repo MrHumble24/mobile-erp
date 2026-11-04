@@ -5,23 +5,23 @@ struct PosEmptyScanLanding: View {
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Tokens.Space.md) {
             ZStack {
                 Circle()
-                    .fill(Color(.tertiarySystemFill))
+                    .fill(Tokens.surface2)
                     .frame(width: 64, height: 64)
                 Image(systemName: "barcode.viewfinder")
                     .font(.system(size: 30))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
 
-            VStack(spacing: 4) {
+            VStack(spacing: Tokens.Space.xs) {
                 Text(i18n.t("pos.cartEmpty", default: "Ready to Scan"))
-                    .font(.headline)
-                    .foregroundStyle(Tokens.ink)
+                    .font(.ui(.heading))
+                    .foregroundStyle(Tokens.text)
                 Text(i18n.t("pos.scanPrompt", default: "Scan a device IMEI or use the camera to start checkout."))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.ui(.body))
+                    .foregroundStyle(Tokens.muted)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
             }

@@ -28,7 +28,7 @@ struct WarrantyLookupSheet: View {
                             ProgressView()
                             Text(i18n.t("common.loading", default: "Looking up warranty..."))
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 20)
@@ -80,7 +80,7 @@ struct WarrantyLookupSheet: View {
                          ? i18n.t("sales.daysRemaining", default: "\(r.remainingDays) days remaining")
                          : i18n.t("sales.expired", default: "Coverage period has ended"))
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
             }
             .padding(.vertical, 6)
@@ -97,7 +97,7 @@ struct WarrantyLookupSheet: View {
                         .foregroundStyle(Tokens.ink)
                     Button {
                         UIPasteboard.general.string = r.imei
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        Haptic.tick.play()
                         withAnimation(.snappy(duration: 0.2)) { copied = true }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                             withAnimation { copied = false }
@@ -133,12 +133,12 @@ struct WarrantyLookupSheet: View {
                         .foregroundStyle(Tokens.warning)
                     Text(i18n.t("sales.alreadyReturned", default: "Device has already been returned and refunded."))
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 .padding(.vertical, 4)
             } else if container.session.can("sale.return") {
                 Button(role: .destructive) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    Haptic.tick.play()
                     showReturn = true
                 } label: {
                     Label(i18n.t("sales.returnDevice", default: "Process Return / Refund"), systemImage: "arrow.uturn.backward")

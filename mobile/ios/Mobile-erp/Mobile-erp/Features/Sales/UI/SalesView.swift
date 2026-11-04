@@ -27,7 +27,7 @@ struct SalesView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    Haptic.tick.play()
                     showFilters = true
                 } label: {
                     Label(
@@ -107,7 +107,7 @@ private struct SaleRow: View {
                         .foregroundStyle(Tokens.ink)
                     Text(sale.device.imei)
                         .font(.mono(12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Tokens.muted)
                 }
                 Spacer()
                 MoneyText(value: sale.salePrice.string, size: 16)
@@ -120,11 +120,11 @@ private struct SaleRow: View {
                 )
                 Text(sale.customer?.name ?? i18n.t("pos.walkIn"))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
                 Spacer()
                 Text(SaleDate.day(sale.soldAt))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Tokens.muted)
             }
         }
         .padding(.vertical, 4)

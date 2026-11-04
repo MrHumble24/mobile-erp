@@ -36,7 +36,7 @@ struct CustomerFilterSheet: View {
                                 .foregroundStyle(Tokens.ink)
                             Text(i18n.t("sales.customerSalesHistoryDesc", default: "Show only customers who have completed at least one device purchase."))
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Tokens.muted)
                         }
                     }
                 }
@@ -44,7 +44,7 @@ struct CustomerFilterSheet: View {
                 if hasActiveFilters {
                     Section {
                         Button(role: .destructive) {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            Haptic.tick.play()
                             model.sort = "recent"
                             model.hasPurchasesOnly = false
                             model.reload()
@@ -62,7 +62,7 @@ struct CustomerFilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.apply", default: "Apply")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         model.reload()
                         dismiss()
                     }

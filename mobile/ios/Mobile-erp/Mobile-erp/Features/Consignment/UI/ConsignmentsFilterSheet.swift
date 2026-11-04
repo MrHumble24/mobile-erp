@@ -47,7 +47,7 @@ struct ConsignmentsFilterSheet: View {
                 if hasActiveFilters {
                     Section {
                         Button(role: .destructive) {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            Haptic.tick.play()
                             model.reset()
                             onApply()
                             dismiss()
@@ -70,7 +70,7 @@ struct ConsignmentsFilterSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(i18n.t("common.apply", default: "Qo'llash")) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        Haptic.tick.play()
                         onApply()
                         dismiss()
                     }

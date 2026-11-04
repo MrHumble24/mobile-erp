@@ -16,7 +16,7 @@ enum KitToastStyle {
         switch self {
         case .success: return Tokens.success
         case .error: return Tokens.danger
-        case .info: return Tokens.signalBlue
+        case .info: return Tokens.info
         }
     }
     var systemImage: String {
@@ -94,19 +94,17 @@ private struct KitToastBanner: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(background)
-        .overlay(RoundedRectangle(cornerRadius: Tokens.Radius.cards)
-            .strokeBorder(Tokens.hairline))
-        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.cards))
+        .clipShape(RoundedRectangle(cornerRadius: Tokens.Radius.buttons, style: .continuous))
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }
 
     @ViewBuilder private var background: some View {
         if #available(iOS 26, *) {
-            RoundedRectangle(cornerRadius: Tokens.Radius.cards).glassEffect()
+            RoundedRectangle(cornerRadius: Tokens.Radius.buttons, style: .continuous).glassEffect()
         } else {
-            RoundedRectangle(cornerRadius: Tokens.Radius.cards)
-                .fill(.regularMaterial)
+            RoundedRectangle(cornerRadius: Tokens.Radius.buttons, style: .continuous)
+                .fill(Tokens.card)
         }
     }
 }
