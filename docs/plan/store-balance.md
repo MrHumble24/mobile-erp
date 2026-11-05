@@ -644,8 +644,8 @@ Progress (updated as each step lands):
 | 2c Telegram: opening and closing balance | merged (`542afcf`) | not needed | not needed | not needed | English text for now. |
 | 3 Expense per phone, customs fee from a price list, fee history | merged (`542afcf`, 283 tests), walk-through matched a hand calculation | merged (`0fbfccc` + polish `df6bfef`); Customs page, new-list form, fee chart and shipments clicked through in a browser | building | building | ADR 0026, 0027. Shipment overhead is gone. No Excel upload until the client's file arrives; the list is typed in. |
 | Security fixes for the ledger | merged (`542afcf`) | part of step 3 work | part of step 3 work | part of step 3 work | ADR 0028. Refund capped; cost amounts hidden in history without the cost permission. |
-| 4a Product kinds, categories, serial-number items | building | after server | after server | after server | Change 8, first half. Tables are not renamed: a model is a product, a device is a unit. |
-| 4b Quantity items (cases, cables) | after 4a | | | | Change 8, second half. |
+| 4a Product kinds, categories, serial-number items | merged (`97bb28a`, 317 tests) | building | after step 3 | after step 3 | ADR 0029. Change 8, first half. Tables are not renamed: a model is a product, a device is a unit. |
+| 4b Quantity items (cases, cables) | building | after server | after server | after server | Change 8, second half. Stock is kept like the money ledger: one row per movement, nothing stored twice. Stock may go below zero. |
 
 Security check of the balance ledger (2026-11-05, read-only): no
 critical problems. Two serious ones, both being fixed on the server
