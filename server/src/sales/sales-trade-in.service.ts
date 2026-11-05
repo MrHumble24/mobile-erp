@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { resolveCustomerId } from '../common/lib/resolve-customer.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import type { PrismaTx } from '../common/types/prisma-tx.js';
@@ -53,6 +57,15 @@ export class SalesTradeInService {
       throw new BadRequestException({
         message: 'Trade-in is not supported for offline sales',
         code: 'TRADE_IN_OFFLINE',
+      });
+    }
+    // Taking a phone for value is buying a phone (security fix): it needs the
+    // buying permission, so a plain cashier cannot turn a made-up trade-in into
+    // a cash refund or put a unit into stock at any cost.
+    if (!caller.permissions.has('purchase.create')) {
+      throw new ForbiddenException({
+        message: 'Taking a trade-in needs the purchase.create permission',
+        code: 'TRADE_IN_FORBIDDEN',
       });
     }
     const customerId = await resolveCustomerId(this.prisma, {

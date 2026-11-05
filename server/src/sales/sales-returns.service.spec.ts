@@ -13,6 +13,12 @@ const caller: AuthenticatedUser = {
   email: 'c@x',
   permissions: new Set(['sale.return']),
 };
+// Refunding the trade-in part (above money paid) needs purchase.create.
+const buyer: AuthenticatedUser = {
+  id: 'owner-1',
+  email: 'o@x',
+  permissions: new Set(['sale.return', 'purchase.create']),
+};
 
 function build() {
   const reads = {
@@ -112,8 +118,8 @@ describe('SalesReturnsService refund cap (ADR 0028)', () => {
     svc.purchases.tradeInTotalForSale.mockResolvedValue(
       new Prisma.Decimal(100),
     );
-    // 150 paid + 100 trade-in = 250 cap.
-    await svc.service.processReturn(caller, 'sale-1', ret(250));
+    // 150 paid + 100 trade-in = 250 cap; the trade-in part needs purchase.create.
+    await svc.service.processReturn(buyer, 'sale-1', ret(250));
     expect(svc.checkout.processReturn).toHaveBeenCalled();
 
     const bad = build();
@@ -126,8 +132,39 @@ describe('SalesReturnsService refund cap (ADR 0028)', () => {
       new Prisma.Decimal(100),
     );
     await expect(
-      bad.service.processReturn(caller, 'sale-1', ret(251)),
+      bad.service.processReturn(buyer, 'sale-1', ret(251)),
     ).rejects.toThrow(BadRequestException);
+    expect(bad.checkout.processReturn).not.toHaveBeenCalled();
+  });
+
+  it('refuses the trade-in part of a refund without purchase.create (403)', async () => {
+    const svc = build();
+    svc.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(150) }]],
+      ]),
+    );
+    svc.purchases.tradeInTotalForSale.mockResolvedValue(
+      new Prisma.Decimal(100),
+    );
+    // 150 paid; the cashier (no purchase.create) may refund only 150.
+    await svc.service.processReturn(caller, 'sale-1', ret(150));
+    expect(svc.checkout.processReturn).toHaveBeenCalled();
+
+    const bad = build();
+    bad.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(150) }]],
+      ]),
+    );
+    bad.purchases.tradeInTotalForSale.mockResolvedValue(
+      new Prisma.Decimal(100),
+    );
+    await expect(
+      bad.service.processReturn(caller, 'sale-1', ret(200)),
+    ).rejects.toMatchObject({
+      response: { code: 'TRADE_IN_REFUND_FORBIDDEN' },
+    });
     expect(bad.checkout.processReturn).not.toHaveBeenCalled();
   });
 

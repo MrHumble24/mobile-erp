@@ -20,9 +20,21 @@ import {
   assertFutureDueDates,
   assertPlanAddsUp,
   assertWithinLimit,
+  validateDownPayments,
 } from './lib/credit-validation.js';
 import { toSaleDto } from './lib/credit-mapper.js';
 import type { CreditView } from './types/credit.types.js';
+
+interface CreateCreditTx {
+  dto: CreateCreditDto;
+  caller: AuthenticatedUser;
+  storeId: string;
+  downPayments: { accountCode: string; amount: Prisma.Decimal }[];
+  instalmentsTotal: Prisma.Decimal;
+  downTotal: Prisma.Decimal;
+  limit: Prisma.Decimal | null;
+  now: Date;
+}
 
 const ZERO = new Prisma.Decimal(0);
 
@@ -63,70 +75,103 @@ export class CreditsService {
     await this.shifts.assertCanSell(caller);
     const customer = await this.requireCustomerWithPhone(dto.customerId);
     const now = new Date();
-    const dueDates = dto.instalments.map((i) => new Date(i.dueDate));
-    assertFutureDueDates(dueDates, now);
-
+    assertFutureDueDates(
+      dto.instalments.map((i) => new Date(i.dueDate)),
+      now,
+    );
     const accounts = await this.ledger.activeAccountCodes();
-    const downPayments = this.validateDownPayments(
-      dto.payments ?? [],
-      accounts,
+    const downPayments = validateDownPayments(dto.payments ?? [], accounts);
+    const ctx: CreateCreditTx = {
+      dto,
+      caller,
+      storeId: await this.stores.currentStoreId(),
+      downPayments,
+      instalmentsTotal: dto.instalments.reduce(
+        (s, i) => s.plus(new Prisma.Decimal(i.amount)),
+        ZERO,
+      ),
+      downTotal: downPayments.reduce((s, p) => s.plus(p.amount), ZERO),
+      limit: this.effectiveLimit(
+        customer.creditLimit,
+        settings.defaultCreditLimit,
+      ),
+      now,
+    };
+    const creditId = await this.writes.transaction((tx) =>
+      this.writeCredit(tx, ctx),
     );
-    const downTotal = downPayments.reduce((s, p) => s.plus(p.amount), ZERO);
-    const instalmentsTotal = dto.instalments.reduce(
-      (s, i) => s.plus(new Prisma.Decimal(i.amount)),
-      ZERO,
-    );
-    const limit = this.effectiveLimit(
-      customer.creditLimit,
-      settings.defaultCreditLimit,
-    );
+    return this.read.get(creditId);
+  }
+
+  /**
+   * The credit's writes in one transaction. The customer row is locked and their
+   * outstanding read **inside** it (ADR 0028), so two concurrent credits cannot
+   * both slip past the limit on a stale read.
+   */
+  private async writeCredit(
+    tx: PrismaTx,
+    ctx: CreateCreditTx,
+  ): Promise<string> {
+    const { dto, caller, storeId, now } = ctx;
+    await this.repo.lockCustomer(tx, dto.customerId);
     const priorOutstanding = await this.repo.customerOutstanding(
       dto.customerId,
+      tx,
     );
-    const storeId = await this.stores.currentStoreId();
-
-    const creditId = await this.writes.transaction(async (tx) => {
-      const id = await this.writes.createCredit(tx, {
-        storeId,
-        customerId: dto.customerId,
-        createdById: caller.id,
-        note: dto.note,
-        clientKey: dto.clientKey,
-      });
-      let cartTotal = ZERO;
-      for (const line of dto.lines) {
-        const checked = await this.salesCredit.checkoutLine(
-          caller,
-          toSaleDto(line),
-          { creditId: id, storeId, customerId: dto.customerId },
-          tx,
-        );
-        cartTotal = cartTotal.plus(checked.salePrice);
-      }
-      assertPlanAddsUp(instalmentsTotal, downTotal, cartTotal);
-      assertWithinLimit(priorOutstanding, cartTotal.minus(downTotal), limit);
-      await this.writes.createInstalments(
-        tx,
-        id,
-        dto.instalments.map((i) => ({
-          dueDate: new Date(i.dueDate),
-          amount: new Prisma.Decimal(i.amount),
-        })),
-      );
-      for (const p of downPayments) {
-        await this.postPayment(
-          tx,
-          caller,
-          id,
-          storeId,
-          p.accountCode,
-          p.amount,
-          now,
-        );
-      }
-      return id;
+    const id = await this.writes.createCredit(tx, {
+      storeId,
+      customerId: dto.customerId,
+      createdById: caller.id,
+      note: dto.note,
+      clientKey: dto.clientKey,
     });
-    return this.read.get(creditId);
+    const cartTotal = await this.checkoutLines(tx, ctx, id);
+    assertPlanAddsUp(ctx.instalmentsTotal, ctx.downTotal, cartTotal);
+    assertWithinLimit(
+      priorOutstanding,
+      cartTotal.minus(ctx.downTotal),
+      ctx.limit,
+    );
+    await this.writes.createInstalments(
+      tx,
+      id,
+      dto.instalments.map((i) => ({
+        dueDate: new Date(i.dueDate),
+        amount: new Prisma.Decimal(i.amount),
+      })),
+    );
+    for (const p of ctx.downPayments) {
+      await this.postPayment(
+        tx,
+        caller,
+        id,
+        storeId,
+        p.accountCode,
+        p.amount,
+        now,
+      );
+    }
+    return id;
+  }
+
+  /** Check out every credit-cart line (no SALE rows) and sum the cart total. */
+  private async checkoutLines(
+    tx: PrismaTx,
+    ctx: CreateCreditTx,
+    creditId: string,
+  ): Promise<Prisma.Decimal> {
+    const { dto, caller, storeId } = ctx;
+    let cartTotal = ZERO;
+    for (const line of dto.lines) {
+      const checked = await this.salesCredit.checkoutLine(
+        caller,
+        toSaleDto(line),
+        { creditId, storeId, customerId: dto.customerId },
+        tx,
+      );
+      cartTotal = cartTotal.plus(checked.salePrice);
+    }
+    return cartTotal;
   }
 
   /** A later payment at the till (cash or card); may not exceed the outstanding. */
@@ -135,17 +180,20 @@ export class CreditsService {
     creditId: string,
     dto: CreditPaymentDto,
   ): Promise<CreditView> {
-    const { standing } = await this.read.standing(creditId);
     await this.requireActiveAccount(dto.accountCode);
     const amount = new Prisma.Decimal(dto.amount);
-    if (amount.greaterThan(standing.outstanding)) {
-      throw new BadRequestException(
-        `Payment ${amount.toFixed(2)} exceeds the outstanding ${standing.outstanding.toFixed(2)}`,
-      );
-    }
     const storeId = await this.stores.currentStoreId();
-    await this.writes.transaction((tx) =>
-      this.postPayment(
+    await this.writes.transaction(async (tx) => {
+      // Lock the credit, then read the standing inside the tx (ADR 0028): two
+      // concurrent payments cannot together pay more than is owed.
+      await this.repo.lockCredit(tx, creditId);
+      const { standing } = await this.read.standing(creditId, tx);
+      if (amount.greaterThan(standing.outstanding)) {
+        throw new BadRequestException(
+          `Payment ${amount.toFixed(2)} exceeds the outstanding ${standing.outstanding.toFixed(2)}`,
+        );
+      }
+      await this.postPayment(
         tx,
         caller,
         creditId,
@@ -153,8 +201,8 @@ export class CreditsService {
         dto.accountCode,
         amount,
         new Date(),
-      ),
-    );
+      );
+    });
     return this.read.get(creditId);
   }
 
@@ -164,18 +212,21 @@ export class CreditsService {
     creditId: string,
     dto: CreditPaymentDto,
   ): Promise<CreditView> {
-    const { standing } = await this.read.standing(creditId);
     await this.requireActiveAccount(dto.accountCode);
-    if (standing.overpaid.lessThanOrEqualTo(ZERO)) {
-      throw new BadRequestException('Nothing has been overpaid on this credit');
-    }
     const requested = new Prisma.Decimal(dto.amount);
-    const refund = requested.greaterThan(standing.overpaid)
-      ? standing.overpaid
-      : requested;
     const storeId = await this.stores.currentStoreId();
-    await this.writes.transaction((tx) =>
-      this.postPayment(
+    await this.writes.transaction(async (tx) => {
+      await this.repo.lockCredit(tx, creditId);
+      const { standing } = await this.read.standing(creditId, tx);
+      if (standing.overpaid.lessThanOrEqualTo(ZERO)) {
+        throw new BadRequestException(
+          'Nothing has been overpaid on this credit',
+        );
+      }
+      const refund = requested.greaterThan(standing.overpaid)
+        ? standing.overpaid
+        : requested;
+      await this.postPayment(
         tx,
         caller,
         creditId,
@@ -183,8 +234,8 @@ export class CreditsService {
         dto.accountCode,
         refund.negated(),
         new Date(),
-      ),
-    );
+      );
+    });
     return this.read.get(creditId);
   }
 
@@ -235,30 +286,6 @@ export class CreditsService {
       );
     }
     return customer;
-  }
-
-  private validateDownPayments(
-    payments: { accountCode: string; amount: number }[],
-    activeAccounts: string[],
-  ): { accountCode: string; amount: Prisma.Decimal }[] {
-    const seen = new Set<string>();
-    return payments.map((p) => {
-      if (!activeAccounts.includes(p.accountCode)) {
-        throw new BadRequestException(
-          `Unknown or inactive account ${p.accountCode}`,
-        );
-      }
-      if (seen.has(p.accountCode)) {
-        throw new BadRequestException(
-          `Duplicate payment account ${p.accountCode}`,
-        );
-      }
-      seen.add(p.accountCode);
-      return {
-        accountCode: p.accountCode,
-        amount: new Prisma.Decimal(p.amount),
-      };
-    });
   }
 
   private async requireActiveAccount(code: string): Promise<void> {

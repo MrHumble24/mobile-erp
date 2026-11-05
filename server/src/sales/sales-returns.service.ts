@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,7 +10,11 @@ import { CustomerPurchasesService } from '../customer-purchases/customer-purchas
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
-import { assertRefundWithinSale, buildRefundPostings } from './lib/refund.js';
+import {
+  assertRefundWithinSale,
+  buildRefundPostings,
+  saleMoneyPaid,
+} from './lib/refund.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
 import type { SalePayment, SaleView } from './types/sale.types.js';
@@ -38,7 +43,7 @@ export class SalesReturnsService {
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
     await this.assertNotBoughtBack(sale);
 
-    const refundPostings = await this.cappedPostings(id, sale, dto);
+    const refundPostings = await this.cappedPostings(caller, id, sale, dto);
     // A return takes back points earned and gives back points spent (ADR 0043),
     // in the same transaction as the refund.
     const reverseBonus = (tx: Prisma.TransactionClient) =>
@@ -104,23 +109,38 @@ export class SalesReturnsService {
   }
 
   /**
-   * Cap the refund at the sale's net SALE rows (or salePrice when there are
-   * none) plus its trade-in value (ADR 0028/0039), then split it per account.
+   * Cap the refund at the sale's money paid + trade-in value (ADR 0028/0039),
+   * then split it per account. The part above the money actually paid (the
+   * trade-in part, refunded in cash) needs `purchase.create` — a plain cashier
+   * may refund only what the sale took in (security fix); above that → 403.
    */
   private async cappedPostings(
+    caller: AuthenticatedUser,
     id: string,
     sale: { salePrice: Prisma.Decimal; creditId: string | null },
     dto: ReturnSaleDto,
   ): Promise<SalePayment[]> {
     const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
     const tradeInTotal = await this.purchases.tradeInTotalForSale(id);
+    const isCredit = sale.creditId !== null;
     assertRefundWithinSale(
       dto.refundAmount,
       sale.salePrice,
       saleNets,
-      sale.creditId !== null,
+      isCredit,
       tradeInTotal,
     );
+    const paid = saleMoneyPaid(sale.salePrice, saleNets, isCredit);
+    if (
+      !caller.permissions.has('purchase.create') &&
+      new Prisma.Decimal(dto.refundAmount).greaterThan(paid)
+    ) {
+      throw new ForbiddenException({
+        message:
+          'Refunding the trade-in part needs the purchase.create permission',
+        code: 'TRADE_IN_REFUND_FORBIDDEN',
+      });
+    }
     return buildRefundPostings(dto.refundAmount, saleNets);
   }
 

@@ -7,10 +7,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { SalesTradeInService } from './sales-trade-in.service.js';
 
+// Taking a trade-in needs the buying permission (security fix).
 const caller: AuthenticatedUser = {
   id: 'u-1',
   email: 'c@x',
-  permissions: new Set(['sale.create']),
+  permissions: new Set(['sale.create', 'purchase.create']),
 };
 
 function build() {
@@ -54,6 +55,24 @@ describe('SalesTradeInService.prepare', () => {
     await expect(
       service.prepare(caller, dto, { fromSync: true }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('refuses a trade-in from a caller without purchase.create (403), writing nothing', async () => {
+    const { service, purchases, writes } = build();
+    const cashier: AuthenticatedUser = {
+      id: 'u-2',
+      email: 'x@x',
+      permissions: new Set(['sale.create']),
+    };
+    const dto = base({
+      customerId: 'cust-1',
+      tradeIns: [{ modelId: 'm-1', imei: '111111111111111', value: 100 }],
+    });
+    await expect(service.prepare(cashier, dto)).rejects.toMatchObject({
+      response: { code: 'TRADE_IN_FORBIDDEN' },
+    });
+    expect(purchases.prepareUnit).not.toHaveBeenCalled();
+    expect(writes.create).not.toHaveBeenCalled();
   });
 
   it('refuses a trade-in with no customer', async () => {

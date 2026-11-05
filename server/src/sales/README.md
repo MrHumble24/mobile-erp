@@ -101,7 +101,9 @@ rejected — the sale already happened at the counter.
 
 `POST /sales` also accepts `tradeIns?: [{ modelId, imei?|serialNumber?, imei2?,
 specs?, value }]` — phones the customer gives in part payment. A customer (id or
-inline) is required. Each becomes a customer purchase in the **same transaction**
+inline) is required, and the caller needs **`purchase.create`** on top of
+`sale.create` (taking a phone for value is buying one) — else 403
+`code: "TRADE_IN_FORBIDDEN"` (security fix). Each becomes a customer purchase in the **same transaction**
 as the sale (reusing `CustomerPurchasesWriteRepository` — one implementation)
 and enters stock at `value`, posting **no** ledger row. The sale books its full
 `salePrice` (revenue intact); `payments` must sum to `salePrice − Σ values`, so
@@ -115,8 +117,10 @@ the read side (list / lookups / view enrichment with payments + trade-ins) lives
 in `SalesReadService`, split from the write orchestration in `SalesService`.
 
 A **return** of a sale that had a trade-in keeps the traded-in phone (its
-purchase is never undone); the refund cap becomes net SALE rows + Σ trade-in
-values (ADR 0028 extended).
+purchase is never undone); the refund cap is net SALE rows + Σ trade-in values
+(ADR 0028 extended). The part **above the money actually paid** (the trade-in
+part, refunded in cash) needs `purchase.create`; a caller without it may refund
+only the money paid — above that → 403 `code: "TRADE_IN_REFUND_FORBIDDEN"`.
 
 A sale whose unit has since been **bought back** (ADR 0044) can no longer be
 returned: `POST /sales/:id/return` refuses 409 `code: "SALE_UNIT_BOUGHT_BACK"`

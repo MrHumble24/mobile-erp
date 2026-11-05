@@ -31,7 +31,9 @@ imei2,serialNumber,model}, pricePaid, accountCode|null, saleId|null, soldBy, occ
 
 - `CustomerPurchasesWriteRepository.create(input, tx?)` — the one write path,
   reused by a sale's trade-in inside the sale transaction. A trade-in passes
-  `saleId` and **no** `ledgerAccountCode`, so it posts no cash row.
+  `saleId` and **no** `ledgerAccountCode`, so it posts no cash row. The trade-in
+  caller is gated by `purchase.create` in `SalesTradeInService` (security fix),
+  so no unit reaches this write at any cost without the buying permission.
 - `CustomerPurchasesService.prepareUnit(dto)` — validate + normalise one unit
   (kind + specs) before the write; `tradeInTotalForSale(id)` and
   `tradeInsBySale(ids)` feed the refund cap and the sale/receipt views.
