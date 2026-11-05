@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
 import type { SaleView } from "@/entities/sale"
+import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
 import { Link } from "@/shared/ui/link"
 import { SaleWarrantyBadge } from "./SaleWarrantyBadge"
@@ -80,6 +81,9 @@ export function MoneySection({
   return (
     <Section title={t("sales.moneySection")}>
       <Row label={t("sales.salePrice")} value={formatMoney(sale.salePrice)} />
+      {sale.payments.length > 0 && (
+        <Row label={t("balance.paidWith")} value={<PaymentSummary payments={sale.payments} />} />
+      )}
       {showProfit && (
         <>
           <Row label={t("inventory.landedCost")} value={formatMoney(sale.landedCostSnapshot)} />

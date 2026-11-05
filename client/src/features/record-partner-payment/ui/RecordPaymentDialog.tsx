@@ -2,6 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { useRecordPayment, type PartnerView } from "@/entities/partner"
+import { AccountSelect } from "@/entities/ledger"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -11,11 +12,15 @@ import { toast } from "@/shared/ui/sonner"
 function PaymentInputs({
   amount,
   setAmount,
+  accountCode,
+  setAccountCode,
   notes,
   setNotes,
 }: {
   amount: string
   setAmount: (v: string) => void
+  accountCode: string
+  setAccountCode: (v: string) => void
   notes: string
   setNotes: (v: string) => void
 }) {
@@ -33,6 +38,11 @@ function PaymentInputs({
           className="h-10 text-base font-bold font-mono"
           required
         />
+      </div>
+
+      <div className="space-y-1">
+        <Label>{t("balance.payFrom")}</Label>
+        <AccountSelect value={accountCode} onValueChange={setAccountCode} />
       </div>
 
       <div className="space-y-1">
@@ -60,6 +70,7 @@ function RecordPaymentForm({
   const { t } = useI18n()
   const recordMutation = useRecordPayment()
   const [amount, setAmount] = React.useState("")
+  const [accountCode, setAccountCode] = React.useState("CASH")
   const [notes, setNotes] = React.useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -69,7 +80,7 @@ function RecordPaymentForm({
     recordMutation.mutate(
       {
         partnerId: partner.id,
-        dto: { amount: Number(amount), notes: notes.trim() || undefined },
+        dto: { amount: Number(amount), accountCode, notes: notes.trim() || undefined },
       },
       {
         onSuccess: () => {
@@ -89,6 +100,8 @@ function RecordPaymentForm({
       <PaymentInputs
         amount={amount}
         setAmount={setAmount}
+        accountCode={accountCode}
+        setAccountCode={setAccountCode}
         notes={notes}
         setNotes={setNotes}
       />

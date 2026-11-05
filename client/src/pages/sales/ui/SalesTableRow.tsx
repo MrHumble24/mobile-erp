@@ -3,6 +3,7 @@ import { Eye, Receipt, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
 import type { SaleView } from "@/entities/sale"
+import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { TableCell, TableRow } from "@/shared/ui/table"
@@ -75,7 +76,13 @@ export function SalesTableRow({
           <div className="text-xs text-muted-foreground">{sale.customer.phone}</div>
         )}
       </TableCell>
-      <TableCell className="text-sm font-semibold">{formatMoney(sale.salePrice)}</TableCell>
+      <TableCell className="text-sm font-semibold">
+        {formatMoney(sale.salePrice)}
+        <PaymentSummary
+          payments={sale.payments}
+          className="block text-xs font-normal text-muted-foreground"
+        />
+      </TableCell>
       {hasProfitView && (
         <TableCell className="font-mono text-sm font-semibold text-emerald-600">
           {sale.netProfit !== undefined ? formatMoney(sale.netProfit) : "—"}

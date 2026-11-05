@@ -3,6 +3,7 @@ import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useSuppliers, type SupplierView } from "@/entities/supplier"
 import { useCreateShipment } from "@/entities/shipment"
+import { AccountSelect } from "@/entities/ledger"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
@@ -92,6 +93,7 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
   const [shipmentDate, setShipmentDate] = React.useState(() => new Date().toISOString().slice(0, 10))
   const [expectedCount, setExpectedCount] = React.useState(10)
   const [overheadCost, setOverheadCost] = React.useState(0)
+  const [paymentAccountCode, setPaymentAccountCode] = React.useState("CASH")
   const [notes, setNotes] = React.useState("")
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -106,6 +108,7 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
         shipmentDate: new Date(shipmentDate).toISOString(),
         expectedCount,
         overheadCost: canViewCost ? overheadCost : undefined,
+        paymentAccountCode,
         notes: notes || undefined,
       },
       { onSuccess: (res) => { toast.success(t("common.success")); onSuccess(res.id) } }
@@ -124,6 +127,10 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
         onCostChange={setOverheadCost}
         canViewCost={canViewCost}
       />
+      <div className="space-y-2">
+        <Label>{t("balance.payFrom")}</Label>
+        <AccountSelect value={paymentAccountCode} onValueChange={setPaymentAccountCode} />
+      </div>
       <div className="space-y-2">
         <Label>{t("common.notes")}</Label>
         <Input value={notes} onChange={(e) => setNotes(e.target.value)} className="h-10" />

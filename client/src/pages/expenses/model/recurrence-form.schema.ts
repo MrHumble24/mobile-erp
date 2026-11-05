@@ -15,6 +15,7 @@ export function makeRecurrenceSchema(t: Translate) {
     description: z.string().optional(),
     frequency: z.enum(["monthly", "weekly"]),
     nextDueAt: z.string().min(1, t("expenses.categoryRequired")),
+    accountCode: z.string().min(1),
   })
 }
 
@@ -36,6 +37,7 @@ export function toRecurrenceFormValues(
     description: recurrence?.description ?? "",
     frequency: recurrence?.frequency ?? "monthly",
     nextDueAt: (recurrence?.nextDueAt ?? todayIso()).slice(0, 10),
+    accountCode: recurrence?.accountCode ?? "CASH",
   }
 }
 
@@ -52,6 +54,7 @@ function toBaseDto(values: RecurrenceFormValues) {
     description: trimOrUndefined(values.description),
     frequency: values.frequency,
     nextDueAt: new Date(values.nextDueAt).toISOString(),
+    accountCode: values.accountCode,
   }
 }
 

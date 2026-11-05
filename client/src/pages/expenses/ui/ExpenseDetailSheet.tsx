@@ -3,6 +3,7 @@ import { Pencil } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate, formatDateTime } from "@/shared/lib/format"
 import { useExpense, type ExpenseView } from "@/entities/expense"
+import { accountLabel } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -46,6 +47,7 @@ function ExpenseBody({
       <div>
         <Row label={t("expenses.category")} value={expense.category?.name ?? "—"} />
         <Row label={t("expenses.incurredAt")} value={formatDate(expense.incurredAt)} />
+        <Row label={t("balance.payFrom")} value={accountLabel(expense.accountCode, undefined, t)} />
         <Row label={t("expenses.vendor")} value={expense.vendor || "—"} />
         <Row label={t("expenses.description")} value={expense.description || "—"} />
         <Row

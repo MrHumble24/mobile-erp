@@ -2,6 +2,7 @@ import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDateTime, formatDate } from "@/shared/lib/format"
 import type { ShipmentView } from "@/entities/shipment"
 import type { SupplierView } from "@/entities/supplier"
+import { accountLabel } from "@/entities/ledger"
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -59,6 +60,7 @@ export function ShipmentSummary({
       <Row label={t("shipments.shipmentDate")} value={formatDate(shipment.shipmentDate)} />
       <Row label={t("shipments.expectedCount")} value={String(shipment.expectedCount)} />
       <Row label={t("shipments.receivedCount")} value={String(shipment.deviceCount)} />
+      <Row label={t("balance.payFrom")} value={accountLabel(shipment.paymentAccountCode, undefined, t)} />
       {canViewCost && <CostRows shipment={shipment} avgLanded={avgLanded} />}
       <Row label={t("shipments.createdAt")} value={formatDateTime(shipment.createdAt)} />
       <div className="sm:col-span-2">

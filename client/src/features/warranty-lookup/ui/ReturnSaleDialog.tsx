@@ -2,6 +2,7 @@ import * as React from "react"
 import { AlertTriangle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useReturnSale } from "@/entities/sale"
+import { accountLabel } from "@/entities/ledger"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -77,14 +78,29 @@ function ReturnFields({
   )
 }
 
+function RefundNote({ payments }: { payments: { accountCode: string }[] }) {
+  const { t } = useI18n()
+  if (payments.length === 0) return null
+  const accounts = payments
+    .map((p) => accountLabel(p.accountCode, undefined, t))
+    .join(", ")
+  return (
+    <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+      {t("sales.refundGoesBack", { accounts })}
+    </p>
+  )
+}
+
 function ReturnSaleForm({
   saleId,
   salePrice,
+  payments,
   onCancel,
   onSuccess,
 }: {
   saleId: string
   salePrice: number
+  payments: { accountCode: string }[]
   onCancel: () => void
   onSuccess?: () => void
 }) {
@@ -128,6 +144,7 @@ function ReturnSaleForm({
         setReason={setReason}
         salePrice={salePrice}
       />
+      <RefundNote payments={payments} />
       <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending}>
         {returnMutation.isPending ? t("common.loading") : t("sales.returnDevice")}
       </Button>
@@ -138,12 +155,15 @@ function ReturnSaleForm({
 export function ReturnSaleDialog({
   saleId,
   salePrice,
+  payments = [],
   open,
   onOpenChange,
   onSuccess,
 }: {
   saleId: string
   salePrice: number
+  /** The sale's tender lines; the refund goes back to these accounts. */
+  payments?: { accountCode: string }[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
@@ -162,6 +182,7 @@ export function ReturnSaleDialog({
           <ReturnSaleForm
             saleId={saleId}
             salePrice={salePrice}
+            payments={payments}
             onCancel={() => onOpenChange(false)}
             onSuccess={onSuccess}
           />

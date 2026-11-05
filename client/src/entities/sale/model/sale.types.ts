@@ -24,6 +24,12 @@ export interface SaleReturnRef {
   processedBy: { id: string; name: string }
 }
 
+/** One tender line, derived from the sale's SALE ledger rows. `amount` is a decimal string. */
+export interface SalePaymentLine {
+  accountCode: string
+  amount: string
+}
+
 export interface SaleView {
   id: string
   device: SaleDeviceRef
@@ -37,6 +43,8 @@ export interface SaleView {
   consignmentId: string | null
   notes: string | null
   return: SaleReturnRef | null
+  /** How the sale was tendered; [] when the sale predates ledger posting. */
+  payments: SalePaymentLine[]
 }
 
 export interface SaleStats {
@@ -90,6 +98,8 @@ export interface CreateSaleDto {
   notes?: string
   clientMutationId?: string
   expectedVersion?: number
+  /** Omit for a single CASH payment of the full price; else amounts must sum to salePrice. */
+  payments?: { accountCode: string; amount: number }[]
 }
 
 export interface ReturnSaleDto {

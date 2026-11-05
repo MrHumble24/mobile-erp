@@ -66,4 +66,6 @@ export interface RecordPaymentDto {
   consignmentId?: string
   paidAt?: string
   notes?: string
+  /** Account the cash landed in. Defaults to CASH server-side. */
+  accountCode?: string
 }

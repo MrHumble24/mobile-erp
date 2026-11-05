@@ -7,6 +7,7 @@ import {
   type ExpenseRecurrenceView,
 } from "@/entities/expense"
 import { useExpenseCategories } from "@/entities/expense-category"
+import { AccountSelect } from "@/entities/ledger"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -88,6 +89,23 @@ function FrequencyField({ form }: { form: FormApi }) {
   )
 }
 
+function AccountField({ form }: { form: FormApi }) {
+  const { t } = useI18n()
+  return (
+    <FormField
+      control={form.control}
+      name="accountCode"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{t("balance.payFrom")}</FormLabel>
+          <AccountSelect value={field.value} onValueChange={field.onChange} />
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
 function TextField({
   form,
   name,
@@ -154,6 +172,7 @@ function RecurrenceForm({
         <TextField form={form} name="amount" type="number" label={t("expenses.amount")} />
         <FrequencyField form={form} />
         <TextField form={form} name="nextDueAt" type="date" label={t("expenses.nextDueAt")} />
+        <AccountField form={form} />
         <TextField form={form} name="vendor" label={t("expenses.vendor")} />
         <TextField form={form} name="description" label={t("expenses.description")} />
         <Button type="submit" className="w-full" disabled={isPending}>

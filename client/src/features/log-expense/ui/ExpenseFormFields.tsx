@@ -1,6 +1,7 @@
 import { type UseFormReturn } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
 import { useExpenseCategories } from "@/entities/expense-category"
+import { AccountSelect } from "@/entities/ledger"
 import {
   FormControl,
   FormField,
@@ -90,6 +91,23 @@ function TextField({
   )
 }
 
+function AccountField({ form }: { form: FormApi }) {
+  const { t } = useI18n()
+  return (
+    <FormField
+      control={form.control}
+      name="accountCode"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{t("balance.payFrom")}</FormLabel>
+          <AccountSelect value={field.value} onValueChange={field.onChange} />
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
 function RecurringField({ form }: { form: FormApi }) {
   const { t } = useI18n()
   return (
@@ -127,6 +145,7 @@ export function ExpenseFormFields({ form }: { form: FormApi }) {
         placeholder={t("expenses.vendorPlaceholder")}
       />
       <DescriptionField form={form} />
+      <AccountField form={form} />
       <RecurringField form={form} />
     </>
   )

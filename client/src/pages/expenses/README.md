@@ -20,6 +20,12 @@ Route `/expenses` — the operational-expense workspace (PRD Module 5).
   recurring-template form. Lives here (not a feature slice) by task scope.
 - `lib/expenses-csv.ts` — current-page CSV export + `recordedByName`.
 
+## Payment account
+
+The recurring-template form has an `AccountSelect` (default Cash) from
+`entities/ledger`; the expenses table and detail sheet show each expense's
+`accountCode` via `accountLabel`.
+
 ## Must never
 
 - Call `useQuery`/HTTP directly (only entity hooks) or hold server data in state.

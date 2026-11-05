@@ -65,5 +65,6 @@
   "noCustomersFound": "Mijozlar topilmadi",
   "customerSaved": "Mijoz muvaffaqiyatli saqlandi",
   "receipt": "Chek",
-  "printReceipt": "Chekni chop etish"
+  "printReceipt": "Chekni chop etish",
+  "refundGoesBack": "Refund returns the same way it was paid: {accounts}"
 }
