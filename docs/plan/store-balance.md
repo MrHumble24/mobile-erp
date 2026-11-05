@@ -639,9 +639,10 @@ Progress (updated as each step lands):
 | Step | Server | Web | Android | iOS | Notes |
 |---|---|---|---|---|---|
 | 1 Stores skeleton | merged, pushed | not needed | not needed | not needed | ADR 0023 |
-| 2a Ledger core + Balance screen | merged (`025f060`, 219 tests) | merged (`8378dd4` + fix `31afa82`), clicked through in a browser | building | merged (`35f2b34`), builds; not yet seen signed in on a simulator | ADR 0024. Text keys added (`balance` namespace, English placeholders). Web: the builder could not run a browser; Claude did and found the action menu did nothing (fixed). |
-| 2b Automatic posting, cash/card choice, split payment | building | after server | after server | after server | Split payment moved here from 2c so the apps are changed once. |
-| 2c Telegram: opening and closing balance | waits for 2b | not needed | not needed | not needed | |
+| 2a Ledger core + Balance screen | merged (`025f060`) | merged, clicked through in a browser, one bug fixed (`31afa82`) | merged (`d75797c`), builds, tests pass; emulator check running | merged, seen running on a simulator, large-text fix (`c0967ec`) | ADR 0024. iOS gained a debug-only automatic sign-in so screens can be photographed. |
+| 2b Automatic posting, cash/card choice, split payment | merged (`4003240`, 248 tests), live API checked | building | after the emulator check | building | ADR 0025. Split payment was moved here from 2c. Security audit of the ledger running. |
+| 2c Telegram: opening and closing balance | building (same branch as step 3) | not needed | not needed | not needed | |
+| 3 Expense per phone, customs fee from a price list, fee history | building | after server | after server | after server | No Excel upload until the client's file arrives. |
 
 Notes for the user:
 - Railway does not run the seed on start. After a push, run
