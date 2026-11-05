@@ -29,7 +29,12 @@ export class SalesReturnsService {
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
 
     const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
-    assertRefundWithinSale(dto.refundAmount, sale.salePrice, saleNets);
+    assertRefundWithinSale(
+      dto.refundAmount,
+      sale.salePrice,
+      saleNets,
+      sale.creditId !== null,
+    );
     const refundPostings = buildRefundPostings(dto.refundAmount, saleNets);
 
     if (sale.deviceId === null) {

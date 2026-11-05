@@ -18,6 +18,7 @@ export interface SaleRow {
   priceLevelCode: string | null;
   soldAt: Date;
   consignmentId: string | null;
+  creditId: string | null;
   notes: string | null;
   /** Null for a quantity sale. */
   device: {
@@ -88,6 +89,8 @@ export interface SaleView {
   soldBy: { id: string; name: string };
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
   consignmentId: string | null;
+  /** The credit agreement this sale belongs to (ADR 0035), null for a paid sale. */
+  creditId: string | null;
   notes: string | null;
   return: SaleReturnView | null;
   /** How the sale was tendered (its SALE ledger rows); [] when none exist. */
@@ -172,6 +175,8 @@ export interface CheckoutInput {
   warranty: { days: number; startsAt: Date; endsAt: Date };
   /** One SALE ledger row posted per line, inside the checkout transaction. */
   payments: SalePayment[];
+  /** Links the sale to a credit agreement (ADR 0035); omit for a normal sale. */
+  creditId?: string;
 }
 
 /**
@@ -193,6 +198,8 @@ export interface QuantityCheckoutInput {
   customerId?: string;
   inlineCustomer?: { name: string; phone?: string };
   payments: SalePayment[];
+  /** Links the sale to a credit agreement (ADR 0035); omit for a normal sale. */
+  creditId?: string;
 }
 
 export interface ReturnInput {

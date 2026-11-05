@@ -11,6 +11,7 @@ const customerSelect = {
   notes: true,
   priceLevelCode: true,
   standingDiscountPercent: true,
+  creditLimit: true,
   createdAt: true,
 } as const;
 
@@ -21,6 +22,7 @@ interface CustomerRow {
   notes: string | null;
   priceLevelCode: string;
   standingDiscountPercent: Prisma.Decimal;
+  creditLimit: Prisma.Decimal | null;
   createdAt: Date;
 }
 
@@ -28,6 +30,7 @@ function toView(row: CustomerRow): CustomerView {
   return {
     ...row,
     standingDiscountPercent: row.standingDiscountPercent.toFixed(2),
+    creditLimit: row.creditLimit === null ? null : row.creditLimit.toFixed(2),
   };
 }
 
@@ -38,6 +41,7 @@ export interface CustomerWrite {
   notes?: string;
   priceLevelCode?: string;
   standingDiscountPercent?: number;
+  creditLimit?: number | null;
 }
 
 /** All Prisma access for customers. Sale aggregates are derived in the service. */

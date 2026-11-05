@@ -34,6 +34,8 @@ const DEFAULTS: StoreSettings = {
   discountPresetsPercent: [],
   discountPresetsAmount: [],
   maxDiscountPercent: new Prisma.Decimal(0),
+  customerCreditEnabled: false,
+  defaultCreditLimit: null,
   digestSentOn: null,
   updatedAt: new Date(0),
 };

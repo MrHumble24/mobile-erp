@@ -16,15 +16,19 @@ aggregates are **derived from sales, never stored**.
 - `GET /customers/:id/sales` (`customer.read`) → `SaleView[]` — newest first
   (delegates to `SalesService`; cost/profit fields redacted per permission).
 - `POST /customers` (`customer.manage`) `{ name, phone?, notes?, priceLevelCode?,
-  standingDiscountPercent? }` → `CustomerView`.
+  standingDiscountPercent?, creditLimit? }` → `CustomerView`.
 - `PATCH /customers/:id` (`customer.manage`) same optional fields → `CustomerView`.
 
 `CustomerView` carries `priceLevelCode` (default `RETAIL`, validated against
-active price levels) and `standingDiscountPercent` (2-dp string) — the till's
-default level and discount ceiling for this customer (ADR 0034).
+active price levels), `standingDiscountPercent` (2-dp string) — the till's
+default level and discount ceiling (ADR 0034) — and `creditLimit` (2-dp string
+or null) — this customer's own credit ceiling, overriding the settings default
+(ADR 0035).
 
 `CustomerListItem` = `CustomerView` + `{ purchaseCount, totalSpent, lastPurchaseAt,
-activeWarranties, returnsCount }`.
+activeWarranties, returnsCount, creditOutstanding, creditOverdue,
+effectiveCreditLimit }`. The credit fields come from `CreditsReadService`
+(derived, never stored); `effectiveCreditLimit` is the own limit or the default.
 
 ## Decisions
 

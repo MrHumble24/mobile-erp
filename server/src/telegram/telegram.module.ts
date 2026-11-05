@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConsignmentsModule } from '../consignments/consignments.module.js';
+import { CreditsModule } from '../credits/credits.module.js';
 import { LedgerModule } from '../ledger/ledger.module.js';
 import { PartnersModule } from '../partners/partners.module.js';
 import { ReportsModule } from '../reports/reports.module.js';
@@ -17,6 +18,7 @@ import { TelegramService } from './telegram.service.js';
     PartnersModule,
     ReportsModule,
     LedgerModule,
+    CreditsModule,
   ],
   providers: [TelegramService, TelegramListener, TelegramCron],
 })

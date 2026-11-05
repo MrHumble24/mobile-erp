@@ -1,0 +1,74 @@
+// ---------------------------------------------------------------------------
+// Customer credit, the Islamic way (Change 6, ADR 0035). A walk-in named
+// customer takes the goods now and pays the agreed price in parts. NO INTEREST,
+// no late fee, no penalty — there is deliberately no such column anywhere here.
+//
+// Nothing derivable is stored: the agreed total is Σ sale prices of the
+// credit's not-returned sales, paid is Σ payments, outstanding = agreed − paid,
+// and "settled" is outstanding ≤ 0 (no status column). The arithmetic lives in
+// one pure function (credits/lib/credit-math.ts).
+// ---------------------------------------------------------------------------
+
+/// One credit agreement covering a cart of sales (a phone and a case can share
+/// one credit). Links to its sales via Sale.creditId.
+model CustomerCredit {
+  id          String   @id @default(uuid())
+  /// Idempotency key from the till, like a sale's clientMutationId.
+  clientKey   String?  @unique
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sales       Sale[]
+  instalments CreditInstalment[]
+  payments    CreditPayment[]
+
+  @@index([customerId])
+  @@index([storeId])
+  @@map("customer_credits")
+}
+
+/// One part of the payment plan: an amount due by a date. The plan is frozen
+/// history; overdue is computed by allocating payments in due-date order
+/// (credit-math.ts), never stored.
+model CreditInstalment {
+  id        String         @id @default(uuid())
+  creditId  String
+  credit    CustomerCredit @relation(fields: [creditId], references: [id], onDelete: Cascade)
+  dueDate   DateTime       @db.Date
+  amount    Decimal        @db.Decimal(14, 2)
+  createdAt DateTime       @default(now())
+
+  @@index([creditId])
+  @@index([dueDate])
+  @@map("credit_instalments")
+}
+
+/// A payment against the credit, taken at the till by cash or card. `amount` is
+/// signed like the cash ledger: positive = money in (down payment or later
+/// payment), negative = an overpayment refunded after a return. Each payment
+/// posts exactly one CREDIT_PAYMENT cash_transactions row in the same
+/// transaction, linked back via CashTransaction.creditPaymentId.
+model CreditPayment {
+  id           String         @id @default(uuid())
+  creditId     String
+  credit       CustomerCredit @relation(fields: [creditId], references: [id], onDelete: Cascade)
+  accountCode  String
+  account      CashAccount    @relation(fields: [accountCode], references: [code])
+  amount       Decimal        @db.Decimal(14, 2)
+  receivedById String
+  receivedBy   User           @relation(fields: [receivedById], references: [id])
+  occurredAt   DateTime       @default(now())
+  createdAt    DateTime       @default(now())
+
+  cashTransactions CashTransaction[]
+
+  @@index([creditId])
+  @@map("credit_payments")
+}

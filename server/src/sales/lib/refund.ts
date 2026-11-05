@@ -6,18 +6,23 @@ import type { SalePayment } from '../types/sale.types.js';
 
 /**
  * A refund may never exceed what the sale took in: the net of its SALE ledger
- * rows, or `salePrice` for a sale with no ledger rows (pre-ledger). The cap is
- * computed, never trusted from the client (ADR 0028).
+ * rows, or `salePrice` for a sale with no ledger rows (pre-ledger). A credit
+ * sale deliberately has no SALE rows — its money flowed through CreditPayment —
+ * so its return refunds nothing (cap 0); the overpayment is paid back on the
+ * credit instead (ADR 0035). The cap is computed, never trusted (ADR 0028).
  */
 export function assertRefundWithinSale(
   refundAmount: number,
   salePrice: Prisma.Decimal,
   saleNets: { amount: Prisma.Decimal }[],
+  isCreditSale = false,
 ): void {
   const cap =
     saleNets.length > 0
       ? saleNets.reduce((sum, n) => sum.plus(n.amount), new Prisma.Decimal(0))
-      : salePrice;
+      : isCreditSale
+        ? new Prisma.Decimal(0)
+        : salePrice;
   if (new Prisma.Decimal(refundAmount).greaterThan(cap)) {
     throw new BadRequestException(
       `Refund ${refundAmount} exceeds the sale's ${cap.toFixed(2)}`,

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CreditsReadService } from '../credits/credits-read.service.js';
 import { PricingService } from '../pricing/pricing.service.js';
 import { SalesService } from '../sales/sales.service.js';
 import { CustomersRepository } from './customers.repository.js';
@@ -25,6 +26,7 @@ export class CustomersService {
     private readonly repo: CustomersRepository,
     private readonly sales: SalesService,
     private readonly pricing: PricingService,
+    private readonly credits: CreditsReadService,
   ) {}
 
   lookup(query?: string): Promise<CustomerView[]> {
@@ -70,6 +72,7 @@ export class CustomersService {
       notes: dto.notes,
       priceLevelCode: dto.priceLevelCode,
       standingDiscountPercent: dto.standingDiscountPercent,
+      creditLimit: dto.creditLimit,
     });
   }
 
@@ -84,12 +87,22 @@ export class CustomersService {
       notes: dto.notes,
       priceLevelCode: dto.priceLevelCode,
       standingDiscountPercent: dto.standingDiscountPercent,
+      creditLimit: dto.creditLimit,
     });
   }
 
   private async toListItem(customer: CustomerView): Promise<CustomerListItem> {
-    const sales = await this.sales.listByCustomer(customer.id);
-    return { ...customer, ...aggregateSales(sales) };
+    const [sales, credit] = await Promise.all([
+      this.sales.listByCustomer(customer.id),
+      this.credits.customerSummary(customer.id),
+    ]);
+    return {
+      ...customer,
+      ...aggregateSales(sales),
+      creditOutstanding: credit.outstanding,
+      creditOverdue: credit.overdueAmount,
+      effectiveCreditLimit: credit.effectiveLimit,
+    };
   }
 
   private async assertPhoneFree(

@@ -20,6 +20,10 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
   `discountAmountAllowed`, `discountPresetsPercent`/`discountPresetsAmount`
   (≤ 5 numbers each), `maxDiscountPercent` (cashier ceiling). Optional on the
   write DTO — an omitted field is left unchanged. Read by checkout.
+- Customer credit (ADR 0035): `customerCreditEnabled` (default false) and
+  `defaultCreditLimit` (nullable; null = no cap). Optional on the write DTO.
+  Read by the credits module to gate credit creation and compute the effective
+  limit.
 
 ## Exposes
 

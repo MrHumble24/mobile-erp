@@ -75,6 +75,16 @@ export function overdueConsignments(
   return `⏰ Muddati o'tgan nasiyalar:\n${lines.join('\n')}`;
 }
 
+export function overdueCredits(
+  rows: { customer: string; overdueAmount: number }[],
+): string {
+  // English placeholder; Uzbek copy comes from the i18n team later.
+  const lines = rows.map(
+    (r) => `- ${r.customer}: ${money(r.overdueAmount)} overdue`,
+  );
+  return `⏰ Overdue customer credit:\n${lines.join('\n')}`;
+}
+
 /** One account's balance at the day's start and now (decimal strings). */
 export interface DigestBalanceLine {
   label: string;
