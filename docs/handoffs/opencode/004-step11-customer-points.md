@@ -1,6 +1,6 @@
 # 004 — Step 11, part 2 of 6: the customer's bonus points
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 003 (merged)
+Status: done · Owner: OpenCode (Big Pickle) · Depends on: 003 (merged)
 
 ## Why
 Part 2 of the step 11 website work (see 003 for the list of parts). The server keeps a points
@@ -42,10 +42,22 @@ Fill the Result section of `docs/handoffs/opencode/004-step11-customer-points.md
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (OpenCode)
+- Commits: `b0cfa04` — `feat(client): show customer bonus points and let the owner correct them` (this doc committed separately)
 - Files changed:
+  - New `client/src/entities/bonus/` (types, key factory, repository, `useCustomerBonus`, `useAdjustCustomerBonus`, README).
+  - New `client/src/features/adjust-bonus/` (schema + spec, dialog, fields component, README).
+  - New `client/src/pages/customers/ui/CustomerBonusPanel.tsx` + `CustomerBonusHistory.tsx`; mounted from `CustomerDetailSheet.tsx`, permission checked in `CustomersPage.tsx`.
+  - `entities/customer`: `bonusBalance` type, `lookups()` key, picker shows points only when non-null.
+  - `shared/i18n/{en,uz}/customers.json`: same English keys/text (uz left for the translator).
+  - `client/package.json`: new spec added to `test`.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
+  - test: `ℹ tests 73` / `ℹ pass 73` / `ℹ fail 0` (exit 0).
+  - lint: `$ oxlint` completes with the pre-existing warnings; no new warning from the bonus files (exit 0).
+  - build: `✓ 4114 modules transformed.` … `✓ built in 5.99s` (exit 0).
+  - `graphify update .` ran in `client/` and at the repo root (exit 0).
 - Not done / skipped / failed:
+  - **Screens were not seen.** No browser is available here; Claude must check the rendered customer detail, picker points and correction dialog.
+  - No failures. Nothing else intentionally skipped.
 
 ## Check by Claude
