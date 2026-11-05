@@ -18,8 +18,18 @@ struct CustomerListItem: Decodable, Identifiable {
     let priceLevelCode: String?
     /// Standing discount as a 2-dp percent string; nil/"0.00" = none.
     let standingDiscountPercent: String?
+    /// Customer credit (ADR 0035). `creditLimit` is this customer's own ceiling
+    /// (nil = use the shop default); the others are derived positions. All nil on
+    /// a pre-feature response.
+    let creditLimit: String?
+    let creditOutstanding: String?
+    let creditOverdue: String?
+    /// The limit actually enforced: own, else the default; nil = no cap.
+    let effectiveCreditLimit: String?
 
     var totalSpentString: String { NSDecimalNumber(value: totalSpent).stringValue }
+    /// Own limit as an exact Decimal (nil when unset → uses the default).
+    var creditLimitDecimal: Decimal? { creditLimit.flatMap { Decimal(string: $0) } }
 
     /// The level to use, defaulting to walk-in when the server omitted it.
     var level: String { priceLevelCode ?? PriceLevels.defaultCode }
@@ -65,17 +75,6 @@ struct CustomerSale: Decodable, Identifiable {
         let m = device?.model ?? model
         return "\(m?.brand ?? "") \(m?.name ?? "")".trimmingCharacters(in: .whitespaces)
     }
-}
-
-/// `POST /customers`. Synthesized `Encodable` omits nil optionals, satisfying
-/// the server's `forbidNonWhitelisted`.
-struct CustomerPayload: Encodable {
-    let name: String?
-    let phone: String?
-    let notes: String?
-    /// Price level and standing discount (ADR 0034). Sent on create and update.
-    let priceLevelCode: String?
-    let standingDiscountPercent: Double?
 }
 
 /// Slice-local input helper (duplicated from Pos's global on purpose — a slice

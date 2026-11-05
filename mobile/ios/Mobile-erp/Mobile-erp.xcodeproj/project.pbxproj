@@ -16,6 +16,7 @@
 			membershipExceptions = (
 				Features/Balance/README.md,
 				Features/Consignment/README.md,
+				Features/Credit/README.md,
 				Features/Customers/README.md,
 				Features/Dashboard/README.md,
 				Features/Expenses/README.md,
@@ -26,6 +27,7 @@
 				Features/Reports/README.md,
 				Features/Sales/README.md,
 				Features/Settings/README.md,
+				Features/Shifts/README.md,
 				Features/Sync/README.md,
 				Features/Users/README.md,
 				FOUNDATION.md,

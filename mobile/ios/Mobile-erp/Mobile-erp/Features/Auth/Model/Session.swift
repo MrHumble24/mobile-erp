@@ -66,6 +66,19 @@ final class Session {
         }
     }
 
+    /// Re-read the signed-in user from `/auth/me` and persist it, so a permission
+    /// granted or revoked server-side applies without signing out (called on app
+    /// start and when the app returns to the foreground while online). A failure
+    /// keeps the current user — this never logs anyone out on its own.
+    func refreshUser() async {
+        guard user != nil else { return }
+        guard let fresh = try? await repo.me() else { return }
+        if let data = try? JSONEncoder().encode(fresh) {
+            keychain.set(String(decoding: data, as: UTF8.self), for: .user)
+        }
+        user = fresh
+    }
+
     func logout() {
         AppLog.info("auth", "logout")
         clear()

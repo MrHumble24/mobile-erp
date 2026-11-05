@@ -449,3 +449,64 @@ editor); `-openDevicePrices 1` (unit price editor); `-openCustomerForm 1`;
 `-openConsignForm <code>` (consign form with the partner price prefilled);
 `-openShipmentDetail first`; `-settingsBottom 1` (anchor settings at the discounts
 section).
+
+---
+
+### Customer credit (Step 7, ADR 0035)
+
+Sell a cart on credit — **no interest, ever**. Lives in `Features/Credit`; a
+finance screen in the More tab (`sale.read`), with the sell flow at the till.
+
+| Screen / Sheet | File | Role | Description |
+| :--- | :--- | :--- | :--- |
+| **Credits list** (`CreditsView`) | `Features/Credit/UI/CreditsView.swift` | `sale.read` | Status chips (all / open / overdue / paid in full), name/phone search, rows with left-to-pay + an overdue / paid-in-full tag. |
+| **Credit detail** (`CreditDetailSheet`) | `Features/Credit/UI/CreditDetailSheet.swift` | `sale.read` | Agreed / paid / left / overdue, goods, plan parts (paid + overdue), payments; take a payment, refund an overpayment (`sale.return`), contract. |
+| **Take payment / refund** (`CreditPaymentSheet`) | `Features/Credit/UI/CreditPaymentSheet.swift` | `sale.create` / `sale.return` | One amount + cash/card. A refund caps at the overpaid amount. |
+| **Contract** (`CreditContractSheet`) | `Features/Credit/UI/CreditContractSheet.swift` | `sale.read` | The printable contract: store, customer, goods, down payment, plan, no-interest statement. |
+| **On-credit sheet** (`CreditSheet`) | `Features/Credit/UI/CreditSheet.swift` | Till (`sale.credit`) | From the till checkout bar: customer debt/limit, cart total, down payment (cash/card/split), plan builder, sell, result. Online only. |
+
+Till (`Features/Pos`): the "On credit" button (`PosCheckoutBar`) is shown when the
+setting is on and the user has `sale.credit`; disabled offline. `PosCreditEntry`
+builds the cart as `CreditLinePost`s and `PosView` presents `CreditSheet`.
+
+Other slices: the customer form gains a credit-limit field (settings default as
+the placeholder); the customer detail shows current debt + overdue and that
+customer's credits; a credit sale shows a badge in `SaleDetailSheet` and its
+return shows the no-cash note (`ReturnSheet`); Settings gains the credit switch +
+default limit; Reports gains the customer-credit tab (`CreditReportTab`).
+
+Permissions now refresh on app start and on foreground (`Session.refreshUser()`
+in `RootView`), so a newly granted permission applies without signing out.
+
+DEBUG self-check: `CreditPlanSelfCheck`. DEBUG args: `-open credits`,
+`-openCredit first` (first credit's detail), `-posCredit 1` (till credit sheet on a
+seeded cart), `-openTab credit` (report tab).
+
+---
+
+### Cashier shifts (Step 8, ADR 0036)
+
+Optional per store (`shiftsEnabled`, off by default). A cashier counts the drawer
+cash on opening and closing; the closing difference posts to the balance. Lives in
+`Features/Shifts`; the open/close flow is the till bar. Online only.
+
+| Screen / Sheet | File | Role | Description |
+| :--- | :--- | :--- | :--- |
+| **Shift bar** (`ShiftBar`) | `Features/Shifts/UI/ShiftBar.swift` | Till (`sale.create`) | Open since HH:mm + Close shift, or No open shift + Open shift. Hidden when the setting is off. |
+| **Open shift** (`OpenShiftSheet`) | `Features/Shifts/UI/OpenShiftSheet.swift` | `sale.create` | Type the cash counted at the start. |
+| **Close shift** (`CloseShiftSheet`) | `Features/Shifts/UI/CloseShiftSheet.swift` | `sale.create` | Expected cash live, counted cash, the difference preview, an optional note; then the report. |
+| **Shift report** (`ShiftReportSheet`) | `Features/Shifts/UI/ShiftReportSheet.swift` | `sale.read` | Opening / expected / counted / difference / card total + movements by type with per-account totals. Force-close an open shift with `shift.manage`. |
+| **Shifts list** (`ShiftsView`) | `Features/Shifts/UI/ShiftsView.swift` | `sale.read` | Newest first, a date filter, a cashier filter for `shift.manage`. |
+| **Force close** (`ForceCloseSheet`) | `Features/Shifts/UI/ForceCloseSheet.swift` | `shift.manage` | Counted cash + a required note for a forgotten open shift. |
+
+Till (`Features/Pos`): the selling gate (`ShiftModel.blocksSale`) — online needs an
+open shift (checkout is disabled with a message + Open shift button), offline is
+allowed when a shift was open the last time we looked (cached). The server's 409
+`NO_OPEN_SHIFT` on `POST /sales` and `POST /credits` maps to the same prompt and
+keeps the cart. Settings gains the shifts switch; the `SHIFT_DIFFERENCE`
+ledger-type label is added to `BalanceFormat`. Permissions refresh on foreground
+(shared with step 7).
+
+DEBUG self-check: `ShiftMathSelfCheck` (−20,000 on an 11,480,000 vs 11,500,000
+count). DEBUG args: `-open shifts`, `-openShift first` (first shift's report),
+`-posShiftOpen 1`, `-posShiftClose 1` (the till open / close sheets).

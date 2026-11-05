@@ -12,6 +12,8 @@ final class PosViewModel {
     let cart = PosCart()
     /// How the customer pays (Cash / Card / Split). Default Cash.
     let payment = PaymentSelection()
+    /// Cashier shifts (ADR 0036): the till bar + the selling gate.
+    let shift = ShiftModel()
     var errorKey: String?
     /// A scanned unit awaiting the cashier's confirm tap before it joins the cart
     /// (or an error variant explaining why it can't). Drives the confirm sheet.
@@ -28,6 +30,12 @@ final class PosViewModel {
         didSet { if mode != oldValue { PosMode.remember(mode) } }
     }
 
+    /// Customer credit (ADR 0035): the "On credit" sheet and whether the shop has
+    /// the setting on. The entry also needs the `sale.credit` permission, which is
+    /// read via `canSellCredit`. Credit is online only.
+    var showCredit = false
+    var creditEnabled = false
+
     /// The catalog grid, built lazily so it only loads when the mode is used.
     let catalog = CatalogBrowser()
 
@@ -38,7 +46,7 @@ final class PosViewModel {
     /// load must not overwrite it (used to show the cashier-limit error).
     @ObservationIgnored var debugLockConfig = false
 
-    @ObservationIgnored private var container: AppContainer?
+    @ObservationIgnored private(set) var container: AppContainer?
     private var repo: PosRepository {
         PosRepository(context: container!.modelContext, api: container!.api)
     }
@@ -46,6 +54,8 @@ final class PosViewModel {
     func configure(_ container: AppContainer) {
         guard self.container == nil else { return }
         self.container = container
+        shift.configure(container)
+        Task { await shift.load() }
         Task { defaultWarrantyDays = await repo.defaultWarrantyDays() }
         Task {
             payment.setAccounts(await PaymentAccounts.load(api: container.api, i18n: container.i18n))
@@ -64,6 +74,7 @@ final class PosViewModel {
             return
         }
         cart.config = PosDiscountConfig.from(settings, session: container.session)
+        creditEnabled = settings.customerCreditEnabled
     }
 
     /// Resolve a scanned code. A unit (IMEI/serial) wins and is staged for the
@@ -169,9 +180,12 @@ final class PosViewModel {
     /// so each sale's payments sum to its own price. Offline, every line queues.
     func checkout() {
         guard let container, !cart.isEmpty, !busy else { return }
+        let online = container.connectivity.isOnline
+        // Shifts (ADR 0036): online, selling needs an open shift; offline is let
+        // through (the server trusts replays). Keep the cart and prompt to open.
+        guard !shift.blocksSale(online: online) else { errorKey = "shifts.shiftRequired"; return }
         busy = true
         errorKey = nil
-        let online = container.connectivity.isOnline
         let cashier = container.session.user?.displayName ?? ""
         let customer = cart.customer
         let lines = cart.lines
@@ -191,9 +205,13 @@ final class PosViewModel {
                         let id = try await repo.postSale(payload)
                         if !id.isEmpty { receiptId = id }
                     } catch {
-                        if (error as? AppError)?.statusCode == nil {
+                        let appError = error as? AppError
+                        if appError?.statusCode == nil {
                             try? repo.enqueueSale(payload, baseVersion: line.device?.version)
                             pending = true
+                        } else if appError?.statusCode == 409, appError?.code == "NO_OPEN_SHIFT" {
+                            busy = false; errorKey = "shifts.shiftRequired"
+                            await shift.refresh(); break   // keep the cart
                         } else {
                             busy = false; errorKey = "common.error"; break
                         }
@@ -207,7 +225,7 @@ final class PosViewModel {
             }
             busy = false
             if !results.isEmpty {
-                container.toasts.success(i18n("pos.saleSuccess", count: results.count))
+                container.toasts.success(container.i18n.t("pos.saleSuccess", ["count": String(results.count)]))
                 showCart = false   // close the catalog cart sheet before the receipt
                 completed = results
                 payment.method = .cash
@@ -278,9 +296,5 @@ final class PosViewModel {
             discountAmount: discount > 0 ? NSDecimalNumber(decimal: discount).stringValue : nil,
             priceLevelCode: cart.level
         )
-    }
-
-    private func i18n(_ key: String, count: Int) -> String {
-        container?.i18n.t(key, ["count": String(count)]) ?? key
     }
 }

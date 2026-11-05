@@ -15,6 +15,9 @@ struct ReturnSheet: View {
     /// A quantity sale (ADR 0030) has no device, so the restock-condition picker
     /// is hidden; the pieces are restored to stock regardless.
     var isQuantity = false
+    /// A credit sale (ADR 0035): the return lowers the debt and hands back no
+    /// cash, so the note is shown and the refund is 0.
+    var isCredit = false
     let onDone: () -> Void
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -44,6 +47,13 @@ struct ReturnSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if isCredit {
+                    Section {
+                        Label(i18n.t("credit.returnNote"), systemImage: "info.circle")
+                            .font(.footnote)
+                            .foregroundStyle(Tokens.muted)
+                    }
+                }
                 if !payments.isEmpty {
                     Section {
                         Text("\(i18n.t("balance.paidWith")): \(refundDestination)")
@@ -111,6 +121,7 @@ struct ReturnSheet: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .task { if isCredit, refund.isEmpty { refund = "0" } }
             .navigationTitle(i18n.t("sales.returnDevice", default: "Return & Refund"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

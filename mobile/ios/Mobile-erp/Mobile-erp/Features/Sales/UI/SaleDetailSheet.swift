@@ -17,8 +17,10 @@ struct SaleDetailSheet: View {
     private var canReturn: Bool { container.session.can("sale.return") && !sale.isReturned }
 
     /// The refund ceiling: what was tendered (sum of payment lines), or the sale
-    /// price when there are no tender lines — mirrors the server cap (ADR 0028).
+    /// price when there are no tender lines — mirrors the server cap (ADR 0028). A
+    /// credit sale's return hands back no cash (ADR 0035), so its cap is zero.
     private var maxRefund: Decimal {
+        if sale.isCredit { return 0 }
         if let lines = sale.payments, !lines.isEmpty {
             return lines.reduce(.zero) { $0 + (Decimal(string: $1.amount.string) ?? .zero) }
         }
@@ -39,7 +41,7 @@ struct SaleDetailSheet: View {
         .background(Tokens.card)
         .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id, payments: sale.payments ?? []) }
         .sheet(isPresented: $showReturn) {
-            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund, isQuantity: sale.isQuantitySale) {
+            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund, isQuantity: sale.isQuantitySale, isCredit: sale.isCredit) {
                 container.toasts.success(i18n.t("sales.returnSuccess"))
                 onChanged()
                 dismiss()
@@ -86,6 +88,7 @@ struct SaleDetailSheet: View {
             HStack(spacing: Tokens.Space.sm) {
                 StatusBadge(sale.isB2B ? i18n.t("sales.channelB2B") : i18n.t("sales.channelRetail"),
                             color: sale.isB2B ? Tokens.warning : Tokens.info)
+                if sale.isCredit { StatusBadge(i18n.t("credit.title"), color: Tokens.action) }
                 if sale.isReturned { StatusBadge(i18n.t("sales.returned"), color: Tokens.danger) }
             }
         }

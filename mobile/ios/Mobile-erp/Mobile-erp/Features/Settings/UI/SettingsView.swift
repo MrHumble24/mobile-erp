@@ -63,6 +63,8 @@ struct SettingsView: View {
                     number("settings.closingTime", $model.form.closingTime, "closingTime", placeholder: "20:00")
                 }
                 discountsSection($model)
+                creditSection($model)
+                shiftsSection($model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
@@ -112,6 +114,39 @@ struct SettingsView: View {
                             .sanitizeDecimal(model.form.maxDiscountPercent)
                     }
                 }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Customer credit (ADR 0035): the switch and the default per-customer limit.
+    private func creditSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("credit.settingsTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("credit.settingsEnabled"), isOn: model.form.customerCreditEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                if model.wrappedValue.form.customerCreditEnabled {
+                    AppFormField(label: i18n.t("credit.settingsDefaultLimit")) {
+                        AppTextField(placeholder: i18n.t("credit.noLimit"), text: model.form.defaultCreditLimit,
+                                     keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                            .sanitizeDecimal(model.form.defaultCreditLimit)
+                        Text(i18n.t("credit.creditLimitHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Cashier shifts (ADR 0036): the switch only; the rest lives at the till.
+    private func shiftsSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("shifts.settingsTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("shifts.settingsEnabled"), isOn: model.form.shiftsEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                Text(i18n.t("shifts.settingsHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

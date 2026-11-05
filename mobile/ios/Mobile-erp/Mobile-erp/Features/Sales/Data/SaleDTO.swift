@@ -84,8 +84,12 @@ struct SaleView: Decodable, Identifiable {
     let listPrice: MoneyValue?
     let discountAmount: MoneyValue?
     let priceLevelCode: String?
+    /// The credit this sale belongs to, or nil for an ordinary paid sale (ADR 0035).
+    let creditId: String?
 
     var isB2B: Bool { consignmentId != nil }
+    /// Sold on credit — the return lowers the debt and hands back no cash.
+    var isCredit: Bool { creditId != nil }
     /// Show the pricing block when a discount was given or the level is not retail.
     var showsPricing: Bool {
         (Decimal(string: discountAmount?.string ?? "0") ?? 0) > 0
