@@ -5,6 +5,7 @@ export interface ShipmentView {
   shipmentDate: Date;
   expectedCount: number;
   overheadCost: string;
+  paymentAccountCode: string;
   notes: string | null;
   createdById: string;
   createdAt: Date;
@@ -18,6 +19,7 @@ export interface ShipmentInput {
   shipmentDate: Date;
   expectedCount: number;
   overheadCost?: number;
+  paymentAccountCode: string;
   notes?: string;
   createdById: string;
 }

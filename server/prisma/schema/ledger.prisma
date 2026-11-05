@@ -15,6 +15,8 @@ model CashAccount {
   isActive  Boolean @default(true)
 
   transactions CashTransaction[]
+  shipments    Shipment[]
+  recurrences  ExpenseRecurrence[]
 
   @@map("cash_accounts")
 }
@@ -37,7 +39,8 @@ model CashTransactionType {
 /// fixed by a new row. `amount` is signed: positive = money in, negative =
 /// money out, never zero (enforced by a DB CHECK and the service). A transfer
 /// writes two rows sharing `transferId` (one negative, one positive) so the
-/// store total is unchanged. 2b adds nullable links to the source row.
+/// store total is unchanged. 2b posts rows automatically from the source event
+/// and links back to it via exactly one of the nullable source ids below.
 model CashTransaction {
   id          String              @id @default(uuid())
   storeId     String
@@ -51,6 +54,17 @@ model CashTransaction {
   note        String?
   /// Shared by the two rows of one transfer; null for every other row.
   transferId  String?
+  /// At most one of these is set, tying the row to what moved the money (2b).
+  saleId           String?
+  sale             Sale?           @relation(fields: [saleId], references: [id])
+  expenseId        String?
+  expense          Expense?        @relation(fields: [expenseId], references: [id])
+  partnerPaymentId String?
+  partnerPayment   PartnerPayment? @relation(fields: [partnerPaymentId], references: [id])
+  deviceId         String?
+  device           Device?         @relation(fields: [deviceId], references: [id])
+  shipmentId       String?
+  shipment         Shipment?       @relation(fields: [shipmentId], references: [id])
   createdById String
   createdBy   User                @relation(fields: [createdById], references: [id])
   createdAt   DateTime            @default(now())
@@ -60,5 +74,10 @@ model CashTransaction {
   @@index([typeCode])
   @@index([occurredAt])
   @@index([transferId])
+  @@index([saleId])
+  @@index([expenseId])
+  @@index([partnerPaymentId])
+  @@index([deviceId])
+  @@index([shipmentId])
   @@map("cash_transactions")
 }

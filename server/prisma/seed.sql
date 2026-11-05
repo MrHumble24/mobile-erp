@@ -43,14 +43,21 @@ INSERT INTO cash_accounts (code, label, "sortOrder") VALUES
   ('CARD', 'Card', 20)
 ON CONFLICT (code) DO NOTHING;
 
--- Manual + transfer types only in 2a; 2b adds SALE, REFUND, PARTNER_PAYMENT,
--- PURCHASE, OVERHEAD, EXPENSE (posted automatically, never from this list).
+-- 2a seeds the manual + transfer types; 2b adds the automatic ones (posted by
+-- the sale/return/expense/partner-payment/purchase/overhead paths, never picked
+-- from this list by a user). Mirrored in the 2b migration for `migrate deploy`.
 INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
-  ('OPENING',    'Opening balance', 10),
-  ('DEPOSIT',    'Deposit',         20),
-  ('WITHDRAWAL', 'Withdrawal',      30),
-  ('CORRECTION', 'Correction',      40),
-  ('TRANSFER',   'Transfer',        50)
+  ('OPENING',         'Opening balance',  10),
+  ('DEPOSIT',         'Deposit',          20),
+  ('WITHDRAWAL',      'Withdrawal',       30),
+  ('CORRECTION',      'Correction',       40),
+  ('TRANSFER',        'Transfer',         50),
+  ('SALE',            'Sale',             60),
+  ('REFUND',          'Refund',           70),
+  ('PARTNER_PAYMENT', 'Partner payment',  80),
+  ('PURCHASE',        'Device purchase',  90),
+  ('OVERHEAD',        'Shipment overhead',100),
+  ('EXPENSE',         'Expense',          110)
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;

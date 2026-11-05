@@ -9,6 +9,7 @@ import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
 import {
@@ -31,6 +32,7 @@ export class ShipmentsService {
     private readonly suppliers: SuppliersService,
     private readonly models: DeviceModelsService,
     private readonly stores: StoresService,
+    private readonly ledger: LedgerService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -44,25 +46,42 @@ export class ShipmentsService {
 
   async create(dto: CreateShipmentDto, userId: string): Promise<ShipmentView> {
     await this.suppliers.get(dto.supplierId);
+    const paymentAccountCode = dto.paymentAccountCode ?? 'CASH';
+    if (
+      !(await this.ledger.activeAccountCodes()).includes(paymentAccountCode)
+    ) {
+      throw new BadRequestException(
+        `Unknown or inactive account ${paymentAccountCode}`,
+      );
+    }
     return this.repo.create({
       storeId: await this.stores.currentStoreId(),
       supplierId: dto.supplierId,
       shipmentDate: new Date(dto.shipmentDate),
       expectedCount: dto.expectedCount,
       overheadCost: dto.overheadCost,
+      paymentAccountCode,
       notes: dto.notes,
       createdById: userId,
     });
   }
 
-  async update(id: string, dto: UpdateShipmentDto): Promise<ShipmentView> {
+  async update(
+    id: string,
+    dto: UpdateShipmentDto,
+    userId: string,
+  ): Promise<ShipmentView> {
     await this.require(id);
-    return this.repo.update(id, {
-      shipmentDate: dto.shipmentDate ? new Date(dto.shipmentDate) : undefined,
-      expectedCount: dto.expectedCount,
-      overheadCost: dto.overheadCost,
-      notes: dto.notes,
-    });
+    return this.repo.update(
+      id,
+      {
+        shipmentDate: dto.shipmentDate ? new Date(dto.shipmentDate) : undefined,
+        expectedCount: dto.expectedCount,
+        overheadCost: dto.overheadCost,
+        notes: dto.notes,
+      },
+      userId,
+    );
   }
 
   async addDevices(

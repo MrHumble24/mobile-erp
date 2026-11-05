@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
@@ -35,14 +36,19 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
   };
   const checkout = { checkout: jest.fn().mockResolvedValue('sale-1') };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
+  const ledger = {
+    activeAccountCodes: jest.fn().mockResolvedValue(['CASH', 'CARD']),
+    salePayments: jest.fn().mockResolvedValue(new Map()),
+  };
   const events = { emit: jest.fn() };
   const service = new SalesService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
     stores as unknown as StoresService,
+    ledger as unknown as LedgerService,
     events as unknown as EventEmitter2,
   );
-  return { service, reads, checkout, stores, events };
+  return { service, reads, checkout, stores, ledger, events };
 }
 
 describe('SalesService.create', () => {
@@ -57,7 +63,7 @@ describe('SalesService.create', () => {
       ...(dto as object),
       clientMutationId: 'm-1',
     } as never);
-    expect(result).toBe(existing);
+    expect(result).toMatchObject({ id: 'sale-prev' });
     expect(checkout.checkout).not.toHaveBeenCalled();
   });
 

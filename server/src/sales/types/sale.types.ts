@@ -40,6 +40,12 @@ export interface SaleReturnView {
   processedBy: { id: string; name: string };
 }
 
+/** One tender line of a sale, derived from its SALE ledger rows. */
+export interface SalePayment {
+  accountCode: string;
+  amount: Money;
+}
+
 export interface SaleView {
   id: string;
   device: {
@@ -58,6 +64,8 @@ export interface SaleView {
   consignmentId: string | null;
   notes: string | null;
   return: SaleReturnView | null;
+  /** How the sale was tendered (its SALE ledger rows); [] when none exist. */
+  payments: SalePayment[];
 }
 
 /** Filters shared by `GET /sales` and `GET /sales/stats`. */
@@ -128,6 +136,8 @@ export interface CheckoutInput {
   customerId?: string;
   inlineCustomer?: { name: string; phone?: string };
   warranty: { days: number; startsAt: Date; endsAt: Date };
+  /** One SALE ledger row posted per line, inside the checkout transaction. */
+  payments: SalePayment[];
 }
 
 export interface ReturnInput {
@@ -138,4 +148,7 @@ export interface ReturnInput {
   refundAmount: number;
   reason?: string;
   processedById: string;
+  storeId: string;
+  /** Per-account refund rows (positive magnitudes) posted inside the return tx. */
+  refundPostings: SalePayment[];
 }

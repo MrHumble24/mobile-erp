@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { LedgerFilter, LedgerPost } from './types/ledger.types.js';
+import type {
+  LedgerFilter,
+  LedgerPost,
+  LedgerSourceField,
+} from './types/ledger.types.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -61,6 +65,20 @@ export class LedgerRepository {
     return this.prisma.cashTransaction.groupBy({
       by: ['accountCode'],
       where: { storeId },
+      _sum: { amount: true },
+    });
+  }
+
+  /**
+   * Net amount per (source row, account) for the given type codes — one query
+   * that powers every derived read: a sale's payments, an expense's current
+   * account, a partner payment's account. Rows are keyed by `field`.
+   */
+  groupBySource(field: LedgerSourceField, typeCodes: string[], ids: string[]) {
+    if (ids.length === 0) return Promise.resolve([]);
+    return this.prisma.cashTransaction.groupBy({
+      by: [field, 'accountCode'],
+      where: { [field]: { in: ids }, typeCode: { in: typeCodes } },
       _sum: { amount: true },
     });
   }

@@ -25,6 +25,14 @@ export class CreateShipmentDto {
   @Min(0)
   overheadCost?: number;
 
+  /**
+   * Account the purchase + overhead money leaves from. Fixed at creation
+   * (cannot be changed later); defaults to CASH; must be active.
+   */
+  @IsOptional()
+  @IsString()
+  paymentAccountCode?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(2000)

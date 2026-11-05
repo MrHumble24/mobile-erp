@@ -34,8 +34,12 @@ export class ShipmentsController {
 
   @Patch(':id')
   @RequirePermissions('shipment.manage')
-  update(@Param('id') id: string, @Body() dto: UpdateShipmentDto) {
-    return this.shipments.update(id, dto);
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateShipmentDto,
+  ) {
+    return this.shipments.update(id, dto, user.id);
   }
 
   @Post(':id/devices')

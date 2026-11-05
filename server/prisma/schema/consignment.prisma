@@ -85,6 +85,8 @@ model PartnerPayment {
   receivedBy    User         @relation(fields: [receivedById], references: [id])
   createdAt     DateTime     @default(now())
 
+  cashTransactions CashTransaction[]
+
   @@index([partnerId, paidAt])
   @@index([storeId])
   @@map("partner_payments")

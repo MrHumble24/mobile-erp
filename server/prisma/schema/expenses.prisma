@@ -39,6 +39,9 @@ model Expense {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
+  // Which account the money left is derived from these ledger rows, never stored.
+  cashTransactions CashTransaction[]
+
   @@index([incurredAt])
   @@index([categoryId])
   @@index([deletedAt])
@@ -61,6 +64,10 @@ model ExpenseRecurrence {
   frequency   String
   nextDueAt   DateTime
   isActive    Boolean         @default(true)
+  // Account each spawned expense posts against (CASH default). Stored here (not
+  // derived) because a template has no ledger rows of its own.
+  accountCode String          @default("CASH")
+  account     CashAccount     @relation(fields: [accountCode], references: [code])
   // Author id (no relation: adding a back-reference would touch the User model).
   createdById String
   expenses    Expense[]
@@ -70,5 +77,6 @@ model ExpenseRecurrence {
   @@index([nextDueAt])
   @@index([categoryId])
   @@index([storeId])
+  @@index([accountCode])
   @@map("expense_recurrences")
 }

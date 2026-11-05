@@ -80,11 +80,12 @@ model Device {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inspections   QcInspection[]
-  statusHistory DeviceStatusHistory[]
-  sales         Sale[]
-  consignments  Consignment[]
-  conflicts     SyncConflict[]
+  inspections      QcInspection[]
+  statusHistory    DeviceStatusHistory[]
+  sales            Sale[]
+  consignments     Consignment[]
+  conflicts        SyncConflict[]
+  cashTransactions CashTransaction[]
 
   @@index([statusCode])
   @@index([modelId])

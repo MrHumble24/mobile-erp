@@ -41,6 +41,8 @@ export interface PaymentView {
   notes: string | null;
   receivedById: string;
   createdAt: Date;
+  /** Account the payment landed in (its PARTNER_PAYMENT ledger row). */
+  accountCode: string;
 }
 
 /** One chronological ledger line: a consignment charge or a payment credit. */
@@ -72,4 +74,5 @@ export interface CreatePaymentInput {
   paidAt?: Date;
   notes?: string;
   receivedById: string;
+  accountCode: string;
 }

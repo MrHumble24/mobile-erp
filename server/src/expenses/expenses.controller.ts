@@ -53,14 +53,18 @@ export class ExpensesController {
 
   @Patch(':id')
   @RequirePermissions('expense.manage')
-  update(@Param('id') id: string, @Body() dto: UpdateExpenseDto) {
-    return this.expenses.update(id, dto);
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateExpenseDto,
+  ) {
+    return this.expenses.update(user.id, id, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
   @RequirePermissions('expense.manage')
-  remove(@Param('id') id: string) {
-    return this.expenses.remove(id);
+  remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.expenses.remove(user.id, id);
   }
 }

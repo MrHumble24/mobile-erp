@@ -4,15 +4,20 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { toNumber } from '../common/lib/to-number.js';
-import type { Prisma } from '../generated/client/client.js';
+import { Prisma } from '../generated/client/client.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
 import { LedgerQueryDto } from './dto/ledger-query.dto.js';
 import { TransferDto } from './dto/transfer.dto.js';
 import { LedgerRepository } from './ledger.repository.js';
 import { signedManualAmount } from './lib/signed-amount.js';
-import type { BalanceSummary, LedgerPost } from './types/ledger.types.js';
+import { currentAccount, foldSourceNets } from './lib/source-nets.js';
+import type {
+  AccountNet,
+  BalanceSummary,
+  LedgerPost,
+  LedgerSourceField,
+} from './types/ledger.types.js';
 
 @Injectable()
 export class LedgerService {
@@ -21,7 +26,10 @@ export class LedgerService {
     private readonly stores: StoresService,
   ) {}
 
-  /** One number per account plus the total — all summed from the rows. */
+  /**
+   * One balance per account plus the total, summed from the rows in exact
+   * decimal arithmetic (never float) and returned as 2-dp strings.
+   */
   async getBalances(): Promise<BalanceSummary> {
     const storeId = await this.stores.currentStoreId();
     const [accounts, sums] = await Promise.all([
@@ -29,17 +37,66 @@ export class LedgerService {
       this.repo.sumByAccount(storeId),
     ]);
     const byCode = new Map(
-      sums.map((s) => [s.accountCode, toNumber(s._sum.amount)]),
+      sums.map((s) => [s.accountCode, s._sum.amount ?? new Prisma.Decimal(0)]),
     );
-    const rows = accounts.map((a) => ({
-      accountCode: a.code,
-      label: a.label,
-      balance: byCode.get(a.code) ?? 0,
-    }));
-    return {
-      accounts: rows,
-      total: rows.reduce((sum, r) => sum + r.balance, 0),
-    };
+    let total = new Prisma.Decimal(0);
+    const rows = accounts.map((a) => {
+      const balance = byCode.get(a.code) ?? new Prisma.Decimal(0);
+      total = total.plus(balance);
+      return {
+        accountCode: a.code,
+        label: a.label,
+        balance: balance.toFixed(2),
+      };
+    });
+    return { accounts: rows, total: total.toFixed(2) };
+  }
+
+  /** Active account codes, for validating caller-supplied payment accounts. */
+  async activeAccountCodes(): Promise<string[]> {
+    const accounts = await this.repo.listAccounts();
+    return accounts.map((a) => a.code);
+  }
+
+  /** Per-account SALE nets for each sale (positive = money taken in). */
+  salePayments(saleIds: string[]): Promise<Map<string, AccountNet[]>> {
+    return this.sourceNets('saleId', ['SALE'], saleIds);
+  }
+
+  /** The account each partner payment landed in (one row), or none. */
+  async partnerPaymentAccounts(ids: string[]): Promise<Map<string, string>> {
+    const nets = await this.sourceNets(
+      'partnerPaymentId',
+      ['PARTNER_PAYMENT'],
+      ids,
+    );
+    return this.toCurrentAccounts(nets);
+  }
+
+  /** The account each expense's money currently sits against, or none. */
+  async expenseAccounts(ids: string[]): Promise<Map<string, string>> {
+    const nets = await this.sourceNets('expenseId', ['EXPENSE'], ids);
+    return this.toCurrentAccounts(nets);
+  }
+
+  private async sourceNets(
+    field: LedgerSourceField,
+    typeCodes: string[],
+    ids: string[],
+  ): Promise<Map<string, AccountNet[]>> {
+    const rows = await this.repo.groupBySource(field, typeCodes, ids);
+    return foldSourceNets(field, rows);
+  }
+
+  private toCurrentAccounts(
+    nets: Map<string, AccountNet[]>,
+  ): Map<string, string> {
+    const out = new Map<string, string>();
+    for (const [id, list] of nets) {
+      const account = currentAccount(list);
+      if (account) out.set(id, account);
+    }
+    return out;
   }
 
   /** History, newest first, paginated and filterable (expenses conventions). */
@@ -90,7 +147,7 @@ export class LedgerService {
    * Callers build a `LedgerPost`; no module ever touches LedgerRepository.
    */
   post(entry: LedgerPost, tx?: Prisma.TransactionClient) {
-    if (entry.amount === 0) {
+    if (new Prisma.Decimal(entry.amount).isZero()) {
       throw new BadRequestException('amount cannot be zero');
     }
     return this.repo.create(entry, tx);

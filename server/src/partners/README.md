@@ -22,7 +22,9 @@ B2B partner directory, balances, ledger and payments (PRD Module 4).
 - `POST /` — `partner.manage`. Create.
 - `PATCH /:id` — `partner.manage`. Update / deactivate.
 - `POST /:id/payments` — `partner.payment`. `{ amount>0, consignmentId?,
-  paidAt?, notes? }`; `receivedById` = current user.
+  paidAt?, notes?, accountCode? }`; `receivedById` = current user. `accountCode`
+  defaults to CASH (must be active); one `PARTNER_PAYMENT` row (money in) posts
+  in the same transaction, and the response carries `accountCode` (ADR 0025).
 
 `PartnersService.assertWithinCreditLimit(partnerId, agreedPrice)` is the public
 method the consignments module injects for the credit-limit gate.

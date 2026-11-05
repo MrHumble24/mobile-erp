@@ -1,9 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateExpenseDto } from './dto/create-expense.dto.js';
 import { UpdateExpenseDto } from './dto/update-expense.dto.js';
+import { ExpensePosting } from './lib/expense-ledger.js';
 import { ExpenseDailyPoint, ExpenseFilter } from './types/expense.types.js';
+
+type Tx = Prisma.TransactionClient;
+
+/** Who/where/when a batch of EXPENSE rows is posted under. */
+interface PostContext {
+  storeId: string;
+  createdById: string;
+  occurredAt?: Date;
+}
 
 const LIST_INCLUDE = {
   category: { select: { id: true, name: true } },
@@ -19,7 +30,32 @@ const LIST_INCLUDE = {
 /** All Prisma access for expenses. Every read excludes soft-deleted rows. */
 @Injectable()
 export class ExpensesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledger: LedgerService,
+  ) {}
+
+  private async postAll(
+    tx: Tx,
+    expenseId: string,
+    postings: ExpensePosting[],
+    ctx: PostContext,
+  ) {
+    for (const p of postings) {
+      await this.ledger.post(
+        {
+          storeId: ctx.storeId,
+          accountCode: p.accountCode,
+          typeCode: 'EXPENSE',
+          amount: p.amount,
+          occurredAt: ctx.occurredAt,
+          expenseId,
+          createdById: ctx.createdById,
+        },
+        tx,
+      );
+    }
+  }
 
   async findMany(filter: ExpenseFilter) {
     const where = this.toWhere(filter);
@@ -44,31 +80,51 @@ export class ExpensesRepository {
   }
 
   create(
-    data: Omit<CreateExpenseDto, 'incurredAt'> & {
+    data: Omit<CreateExpenseDto, 'incurredAt' | 'accountCode'> & {
       storeId: string;
       createdById: string;
       incurredAt?: Date;
     },
+    postings: ExpensePosting[],
   ) {
-    return this.prisma.expense.create({ data, include: LIST_INCLUDE });
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.expense.create({ data, include: LIST_INCLUDE });
+      await this.postAll(tx, row.id, postings, {
+        storeId: data.storeId,
+        createdById: data.createdById,
+        occurredAt: data.incurredAt,
+      });
+      return row;
+    });
   }
 
   update(
     id: string,
-    data: Omit<UpdateExpenseDto, 'incurredAt'> & { incurredAt?: Date },
+    data: Omit<UpdateExpenseDto, 'incurredAt' | 'accountCode'> & {
+      incurredAt?: Date;
+    },
+    postings: ExpensePosting[],
+    ctx: PostContext,
   ) {
-    return this.prisma.expense.update({
-      where: { id },
-      data,
-      include: LIST_INCLUDE,
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.expense.update({
+        where: { id },
+        data,
+        include: LIST_INCLUDE,
+      });
+      await this.postAll(tx, id, postings, ctx);
+      return row;
     });
   }
 
   /** Soft delete — keeps the row for report history, hides it from every read. */
-  async softRemove(id: string) {
-    await this.prisma.expense.update({
-      where: { id },
-      data: { deletedAt: new Date() },
+  async softRemove(id: string, postings: ExpensePosting[], ctx: PostContext) {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.expense.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+      await this.postAll(tx, id, postings, ctx);
     });
   }
 

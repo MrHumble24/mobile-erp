@@ -43,8 +43,9 @@ model Sale {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  warranty Warranty?
-  return   SaleReturn?
+  warranty         Warranty?
+  return           SaleReturn?
+  cashTransactions CashTransaction[]
 
   @@index([soldAt])
   @@index([deviceId])
