@@ -16,6 +16,7 @@ const TYPE_KEYS: Record<string, string> = {
   REFUND: "balance.typeRefund",
   PARTNER_PAYMENT: "balance.typePartnerPayment",
   PURCHASE: "balance.typePurchase",
+  CUSTOMER_PURCHASE: "balance.typeCustomerPurchase",
   OVERHEAD: "balance.typeOverhead",
   EXPENSE: "balance.typeExpense",
   DEVICE_EXPENSE: "balance.typeDeviceExpense",

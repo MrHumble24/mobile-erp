@@ -14,7 +14,8 @@ export interface DeviceView {
   imei: string | null
   imei2: string | null
   serialNumber: string | null
-  shipmentId: string
+  /** Null for a unit bought from a customer — it has no supplier shipment (ADR 0039). */
+  shipmentId: string | null
   modelId: string
   specs: DeviceSpecs
   acquisitionCost?: string

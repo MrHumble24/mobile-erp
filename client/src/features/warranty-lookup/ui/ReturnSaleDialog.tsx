@@ -111,10 +111,21 @@ function RefundNote({ payments }: { payments: PaymentLine[] }) {
   )
 }
 
+function TradeInNote({ tradeInValue }: { tradeInValue: number }) {
+  const { t } = useI18n()
+  if (tradeInValue <= 0) return null
+  return (
+    <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+      {t("purchases.returnTradeInNote")}
+    </p>
+  )
+}
+
 function ReturnSaleForm({
   saleId,
   salePrice,
   payments,
+  tradeInValue,
   onCredit,
   onCancel,
   onSuccess,
@@ -122,14 +133,16 @@ function ReturnSaleForm({
   saleId: string
   salePrice: number
   payments: PaymentLine[]
+  tradeInValue: number
   onCredit: boolean
   onCancel: () => void
   onSuccess?: () => void
 }) {
   const { t } = useI18n()
   const returnMutation = useReturnSale()
-  // A credit sale refunds nothing — the return lowers the debt (ADR 0035).
-  const maxRefund = onCredit ? 0 : paidTotalOf(payments, salePrice)
+  // A credit sale refunds nothing — the return lowers the debt (ADR 0035). A
+  // trade-in's value adds to the cap and is paid back in cash (ADR 0039).
+  const maxRefund = onCredit ? 0 : paidTotalOf(payments, salePrice) + tradeInValue
   const [refundAmount, setRefundAmount] = React.useState(maxRefund)
   const [reason, setReason] = React.useState("")
   const [deviceToStatusCode, setDeviceToStatusCode] = React.useState<"IN_STOCK" | "DEFECTIVE">("IN_STOCK")
@@ -169,6 +182,7 @@ function ReturnSaleForm({
         maxRefund={maxRefund}
         onCredit={onCredit}
       />
+      <TradeInNote tradeInValue={tradeInValue} />
       {!onCredit && <RefundNote payments={payments} />}
       <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending || refundAmount > maxRefund}>
         {returnMutation.isPending ? t("common.loading") : t("sales.returnDevice")}
@@ -181,6 +195,7 @@ export function ReturnSaleDialog({
   saleId,
   salePrice,
   payments = [],
+  tradeInValue = 0,
   onCredit = false,
   open,
   onOpenChange,
@@ -191,6 +206,8 @@ export function ReturnSaleDialog({
   /** The sale's tender lines; the refund goes back to these accounts and is
    *  capped at their sum (or the sale price when there are none). */
   payments?: PaymentLine[]
+  /** Σ trade-in values on the sale; adds to the cap, refunded in cash (ADR 0039). */
+  tradeInValue?: number
   /** A sale sold on credit: no cash is handed back; the return lowers the debt. */
   onCredit?: boolean
   open: boolean
@@ -212,6 +229,7 @@ export function ReturnSaleDialog({
             saleId={saleId}
             salePrice={salePrice}
             payments={payments}
+            tradeInValue={tradeInValue}
             onCredit={onCredit}
             onCancel={() => onOpenChange(false)}
             onSuccess={onSuccess}

@@ -22,4 +22,12 @@ export {
   useRemoveDeviceModelImage,
 } from "./model/use-device-models"
 export { DynamicSpecFields, type SpecFieldProblem } from "./ui/DynamicSpecFields"
+export { UsedUnitFields } from "./ui/UsedUnitFields"
+export {
+  emptyUsedUnit,
+  usedUnitToPayload,
+  usedUnitReady,
+  type UsedUnitValues,
+  type UsedUnitPayload,
+} from "./lib/used-unit"
 export { storageOptionsFromModels } from "./lib/storage-options"

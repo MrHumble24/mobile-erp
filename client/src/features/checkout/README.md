@@ -30,11 +30,24 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
   catalog-mode column.
 
 ## Exposes (index.ts)
-`useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `toLinePrices`,
-`lineFinalPrice`, `lineListCents`, `lineHasList`, `cartTotals`, `toCreditLine`,
-`toCreditLines`, `CartLines`, `CompactCartLines`, `PriceLevelControl`,
-`CartDiscountControl`, `CustomerPanel`, `TotalsPanel`, `CheckoutReceiptModal`, and
+`useCartStore`, `useCheckout`, `useTradeInStore`, `useCartTradeInPlan`,
+`isLineBlocked`, `isPaymentBlocked`, `toLinePrices`, `lineFinalPrice`,
+`lineListCents`, `lineHasList`, `cartTotals`, `toCreditLine`, `toCreditLines`,
+`CartLines`, `CompactCartLines`, `PriceLevelControl`, `CartDiscountControl`,
+`CustomerPanel`, `TotalsPanel`, `TradeInSection`, `CheckoutReceiptModal`, and
 cart/checkout types.
+
+## Trade-in at the till (ADR 0039, 0041)
+A trade-in is a phone the customer gives in part payment; the checkout owns it
+because it rides the sale. `trade-in.store.ts` holds the cart's trade-in drafts
+(persisted, online only, never queued). `lib/allocate-trade-ins.ts` (tested) puts
+each trade-in on a line that can carry it — largest first, onto the line with the
+most remaining price — and `lib/trade-in-plan.ts` (tested) derives the per-line
+payable (price − its trade-ins) and the amount to pay (total − trade-ins). The
+payment panel/totals and `use-checkout` all read the plan; each line's POST sends
+`payments = price − its trade-ins` and carries those trade-ins. A sold line's
+trade-in drafts are dropped so a retry never resends them; a cart with a trade-in
+is online-only and cannot be sold on credit.
 
 ## Pricing (ADR 0034)
 Each line shows its list price for the cart's level. When a list price exists the price

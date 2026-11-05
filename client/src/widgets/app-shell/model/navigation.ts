@@ -19,6 +19,7 @@ import {
   Package,
   HandCoins,
   Clock,
+  Repeat2,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -52,6 +53,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/sales", labelKey: "nav.sales", permission: "sale.read", icon: Receipt },
       { to: "/customers", labelKey: "nav.customers", permission: "customer.read", icon: UserRound },
+      { to: "/purchases", labelKey: "nav.purchases", permission: "purchase.read", icon: Repeat2 },
       { to: "/credits", labelKey: "nav.credits", permission: "sale.read", icon: HandCoins },
       { to: "/shifts", labelKey: "nav.shifts", permission: "sale.read", icon: Clock },
       { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },

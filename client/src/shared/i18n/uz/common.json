@@ -32,5 +32,9 @@
   "required": "Majburiy",
   "notFound": "Ma'lumot topilmadi",
   "select": "Tanlang",
-  "print": "Print"
+  "print": "Print",
+  "from": "From",
+  "to": "To",
+  "previous": "Previous",
+  "next": "Next"
 }

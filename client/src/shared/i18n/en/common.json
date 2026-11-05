@@ -32,5 +32,9 @@
   "required": "Required",
   "notFound": "Not found",
   "select": "Select",
-  "print": "Print"
+  "print": "Print",
+  "from": "From",
+  "to": "To",
+  "previous": "Previous",
+  "next": "Next"
 }

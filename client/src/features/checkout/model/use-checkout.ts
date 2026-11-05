@@ -1,15 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { HttpError, isNetworkError } from "@/shared/api/http"
-import { saleRepository, saleKeys } from "@/entities/sale"
+import { saleRepository, saleKeys, type SaleTradeInDto } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { stockKeys } from "@/entities/stock"
 import { catalogKeys } from "@/entities/catalog"
 import { customerKeys } from "@/entities/customer"
+import { customerPurchaseKeys } from "@/entities/customer-purchase"
+import { ledgerKeys } from "@/entities/ledger"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
+import { useTradeInStore, type TradeInDraft } from "./trade-in.store"
+import { buildCartTradeInPlan } from "./use-trade-in-plan"
 import { toSaleDto } from "../lib/to-sale-dto"
 import { buildCartPayments } from "../lib/payment"
-import { toLinePrices } from "../lib/line-pricing"
 import { cartLineLabel } from "../lib/cart-line-label"
 
 export interface CheckoutResult {
@@ -39,10 +42,26 @@ export class CheckoutLineError extends Error {
   }
 }
 
+function toTradeInDtos(drafts: TradeInDraft[]): SaleTradeInDto[] {
+  return drafts.map((d) => ({
+    modelId: d.modelId,
+    imei: d.imei,
+    imei2: d.imei2,
+    serialNumber: d.serialNumber,
+    specs: d.specs,
+    value: d.value,
+  }))
+}
+
 /**
  * Submits cart lines sequentially, one POST /sales each. Succeeded lines are removed
  * from the cart as they complete (so a retry is idempotent on the remaining lines);
  * the first failure stops the loop and surfaces which IMEI failed and why.
+ *
+ * Trade-ins (ADR 0039) are allocated to the lines that can carry them; each line's
+ * payments are sent as its price − the trade-ins put on it, and those trade-ins ride
+ * that line's POST. A trade-in's draft is dropped as its line commits, so a retry
+ * never sends it twice. Online only — a cart with trade-ins is never queued.
  */
 export function useCheckout() {
   const queryClient = useQueryClient()
@@ -55,23 +74,31 @@ export function useCheckout() {
       const snapshot = useCartStore.getState()
       const lines = [...snapshot.lines]
       const level = snapshot.priceLevelCode
-      const payments = buildCartPayments(
-        toLinePrices(lines, level),
-        snapshot.paymentMethod,
-        snapshot.splitParts
-      )
+      const tradeIns = useTradeInStore.getState().tradeIns
+      const hasTradeIns = tradeIns.length > 0
+      const plan = buildCartTradeInPlan(lines, level, tradeIns)
+      const payments = buildCartPayments(plan.payableLines, snapshot.paymentMethod, snapshot.splitParts)
+      const draftById = new Map(tradeIns.map((t) => [t.id, t]))
+
       for (const line of lines) {
         const customer = useCartStore.getState().customer
-        const dto = toSaleDto(line, customer, level, payments[line.lineId])
+        const linePayments = payments[line.lineId]?.filter((p) => p.amount > 0)
+        const dto = toSaleDto(line, customer, level, linePayments?.length ? linePayments : undefined)
+        const lineTradeInIds = plan.itemsByLine[line.lineId] ?? []
+        if (lineTradeInIds.length > 0) {
+          dto.tradeIns = toTradeInDtos(
+            lineTradeInIds.map((id) => draftById.get(id)).filter((d): d is TradeInDraft => Boolean(d))
+          )
+        }
         try {
           const sale = await saleRepository.create(dto)
           saleIds.push(sale.id)
           useCartStore.getState().removeLine(line.lineId)
+          if (lineTradeInIds.length > 0) useTradeInStore.getState().removeMany(lineTradeInIds)
         } catch (err) {
-          // Transport failure → queue the same payload (same clientMutationId)
-          // and clear the line as if it succeeded. HTTP verdicts still stop here.
-          // A quantity sale needs no device lock, so it carries no baseVersion.
-          if (isNetworkError(err)) {
+          // A trade-in is never queued for sync (the server refuses it on replay,
+          // ADR 0039): a cart with trade-ins surfaces the failure instead.
+          if (isNetworkError(err) && !hasTradeIns) {
             await enqueueMutation({
               id: line.clientMutationId,
               type: MUTATION_TYPES.saleCreate,
@@ -94,6 +121,8 @@ export function useCheckout() {
       queryClient.invalidateQueries({ queryKey: stockKeys.lists() })
       queryClient.invalidateQueries({ queryKey: catalogKeys.all })
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: customerPurchaseKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: ledgerKeys.all })
     },
   })
 }

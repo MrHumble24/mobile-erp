@@ -4,8 +4,9 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
 
 ## Public API (`index.ts`)
 
-- Types: `SaleView`, `SaleModelRef`, `SaleReturnRef`, `SaleStats`, `SalePage`,
-  `SaleFilters`, `ReceiptView`, `WarrantyLookupView`, `CreateSaleDto`, `ReturnSaleDto`.
+- Types: `SaleView`, `SaleModelRef`, `TradeInView`, `SaleTradeInDto`,
+  `SaleReturnRef`, `SaleStats`, `SalePage`, `SaleFilters`, `ReceiptView`,
+  `WarrantyLookupView`, `CreateSaleDto`, `ReturnSaleDto`.
 - `saleRepository` (the only HTTP caller), `saleKeys` (key factory).
 - Hooks: `useSales`, `useSalesStats`, `useSale`, `useSaleReceipt`,
   `useWarrantyLookup`, `useCreateSale`, `useReturnSale`.
@@ -25,6 +26,10 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
 - `SaleView.payments` / `ReceiptView.payments` are the tender lines (`{accountCode,
   amount}`); `[]` for sales predating ledger posting. `combineReceipts` sums them
   per account across a multi-item cart; the receipt shows "Paid with …".
+- `SaleView.tradeIns` / `ReceiptView.tradeIns` are phones taken in part payment
+  (ADR 0039): `{deviceId, imei, serialNumber, model, value}`, `[]` when none. The
+  `value` is customer-facing, never cost-redacted. `CreateSaleDto.tradeIns` carries
+  them on checkout; the trade-in cart + allocation live in `features/checkout`.
 - `useReturnSale` invalidates `saleKeys.all` (list + stats + detail) and device lists.
 - Components never import the repository; only hooks do.
 

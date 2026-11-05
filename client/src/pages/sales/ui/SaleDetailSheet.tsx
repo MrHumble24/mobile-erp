@@ -14,6 +14,7 @@ import {
   MoneySection,
   ReturnSection,
   SaleMetaSection,
+  TradeInsSection,
 } from "./SaleDetailSections"
 
 function SaleActions({
@@ -84,6 +85,7 @@ function SaleBody({
       <DeviceSection sale={sale} />
       <CustomerSection sale={sale} />
       <MoneySection sale={sale} canViewProfit={canViewProfit} />
+      <TradeInsSection sale={sale} />
       <SaleMetaSection sale={sale} />
       {sale.notes && (
         <div className="space-y-1.5">

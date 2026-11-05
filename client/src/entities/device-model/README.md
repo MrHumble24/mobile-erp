@@ -22,6 +22,10 @@ code (ADR 0029) and its per-model spec schema.
 - `DynamicSpecFields` — renders one react-hook-form field per attribute (sorted
   by `sortOrder`): `select` → `Combobox`, `number`/`text` → `Input`; required
   marker; shows server `{ key, message }` problems under the matching field.
+- `UsedUnitFields` + `lib/used-unit.ts` (`UsedUnitValues`, `emptyUsedUnit`,
+  `usedUnitToPayload`, `usedUnitReady`) — the model picker + specs + IMEI/serial
+  fields for entering a used unit, shared by `features/buy-phone` and the till's
+  trade-in (ADR 0039). Generic over a form whose values extend `UsedUnitValues`.
 
 ## Public API
 Everything in `index.ts`. Never deep-import.
