@@ -43,9 +43,13 @@ export type RepairRaw = Prisma.RepairGetPayload<{
 export class RepairsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findRawById(id: string): Promise<RepairRaw | null> {
-    return this.prisma.repair.findUnique({
-      where: { id },
+  findRawById(id: string, storeIds?: string[]): Promise<RepairRaw | null> {
+    const where: Prisma.RepairWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    return this.prisma.repair.findFirst({
+      where,
       include: REPAIR_INCLUDE,
     });
   }
@@ -63,10 +67,10 @@ export class RepairsRepository {
   }
 
   async list(
-    storeId: string,
+    storeIds: string[],
     query: ListRepairsQueryDto,
   ): Promise<{ items: RepairRaw[]; total: number }> {
-    const where = this.toWhere(storeId, query);
+    const where = this.toWhere(storeIds, query);
     const [items, total] = await this.prisma.$transaction([
       this.prisma.repair.findMany({
         where,
@@ -82,12 +86,17 @@ export class RepairsRepository {
 
   /** Σ customer payments (net of refunds) in [from, to] for the store (report). */
   async sumPayments(
-    storeId: string,
+    storeIds: string[],
     from?: Date,
     to?: Date,
   ): Promise<Prisma.Decimal> {
     const { _sum } = await this.prisma.repairPayment.aggregate({
-      where: { repair: { storeId }, occurredAt: range(from, to) },
+      where: {
+        repair: {
+          storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+        },
+        occurredAt: range(from, to),
+      },
       _sum: { amount: true },
     });
     return _sum.amount ?? new Prisma.Decimal(0);
@@ -95,21 +104,28 @@ export class RepairsRepository {
 
   /** Parts taken in [from, to] for the store, to sum cost in the service. */
   partsInRange(
-    storeId: string,
+    storeIds: string[],
     from?: Date,
     to?: Date,
   ): Promise<{ quantity: number; unitCostSnapshot: Prisma.Decimal }[]> {
     return this.prisma.repairPart.findMany({
-      where: { repair: { storeId }, createdAt: range(from, to) },
+      where: {
+        repair: {
+          storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+        },
+        createdAt: range(from, to),
+      },
       select: { quantity: true, unitCostSnapshot: true },
     });
   }
 
   private toWhere(
-    storeId: string,
+    storeIds: string[],
     query: ListRepairsQueryDto,
   ): Prisma.RepairWhereInput {
-    const where: Prisma.RepairWhereInput = { storeId };
+    const storeIdFilter =
+      storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+    const where: Prisma.RepairWhereInput = { storeId: storeIdFilter };
     if (query.status) where.statusCode = query.status;
     if (query.customerId) where.customerId = query.customerId;
     const from = parseDate(query.from);

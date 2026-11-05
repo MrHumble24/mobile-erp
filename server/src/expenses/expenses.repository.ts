@@ -92,9 +92,13 @@ export class ExpensesRepository {
     return { items, total };
   }
 
-  findById(id: string) {
+  findById(id: string, storeIds?: string[]) {
     return this.prisma.expense.findFirst({
-      where: { id, deletedAt: null },
+      where: {
+        id,
+        deletedAt: null,
+        ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      },
       include: LIST_INCLUDE,
     });
   }
@@ -208,6 +212,7 @@ export class ExpensesRepository {
   }
 
   toWhere(filter: {
+    storeIds?: string[];
     from?: Date;
     to?: Date;
     categoryId?: string;
@@ -217,6 +222,12 @@ export class ExpensesRepository {
     maxAmount?: number;
     isRecurring?: boolean;
   }): Prisma.ExpenseWhereInput {
+    const storeId =
+      filter.storeIds && filter.storeIds.length > 0
+        ? filter.storeIds.length === 1
+          ? filter.storeIds[0]
+          : { in: filter.storeIds }
+        : undefined;
     const amount =
       filter.minAmount !== undefined || filter.maxAmount !== undefined
         ? { gte: filter.minAmount, lte: filter.maxAmount }
@@ -224,6 +235,7 @@ export class ExpensesRepository {
     const search = filter.search?.trim();
     return {
       deletedAt: null,
+      storeId,
       categoryId: filter.categoryId,
       createdById: filter.recordedById,
       isRecurring: filter.isRecurring,

@@ -30,13 +30,18 @@ function build(
   const models = {
     getAttributes: jest.fn().mockResolvedValue([]),
   } as unknown as DeviceModelsService;
+  const stores = {
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
   const service = new DevicesService(
     query,
     status as unknown as DevicesStatusRepository,
     expense,
     models,
+    {} as any,
+    stores as any,
   );
-  return { service, status, query, expense };
+  return { service, status, query, expense, stores };
 }
 
 describe('isAllowedTransition', () => {

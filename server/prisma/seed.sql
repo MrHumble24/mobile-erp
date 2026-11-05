@@ -3,10 +3,11 @@
 
 -- Lifecycle lookups ----------------------------------------------------------
 INSERT INTO device_statuses (code, label, "sortOrder", "isTerminal") VALUES
-  ('IN_STOCK',  'In stock',   10, false),
-  ('DEFECTIVE', 'Defective',  20, false),
-  ('CONSIGNED', 'Consigned',  30, false),
-  ('SOLD',      'Sold',       40, true)
+  ('IN_STOCK',   'In stock',   10, false),
+  ('DEFECTIVE',  'Defective',  20, false),
+  ('CONSIGNED',  'Consigned',  30, false),
+  ('IN_TRANSIT', 'In transit', 35, false),
+  ('SOLD',       'Sold',       40, true)
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO consignment_statuses (code, label, "sortOrder", "isTerminal") VALUES
@@ -29,7 +30,9 @@ INSERT INTO stock_movement_types (code, label, "sortOrder") VALUES
   ('RETURN',           'Return',           30),
   ('WRITE_OFF',        'Write-off',        40),
   ('COUNT_CORRECTION', 'Count correction', 50),
-  ('REPAIR_USE',       'Repair use',       60)
+  ('REPAIR_USE',       'Repair use',       60),
+  ('TRANSFER_OUT',     'Transfer out',     70),
+  ('TRANSFER_IN',      'Transfer in',      80)
 ON CONFLICT (code) DO NOTHING;
 
 -- Repair statuses (Change 13, ADR 0040). Also inserted by the migration.
@@ -112,13 +115,19 @@ INSERT INTO bonus_transaction_types (code, label, "sortOrder") VALUES
   ('CORRECTION', 'Manual correction',    40)
 ON CONFLICT (code) DO NOTHING;
 
-INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;
-
--- Single store (ADR 0023). Store identity lives here; admins edit it via settings.
--- Idempotent: insert only when no store exists yet.
+-- Stores & Settings (ADR 0023, ADR 0045).
 INSERT INTO stores (id, name, "updatedAt")
 SELECT gen_random_uuid(), 'Main store', now()
-WHERE NOT EXISTS (SELECT 1 FROM stores);
+WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Main store');
+
+INSERT INTO stores (id, name, "updatedAt")
+SELECT gen_random_uuid(), 'Branch 2', now()
+WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Branch 2');
+
+INSERT INTO store_settings ("storeId", "updatedAt")
+SELECT s.id, now()
+FROM stores s
+WHERE NOT EXISTS (SELECT 1 FROM store_settings ss WHERE ss."storeId" = s.id);
 
 -- Permissions: "<resource>.<action>" ----------------------------------------
 INSERT INTO permissions (code, resource, action, description) VALUES
@@ -168,7 +177,12 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('user.manage',          'user',        'manage',    'Create users, assign roles and permissions'),
   ('role.manage',          'role',        'manage',    'Create roles, edit role permissions'),
   ('settings.manage',      'settings',    'manage',    'Store settings and Telegram'),
-  ('sync.resolve',         'sync',        'resolve',   'Resolve offline sync conflicts')
+  ('sync.resolve',         'sync',        'resolve',   'Resolve offline sync conflicts'),
+  ('store.manage',         'store',       'manage',    'Create, edit and deactivate stores'),
+  ('store.all',            'store',       'all',       'Access every store and all-stores view'),
+  ('transfer.create',      'transfer',    'create',    'Create and send stock transfers'),
+  ('transfer.receive',     'transfer',    'receive',   'Receive stock transfers'),
+  ('transfer.read',        'transfer',    'read',      'View stock transfers')
 ON CONFLICT (code) DO UPDATE SET description = EXCLUDED.description;
 
 -- Roles ----------------------------------------------------------------------
@@ -189,7 +203,25 @@ INSERT INTO role_permissions ("roleCode", "permissionCode") VALUES
   ('CASHIER', 'customer.read'), ('CASHIER', 'customer.manage'),
   ('CASHIER', 'consignment.read'), ('CASHIER', 'consignment.create'),
   ('CASHIER', 'partner.read'),
+  ('CASHIER', 'transfer.read'), ('CASHIER', 'transfer.create'), ('CASHIER', 'transfer.receive'),
   ('QC', 'device.read'), ('QC', 'device.create'), ('QC', 'device.update'), ('QC', 'device.status.change'),
   ('QC', 'shipment.read'), ('QC', 'shipment.manage'),
-  ('QC', 'qc.read'), ('QC', 'qc.create')
+  ('QC', 'qc.read'), ('QC', 'qc.create'),
+  ('QC', 'transfer.read'), ('QC', 'transfer.create'), ('QC', 'transfer.receive')
+ON CONFLICT DO NOTHING;
+
+-- Dev user store assignments (Change 9, ADR 0045)
+-- Owner belongs to all stores; cashier belongs only to Main store.
+INSERT INTO user_stores ("userId", "storeId")
+SELECT u.id, s.id
+FROM users u
+CROSS JOIN stores s
+WHERE u.email = 'owner@malika.uz'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO user_stores ("userId", "storeId")
+SELECT u.id, s.id
+FROM users u
+JOIN stores s ON s.name = 'Main store'
+WHERE u.email = 'cashier@malika.uz'
 ON CONFLICT DO NOTHING;

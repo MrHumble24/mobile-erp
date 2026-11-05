@@ -60,7 +60,8 @@ export class ShipmentsService {
   ) {}
 
   async list(): Promise<ShipmentView[]> {
-    const views = await this.repo.findAll();
+    const storeIds = await this.stores.currentStoreIds();
+    const views = await this.repo.findAll(storeIds);
     const totals = await this.stock.purchaseTotalsByShipment(
       views.map((v) => v.id),
     );
@@ -262,7 +263,8 @@ export class ShipmentsService {
   }
 
   private async require(id: string): Promise<ShipmentView> {
-    const shipment = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const shipment = await this.repo.findById(id, storeIds);
     if (!shipment) throw new NotFoundException(`Shipment ${id} not found`);
     const totals = await this.stock.purchaseTotalsByShipment([id]);
     return { ...shipment, stockLinesTotal: str(totals.get(id)) };

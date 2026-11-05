@@ -6,6 +6,8 @@ import { LedgerService } from '../ledger/ledger.service.js';
 import { PartnersService } from '../partners/partners.service.js';
 import { ReportsService } from '../reports/reports.service.js';
 import { SettingsService } from '../settings/settings.service.js';
+import { runWithStoreSelection } from '../stores/lib/store-context.js';
+import { StoresService } from '../stores/stores.service.js';
 import { shouldSendDigest, todayMarker } from './lib/digest-schedule.js';
 import * as messages from './messages.js';
 import { TelegramService } from './telegram.service.js';
@@ -23,6 +25,7 @@ export class TelegramCron {
     private readonly settings: SettingsService,
     private readonly ledger: LedgerService,
     private readonly credits: CreditsReadService,
+    private readonly stores: StoresService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
@@ -55,26 +58,41 @@ export class TelegramCron {
       const { closingTime, digestSentOn } = await this.settings.get();
       if (!shouldSendDigest(now, closingTime, digestSentOn)) return;
 
-      const [closing, partners] = await Promise.all([
-        this.reports.dailyClosing({}),
-        this.partners.list(),
-      ]);
-      // Same UTC-day boundary the digest already uses (closing.date is its start).
-      const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
-      const balances = await this.ledger.digestBalances(dayStart);
+      const activeStores = await this.stores.list(false);
+      const partners = await this.partners.list();
       const outstanding = partners.reduce(
         (sum, p) => sum + Number(p.outstanding),
         0,
       );
+
+      const storeBlocks: messages.DigestStoreBlock[] = [];
+      let digestDate = '';
+
+      for (const store of activeStores) {
+        await runWithStoreSelection(
+          { all: false, storeIds: [store.id] },
+          async () => {
+            const closing = await this.reports.dailyClosing({});
+            digestDate = closing.date;
+            const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
+            const balances = await this.ledger.digestBalances(dayStart);
+            storeBlocks.push({
+              storeName: store.name,
+              unitsSold: closing.unitsSold,
+              revenue: closing.revenue,
+              netProfit: closing.grossProfit,
+              expenses: closing.expenses,
+              balances,
+            });
+          },
+        );
+      }
+
       await this.telegram.send(
         messages.dailyDigest({
-          date: closing.date,
-          unitsSold: closing.unitsSold,
-          revenue: closing.revenue,
-          netProfit: closing.grossProfit,
-          expenses: closing.expenses,
+          date: digestDate || todayMarker(now).toISOString().slice(0, 10),
           outstanding,
-          balances,
+          stores: storeBlocks,
         }),
       );
       await this.settings.markDigestSent(todayMarker(now));

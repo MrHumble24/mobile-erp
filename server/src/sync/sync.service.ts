@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { runWithStoreSelection } from '../stores/lib/store-context.js';
 import { MutationDto, PushDto } from './dto/push.dto.js';
 import { SyncHandlerRegistry } from './handlers/handler-registry.js';
 import type {
@@ -72,7 +73,14 @@ export class SyncService {
     mutation: MutationDto,
   ): Promise<MutationResult> {
     try {
-      const record = await handler.apply(ctx, dto);
+      const runner = mutation.storeId
+        ? () =>
+            runWithStoreSelection(
+              { all: false, storeIds: [mutation.storeId!] },
+              () => handler.apply(ctx, dto),
+            )
+        : () => handler.apply(ctx, dto);
+      const record = await runner();
       return { id: mutation.id, status: 'applied', record };
     } catch (error) {
       if (error instanceof ConflictException) {

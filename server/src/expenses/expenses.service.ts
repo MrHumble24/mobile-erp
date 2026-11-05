@@ -31,7 +31,9 @@ export class ExpensesService {
   async list(query: ExpenseQueryDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 50;
+    const storeIds = await this.stores.currentStoreIds();
     const { items, total } = await this.repo.findMany({
+      storeIds,
       from: parseDate(query.from),
       to: parseDate(query.to),
       categoryId: query.categoryId,
@@ -140,7 +142,8 @@ export class ExpensesService {
   }
 
   private async require(id: string) {
-    const found = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const found = await this.repo.findById(id, storeIds);
     if (!found) throw new NotFoundException(`Expense ${id} not found`);
     return found;
   }

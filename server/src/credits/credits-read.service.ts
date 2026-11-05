@@ -50,7 +50,8 @@ export class CreditsReadService {
 
   async list(query: ListCreditsQueryDto): Promise<CreditListItem[]> {
     const now = new Date();
-    const rows = await this.repo.listRaw(query.customerId);
+    const storeIds = await this.stores.currentStoreIds();
+    const rows = await this.repo.listRaw(storeIds, query.customerId);
     return rows
       .map((raw) => ({ raw, standing: standingOf(raw, now) }))
       .filter(({ standing }) => matchesStatus(standing, query.status))
@@ -60,8 +61,9 @@ export class CreditsReadService {
   /** A customer's outstanding, overdue and effective credit limit. */
   async customerSummary(customerId: string): Promise<CustomerCreditSummary> {
     const now = new Date();
+    const storeIds = await this.stores.currentStoreIds();
     const [rows, customer, settings] = await Promise.all([
-      this.repo.listRaw(customerId),
+      this.repo.listRaw(storeIds, customerId),
       this.repo.customerForCredit(customerId),
       this.settings.get(),
     ]);
@@ -181,7 +183,8 @@ export class CreditsReadService {
   }
 
   private async require(id: string, tx?: PrismaTx): Promise<CreditRaw> {
-    const raw = await this.repo.findRawById(id, tx);
+    const storeIds = await this.stores.currentStoreIds();
+    const raw = await this.repo.findRawById(id, tx, storeIds);
     if (!raw) throw new NotFoundException(`Credit ${id} not found`);
     return raw;
   }

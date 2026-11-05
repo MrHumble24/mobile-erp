@@ -35,18 +35,22 @@ export type PurchaseRow = Prisma.CustomerPurchaseGetPayload<{
 export class CustomerPurchasesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findById(id: string): Promise<PurchaseRow | null> {
-    return this.prisma.customerPurchase.findUnique({
-      where: { id },
+  findById(id: string, storeIds?: string[]): Promise<PurchaseRow | null> {
+    const where: Prisma.CustomerPurchaseWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    return this.prisma.customerPurchase.findFirst({
+      where,
       select: PURCHASE_SELECT,
     });
   }
 
   async list(
-    storeId: string,
+    storeIds: string[],
     query: ListCustomerPurchasesQueryDto,
   ): Promise<{ items: PurchaseRow[]; total: number }> {
-    const where = this.toWhere(storeId, query);
+    const where = this.toWhere(storeIds, query);
     const [items, total] = await this.prisma.$transaction([
       this.prisma.customerPurchase.findMany({
         where,
@@ -91,12 +95,14 @@ export class CustomerPurchasesRepository {
   }
 
   private toWhere(
-    storeId: string,
+    storeIds: string[],
     query: ListCustomerPurchasesQueryDto,
   ): Prisma.CustomerPurchaseWhereInput {
     const code = query.search?.trim();
+    const storeIdFilter =
+      storeIds.length === 1 ? storeIds[0] : { in: storeIds };
     return {
-      storeId,
+      storeId: storeIdFilter,
       customerId: query.customerId,
       occurredAt:
         query.from || query.to

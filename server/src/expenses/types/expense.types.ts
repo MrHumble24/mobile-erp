@@ -2,6 +2,7 @@ import type { ExpenseSortField } from '../dto/expense-query.dto.js';
 
 /** Normalized list filter (dates already parsed) passed service → repository. */
 export interface ExpenseFilter {
+  storeIds?: string[];
   from?: Date;
   to?: Date;
   categoryId?: string;

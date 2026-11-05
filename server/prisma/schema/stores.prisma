@@ -1,15 +1,17 @@
 // ---------------------------------------------------------------------------
-// Stores (ADR 0023). One store today; born multi-store so the cash/card ledger
+// Stores (ADR 0023, ADR 0045). Born multi-store so the cash/card ledger
 // built on top carries a store from day one. Every stock and money row points
-// here. Store identity lives here (not in store_settings): one home.
+// here. Store identity lives here: one home.
 // ---------------------------------------------------------------------------
 
 model Store {
-  id      String  @id @default(uuid())
+  id            String    @id @default(uuid())
   /// Store identity, shown on receipts and the app shell.
-  name    String
-  address String?
-  phone   String?
+  name          String
+  address       String?
+  phone         String?
+  /// Set when the store is deactivated (Change 9, ADR 0045).
+  deactivatedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,6 +30,11 @@ model Store {
   customerPurchases CustomerPurchase[]
   repairs           Repair[]
   bonusTransactions BonusTransaction[]
+
+  users             UserStore[]
+  settings          StoreSettings?
+  transfersSent     StockTransfer[] @relation("TransferSource")
+  transfersReceived StockTransfer[] @relation("TransferTarget")
 
   @@map("stores")
 }

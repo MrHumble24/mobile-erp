@@ -27,6 +27,11 @@ const userSelect = {
     },
   },
   roles: { select: { roleCode: true } },
+  stores: {
+    select: {
+      store: { select: { id: true, name: true } },
+    },
+  },
 } as const;
 
 type UserRow = {
@@ -37,6 +42,7 @@ type UserRow = {
   createdAt: Date;
   profile: UserView['profile'];
   roles: { roleCode: string }[];
+  stores: { store: { id: string; name: string } }[];
 };
 
 /** All Prisma access for user accounts. Never selects passwordHash outward. */
@@ -107,6 +113,9 @@ export class UsersRepository {
         passwordHash: input.passwordHash,
         profile: { create: input.profile },
         roles: { create: input.roleCodes.map((roleCode) => ({ roleCode })) },
+        stores: input.storeIds?.length
+          ? { create: input.storeIds.map((storeId) => ({ storeId })) }
+          : undefined,
       },
       select: userSelect,
     });
@@ -115,8 +124,21 @@ export class UsersRepository {
 
   async update(
     id: string,
-    data: { profile?: ProfileDto; isActive?: boolean },
+    data: {
+      profile?: ProfileDto;
+      isActive?: boolean;
+      storeIds?: string[];
+    },
   ): Promise<UserView> {
+    if (data.storeIds !== undefined) {
+      await this.prisma.$transaction([
+        this.prisma.userStore.deleteMany({ where: { userId: id } }),
+        this.prisma.userStore.createMany({
+          data: data.storeIds.map((storeId) => ({ userId: id, storeId })),
+          skipDuplicates: true,
+        }),
+      ]);
+    }
     const row = await this.prisma.user.update({
       where: { id },
       data: {
@@ -186,5 +208,6 @@ function toView(row: UserRow): UserView {
     createdAt: row.createdAt,
     profile: row.profile,
     roles: row.roles.map((r) => r.roleCode),
+    stores: row.stores.map((s) => s.store),
   };
 }

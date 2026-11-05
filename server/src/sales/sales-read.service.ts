@@ -37,12 +37,14 @@ export class SalesReadService {
   }
 
   async list(query: ListSalesQueryDto) {
-    const page = await this.reads.list(query);
+    const storeIds = await this.stores.currentStoreIds();
+    const page = await this.reads.list(query, storeIds);
     return { ...page, items: await this.attachPayments(page.items) };
   }
 
-  stats(query: ListSalesQueryDto) {
-    return this.reads.stats(query);
+  async stats(query: ListSalesQueryDto) {
+    const storeIds = await this.stores.currentStoreIds();
+    return this.reads.stats(query, storeIds);
   }
 
   get(id: string): Promise<SaleView> {
@@ -60,7 +62,8 @@ export class SalesReadService {
   }
 
   async receipt(id: string): Promise<ReceiptView> {
-    const receipt = await this.reads.receipt(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const receipt = await this.reads.receipt(id, storeIds);
     if (!receipt) throw new NotFoundException(`Sale ${id} not found`);
     const [payments, tradeIns, bonus, store, settings] = await Promise.all([
       this.ledger.salePayments([id]),
@@ -80,7 +83,8 @@ export class SalesReadService {
   }
 
   async require(id: string): Promise<SaleView> {
-    const sale = await this.reads.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const sale = await this.reads.findById(id, storeIds);
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
     return this.withPayments(sale);
   }

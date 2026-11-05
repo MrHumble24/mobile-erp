@@ -1,0 +1,54 @@
+// ---------------------------------------------------------------------------
+// Stock transfers between stores (ADR 0045).
+// Lines are either UNIT (IMEI/serial physical device) or QUANTITY (accessory/etc).
+// Statuses: SENT, RECEIVED, CANCELLED.
+// ---------------------------------------------------------------------------
+
+model StockTransfer {
+  id             String    @id @default(uuid())
+  sourceStoreId  String
+  sourceStore    Store     @relation("TransferSource", fields: [sourceStoreId], references: [id])
+  targetStoreId  String
+  targetStore    Store     @relation("TransferTarget", fields: [targetStoreId], references: [id])
+  status         String    @default("SENT")
+  sentAt         DateTime  @default(now())
+  sentById       String
+  sentBy         User      @relation("TransfersSent", fields: [sentById], references: [id])
+  receivedAt     DateTime?
+  receivedById   String?
+  receivedBy     User?     @relation("TransfersReceived", fields: [receivedById], references: [id])
+  cancelledAt    DateTime?
+  cancelledById  String?
+  cancelledBy    User?     @relation("TransfersCancelled", fields: [cancelledById], references: [id])
+  note           String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  lines          StockTransferLine[]
+  stockMovements StockMovement[]
+
+  @@index([sourceStoreId])
+  @@index([targetStoreId])
+  @@index([status])
+  @@map("stock_transfers")
+}
+
+model StockTransferLine {
+  id                 String         @id @default(uuid())
+  transferId         String
+  transfer           StockTransfer  @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  lineType           String
+  deviceId           String?
+  device             Device?        @relation(fields: [deviceId], references: [id])
+  previousStatusCode String?
+  modelId            String?
+  model              DeviceModel?   @relation(fields: [modelId], references: [id])
+  quantity           Int?
+  unitCostSnapshot   Decimal?       @db.Decimal(14, 2)
+  note               String?
+
+  @@index([transferId])
+  @@index([deviceId])
+  @@index([modelId])
+  @@map("stock_transfer_lines")
+}

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { AllowAllStores } from '../common/decorators/allow-all-stores.decorator.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
@@ -18,6 +19,7 @@ export class LedgerController {
   }
 
   @Get('balances')
+  @AllowAllStores()
   @RequirePermissions('balance.read')
   balances() {
     return this.ledger.getBalances();

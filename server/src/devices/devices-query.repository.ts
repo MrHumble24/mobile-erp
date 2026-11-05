@@ -29,8 +29,9 @@ export class DevicesQueryRepository {
     filters: DeviceFilters,
     page: number,
     pageSize: number,
+    storeIds?: string[],
   ): Promise<PaginatedDevices> {
-    const where = buildWhere(filters);
+    const where = buildWhere(filters, storeIds);
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.device.findMany({
         where,
@@ -55,23 +56,44 @@ export class DevicesQueryRepository {
   }
 
   /** Devices still owing a first QC pass: in stock or defective, never inspected. */
-  countAwaitingInspection(): Promise<number> {
-    return this.prisma.device.count({
-      where: {
-        statusCode: { in: ['IN_STOCK', 'DEFECTIVE'] },
-        inspections: { none: {} },
-      },
-    });
+  countAwaitingInspection(storeIds?: string[]): Promise<number> {
+    const where: Prisma.DeviceWhereInput = {
+      statusCode: { in: ['IN_STOCK', 'DEFECTIVE'] },
+      inspections: { none: {} },
+    };
+    if (storeIds && storeIds.length > 0) {
+      where.storeId = storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+    }
+    return this.prisma.device.count({ where });
   }
 
-  async findById(id: string): Promise<DeviceView | null> {
-    const row = await this.prisma.device.findUnique({ where: { id } });
+  async findById(id: string, storeIds?: string[]): Promise<DeviceView | null> {
+    const where: Prisma.DeviceWhereInput = { id };
+    if (storeIds && storeIds.length > 0) {
+      where.storeId = storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+    }
+    const row = await this.prisma.device.findFirst({ where });
     return row ? toDeviceView(row) : null;
   }
 
-  async findDetailByImei(code: string): Promise<DeviceDetailView | null> {
+  async findDetailByImei(
+    code: string,
+    storeIds?: string[],
+  ): Promise<DeviceDetailView | null> {
+    const where: Prisma.DeviceWhereInput = {
+      AND: [
+        unitCodeWhere(code),
+        ...(storeIds && storeIds.length > 0
+          ? [
+              {
+                storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+              },
+            ]
+          : []),
+      ],
+    };
     const row = await this.prisma.device.findFirst({
-      where: unitCodeWhere(code),
+      where,
       include: {
         model: {
           select: { id: true, brand: true, name: true, kindCode: true },
@@ -121,8 +143,14 @@ export class DevicesQueryRepository {
   }
 }
 
-function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
+function buildWhere(
+  filters: DeviceFilters,
+  storeIds?: string[],
+): Prisma.DeviceWhereInput {
   const where: Prisma.DeviceWhereInput = {};
+  if (storeIds && storeIds.length > 0) {
+    where.storeId = storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+  }
   if (filters.imei) where.imei = filters.imei;
   if (filters.modelId) where.modelId = filters.modelId;
   if (filters.shipmentId) where.shipmentId = filters.shipmentId;

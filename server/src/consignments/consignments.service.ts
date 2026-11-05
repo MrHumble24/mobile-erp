@@ -124,16 +124,19 @@ export class ConsignmentsService {
     return price;
   }
 
-  list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
+  async list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
+    const storeIds = await this.stores.currentStoreIds();
     return this.reads.list(
       toFilters(query),
       query.page ?? 1,
       query.pageSize ?? 20,
+      storeIds,
     );
   }
 
-  stats(query: ListConsignmentsQuery): Promise<ConsignmentStats> {
-    return this.reads.stats(toFilters(query));
+  async stats(query: ListConsignmentsQuery): Promise<ConsignmentStats> {
+    const storeIds = await this.stores.currentStoreIds();
+    return this.reads.stats(toFilters(query), storeIds);
   }
 
   overdue(): Promise<OverdueConsignment[]> {
@@ -141,7 +144,8 @@ export class ConsignmentsService {
   }
 
   async get(id: string): Promise<ConsignmentView> {
-    const c = await this.reads.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const c = await this.reads.findById(id, storeIds);
     if (!c) throw new NotFoundException(`Consignment ${id} not found`);
     return c;
   }

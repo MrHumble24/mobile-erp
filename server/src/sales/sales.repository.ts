@@ -63,17 +63,24 @@ const saleSelect = {
 export class SalesRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async findRow(id: string): Promise<SaleRow | null> {
-    return this.prisma.sale.findUnique({ where: { id }, select: saleSelect });
+  private async findRow(
+    id: string,
+    storeIds?: string[],
+  ): Promise<SaleRow | null> {
+    const where: Prisma.SaleWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    return this.prisma.sale.findFirst({ where, select: saleSelect });
   }
 
-  async findById(id: string): Promise<SaleView | null> {
-    const row = await this.findRow(id);
+  async findById(id: string, storeIds?: string[]): Promise<SaleView | null> {
+    const row = await this.findRow(id, storeIds);
     return row ? toSaleView(row) : null;
   }
 
-  async receipt(id: string): Promise<ReceiptView | null> {
-    const row = await this.findRow(id);
+  async receipt(id: string, storeIds?: string[]): Promise<ReceiptView | null> {
+    const row = await this.findRow(id, storeIds);
     return row ? toReceiptView(row) : null;
   }
 
@@ -96,13 +103,16 @@ export class SalesRepository {
     return rows.map(toSaleView);
   }
 
-  async list(filters: SaleFilters): Promise<{
+  async list(
+    filters: SaleFilters,
+    storeIds?: string[],
+  ): Promise<{
     items: SaleView[];
     total: number;
     page: number;
     pageSize: number;
   }> {
-    const where = buildSaleWhere(filters);
+    const where = buildSaleWhere(filters, storeIds);
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.sale.findMany({
         where,
@@ -121,8 +131,11 @@ export class SalesRepository {
     };
   }
 
-  async stats(filters: SaleFilters): Promise<SaleStatsView> {
-    const where = buildSaleWhere(filters);
+  async stats(
+    filters: SaleFilters,
+    storeIds?: string[],
+  ): Promise<SaleStatsView> {
+    const where = buildSaleWhere(filters, storeIds);
     const zero = new Prisma.Decimal(0);
     const [sales, returns] = await this.prisma.$transaction([
       this.prisma.sale.aggregate({
@@ -234,12 +247,16 @@ export class SalesRepository {
     });
   }
 
-  /** store_settings is a singleton (id = 1); 14 days when the row is absent. */
-  async defaultWarrantyDays(): Promise<number> {
-    const row = await this.prisma.storeSettings.findUnique({
-      where: { id: 1 },
-      select: { defaultWarrantyDays: true },
-    });
+  /** Store settings warranty days; 14 days when the row is absent. */
+  async defaultWarrantyDays(storeId?: string): Promise<number> {
+    const row = storeId
+      ? await this.prisma.storeSettings.findUnique({
+          where: { storeId },
+          select: { defaultWarrantyDays: true },
+        })
+      : await this.prisma.storeSettings.findFirst({
+          select: { defaultWarrantyDays: true },
+        });
     return row?.defaultWarrantyDays ?? 14;
   }
 

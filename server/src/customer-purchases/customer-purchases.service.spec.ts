@@ -55,7 +55,10 @@ function build(kindCode = 'IMEI') {
       .fn()
       .mockResolvedValue(new Map([['p-1', 'CASH']])),
   };
-  const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
+  const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store-1'),
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
   const shifts = { assertCanSell: jest.fn().mockResolvedValue(undefined) };
   const service = new CustomerPurchasesService(
     prisma as unknown as PrismaService,

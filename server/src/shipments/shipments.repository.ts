@@ -24,8 +24,12 @@ const withCount = {
 export class ShipmentsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<ShipmentView[]> {
+  async findAll(storeIds?: string[]): Promise<ShipmentView[]> {
+    const where: Prisma.ShipmentWhereInput = storeIds?.length
+      ? { storeId: { in: storeIds } }
+      : {};
     const rows = await this.prisma.shipment.findMany({
+      where,
       orderBy: { shipmentDate: 'desc' },
       ...withCount,
     });
@@ -33,9 +37,16 @@ export class ShipmentsRepository {
     return rows.map((r) => toShipmentView(r, totals.get(r.id)));
   }
 
-  async findById(id: string): Promise<ShipmentView | null> {
-    const row = await this.prisma.shipment.findUnique({
-      where: { id },
+  async findById(
+    id: string,
+    storeIds?: string[],
+  ): Promise<ShipmentView | null> {
+    const where: Prisma.ShipmentWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    const row = await this.prisma.shipment.findFirst({
+      where,
       ...withCount,
     });
     if (!row) return null;

@@ -2,31 +2,29 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { SettingsRow } from './settings.service.js';
 
-const SINGLETON_ID = 1;
-
-/** All Prisma access for the single StoreSettings row (id = 1). */
+/** All Prisma access for StoreSettings rows (one row per store, ADR 0045). */
 @Injectable()
 export class SettingsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  get() {
+  get(storeId: string) {
     return this.prisma.storeSettings.findUnique({
-      where: { id: SINGLETON_ID },
+      where: { storeId },
     });
   }
 
-  upsert(data: SettingsRow) {
+  upsert(storeId: string, data: SettingsRow) {
     return this.prisma.storeSettings.upsert({
-      where: { id: SINGLETON_ID },
-      create: { id: SINGLETON_ID, ...data },
+      where: { storeId },
+      create: { storeId, ...data },
       update: data,
     });
   }
 
-  markDigestSent(on: Date) {
+  markDigestSent(storeId: string, on: Date) {
     return this.prisma.storeSettings.upsert({
-      where: { id: SINGLETON_ID },
-      create: { id: SINGLETON_ID, digestSentOn: on },
+      where: { storeId },
+      create: { storeId, digestSentOn: on },
       update: { digestSentOn: on },
     });
   }

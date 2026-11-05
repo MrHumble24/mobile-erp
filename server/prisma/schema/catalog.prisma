@@ -80,6 +80,7 @@ model DeviceModel {
   productPrices  ProductPrice[]
   repairs        Repair[]
   repairParts    RepairPart[]
+  transferLines  StockTransferLine[]
 
   @@unique([brand, name])
   @@unique([barcode])
