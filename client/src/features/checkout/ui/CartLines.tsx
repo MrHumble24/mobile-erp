@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { CartLine } from "./CartLine"
+import { QuantityCartLine } from "./QuantityCartLine"
 import { useCartStore } from "../model/cart.store"
 
 export interface CartLinesProps {
@@ -22,14 +23,18 @@ export function CartLines({ canViewCost, minMarginPercent }: CartLinesProps) {
 
   return (
     <div className="space-y-3">
-      {lines.map((line) => (
-        <CartLine
-          key={line.lineId}
-          line={line}
-          canViewCost={canViewCost}
-          minMarginPercent={minMarginPercent}
-        />
-      ))}
+      {lines.map((line) =>
+        line.kind === "quantity" ? (
+          <QuantityCartLine key={line.lineId} line={line} />
+        ) : (
+          <CartLine
+            key={line.lineId}
+            line={line}
+            canViewCost={canViewCost}
+            minMarginPercent={minMarginPercent}
+          />
+        )
+      )}
     </div>
   )
 }

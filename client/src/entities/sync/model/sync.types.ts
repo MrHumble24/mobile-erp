@@ -79,9 +79,24 @@ export interface PartnerChange {
   outstanding: string
 }
 
+/**
+ * A quantity product from the changes feed (ADR 0030) — the full list each sync
+ * so an offline till can sell it. Structural (not imported from entities/stock)
+ * so the two entities stay independent. Never carries cost fields.
+ */
+export interface ProductChange {
+  modelId: string
+  brand: string
+  name: string
+  barcode: string | null
+  salePrice: string | null
+  quantity: number
+}
+
 export interface ChangesResponse {
   serverTime: string
   nextSince: string | null
   devices: DeviceChange[]
   partners: PartnerChange[]
+  products: ProductChange[]
 }

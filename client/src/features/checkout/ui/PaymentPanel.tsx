@@ -1,6 +1,6 @@
 import { PaymentMethodField } from "@/entities/ledger"
 import { useCartStore } from "../model/cart.store"
-import { cartTotal } from "../lib/payment"
+import { cartTotal, toLinePrices } from "../lib/payment"
 
 /** POS "Paid with" control, bound to the cart store. Split divides the whole
  *  cart total across accounts; the allocation per phone happens at checkout. */
@@ -11,7 +11,7 @@ export function PaymentPanel() {
   const setMethod = useCartStore((s) => s.setPaymentMethod)
   const setParts = useCartStore((s) => s.setSplitParts)
 
-  const total = cartTotal(lines)
+  const total = cartTotal(toLinePrices(lines))
 
   const handleMethod = (next: typeof method) => {
     setMethod(next)

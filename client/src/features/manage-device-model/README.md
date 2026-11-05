@@ -10,7 +10,9 @@ code, active, spec schema — ADR 0029).
   mentioning "kind" → `catalog.kindLocked` on the kind field; otherwise a
   just-entered/changed barcode → `catalog.errorBarcodeExists`, else duplicate name.
 - `ModelCatalogFields` — Kind select (with hint), Category select (+ "no
-  category"), barcode and model-code inputs.
+  category"), barcode and model-code inputs, and a `SalePriceField`. For a
+  QUANTITY product the dialog shows the price per piece (`salePrice`) and hides
+  the customs code and attribute editor (ADR 0030); otherwise it hides the price.
 - `AttributeEditor` / `AttributeRow` / `OptionsChipsEditor` — the per-model spec
   schema editor: add/reorder/remove attributes (label, auto-slugged key, type,
   required, select options as chips). The reserved `storage` attribute is shown

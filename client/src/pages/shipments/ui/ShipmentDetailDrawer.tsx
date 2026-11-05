@@ -1,10 +1,13 @@
+import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import type { ShipmentView } from "@/entities/shipment"
 import type { SupplierView } from "@/entities/supplier"
+import { AddStockDialog, type PurchasedLineView } from "@/features/add-stock-to-shipment"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/shared/ui/sheet"
 import { Button } from "@/shared/ui/button"
 import { ShipmentSummary } from "./ShipmentSummary"
 import { ShipmentDevicesSection } from "./ShipmentDevicesSection"
+import { ShipmentStockSection } from "./ShipmentStockSection"
 import { useShipmentDevices } from "../model/use-shipment-devices"
 
 export interface ShipmentDetailDrawerProps {
@@ -26,7 +29,15 @@ function avgLandedOf(items: { landedCost?: string }[]): number | null {
   return sum / items.length
 }
 
-function DrawerBody({ shipment, supplier, canViewCost }: Pick<ShipmentDetailDrawerProps, "shipment" | "supplier" | "canViewCost"> & { shipment: ShipmentView }) {
+function DrawerBody({
+  shipment,
+  supplier,
+  canViewCost,
+  stockLines,
+}: Pick<ShipmentDetailDrawerProps, "shipment" | "supplier" | "canViewCost"> & {
+  shipment: ShipmentView
+  stockLines: PurchasedLineView[]
+}) {
   const data = useShipmentDevices(shipment.id)
   const fresh = data.shipment ?? shipment
   return (
@@ -47,6 +58,7 @@ function DrawerBody({ shipment, supplier, canViewCost }: Pick<ShipmentDetailDraw
         onPageChange={data.setPage}
         onPageSizeChange={data.setPageSize}
       />
+      <ShipmentStockSection lines={stockLines} />
     </div>
   )
 }
@@ -57,12 +69,17 @@ function DrawerActions({
   canManage,
   onIntake,
   onEdit,
-}: Pick<ShipmentDetailDrawerProps, "canIntake" | "canManage" | "onIntake" | "onEdit"> & { shipment: ShipmentView }) {
+  onAddStock,
+}: Pick<ShipmentDetailDrawerProps, "canIntake" | "canManage" | "onIntake" | "onEdit"> & {
+  shipment: ShipmentView
+  onAddStock: () => void
+}) {
   const { t } = useI18n()
   if (!canIntake && !canManage) return null
   return (
     <SheetFooter>
       {canManage && <Button variant="outline" onClick={() => onEdit(shipment)}>{t("shipments.editShipment")}</Button>}
+      {canIntake && <Button variant="outline" onClick={onAddStock}>{t("catalog.addStock")}</Button>}
       {canIntake && <Button onClick={() => onIntake(shipment.id)}>{t("shipments.continueIntake")}</Button>}
     </SheetFooter>
   )
@@ -71,6 +88,11 @@ function DrawerActions({
 export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
   const { t } = useI18n()
   const { shipment, supplier, open, onClose, canViewCost, canIntake, canManage, onIntake, onEdit } = props
+  const [addOpen, setAddOpen] = React.useState(false)
+  const [stockLines, setStockLines] = React.useState<PurchasedLineView[]>([])
+  React.useEffect(() => {
+    if (!open) setStockLines([])
+  }, [open, shipment?.id])
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
       <SheetPopup className="w-full sm:max-w-3xl lg:max-w-5xl">
@@ -80,13 +102,21 @@ export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
         </SheetHeader>
         {shipment && (
           <>
-            <DrawerBody shipment={shipment} supplier={supplier} canViewCost={canViewCost} />
+            <DrawerBody shipment={shipment} supplier={supplier} canViewCost={canViewCost} stockLines={stockLines} />
             <DrawerActions
               shipment={shipment}
               canIntake={canIntake}
               canManage={canManage}
               onIntake={onIntake}
               onEdit={onEdit}
+              onAddStock={() => setAddOpen(true)}
+            />
+            <AddStockDialog
+              shipmentId={shipment.id}
+              paymentAccountCode={shipment.paymentAccountCode}
+              open={addOpen}
+              onOpenChange={setAddOpen}
+              onAdded={(lines) => setStockLines((prev) => [...prev, ...lines])}
             />
           </>
         )}

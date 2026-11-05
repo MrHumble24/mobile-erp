@@ -2,7 +2,7 @@ import * as React from "react"
 import { Printer, Receipt, RotateCcw, Smartphone } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useSale, type SaleView } from "@/entities/sale"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleUnitCode } from "@/shared/lib/sale-subject"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Button, buttonVariants } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
@@ -32,9 +32,11 @@ function SaleActions({
   const { t } = useI18n()
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" size="sm" className="gap-1.5" onClick={onOpenDevice}>
-        <Smartphone className="size-4" /> {t("sales.openDevice")}
-      </Button>
+      {sale.device && (
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={onOpenDevice}>
+          <Smartphone className="size-4" /> {t("sales.openDevice")}
+        </Button>
+      )}
       <Button variant="outline" size="sm" className="gap-1.5" onClick={() => onReceipt(sale.id)}>
         <Receipt className="size-4" /> {t("sales.receipt")}
       </Button>
@@ -88,7 +90,7 @@ function SaleBody({
         onReturn={onReturn}
         onOpenDevice={() => setDeviceOpen(true)}
       />
-      <DeviceDrawer imei={unitCode(sale.device)} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
+      <DeviceDrawer imei={saleUnitCode(sale) ?? ""} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
     </div>
   )
 }

@@ -6,12 +6,15 @@ The cashier's POS workspace. Composes the `checkout` and `consign-device` featur
 ## Owns
 - `model/use-pos-terminal.ts` — orchestrator: mode (Sale | Nasiya), settings, cost
   permission, cart wiring, checkout + receipt state, Nasiya consign target.
-- `model/use-pos-scanner.ts` — resolves scans through `useDeviceByImei`; IN_STOCK is
-  dispatched (add line, or open consign in Nasiya), other statuses become a `ScanResult`
-  card. `focusScanner()` + `SCANNER_INPUT_ID` for F2.
+- `model/use-pos-scanner.ts` — resolves any code through `features/scan-code`
+  (`GET /scan/:code`, ADR 0030). An IN_STOCK unit is dispatched (add line, or open
+  consign in Nasiya); a quantity product is added to the cart (scan again to raise the
+  quantity); other unit statuses / unknown codes become a `ScanResult` card.
+  `focusScanner()` + `SCANNER_INPUT_ID` for F2.
 - `model/use-pos-shortcuts.ts` — global keys.
-- UI: `PosTerminal`, `ModeSwitch`, `PosScanner`, `ScanResultCard`, `SessionPanel`,
-  `NasiyaPanel`, `ShortcutsHelp`.
+- UI: `PosTerminal`, `ModeSwitch`, `PosScanner`, `ProductSearch` (type-to-find a
+  quantity product by name), `ScanResultCard`, `SessionPanel`, `NasiyaPanel`,
+  `ShortcutsHelp`.
 
 ## Keyboard shortcuts
 `F2` focus scanner · `F9` checkout · `Esc` clear scanner · `Ctrl/⌘+Backspace` remove
@@ -22,9 +25,9 @@ last line · `F4` customer search · `F8` switch Sale/Nasiya.
 - Let features reach each other; the widget is the only composition point.
 
 ## Offline
-The scanner's `useDeviceByImei` falls back to the synced device cache when
-offline, so the cart line carries the cached `version`. `use-pos-checkout`
-shows a "queued" toast when checkout enqueues lines instead of selling.
+`features/scan-code` falls back to the synced device cache, then the product
+cache, when offline — so both a unit and a quantity product can be found and
+sold. `use-pos-checkout` shows a "queued" toast when checkout enqueues lines.
 
 ## Open questions
 - SOLD scan links to `/sales` (list), not the exact sale — device lookup has no sale id.

@@ -1,6 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import { useSales, type SaleView } from "@/entities/sale"
 import {
   Table,
@@ -27,10 +27,8 @@ function SalesRow({
   return (
     <TableRow className="cursor-pointer" onClick={() => onNavigate(`/sales?id=${sale.id}`)}>
       <TableCell className="text-sm">{formatDate(sale.soldAt)}</TableCell>
-      <TableCell className="font-mono text-xs">{unitCode(sale.device)}</TableCell>
-      <TableCell className="text-sm">
-        {sale.device.model.brand} {sale.device.model.name}
-      </TableCell>
+      <TableCell className="font-mono text-xs">{saleUnitCode(sale) ?? "—"}</TableCell>
+      <TableCell className="text-sm">{saleModelName(sale)}</TableCell>
       <TableCell className="text-sm">{channelOf(sale)}</TableCell>
       <TableCell className="text-sm">{sale.soldBy.name}</TableCell>
       {showCost && (
@@ -54,7 +52,7 @@ export function SalesLinesBreakdown({ request, onNavigate, canViewCost }: Breakd
 
   if (isLoading) return <Skeleton className="h-64 w-full rounded-[12px]" />
   const items = (data?.items ?? []).filter(
-    (s) => !modelLabel || `${s.device.model.brand} ${s.device.model.name}` === modelLabel
+    (s) => !modelLabel || saleModelName(s) === modelLabel
   )
   if (items.length === 0)
     return <p className="py-8 text-center text-sm text-muted-foreground">{t("reports.empty")}</p>

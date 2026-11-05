@@ -32,6 +32,8 @@ export const deviceModelFormSchema = z.object({
   barcode: z.string(),
   modelCode: z.string(),
   customsCode: z.string(),
+  /** Price per piece for a QUANTITY product; "" means unset. */
+  salePrice: z.string(),
   attributes: z.array(attributeSchema).superRefine((attrs, ctx) => {
     const seen = new Set<string>()
     attrs.forEach((a, i) => {

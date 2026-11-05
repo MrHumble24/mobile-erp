@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import { Eye, Receipt, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import type { SaleView } from "@/entities/sale"
 import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
@@ -61,10 +61,10 @@ export function SalesTableRow({
   return (
     <TableRow className="cursor-pointer" onClick={() => actions.onOpenDetail(sale)}>
       <TableCell>
-        <div className="text-sm font-semibold">
-          {sale.device.model?.brand} {sale.device.model?.name}
+        <div className="text-sm font-semibold">{saleModelName(sale)}</div>
+        <div className="font-mono text-xs text-muted-foreground">
+          {saleUnitCode(sale) ?? t("catalog.pieces", { count: sale.quantity ?? 0 })}
         </div>
-        <div className="font-mono text-xs text-muted-foreground">{unitCode(sale.device)}</div>
       </TableCell>
       <TableCell>
         <Badge variant={isB2B ? "violet" : "default"}>

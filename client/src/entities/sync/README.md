@@ -20,12 +20,13 @@ counter + invalidate conflicts; `rejected` → keep, flag with error, stop
 auto-retrying (user retries/discards from `/sync`). Only `pending` entries are
 pushed, oldest first. One module-level lock → never two concurrent drains.
 
-## Device cache
-This slice **writes** the `devices`/`partners` IndexedDB stores from
-`GET /sync/changes`. The cache-aware IMEI **read** lives in `entities/device`
-(so `useDeviceByImei` falls back transparently and the cart carries the cached
-`version`). The two sides share the row shape structurally, not by import, to
-respect the same-layer FSD rule.
+## Device + product cache
+This slice **writes** the `devices`/`partners`/`products` IndexedDB stores from
+`GET /sync/changes`. The cache-aware **reads** live in the owning entities —
+`entities/device` (`getCachedDeviceByCode`) and `entities/stock`
+(`getCachedProductByBarcode`, ADR 0030) — so a scan falls back transparently
+offline. The sides share each row shape structurally, not by import, to respect
+the same-layer FSD rule. `products` is the full quantity-product list each sync.
 
 ## Must never
 Hold server lists in Zustand (counts are derived from the IDB mirror); write

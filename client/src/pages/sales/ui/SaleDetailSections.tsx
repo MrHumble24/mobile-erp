@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import type { SaleView } from "@/entities/sale"
 import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
@@ -28,18 +28,28 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
+function QuantitySection({ sale }: { sale: SaleView }) {
+  const { t } = useI18n()
+  return (
+    <Section title={t("catalog.quantity")}>
+      <p className="text-sm font-semibold">{saleModelName(sale)}</p>
+      <Row label={t("catalog.quantity")} value={t("catalog.pieces", { count: sale.quantity ?? 0 })} />
+      <Row label={t("catalog.lineTotal")} value={formatMoney(sale.salePrice)} />
+    </Section>
+  )
+}
+
 export function DeviceSection({ sale }: { sale: SaleView }) {
   const { t } = useI18n()
+  if (!sale.device) return <QuantitySection sale={sale} />
   const specs = sale.device.specs ?? {}
   const chips = Object.entries(specs).filter(
     ([, v]) => typeof v === "string" || typeof v === "number"
   )
   return (
     <Section title={t("sales.deviceSection")}>
-      <p className="text-sm font-semibold">
-        {sale.device.model.brand} {sale.device.model.name}
-      </p>
-      <p className="font-mono text-xs text-muted-foreground">{unitCode(sale.device)}</p>
+      <p className="text-sm font-semibold">{saleModelName(sale)}</p>
+      <p className="font-mono text-xs text-muted-foreground">{saleUnitCode(sale)}</p>
       {sale.device.imei2 && (
         <p className="font-mono text-xs text-muted-foreground">IMEI 2: {sale.device.imei2}</p>
       )}

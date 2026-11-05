@@ -1,13 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { HttpError, isNetworkError } from "@/shared/api/http"
-import { unitCode } from "@/shared/lib/unit-code"
 import { saleRepository, saleKeys } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
+import { stockKeys } from "@/entities/stock"
 import { customerKeys } from "@/entities/customer"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
 import { toSaleDto } from "../lib/to-sale-dto"
-import { buildCartPayments } from "../lib/payment"
+import { buildCartPayments, toLinePrices } from "../lib/payment"
+import { cartLineLabel } from "../lib/cart-line-label"
 
 export interface CheckoutResult {
   /** Sales confirmed by the server now. */
@@ -18,6 +19,7 @@ export interface CheckoutResult {
 
 /** A line failed mid-checkout; carries the already-succeeded sale ids so the caller can still print them. */
 export class CheckoutLineError extends Error {
+  /** The failing line's label: a unit code or a product name. */
   imei: string
   statusCode?: number
   saleIds: string[]
@@ -47,7 +49,11 @@ export function useCheckout() {
       // Snapshot now; removeLine mutates the store as we go.
       const snapshot = useCartStore.getState()
       const lines = [...snapshot.lines]
-      const payments = buildCartPayments(lines, snapshot.paymentMethod, snapshot.splitParts)
+      const payments = buildCartPayments(
+        toLinePrices(lines),
+        snapshot.paymentMethod,
+        snapshot.splitParts
+      )
       for (const line of lines) {
         const customer = useCartStore.getState().customer
         const dto = toSaleDto(line, customer, payments[line.lineId])
@@ -58,19 +64,20 @@ export function useCheckout() {
         } catch (err) {
           // Transport failure → queue the same payload (same clientMutationId)
           // and clear the line as if it succeeded. HTTP verdicts still stop here.
+          // A quantity sale needs no device lock, so it carries no baseVersion.
           if (isNetworkError(err)) {
             await enqueueMutation({
               id: line.clientMutationId,
               type: MUTATION_TYPES.saleCreate,
               payload: dto as unknown as Record<string, unknown>,
-              baseVersion: line.device.version,
+              baseVersion: line.kind === "unit" ? line.device.version : undefined,
               occurredAt: new Date().toISOString(),
             })
             queuedCount += 1
             useCartStore.getState().removeLine(line.lineId)
             continue
           }
-          throw new CheckoutLineError(unitCode(line.device), saleIds, err)
+          throw new CheckoutLineError(cartLineLabel(line), saleIds, err)
         }
       }
       return { saleIds, queuedCount }
@@ -78,6 +85,7 @@ export function useCheckout() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: stockKeys.lists() })
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() })
     },
   })

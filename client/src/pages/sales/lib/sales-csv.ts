@@ -1,5 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleUnitCode } from "@/shared/lib/sale-subject"
 import type { SaleView } from "@/entities/sale"
 
 /**
@@ -21,9 +21,9 @@ export function exportSalesCsv(sales: SaleView[], includeProfit: boolean): void 
     "Status",
   ]
   const rows = sales.map((s) => [
-    s.device.model.brand,
-    s.device.model.name,
-    unitCode(s.device),
+    s.device?.model.brand ?? s.model?.brand ?? "",
+    s.device?.model.name ?? s.model?.name ?? "",
+    saleUnitCode(s) ?? `×${s.quantity ?? ""}`,
     s.consignmentId ? "B2B" : "Retail",
     s.customer?.name ?? "",
     s.customer?.phone ?? "",

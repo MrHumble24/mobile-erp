@@ -7,6 +7,7 @@ const LoginPage = lazy(() => import("@/pages/login"))
 const DashboardPage = lazy(() => import("@/pages/dashboard"))
 const PosPage = lazy(() => import("@/pages/pos"))
 const InventoryPage = lazy(() => import("@/pages/inventory"))
+const StockPage = lazy(() => import("@/pages/stock"))
 const ShipmentsPage = lazy(() => import("@/pages/shipments"))
 const QcPage = lazy(() => import("@/pages/qc"))
 const SalesPage = lazy(() => import("@/pages/sales"))
@@ -40,6 +41,7 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="device.read" />}>
           <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/stock" element={<StockPage />} />
         </Route>
         <Route element={<RequirePermission permission="shipment.read" />}>
           <Route path="/shipments" element={<ShipmentsPage />} />

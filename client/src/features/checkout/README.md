@@ -3,10 +3,15 @@
 The sale cart: a multi-line draft that turns scanned devices into `POST /sales` calls.
 
 ## Owns
-- `cart.store.ts` — Zustand (persisted under `mobile-erp-pos-cart`): a list of `CartLine`
-  `{ lineId, device, salePrice, warrantyDays, notes, clientMutationId, belowCostConfirmed }`
-  plus one shared `customer`, plus the cart-wide `paymentMethod` + `splitParts`. Each line
-  keeps its own `clientMutationId` so a retry is idempotent per device.
+- `cart.store.ts` — Zustand (persisted under `mobile-erp-pos-cart`, v1): a list of
+  `CartLine` — a discriminated union of `UnitCartLine` (a phone/serial device, priced
+  whole, with warranty) and `QuantityCartLine` (a counted product: `modelId`, editable
+  `unitPrice` per piece, `quantity`, `onHand` for the over-stock warning; no warranty,
+  ADR 0030). Plus one shared `customer` and the cart-wide `paymentMethod` + `splitParts`.
+  Each line keeps its own `clientMutationId` so a retry is idempotent.
+- `lib/line-total.ts` — `lineTotal(line)` (unit price, or `unitPrice × quantity` in
+  cents); `payment.ts`'s `toLinePrices` projects a mixed cart onto the id+total the
+  split maths needs, so Cash/Card/Split work across phones and quantity lines alike.
 - `use-checkout.ts` — mutation that submits lines sequentially, one `POST /sales` each.
   Succeeded lines are removed as they complete; the first failure stops and throws
   `CheckoutLineError` (which IMEI, status code, already-succeeded sale ids).
@@ -29,8 +34,10 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
 
 ## Offline
 On a transport failure (not a 4xx/5xx), `use-checkout` enqueues the line via
-`entities/sync` (same `clientMutationId`, device `version` → `baseVersion`),
-clears the line, and returns `queuedCount`; the POS shows a "queued" toast.
+`entities/sync` (same `clientMutationId`), clears the line, and returns
+`queuedCount`; the POS shows a "queued" toast. A unit line carries its device
+`version` as `baseVersion`; a quantity line carries none (no device lock, never
+conflicts, ADR 0030).
 
 ## Payment
 The cashier picks Cash, Card or Split (`PaymentPanel` → `entities/ledger`'s

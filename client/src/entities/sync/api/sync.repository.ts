@@ -51,6 +51,8 @@ export const syncRepository = {
       })
       await idbPutMany(STORES.devices, res.devices)
       await idbPutMany(STORES.partners, res.partners)
+      // products is the full list each sync (not since-filtered); write it as-is.
+      await idbPutMany(STORES.products, res.products)
       serverTime = res.serverTime
       if (!res.nextSince) break
       cursor = res.nextSince

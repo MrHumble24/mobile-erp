@@ -31,9 +31,21 @@ export interface SalePaymentLine {
   amount: string
 }
 
+/** The product sold on a quantity sale (ADR 0030); set when `device` is null. */
+export interface SaleModelRef {
+  brand: string
+  name: string
+  kindCode?: string
+}
+
 export interface SaleView {
   id: string
-  device: SaleDeviceRef
+  /** Null for a quantity sale, which carries `model` + `quantity` instead (ADR 0030). */
+  device: SaleDeviceRef | null
+  /** Set only on a quantity sale. */
+  model: SaleModelRef | null
+  /** Pieces sold, set only on a quantity sale. */
+  quantity: number | null
   customer: SaleCustomerRef | null
   salePrice: string
   landedCostSnapshot?: string
@@ -65,6 +77,9 @@ export interface ReceiptItem {
   model: string
   storage: string | null
   color: string | null
+  /** Pieces sold, set only on a quantity-product line (ADR 0030). */
+  quantity?: number | null
+  /** Line total (quantity × price per piece for a quantity line). */
   price: string
   /** Per-item warranty, set only on combined multi-sale receipts (server receipts carry it at the top level). */
   warranty?: { days: number; endsAt: string } | null
@@ -95,9 +110,12 @@ export interface WarrantyLookupView {
 }
 
 export interface CreateSaleDto {
-  /** Send exactly one of imei / serialNumber (ADR 0029). */
+  /** Say what is sold exactly one way: imei / serialNumber (ADR 0029), or modelId+quantity (ADR 0030). */
   imei?: string
   serialNumber?: string
+  /** A quantity product: send with `quantity`; `salePrice` is then the line total. */
+  modelId?: string
+  quantity?: number
   salePrice: number
   customerId?: string
   customer?: { name: string; phone?: string }

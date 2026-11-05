@@ -4,8 +4,8 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
 
 ## Public API (`index.ts`)
 
-- Types: `SaleView`, `SaleReturnRef`, `SaleStats`, `SalePage`, `SaleFilters`,
-  `ReceiptView`, `WarrantyLookupView`, `CreateSaleDto`, `ReturnSaleDto`.
+- Types: `SaleView`, `SaleModelRef`, `SaleReturnRef`, `SaleStats`, `SalePage`,
+  `SaleFilters`, `ReceiptView`, `WarrantyLookupView`, `CreateSaleDto`, `ReturnSaleDto`.
 - `saleRepository` (the only HTTP caller), `saleKeys` (key factory).
 - Hooks: `useSales`, `useSalesStats`, `useSale`, `useSaleReceipt`,
   `useWarrantyLookup`, `useCreateSale`, `useReturnSale`.
@@ -16,6 +16,10 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
 
 ## Invariants
 
+- A quantity sale (ADR 0030) has `device: null` and carries `model` + `quantity`
+  instead; a unit sale has `model: null`. Resolve the subject with
+  `shared/lib/sale-subject` (`saleModelName`, `saleUnitCode`), never `sale.device.…`
+  directly. `ReceiptItem.quantity` is set only on a quantity line, `price` is its total.
 - `landedCostSnapshot` / `netProfit` on `SaleView` and `netProfit` on `SaleStats`
   are optional: the server redacts them without `sale.profit.view`.
 - `SaleView.payments` / `ReceiptView.payments` are the tender lines (`{accountCode,

@@ -51,12 +51,15 @@ export interface UpdateCustomerDto {
 
 export interface CustomerSaleView {
   id: string
+  /** Null for a quantity sale, which carries `model` + `quantity` instead (ADR 0030). */
   device: {
     imei: string | null
     serialNumber?: string | null
     model: { brand: string; name: string }
     specs: Record<string, unknown>
-  }
+  } | null
+  model?: { brand: string; name: string } | null
+  quantity?: number | null
   salePrice: string
   soldAt: string
   warranty: { days: number; startsAt: string; endsAt: string } | null
