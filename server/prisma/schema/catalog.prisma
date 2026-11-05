@@ -58,6 +58,10 @@ model DeviceModel {
   /// The seller may still change it at checkout, as with phones. Null = no
   /// default; irrelevant for IMEI/SERIAL units (they price per unit).
   salePrice Decimal? @db.Decimal(14, 2)
+  /// Server-generated file name of the one product picture on disk (ADR 0031),
+  /// stored under UPLOADS_DIR and served read-only from the /uploads prefix.
+  /// Null = no picture. Only the name lives here; the bytes never touch the DB.
+  imageFileName String?
   /// Per-model spec schema driving device intake/edit forms. Array of:
   /// [{ key: "storage", label: "Storage", type: "select",
   ///    options: ["128GB","256GB"], required: true, sortOrder: 10 }, ...]
@@ -72,6 +76,7 @@ model DeviceModel {
   alertRules     StockAlertRule[]
   sales          Sale[]
   stockMovements StockMovement[]
+  referenceLinks ReferenceModelLink[]
 
   @@unique([brand, name])
   @@unique([barcode])

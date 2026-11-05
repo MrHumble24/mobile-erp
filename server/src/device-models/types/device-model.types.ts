@@ -18,6 +18,8 @@ export interface DeviceModelView {
   customsCode: string | null;
   /** Default till price per piece for a QUANTITY product (ADR 0030); 2-dp string. */
   salePrice: string | null;
+  /** Public URL of the product picture, or null when it has none (ADR 0031). */
+  imageUrl: string | null;
   attributes: AttributeDef[];
   createdAt: Date;
   updatedAt: Date;
@@ -45,5 +47,6 @@ export interface DeviceModelPatch {
   modelCode?: string | null;
   customsCode?: string | null;
   salePrice?: number | null;
+  imageFileName?: string | null;
   attributes?: AttributeDef[];
 }

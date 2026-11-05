@@ -24,8 +24,14 @@ function searchOr(search?: string): Prisma.SaleWhereInput['OR'] {
   const term = search?.trim();
   if (!term) return undefined;
   return [
+    // Unit sale: IMEI, second IMEI or serial number (the three unit codes, ADR 0029).
     { device: { imei: { contains: term } } },
     { device: { imei2: { contains: term } } },
+    { device: { serialNumber: { contains: term, mode: 'insensitive' } } },
+    // Quantity sale: no unit, identified by its product's name/barcode/model code.
+    { model: { name: { contains: term, mode: 'insensitive' } } },
+    { model: { barcode: { contains: term, mode: 'insensitive' } } },
+    { model: { modelCode: { contains: term, mode: 'insensitive' } } },
     { customer: { name: { contains: term, mode: 'insensitive' } } },
     { customer: { phone: { contains: term, mode: 'insensitive' } } },
   ];

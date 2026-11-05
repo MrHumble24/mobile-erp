@@ -10,8 +10,9 @@ of. Owns no tables — it composes `DevicesService` and `StockService`.
   - `{ kind: 'unit', unit: DeviceDetailView }` — the code matched an IMEI,
     second IMEI or serial (ADR 0029 lookup); **units win** over barcodes.
   - `{ kind: 'product', product: { modelId, brand, name, barcode, salePrice,
-    quantity } }` — the code is a `QUANTITY` product's barcode, with its current
-    stock (may be negative) and default price.
+    quantity, categoryId, imageUrl } }` — the code is a `QUANTITY` product's
+    barcode, with its current stock (may be negative), default price and the
+    grid fields `categoryId`/`imageUrl` (ADR 0031).
   - `404` when the code is neither.
 
 ## Must never

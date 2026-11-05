@@ -3,11 +3,12 @@ import { ProductCategoriesModule } from '../product-categories/product-categorie
 import { DeviceModelsController } from './device-models.controller.js';
 import { DeviceModelsRepository } from './device-models.repository.js';
 import { DeviceModelsService } from './device-models.service.js';
+import { ImageStorageService } from './image-storage.service.js';
 
 @Module({
   imports: [ProductCategoriesModule],
   controllers: [DeviceModelsController],
-  providers: [DeviceModelsService, DeviceModelsRepository],
+  providers: [DeviceModelsService, DeviceModelsRepository, ImageStorageService],
   exports: [DeviceModelsService],
 })
 export class DeviceModelsModule {}

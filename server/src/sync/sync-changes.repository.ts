@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { buildImageUrl } from '../common/lib/image-url.js';
 import type { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { DeviceChange } from './types/sync.types.js';
@@ -31,7 +32,14 @@ export class SyncChangesRepository {
         specs: true,
         updatedAt: true,
         model: {
-          select: { id: true, brand: true, name: true, kindCode: true },
+          select: {
+            id: true,
+            brand: true,
+            name: true,
+            kindCode: true,
+            categoryId: true,
+            imageFileName: true,
+          },
         },
         sales: {
           orderBy: { soldAt: 'desc' },
@@ -64,7 +72,14 @@ type DeviceRow = {
   targetPrice: Prisma.Decimal | null;
   specs: Prisma.JsonValue;
   updatedAt: Date;
-  model: { id: string; brand: string; name: string; kindCode: string };
+  model: {
+    id: string;
+    brand: string;
+    name: string;
+    kindCode: string;
+    categoryId: string | null;
+    imageFileName: string | null;
+  };
   sales: {
     id: string;
     soldAt: Date;
@@ -86,7 +101,14 @@ function toDeviceChange(row: DeviceRow): DeviceChange {
     version: row.version,
     targetPrice: row.targetPrice === null ? null : row.targetPrice.toFixed(2),
     specs: row.specs,
-    model: row.model,
+    model: {
+      id: row.model.id,
+      brand: row.model.brand,
+      name: row.model.name,
+      kindCode: row.model.kindCode,
+      categoryId: row.model.categoryId,
+      imageUrl: buildImageUrl(row.model.imageFileName),
+    },
     latestSale: sale
       ? {
           id: sale.id,

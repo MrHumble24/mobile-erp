@@ -1,0 +1,53 @@
+// ---------------------------------------------------------------------------
+// Reference data for code lookup at intake (ADR 0031, Change 5). These rows are
+// NOT our inventory: they are free public lists mapping a scanned/typed code to
+// a device. Too big for a migration, so `pnpm ref:import` loads them from
+// docs/reference/device-lists/ and replaces the contents (idempotent). The
+// lookup route reads them to prefill model/colour/storage when a phone is taken
+// in. Apple box codes come from The Apple Wiki (CC BY-SA) — credit required.
+// ---------------------------------------------------------------------------
+
+/// Apple box code (the 5-char base of a part number like `MU793`) → device.
+/// Loaded from the iPhone/iPad/Mac/Watch/AirPods box-code CSVs (retail rows).
+model ReferenceAppleBoxCode {
+  /// Normalised 5-char box code, upper-case (the key you look up).
+  boxCode String  @id
+  brand   String
+  model   String
+  color   String?
+  storage String?
+  /// RAM, only present for Macs.
+  ram     String?
+
+  @@map("ref_apple_box_codes")
+}
+
+/// IMEI TAC (first 8 digits of an IMEI) → brand + model. Community list; gaps
+/// possible. Loaded from imei-tac.csv.
+model ReferenceImeiTac {
+  tac   String @id
+  brand String
+  model String
+
+  @@map("ref_imei_tacs")
+}
+
+/// A link the shop taught the system: a reference brand+model the lists know but
+/// could not name our product for → our catalog product. The lookup uses it
+/// first. One link per reference model (`refKey` = lower, de-spaced
+/// brand|model); storing again replaces it. Survives `ref:import` (not reference
+/// data — it is the shop's own learning).
+model ReferenceModelLink {
+  id       String      @id @default(uuid())
+  refKey   String      @unique
+  refBrand String
+  refModel String
+  modelId  String
+  model    DeviceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([modelId])
+  @@map("ref_model_links")
+}

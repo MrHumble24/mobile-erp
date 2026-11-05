@@ -44,7 +44,15 @@ export interface DeviceChange {
   version: number;
   targetPrice: string | null;
   specs: unknown;
-  model: { id: string; brand: string; name: string; kindCode: string };
+  /** imageUrl + categoryId let an offline till draw the product grid (ADR 0031). */
+  model: {
+    id: string;
+    brand: string;
+    name: string;
+    kindCode: string;
+    categoryId: string | null;
+    imageUrl: string | null;
+  };
   latestSale: {
     id: string;
     soldAt: Date;
@@ -71,6 +79,9 @@ export interface QuantityProductChange {
   barcode: string | null;
   salePrice: string | null;
   quantity: number;
+  /** For the offline grid (ADR 0031). */
+  categoryId: string | null;
+  imageUrl: string | null;
 }
 
 /** Offline-cache feed. nextSince is set only when the device page was capped. */

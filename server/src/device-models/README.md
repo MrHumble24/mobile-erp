@@ -23,6 +23,18 @@ devices may have). Validation of that schema lives in `lib/attribute-schema.ts`.
   only while the model has **no units** (else 409). `null` clears `categoryId`/
   `barcode`/`modelCode`/`customsCode`. Replacing `attributes` re-injects the
   reserved `storage` select. Duplicate name/barcode → 409.
+- `POST /:id/image` — multipart, one field `file` (`device.update`). Accepts a
+  JPEG/PNG/WebP decided by the leading bytes (not the name/declared type),
+  ≤ 2 MB; stores it under `UPLOADS_DIR` with a random name, points the model at
+  it and deletes the previous file. 400 on a non-image/empty, 413 over 2 MB.
+- `DELETE /:id/image` — removes the picture and deletes the file (`device.update`).
+
+Every model response carries `imageUrl` (the `/uploads/...` path to fetch, or
+null) — the file name itself (`imageFileName`) stays internal (ADR 0031).
+Pictures are served public + read-only + cross-origin from `/uploads` (mounted
+in `main.ts`), so an `<img>` on another origin loads them with no token. File
+I/O and the magic-byte check live in `image-storage.service.ts` /
+`lib/image-file.ts`.
 
 `kindCode` (IMEI | SERIAL | QUANTITY) says how the model's units are stocked
 (ADR 0029). `barcode` is the box EAN (used later for quantity scanning);
@@ -46,3 +58,5 @@ product (ADR 0030); `null` clears it. `PATCH` also accepts `salePrice`.
 
 - Hold per-unit data (specs values, price, status) — that is the `devices` module.
 - Change the reserved `storage` key's type.
+- Put a client-supplied name or path on disk — file names are server-generated,
+  only the one `UPLOADS_DIR` is exposed, no traversal (ADR 0031).

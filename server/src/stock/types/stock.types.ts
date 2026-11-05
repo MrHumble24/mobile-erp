@@ -49,6 +49,7 @@ export interface StockLevelRow {
   barcode: string | null;
   modelCode: string | null;
   categoryId: string | null;
+  imageFileName: string | null;
   salePrice: Prisma.Decimal | null;
   quantity: number;
   value: Prisma.Decimal;
@@ -90,4 +91,7 @@ export interface QuantityProductView {
   barcode: string | null;
   salePrice: string | null;
   quantity: number;
+  /** For the POS / offline grid (ADR 0031). */
+  categoryId: string | null;
+  imageUrl: string | null;
 }

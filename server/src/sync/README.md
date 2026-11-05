@@ -23,11 +23,13 @@ Offline mutation queue, conflict resolution, and the offline-cache feed (PRD §5
 - `GET /changes?since=` (`device.read`) — `{ serverTime, nextSince, devices[],
   partners[], products[] }`. Devices changed since `since` (cap 2000, `nextSince`
   to page); each device change carries `imei`/`imei2`/`serialNumber` and
-  `model.kindCode`; **no cost fields are selected at all**. Partners (with
+  `model` (`kindCode` + `categoryId` + `imageUrl`, so an offline till can draw
+  the product grid, ADR 0031); **no cost fields are selected at all**. Partners (with
   `creditLimit`/`outstanding`) are returned only when the caller holds
   `partner.read`; otherwise `partners: []`. `products` is every `QUANTITY`
   product with its current stock (`{ modelId, brand, name, barcode, salePrice,
-  quantity }`, ADR 0030) so an offline till can sell them — the full list each
+  quantity, categoryId, imageUrl }`, ADR 0030/0031) so an offline till can sell
+  and show them — the full list each
   sync (not `since`-filtered; no cost fields). The `sale.create` mutation
   accepts a quantity sale (no device lock, never conflicts).
 

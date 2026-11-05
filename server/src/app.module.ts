@@ -32,6 +32,8 @@ import { LedgerModule } from './ledger/ledger.module.js';
 import { CustomsModule } from './customs/customs.module.js';
 import { StockModule } from './stock/stock.module.js';
 import { ScanModule } from './scan/scan.module.js';
+import { CatalogModule } from './catalog/catalog.module.js';
+import { LookupModule } from './lookup/lookup.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -68,6 +70,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     CustomsModule,
     StockModule,
     ScanModule,
+    CatalogModule,
+    LookupModule,
   ],
   controllers: [AppController],
   providers: [

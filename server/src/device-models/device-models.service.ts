@@ -12,11 +12,13 @@ import { ProductCategoriesService } from '../product-categories/product-categori
 import { DeviceModelsRepository } from './device-models.repository.js';
 import { CreateDeviceModelDto } from './dto/create-device-model.dto.js';
 import { UpdateDeviceModelDto } from './dto/update-device-model.dto.js';
+import { ImageStorageService } from './image-storage.service.js';
 import {
   AttributeDef,
   defaultAttributes,
   normalizeAttributes,
 } from './lib/attribute-schema.js';
+import { assertValidImage } from './lib/image-file.js';
 import { DeviceModelView } from './types/device-model.types.js';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class DeviceModelsService {
   constructor(
     private readonly repo: DeviceModelsRepository,
     private readonly categories: ProductCategoriesService,
+    private readonly images: ImageStorageService,
   ) {}
 
   list(): Promise<DeviceModelView[]> {
@@ -96,6 +99,34 @@ export class DeviceModelsService {
     } catch (error) {
       throw this.mapConflict(error, dto.brand, dto.name);
     }
+  }
+
+  /**
+   * Replaces the product picture: validates the bytes (JPEG/PNG/WebP by magic
+   * number, ≤ 2 MB), writes a fresh random file, points the model at it and
+   * deletes the old file. The DB points at the new file before the old one is
+   * removed, so a crash leaves an orphan file, never a broken link.
+   */
+  async setImage(
+    id: string,
+    buffer: Buffer | undefined,
+  ): Promise<DeviceModelView> {
+    await this.require(id);
+    const ext = assertValidImage(buffer);
+    const previous = await this.repo.imageFileName(id);
+    const fileName = await this.images.save(buffer!, ext);
+    const view = await this.repo.update(id, { imageFileName: fileName });
+    await this.images.remove(previous);
+    return view;
+  }
+
+  /** Removes the product picture (deletes the file; no-op if it has none). */
+  async removeImage(id: string): Promise<DeviceModelView> {
+    await this.require(id);
+    const previous = await this.repo.imageFileName(id);
+    const view = await this.repo.update(id, { imageFileName: null });
+    await this.images.remove(previous);
+    return view;
   }
 
   private async assertKind(kindCode: string): Promise<void> {
