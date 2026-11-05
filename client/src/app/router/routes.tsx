@@ -15,6 +15,7 @@ const CustomersPage = lazy(() => import("@/pages/customers"))
 const ConsignmentsPage = lazy(() => import("@/pages/consignments"))
 const PartnersPage = lazy(() => import("@/pages/partners"))
 const ExpensesPage = lazy(() => import("@/pages/expenses"))
+const BalancePage = lazy(() => import("@/pages/balance"))
 const ReportsPage = lazy(() => import("@/pages/reports"))
 const UsersPage = lazy(() => import("@/pages/users"))
 const SyncPage = lazy(() => import("@/pages/sync"))
@@ -60,6 +61,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="expense.read" />}>
           <Route path="/expenses" element={<ExpensesPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="balance.read" />}>
+          <Route path="/balance" element={<BalancePage />} />
         </Route>
         <Route element={<RequirePermission permission="report.finance" />}>
           <Route path="/reports" element={<ReportsPage />} />

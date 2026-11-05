@@ -50,6 +50,8 @@
   "errorSameAccount": "Pick two different accounts",
   "errorReasonRequired": "Write the reason",
   "errorAmountRequired": "Enter an amount",
+  "errorAmountPositive": "Enter an amount above zero",
+  "resetFilters": "Reset",
   "paidWith": "Paid with",
   "payCash": "Cash",
   "payCard": "Card",
