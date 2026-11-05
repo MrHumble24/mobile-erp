@@ -123,4 +123,10 @@ export class UpdateSettingsDto {
   @Min(0)
   @Max(1_000_000_000)
   defaultCreditLimit?: number | null;
+
+  // Cashier shifts (Change 11, ADR 0036). Optional so a PUT that omits it
+  // leaves the stored value untouched. Off by default.
+  @IsOptional()
+  @IsBoolean()
+  shiftsEnabled?: boolean;
 }

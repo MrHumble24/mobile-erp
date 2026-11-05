@@ -9,6 +9,7 @@ import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { SalesCreditService } from '../sales/sales-credit.service.js';
 import { SettingsService } from '../settings/settings.service.js';
+import { ShiftsService } from '../shifts/shifts.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreditsReadService } from './credits-read.service.js';
 import { CreditsRepository } from './credits.repository.js';
@@ -33,6 +34,7 @@ export class CreditsService {
     private readonly stores: StoresService,
     private readonly ledger: LedgerService,
     private readonly salesCredit: SalesCreditService,
+    private readonly shifts: ShiftsService,
     private readonly repo: CreditsRepository,
     private readonly writes: CreditsWriteRepository,
     private readonly read: CreditsReadService,
@@ -56,6 +58,9 @@ export class CreditsService {
       const existing = await this.repo.findRawByClientKey(dto.clientKey);
       if (existing) return this.read.get(existing.id); // idempotent replay
     }
+    // Shift gate (ADR 0036): credit is online only, so an open shift is always
+    // required when shifts are on.
+    await this.shifts.assertCanSell(caller);
     const customer = await this.requireCustomerWithPhone(dto.customerId);
     const now = new Date();
     const dueDates = dto.instalments.map((i) => new Date(i.dueDate));

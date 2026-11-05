@@ -80,6 +80,7 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     ),
   };
   const events = { emit: jest.fn() };
+  const shifts = { assertCanSell: jest.fn(() => Promise.resolve()) };
   const service = new SalesService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
@@ -87,6 +88,7 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     ledger as unknown as LedgerService,
     stock as unknown as StockService,
     salesPricing as unknown as SalesPricingService,
+    shifts as never,
     events as unknown as EventEmitter2,
   );
   return {
@@ -97,6 +99,7 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     ledger,
     stock,
     salesPricing,
+    shifts,
     events,
   };
 }

@@ -24,6 +24,9 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
   `defaultCreditLimit` (nullable; null = no cap). Optional on the write DTO.
   Read by the credits module to gate credit creation and compute the effective
   limit.
+- Cashier shifts (ADR 0036): `shiftsEnabled` (default false). Optional on the
+  write DTO. Read by the shifts module to gate selling (a sale/credit needs an
+  open shift when on).
 
 ## Exposes
 

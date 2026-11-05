@@ -1,0 +1,37 @@
+// ---------------------------------------------------------------------------
+// Cashier shifts (Change 11, ADR 0036). Optional, off by default
+// (StoreSettings.shiftsEnabled). The cashier counts the drawer cash when
+// opening and again when closing. One shift per cashier at a time: an open
+// shift is one with no `closedAt` (no status column), enforced by a partial
+// unique index (in the migration) and the service.
+//
+// Nothing derivable is stored: what happened during a shift is every cash
+// ledger row the cashier posted in the window, in that store. Expected cash =
+// opening count + the net of those rows on the cash account; the difference =
+// closing count − expected. The arithmetic lives in one pure function
+// (shifts/lib/shift-math.ts). Closing posts the difference (when non-zero) as
+// one SHIFT_DIFFERENCE cash_transactions row linked back via `shiftId`.
+// ---------------------------------------------------------------------------
+
+model Shift {
+  id           String    @id @default(uuid())
+  storeId      String
+  store        Store     @relation(fields: [storeId], references: [id])
+  cashierId    String
+  cashier      User      @relation(fields: [cashierId], references: [id])
+  openedAt     DateTime  @default(now())
+  /// Cash counted in the drawer when the shift opened.
+  openingCount Decimal   @db.Decimal(14, 2)
+  /// Null while the shift is open; set once, with the drawer re-count, at close.
+  closedAt     DateTime?
+  closingCount Decimal?  @db.Decimal(14, 2)
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  cashTransactions CashTransaction[]
+
+  @@index([storeId])
+  @@index([cashierId])
+  @@index([openedAt])
+  @@map("shifts")
+}

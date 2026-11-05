@@ -33,6 +33,7 @@ model User {
   stockMovements      StockMovement[]
   creditsCreated      CustomerCredit[]
   creditPayments      CreditPayment[]
+  shifts              Shift[]
 
   @@map("users")
 }

@@ -67,16 +67,18 @@ function build(
     get: jest.fn().mockResolvedValue({ id: 'credit-1' }),
     standing: jest.fn(),
   };
+  const shifts = { assertCanSell: jest.fn(() => Promise.resolve()) };
   const service = new CreditsService(
     settings as never,
     stores as never,
     ledger as never,
     salesCredit as never,
+    shifts as never,
     repo as never,
     writes as never,
     read as never,
   );
-  return { service, settings, ledger, salesCredit, repo, writes, read };
+  return { service, settings, ledger, salesCredit, shifts, repo, writes, read };
 }
 
 function dto(over: Partial<CreateCreditDto> = {}): CreateCreditDto {

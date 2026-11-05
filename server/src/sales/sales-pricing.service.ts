@@ -27,6 +27,8 @@ export interface PricingOutcome {
 export interface CheckoutOptions {
   /** Offline replay (sync push): trust the till, never reject (ADR 0034). */
   trustClientPrice?: boolean;
+  /** Offline replay: the sale already happened, so the shift gate is skipped (ADR 0036). */
+  fromSync?: boolean;
 }
 
 /** One home for the checkout list-price + discount money rules (ADR 0034). */

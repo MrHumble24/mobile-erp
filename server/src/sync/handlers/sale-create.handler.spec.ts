@@ -52,6 +52,7 @@ describe('SaleCreateHandler (offline replay by serial)', () => {
     expect(dto.expectedVersion).toBe(2);
     expect(sales.create).toHaveBeenCalledWith(ctx.caller, dto, {
       trustClientPrice: true,
+      fromSync: true,
     });
   });
 });

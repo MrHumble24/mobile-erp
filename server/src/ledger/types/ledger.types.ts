@@ -97,7 +97,16 @@ export interface LedgerPost {
   shipmentId?: string;
   /** Ties a CREDIT_PAYMENT row to its credit payment (ADR 0035). */
   creditPaymentId?: string;
+  /** Ties a SHIFT_DIFFERENCE row to the shift it reconciles (ADR 0036). */
+  shiftId?: string;
   createdById: string;
+}
+
+/** A cash row inside a shift's window — the shift report's raw input (ADR 0036). */
+export interface ShiftRowNet {
+  typeCode: string;
+  accountCode: string;
+  amount: Prisma.Decimal;
 }
 
 /** Net of a source's rows on one account (money in positive, out negative). */
