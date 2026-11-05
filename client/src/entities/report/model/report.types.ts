@@ -45,7 +45,8 @@ export type ExpenseGroupBy = "category" | "month" | "day"
 export interface ReturnRow {
   id: string
   saleId: string
-  imei: string
+  imei: string | null
+  serialNumber?: string | null
   model: string
   refundAmount: number
   reason: string | null

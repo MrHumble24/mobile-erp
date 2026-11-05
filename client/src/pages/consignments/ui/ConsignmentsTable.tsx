@@ -1,6 +1,7 @@
 import { CheckCircle2, Eye, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { ConsignmentView } from "@/entities/consignment"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
@@ -76,7 +77,7 @@ function ConsignmentTableRow({ item, actions }: { item: ConsignmentView; actions
   return (
     <TableRow>
       <TableCell className="font-semibold text-sm">{item.partnerShopName}</TableCell>
-      <TableCell className="font-mono text-sm">{item.imei}</TableCell>
+      <TableCell className="font-mono text-sm">{unitCode(item)}</TableCell>
       <TableCell className="font-mono font-bold text-sm">{formatMoney(item.agreedPrice)}</TableCell>
       <TableCell><DueCell item={item} /></TableCell>
       <TableCell><ConsignmentStatusBadge statusCode={item.statusCode} /></TableCell>

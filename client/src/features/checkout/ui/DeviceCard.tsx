@@ -1,6 +1,7 @@
 import { Smartphone, CheckCircle, Battery } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { Card, CardContent } from "@/shared/ui/card"
 import { DeviceStatusBadge, type DeviceDetailView } from "@/entities/device"
 
@@ -22,7 +23,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
               <h3 className="font-bold text-base leading-tight">
                 {device.model?.brand} {device.model?.name}
               </h3>
-              <p className="font-mono text-xs text-muted-foreground">{device.imei}</p>
+              <p className="font-mono text-xs text-muted-foreground">{unitCode(device)}</p>
               {device.imei2 && (
                 <p className="font-mono text-[10px] text-muted-foreground">IMEI 2: {device.imei2}</p>
               )}

@@ -10,8 +10,10 @@ export interface DeviceSpecs {
 
 export interface DeviceView {
   id: string
-  imei: string
+  /** Exactly one of imei / serialNumber is set (ADR 0029). */
+  imei: string | null
   imei2: string | null
+  serialNumber: string | null
   shipmentId: string
   modelId: string
   specs: DeviceSpecs
@@ -36,6 +38,7 @@ export interface DeviceModelRef {
   id: string
   brand: string
   name: string
+  kindCode?: string
 }
 
 export interface QcInspectionSummary {

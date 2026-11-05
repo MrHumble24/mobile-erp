@@ -52,7 +52,8 @@ export interface UpdateCustomerDto {
 export interface CustomerSaleView {
   id: string
   device: {
-    imei: string
+    imei: string | null
+    serialNumber?: string | null
     model: { brand: string; name: string }
     specs: Record<string, unknown>
   }

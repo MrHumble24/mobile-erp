@@ -35,10 +35,12 @@ export function useSaleReceipt(id?: string | null) {
 }
 
 export function useWarrantyLookup(imei?: string | null) {
+  const code = imei?.trim() ?? ""
   return useQuery({
-    queryKey: saleKeys.warranty(imei || ""),
-    queryFn: () => saleRepository.getWarranty(imei || ""),
-    enabled: Boolean(imei && imei.length === 15),
+    queryKey: saleKeys.warranty(code),
+    queryFn: () => saleRepository.getWarranty(code),
+    // Any unit code: an IMEI or a serial number (ADR 0029); server resolves either.
+    enabled: code.length >= 3,
   })
 }
 

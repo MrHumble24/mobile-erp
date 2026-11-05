@@ -44,7 +44,7 @@ export function ConsignDeviceRow({
         onChange={(e) => onChange({ imei: e.target.value })}
         onScan={(code) => onChange({ imei: code.trim() })}
         onClear={() => onChange({ imei: "" })}
-        placeholder="IMEI (15 xona)..."
+        placeholder={t("catalog.scanCode")}
       />
       <div className="space-y-1">
         <Label>{t("consignments.agreedPrice")}</Label>

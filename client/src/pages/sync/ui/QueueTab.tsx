@@ -15,9 +15,10 @@ import {
 
 type T = (k: string, p?: Record<string, string | number>) => string
 
-function imeiOf(entry: OutboxEntry): string {
-  const imei = entry.payload.imei
-  return typeof imei === "string" ? imei : "—"
+/** The unit code the mutation carried: whichever of imei / serialNumber was scanned. */
+function unitCodeOf(entry: OutboxEntry): string {
+  const code = entry.payload.imei ?? entry.payload.serialNumber
+  return typeof code === "string" ? code : "—"
 }
 
 function QueueRow({ entry, t }: { entry: OutboxEntry; t: T }) {
@@ -38,7 +39,7 @@ function QueueRow({ entry, t }: { entry: OutboxEntry; t: T }) {
   return (
     <TableRow>
       <TableCell className="font-mono text-xs">{entry.type}</TableCell>
-      <TableCell className="font-mono text-xs">{imeiOf(entry)}</TableCell>
+      <TableCell className="font-mono text-xs">{unitCodeOf(entry)}</TableCell>
       <TableCell className="text-xs">{formatDateTime(entry.occurredAt)}</TableCell>
       <TableCell>
         <Badge variant={entry.status === "rejected" ? "destructive" : "mercury"}>

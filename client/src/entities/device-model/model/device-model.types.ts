@@ -1,5 +1,8 @@
 export type AttributeType = "text" | "number" | "select"
 
+/** How a product's units are stocked (ADR 0029). */
+export type ProductKind = "IMEI" | "SERIAL" | "QUANTITY"
+
 /** One spec field defined on a device model (mirrors the server AttributeDef). */
 export interface AttributeDef {
   key: string
@@ -15,6 +18,13 @@ export interface DeviceModelView {
   brand: string
   name: string
   isActive: boolean
+  /** How this product's units are stocked; cannot change once it has units. */
+  kindCode: ProductKind
+  categoryId: string | null
+  /** Box EAN; unique. */
+  barcode: string | null
+  /** Maker's code, e.g. A2894 / SM-S918B; indexed for search. */
+  modelCode: string | null
   /** How customs writes this model; matched to the price list for the fee (ADR 0027). */
   customsCode: string | null
   attributes: AttributeDef[]
@@ -26,6 +36,11 @@ export interface CreateDeviceModelDto {
   brand: string
   name: string
   isActive?: boolean
+  /** Defaults to IMEI server-side. */
+  kindCode?: ProductKind
+  categoryId?: string | null
+  barcode?: string | null
+  modelCode?: string | null
   customsCode?: string | null
   attributes?: AttributeDef[]
 }
@@ -34,6 +49,10 @@ export interface UpdateDeviceModelDto {
   brand?: string
   name?: string
   isActive?: boolean
+  kindCode?: ProductKind
+  categoryId?: string | null
+  barcode?: string | null
+  modelCode?: string | null
   customsCode?: string | null
   attributes?: AttributeDef[]
 }

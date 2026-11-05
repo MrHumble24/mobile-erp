@@ -1,5 +1,6 @@
 import * as React from "react"
 import { isNetworkError } from "@/shared/api/http"
+import { codeToIdentifier } from "@/entities/device"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCreateConsignment, type ConsignmentView } from "@/entities/consignment"
 
@@ -68,7 +69,7 @@ export function useConsignForm(opts: {
       const clientMutationId = crypto.randomUUID()
       const dto = {
         partnerId,
-        imei: row.imei.trim(),
+        ...codeToIdentifier(row.imei),
         agreedPrice: Number(row.agreedPrice),
         dueDate: iso,
         notes: notes.trim() || undefined,

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { normalizeSerial, isSerial } from "@/entities/device"
 import { useAddShipmentDevices, type RegisterDeviceItem, type RegisteredDeviceView } from "@/entities/shipment"
 import type { SpecFieldProblem } from "@/entities/device-model"
 
@@ -7,6 +8,10 @@ export interface IntakeDraftValues {
   imei: string
   imei2: string
   dualSim: boolean
+  /** Serial number (for a SERIAL model); mutually exclusive with imei. */
+  serialNumber: string
+  /** The selected model's kind; drives which identifier the unit carries (ADR 0029). */
+  kindCode: string
   modelId: string
   specs: Record<string, string>
   cost: number
@@ -66,6 +71,18 @@ function submitHandlers(bag: SubmitBag) {
   }
 }
 
+function serialDraftError(
+  serial: string,
+  modelId: string,
+  batch: RegisterDeviceItem[],
+  t: (key: string) => string,
+): string | null {
+  if (!isSerial(serial)) return t("catalog.errorSerialInvalid")
+  if (batch.some((b) => b.serialNumber === serial)) return t("catalog.errorSerialExists")
+  if (!modelId) return t("shipments.selectModel")
+  return null
+}
+
 function draftError(
   values: IntakeDraftValues,
   imei: string,
@@ -73,6 +90,9 @@ function draftError(
   batch: RegisterDeviceItem[],
   t: (key: string) => string,
 ): string | null {
+  if (values.kindCode === "SERIAL") {
+    return serialDraftError(normalizeSerial(values.serialNumber), values.modelId, batch, t)
+  }
   if (!/^\d{15}$/.test(imei)) return t("shipments.imeiLength")
   if (values.dualSim && !imei2) return t("inventory.imei2Required")
   if (imei2 && !/^\d{15}$/.test(imei2)) return t("shipments.imeiLength")
@@ -99,11 +119,14 @@ export function useIntakeBatch(shipmentId: string) {
     if (error) return error
     setErrorMsg("")
     const note = values.unitExpenseNote.trim()
+    const identifier: Pick<RegisterDeviceItem, "imei" | "imei2" | "serialNumber"> =
+      values.kindCode === "SERIAL"
+        ? { serialNumber: normalizeSerial(values.serialNumber) }
+        : { imei, imei2: values.dualSim ? imei2 || null : null }
     setBatch((p) => [
       ...p,
       {
-        imei,
-        imei2: values.dualSim ? imei2 || null : null,
+        ...identifier,
         modelId: values.modelId,
         specs: values.specs,
         acquisitionCost: values.cost,

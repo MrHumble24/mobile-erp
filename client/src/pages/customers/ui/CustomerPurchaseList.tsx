@@ -2,6 +2,7 @@ import * as React from "react"
 import { Receipt, Smartphone } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useCustomerSales, type CustomerSaleView } from "@/entities/customer"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Button, buttonVariants } from "@/shared/ui/button"
@@ -26,7 +27,7 @@ function PurchaseItem({
         <div className="font-mono font-bold">{formatMoney(sale.salePrice)}</div>
       </div>
       <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
-        <span>{sale.device.imei}</span>
+        <span>{unitCode(sale.device)}</span>
         <span>{formatDate(sale.soldAt)}</span>
       </div>
       <div className="flex items-center justify-between gap-2">
@@ -38,7 +39,7 @@ function PurchaseItem({
             className="size-8"
             aria-label={t("customers.openDevice")}
             title={t("customers.openDevice")}
-            onClick={() => onOpenDevice(sale.device.imei)}
+            onClick={() => onOpenDevice(unitCode(sale.device))}
           >
             <Smartphone className="size-4" />
           </Button>

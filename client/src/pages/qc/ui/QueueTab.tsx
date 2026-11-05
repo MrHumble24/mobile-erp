@@ -2,6 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { useDeviceModels } from "@/entities/device-model"
 import type { DeviceView } from "@/entities/device"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Pagination } from "@/shared/ui/pagination"
 import { QueueFilters } from "./QueueFilters"
@@ -33,8 +34,8 @@ export function QueueTab({ onInspect }: { onInspect: (imei: string) => void }) {
         <QueueTable
           devices={data?.items || []}
           modelsMap={modelsMap}
-          onInspect={(d: DeviceView) => onInspect(d.imei)}
-          onSelect={(d: DeviceView) => setDrawerImei(d.imei)}
+          onInspect={(d: DeviceView) => onInspect(unitCode(d))}
+          onSelect={(d: DeviceView) => setDrawerImei(unitCode(d))}
         />
       )}
       {data && data.total > 0 && (
@@ -52,7 +53,7 @@ export function QueueTab({ onInspect }: { onInspect: (imei: string) => void }) {
         imei={drawerImei}
         open={Boolean(drawerImei)}
         onClose={() => setDrawerImei(null)}
-        onInspect={(d) => { setDrawerImei(null); onInspect(d.imei) }}
+        onInspect={(d) => { setDrawerImei(null); onInspect(unitCode(d)) }}
       />
     </div>
   )

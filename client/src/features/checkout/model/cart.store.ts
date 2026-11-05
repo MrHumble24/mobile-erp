@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { DeviceDetailView } from "@/entities/device"
 import type { PaymentMethod, PaymentPart } from "@/entities/ledger"
 
@@ -30,7 +31,7 @@ export interface CartState {
   paymentMethod: PaymentMethod
   /** Per-account amounts when paymentMethod is "split". */
   splitParts: PaymentPart[]
-  /** Adds a device line. Returns false if the IMEI is already in the cart. */
+  /** Adds a device line. Returns false if that unit is already in the cart. */
   addLine: (device: DeviceDetailView, defaults: LineDefaults) => boolean
   removeLine: (lineId: string) => void
   removeLastLine: () => void
@@ -63,7 +64,8 @@ export const useCartStore = create<CartState>()(
       splitParts: [],
 
       addLine: (device, defaults) => {
-        if (get().lines.some((line) => line.device.imei === device.imei)) return false
+        const code = unitCode(device)
+        if (get().lines.some((line) => unitCode(line.device) === code)) return false
         const line: CartLine = {
           lineId: newId(),
           device,

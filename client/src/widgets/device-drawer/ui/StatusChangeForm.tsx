@@ -12,6 +12,7 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
+import { unitCode } from "@/shared/lib/unit-code"
 import { toast } from "@/shared/ui/sonner"
 
 const STATUS_LABEL_KEY: Record<string, string> = {
@@ -31,7 +32,7 @@ export function StatusChangeForm({ device }: { device: DeviceView }) {
 
   const onError = (err: { statusCode?: number; message?: string }) => {
     if (err?.statusCode === 409) {
-      queryClient.invalidateQueries({ queryKey: deviceKeys.byImei(device.imei) })
+      queryClient.invalidateQueries({ queryKey: deviceKeys.byImei(unitCode(device)) })
       toast.error(t("inventory.versionConflict"))
       return
     }

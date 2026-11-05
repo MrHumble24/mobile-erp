@@ -2,6 +2,7 @@ import * as React from "react"
 import { Printer, Copy, Check } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { accountLabel } from "@/entities/ledger"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
@@ -70,7 +71,7 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
     <>
       <div className="py-2.5 border-b-2 border-dashed border-black/30 space-y-2">
         {items.map((item) => (
-          <div key={item.imei} className="space-y-0.5">
+          <div key={unitCode(item)} className="space-y-0.5">
             <div className="flex justify-between font-bold text-[11px]">
               <span className="line-clamp-1">{item.model}</span>
               <span className="shrink-0 font-mono">{formatMoney(item.price)}</span>
@@ -79,7 +80,7 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
               <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
             </div>
             <div className="text-[9px] text-black/90 font-mono tracking-wider">
-              IMEI: {item.imei}
+              {item.imei ? "IMEI" : t("catalog.serialNumber")}: {unitCode(item)}
             </div>
             {item.imei2 && (
               <div className="text-[9px] text-black/90 font-mono tracking-wider">
@@ -135,7 +136,8 @@ function ChequeWarranty({ warranty }: { warranty: ReceiptView["warranty"] }) {
 
 export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
   const { t } = useI18n()
-  const primaryImei = receipt.items[0]?.imei || receipt.saleId.slice(0, 15)
+  const firstItem = receipt.items[0]
+  const primaryImei = (firstItem && unitCode(firstItem)) || receipt.saleId.slice(0, 15)
 
   return (
     <div className="printable-cheque w-full max-w-[320px] sm:w-[58mm] bg-white text-black p-4 font-mono text-[11px] leading-snug rounded-[8px] border border-[#d4d4d4] shadow-[var(--shadow-md)] print:shadow-none print:border-none print:p-0">

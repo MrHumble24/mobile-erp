@@ -26,6 +26,11 @@ export const deviceModelFormSchema = z.object({
   brand: z.string().min(1),
   name: z.string().min(1),
   isActive: z.boolean(),
+  kindCode: z.enum(["IMEI", "SERIAL", "QUANTITY"]),
+  /** "" means no category. */
+  categoryId: z.string(),
+  barcode: z.string(),
+  modelCode: z.string(),
   customsCode: z.string(),
   attributes: z.array(attributeSchema).superRefine((attrs, ctx) => {
     const seen = new Set<string>()

@@ -27,6 +27,7 @@
   "errorSerialInvalid": "3 to 64 letters or numbers, no spaces",
   "scanCode": "Scan or type IMEI, serial number or barcode",
   "unitCode": "IMEI / serial number",
+  "sortOrder": "Sort order",
   "quantity": "Quantity",
   "pieces": "{count} pcs",
   "onHand": "In stock",

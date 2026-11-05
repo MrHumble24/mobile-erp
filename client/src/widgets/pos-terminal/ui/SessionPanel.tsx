@@ -1,6 +1,7 @@
 import { Receipt } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { Button } from "@/shared/ui/button"
 import { MetricCard } from "@/shared/ui/metric-card"
 import { useSales, type SaleView } from "@/entities/sale"
@@ -25,7 +26,7 @@ function SaleRow({ sale, onOpenReceipt }: { sale: SaleView; onOpenReceipt: (id: 
         <p className="text-sm font-medium truncate">
           {sale.device.model.brand} {sale.device.model.name}
         </p>
-        <p className="text-xs text-muted-foreground font-mono">{time} · {sale.device.imei}</p>
+        <p className="text-xs text-muted-foreground font-mono">{time} · {unitCode(sale.device)}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <span className="text-sm font-semibold">{formatMoney(sale.salePrice)}</span>

@@ -6,7 +6,8 @@ import { openDB, type IDBPDatabase } from "idb"
  * mean — slices own their shapes. `meta` is a key/value store for cursors etc.
  */
 export const OFFLINE_DB = "mobile-erp-offline"
-export const OFFLINE_DB_VERSION = 1
+// v2: devices store re-keyed from `imei` to `id` so serial units (no imei) fit.
+export const OFFLINE_DB_VERSION = 2
 
 export const STORES = {
   outbox: "outbox",
@@ -23,10 +24,20 @@ function db(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(OFFLINE_DB, OFFLINE_DB_VERSION, {
       upgrade(database) {
-        database.createObjectStore(STORES.outbox, { keyPath: "id" })
-        database.createObjectStore(STORES.devices, { keyPath: "imei" })
-        database.createObjectStore(STORES.partners, { keyPath: "id" })
-        database.createObjectStore(STORES.meta)
+        if (!database.objectStoreNames.contains(STORES.outbox)) {
+          database.createObjectStore(STORES.outbox, { keyPath: "id" })
+        }
+        // Re-key devices by id: a serial unit has no imei (ADR 0029).
+        if (database.objectStoreNames.contains(STORES.devices)) {
+          database.deleteObjectStore(STORES.devices)
+        }
+        database.createObjectStore(STORES.devices, { keyPath: "id" })
+        if (!database.objectStoreNames.contains(STORES.partners)) {
+          database.createObjectStore(STORES.partners, { keyPath: "id" })
+        }
+        if (!database.objectStoreNames.contains(STORES.meta)) {
+          database.createObjectStore(STORES.meta)
+        }
       },
     })
   }

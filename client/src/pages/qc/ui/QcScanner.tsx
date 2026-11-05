@@ -16,7 +16,7 @@ export function QcScanner({ onScan }: { onScan: (imei: string) => void }) {
         onChange={(e) => setValue(e.target.value)}
         onClear={() => setValue("")}
         onScan={(imei) => { onScan(imei); setValue("") }}
-        placeholder={t("qc.scanPlaceholder")}
+        placeholder={t("catalog.scanCode")}
       />
     </div>
   )

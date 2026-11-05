@@ -34,8 +34,10 @@ export interface UpdateShipmentDto {
 }
 
 export interface RegisterDeviceItem {
-  imei: string
+  /** Exactly one of imei / serialNumber per the model's kind (ADR 0029). */
+  imei?: string
   imei2?: string | null
+  serialNumber?: string
   modelId: string
   specs: Record<string, unknown>
   acquisitionCost: number
@@ -51,8 +53,10 @@ export interface RegisterDevicesDto {
 
 export interface RegisteredDeviceView {
   id: string
-  imei: string
+  imei: string | null
   imei2: string | null
+  serialNumber: string | null
+  kindCode: string
   modelId: string
   acquisitionCost: string
   /** Customs fee stamped by the server from the current list. */

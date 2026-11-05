@@ -20,6 +20,7 @@ import {
   type DeviceModelFormValues,
 } from "../model/device-model-form.schema"
 import { AttributeEditor } from "./AttributeEditor"
+import { KindField, CategoryField, BarcodeField, ModelCodeField } from "./ModelCatalogFields"
 
 type FormApi = UseFormReturn<DeviceModelFormValues>
 
@@ -91,14 +92,29 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
       brand: model?.brand ?? "",
       name: model?.name ?? "",
       isActive: model?.isActive ?? true,
+      kindCode: model?.kindCode ?? "IMEI",
+      categoryId: model?.categoryId ?? "",
+      barcode: model?.barcode ?? "",
+      modelCode: model?.modelCode ?? "",
       customsCode: model?.customsCode ?? "",
       attributes: model ? toFormAttributes(model.attributes) : defaultFormAttributes(),
     },
   })
 
-  const handleError = (err: { statusCode?: number; message?: string }) => {
+  const handleError = (err: { statusCode?: number; message?: string }, values: DeviceModelFormValues) => {
     if (err?.statusCode === 409) {
-      form.setError("name", { message: t("inventory.modelDuplicate") })
+      // Kind change on a model with units (server message mentions "kind").
+      if (/kind/i.test(err.message ?? "")) {
+        form.setError("kindCode", { message: t("catalog.kindLocked") })
+        return
+      }
+      // Barcode and name both surface a generic "already exists"; a barcode that
+      // was just entered/changed is the likely culprit, else the (brand, name).
+      if (values.barcode.trim() && values.barcode.trim() !== (model?.barcode ?? "")) {
+        form.setError("barcode", { message: t("catalog.errorBarcodeExists") })
+      } else {
+        form.setError("name", { message: t("inventory.modelDuplicate") })
+      }
       return
     }
     toast.error(err?.message || t("common.error"))
@@ -106,10 +122,22 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
 
   const onSubmit = (values: DeviceModelFormValues) => {
     const attributes = toDtoAttributes(values.attributes)
-    const customsCode = values.customsCode.trim() || null
-    const opts = { onSuccess: () => { toast.success(t("common.success")); onDone() }, onError: handleError }
-    if (model) updateMutation.mutate({ id: model.id, dto: { ...values, customsCode, attributes } }, opts)
-    else createMutation.mutate({ brand: values.brand, name: values.name, customsCode, attributes }, opts)
+    const catalog = {
+      kindCode: values.kindCode,
+      categoryId: values.categoryId.trim() || null,
+      barcode: values.barcode.trim() || null,
+      modelCode: values.modelCode.trim() || null,
+      customsCode: values.customsCode.trim() || null,
+    }
+    const opts = {
+      onSuccess: () => { toast.success(t("common.success")); onDone() },
+      onError: (err: { statusCode?: number; message?: string }) => handleError(err, values),
+    }
+    if (model) {
+      updateMutation.mutate({ id: model.id, dto: { brand: values.brand, name: values.name, isActive: values.isActive, ...catalog, attributes } }, opts)
+    } else {
+      createMutation.mutate({ brand: values.brand, name: values.name, ...catalog, attributes }, opts)
+    }
   }
 
   return (
@@ -117,6 +145,12 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 my-2">
         <ModelTextField form={form} name="brand" label={t("inventory.brand")} />
         <ModelTextField form={form} name="name" label={t("inventory.model")} />
+        <KindField form={form} />
+        <CategoryField form={form} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <BarcodeField form={form} />
+          <ModelCodeField form={form} />
+        </div>
         <CustomsCodeField form={form} />
         <ActiveField form={form} />
         <AttributeEditor form={form} savedKeys={savedKeys} />

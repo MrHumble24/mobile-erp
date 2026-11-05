@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { SaleView } from "@/entities/sale"
 import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
@@ -38,7 +39,7 @@ export function DeviceSection({ sale }: { sale: SaleView }) {
       <p className="text-sm font-semibold">
         {sale.device.model.brand} {sale.device.model.name}
       </p>
-      <p className="font-mono text-xs text-muted-foreground">{sale.device.imei}</p>
+      <p className="font-mono text-xs text-muted-foreground">{unitCode(sale.device)}</p>
       {sale.device.imei2 && (
         <p className="font-mono text-xs text-muted-foreground">IMEI 2: {sale.device.imei2}</p>
       )}

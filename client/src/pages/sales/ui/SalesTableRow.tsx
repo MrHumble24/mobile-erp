@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { Eye, Receipt, RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { SaleView } from "@/entities/sale"
 import { PaymentSummary } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
@@ -63,7 +64,7 @@ export function SalesTableRow({
         <div className="text-sm font-semibold">
           {sale.device.model?.brand} {sale.device.model?.name}
         </div>
-        <div className="font-mono text-xs text-muted-foreground">{sale.device.imei}</div>
+        <div className="font-mono text-xs text-muted-foreground">{unitCode(sale.device)}</div>
       </TableCell>
       <TableCell>
         <Badge variant={isB2B ? "violet" : "default"}>

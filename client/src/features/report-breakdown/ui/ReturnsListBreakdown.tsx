@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useReturnsReport } from "@/entities/report"
 import {
   Table,
@@ -31,7 +32,7 @@ export function ReturnsListBreakdown({ request }: BreakdownProps) {
       <TableHeader>
         <TableRow>
           <TableHead>{t("common.date")}</TableHead>
-          <TableHead>IMEI</TableHead>
+          <TableHead>{t("catalog.unitCode")}</TableHead>
           <TableHead>{t("inventory.model")}</TableHead>
           <TableHead>{t("reports.reason")}</TableHead>
           <TableHead className="text-right">{t("reports.refund")}</TableHead>
@@ -41,7 +42,7 @@ export function ReturnsListBreakdown({ request }: BreakdownProps) {
         {items.map((r) => (
           <TableRow key={r.id}>
             <TableCell className="text-sm">{formatDate(r.returnedAt)}</TableCell>
-            <TableCell className="font-mono text-xs">{r.imei}</TableCell>
+            <TableCell className="font-mono text-xs">{unitCode(r)}</TableCell>
             <TableCell className="text-sm">{r.model}</TableCell>
             <TableCell className="text-sm text-muted-foreground">
               {r.reason ?? "—"}

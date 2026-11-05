@@ -5,8 +5,9 @@ stock-alert rules. Composes entities and features; holds no HTTP of its own.
 
 ## Tabs
 - **Devices** — filters (search debounced, model, status, storage), paginated
-  table, IMEI scanner, detail drawer, edit dialog.
+  table, unit-code scanner (IMEI or serial), detail drawer, edit dialog.
 - **Models** (`device.update`) — `features/manage-device-model`.
+- **Categories** (`device.update`) — `features/manage-product-category`.
 - **Stock Alerts** (`device.read`; writes need `settings.manage`) —
   `features/manage-stock-alert-rule`.
 

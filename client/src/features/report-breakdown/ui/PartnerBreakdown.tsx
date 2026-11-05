@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useConsignments, type ConsignmentView } from "@/entities/consignment"
 import { usePartnerLedger, type LedgerEntry } from "@/entities/partner"
 import {
@@ -22,7 +23,7 @@ function ConsignmentsSection({ items }: { items: ConsignmentView[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>{t("common.date")}</TableHead>
-            <TableHead>IMEI</TableHead>
+            <TableHead>{t("catalog.unitCode")}</TableHead>
             <TableHead>{t("common.status")}</TableHead>
             <TableHead className="text-right">{t("consignments.agreedPrice")}</TableHead>
           </TableRow>
@@ -31,7 +32,7 @@ function ConsignmentsSection({ items }: { items: ConsignmentView[] }) {
           {items.map((c) => (
             <TableRow key={c.id}>
               <TableCell className="text-sm">{formatDate(c.consignedAt)}</TableCell>
-              <TableCell className="font-mono text-xs">{c.imei}</TableCell>
+              <TableCell className="font-mono text-xs">{unitCode(c)}</TableCell>
               <TableCell className="text-sm">{c.statusCode}</TableCell>
               <TableCell className="font-mono text-sm text-right">{formatMoney(c.agreedPrice)}</TableCell>
             </TableRow>

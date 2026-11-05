@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useSales, type SaleView } from "@/entities/sale"
 import {
   Table,
@@ -26,7 +27,7 @@ function SalesRow({
   return (
     <TableRow className="cursor-pointer" onClick={() => onNavigate(`/sales?id=${sale.id}`)}>
       <TableCell className="text-sm">{formatDate(sale.soldAt)}</TableCell>
-      <TableCell className="font-mono text-xs">{sale.device.imei}</TableCell>
+      <TableCell className="font-mono text-xs">{unitCode(sale.device)}</TableCell>
       <TableCell className="text-sm">
         {sale.device.model.brand} {sale.device.model.name}
       </TableCell>
@@ -63,7 +64,7 @@ export function SalesLinesBreakdown({ request, onNavigate, canViewCost }: Breakd
       <TableHeader>
         <TableRow>
           <TableHead>{t("common.date")}</TableHead>
-          <TableHead>IMEI</TableHead>
+          <TableHead>{t("catalog.unitCode")}</TableHead>
           <TableHead>{t("inventory.model")}</TableHead>
           <TableHead>{t("reports.channel")}</TableHead>
           <TableHead>{t("reports.cashier")}</TableHead>

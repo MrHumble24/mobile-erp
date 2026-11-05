@@ -24,7 +24,7 @@ export function PosScanner({ scanner }: PosScannerProps) {
         onChange={(e) => scanner.setImei(e.target.value)}
         onScan={handleScan}
         onClear={scanner.clear}
-        placeholder={t("pos.scanPrompt")}
+        placeholder={t("catalog.scanCode")}
         className="h-12 text-base"
       />
       {scanner.scanResult && <ScanResultCard result={scanner.scanResult} />}

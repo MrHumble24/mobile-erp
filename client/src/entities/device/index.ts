@@ -26,5 +26,6 @@ export {
 export { DeviceStatusBadge } from "./ui/DeviceStatusBadge"
 export { DeviceTable } from "./ui/DeviceTable"
 export { STORAGE_OPTIONS, type StorageOption } from "./model/device-storage"
-export { IMEI_REGEX, isImei, matchesImei } from "./lib/imei"
+export { IMEI_REGEX, isImei, matchesUnitCode } from "./lib/imei"
+export { SERIAL_REGEX, normalizeSerial, isSerial, codeToIdentifier } from "./lib/unit-code"
 export { MANUAL_STATUS_TRANSITIONS, manualTransitionsFor } from "./model/device-transitions"

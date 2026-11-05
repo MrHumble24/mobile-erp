@@ -1,6 +1,7 @@
 import { Clock } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useOverdueConsignments } from "@/entities/consignment"
 import { Badge } from "@/shared/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
@@ -47,7 +48,7 @@ export function DashboardOverdueConsignmentsTable() {
                       <div className="text-xs text-muted-foreground">{item.partnerPhone}</div>
                     )}
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{item.imei}</TableCell>
+                  <TableCell className="font-mono text-xs">{unitCode(item)}</TableCell>
                   <TableCell className="font-mono font-bold text-sm text-amber-600">
                     {formatMoney(item.agreedPrice)}
                   </TableCell>
