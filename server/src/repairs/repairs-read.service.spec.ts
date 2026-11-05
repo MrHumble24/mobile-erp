@@ -29,10 +29,12 @@ function build(repairsEnabled: boolean) {
 describe('RepairsReadService gate', () => {
   it('refuses reads when repairs are disabled', async () => {
     const { service } = build(false);
-    await expect(
-      service.list({ page: 1, pageSize: 20 }),
-    ).rejects.toThrow(ForbiddenException);
-    await expect(service.report(caller, {})).rejects.toThrow(ForbiddenException);
+    await expect(service.list({ page: 1, pageSize: 20 })).rejects.toThrow(
+      ForbiddenException,
+    );
+    await expect(service.report(caller, {})).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
   it('lists when repairs are enabled', async () => {
