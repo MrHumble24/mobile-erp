@@ -24,5 +24,6 @@
   "statusOnline": "Online",
   "collapseSidebar": "Collapse sidebar",
   "expandSidebar": "Expand sidebar",
-  "sync": "Sync"
+  "sync": "Sync",
+  "balance": "Balance"
 }

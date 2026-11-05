@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import uzAuth from "./uz/auth.json"
+import uzBalance from "./uz/balance.json"
 import uzCommon from "./uz/common.json"
 import uzConsignments from "./uz/consignments.json"
 import uzCustomers from "./uz/customers.json"
@@ -18,6 +19,7 @@ import uzSync from "./uz/sync.json"
 import uzUsers from "./uz/users.json"
 
 import enAuth from "./en/auth.json"
+import enBalance from "./en/balance.json"
 import enCommon from "./en/common.json"
 import enConsignments from "./en/consignments.json"
 import enCustomers from "./en/customers.json"
@@ -40,6 +42,7 @@ export type Locale = "uz" | "en"
 const translations: Record<Locale, Record<string, Record<string, string>>> = {
   uz: {
     auth: uzAuth,
+    balance: uzBalance,
     common: uzCommon,
     consignments: uzConsignments,
     customers: uzCustomers,
@@ -59,6 +62,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
   },
   en: {
     auth: enAuth,
+    balance: enBalance,
     common: enCommon,
     consignments: enConsignments,
     customers: enCustomers,

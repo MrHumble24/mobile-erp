@@ -603,6 +603,41 @@ Requests"). The data belongs to GSMArena, not to the library.
 Decided by the user on 2026-11-05: read it once, slowly, for Samsung
 colors and memory sizes only. Given to Gemini as handoff 016.
 
+### Night build (user, 2026-11-05 evening)
+
+The user said: "Step by step build all the features which we
+discussed", then went to sleep. So every step below is confirmed, and
+Claude works through them in order without asking.
+
+Rules Claude follows while the user is away:
+- Same path for each step: server, then web, then Android and iOS,
+  with the checks, then merge into `main` on this computer.
+- **Nothing is pushed.** Pushing deploys to Railway; that waits for the
+  user.
+- Uzbek texts are left as English placeholders and collected into a
+  Gemini handoff. The PRD is not touched; its text is written here.
+- Where a decision is missing, Claude takes the option it recommended,
+  writes it under "Decisions taken while the user slept", and goes on.
+- A step that cannot be finished properly is left unmerged and listed
+  under "Progress", with the reason. No half-working code goes into
+  `main`.
+
+Decisions taken while the user slept:
+- Part 2b, who pays when nobody picks: the person registering a
+  shipment picks cash or card for that shipment (its phones and its
+  overhead). A repeating expense keeps the account on its template.
+  Both default to cash.
+- Customs fee: the Excel upload is **not** built until the client's
+  file arrives (the plan already says so). The fee list can be typed
+  in by hand meanwhile.
+
+Progress (updated as each step lands):
+
+| Step | Server | Web | Android | iOS | Notes |
+|---|---|---|---|---|---|
+| 1 Stores skeleton | merged, pushed | not needed | not needed | not needed | ADR 0023 |
+| 2a Ledger core | building | | | | |
+
 ### Before any code
 
 1. **No real data yet** (user, 2026-11-05). The database on Railway
