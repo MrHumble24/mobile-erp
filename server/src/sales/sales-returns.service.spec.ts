@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { BonusService } from '../bonus/bonus.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
 import { Prisma } from '../generated/client/client.js';
@@ -34,13 +35,18 @@ function build() {
     tradeInTotalForSale: jest.fn().mockResolvedValue(new Prisma.Decimal(0)),
     tradeInsBySale: jest.fn().mockResolvedValue(new Map()),
   };
+  const bonus = {
+    reverseForSale: jest.fn().mockResolvedValue(undefined),
+    summaryBySale: jest.fn().mockResolvedValue(new Map()),
+  };
   const service = new SalesReturnsService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
     ledger as unknown as LedgerService,
     purchases as unknown as CustomerPurchasesService,
+    bonus as unknown as BonusService,
   );
-  return { service, reads, checkout, ledger, purchases };
+  return { service, reads, checkout, ledger, purchases, bonus };
 }
 
 const ret = (refundAmount: number) =>

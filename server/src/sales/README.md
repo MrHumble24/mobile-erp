@@ -115,6 +115,20 @@ A **return** of a sale that had a trade-in keeps the traded-in phone (its
 purchase is never undone); the refund cap becomes net SALE rows + Σ trade-in
 values (ADR 0028 extended).
 
+## Bonus points (ADR 0043)
+
+`POST /sales` also accepts `bonusRedeem?` (points to spend, online only). It
+funds part of the price like the customer's own money: `payments` must sum to
+`salePrice − Σ trade-in values − bonusRedeem`. Requires `customerId`, bonus on,
+and `bonusRedeem ≤ balance`, `≤ bonusMaxRedeemPercent` of the sale, `≤` what is
+left to pay (400 `BONUS_REDEEM_EXCEEDS_*`); points are **not** a discount, so
+they never touch the cashier discount limit. On the sync replay path redeem is
+refused (`BONUS_REDEEM_OFFLINE`) but earning still happens. `SalesCreateService`
+posts the EARN/SPEND rows via `BonusService` inside the sale transaction; a
+return reverses them in the refund transaction. `SaleView` + `ReceiptView` carry
+`bonus: { earned, spent }`. Checkout orchestration lives in `SalesCreateService`;
+`SalesService` is the read/create facade.
+
 ## Customer credit (ADR 0035)
 
 `SaleView` carries `creditId` (null for a normal paid sale). `SalesCreditService`

@@ -40,6 +40,13 @@ model StoreSettings {
   /// Repairs (Change 13, ADR 0040). Off by default. When off, every /repairs
   /// route refuses with 403 REPAIRS_DISABLED.
   repairsEnabled         Boolean  @default(false)
+  /// Loyalty bonus points (ADR 0043). Off by default. One point = one unit of
+  /// money. `bonusEarnPercent` is the share of money actually paid that comes
+  /// back as points; `bonusMaxRedeemPercent` is the largest share of one sale
+  /// that may be paid with points.
+  bonusEnabled           Boolean  @default(false)
+  bonusEarnPercent       Decimal  @default(0) @db.Decimal(5, 2)
+  bonusMaxRedeemPercent  Decimal  @default(0) @db.Decimal(5, 2)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

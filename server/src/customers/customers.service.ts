@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { BonusService } from '../bonus/bonus.service.js';
 import { CreditsReadService } from '../credits/credits-read.service.js';
 import { PricingService } from '../pricing/pricing.service.js';
 import { SalesService } from '../sales/sales.service.js';
@@ -27,10 +28,19 @@ export class CustomersService {
     private readonly sales: SalesService,
     private readonly pricing: PricingService,
     private readonly credits: CreditsReadService,
+    private readonly bonus: BonusService,
   ) {}
 
-  lookup(query?: string): Promise<CustomerView[]> {
-    return this.repo.lookup(query);
+  /** POS typeahead; carries each match's points balance when bonus is on. */
+  async lookup(query?: string): Promise<CustomerView[]> {
+    const rows = await this.repo.lookup(query);
+    const { enabled } = await this.bonus.config();
+    if (!enabled || rows.length === 0) return rows;
+    const balances = await this.bonus.balancesFor(rows.map((r) => r.id));
+    return rows.map((r) => ({
+      ...r,
+      bonusBalance: balances.get(r.id) ?? '0.00',
+    }));
   }
 
   async list(query: ListCustomersQueryDto): Promise<CustomerPage> {

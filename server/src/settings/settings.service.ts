@@ -38,6 +38,9 @@ const DEFAULTS: StoreSettings = {
   defaultCreditLimit: null,
   shiftsEnabled: false,
   repairsEnabled: false,
+  bonusEnabled: false,
+  bonusEarnPercent: new Prisma.Decimal(0),
+  bonusMaxRedeemPercent: new Prisma.Decimal(0),
   digestSentOn: null,
   updatedAt: new Date(0),
 };

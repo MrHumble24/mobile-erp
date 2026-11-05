@@ -51,6 +51,7 @@ export function toSaleView(row: SaleRow): SaleView {
     notes: row.notes,
     payments: [],
     tradeIns: [],
+    bonus: { earned: '0.00', spent: '0.00' },
     return: row.return
       ? {
           returnedAt: row.return.returnedAt,
@@ -94,5 +95,6 @@ export function toReceiptView(row: SaleRow): ReceiptView {
       : undefined,
     payments: [], // filled by the service from the sale's SALE ledger rows
     tradeIns: [], // filled by the service from the sale's customer purchases
+    bonus: { earned: '0.00', spent: '0.00' }, // filled from the bonus ledger
   };
 }

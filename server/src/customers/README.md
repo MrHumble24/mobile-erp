@@ -23,7 +23,10 @@ aggregates are **derived from sales, never stored**.
 active price levels), `standingDiscountPercent` (2-dp string) — the till's
 default level and discount ceiling (ADR 0034) — and `creditLimit` (2-dp string
 or null) — this customer's own credit ceiling, overriding the settings default
-(ADR 0035).
+(ADR 0035). `/customers/lookup` also fills `bonusBalance` (2-dp string) when
+bonus is on, so the till shows points without another call (ADR 0043); it is
+null elsewhere. The per-customer points balance + history live at
+`GET /customers/:id/bonus`, owned by the `bonus` module.
 
 `CustomerListItem` = `CustomerView` + `{ purchaseCount, totalSpent, lastPurchaseAt,
 activeWarranties, returnsCount, creditOutstanding, creditOverdue,

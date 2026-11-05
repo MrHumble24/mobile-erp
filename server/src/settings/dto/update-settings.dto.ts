@@ -135,4 +135,26 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   repairsEnabled?: boolean;
+
+  // Loyalty bonus points (ADR 0043). Optional so a PUT that omits them leaves
+  // the stored values untouched. Off by default.
+  @IsOptional()
+  @IsBoolean()
+  bonusEnabled?: boolean;
+
+  /** Share of money paid returned as points, as a percent. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  bonusEarnPercent?: number;
+
+  /** Largest share of one sale payable with points, as a percent. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  bonusMaxRedeemPercent?: number;
 }

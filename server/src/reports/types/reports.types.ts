@@ -13,6 +13,10 @@ export interface ProfitReport extends SaleTotals {
   returnsRefunded: number;
   /** Total given away in discounts: Σ(listPriceSnapshot − salePrice), ADR 0034. */
   discountsGiven: number;
+  /** Loyalty points given (EARN) in range (ADR 0043). */
+  bonusPointsEarned: number;
+  /** Loyalty points spent (SPEND, as a positive magnitude) in range (ADR 0043). */
+  bonusPointsSpent: number;
 }
 
 export interface ExpenseReportRow {

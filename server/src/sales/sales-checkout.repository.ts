@@ -163,9 +163,13 @@ export class SalesCheckoutRepository {
   /**
    * Records a return and posts REFUND rows (money out). A unit sale moves the
    * device back; a quantity sale (`quantityRestore` set) posts a RETURN stock
-   * movement at the sale's own unit cost instead.
+   * movement at the sale's own unit cost instead. `afterReturn` runs in the same
+   * transaction (bonus-point reversal, ADR 0043) so it commits with the refund.
    */
-  async processReturn(input: ReturnInput): Promise<void> {
+  async processReturn(
+    input: ReturnInput,
+    afterReturn?: (tx: Tx) => Promise<void>,
+  ): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const existing = await tx.saleReturn.findUnique({
         where: { saleId: input.saleId },
@@ -208,6 +212,7 @@ export class SalesCheckoutRepository {
         },
       });
       await this.postRefunds(tx, input);
+      if (afterReturn) await afterReturn(tx);
     });
   }
 

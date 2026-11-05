@@ -10,6 +10,11 @@ export interface CustomerView {
   standingDiscountPercent: string;
   /** This customer's own credit ceiling (2-dp string); null = use the default. */
   creditLimit: string | null;
+  /**
+   * Loyalty points balance (2-dp string) when bonus is on, so the till can show
+   * it without another call (ADR 0043). Null when bonus is off / not loaded.
+   */
+  bonusBalance: string | null;
   createdAt: Date;
 }
 

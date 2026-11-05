@@ -1,0 +1,51 @@
+// ---------------------------------------------------------------------------
+// Loyalty bonus points (ADR 0043), behind a switch (StoreSettings.bonusEnabled,
+// off by default). One point = one unit of money. An append-only per-customer
+// ledger like the cash ledger and stock movements: a customer's balance is the
+// SUM of their rows, never a stored column.
+// ---------------------------------------------------------------------------
+
+/// Why points moved. Lookup (not an enum): EARN (on a sale), SPEND (on a sale),
+/// RETURN (a return taking back earned / giving back spent points) and
+/// CORRECTION (a manual owner fix). More can be added as rows later.
+model BonusTransactionType {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  transactions BonusTransaction[]
+
+  @@map("bonus_transaction_types")
+}
+
+/// One points movement for a customer. Append-only: a mistake is fixed by a new
+/// row, never an edit or delete. `amount` is signed (positive = points in,
+/// negative = points out) and never zero. A balance may go below zero when a
+/// return gives back points the customer had already spent. `saleId` links the
+/// row to the sale that earned / spent / returned the points; a CORRECTION
+/// carries a required reason in `note` and no sale.
+model BonusTransaction {
+  id          String               @id @default(uuid())
+  storeId     String
+  store       Store                @relation(fields: [storeId], references: [id])
+  customerId  String
+  customer    Customer             @relation(fields: [customerId], references: [id])
+  typeCode    String
+  type        BonusTransactionType @relation(fields: [typeCode], references: [code])
+  amount      Decimal              @db.Decimal(14, 2)
+  occurredAt  DateTime             @default(now())
+  note        String?
+  saleId      String?
+  sale        Sale?                @relation(fields: [saleId], references: [id])
+  createdById String
+  createdBy   User                 @relation(fields: [createdById], references: [id])
+  createdAt   DateTime             @default(now())
+
+  @@index([storeId])
+  @@index([customerId])
+  @@index([saleId])
+  @@index([typeCode])
+  @@index([occurredAt])
+  @@map("bonus_transactions")
+}
