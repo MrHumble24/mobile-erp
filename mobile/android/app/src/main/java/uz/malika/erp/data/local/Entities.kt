@@ -22,6 +22,8 @@ data class DeviceEntity(
     val modelId: String,
     val modelBrand: String,
     val modelName: String,
+    val categoryId: String? = null, // the model's product category (ADR 0031), for the offline till grid
+    val imageUrl: String? = null, // the model's picture path, drawn against the API base URL (ADR 0031)
     val latestSale: String?, // JSON
     val gradeCode: String?,
     val inspectionNotes: String?,
@@ -42,6 +44,8 @@ data class ProductEntity(
     val barcode: String? = null,
     val salePrice: String? = null, // Decimal string
     val quantity: Int,
+    val categoryId: String? = null, // product category (ADR 0031), for the offline till grid
+    val imageUrl: String? = null, // the product's picture path, drawn against the API base URL (ADR 0031)
 )
 
 /** Cached partners from `/sync/changes`. Money columns are Decimal strings. */

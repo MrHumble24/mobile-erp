@@ -139,3 +139,18 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
   has no read-back for these lines, so the detail lists the ones added this session
   (held in `ShipmentsViewModel.items`). A shipment may hold units, quantity lines,
   or both. Wired on the phone sheet path; the tablet side pane omits it.
+
+## Intake code lookup (ADR 0031, Change 5)
+- The intake form leads with a `LookupField` — an **"IMEI or code on the box"**
+  scannable field (`catalog.boxCode`), separate from the IMEI capture field, with a
+  quiet data-credit line (`catalog.dataCredit`). Typing/scanning a code asks
+  `GET /lookup` (`ProcurementRepository.lookup`, 404 → null). When it names one of
+  our products, the model is selected and storage/colour are filled from the
+  product's options — **only empty fields** (`lib/LookupFill.fill`, unit-tested) —
+  and `catalog.lookupFound` shows. When the lists know the code but not our
+  product, a pick sheet lets the seller choose it once, with "remember" storing the
+  link via `POST /lookup/links` (offered only with `device.update`). A 404 shows a
+  quiet `catalog.lookupNotFound` hint. The lookup is fire-and-forget — it never
+  blocks or slows the scan/save below it.
+- `IntakeDeviceForm` gained `online` / `canLearn` / `repo`; `IntakeSheet` passes
+  them (`canLearn` = `device.update`). Lookup DTOs live in `data/LookupDtos.kt`.

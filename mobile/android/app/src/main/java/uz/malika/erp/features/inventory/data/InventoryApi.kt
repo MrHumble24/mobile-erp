@@ -2,10 +2,14 @@ package uz.malika.erp.features.inventory.data
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import okhttp3.MultipartBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 /**
@@ -46,6 +50,15 @@ interface InventoryApi {
 
     @PATCH("device-models/{id}")
     suspend fun updateModel(@Path("id") id: String, @Body body: JsonElement)
+
+    // Product picture (ADR 0031): multipart, one `file` part; the server decides
+    // the type from the leading bytes and caps the size at 2 MB.
+    @Multipart
+    @POST("device-models/{id}/image")
+    suspend fun uploadModelImage(@Path("id") id: String, @Part file: MultipartBody.Part): DeviceModelDto
+
+    @DELETE("device-models/{id}/image")
+    suspend fun deleteModelImage(@Path("id") id: String): DeviceModelDto
 
     @GET("product-categories")
     suspend fun categories(): List<ProductCategoryDto>
@@ -125,6 +138,8 @@ data class DeviceModelDto(
     val modelCode: String? = null,
     /** Default till price per piece for a QUANTITY product (ADR 0030); 2-dp string. */
     val salePrice: String? = null,
+    /** The model's picture path (ADR 0031), drawn against the API base URL; null when none. */
+    val imageUrl: String? = null,
 )
 
 @Serializable

@@ -74,6 +74,8 @@ data class DeviceModelView(
     val modelCode: String? = null,
     /** Default till price per piece for a QUANTITY product (ADR 0030); null otherwise. */
     val salePrice: String? = null,
+    /** The model's picture path (ADR 0031), or null when it has none. */
+    val imageUrl: String? = null,
 ) {
     val label: String get() = "$brand $name"
 
@@ -90,6 +92,7 @@ data class DeviceModelView(
             barcode = d.barcode,
             modelCode = d.modelCode,
             salePrice = d.salePrice,
+            imageUrl = d.imageUrl,
         )
     }
 }

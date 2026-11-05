@@ -43,6 +43,14 @@ interface ProcurementService {
     @GET("device-models")
     suspend fun deviceModels(): List<DeviceModelDto>
 
+    /** Device-code lookup for intake autofill (ADR 0031); 404 when unknown. */
+    @GET("lookup")
+    suspend fun codeLookup(@Query("code") code: String): CodeLookupResultDto
+
+    /** Remember which of our products a reference model is (needs `device.update`). */
+    @POST("lookup/links")
+    suspend fun learnLink(@Body body: LearnLinkBody)
+
     @GET("devices")
     suspend fun devices(
         @Query("shipmentId") shipmentId: String? = null,

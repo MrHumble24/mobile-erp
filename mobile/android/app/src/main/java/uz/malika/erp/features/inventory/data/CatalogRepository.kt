@@ -7,10 +7,26 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import uz.malika.erp.core.runApi
 
 /** The only place that talks to `/device-models` and `/product-categories`. Writes need `device.update`. */
 class CatalogRepository(private val api: InventoryApi) {
+
+    /** Upload a product picture (ADR 0031); returns the refreshed model view. */
+    suspend fun uploadImage(id: String, bytes: ByteArray, mime: String, filename: String): DeviceModelView =
+        runApi {
+            val part = MultipartBody.Part.createFormData(
+                "file", filename, bytes.toRequestBody(mime.toMediaTypeOrNull()),
+            )
+            DeviceModelView.fromDto(api.uploadModelImage(id, part))
+        }
+
+    /** Remove a product's picture; returns the refreshed model view. */
+    suspend fun removeImage(id: String): DeviceModelView =
+        runApi { DeviceModelView.fromDto(api.deleteModelImage(id)) }
 
     suspend fun list(): List<DeviceModelView> =
         runApi { api.deviceModels().map(DeviceModelView::fromDto) }

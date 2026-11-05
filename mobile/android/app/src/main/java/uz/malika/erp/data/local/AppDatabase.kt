@@ -20,7 +20,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -84,9 +84,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Picture + category on the cache (ADR 0031): adds `categoryId`/`imageUrl`
+         * to `devices` and `products` so the offline till grid can group by
+         * category and draw each product's picture. Plain ALTERs — existing rows
+         * and the outbox are untouched; the next pull fills the new columns.
+         */
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE devices ADD COLUMN categoryId TEXT")
+                db.execSQL("ALTER TABLE devices ADD COLUMN imageUrl TEXT")
+                db.execSQL("ALTER TABLE products ADD COLUMN categoryId TEXT")
+                db.execSQL("ALTER TABLE products ADD COLUMN imageUrl TEXT")
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
     }
 }

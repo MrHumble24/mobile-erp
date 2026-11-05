@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.inventory.data.DeviceModelView
 import uz.malika.erp.features.inventory.data.ProductCategoryDto
 import uz.malika.erp.features.inventory.model.Async
@@ -37,12 +39,18 @@ import uz.malika.erp.shared.ui.EmptyView
 import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.shared.ui.ProductImage
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.Tokens
 
 /** Models tab: searchable product list with kind + category, a category filter, create / edit. */
 @Composable
-fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
+fun DeviceModelsTab(
+    catalogVm: CatalogViewModel,
+    online: Boolean,
+    baseUrl: String,
+    onToast: (String) -> Unit,
+) {
     val t = LocalT.current
     val state by catalogVm.models.collectAsState()
     val categories by catalogVm.categories.collectAsState()
@@ -91,7 +99,7 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
                         EmptyView(message = t("inventory.empty", null))
                     } else {
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
-                            items(list, key = { it.id }) { m -> ModelRow(m, categories) { editing = m } }
+                            items(list, key = { it.id }) { m -> ModelRow(m, categories, baseUrl) { editing = m } }
                         }
                     }
                 }
@@ -101,12 +109,12 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
 
     if (creating) {
         AppBottomSheet(onDismiss = { creating = false }) {
-            ModelFormSheet(model = null, catalogVm = catalogVm, online = online, onSaved = { creating = false })
+            ModelFormSheet(model = null, catalogVm = catalogVm, online = online, baseUrl = baseUrl, onToast = onToast, onSaved = { creating = false })
         }
     }
     editing?.let { model ->
         AppBottomSheet(onDismiss = { editing = null }) {
-            ModelFormSheet(model = model, catalogVm = catalogVm, online = online, onSaved = { editing = null })
+            ModelFormSheet(model = model, catalogVm = catalogVm, online = online, baseUrl = baseUrl, onToast = onToast, onSaved = { editing = null })
         }
     }
     if (managingCategories) {
@@ -115,11 +123,18 @@ fun DeviceModelsTab(catalogVm: CatalogViewModel, online: Boolean) {
 }
 
 @Composable
-private fun ModelRow(model: DeviceModelView, categories: List<ProductCategoryDto>, onClick: () -> Unit) {
+private fun ModelRow(model: DeviceModelView, categories: List<ProductCategoryDto>, baseUrl: String, onClick: () -> Unit) {
     val t = LocalT.current
     val categoryName = categories.firstOrNull { it.id == model.categoryId }?.name
     AppCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            ProductImage(
+                imageUrl = model.imageUrl,
+                baseUrl = baseUrl,
+                contentDescription = model.label,
+                modifier = Modifier.size(48.dp),
+            )
+            Spacer(Modifier.width(Tokens.Space.gap))
             Column(Modifier.weight(1f)) {
                 Text(model.label, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 val sub = listOfNotNull(t(model.kind.labelKey, null), categoryName).joinToString(" · ")

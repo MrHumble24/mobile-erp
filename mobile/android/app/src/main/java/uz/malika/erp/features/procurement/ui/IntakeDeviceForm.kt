@@ -16,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.IntakeDraft
+import uz.malika.erp.features.procurement.data.ProcurementRepository
+import uz.malika.erp.features.procurement.lib.LookupFill
 import uz.malika.erp.features.procurement.lib.imeiSlotsFilled
 import uz.malika.erp.features.procurement.lib.isValidImei
 import uz.malika.erp.features.procurement.lib.validateIntake
@@ -38,6 +40,9 @@ import uz.malika.erp.ui.theme.Tokens
 fun IntakeDeviceForm(
     models: List<DeviceModelDto>,
     canExpense: Boolean,
+    online: Boolean,
+    canLearn: Boolean,
+    repo: ProcurementRepository,
     onAdd: (IntakeDraft) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -134,6 +139,30 @@ fun IntakeDeviceForm(
     }
 
     Column(modifier) {
+        // Autofill from a typed/scanned IMEI or box code (ADR 0031). It only fills
+        // the model + empty storage/colour; it never blocks the scan/save below.
+        LookupField(
+            models = sellable,
+            online = online,
+            canLearn = canLearn,
+            repo = repo,
+            onFill = { modelId, storageOpt, colorOpt ->
+                val picked = modelId?.let { id -> sellable.firstOrNull { it.id == id } }
+                if (picked != null && picked.id != model?.id) {
+                    val kindChanged = (model?.isSerial == true) != (picked.isSerial == true)
+                    if (kindChanged) {
+                        imei1 = ""; imei2 = ""; serial = ""
+                        slot1Error = null; slot2Error = null; serialError = null; resetKey++
+                    }
+                    model = picked
+                    specs.clear()
+                }
+                val merged = LookupFill.fill(specs.toMap(), storageOpt, colorOpt)
+                specs.clear(); specs.putAll(merged)
+                stageIfComplete(false)
+            },
+        )
+        Spacer(Modifier.height(Tokens.Space.section))
         key(resetKey) {
             if (isSerial) {
                 Column {

@@ -62,6 +62,19 @@ class CatalogViewModel(private val repo: CatalogRepository) : ViewModel() {
         refresh()
     }
 
+    /** Upload / remove a product picture (ADR 0031); returns the refreshed view. */
+    suspend fun uploadImage(id: String, bytes: ByteArray, mime: String, filename: String): DeviceModelView {
+        val view = repo.uploadImage(id, bytes, mime, filename)
+        refresh()
+        return view
+    }
+
+    suspend fun removeImage(id: String): DeviceModelView {
+        val view = repo.removeImage(id)
+        refresh()
+        return view
+    }
+
     suspend fun addCategory(name: String) {
         repo.createCategory(name)
         refreshCategories()

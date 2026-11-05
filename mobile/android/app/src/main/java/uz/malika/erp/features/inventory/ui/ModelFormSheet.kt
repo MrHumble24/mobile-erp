@@ -45,6 +45,8 @@ fun ModelFormSheet(
     model: DeviceModelView?,
     catalogVm: CatalogViewModel,
     online: Boolean,
+    baseUrl: String,
+    onToast: (String) -> Unit,
     onSaved: () -> Unit,
 ) {
     val t = LocalT.current
@@ -102,6 +104,18 @@ fun ModelFormSheet(
             color = Tokens.text,
         )
         Spacer(Modifier.height(Tokens.Space.lg))
+        // The picture needs a saved model (an id), so it shows on edit only.
+        if (isEdit) {
+            ProductImageSection(
+                modelId = model!!.id,
+                initialImageUrl = model.imageUrl,
+                baseUrl = baseUrl,
+                catalogVm = catalogVm,
+                online = online,
+                onToast = onToast,
+            )
+            Spacer(Modifier.height(Tokens.Space.lg))
+        }
         AppFormField(label = t("inventory.brand", null), value = brand, onValueChange = { brand = it })
         Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(label = t("inventory.model", null), value = name, onValueChange = { name = it })
