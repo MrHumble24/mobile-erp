@@ -21,6 +21,8 @@ interface ReturnTarget {
   id: string
   salePrice: number
   payments: SalePaymentLine[]
+  /** Σ trade-in values on the sale; raises the refund cap, paid back in cash. */
+  tradeInValue: number
   /** A sale sold on credit: the return lowers the debt, hands back no cash. */
   onCredit: boolean
 }
@@ -52,6 +54,7 @@ export function SalesPage() {
           id: sale.id,
           salePrice: Number(sale.salePrice),
           payments: sale.payments,
+          tradeInValue: (sale.tradeIns ?? []).reduce((sum, ti) => sum + Number(ti.value), 0),
           onCredit: Boolean(sale.creditId),
         }),
     }),
@@ -119,6 +122,7 @@ export function SalesPage() {
           saleId={d.returnTarget.id}
           salePrice={d.returnTarget.salePrice}
           payments={d.returnTarget.payments}
+          tradeInValue={d.returnTarget.tradeInValue}
           onCredit={d.returnTarget.onCredit}
           open={Boolean(d.returnTarget)}
           onOpenChange={(open) => !open && d.setReturnTarget(null)}

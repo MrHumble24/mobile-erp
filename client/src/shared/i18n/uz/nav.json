@@ -30,5 +30,6 @@
   "stock": "Stock",
   "categories": "Categories",
   "credits": "Customer credit",
-  "shifts": "Shifts"
+  "shifts": "Shifts",
+  "purchases": "Customer purchases"
 }

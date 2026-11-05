@@ -8,6 +8,7 @@ import {
   PriceLevelControl,
   CartDiscountControl,
   TotalsPanel,
+  TradeInSection,
   useCartStore,
   cartTotals,
   toCreditLines,
@@ -31,12 +32,15 @@ function CreditSell({ pos }: { pos: Pos }) {
         type="button"
         variant="outline"
         className="h-11 w-full gap-2 font-semibold"
-        disabled={lines.length === 0 || pos.noOpenShift}
+        disabled={lines.length === 0 || pos.noOpenShift || pos.hasTradeIn}
         onClick={() => pos.setCreditOpen(true)}
       >
         <HandCoins className="size-4" />
         {t("credit.payOnCredit")}
       </Button>
+      {pos.hasTradeIn && (
+        <p className="text-xs text-muted-foreground">{t("purchases.tradeInNoCredit")}</p>
+      )}
       <CreditDialog
         open={pos.creditOpen}
         onOpenChange={pos.setCreditOpen}
@@ -74,6 +78,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
         </div>
         <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
+        <TradeInSection offline={!pos.online} />
         <TotalsPanel isPending={pos.isPending} disabled={pos.blocked} onCheckout={pos.handleCheckout} />
         {pos.creditEnabled && <CreditSell pos={pos} />}
       </div>
@@ -88,6 +93,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
           <PriceLevelControl />
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
           <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
+          <TradeInSection offline={!pos.online} />
         </div>
       </div>
       <div className="shrink-0 space-y-2">

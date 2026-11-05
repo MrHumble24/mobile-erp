@@ -2,7 +2,7 @@ import { Pencil } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
-import { useCustomer, type CustomerView } from "@/entities/customer"
+import { useCustomer, type CustomerView, type CustomerListItem } from "@/entities/customer"
 import {
   Sheet,
   SheetPopup,
@@ -14,6 +14,7 @@ import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { CustomerPurchaseList } from "./CustomerPurchaseList"
 import { CustomerCreditsList } from "./CustomerCreditsList"
+import { CustomerBoughtList } from "./CustomerBoughtList"
 
 function levelLabel(code: string, t: (k: string) => string): string {
   if (code === "WHOLESALE") return t("pricing.levelWholesale")
@@ -39,6 +40,7 @@ function DetailBody({
 }) {
   const { t } = useI18n()
   const canManage = useAuthStore((s) => s.hasPermission("customer.manage"))
+  const canReadPurchases = useAuthStore((s) => s.hasPermission("purchase.read"))
   const { data: customer, isLoading } = useCustomer(customerId)
 
   if (isLoading || !customer) {
@@ -83,6 +85,21 @@ function DetailBody({
         </div>
       )}
 
+      <CustomerRelations customer={customer} canReadPurchases={canReadPurchases} />
+    </div>
+  )
+}
+
+function CustomerRelations({
+  customer,
+  canReadPurchases,
+}: {
+  customer: CustomerListItem
+  canReadPurchases: boolean
+}) {
+  const { t } = useI18n()
+  return (
+    <>
       <div className="grid grid-cols-3 gap-2.5">
         <Stat label={t("credit.outstanding")} value={formatMoney(customer.creditOutstanding)} />
         <Stat label={t("credit.overdueAmount")} value={formatMoney(customer.creditOverdue)} />
@@ -105,7 +122,14 @@ function DetailBody({
         <h3 className="text-sm font-semibold tracking-tight">{t("customers.purchaseHistory")}</h3>
         <CustomerPurchaseList customerId={customer.id} />
       </div>
-    </div>
+
+      {canReadPurchases && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold tracking-tight">{t("purchases.boughtFromTitle")}</h3>
+          <CustomerBoughtList customerId={customer.id} />
+        </div>
+      )}
+    </>
   )
 }
 

@@ -9,7 +9,7 @@ import type { DeviceDetailView } from "@/entities/device"
 import type { StockScanProduct } from "@/entities/stock"
 import type { CatalogEntry, CatalogUnit } from "@/entities/catalog"
 import { useCurrentShift } from "@/entities/shift"
-import { useCartStore, isLineBlocked, isPaymentBlocked, toLinePrices } from "@/features/checkout"
+import { useCartStore, isLineBlocked, isPaymentBlocked, useCartTradeInPlan, useTradeInStore } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
@@ -60,19 +60,26 @@ export function usePosTerminal() {
   const priceLevelCode = useCartStore((s) => s.priceLevelCode)
   const paymentMethod = useCartStore((s) => s.paymentMethod)
   const splitParts = useCartStore((s) => s.splitParts)
+  const customer = useCartStore((s) => s.customer)
   const addLine = useCartStore((s) => s.addLine)
   const addProduct = useCartStore((s) => s.addProduct)
   const removeLastLine = useCartStore((s) => s.removeLastLine)
   const clearCart = useCartStore((s) => s.clear)
+  const clearTradeIns = useTradeInStore((s) => s.clear)
+  const tradeInPlan = useCartTradeInPlan()
+  const hasTradeIn = tradeInPlan.tradeInTotal > 0
   const consign = useConsignTarget()
 
   const defaultWarranty = settings?.defaultWarrantyDays ?? 14
   const minMargin = Number(settings?.minMarginPercent ?? 0)
+  // Trade-ins are online only and need a customer; a trade-in that fits no line refuses (ADR 0039).
+  const tradeInBlocked = hasTradeIn && (!tradeInPlan.ok || !customer || !online)
   const blocked =
     noOpenShift ||
     lines.length === 0 ||
+    tradeInBlocked ||
     lines.some((line) => isLineBlocked(line, canViewCost, priceLevelCode)) ||
-    isPaymentBlocked(toLinePrices(lines, priceLevelCode), paymentMethod, splitParts)
+    isPaymentBlocked(tradeInPlan.payableLines, paymentMethod, splitParts)
 
   const onInStock = (device: DeviceDetailView) => {
     if (mode === "nasiya") return consign.openFor(device)
@@ -97,8 +104,9 @@ export function usePosTerminal() {
   const scanner = usePosScanner(onInStock, onProduct)
   const resetCart = React.useCallback(() => {
     clearCart()
+    clearTradeIns()
     scanner.clear()
-  }, [clearCart, scanner])
+  }, [clearCart, clearTradeIns, scanner])
   const checkout = usePosCheckout(blocked, resetCart)
 
   usePosShortcuts({
@@ -133,6 +141,7 @@ export function usePosTerminal() {
     customerOpen,
     setCustomerOpen,
     creditEnabled,
+    hasTradeIn,
     online,
     creditOpen,
     setCreditOpen,

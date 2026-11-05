@@ -38,6 +38,15 @@ export interface SaleModelRef {
   kindCode?: string
 }
 
+/** A phone taken in part payment (ADR 0039). `value` is customer-facing (not cost-redacted). */
+export interface TradeInView {
+  deviceId: string
+  imei: string | null
+  serialNumber: string | null
+  model: { brand: string; name: string; kindCode?: string }
+  value: string
+}
+
 export interface SaleView {
   id: string
   /** Null for a quantity sale, which carries `model` + `quantity` instead (ADR 0030). */
@@ -66,6 +75,8 @@ export interface SaleView {
   return: SaleReturnRef | null
   /** How the sale was tendered; [] when the sale predates ledger posting. */
   payments: SalePaymentLine[]
+  /** Phones taken in part payment (ADR 0039); [] when none. */
+  tradeIns: TradeInView[]
 }
 
 export interface SaleStats {
@@ -107,6 +118,8 @@ export interface ReceiptView {
   customer?: { name: string; phone: string | null }
   /** How the sale was tendered; [] when the sale predates ledger posting. */
   payments?: SalePaymentLine[]
+  /** Phones taken in part payment (ADR 0039); [] when none. */
+  tradeIns?: TradeInView[]
 }
 
 export interface WarrantyLookupView {
@@ -143,6 +156,22 @@ export interface CreateSaleDto {
   discount?: { mode: "PERCENT" | "AMOUNT"; value: number }
   /** Only honoured on the offline-replay path: the list price the till used. */
   listPrice?: number
+  /**
+   * Phones taken in part payment (ADR 0039). Their values lower what the
+   * customer pays: `payments` must sum to `salePrice` − Σ values. A customer
+   * (id or inline) is required. Online only — never queued for sync.
+   */
+  tradeIns?: SaleTradeInDto[]
+}
+
+/** One phone given in part payment; enters stock at `value`. */
+export interface SaleTradeInDto {
+  modelId: string
+  imei?: string
+  imei2?: string
+  serialNumber?: string
+  specs?: Record<string, unknown>
+  value: number
 }
 
 export interface ReturnSaleDto {

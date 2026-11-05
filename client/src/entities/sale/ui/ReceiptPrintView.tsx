@@ -136,6 +136,25 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
   )
 }
 
+function ChequeTradeIns({ tradeIns }: { tradeIns: ReceiptView["tradeIns"] }) {
+  const { t } = useI18n()
+  if (!tradeIns || tradeIns.length === 0) return null
+  return (
+    <div className="py-2 border-b border-dashed border-black/30 space-y-0.5 text-[10px]">
+      <p className="font-semibold">{t("purchases.tradeInLabel")}:</p>
+      {tradeIns.map((ti) => (
+        <div key={ti.deviceId} className="flex justify-between">
+          <span className="truncate">
+            {ti.model.brand} {ti.model.name}
+            {(ti.imei || ti.serialNumber) && ` · ${ti.imei ?? ti.serialNumber}`}
+          </span>
+          <span className="font-mono shrink-0">− {formatMoney(ti.value)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ChequePayments({ payments }: { payments: ReceiptView["payments"] }) {
   const { t } = useI18n()
   if (!payments || payments.length === 0) return null
@@ -177,6 +196,7 @@ export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
       <ChequeMeta receipt={receipt} />
       <ChequeDiscount receipt={receipt} />
       <ChequeItems items={receipt.items} total={receipt.total} />
+      <ChequeTradeIns tradeIns={receipt.tradeIns} />
       <ChequePayments payments={receipt.payments} />
       <ChequeWarranty warranty={receipt.warranty} />
       <BarcodeVisual value={primaryImei} />

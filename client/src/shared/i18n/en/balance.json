@@ -28,6 +28,7 @@
   "typeRefund": "Refund",
   "typePartnerPayment": "Partner payment",
   "typePurchase": "Phone purchase",
+  "typeCustomerPurchase": "Customer purchase",
   "typeOverhead": "Shipment overhead",
   "typeExpense": "Expense",
   "newEntry": "New entry",

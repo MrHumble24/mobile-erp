@@ -82,6 +82,9 @@ function DeviceSpecsGrid({ device, canViewCost }: { device: DeviceDetailView; ca
         </div>
         <SpecCell label={t("inventory.intakeDate")} value={formatDate(device.intakeDate)} />
       </div>
+      {device.shipmentId === null && (
+        <p className="text-xs font-medium text-[#646464]">{t("purchases.boughtFromCustomer")}</p>
+      )}
       {canViewCost && <MarginCard targetPrice={device.targetPrice} landedCost={device.landedCost} />}
     </div>
   )

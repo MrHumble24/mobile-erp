@@ -143,6 +143,25 @@ export function SaleMetaSection({ sale }: { sale: SaleView }) {
   )
 }
 
+export function TradeInsSection({ sale }: { sale: SaleView }) {
+  const { t } = useI18n()
+  if (!sale.tradeIns || sale.tradeIns.length === 0) return null
+  const total = sale.tradeIns.reduce((sum, ti) => sum + Number(ti.value), 0)
+  const paid = Number(sale.salePrice) - total
+  return (
+    <Section title={t("purchases.tradeInLabel")}>
+      {sale.tradeIns.map((ti) => (
+        <Row
+          key={ti.deviceId}
+          label={`${ti.model.brand} ${ti.model.name}${ti.imei || ti.serialNumber ? ` · ${ti.imei ?? ti.serialNumber}` : ""}`}
+          value={`− ${formatMoney(ti.value)}`}
+        />
+      ))}
+      <Row label={t("purchases.amountPaid")} value={formatMoney(paid)} />
+    </Section>
+  )
+}
+
 export function ReturnSection({ sale }: { sale: SaleView }) {
   const { t } = useI18n()
   if (!sale.return) return null

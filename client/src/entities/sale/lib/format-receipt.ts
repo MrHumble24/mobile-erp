@@ -21,13 +21,21 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
     })
     .join("\n")
 
+  const tradeInStr =
+    receipt.tradeIns && receipt.tradeIns.length > 0
+      ? `\n─────────────────────────\n${t("purchases.tradeInLabel")}:\n` +
+        receipt.tradeIns
+          .map((ti) => `   ${ti.model.brand} ${ti.model.name} = − ${formatMoney(ti.value)}`)
+          .join("\n")
+      : ""
+
   return `🧾 ${t("pos.storeName")} · ${t("pos.receiptTitle")}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ${t("pos.receiptNumber")}: #${receipt.saleId.slice(0, 8).toUpperCase()}
 ${t("pos.soldAt")}: ${dateStr}
 ${t("pos.cashier")}: ${receipt.cashier}${customerStr}
 ─────────────────────────
-${itemsStr}
+${itemsStr}${tradeInStr}
 ─────────────────────────
 💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${warrantyStr}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
