@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { toast } from "@/shared/ui/sonner"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
@@ -16,7 +17,7 @@ function useConsignTarget() {
   const [imei, setImei] = React.useState("")
   const [price, setPrice] = React.useState("")
   const openFor = (device: DeviceDetailView) => {
-    setImei(device.imei)
+    setImei(unitCode(device))
     setPrice(device.targetPrice ?? "")
     setOpen(true)
   }

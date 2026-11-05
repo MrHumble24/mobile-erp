@@ -3,8 +3,10 @@ export interface ConsignmentView {
   partnerId: string
   partnerShopName: string
   deviceId: string
-  imei: string
+  imei: string | null
   imei2?: string | null
+  serialNumber?: string | null
+  kindCode?: string
   agreedPrice: string
   dueDate: string
   statusCode: "OUT" | "SETTLED" | "RETURNED" | string
@@ -48,7 +50,9 @@ export interface ConsignmentFilters {
 }
 
 export interface CreateConsignmentDto {
-  imei: string
+  /** Send exactly one of imei / serialNumber (ADR 0029). */
+  imei?: string
+  serialNumber?: string
   partnerId: string
   agreedPrice: number
   dueDate: string

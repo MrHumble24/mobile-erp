@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceStatusBadge } from "./DeviceStatusBadge"
 import type { DeviceView } from "../model/device.types"
 
@@ -17,18 +18,18 @@ interface DeviceTableRowProps {
   onSell?: (device: DeviceView) => void
 }
 
-function ImeiCell({ imei, imei2 }: { imei: string; imei2: string | null }) {
+function UnitCodeCell({ code, imei2 }: { code: string; imei2: string | null }) {
   const { t } = useI18n()
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
-    navigator.clipboard.writeText(imei)
-    toast.success(`${t("inventory.imeiCopied")}: ${imei}`)
+    navigator.clipboard.writeText(code)
+    toast.success(`${t("inventory.imeiCopied")}: ${code}`)
   }
 
   return (
     <div className="font-mono text-xs font-semibold text-[#090c1d]">
       <div className="flex items-center gap-1.5">
-        <span>{imei}</span>
+        <span>{code}</span>
         <Button
           variant="ghost"
           size="icon"
@@ -108,7 +109,7 @@ export function DeviceTableRow({
   return (
     <TableRow className="hover:bg-[#f8f9fa] cursor-pointer transition-colors" onClick={() => onSelect?.(device)}>
       <TableCell>
-        <ImeiCell imei={device.imei} imei2={device.imei2} />
+        <UnitCodeCell code={unitCode(device)} imei2={device.imei2} />
       </TableCell>
       <TableCell className="font-medium text-[#202020]">{modelName || device.modelId}</TableCell>
       <TableCell className="text-xs text-[#646464]">{storage}</TableCell>

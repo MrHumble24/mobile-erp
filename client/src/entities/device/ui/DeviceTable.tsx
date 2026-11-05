@@ -27,7 +27,7 @@ function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[180px]">IMEI</TableHead>
+        <TableHead className="w-[180px]">{t("catalog.unitCode")}</TableHead>
         <TableHead>{t("inventory.model")}</TableHead>
         <TableHead>{t("inventory.storage")}</TableHead>
         <TableHead>{t("inventory.color")}</TableHead>

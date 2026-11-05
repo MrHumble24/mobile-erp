@@ -1,4 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { ConsignmentView } from "@/entities/consignment"
 import { daysOverdue } from "./overdue"
 
@@ -16,7 +17,7 @@ export function exportConsignmentsCsv(items: ConsignmentView[], t: Translate): v
   ]
   const rows = items.map((c) => [
     c.partnerShopName,
-    c.imei,
+    unitCode(c),
     Number(c.agreedPrice),
     c.dueDate.slice(0, 10),
     c.statusCode,

@@ -5,7 +5,19 @@ export function isImei(value: string): boolean {
   return IMEI_REGEX.test(value)
 }
 
-/** True when `code` matches either of a device's IMEIs (primary or dual-SIM imei2). */
-export function matchesImei(device: { imei: string; imei2?: string | null }, code: string): boolean {
-  return device.imei === code || device.imei2 === code
+/**
+ * True when `code` matches any of a unit's codes: either IMEI, or its serial
+ * number. Case-insensitive — the server stores serials upper-cased but the user
+ * may type them in any case (the by-code lookup is case-insensitive too).
+ */
+export function matchesUnitCode(
+  device: { imei?: string | null; imei2?: string | null; serialNumber?: string | null },
+  code: string,
+): boolean {
+  const c = code.trim().toUpperCase()
+  return (
+    device.imei?.toUpperCase() === c ||
+    device.imei2?.toUpperCase() === c ||
+    device.serialNumber?.toUpperCase() === c
+  )
 }

@@ -4,6 +4,7 @@ import { useAuthStore } from "@/features/auth"
 import { useDeviceModels } from "@/entities/device-model"
 import { useLowStock } from "@/entities/stock-alert"
 import { DeviceModelsPanel } from "@/features/manage-device-model"
+import { CategoryManagerPanel } from "@/features/manage-product-category"
 import { StockAlertPanel } from "@/features/manage-stock-alert-rule"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Badge } from "@/shared/ui/badge"
@@ -15,7 +16,7 @@ import { DevicesTab } from "./DevicesTab"
 import { InventoryMetricsBar } from "./InventoryMetricsBar"
 import { useDeviceBrowser } from "../model/use-device-browser"
 
-const INVENTORY_TABS = ["devices", "models", "alerts"] as const
+const INVENTORY_TABS = ["devices", "models", "categories", "alerts"] as const
 type InventoryTab = (typeof INVENTORY_TABS)[number]
 
 function InventoryHeader({ total }: { total?: number }) {
@@ -76,6 +77,11 @@ function InventoryTabsNav({
           )}
         </TabsTrigger>
       )}
+      {canManageModels && (
+        <TabsTrigger value="categories">
+          <span>{t("nav.categories")}</span>
+        </TabsTrigger>
+      )}
       {canViewStock && (
         <TabsTrigger value="alerts" className="gap-2">
           <span>{t("inventory.tabAlerts")}</span>
@@ -123,6 +129,11 @@ export function InventoryPage() {
         {canManageModels && (
           <TabsContent value="models">
             <DeviceModelsPanel />
+          </TabsContent>
+        )}
+        {canManageModels && (
+          <TabsContent value="categories">
+            <CategoryManagerPanel />
           </TabsContent>
         )}
         {canViewStock && (

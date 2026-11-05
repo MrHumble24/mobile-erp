@@ -1,5 +1,6 @@
 import type { ReceiptView } from "../model/sale.types"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 
 export function formatReceiptText(receipt: ReceiptView, t: (key: string) => string): string {
   const dateStr = new Date(receipt.soldAt).toLocaleString()
@@ -11,10 +12,10 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
     : ""
 
   const itemsStr = receipt.items
-    .map(
-      (item) =>
-        `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   IMEI: ${item.imei}${item.imei2 ? `\n   IMEI 2: ${item.imei2}` : ""}\n   Narxi: ${formatMoney(item.price)}`
-    )
+    .map((item) => {
+      const codeLabel = item.imei ? "IMEI" : t("catalog.serialNumber")
+      return `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   ${codeLabel}: ${unitCode(item)}${item.imei2 ? `\n   IMEI 2: ${item.imei2}` : ""}\n   Narxi: ${formatMoney(item.price)}`
+    })
     .join("\n")
 
   return `🧾 ${t("pos.storeName")} · ${t("pos.receiptTitle")}

@@ -1,6 +1,7 @@
 import { ExternalLink } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { LookupView, QcInspectionListItem } from "@/entities/qc"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
 import { Badge } from "@/shared/ui/badge"
@@ -37,7 +38,7 @@ function Body({ item, defectTypes }: { item: QcInspectionListItem; defectTypes: 
     <div className="space-y-5 my-4">
       <div className="space-y-1.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] p-3.5">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-sm font-medium">{item.device.imei}</span>
+          <span className="font-mono text-sm font-medium">{unitCode(item.device)}</span>
           <Badge variant={item.passed ? "mint" : "destructive"} size="sm">
             {item.passed ? t("qc.passed") : t("qc.failed")}
           </Badge>
@@ -58,7 +59,7 @@ function Body({ item, defectTypes }: { item: QcInspectionListItem; defectTypes: 
         <h4 className="text-sm font-semibold">{t("qc.defects")}</h4>
         <DefectList item={item} labels={labels} />
       </div>
-      <Link to={`/inventory?imei=${item.device.imei}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+      <Link to={`/inventory?imei=${unitCode(item.device)}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
         <ExternalLink className="size-4" />
         {t("qc.openInInventory")}
       </Link>

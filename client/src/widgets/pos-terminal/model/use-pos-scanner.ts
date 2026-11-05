@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useDeviceByImei, matchesImei, type DeviceDetailView } from "@/entities/device"
+import { useDeviceByImei, matchesUnitCode, type DeviceDetailView } from "@/entities/device"
 
 export interface ScanResult {
   kind: "status" | "notFound"
@@ -7,7 +7,8 @@ export interface ScanResult {
   device?: DeviceDetailView
 }
 
-const IMEI_LENGTH = 15
+/** Shortest accepted code: a serial number's minimum length (ADR 0029). */
+const MIN_CODE_LENGTH = 3
 
 /** DOM id on the scanner input, so F2 can focus it without threading a ref through the tree. */
 export const SCANNER_INPUT_ID = "pos-scanner-input"
@@ -45,7 +46,7 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
       handledRef.current = lookup
       return
     }
-    if (data && matchesImei(data, lookup.imei)) {
+    if (data && matchesUnitCode(data, lookup.imei)) {
       handledRef.current = lookup
       if (data.statusCode === "IN_STOCK") onInStockRef.current(data)
     }
@@ -53,7 +54,7 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
 
   const submit = (code: string) => {
     const trimmed = code.trim()
-    if (trimmed.length !== IMEI_LENGTH) return false
+    if (trimmed.length < MIN_CODE_LENGTH) return false
     setImei("")
     setLookup({ imei: trimmed, nonce: Date.now() })
     return true
@@ -68,7 +69,7 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
   const scanResult: ScanResult | null = React.useMemo(() => {
     if (!lookup || isFetching) return null
     if (isError) return { kind: "notFound", imei: lookup.imei }
-    if (data && matchesImei(data, lookup.imei) && data.statusCode !== "IN_STOCK") {
+    if (data && matchesUnitCode(data, lookup.imei) && data.statusCode !== "IN_STOCK") {
       return { kind: "status", imei: lookup.imei, device: data }
     }
     return null

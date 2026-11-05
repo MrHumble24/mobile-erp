@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { HttpError, isNetworkError } from "@/shared/api/http"
+import { unitCode } from "@/shared/lib/unit-code"
 import { saleRepository, saleKeys } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { customerKeys } from "@/entities/customer"
@@ -69,7 +70,7 @@ export function useCheckout() {
             useCartStore.getState().removeLine(line.lineId)
             continue
           }
-          throw new CheckoutLineError(line.device.imei, saleIds, err)
+          throw new CheckoutLineError(unitCode(line.device), saleIds, err)
         }
       }
       return { saleIds, queuedCount }

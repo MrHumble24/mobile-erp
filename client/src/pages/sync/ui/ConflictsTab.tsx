@@ -1,6 +1,7 @@
 import { toast } from "@/shared/ui/sonner"
 import { HttpError } from "@/shared/api/http"
 import { useI18n } from "@/shared/i18n"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useConflicts, useResolveConflict, type ConflictView } from "@/entities/sync"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
@@ -33,7 +34,7 @@ function ConflictRow({ conflict, t }: { conflict: ConflictView; t: T }) {
 
   return (
     <TableRow>
-      <TableCell className="font-mono text-xs">{conflict.imei}</TableCell>
+      <TableCell className="font-mono text-xs">{unitCode(conflict)}</TableCell>
       <TableCell className="font-mono text-xs">{conflict.attemptedChange.type}</TableCell>
       <TableCell className="font-mono text-xs max-w-[160px] truncate">{conflict.terminalId}</TableCell>
       <TableCell className="text-xs">{conflict.baseVersion}</TableCell>

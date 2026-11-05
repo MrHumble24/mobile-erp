@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceStatusBadge, type DeviceView, type QcInspectionSummary } from "@/entities/device"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Button } from "@/shared/ui/button"
@@ -22,7 +23,7 @@ function QueueHead() {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead>IMEI</TableHead>
+        <TableHead>{t("catalog.unitCode")}</TableHead>
         <TableHead>{t("inventory.model")}</TableHead>
         <TableHead>{t("inventory.storage")}</TableHead>
         <TableHead>{t("inventory.status")}</TableHead>
@@ -60,7 +61,7 @@ export function QueueTable({
         <TableBody>
           {devices.map((device) => (
             <TableRow key={device.id} className="hover:bg-accent/40 cursor-pointer" onClick={() => onSelect(device)}>
-              <TableCell className="font-mono font-medium">{device.imei}</TableCell>
+              <TableCell className="font-mono font-medium">{unitCode(device)}</TableCell>
               <TableCell className="font-medium">{modelsMap[device.modelId] || device.modelId}</TableCell>
               <TableCell>{String(device.specs?.storage || "-")}</TableCell>
               <TableCell><DeviceStatusBadge status={device.statusCode} /></TableCell>

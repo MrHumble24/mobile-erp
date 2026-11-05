@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { isNetworkError } from "@/shared/api/http"
+import { unitCode } from "@/shared/lib/unit-code"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useReturnConsignment, type ConsignmentView } from "@/entities/consignment"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
@@ -107,7 +108,9 @@ export function ReturnConsignmentDialog({
       <DialogPopup className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("consignments.return")}</DialogTitle>
-          <DialogDescription>IMEI: {consignment.imei}</DialogDescription>
+          <DialogDescription>
+            {consignment.imei ? "IMEI" : t("catalog.serialNumber")}: {unitCode(consignment)}
+          </DialogDescription>
         </DialogHeader>
         {open && (
           <ReturnForm

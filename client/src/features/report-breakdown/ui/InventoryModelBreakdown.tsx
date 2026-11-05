@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useDevices } from "@/entities/device"
 import {
   Table,
@@ -34,7 +35,7 @@ export function InventoryModelBreakdown({ request, onNavigate, canViewCost }: Br
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>IMEI</TableHead>
+          <TableHead>{t("catalog.unitCode")}</TableHead>
           <TableHead>{t("inventory.storage")}</TableHead>
           <TableHead>{t("reports.intakeDate")}</TableHead>
           {canViewCost && <TableHead className="text-right">{t("dashboard.avgLandedCost")}</TableHead>}
@@ -45,9 +46,9 @@ export function InventoryModelBreakdown({ request, onNavigate, canViewCost }: Br
           <TableRow
             key={d.id}
             className="cursor-pointer"
-            onClick={() => onNavigate(`/inventory?imei=${d.imei}`)}
+            onClick={() => onNavigate(`/inventory?imei=${unitCode(d)}`)}
           >
-            <TableCell className="font-mono text-xs">{d.imei}</TableCell>
+            <TableCell className="font-mono text-xs">{unitCode(d)}</TableCell>
             <TableCell className="text-sm">{d.specs.storage ?? "—"}</TableCell>
             <TableCell className="text-sm">{formatDate(d.intakeDate)}</TableCell>
             {canViewCost && (

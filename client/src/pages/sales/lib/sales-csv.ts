@@ -1,4 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { SaleView } from "@/entities/sale"
 
 /**
@@ -22,7 +23,7 @@ export function exportSalesCsv(sales: SaleView[], includeProfit: boolean): void 
   const rows = sales.map((s) => [
     s.device.model.brand,
     s.device.model.name,
-    s.device.imei,
+    unitCode(s.device),
     s.consignmentId ? "B2B" : "Retail",
     s.customer?.name ?? "",
     s.customer?.phone ?? "",

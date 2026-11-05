@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceStatusBadge, type DeviceView, type PaginatedDevices } from "@/entities/device"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Pagination } from "@/shared/ui/pagination"
@@ -29,7 +30,7 @@ function DeviceRow({
 }) {
   return (
     <TableRow className="cursor-pointer" onClick={onOpen}>
-      <TableCell className="font-mono text-xs">{device.imei}</TableCell>
+      <TableCell className="font-mono text-xs">{unitCode(device)}</TableCell>
       <TableCell className="text-xs">{modelName}</TableCell>
       <TableCell className="text-xs">{String(device.specs?.storage || "-")}</TableCell>
       <TableCell className="text-xs">{String(device.specs?.color || "-")}</TableCell>
@@ -45,7 +46,7 @@ function DevicesHead({ canViewCost }: { canViewCost: boolean }) {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead>IMEI</TableHead>
+        <TableHead>{t("catalog.unitCode")}</TableHead>
         <TableHead>{t("inventory.model")}</TableHead>
         <TableHead>{t("inventory.storage")}</TableHead>
         <TableHead>{t("inventory.color")}</TableHead>
@@ -91,7 +92,7 @@ export function ShipmentDevicesSection({
                 device={d}
                 modelName={modelsMap[d.modelId] || d.modelId}
                 canViewCost={canViewCost}
-                onOpen={() => navigate(`/inventory?imei=${d.imei}`)}
+                onOpen={() => navigate(`/inventory?imei=${unitCode(d)}`)}
               />
             ))}
           </TableBody>

@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { type RegisterDeviceItem, type RegisteredDeviceView } from "@/entities/shipment"
 import type { SpecFieldProblem } from "@/entities/device-model"
 import { Button } from "@/shared/ui/button"
@@ -28,7 +29,7 @@ function BatchRow({
   return (
     <>
       <TableRow className={hasError ? "bg-destructive/10" : undefined}>
-        <TableCell className="font-mono text-xs">{item.imei}</TableCell>
+        <TableCell className="font-mono text-xs">{unitCode(item)}</TableCell>
         <TableCell className="text-xs">{modelName}</TableCell>
         <TableCell className="text-xs">{specSummary(item.specs)}</TableCell>
         <TableCell className="text-xs font-semibold">{formatMoney(item.acquisitionCost)}</TableCell>
@@ -66,7 +67,7 @@ function BatchTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>IMEI</TableHead>
+            <TableHead>{t("catalog.unitCode")}</TableHead>
             <TableHead>{t("inventory.model")}</TableHead>
             <TableHead>{t("shipments.specs")}</TableHead>
             <TableHead>{t("shipments.acquisitionCost")}</TableHead>
@@ -76,10 +77,10 @@ function BatchTable({
         <TableBody>
           {items.map((it, idx) => (
             <BatchRow
-              key={it.imei}
+              key={unitCode(it)}
               item={it}
               modelName={modelsMap[it.modelId] || it.modelId}
-              problems={problemsByImei[it.imei]}
+              problems={problemsByImei[unitCode(it)]}
               onRemove={() => onRemove(idx)}
             />
           ))}
@@ -96,7 +97,7 @@ function LandedResults({ results }: { results: RegisteredDeviceView[] }) {
       <span className="text-xs font-semibold">{t("shipments.landedCostResults")}</span>
       {results.map((r) => (
         <div key={r.id} className="flex items-center justify-between text-xs">
-          <span className="font-mono">{r.imei}</span>
+          <span className="font-mono">{unitCode(r)}</span>
           <span className="flex items-center gap-3">
             <span className="text-muted-foreground">
               {t("inventory.customsFee")}: {formatMoney(r.customsFee)}

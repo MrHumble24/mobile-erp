@@ -3,6 +3,7 @@ import { CheckCircle2, ExternalLink, RotateCcw, Smartphone, Store } from "lucide
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate, formatDateTime } from "@/shared/lib/format"
 import { useConsignment, type ConsignmentView } from "@/entities/consignment"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Badge } from "@/shared/ui/badge"
 import { Button, buttonVariants } from "@/shared/ui/button"
@@ -52,7 +53,7 @@ function DetailBody({
           label={t("consignments.device")}
           value={
             <span className="font-mono">
-              {consignment.imei}
+              {unitCode(consignment)}
               {consignment.imei2 && (
                 <span className="block text-xs text-muted-foreground">IMEI 2: {consignment.imei2}</span>
               )}
@@ -102,7 +103,7 @@ function DetailBody({
         )}
       </div>
 
-      <DeviceDrawer imei={consignment.imei} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
+      <DeviceDrawer imei={unitCode(consignment)} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
     </div>
   )
 }

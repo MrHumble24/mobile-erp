@@ -2,6 +2,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useUpdateDevice, type DeviceView, type UpdateDeviceDto } from "@/entities/device"
 import {
   useDeviceModelAttributes,
@@ -49,7 +50,7 @@ function EditDeviceForm({
   const updateMutation = useUpdateDevice()
   const [problems, setProblems] = React.useState<SpecFieldProblem[]>([])
   const form = useForm<EditDeviceValues>({
-    resolver: zodResolver(buildEditDeviceSchema(device.imei, t)),
+    resolver: zodResolver(buildEditDeviceSchema(device.imei ?? "", t)),
     defaultValues: {
       specs: initialSpecs(device, attributes),
       targetPrice: device.targetPrice ?? "",
@@ -79,7 +80,12 @@ function EditDeviceForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 my-2">
-        <EditDeviceFields form={form} attributes={attributes} problems={problems} />
+        <EditDeviceFields
+          form={form}
+          attributes={attributes}
+          problems={problems}
+          allowDualSim={Boolean(device.imei)}
+        />
         <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
           {updateMutation.isPending ? t("common.loading") : t("common.save")}
         </Button>
@@ -113,7 +119,7 @@ export function EditDeviceDialog({
       <DialogPopup className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("inventory.editDevice")}</DialogTitle>
-          <DialogDescription className="font-mono text-sm">{device?.imei}</DialogDescription>
+          <DialogDescription className="font-mono text-sm">{device ? unitCode(device) : ""}</DialogDescription>
         </DialogHeader>
         {open && device && (
           <EditDeviceBody key={device.id} device={device} onDone={() => onOpenChange(false)} />

@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import type { QcInspectionListItem } from "@/entities/qc"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Badge } from "@/shared/ui/badge"
@@ -19,7 +20,7 @@ function InspectionsHead({ canViewCost }: { canViewCost: boolean }) {
     <TableHeader>
       <TableRow>
         <TableHead>{t("common.date")}</TableHead>
-        <TableHead>IMEI</TableHead>
+        <TableHead>{t("catalog.unitCode")}</TableHead>
         <TableHead>{t("inventory.model")}</TableHead>
         <TableHead>{t("qc.inspector")}</TableHead>
         <TableHead>{t("qc.result")}</TableHead>
@@ -57,7 +58,7 @@ export function InspectionsTable({
           {items.map((item) => (
             <TableRow key={item.id} className="hover:bg-accent/40 cursor-pointer" onClick={() => onSelect(item)}>
               <TableCell className="text-muted-foreground text-xs">{formatDate(item.inspectedAt)}</TableCell>
-              <TableCell className="font-mono font-medium">{item.device.imei}</TableCell>
+              <TableCell className="font-mono font-medium">{unitCode(item.device)}</TableCell>
               <TableCell className="font-medium">{item.device.model.brand} {item.device.model.name}</TableCell>
               <TableCell>{item.inspectedBy.name || "-"}</TableCell>
               <TableCell><ResultBadge passed={item.passed} /></TableCell>

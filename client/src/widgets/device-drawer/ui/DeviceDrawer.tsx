@@ -2,6 +2,7 @@ import { Copy, PackageX, Pencil, ShoppingCart } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import {
   useDeviceByImei,
   useDeviceHistory,
@@ -175,7 +176,7 @@ function DrawerBody({
   return (
     <div className="space-y-5 my-4 overflow-y-auto">
       <DrawerActions device={device} canEdit={canEdit} onEdit={onEdit} onInspect={onInspect} onSell={onSell} />
-      <DeviceBarcode imei={device.imei} />
+      <DeviceBarcode imei={unitCode(device)} />
       {device.imei2 && (
         <p className="text-center font-mono text-xs text-[#646464]">IMEI 2: {device.imei2}</p>
       )}
@@ -206,7 +207,7 @@ function DrawerHeaderMeta({ title, imei, onCopy }: { title: string; imei?: strin
     <SheetHeader>
       <SheetTitle className="text-xl font-bold text-[#090c1d]">{title}</SheetTitle>
       <SheetDescription className="flex items-center gap-1.5 font-mono text-xs text-[#646464]">
-        <span>IMEI: {imei}</span>
+        <span>{t("catalog.unitCode")}: {imei}</span>
         <Button
           variant="ghost"
           size="icon"

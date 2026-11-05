@@ -1,11 +1,16 @@
 # feature: manage-device-model
 
-CRUD for device models (brand + name + active flag).
+CRUD for products / device models (brand, name, kind, category, barcode, model
+code, active, spec schema — ADR 0029).
 
 ## Owns
-- `DeviceModelsPanel` — table of models + "new" button + edit action.
-- `DeviceModelDialog` — shadcn `Form` create/edit; a 409 from the server surfaces
-  as a duplicate-name field error.
+- `DeviceModelsPanel` — table (brand, name, kind, category, active) + a category
+  filter + "new" button + edit action.
+- `DeviceModelDialog` — shadcn `Form` create/edit. A 409 is routed: a message
+  mentioning "kind" → `catalog.kindLocked` on the kind field; otherwise a
+  just-entered/changed barcode → `catalog.errorBarcodeExists`, else duplicate name.
+- `ModelCatalogFields` — Kind select (with hint), Category select (+ "no
+  category"), barcode and model-code inputs.
 - `AttributeEditor` / `AttributeRow` / `OptionsChipsEditor` — the per-model spec
   schema editor: add/reorder/remove attributes (label, auto-slugged key, type,
   required, select options as chips). The reserved `storage` attribute is shown
@@ -18,13 +23,18 @@ CRUD for device models (brand + name + active flag).
 
 ## Uses
 - `entities/device-model`: `useDeviceModels`, `useCreateDeviceModel`,
-  `useUpdateDeviceModel`.
+  `useUpdateDeviceModel`, `PRODUCT_KINDS`, `productKindLabelKey`.
+- `entities/product-category`: `useProductCategories` (filter + category select).
 
 ## Must never
-- Call HTTP directly or import another feature.
+- Call HTTP directly or import another feature. Category CRUD lives in the
+  sibling feature `manage-product-category`, composed one layer up (inventory).
 
 ## Gating
 - Caller renders this only for `device.update` holders.
 
 ## Open questions
-- Per-model device count is not shown: no cheap server count endpoint exists.
+- Per-model unit count is not shown (no cheap server count), so the kind field
+  stays editable on edit; the server 409 → `catalog.kindLocked` when it has units.
+- Barcode vs name 409 is ambiguous (same server message); the barcode heuristic
+  above is a best-effort guess.

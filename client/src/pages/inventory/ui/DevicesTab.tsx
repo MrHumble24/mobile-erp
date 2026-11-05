@@ -5,6 +5,7 @@ import { useAuthStore } from "@/features/auth"
 import { useCartStore } from "@/features/checkout"
 import { useDeviceModels } from "@/entities/device-model"
 import { type DeviceView } from "@/entities/device"
+import { unitCode } from "@/shared/lib/unit-code"
 import { EditDeviceDialog } from "@/features/edit-device"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { toast } from "@/shared/ui/sonner"
@@ -77,7 +78,7 @@ export function DevicesTab({ browser }: { browser: Browser }) {
         pageSize={browser.pagination.pageSize}
         onPageChange={browser.pagination.setPage}
         onPageSizeChange={browser.pagination.setPageSize}
-        onSelect={(d) => sel.openDrawer({ imei: d.imei, id: d.id })}
+        onSelect={(d) => sel.openDrawer({ imei: unitCode(d), id: d.id })}
         onEdit={sel.openEdit}
         onSell={handleSell}
         onResetFilters={handleResetFilters}

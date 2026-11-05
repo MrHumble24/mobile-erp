@@ -1,5 +1,5 @@
 import { http, isNetworkError } from "@/shared/api/http"
-import { getCachedDeviceByImei } from "../lib/cached-device"
+import { getCachedDeviceByCode } from "../lib/cached-device"
 import type {
   ChangeStatusDto,
   DeviceDetailView,
@@ -25,7 +25,7 @@ export const deviceRepository = {
     } catch (err) {
       // Offline/transport failure: fall back to the synced device cache.
       if (isNetworkError(err)) {
-        const cached = await getCachedDeviceByImei(imei)
+        const cached = await getCachedDeviceByCode(imei)
         if (cached) return cached
       }
       throw err

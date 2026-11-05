@@ -1,7 +1,8 @@
 export interface SaleDeviceRef {
-  imei: string
+  imei: string | null
   imei2?: string | null
-  model: { brand: string; name: string }
+  serialNumber?: string | null
+  model: { brand: string; name: string; kindCode?: string }
   specs: Record<string, unknown>
 }
 
@@ -58,8 +59,9 @@ export interface SaleStats {
 }
 
 export interface ReceiptItem {
-  imei: string
+  imei: string | null
   imei2?: string | null
+  serialNumber?: string | null
   model: string
   storage: string | null
   color: string | null
@@ -81,7 +83,8 @@ export interface ReceiptView {
 }
 
 export interface WarrantyLookupView {
-  imei: string
+  imei: string | null
+  serialNumber?: string | null
   saleId: string
   purchasedAt: string
   salePrice: string
@@ -92,7 +95,9 @@ export interface WarrantyLookupView {
 }
 
 export interface CreateSaleDto {
-  imei: string
+  /** Send exactly one of imei / serialNumber (ADR 0029). */
+  imei?: string
+  serialNumber?: string
   salePrice: number
   customerId?: string
   customer?: { name: string; phone?: string }

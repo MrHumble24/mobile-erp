@@ -2,6 +2,7 @@ import * as React from "react"
 import { Handshake } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { Card, CardContent } from "@/shared/ui/card"
 import { ConsignDeviceDialog } from "@/features/consign-device"
 import type { ConsignmentView } from "@/entities/consignment"
@@ -20,7 +21,7 @@ function LastConsignmentSummary({ consignment }: { consignment: ConsignmentView 
     <Card className="border-emerald-300 bg-emerald-50/60">
       <CardContent className="p-4 space-y-1 text-sm">
         <p className="font-semibold text-emerald-700">{t("consignments.consignSuccess")}</p>
-        <p className="font-mono text-xs text-muted-foreground">{consignment.imei}</p>
+        <p className="font-mono text-xs text-muted-foreground">{unitCode(consignment)}</p>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t("consignments.agreedPrice")}</span>
           <span className="font-semibold">{formatMoney(consignment.agreedPrice)}</span>

@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceStatusBadge, type DeviceDetailView } from "@/entities/device"
 
 function SpecChip({ label, value }: { label: string; value: string }) {
@@ -32,7 +33,7 @@ export function DeviceHeaderCard({ device }: { device: DeviceDetailView }) {
     <div className="space-y-2 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] p-3.5">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-sm font-medium">
-          <span>{device.imei}</span>
+          <span>{unitCode(device)}</span>
           {device.imei2 && <span className="block text-xs font-normal text-muted-foreground">IMEI 2: {device.imei2}</span>}
         </div>
         <DeviceStatusBadge status={device.statusCode} />

@@ -2,6 +2,7 @@ import * as React from "react"
 import { Printer, Receipt, RotateCcw, Smartphone } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useSale, type SaleView } from "@/entities/sale"
+import { unitCode } from "@/shared/lib/unit-code"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Button, buttonVariants } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
@@ -87,7 +88,7 @@ function SaleBody({
         onReturn={onReturn}
         onOpenDevice={() => setDeviceOpen(true)}
       />
-      <DeviceDrawer imei={sale.device.imei} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
+      <DeviceDrawer imei={unitCode(sale.device)} open={deviceOpen} onClose={() => setDeviceOpen(false)} />
     </div>
   )
 }

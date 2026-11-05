@@ -40,7 +40,8 @@ export interface PushResponse {
 export interface ConflictView {
   id: string
   deviceId: string
-  imei: string
+  imei: string | null
+  serialNumber?: string | null
   terminalId: string
   attemptedChange: { type: string; payload: Record<string, unknown>; occurredAt: string; mutationId: string }
   baseVersion: number
@@ -57,13 +58,14 @@ export interface ResolveConflictDto {
 /** A device row from GET /sync/changes — never carries cost fields. */
 export interface DeviceChange {
   id: string
-  imei: string
+  imei: string | null
   imei2: string | null
+  serialNumber: string | null
   statusCode: string
   version: number
   targetPrice: string | null
   specs: unknown
-  model: { id: string; brand: string; name: string }
+  model: { id: string; brand: string; name: string; kindCode?: string }
   latestSale: { id: string; soldAt: string; salePrice: string; warrantyEndsAt: string | null } | null
   latestInspection: { gradeCode: string | null; notes: string | null } | null
   updatedAt: string

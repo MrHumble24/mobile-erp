@@ -1,11 +1,14 @@
 # entity: device-model
 
-The device catalog (brand + name + active) and its per-model spec schema.
+The product catalog (brand + name + active + kind), its category/barcode/model
+code (ADR 0029) and its per-model spec schema.
 
 ## Owns
-- `DeviceModelView`, `CreateDeviceModelDto`, `UpdateDeviceModelDto` (incl. the
-  optional `customsCode` matched to the customs price list — ADR 0027),
-  `AttributeDef` (`{ key, label, type: text|number|select, options, required, sortOrder }`).
+- `DeviceModelView`, `CreateDeviceModelDto`, `UpdateDeviceModelDto` — incl.
+  `kindCode` (`IMEI | SERIAL | QUANTITY`, `ProductKind`), `categoryId`, `barcode`,
+  `modelCode`, and `customsCode` (ADR 0027), plus `AttributeDef`.
+- `lib/product-kind.ts` — `PRODUCT_KINDS` (code + label/hint i18n keys, form
+  order) and `productKindLabelKey(code)`.
 - `device-model.repository.ts` — the only HTTP caller for `/device-models`.
 - `device-model.keys.ts` — query-key factory.
 - `useDeviceModels`, `useCreateDeviceModel`, `useUpdateDeviceModel`.

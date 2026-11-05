@@ -2,6 +2,7 @@ import * as React from "react"
 import { ShieldCheck, ShieldAlert, RotateCcw, ExternalLink } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
+import { unitCode } from "@/shared/lib/unit-code"
 import { useWarrantyLookup, type WarrantyLookupView } from "@/entities/sale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
@@ -44,7 +45,7 @@ function WarrantyInfoCard({
     <div className="space-y-4 pt-4 border-t border-[#e8e8e8]">
       <div className="flex items-center justify-between">
         <div>
-          <span className="font-mono text-base font-semibold">{data.imei}</span>
+          <span className="font-mono text-base font-semibold">{unitCode(data)}</span>
           <p className="text-xs text-muted-foreground">
             {t("sales.soldAt")}: {formatDate(data.purchasedAt)}
           </p>
@@ -124,7 +125,7 @@ export function WarrantyLookupPanel({ onOpenSale }: { onOpenSale?: (saleId: stri
   const handleScan = (code: string) => {
     const cleaned = code.trim()
     setImeiInput(cleaned)
-    if (cleaned.length === 15) setSearchImei(cleaned)
+    if (cleaned.length >= 3) setSearchImei(cleaned)
   }
 
   return (
@@ -141,9 +142,9 @@ export function WarrantyLookupPanel({ onOpenSale }: { onOpenSale?: (saleId: stri
             setImeiInput("")
             setSearchImei("")
           }}
-          placeholder={t("sales.imeiPlaceholder")}
+          placeholder={t("catalog.scanCode")}
         />
-        {searchImei && searchImei.length === 15 && (
+        {searchImei && searchImei.length >= 3 && (
           <WarrantyLookupResult searchImei={searchImei} onOpenSale={onOpenSale} />
         )}
       </CardContent>

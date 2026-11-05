@@ -63,10 +63,13 @@ export function EditDeviceFields({
   form,
   attributes,
   problems,
+  allowDualSim,
 }: {
   form: Form
   attributes: AttributeDef[]
   problems: SpecFieldProblem[]
+  /** Serial units carry no IMEI, so no dual-SIM second IMEI (ADR 0029). */
+  allowDualSim: boolean
 }) {
   const { t } = useI18n()
   return (
@@ -77,7 +80,7 @@ export function EditDeviceFields({
         name="specs"
         problems={problems}
       />
-      <DualSimSection form={form} />
+      {allowDualSim && <DualSimSection form={form} />}
       <FormField
         control={form.control}
         name="targetPrice"

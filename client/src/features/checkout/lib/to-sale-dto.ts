@@ -8,8 +8,11 @@ export function toSaleDto(
   customer: CartCustomer | null,
   payments?: PaymentPart[]
 ): CreateSaleDto {
+  const identifier = line.device.imei
+    ? { imei: line.device.imei }
+    : { serialNumber: line.device.serialNumber ?? undefined }
   return {
-    imei: line.device.imei,
+    ...identifier,
     salePrice: line.salePrice,
     customerId: customer?.id,
     customer:
