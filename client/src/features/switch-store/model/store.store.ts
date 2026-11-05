@@ -35,8 +35,9 @@ export async function switchActiveStore(
   qc: QueryClient,
 ): Promise<void> {
   useStoreSelectionStore.getState().setStoreId(newStoreId)
-  qc.clear()
-  await qc.invalidateQueries()
+  // resetQueries, not clear(): clear() drops the cache without telling mounted
+  // queries, so the open page kept the previous store's rows.
+  await qc.resetQueries()
   await idbClear(STORES.devices)
   await clearCursor()
   await pullChanges()
