@@ -37,6 +37,22 @@ INSERT INTO expense_categories (id, name, "sortOrder", "updatedAt") VALUES
   (gen_random_uuid(), 'Other', 90, now())
 ON CONFLICT (name) DO NOTHING;
 
+-- Cash/card ledger lookups (ADR 0024). Accounts are added as rows over time.
+INSERT INTO cash_accounts (code, label, "sortOrder") VALUES
+  ('CASH', 'Cash', 10),
+  ('CARD', 'Card', 20)
+ON CONFLICT (code) DO NOTHING;
+
+-- Manual + transfer types only in 2a; 2b adds SALE, REFUND, PARTNER_PAYMENT,
+-- PURCHASE, OVERHEAD, EXPENSE (posted automatically, never from this list).
+INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
+  ('OPENING',    'Opening balance', 10),
+  ('DEPOSIT',    'Deposit',         20),
+  ('WITHDRAWAL', 'Withdrawal',      30),
+  ('CORRECTION', 'Correction',      40),
+  ('TRANSFER',   'Transfer',        50)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;
 
 -- Single store (ADR 0023). Store identity lives here; admins edit it via settings.
@@ -71,6 +87,8 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('expense.read',         'expense',     'read',      'View expenses'),
   ('expense.manage',       'expense',     'manage',    'Create / edit / delete expenses'),
   ('expense.category.manage','expense',   'category.manage', 'Manage expense categories'),
+  ('balance.read',         'balance',     'read',      'View store cash/card balances and ledger history'),
+  ('balance.manage',       'balance',     'manage',    'Record manual ledger entries and transfers'),
   ('report.finance',       'report',      'finance',   'Financial reports'),
   ('user.read',            'user',        'read',      'View users'),
   ('user.manage',          'user',        'manage',    'Create users, assign roles and permissions'),

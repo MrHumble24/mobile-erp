@@ -27,6 +27,7 @@ import { StockAlertRulesModule } from './stock-alert-rules/stock-alert-rules.mod
 import { SyncModule } from './sync/sync.module.js';
 import { TelegramModule } from './telegram/telegram.module.js';
 import { StoresModule } from './stores/stores.module.js';
+import { LedgerModule } from './ledger/ledger.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -58,6 +59,7 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     SyncModule,
     TelegramModule,
     StoresModule,
+    LedgerModule,
   ],
   controllers: [AppController],
   providers: [

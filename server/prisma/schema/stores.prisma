@@ -21,6 +21,7 @@ model Store {
   recurrences     ExpenseRecurrence[]
   consignments    Consignment[]
   partnerPayments PartnerPayment[]
+  cashTransactions CashTransaction[]
 
   @@map("stores")
 }

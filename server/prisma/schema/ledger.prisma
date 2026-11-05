@@ -1,0 +1,64 @@
+// ---------------------------------------------------------------------------
+// Store cash/card ledger (ADR 0024). Append-only and signed: every money
+// movement is one row, a balance is the SUM of rows per account — never a
+// stored number. 2a builds the ledger plus the owner's manual entries; 2b
+// makes sales, returns, expenses, partner payments and purchases post rows
+// automatically (adding the SALE/REFUND/... types and source-row links).
+// ---------------------------------------------------------------------------
+
+/// Where the store's money sits. Lookup (not an enum): CASH and CARD seeded;
+/// more accounts are added as rows later.
+model CashAccount {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  transactions CashTransaction[]
+
+  @@map("cash_accounts")
+}
+
+/// Why money moved. Lookup: OPENING, DEPOSIT, WITHDRAWAL, CORRECTION, TRANSFER
+/// seeded in 2a. 2b adds SALE, REFUND, PARTNER_PAYMENT, PURCHASE, OVERHEAD,
+/// EXPENSE.
+model CashTransactionType {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  transactions CashTransaction[]
+
+  @@map("cash_transaction_types")
+}
+
+/// One money movement. Append-only: no update or delete path — a mistake is
+/// fixed by a new row. `amount` is signed: positive = money in, negative =
+/// money out, never zero (enforced by a DB CHECK and the service). A transfer
+/// writes two rows sharing `transferId` (one negative, one positive) so the
+/// store total is unchanged. 2b adds nullable links to the source row.
+model CashTransaction {
+  id          String              @id @default(uuid())
+  storeId     String
+  store       Store               @relation(fields: [storeId], references: [id])
+  accountCode String
+  account     CashAccount         @relation(fields: [accountCode], references: [code])
+  typeCode    String
+  type        CashTransactionType @relation(fields: [typeCode], references: [code])
+  amount      Decimal             @db.Decimal(14, 2)
+  occurredAt  DateTime            @default(now())
+  note        String?
+  /// Shared by the two rows of one transfer; null for every other row.
+  transferId  String?
+  createdById String
+  createdBy   User                @relation(fields: [createdById], references: [id])
+  createdAt   DateTime            @default(now())
+
+  @@index([storeId])
+  @@index([accountCode])
+  @@index([typeCode])
+  @@index([occurredAt])
+  @@index([transferId])
+  @@map("cash_transactions")
+}
