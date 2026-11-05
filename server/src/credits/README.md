@@ -41,6 +41,10 @@ in parts. Owns `customer_credits`, `credit_instalments`, `credit_payments`.
   (plan total − outstanding); overdue = past due and not fully covered.
 - Effective limit = customer `creditLimit` else settings `defaultCreditLimit`;
   null = no cap. The cap is on principal — **there is no interest**.
+- The limit check reads the customer's outstanding **inside** the write
+  transaction after a `FOR UPDATE` lock on the customer row (ADR 0028); a payment
+  / refund locks the credit row first, then reads the standing. So two concurrent
+  credits (or payments) cannot both slip past the limit on a stale read.
 
 ## Cashier shifts (ADR 0036)
 

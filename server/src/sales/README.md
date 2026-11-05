@@ -50,7 +50,10 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   the sale's own unit cost (`landedCostSnapshot ÷ quantity`); no device moves.
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields). Carries
   `payments: [{ accountCode, amount }]` (the SALE rows; `[]` when none) so a
-  printed receipt can show the cash and card parts.
+  printed receipt can show the cash and card parts, plus `store {name,address,
+  phone}` + `footer` for the thermal header (ADR 0043) and `bonus {earned,spent}`.
+  The scannable code a receipt needs is the `saleId` (and `items[].imei`);
+  price-tag per-level prices come from `GET /pricing/units/:id` + the device view.
 
 `SaleView` = `{ id, device{imei,imei2,serialNumber,model{brand,name,kindCode},specs}|null,
 model{brand,name,kindCode}|null, quantity|null, customer, salePrice,
@@ -98,7 +101,9 @@ rejected — the sale already happened at the counter.
 
 `POST /sales` also accepts `tradeIns?: [{ modelId, imei?|serialNumber?, imei2?,
 specs?, value }]` — phones the customer gives in part payment. A customer (id or
-inline) is required. Each becomes a customer purchase in the **same transaction**
+inline) is required, and the caller needs **`purchase.create`** on top of
+`sale.create` (taking a phone for value is buying one) — else 403
+`code: "TRADE_IN_FORBIDDEN"` (security fix). Each becomes a customer purchase in the **same transaction**
 as the sale (reusing `CustomerPurchasesWriteRepository` — one implementation)
 and enters stock at `value`, posting **no** ledger row. The sale books its full
 `salePrice` (revenue intact); `payments` must sum to `salePrice − Σ values`, so
@@ -112,8 +117,28 @@ the read side (list / lookups / view enrichment with payments + trade-ins) lives
 in `SalesReadService`, split from the write orchestration in `SalesService`.
 
 A **return** of a sale that had a trade-in keeps the traded-in phone (its
-purchase is never undone); the refund cap becomes net SALE rows + Σ trade-in
-values (ADR 0028 extended).
+purchase is never undone); the refund cap is net SALE rows + Σ trade-in values
+(ADR 0028 extended). The part **above the money actually paid** (the trade-in
+part, refunded in cash) needs `purchase.create`; a caller without it may refund
+only the money paid — above that → 403 `code: "TRADE_IN_REFUND_FORBIDDEN"`.
+
+A sale whose unit has since been **bought back** (ADR 0044) can no longer be
+returned: `POST /sales/:id/return` refuses 409 `code: "SALE_UNIT_BOUGHT_BACK"`
+(the unit is in stock again, maybe re-sold; its warranty ended at buy-back).
+
+## Bonus points (ADR 0043)
+
+`POST /sales` also accepts `bonusRedeem?` (points to spend, online only). It
+funds part of the price like the customer's own money: `payments` must sum to
+`salePrice − Σ trade-in values − bonusRedeem`. Requires `customerId`, bonus on,
+and `bonusRedeem ≤ balance`, `≤ bonusMaxRedeemPercent` of the sale, `≤` what is
+left to pay (400 `BONUS_REDEEM_EXCEEDS_*`); points are **not** a discount, so
+they never touch the cashier discount limit. On the sync replay path redeem is
+refused (`BONUS_REDEEM_OFFLINE`) but earning still happens. `SalesCreateService`
+posts the EARN/SPEND rows via `BonusService` inside the sale transaction; a
+return reverses them in the refund transaction. `SaleView` + `ReceiptView` carry
+`bonus: { earned, spent }`. Checkout orchestration lives in `SalesCreateService`;
+`SalesService` is the read/create facade.
 
 ## Customer credit (ADR 0035)
 

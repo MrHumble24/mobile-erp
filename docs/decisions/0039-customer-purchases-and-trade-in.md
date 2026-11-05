@@ -22,10 +22,7 @@ slept, so the recommended option is taken and recorded here.
   `Device.shipmentId` is now nullable), its IN_STOCK status-history row (same
   start as a shipment unit), and the purchase document. Only IMEI/SERIAL kinds;
   QUANTITY is refused 400 (`assertUnitKind`, shared with intake).
-- **Duplicate IMEI/serial: reject (409).** `imei`/`serialNumber` are globally
-  unique; a phone we previously sold keeps its row, so a buy-back of the same
-  code collides and is refused — the simplest correct behaviour. Resurrecting
-  the old SOLD row is the upgrade path, deferred (no real data yet).
+- **Duplicate IMEI/serial: 409**, except a sold unit bought back is resurrected in place (ADR 0044).
 - **Plain buy** `POST /customer-purchases` posts money **out** via a new
   `CUSTOMER_PURCHASE` cash row (cost type, redacted like other costs) from CASH
   (default) or CARD, linked by `customerPurchaseId`. Needs an open shift when
@@ -34,12 +31,15 @@ slept, so the recommended option is taken and recorded here.
 - **Trade-in** `POST /sales` gains `tradeIns[]` (each a unit + `value`). Each
   becomes a customer purchase in the **same transaction** as the sale, posting
   **no ledger row** — no money moved for it. The sale books its full `salePrice`
-  (revenue intact); `payments` must sum to `salePrice − Σ values`; the balances
-  move by exactly the tender. A trade-in total above the sale price is refused
-  (400 `TRADE_IN_EXCEEDS_SALE`). A customer is required.
+  (revenue intact); `payments` must sum to `salePrice − Σ values`. Above the sale
+  price is refused (400 `TRADE_IN_EXCEEDS_SALE`). A customer is required, and —
+  since taking a phone for value is buying one — the caller needs `purchase.create`
+  as well as `sale.create` (else 403 `TRADE_IN_FORBIDDEN`; closes the hole where
+  a plain cashier banked a made-up trade-in).
 - **Returns:** the traded-in phone stays ours (its purchase is never undone);
-  the refund cap becomes net SALE rows + Σ trade-in values (ADR 0028 extended);
-  the trade-in part of a refund is paid back in cash.
+  the refund cap is net SALE rows + Σ trade-in values (ADR 0028 extended). The
+  part above the money actually paid (the trade-in part, refunded in cash) needs
+  `purchase.create` (else 403 `TRADE_IN_REFUND_FORBIDDEN`).
 - Online only: trade-ins are refused on the sync replay path and on credit
   (credit lines carry no `tradeIns` field; `forbidNonWhitelisted` rejects it).
 - Permissions `purchase.create` + `purchase.read` (ADMIN only, seeded in the

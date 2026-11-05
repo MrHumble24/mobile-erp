@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -72,29 +73,45 @@ export class CreditsRepository {
   /**
    * The customer's total outstanding across all their credits:
    * Σ sale price of not-returned sales − Σ payments. Pure outstanding (no
-   * overdue), for the credit-limit gate. Exact, in two aggregates.
+   * overdue), for the credit-limit gate. Pass the write `tx` so the read runs
+   * after a `FOR UPDATE` lock on the customer and two concurrent credits cannot
+   * both pass the limit (ADR 0028).
    */
-  async customerOutstanding(customerId: string): Promise<Prisma.Decimal> {
-    const [sales, payments] = await this.prisma.$transaction([
-      this.prisma.sale.aggregate({
-        where: { credit: { customerId }, return: { is: null } },
-        _sum: { salePrice: true },
-      }),
-      this.prisma.creditPayment.aggregate({
-        where: { credit: { customerId } },
-        _sum: { amount: true },
-      }),
-    ]);
+  async customerOutstanding(
+    customerId: string,
+    client: PrismaTx | PrismaService = this.prisma,
+  ): Promise<Prisma.Decimal> {
+    const sales = await client.sale.aggregate({
+      where: { credit: { customerId }, return: { is: null } },
+      _sum: { salePrice: true },
+    });
+    const payments = await client.creditPayment.aggregate({
+      where: { credit: { customerId } },
+      _sum: { amount: true },
+    });
     const sold = sales._sum.salePrice ?? new Prisma.Decimal(0);
     const paid = payments._sum.amount ?? new Prisma.Decimal(0);
     return sold.minus(paid);
   }
 
-  findRawById(id: string): Promise<CreditRaw | null> {
-    return this.prisma.customerCredit.findUnique({
+  findRawById(
+    id: string,
+    client: PrismaTx | PrismaService = this.prisma,
+  ): Promise<CreditRaw | null> {
+    return client.customerCredit.findUnique({
       where: { id },
       include: creditInclude,
     });
+  }
+
+  /** Lock one customer row (FOR UPDATE) so concurrent credits serialize. */
+  async lockCustomer(tx: PrismaTx, customerId: string): Promise<void> {
+    await tx.$queryRaw`SELECT id FROM customers WHERE id = ${customerId} FOR UPDATE`;
+  }
+
+  /** Lock one credit row (FOR UPDATE) so concurrent payments serialize. */
+  async lockCredit(tx: PrismaTx, creditId: string): Promise<void> {
+    await tx.$queryRaw`SELECT id FROM customer_credits WHERE id = ${creditId} FOR UPDATE`;
   }
 
   findRawByClientKey(clientKey: string): Promise<CreditRaw | null> {

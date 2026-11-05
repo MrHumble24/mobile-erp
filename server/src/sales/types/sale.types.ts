@@ -63,6 +63,12 @@ export interface SalePayment {
   amount: Money;
 }
 
+/** Loyalty points a sale earned and spent (ADR 0043), derived from the ledger. */
+export interface SaleBonus {
+  earned: string;
+  spent: string;
+}
+
 export interface SaleView {
   id: string;
   /** Null for a quantity sale (see `model` + `quantity`). */
@@ -98,6 +104,8 @@ export interface SaleView {
   payments: SalePayment[];
   /** Phones taken in part payment (ADR 0039); [] when none. */
   tradeIns: TradeInView[];
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus;
 }
 
 /** Filters shared by `GET /sales` and `GET /sales/stats`. */
@@ -142,6 +150,10 @@ export interface ReceiptView {
   saleId: string;
   soldAt: Date;
   cashier: string;
+  /** Shop identity for the receipt header (ADR 0043), from the store record. */
+  store: { name: string | null; address: string | null; phone: string | null };
+  /** Free-text receipt footer (store_settings.receiptFooter), or null. */
+  footer: string | null;
   items: {
     imei: string | null;
     imei2: string | null;
@@ -160,6 +172,8 @@ export interface ReceiptView {
   payments: SalePayment[];
   /** Phones taken in part payment, for printing (ADR 0039); [] when none. */
   tradeIns: TradeInView[];
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus;
 }
 
 /** Validated checkout input handed to the repository transaction. */

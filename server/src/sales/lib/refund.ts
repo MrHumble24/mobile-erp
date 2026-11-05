@@ -11,6 +11,25 @@ import type { SalePayment } from '../types/sale.types.js';
  * so its return refunds nothing (cap 0); the overpayment is paid back on the
  * credit instead (ADR 0035). The cap is computed, never trusted (ADR 0028).
  */
+/**
+ * The cash/card money the sale actually took in: the net of its SALE ledger
+ * rows, or `salePrice` for a pre-ledger sale (0 for a credit sale — its money
+ * flowed through CreditPayment). A trade-in's value is NOT money paid.
+ */
+export function saleMoneyPaid(
+  salePrice: Prisma.Decimal,
+  saleNets: { amount: Prisma.Decimal }[],
+  isCreditSale = false,
+): Prisma.Decimal {
+  if (saleNets.length > 0) {
+    return saleNets.reduce(
+      (sum, n) => sum.plus(n.amount),
+      new Prisma.Decimal(0),
+    );
+  }
+  return isCreditSale ? new Prisma.Decimal(0) : salePrice;
+}
+
 export function assertRefundWithinSale(
   refundAmount: number,
   salePrice: Prisma.Decimal,
@@ -18,16 +37,12 @@ export function assertRefundWithinSale(
   isCreditSale = false,
   tradeInTotal: Prisma.Decimal = new Prisma.Decimal(0),
 ): void {
-  // A sale with a trade-in took in cash/card (saleNets) plus a phone worth the
+  // A sale with a trade-in took in cash/card (money paid) plus a phone worth the
   // trade-in value; the customer may be refunded up to both (ADR 0039). The
   // traded-in phone stays ours — the return never undoes the purchase.
-  const base =
-    saleNets.length > 0
-      ? saleNets.reduce((sum, n) => sum.plus(n.amount), new Prisma.Decimal(0))
-      : isCreditSale
-        ? new Prisma.Decimal(0)
-        : salePrice;
-  const cap = base.plus(tradeInTotal);
+  const cap = saleMoneyPaid(salePrice, saleNets, isCreditSale).plus(
+    tradeInTotal,
+  );
   if (new Prisma.Decimal(refundAmount).greaterThan(cap)) {
     throw new BadRequestException(
       `Refund ${refundAmount} exceeds the sale's ${cap.toFixed(2)}`,

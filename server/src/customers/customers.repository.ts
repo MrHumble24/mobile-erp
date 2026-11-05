@@ -31,6 +31,7 @@ function toView(row: CustomerRow): CustomerView {
     ...row,
     standingDiscountPercent: row.standingDiscountPercent.toFixed(2),
     creditLimit: row.creditLimit === null ? null : row.creditLimit.toFixed(2),
+    bonusBalance: null, // filled by the service when bonus is on (ADR 0043)
   };
 }
 

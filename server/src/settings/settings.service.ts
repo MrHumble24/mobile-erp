@@ -38,6 +38,12 @@ const DEFAULTS: StoreSettings = {
   defaultCreditLimit: null,
   shiftsEnabled: false,
   repairsEnabled: false,
+  bonusEnabled: false,
+  bonusEarnPercent: new Prisma.Decimal(0),
+  bonusMaxRedeemPercent: new Prisma.Decimal(0),
+  receiptPrintingEnabled: false,
+  receiptPaperWidthMm: 80,
+  priceTagsEnabled: false,
   digestSentOn: null,
   updatedAt: new Date(0),
 };

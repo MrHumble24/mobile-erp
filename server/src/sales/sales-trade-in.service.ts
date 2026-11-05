@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { resolveCustomerId } from '../common/lib/resolve-customer.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import type { PrismaTx } from '../common/types/prisma-tx.js';
@@ -55,6 +59,15 @@ export class SalesTradeInService {
         code: 'TRADE_IN_OFFLINE',
       });
     }
+    // Taking a phone for value is buying a phone (security fix): it needs the
+    // buying permission, so a plain cashier cannot turn a made-up trade-in into
+    // a cash refund or put a unit into stock at any cost.
+    if (!caller.permissions.has('purchase.create')) {
+      throw new ForbiddenException({
+        message: 'Taking a trade-in needs the purchase.create permission',
+        code: 'TRADE_IN_FORBIDDEN',
+      });
+    }
     const customerId = await resolveCustomerId(this.prisma, {
       customerId: dto.customerId,
       inlineCustomer: dto.customer,
@@ -91,34 +104,39 @@ export class SalesTradeInService {
   }
 
   /**
-   * Run `checkout` and, when there are trade-ins, create them in the SAME
-   * transaction so the sale and its purchases commit as one. Without trade-ins
-   * the checkout runs on its own (no outer transaction).
+   * Run `checkout` and its in-transaction side effects as one commit: the
+   * trade-in purchases (when any) and `afterSale` (bonus points, ADR 0043). A
+   * transaction is opened when either is present; a bare sale with neither runs
+   * checkout on its own.
    */
   async run(
     prepared: PreparedTradeIns | null,
     caller: AuthenticatedUser,
     storeId: string,
     checkout: (tx?: PrismaTx) => Promise<string>,
+    afterSale?: (tx: PrismaTx, saleId: string) => Promise<void>,
   ): Promise<string> {
-    if (!prepared) return checkout();
+    if (!prepared && !afterSale) return checkout();
     return this.prisma.$transaction(async (tx) => {
       const saleId = await checkout(tx);
-      const occurredAt = new Date();
-      for (const t of prepared.tradeIns) {
-        await this.writes.create(
-          {
-            storeId,
-            customerId: prepared.customerId,
-            pricePaid: t.value,
-            unit: t.unit,
-            createdById: caller.id,
-            occurredAt,
-            saleId,
-          },
-          tx,
-        );
+      if (prepared) {
+        const occurredAt = new Date();
+        for (const t of prepared.tradeIns) {
+          await this.writes.create(
+            {
+              storeId,
+              customerId: prepared.customerId,
+              pricePaid: t.value,
+              unit: t.unit,
+              createdById: caller.id,
+              occurredAt,
+              saleId,
+            },
+            tx,
+          );
+        }
       }
+      if (afterSale) await afterSale(tx, saleId);
       return saleId;
     });
   }

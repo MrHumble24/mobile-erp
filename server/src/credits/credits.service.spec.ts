@@ -56,6 +56,8 @@ function build(
           },
     ),
     customerOutstanding: jest.fn().mockResolvedValue(overrides.prior ?? D(0)),
+    lockCustomer: jest.fn().mockResolvedValue(undefined),
+    lockCredit: jest.fn().mockResolvedValue(undefined),
   };
   const writes = {
     transaction: jest.fn((fn: (tx: unknown) => Promise<unknown>) => fn({})),

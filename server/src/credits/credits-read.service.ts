@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { Prisma } from '../generated/client/client.js';
 import { SettingsService } from '../settings/settings.service.js';
 import { StoresService } from '../stores/stores.service.js';
@@ -34,11 +35,16 @@ export class CreditsReadService {
     return toCreditView(raw, standingOf(raw, new Date()));
   }
 
-  /** The raw rows plus computed standing — for the write service's gates. */
+  /**
+   * The raw rows plus computed standing — for the write service's gates. Pass
+   * the write `tx` to read inside a locked transaction (ADR 0028), so two
+   * concurrent payments see each other's rows.
+   */
   async standing(
     id: string,
+    tx?: PrismaTx,
   ): Promise<{ raw: CreditRaw; standing: CreditStanding }> {
-    const raw = await this.require(id);
+    const raw = await this.require(id, tx);
     return { raw, standing: standingOf(raw, new Date()) };
   }
 
@@ -174,8 +180,8 @@ export class CreditsReadService {
     };
   }
 
-  private async require(id: string): Promise<CreditRaw> {
-    const raw = await this.repo.findRawById(id);
+  private async require(id: string, tx?: PrismaTx): Promise<CreditRaw> {
+    const raw = await this.repo.findRawById(id, tx);
     if (!raw) throw new NotFoundException(`Credit ${id} not found`);
     return raw;
   }

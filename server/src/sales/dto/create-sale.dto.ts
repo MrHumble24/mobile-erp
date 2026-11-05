@@ -198,4 +198,17 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => SaleTradeInDto)
   tradeIns?: SaleTradeInDto[];
+
+  /**
+   * Loyalty points to spend on this sale (ADR 0043). Funds part of the price
+   * like the customer's own money: `payments` must sum to the price − Σ trade-in
+   * values − `bonusRedeem`. Requires a `customerId`, bonus turned on, and must
+   * not exceed the balance, the max-redeem share, or what is left to pay. Online
+   * only — rejected on the offline replay path.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  @Max(1_000_000_000)
+  bonusRedeem?: number;
 }

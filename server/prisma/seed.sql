@@ -104,6 +104,14 @@ ON CONFLICT (code) DO NOTHING;
 -- the lookup (old history rows reference it) but is retired from the pickers.
 UPDATE cash_transaction_types SET "isActive" = false WHERE code = 'OVERHEAD';
 
+-- Loyalty bonus-point ledger types (ADR 0043). Also inserted by the migration.
+INSERT INTO bonus_transaction_types (code, label, "sortOrder") VALUES
+  ('EARN',       'Earned on a sale',     10),
+  ('SPEND',      'Spent on a sale',      20),
+  ('RETURN',     'Adjusted by a return', 30),
+  ('CORRECTION', 'Manual correction',    40)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;
 
 -- Single store (ADR 0023). Store identity lives here; admins edit it via settings.
@@ -135,6 +143,7 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('sale.credit',          'sale',        'credit',    'Sell on customer credit (nasiya)'),
   ('purchase.create',      'purchase',    'create',    'Buy used phones from customers'),
   ('purchase.read',        'purchase',    'read',      'View customer purchases'),
+  ('bonus.adjust',         'bonus',       'adjust',    'Manually correct a customer''s bonus points'),
   ('repair.read',          'repair',      'read',      'View repair tickets'),
   ('repair.manage',        'repair',      'manage',    'Create / edit repair tickets, status and parts'),
   ('repair.payment',       'repair',      'payment',   'Take repair payments and pay outside masters'),

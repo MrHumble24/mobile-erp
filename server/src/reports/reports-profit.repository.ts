@@ -54,4 +54,16 @@ export class ReportsProfitRepository {
       _sum: { amount: true },
     });
   }
+
+  /** Points given (EARN) and spent (SPEND) in range, by type (ADR 0043). */
+  bonusByType(from?: Date, to?: Date) {
+    return this.prisma.bonusTransaction.groupBy({
+      by: ['typeCode'],
+      where: {
+        typeCode: { in: ['EARN', 'SPEND'] },
+        occurredAt: from || to ? { gte: from, lte: to } : undefined,
+      },
+      _sum: { amount: true },
+    });
+  }
 }

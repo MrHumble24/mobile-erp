@@ -130,6 +130,11 @@ export class CustomerPurchasesService {
     return this.repo.tradeInTotalForSale(saleId);
   }
 
+  /** True once a sold unit has been bought back (ADR 0044) — blocks its return. */
+  wasUnitBoughtBackAfter(deviceId: string, after: Date): Promise<boolean> {
+    return this.repo.boughtBackAfter(deviceId, after);
+  }
+
   /** The trade-ins on each sale, for the sale/receipt views. */
   async tradeInsBySale(saleIds: string[]): Promise<Map<string, TradeInView[]>> {
     const rows = await this.repo.findTradeInsForSales(saleIds);

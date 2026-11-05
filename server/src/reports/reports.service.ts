@@ -33,7 +33,7 @@ export class ReportsService {
   async profit(query: DateRangeQueryDto): Promise<ProfitReport> {
     const from = parseDate(query.from);
     const to = parseDate(query.to);
-    const [sales, retail, b2b, returns, expenses, discounts] =
+    const [sales, retail, b2b, returns, expenses, discounts, bonus] =
       await Promise.all([
         this.profitRepo.salesTotals(from, to),
         this.profitRepo.channelRevenue('retail', from, to),
@@ -41,12 +41,15 @@ export class ReportsService {
         this.profitRepo.returnsRefunded(from, to),
         this.profitRepo.expensesTotal(from, to),
         this.profitRepo.discountsTotals(from, to),
+        this.profitRepo.bonusByType(from, to),
       ]);
 
     const revenue = toNumber(sales._sum.salePrice);
     const cogs = toNumber(sales._sum.landedCostSnapshot);
     const grossProfit = revenue - cogs;
     const expenseTotal = toNumber(expenses._sum.amount);
+    const earnRow = bonus.find((b) => b.typeCode === 'EARN');
+    const spendRow = bonus.find((b) => b.typeCode === 'SPEND');
     return {
       revenue,
       cogs,
@@ -62,6 +65,8 @@ export class ReportsService {
       discountsGiven:
         toNumber(discounts._sum.listPriceSnapshot) -
         toNumber(discounts._sum.salePrice),
+      bonusPointsEarned: toNumber(earnRow?._sum.amount),
+      bonusPointsSpent: -toNumber(spendRow?._sum.amount),
     };
   }
 

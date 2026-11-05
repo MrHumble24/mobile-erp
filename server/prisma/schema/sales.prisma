@@ -26,6 +26,8 @@ model Customer {
   purchases CustomerPurchase[]
   /// Repair tickets opened for this customer (ADR 0040).
   repairs   Repair[]
+  /// Loyalty bonus-point ledger rows (ADR 0043); balance is their signed sum.
+  bonusTransactions BonusTransaction[]
 
   @@index([priceLevelCode])
   @@map("customers")
@@ -90,6 +92,8 @@ model Sale {
   /// Trade-ins taken as part payment on this sale (ADR 0039). A return never
   /// undoes them — the traded-in phone stays ours.
   tradeIns         CustomerPurchase[]
+  /// Bonus-point rows earned / spent / returned on this sale (ADR 0043).
+  bonusTransactions BonusTransaction[]
 
   @@index([soldAt])
   @@index([deviceId])

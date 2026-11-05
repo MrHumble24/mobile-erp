@@ -4,8 +4,11 @@ import type { SalePaymentDto } from '../dto/create-sale.dto.js';
 import type { SalePayment } from '../types/sale.types.js';
 
 /**
- * Normalise the tender lines of a sale. Absent → a single CASH payment for the
- * whole price. Otherwise every amount must be positive, accounts distinct and
+ * Normalise the tender lines of a sale. `salePrice` here is what the customer
+ * tenders in cash/card — the sale price minus any trade-in values and spent
+ * points (ADR 0039/0043). Absent → a single CASH payment for the whole amount,
+ * or no rows at all when nothing is left to pay (fully covered by trade-ins /
+ * points). Otherwise every amount must be positive, accounts distinct and
  * active, and the amounts must add up to `salePrice` to the cent (400 if not).
  */
 export function resolveSalePayments(
@@ -13,8 +16,11 @@ export function resolveSalePayments(
   salePrice: number,
   activeAccountCodes: string[],
 ): SalePayment[] {
+  const due = new Prisma.Decimal(salePrice);
   if (!payments || payments.length === 0) {
-    return [{ accountCode: 'CASH', amount: new Prisma.Decimal(salePrice) }];
+    // Fully covered by trade-ins / points: no cash/card tender, so no SALE rows.
+    if (due.lessThanOrEqualTo(0)) return [];
+    return [{ accountCode: 'CASH', amount: due }];
   }
   const active = new Set(activeAccountCodes);
   const seen = new Set<string>();

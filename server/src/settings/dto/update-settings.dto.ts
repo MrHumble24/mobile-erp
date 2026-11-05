@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -135,4 +136,42 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   repairsEnabled?: boolean;
+
+  // Loyalty bonus points (ADR 0043). Optional so a PUT that omits them leaves
+  // the stored values untouched. Off by default.
+  @IsOptional()
+  @IsBoolean()
+  bonusEnabled?: boolean;
+
+  /** Share of money paid returned as points, as a percent. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  bonusEarnPercent?: number;
+
+  /** Largest share of one sale payable with points, as a percent. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  bonusMaxRedeemPercent?: number;
+
+  // Printing switches (ADR 0043). The server only stores the choice. Optional
+  // so a PUT that omits them leaves the stored values untouched.
+  @IsOptional()
+  @IsBoolean()
+  receiptPrintingEnabled?: boolean;
+
+  /** Thermal paper width: 58 or 80 mm (default 80). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsIn([58, 80])
+  receiptPaperWidthMm?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  priceTagsEnabled?: boolean;
 }

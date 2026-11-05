@@ -51,6 +51,7 @@ export function toSaleView(row: SaleRow): SaleView {
     notes: row.notes,
     payments: [],
     tradeIns: [],
+    bonus: { earned: '0.00', spent: '0.00' },
     return: row.return
       ? {
           returnedAt: row.return.returnedAt,
@@ -73,6 +74,9 @@ export function toReceiptView(row: SaleRow): ReceiptView {
     saleId: row.id,
     soldAt: row.soldAt,
     cashier: fullName(row.soldBy.profile),
+    // Filled by the service from the store record + settings (ADR 0043).
+    store: { name: null, address: null, phone: null },
+    footer: null,
     items: [
       {
         imei: row.device?.imei ?? null,
@@ -94,5 +98,6 @@ export function toReceiptView(row: SaleRow): ReceiptView {
       : undefined,
     payments: [], // filled by the service from the sale's SALE ledger rows
     tradeIns: [], // filled by the service from the sale's customer purchases
+    bonus: { earned: '0.00', spent: '0.00' }, // filled from the bonus ledger
   };
 }

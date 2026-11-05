@@ -30,6 +30,14 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 - Repairs (ADR 0040): `repairsEnabled` (default false). Optional on the write
   DTO. Read by the repairs module; when off every `/repairs` route refuses
   403 `REPAIRS_DISABLED`.
+- Bonus points (ADR 0043): `bonusEnabled` (default false), `bonusEarnPercent`
+  (share of money paid returned as points), `bonusMaxRedeemPercent` (largest
+  share of a sale payable with points). Optional on the write DTO. Read by the
+  bonus + sales modules.
+- Printing (ADR 0043): `receiptPrintingEnabled` (default false),
+  `receiptPaperWidthMm` (58 or 80, default 80), `priceTagsEnabled` (default
+  false). The server only stores the shop's choice — printing itself is client
+  work and there is no server print endpoint. Optional on the write DTO.
 
 ## Exposes
 

@@ -48,3 +48,25 @@ export function assertWithinLimit(
     );
   }
 }
+
+/** Normalise down-payment lines: accounts must be active and distinct (400). */
+export function validateDownPayments(
+  payments: { accountCode: string; amount: number }[],
+  activeAccounts: string[],
+): { accountCode: string; amount: Decimal }[] {
+  const seen = new Set<string>();
+  return payments.map((p) => {
+    if (!activeAccounts.includes(p.accountCode)) {
+      throw new BadRequestException(
+        `Unknown or inactive account ${p.accountCode}`,
+      );
+    }
+    if (seen.has(p.accountCode)) {
+      throw new BadRequestException(
+        `Duplicate payment account ${p.accountCode}`,
+      );
+    }
+    seen.add(p.accountCode);
+    return { accountCode: p.accountCode, amount: new Prisma.Decimal(p.amount) };
+  });
+}
