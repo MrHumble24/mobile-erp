@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Uploaded product pictures (default UPLOADS_DIR; on Railway a mounted volume)
+/uploads
+
 # Logs
 logs
 *.log

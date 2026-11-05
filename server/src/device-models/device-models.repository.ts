@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { buildImageUrl } from '../common/lib/image-url.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { AttributeDef } from './lib/attribute-schema.js';
@@ -19,6 +20,7 @@ interface ModelRow {
   modelCode: string | null;
   customsCode: string | null;
   salePrice: Prisma.Decimal | null;
+  imageFileName: string | null;
   attributes: unknown;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +38,7 @@ function toView(row: ModelRow): DeviceModelView {
     modelCode: row.modelCode,
     customsCode: row.customsCode,
     salePrice: row.salePrice === null ? null : row.salePrice.toFixed(2),
+    imageUrl: buildImageUrl(row.imageFileName),
     attributes: (row.attributes ?? []) as AttributeDef[],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -73,6 +76,15 @@ export class DeviceModelsRepository {
     return this.prisma.device.count({ where: { modelId } });
   }
 
+  /** The raw stored picture file name (to delete the old file on replace/remove). */
+  async imageFileName(id: string): Promise<string | null> {
+    const row = await this.prisma.deviceModel.findUnique({
+      where: { id },
+      select: { imageFileName: true },
+    });
+    return row?.imageFileName ?? null;
+  }
+
   async create(input: DeviceModelInput): Promise<DeviceModelView> {
     const row = await this.prisma.deviceModel.create({
       data: {
@@ -103,6 +115,7 @@ export class DeviceModelsRepository {
         modelCode: patch.modelCode,
         customsCode: patch.customsCode,
         salePrice: patch.salePrice,
+        imageFileName: patch.imageFileName,
         attributes:
           patch.attributes === undefined
             ? undefined

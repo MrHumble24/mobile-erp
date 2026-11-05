@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { buildImageUrl } from '../common/lib/image-url.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { StockAggregate } from './lib/stock-math.js';
@@ -80,7 +81,7 @@ export class StockRepository {
     const where = Prisma.join(filters, ' AND ');
     return this.prisma.$queryRaw<StockLevelRow[]>(Prisma.sql`
       SELECT m.id AS "modelId", m.brand, m.name, m.barcode,
-             m."modelCode", m."categoryId", m."salePrice",
+             m."modelCode", m."categoryId", m."imageFileName", m."salePrice",
              coalesce(sum(sm.quantity), 0)::int AS quantity,
              coalesce(sum(sm.quantity * sm."unitCostSnapshot"), 0)::numeric AS value,
              coalesce((
@@ -91,7 +92,8 @@ export class StockRepository {
       FROM device_models m
       LEFT JOIN stock_movements sm ON sm."modelId" = m.id AND sm."storeId" = ${storeId}
       WHERE ${where}
-      GROUP BY m.id, m.brand, m.name, m.barcode, m."modelCode", m."categoryId", m."salePrice"
+      GROUP BY m.id, m.brand, m.name, m.barcode, m."modelCode", m."categoryId",
+               m."imageFileName", m."salePrice"
       ORDER BY m.brand, m.name`);
   }
 
@@ -151,6 +153,8 @@ export class StockRepository {
       barcode: r.barcode,
       salePrice: r.salePrice === null ? null : r.salePrice.toFixed(2),
       quantity: Number(r.quantity),
+      categoryId: r.categoryId,
+      imageUrl: buildImageUrl(r.imageFileName),
     }));
   }
 
@@ -167,6 +171,8 @@ export class StockRepository {
         name: true,
         barcode: true,
         salePrice: true,
+        categoryId: true,
+        imageFileName: true,
       },
     });
     if (!model) return null;
@@ -178,6 +184,8 @@ export class StockRepository {
       barcode: model.barcode,
       salePrice: model.salePrice === null ? null : model.salePrice.toFixed(2),
       quantity: agg.quantity,
+      categoryId: model.categoryId,
+      imageUrl: buildImageUrl(model.imageFileName),
     };
   }
 
