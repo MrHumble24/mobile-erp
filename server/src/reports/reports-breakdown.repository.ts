@@ -32,11 +32,14 @@ export class ReportsBreakdownRepository {
         FROM sales s ${where} GROUP BY 1, 2`;
     }
     if (groupBy === 'model') {
+      // A quantity sale has no device; its model is on the sale itself. Join on
+      // the effective model id so quantity sales group under their own model.
       return Prisma.sql`
-        SELECT d."modelId" AS key, (m.brand || ' ' || m.name) AS label, ${SUMS}
+        SELECT coalesce(d."modelId", s."modelId") AS key,
+               (m.brand || ' ' || m.name) AS label, ${SUMS}
         FROM sales s
-        JOIN devices d ON d.id = s."deviceId"
-        JOIN device_models m ON m.id = d."modelId"
+        LEFT JOIN devices d ON d.id = s."deviceId"
+        JOIN device_models m ON m.id = coalesce(d."modelId", s."modelId")
         ${where} GROUP BY 1, 2`;
     }
     if (groupBy === 'cashier') {

@@ -1,10 +1,13 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateIf,
   ValidateNested,
@@ -53,6 +56,14 @@ export class CreateDeviceModelDto {
   @IsString()
   @MaxLength(255)
   customsCode?: string;
+
+  /** Default till price per piece for a QUANTITY product (ADR 0030). */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  salePrice?: number | null;
 
   /** Omit → model is seeded with a default storage+color schema. */
   @IsOptional()

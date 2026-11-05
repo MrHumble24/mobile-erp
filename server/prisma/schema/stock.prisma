@@ -1,0 +1,60 @@
+// ---------------------------------------------------------------------------
+// Quantity-product stock (ADR 0030, Change 8 second half). Like the cash ledger
+// (ADR 0024), stock is an append-only, signed log: one row per movement, a
+// product's quantity in a store is the SUM of its rows, its value is
+// SUM(quantity × unitCostSnapshot) and its moving-average cost is value ÷
+// quantity. Never a stored number. No update/delete path — a mistake is a new
+// row. The arithmetic lives in stock/lib/stock-math.ts.
+// ---------------------------------------------------------------------------
+
+/// Why quantity stock moved. Lookup (not an enum, database.md): PURCHASE, SALE,
+/// RETURN, WRITE_OFF, COUNT_CORRECTION. Seeded in the migration and seed.sql.
+model StockMovementType {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  movements StockMovement[]
+
+  @@map("stock_movement_types")
+}
+
+/// One stock movement of a QUANTITY product. `quantity` is signed and whole,
+/// never zero (a DB CHECK enforces it): positive = pieces in, negative = out.
+/// `unitCostSnapshot` freezes the cost per piece at the moment: for a PURCHASE
+/// it is the price paid, for an outgoing row (SALE/WRITE_OFF/...) it is the
+/// moving-average cost at that moment, so value stays self-consistent.
+model StockMovement {
+  id      String @id @default(uuid())
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id])
+  /// The QUANTITY product. A model's kind is validated by the service.
+  modelId String
+  model   DeviceModel       @relation(fields: [modelId], references: [id])
+  typeCode String
+  type     StockMovementType @relation(fields: [typeCode], references: [code])
+  /// Signed whole pieces, never zero (CHECK stock_movements_quantity_nonzero).
+  quantity         Int
+  /// Cost per piece frozen at the movement (Decimal(14,2)).
+  unitCostSnapshot Decimal @db.Decimal(14, 2)
+  /// Set on a PURCHASE row (the shipment it came in on).
+  shipmentId String?
+  shipment   Shipment? @relation(fields: [shipmentId], references: [id])
+  /// Set on a SALE/RETURN row (the sale it belongs to).
+  saleId String?
+  sale   Sale?   @relation(fields: [saleId], references: [id])
+  note        String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([storeId, modelId])
+  @@index([modelId])
+  @@index([typeCode])
+  @@index([shipmentId])
+  @@index([saleId])
+  @@index([occurredAt])
+  @@map("stock_movements")
+}

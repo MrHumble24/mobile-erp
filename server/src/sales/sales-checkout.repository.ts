@@ -1,7 +1,13 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { CheckoutInput, ReturnInput } from './types/sale.types.js';
+import { StockService } from '../stock/stock.service.js';
+import type {
+  CheckoutInput,
+  QuantityCheckoutInput,
+  ReturnInput,
+  SalePayment,
+} from './types/sale.types.js';
 
 type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
 
@@ -20,6 +26,7 @@ export class SalesCheckoutRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
+    private readonly stock: StockService,
   ) {}
 
   /** Creates the sale, marks the device SOLD, opens the warranty, posts SALE rows. */
@@ -50,25 +57,90 @@ export class SalesCheckoutRepository {
         },
         select: { id: true },
       });
-      for (const p of input.payments) {
-        await this.ledger.post(
-          {
-            storeId: input.storeId,
-            accountCode: p.accountCode,
-            typeCode: 'SALE',
-            amount: p.amount,
-            occurredAt: input.soldAt,
-            saleId: sale.id,
-            createdById: input.soldById,
-          },
-          tx,
-        );
-      }
+      await this.postSalePayments(tx, input, sale.id);
       return sale.id;
     });
   }
 
-  /** Records a return, moves the device, and posts REFUND rows (money out). */
+  /** One SALE ledger row per tender line (shared by unit + quantity checkout). */
+  private async postSalePayments(
+    tx: Tx,
+    input: {
+      storeId: string;
+      soldById: string;
+      soldAt: Date;
+      payments: SalePayment[];
+    },
+    saleId: string,
+  ): Promise<void> {
+    for (const p of input.payments) {
+      await this.ledger.post(
+        {
+          storeId: input.storeId,
+          accountCode: p.accountCode,
+          typeCode: 'SALE',
+          amount: p.amount,
+          occurredAt: input.soldAt,
+          saleId,
+          createdById: input.soldById,
+        },
+        tx,
+      );
+    }
+  }
+
+  /**
+   * A quantity sale: one Sale row with no device, a SALE stock movement at the
+   * moving-average cost computed inside this transaction, and the SALE ledger
+   * rows. `landedCostSnapshot = quantity × average` so profit means the same
+   * everywhere. No warranty. Stock may go below zero — nothing is blocked.
+   */
+  async checkoutQuantity(input: QuantityCheckoutInput): Promise<string> {
+    return this.prisma.$transaction(async (tx) => {
+      const customerId = await this.resolveCustomer(tx, input);
+      const unitCost = await this.stock.averageCost(
+        input.storeId,
+        input.modelId,
+        tx,
+      );
+      const sale = await tx.sale.create({
+        data: {
+          storeId: input.storeId,
+          modelId: input.modelId,
+          quantity: input.quantity,
+          customerId,
+          soldById: input.soldById,
+          salePrice: input.salePrice,
+          landedCostSnapshot: unitCost.times(input.quantity),
+          soldAt: input.soldAt,
+          notes: input.notes,
+          clientMutationId: input.clientMutationId,
+        },
+        select: { id: true },
+      });
+      await this.stock.postMovement(
+        {
+          storeId: input.storeId,
+          modelId: input.modelId,
+          typeCode: 'SALE',
+          quantity: -input.quantity,
+          unitCostSnapshot: unitCost,
+          saleId: sale.id,
+          createdById: input.soldById,
+          occurredAt: input.soldAt,
+        },
+        tx,
+      );
+      await this.postSalePayments(tx, input, sale.id);
+      return sale.id;
+    });
+  }
+
+  /**
+   * Records a return and posts REFUND rows (money out). A unit sale moves the
+   * device back; a quantity sale (`quantityRestore` set) posts a RETURN stock
+   * movement at the sale's own unit cost instead.
+   */
   async processReturn(input: ReturnInput): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const existing = await tx.saleReturn.findUnique({
@@ -78,15 +150,31 @@ export class SalesCheckoutRepository {
       if (existing) {
         throw new ConflictException('This sale has already been returned');
       }
-      await this.advanceDevice(
-        tx,
-        input.deviceId,
-        input.expectedVersion,
-        null,
-        input.toStatusCode,
-        input.processedById,
-        'warranty return',
-      );
+      if (input.quantityRestore) {
+        const r = input.quantityRestore;
+        await this.stock.postMovement(
+          {
+            storeId: input.storeId,
+            modelId: r.modelId,
+            typeCode: 'RETURN',
+            quantity: r.quantity,
+            unitCostSnapshot: r.unitCost,
+            saleId: input.saleId,
+            createdById: input.processedById,
+          },
+          tx,
+        );
+      } else {
+        await this.advanceDevice(
+          tx,
+          input.deviceId!,
+          input.expectedVersion,
+          null,
+          input.toStatusCode,
+          input.processedById,
+          'warranty return',
+        );
+      }
       await tx.saleReturn.create({
         data: {
           saleId: input.saleId,
@@ -95,25 +183,33 @@ export class SalesCheckoutRepository {
           processedById: input.processedById,
         },
       });
-      for (const r of input.refundPostings) {
-        await this.ledger.post(
-          {
-            storeId: input.storeId,
-            accountCode: r.accountCode,
-            typeCode: 'REFUND',
-            amount: r.amount.negated(),
-            saleId: input.saleId,
-            createdById: input.processedById,
-          },
-          tx,
-        );
-      }
+      await this.postRefunds(tx, input);
     });
+  }
+
+  /** One REFUND ledger row (money out) per refund posting. */
+  private async postRefunds(tx: Tx, input: ReturnInput): Promise<void> {
+    for (const r of input.refundPostings) {
+      await this.ledger.post(
+        {
+          storeId: input.storeId,
+          accountCode: r.accountCode,
+          typeCode: 'REFUND',
+          amount: r.amount.negated(),
+          saleId: input.saleId,
+          createdById: input.processedById,
+        },
+        tx,
+      );
+    }
   }
 
   private async resolveCustomer(
     tx: Tx,
-    input: CheckoutInput,
+    input: {
+      customerId?: string;
+      inlineCustomer?: { name: string; phone?: string };
+    },
   ): Promise<string | undefined> {
     if (input.customerId) return input.customerId;
     const inline = input.inlineCustomer;

@@ -21,6 +21,7 @@ const saleSelect = {
   soldAt: true,
   consignmentId: true,
   notes: true,
+  quantity: true,
   device: {
     select: {
       imei: true,
@@ -30,6 +31,7 @@ const saleSelect = {
       model: { select: { brand: true, name: true, kindCode: true } },
     },
   },
+  model: { select: { brand: true, name: true, kindCode: true } },
   customer: { select: { id: true, name: true, phone: true } },
   soldBy: {
     select: {
@@ -173,13 +175,24 @@ export class SalesRepository {
 
   findSaleForReturn(id: string): Promise<{
     id: string;
-    deviceId: string;
+    deviceId: string | null;
+    modelId: string | null;
+    quantity: number | null;
     storeId: string;
     salePrice: Prisma.Decimal;
+    landedCostSnapshot: Prisma.Decimal;
   } | null> {
     return this.prisma.sale.findUnique({
       where: { id },
-      select: { id: true, deviceId: true, storeId: true, salePrice: true },
+      select: {
+        id: true,
+        deviceId: true,
+        modelId: true,
+        quantity: true,
+        storeId: true,
+        salePrice: true,
+        landedCostSnapshot: true,
+      },
     });
   }
 
@@ -215,7 +228,7 @@ export class SalesRepository {
         return: { select: { saleId: true } },
       },
     });
-    if (!sale) return null;
+    if (!sale || !sale.device || sale.deviceId === null) return null;
     const inspection = await this.prisma.qcInspection.findFirst({
       where: { deviceId: sale.deviceId },
       orderBy: { inspectedAt: 'desc' },

@@ -55,6 +55,7 @@ export class DeviceModelsService {
         barcode: dto.barcode,
         modelCode: dto.modelCode,
         customsCode: dto.customsCode,
+        salePrice: dto.salePrice,
         attributes,
       });
     } catch (error) {
@@ -89,6 +90,7 @@ export class DeviceModelsService {
         barcode: dto.barcode,
         modelCode: dto.modelCode,
         customsCode: dto.customsCode,
+        salePrice: dto.salePrice,
         attributes,
       });
     } catch (error) {

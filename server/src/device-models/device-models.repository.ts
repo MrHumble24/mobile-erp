@@ -18,6 +18,7 @@ interface ModelRow {
   barcode: string | null;
   modelCode: string | null;
   customsCode: string | null;
+  salePrice: Prisma.Decimal | null;
   attributes: unknown;
   createdAt: Date;
   updatedAt: Date;
@@ -34,6 +35,7 @@ function toView(row: ModelRow): DeviceModelView {
     barcode: row.barcode,
     modelCode: row.modelCode,
     customsCode: row.customsCode,
+    salePrice: row.salePrice === null ? null : row.salePrice.toFixed(2),
     attributes: (row.attributes ?? []) as AttributeDef[],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -81,6 +83,7 @@ export class DeviceModelsRepository {
         barcode: input.barcode ?? null,
         modelCode: input.modelCode ?? null,
         customsCode: input.customsCode ?? null,
+        salePrice: input.salePrice ?? null,
         attributes: input.attributes as unknown as Prisma.InputJsonValue,
       },
     });
@@ -99,6 +102,7 @@ export class DeviceModelsRepository {
         barcode: patch.barcode,
         modelCode: patch.modelCode,
         customsCode: patch.customsCode,
+        salePrice: patch.salePrice,
         attributes:
           patch.attributes === undefined
             ? undefined

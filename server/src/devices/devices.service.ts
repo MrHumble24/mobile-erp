@@ -53,6 +53,11 @@ export class DevicesService {
     return device;
   }
 
+  /** Non-throwing by-code lookup (imei/imei2/serial) for the till scan route. */
+  findByCode(code: string): Promise<DeviceDetailView | null> {
+    return this.query.findDetailByImei(code);
+  }
+
   async getHistory(id: string): Promise<DeviceStatusHistoryView[]> {
     await this.require(id);
     return this.query.findHistory(id);

@@ -30,6 +30,7 @@ model User {
   conflictsResolved   SyncConflict[]
   cashTransactions    CashTransaction[]
   customsPriceLists   CustomsPriceList[]
+  stockMovements      StockMovement[]
 
   @@map("users")
 }

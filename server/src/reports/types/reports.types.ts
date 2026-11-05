@@ -89,6 +89,8 @@ export interface ReturnRow {
   saleId: string;
   imei: string;
   model: string;
+  /** Pieces, for a quantity-product return; null for a unit return. */
+  quantity: number | null;
   refundAmount: number;
   reason: string | null;
   returnedAt: string;

@@ -63,10 +63,22 @@ export interface PartnerChange {
   outstanding: string;
 }
 
+/** A quantity product an offline till can sell: its stock and default price. */
+export interface QuantityProductChange {
+  modelId: string;
+  brand: string;
+  name: string;
+  barcode: string | null;
+  salePrice: string | null;
+  quantity: number;
+}
+
 /** Offline-cache feed. nextSince is set only when the device page was capped. */
 export interface ChangesResponse {
   serverTime: string;
   nextSince: string | null;
   devices: DeviceChange[];
   partners: PartnerChange[];
+  /** QUANTITY products with their current stock (ADR 0030). */
+  products: QuantityProductChange[];
 }

@@ -5,17 +5,22 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
 
 ## HTTP
 
-- `POST /sales` (`sale.create`) `{ imei?, serialNumber?, salePrice,
-  payments?[{accountCode,amount}], customerId?, customer?{name,phone},
+- `POST /sales` (`sale.create`) `{ imei?, serialNumber?, modelId?, quantity?,
+  salePrice, payments?[{accountCode,amount}], customerId?, customer?{name,phone},
   warrantyDays?, notes?, clientMutationId?, expectedVersion? }` → `SaleView`.
-  Send **exactly one** of `imei`/`serialNumber` (400 otherwise); it is resolved
-  against imei, imei2 or serialNumber (ADR 0029, `unitCodeWhere`). The device
-  must exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
-  sellable, see ADR 0007). Idempotent on `clientMutationId` (returns the prior
-  sale, posts the ledger rows once). `payments` omitted = one CASH line for the
-  whole price; present = amounts positive, accounts distinct and active, summing
-  to `salePrice` exactly (400 otherwise). One `SALE` ledger row posts per line
-  inside the checkout transaction (ADR 0025).
+  Say what is sold **exactly one** of three ways (`sale-target.ts`): `imei`,
+  `serialNumber`, or (`modelId` + `quantity`) for a quantity product (400
+  otherwise). A **unit** sale resolves the code against imei/imei2/serialNumber
+  (ADR 0029); the device must exist (404) and be IN_STOCK (409 — DEFECTIVE is
+  not sellable, ADR 0007). A **quantity** sale (ADR 0030): the model must be a
+  `QUANTITY` product (400 otherwise), `salePrice` is the **line total**,
+  `landedCostSnapshot = quantity × moving-average cost` computed in the checkout
+  tx, a `SALE` stock movement posts there, and there is **no warranty**. A DB
+  CHECK keeps a sale unit-XOR-quantity. Both are idempotent on `clientMutationId`
+  (prior sale returned, rows posted once). `payments` omitted = one CASH line for
+  the whole price; present = amounts positive, accounts distinct and active,
+  summing to `salePrice` exactly (400 otherwise). One `SALE` ledger row per line
+  (ADR 0025).
 - `GET /sales` (`sale.read`)
   `?from&to&soldById&customerId&channel=retail|b2b&search&returned=true|false&warranty=active|expired&page&pageSize`
   → `{ items: SaleView[], total, page, pageSize }`. Channel: retail = `consignmentId`
@@ -39,15 +44,19 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   (409 if already returned). The refund is capped at the sale's net `SALE` total
   (or `salePrice` for a pre-ledger sale) — 400 above it (ADR 0028). `REFUND` rows
   (money out) post in proportion to the sale's `SALE` rows (remainder on the
-  largest part); a sale with no ledger rows refunds from CASH. ADR 0025.
+  largest part); a sale with no ledger rows refunds from CASH. ADR 0025. A
+  **quantity** sale return restores the whole line: a `RETURN` stock movement at
+  the sale's own unit cost (`landedCostSnapshot ÷ quantity`); no device moves.
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields). Carries
   `payments: [{ accountCode, amount }]` (the SALE rows; `[]` when none) so a
   printed receipt can show the cash and card parts.
 
-`SaleView` = `{ id, device{imei,imei2,serialNumber,model{brand,name,kindCode},specs}, customer, salePrice,
+`SaleView` = `{ id, device{imei,imei2,serialNumber,model{brand,name,kindCode},specs}|null,
+model{brand,name,kindCode}|null, quantity|null, customer, salePrice,
 landedCostSnapshot, netProfit, soldAt, soldBy{id,name}, warranty, consignmentId, notes,
 payments[{accountCode,amount}] (derived from the SALE rows, [] when none),
-return{returnedAt,refundAmount,reason,processedBy{id,name}}|null }`.
+return{returnedAt,refundAmount,reason,processedBy{id,name}}|null }`. For a
+quantity sale `device` is null and `model`+`quantity` are set (ADR 0030).
 `netProfit` is derived in the mapper (salePrice − landedCostSnapshot), never stored;
 `CostRedactionInterceptor` strips `landedCostSnapshot`/`netProfit` per permission.
 

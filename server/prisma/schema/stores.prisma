@@ -22,6 +22,7 @@ model Store {
   consignments    Consignment[]
   partnerPayments PartnerPayment[]
   cashTransactions CashTransaction[]
+  stockMovements   StockMovement[]
 
   @@map("stores")
 }

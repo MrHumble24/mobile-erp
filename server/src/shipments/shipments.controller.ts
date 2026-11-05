@@ -4,6 +4,7 @@ import { RequirePermissions } from '../common/decorators/require-permissions.dec
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreateShipmentDto } from './dto/create-shipment.dto.js';
 import { RegisterDevicesDto } from './dto/register-devices.dto.js';
+import { RegisterItemsDto } from './dto/register-items.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
 import { ShipmentsService } from './shipments.service.js';
 
@@ -46,5 +47,15 @@ export class ShipmentsController {
     @Body() dto: RegisterDevicesDto,
   ) {
     return this.shipments.addDevices(id, dto, user);
+  }
+
+  @Post(':id/items')
+  @RequirePermissions('device.create')
+  addItems(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: RegisterItemsDto,
+  ) {
+    return this.shipments.addItems(id, dto, user);
   }
 }

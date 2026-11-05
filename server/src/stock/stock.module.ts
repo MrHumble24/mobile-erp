@@ -1,0 +1,15 @@
+import { Module } from '@nestjs/common';
+import { StoresModule } from '../stores/stores.module.js';
+import { StockController } from './stock.controller.js';
+import { StockRepository } from './stock.repository.js';
+import { StockService } from './stock.service.js';
+
+@Module({
+  imports: [StoresModule],
+  controllers: [StockController],
+  providers: [StockService, StockRepository],
+  // Exported so sales (SALE/RETURN movements) and shipments (PURCHASE) post
+  // through StockService inside their own transaction — never StockRepository.
+  exports: [StockService],
+})
+export class StockModule {}

@@ -14,6 +14,8 @@ import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
 import { normalizeSerial } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StockService } from '../stock/stock.service.js';
+import type { PurchasedLineView } from '../stock/types/stock.types.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
 import {
@@ -26,7 +28,9 @@ import {
   RegisterDevicesDto,
 } from './dto/register-devices.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
+import { RegisterItemsDto } from './dto/register-items.dto.js';
 import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
+import { ShipmentsQuantityRepository } from './shipments-quantity.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
 import {
   RegisteredDeviceView,
@@ -39,10 +43,12 @@ export class ShipmentsService {
   constructor(
     private readonly repo: ShipmentsRepository,
     private readonly intake: ShipmentsIntakeRepository,
+    private readonly quantity: ShipmentsQuantityRepository,
     private readonly suppliers: SuppliersService,
     private readonly models: DeviceModelsService,
     private readonly stores: StoresService,
     private readonly ledger: LedgerService,
+    private readonly stock: StockService,
     private readonly customs: CustomsService,
     private readonly events: EventEmitter2,
   ) {}
@@ -105,6 +111,24 @@ export class ShipmentsService {
       models,
     ).catch(() => undefined);
     return registered;
+  }
+
+  /**
+   * Buy quantity products into this shipment (ADR 0030). Each line must be a
+   * QUANTITY model; each posts a PURCHASE stock movement and a PURCHASE ledger
+   * row from the shipment's account, in one transaction. Same permission as
+   * device intake (`device.create`).
+   */
+  async addItems(
+    id: string,
+    dto: RegisterItemsDto,
+    user: AuthenticatedUser,
+  ): Promise<PurchasedLineView[]> {
+    await this.require(id);
+    for (const item of dto.items) {
+      await this.stock.assertQuantityModel(item.modelId);
+    }
+    return this.quantity.purchase(id, dto.items, user.id);
   }
 
   /** Stamp each device with the current list's fee for its model's customsCode. */

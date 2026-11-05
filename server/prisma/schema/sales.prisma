@@ -16,7 +16,11 @@ model Customer {
 }
 
 /// One sale event. Channel is derived: consignmentId null → retail, else B2B.
-/// Net profit is derived: salePrice − landedCostSnapshot.
+/// Net profit is derived: salePrice − landedCostSnapshot. A sale is either a
+/// unit sale (deviceId set, modelId/quantity null) or a quantity sale (deviceId
+/// null, modelId + quantity set) — never both or neither (CHECK
+/// sales_unit_xor_quantity, ADR 0030). For a quantity sale `salePrice` is the
+/// line total and `landedCostSnapshot` is quantity × average cost at sale time.
 model Sale {
   id               String       @id @default(uuid())
   /// Idempotency key from the offline terminal's mutation queue.
@@ -25,8 +29,14 @@ model Sale {
   /// move between stores, this freezes where it was sold.
   storeId          String
   store            Store        @relation(fields: [storeId], references: [id])
-  deviceId         String
-  device           Device       @relation(fields: [deviceId], references: [id])
+  /// The unit sold (null for a quantity sale).
+  deviceId         String?
+  device           Device?      @relation(fields: [deviceId], references: [id])
+  /// The QUANTITY product sold (null for a unit sale).
+  modelId          String?
+  model            DeviceModel? @relation(fields: [modelId], references: [id])
+  /// Pieces sold (null for a unit sale; whole and positive for a quantity sale).
+  quantity         Int?
   customerId       String?
   customer         Customer?    @relation(fields: [customerId], references: [id])
   consignmentId    String?      @unique
@@ -46,9 +56,11 @@ model Sale {
   warranty         Warranty?
   return           SaleReturn?
   cashTransactions CashTransaction[]
+  stockMovements   StockMovement[]
 
   @@index([soldAt])
   @@index([deviceId])
+  @@index([modelId])
   @@index([storeId])
   @@map("sales")
 }

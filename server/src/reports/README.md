@@ -51,6 +51,19 @@ Revenue-only figures (`revenue`, `settledRevenue`, `avgSellingPrice`) are not
 redacted. Any new cost/profit-derived report field must be added to the key lists
 in `common/lib/redact.ts`.
 
+## Quantity sales (ADR 0030)
+
+A quantity sale has no device; its model is on the sale (`sale.modelId`) and it
+carries `quantity`. Totals that aggregate `sales`/`sale_returns` directly
+(profit, trend, daily-closing, sale stats) already include quantity sales. The
+queries that reached a product **through the device** were fixed to use the
+effective model: profit **breakdown by model** (`LEFT JOIN devices`, group on
+`coalesce(d.modelId, s.modelId)`) and the **returns** list (model from the sale
+when the device is null; the row shows `quantity`). The **inventory** report's
+stock value folds in quantity-stock value (`StockService.totalStockValue`);
+unit counts stay phone-centric. Model-pricing is deliberately phone-only
+(per-storage rolling averages have no meaning for accessories).
+
 ## Must never
 
 - Load whole tables into JS or run per-row queries; each endpoint is aggregates.

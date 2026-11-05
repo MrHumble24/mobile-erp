@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConsignmentsModule } from '../consignments/consignments.module.js';
 import { PartnersModule } from '../partners/partners.module.js';
 import { SalesModule } from '../sales/sales.module.js';
+import { StockModule } from '../stock/stock.module.js';
+import { StoresModule } from '../stores/stores.module.js';
 import { ConsignmentCreateHandler } from './handlers/consignment-create.handler.js';
 import { ConsignmentReturnHandler } from './handlers/consignment-return.handler.js';
 import { ConsignmentSettleHandler } from './handlers/consignment-settle.handler.js';
@@ -15,7 +17,13 @@ import { SyncRepository } from './sync.repository.js';
 import { SyncService } from './sync.service.js';
 
 @Module({
-  imports: [SalesModule, ConsignmentsModule, PartnersModule],
+  imports: [
+    SalesModule,
+    ConsignmentsModule,
+    PartnersModule,
+    StockModule,
+    StoresModule,
+  ],
   controllers: [SyncController],
   providers: [
     SyncService,

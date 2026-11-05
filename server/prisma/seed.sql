@@ -22,6 +22,15 @@ INSERT INTO product_kinds (code, label, "sortOrder") VALUES
   ('QUANTITY', 'Accessory (quantity)',          30)
 ON CONFLICT (code) DO NOTHING;
 
+-- Quantity stock movement types (ADR 0030). Also inserted by the migration.
+INSERT INTO stock_movement_types (code, label, "sortOrder") VALUES
+  ('PURCHASE',         'Purchase',         10),
+  ('SALE',             'Sale',             20),
+  ('RETURN',           'Return',           30),
+  ('WRITE_OFF',        'Write-off',        40),
+  ('COUNT_CORRECTION', 'Count correction', 50)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO cosmetic_grades (code, label, "sortOrder") VALUES
   ('A', 'Like new', 10), ('B', 'Minor wear', 20), ('C', 'Visible wear', 30), ('D', 'Heavy wear', 40)
 ON CONFLICT (code) DO NOTHING;
@@ -112,6 +121,7 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('expense.category.manage','expense',   'category.manage', 'Manage expense categories'),
   ('balance.read',         'balance',     'read',      'View store cash/card balances and ledger history'),
   ('balance.manage',       'balance',     'manage',    'Record manual ledger entries and transfers'),
+  ('stock.adjust',         'stock',       'adjust',    'Write off stock and correct counts'),
   ('report.finance',       'report',      'finance',   'Financial reports'),
   ('user.read',            'user',        'read',      'View users'),
   ('user.manage',          'user',        'manage',    'Create users, assign roles and permissions'),

@@ -29,9 +29,11 @@ export class ReportsReturnsRepository {
           returnedAt: true,
           sale: {
             select: {
+              quantity: true,
               device: {
                 select: { imei: true, serialNumber: true, model: true },
               },
+              model: true,
             },
           },
           processedBy: { select: { profile: true } },
@@ -43,17 +45,20 @@ export class ReportsReturnsRepository {
   }
 }
 
+type ModelRef = { brand: string; name: string };
 type RawReturn = {
   saleId: string;
   refundAmount: Prisma.Decimal;
   reason: string | null;
   returnedAt: Date;
   sale: {
+    quantity: number | null;
     device: {
       imei: string | null;
       serialNumber: string | null;
-      model: { brand: string; name: string };
-    };
+      model: ModelRef;
+    } | null;
+    model: ModelRef | null;
   };
   processedBy: {
     profile: { firstName: string; lastName: string | null } | null;
@@ -62,11 +67,20 @@ type RawReturn = {
 
 function toReturnRow(r: RawReturn): ReturnRow {
   const p = r.processedBy.profile;
+  // A quantity sale has no device: its identifier is the piece count, its model
+  // is on the sale itself.
+  const ref = r.sale.device?.model ?? r.sale.model;
+  const label = ref ? `${ref.brand} ${ref.name}` : '';
+  const imei =
+    r.sale.device?.imei ??
+    r.sale.device?.serialNumber ??
+    (r.sale.quantity !== null ? `×${r.sale.quantity}` : '');
   return {
     id: r.saleId,
     saleId: r.saleId,
-    imei: r.sale.device.imei ?? r.sale.device.serialNumber ?? '',
-    model: `${r.sale.device.model.brand} ${r.sale.device.model.name}`,
+    imei,
+    model: label,
+    quantity: r.sale.quantity,
     refundAmount: Number(r.refundAmount),
     reason: r.reason,
     returnedAt: r.returnedAt.toISOString(),
