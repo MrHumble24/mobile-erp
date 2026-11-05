@@ -1,6 +1,6 @@
 # 002 — Website: "today" is the wrong day after midnight
 
-Status: done · Owner: OpenCode (model: Big Pickle, a trial task) · Depends on: nothing
+Status: merged · Owner: OpenCode (model: Big Pickle, a trial task) · Depends on: nothing
 
 ## Why
 The shop is in Tashkent (UTC+5). The website works out "today" with `toISOString()`, which gives
@@ -83,3 +83,9 @@ Fill the Result section of `docs/handoffs/opencode/002-local-date.md`, set Statu
 - Not done / skipped / failed: nothing failed. `graphify update .` ran in `client/` and at the repo root; the root run skipped `graph.html` because the graph exceeds the 5000-node HTML limit (graph.json and GRAPH_REPORT.md updated). No ADR, as requested.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Stayed in its worktree and on its branch; `main` untouched.
+  Did every listed point, found one extra place (`ledger-entry.schema.ts`), left `credit-plan.ts`
+  alone as told. I ran the tests in three timezones (machine, Los Angeles, Kiritimati): 68 pass
+  each time. Lint 0 errors, build passes. Its report matched what I saw.
+- Verdict on the model (Big Pickle): good on a small, exactly specified task. Not yet proven on a
+  large one or on anything that needs a browser.
