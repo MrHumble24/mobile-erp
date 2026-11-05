@@ -38,3 +38,8 @@ Phone-expense / customs-fee totals and acquisition/landed columns render only fo
   the batch fits one page). The shipments list endpoint is not paginated.
 - The drawer summary shows the shipment's `paymentAccountCode` read-only; it is
   fixed at creation (set in the create form, `features/intake-shipment`).
+
+## Quantity lines (ADR 0034)
+`ShipmentStockSection` reads the shipment's `stockLines` from `GET /shipments/:id`
+(built server-side from its PURCHASE movements), so they survive a reload; the old
+session-only list is gone. Adding stock invalidates the shipment detail query.

@@ -23,6 +23,7 @@ import {
 import {
   StoreIdentitySection,
   SalesSection,
+  DiscountsSection,
   NasiyaSection,
   TelegramSection,
 } from "./SettingsSections"
@@ -64,6 +65,7 @@ function SettingsForm({
         </div>
         <StoreIdentitySection form={form} disabled={disabled} />
         <SalesSection form={form} disabled={disabled} />
+        <DiscountsSection form={form} disabled={disabled} />
         <NasiyaSection form={form} disabled={disabled} />
         <TelegramSection form={form} disabled={disabled} />
         {canManage && (

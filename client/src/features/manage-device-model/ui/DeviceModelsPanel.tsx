@@ -102,7 +102,7 @@ function CategoryFilter({ value, onChange }: { value: string; onChange: (v: stri
   )
 }
 
-export function DeviceModelsPanel() {
+export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices?: boolean } = {}) {
   const { t } = useI18n()
   const { data: models, isLoading } = useDeviceModels()
   const { data: categories } = useProductCategories()
@@ -160,6 +160,7 @@ export function DeviceModelsPanel() {
         model={dialog.model}
         open={dialog.open}
         onOpenChange={(open) => setDialog((s) => ({ ...s, open }))}
+        canManagePrices={canManagePrices}
       />
     </div>
   )

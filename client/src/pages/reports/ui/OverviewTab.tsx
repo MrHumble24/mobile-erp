@@ -86,6 +86,14 @@ export function OverviewTab({ range, onBreakdown }: ReportTabProps) {
       {profit.data && (
         <TileGrid report={profit.data} from={from} to={to} onBreakdown={onBreakdown} />
       )}
+      {profit.data && profit.data.discountsGiven > 0 && (
+        <MetricCard
+          label={t("pricing.discountsGiven")}
+          value={formatMoney(profit.data.discountsGiven)}
+          variant="white"
+          className="w-full sm:max-w-xs"
+        />
+      )}
       <TrendChart
         title={t("reports.trendTitle")}
         data={trend.data ?? []}

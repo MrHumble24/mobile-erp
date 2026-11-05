@@ -4,6 +4,7 @@ import { useI18n } from "@/shared/i18n"
 import { useDebounce } from "@/shared/lib/hooks/use-debounce"
 import { Input } from "@/shared/ui/input"
 import { Skeleton } from "@/shared/ui/skeleton"
+import type { LevelCode } from "@/entities/pricing"
 import { useCatalog, type CatalogEntry, type CatalogUnit } from "@/entities/catalog"
 import { CatalogCard } from "./CatalogCard"
 import { CategoryChips } from "./CategoryChips"
@@ -11,6 +12,8 @@ import { UnitPickerSheet } from "./UnitPickerSheet"
 import { useCatalogPick } from "../model/use-catalog-pick"
 
 export interface CatalogBrowserProps {
+  /** The price level the cards show (ADR 0034). */
+  level: LevelCode
   /** Unit ids already in the cart — those units are not offered again. */
   excludeUnitIds: Set<string>
   onPickUnit: (unit: CatalogUnit, entry: CatalogEntry) => void
@@ -18,7 +21,7 @@ export interface CatalogBrowserProps {
 }
 
 /** Catalog till mode: search + category chips + a tappable product grid. */
-export function CatalogBrowser({ excludeUnitIds, onPickUnit, onPickQuantity }: CatalogBrowserProps) {
+export function CatalogBrowser({ level, excludeUnitIds, onPickUnit, onPickQuantity }: CatalogBrowserProps) {
   const { t } = useI18n()
   const [search, setSearch] = React.useState("")
   const [categoryId, setCategoryId] = React.useState<string | undefined>(undefined)
@@ -43,8 +46,8 @@ export function CatalogBrowser({ excludeUnitIds, onPickUnit, onPickQuantity }: C
       <CategoryChips value={categoryId} onChange={setCategoryId} />
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] rounded-[16px]" />
           ))}
         </div>
@@ -53,9 +56,9 @@ export function CatalogBrowser({ excludeUnitIds, onPickUnit, onPickQuantity }: C
           {t("catalog.noUnits")}
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {data.map((entry) => (
-            <CatalogCard key={entry.modelId} entry={entry} onTap={() => pick.handleTap(entry)} />
+            <CatalogCard key={entry.modelId} entry={entry} level={level} onTap={() => pick.handleTap(entry)} />
           ))}
         </div>
       )}

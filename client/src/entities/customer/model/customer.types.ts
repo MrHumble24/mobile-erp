@@ -4,6 +4,10 @@ export interface CustomerView {
   phone: string | null
   notes: string | null
   createdAt: string
+  /** The till's default level for this customer (default RETAIL). ADR 0034. */
+  priceLevelCode: string
+  /** The discount ceiling offered to this customer, a 2-dp percent string. */
+  standingDiscountPercent: string
 }
 
 /** A customer with purchase aggregates derived server-side from their sales. */
@@ -41,12 +45,16 @@ export interface CreateCustomerDto {
   name: string
   phone?: string
   notes?: string
+  priceLevelCode?: string
+  standingDiscountPercent?: number
 }
 
 export interface UpdateCustomerDto {
   name?: string
   phone?: string
   notes?: string
+  priceLevelCode?: string
+  standingDiscountPercent?: number
 }
 
 export interface CustomerSaleView {

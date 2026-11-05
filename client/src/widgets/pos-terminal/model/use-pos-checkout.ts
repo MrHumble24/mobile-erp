@@ -4,6 +4,16 @@ import { toast } from "@/shared/ui/sonner"
 import { useCheckout, CheckoutLineError } from "@/features/checkout"
 import { focusScanner } from "./use-pos-scanner"
 
+/** Map a server 400 about pricing to a friendly `pricing.*` key (ADR 0034). */
+function pricingReason(message: string, t: (k: string) => string): string | null {
+  const m = message.toLowerCase()
+  if (m.includes("does not match")) return t("pricing.errorPriceMismatch")
+  if (m.includes("turned off") || m.includes("not allowed")) return t("pricing.errorDiscountDisabled")
+  if (m.includes("exceeds the list price")) return t("pricing.errorDiscountAboveList")
+  // "exceeds the limit" carries the figure already; let the server text through.
+  return null
+}
+
 function failureMessage(
   err: CheckoutLineError,
   t: (k: string, p?: Record<string, string | number>) => string
@@ -13,7 +23,7 @@ function failureMessage(
       ? t("common.notFound")
       : err.statusCode === 409
         ? t("pos.deviceConflict")
-        : err.message
+        : (err.statusCode === 400 && pricingReason(err.message, t)) || err.message
   return t("pos.lineFailed", { imei: err.imei, reason })
 }
 

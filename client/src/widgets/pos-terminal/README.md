@@ -20,9 +20,17 @@ catalog, customer, settings and auth slices.
 - `model/use-pos-shortcuts.ts` — global keys.
 - UI: `PosTerminal`, `ModeSwitch`, `InputModeSwitch` (Scan ⇄ Catalog),
   `PosScanner`, `ProductSearch` (type-to-find a quantity product by name),
-  `ScanResultCard`, `SessionPanel`, `NasiyaPanel`, `ShortcutsHelp`. Catalog mode
-  renders `features/catalog-sell`'s `CatalogBrowser`; both modes feed one cart
-  and switching keeps it.
+  `ScanResultCard`, `SessionPanel`, `NasiyaPanel`, `CartBar`, `ShortcutsHelp`.
+  Catalog mode renders `features/catalog-sell`'s `CatalogBrowser`; both modes feed
+  one cart and switching keeps it.
+
+## Layout (ADR 0034)
+In Catalog + Sale mode the grid sits on the left and the cart column
+(`CartColumn`: lines, level + customer, a whole-cart discount, totals + checkout)
+on the right, sticky so the seller never scrolls to pay; the grid shows 5–6 cards
+per row on a wide screen. On a narrow window it is one column with a fixed
+`CartBar` that shows the amount to pay and jumps to the cart. The cart's price
+level is passed into `CatalogBrowser` so the cards show the current level's price.
 
 ## Keyboard shortcuts
 `F2` focus scanner · `F9` checkout · `Esc` clear scanner · `Ctrl/⌘+Backspace` remove

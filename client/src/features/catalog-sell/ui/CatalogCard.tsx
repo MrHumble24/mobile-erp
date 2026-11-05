@@ -4,8 +4,12 @@ import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { AssetImage } from "@/shared/ui/asset-image"
 import type { CatalogEntry } from "@/entities/catalog"
+import type { LevelCode } from "@/entities/pricing"
 
-function priceLabel(entry: CatalogEntry): string {
+function priceLabel(entry: CatalogEntry, level: LevelCode): string {
+  // The resolved price for the current level wins when set (ADR 0034).
+  const levelPrice = entry.prices?.[level]
+  if (levelPrice != null) return formatMoney(levelPrice)
   if (entry.kindCode === "QUANTITY") return formatMoney(entry.salePrice)
   const { minTargetPrice: min, maxTargetPrice: max } = entry
   if (min == null) return "-"
@@ -14,7 +18,7 @@ function priceLabel(entry: CatalogEntry): string {
 }
 
 /** One tappable product card: picture, name, stock count and price. */
-export function CatalogCard({ entry, onTap }: { entry: CatalogEntry; onTap: () => void }) {
+export function CatalogCard({ entry, level, onTap }: { entry: CatalogEntry; level: LevelCode; onTap: () => void }) {
   const { t } = useI18n()
   const low = entry.inStock <= 0
   return (
@@ -32,7 +36,7 @@ export function CatalogCard({ entry, onTap }: { entry: CatalogEntry; onTap: () =
         <span className={cn("text-xs", low ? "text-red-600" : "text-[#646464]")}>
           {t("catalog.inStockCount", { count: entry.inStock })}
         </span>
-        <span className="mt-auto pt-1 text-sm font-bold text-primary">{priceLabel(entry)}</span>
+        <span className="mt-auto pt-1 text-sm font-bold text-primary">{priceLabel(entry, level)}</span>
       </span>
     </Button>
   )

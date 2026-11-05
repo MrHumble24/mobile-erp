@@ -6,11 +6,19 @@ import { useCartStore } from "../model/cart.store"
 export interface CartLinesProps {
   canViewCost: boolean
   minMarginPercent: number
+  canOverridePrice: boolean
+  canDiscountUnlimited: boolean
 }
 
-export function CartLines({ canViewCost, minMarginPercent }: CartLinesProps) {
+export function CartLines({
+  canViewCost,
+  minMarginPercent,
+  canOverridePrice,
+  canDiscountUnlimited,
+}: CartLinesProps) {
   const { t } = useI18n()
   const lines = useCartStore((s) => s.lines)
+  const level = useCartStore((s) => s.priceLevelCode)
 
   if (lines.length === 0) {
     return (
@@ -25,13 +33,22 @@ export function CartLines({ canViewCost, minMarginPercent }: CartLinesProps) {
     <div className="space-y-3">
       {lines.map((line) =>
         line.kind === "quantity" ? (
-          <QuantityCartLine key={line.lineId} line={line} />
+          <QuantityCartLine
+            key={line.lineId}
+            line={line}
+            level={level}
+            canOverridePrice={canOverridePrice}
+            canDiscountUnlimited={canDiscountUnlimited}
+          />
         ) : (
           <CartLine
             key={line.lineId}
             line={line}
+            level={level}
             canViewCost={canViewCost}
             minMarginPercent={minMarginPercent}
+            canOverridePrice={canOverridePrice}
+            canDiscountUnlimited={canDiscountUnlimited}
           />
         )
       )}

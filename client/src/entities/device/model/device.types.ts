@@ -32,6 +32,8 @@ export interface DeviceView {
   updatedAt: string
   /** Present on list rows: the device's most recent QC summary, or null. */
   latestInspection?: QcInspectionSummary | null
+  /** Resolved prices per level, null where none set (ADR 0034). Declared inline so device stays independent of pricing. */
+  prices?: { RETAIL: string | null; WHOLESALE: string | null; PARTNER: string | null }
 }
 
 export interface DeviceModelRef {

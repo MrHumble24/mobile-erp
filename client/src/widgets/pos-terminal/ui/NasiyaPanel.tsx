@@ -13,6 +13,7 @@ export interface NasiyaPanelProps {
   onOpenChange: (open: boolean) => void
   initialImei: string
   initialAgreedPrice: string
+  partnerPriceUsed?: boolean
 }
 
 function LastConsignmentSummary({ consignment }: { consignment: ConsignmentView }) {
@@ -35,7 +36,7 @@ function LastConsignmentSummary({ consignment }: { consignment: ConsignmentView 
   )
 }
 
-export function NasiyaPanel({ open, onOpenChange, initialImei, initialAgreedPrice }: NasiyaPanelProps) {
+export function NasiyaPanel({ open, onOpenChange, initialImei, initialAgreedPrice, partnerPriceUsed }: NasiyaPanelProps) {
   const { t } = useI18n()
   const [last, setLast] = React.useState<ConsignmentView | null>(null)
 
@@ -53,6 +54,7 @@ export function NasiyaPanel({ open, onOpenChange, initialImei, initialAgreedPric
         onOpenChange={onOpenChange}
         initialImei={initialImei}
         initialAgreedPrice={initialAgreedPrice}
+        partnerPriceUsed={partnerPriceUsed}
         onSuccess={(consignment) => {
           setLast(consignment)
           focusScanner()

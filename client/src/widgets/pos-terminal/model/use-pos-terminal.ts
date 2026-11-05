@@ -20,18 +20,24 @@ function useConsignTarget() {
   const [open, setOpen] = React.useState(false)
   const [imei, setImei] = React.useState("")
   const [price, setPrice] = React.useState("")
+  const [partnerPrice, setPartnerPrice] = React.useState(false)
   const openFor = (device: DeviceDetailView) => {
     setImei(unitCode(device))
-    setPrice(device.targetPrice ?? "")
+    // Offer the partner price first (ADR 0034); fall back to the retail target.
+    const partner = device.prices?.PARTNER ?? null
+    setPrice(partner ?? device.targetPrice ?? "")
+    setPartnerPrice(partner != null)
     setOpen(true)
   }
-  return { open, setOpen, imei, price, openFor }
+  return { open, setOpen, imei, price, partnerPrice, openFor }
 }
 
 export function usePosTerminal() {
   const { t } = useI18n()
   const { data: settings } = useSettings()
   const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
+  const canOverridePrice = useAuthStore((s) => s.hasPermission("sale.price.override"))
+  const canDiscountUnlimited = useAuthStore((s) => s.hasPermission("sale.discount.unlimited"))
   const me = useAuthStore((s) => s.user?.id)
 
   const [mode, setMode] = React.useState<PosMode>("sale")
@@ -40,6 +46,7 @@ export function usePosTerminal() {
   const setInputMode = usePosPrefsStore((s) => s.setInputMode)
 
   const lines = useCartStore((s) => s.lines)
+  const priceLevelCode = useCartStore((s) => s.priceLevelCode)
   const paymentMethod = useCartStore((s) => s.paymentMethod)
   const splitParts = useCartStore((s) => s.splitParts)
   const addLine = useCartStore((s) => s.addLine)
@@ -52,8 +59,8 @@ export function usePosTerminal() {
   const minMargin = Number(settings?.minMarginPercent ?? 0)
   const blocked =
     lines.length === 0 ||
-    lines.some((line) => isLineBlocked(line, canViewCost)) ||
-    isPaymentBlocked(toLinePrices(lines), paymentMethod, splitParts)
+    lines.some((line) => isLineBlocked(line, canViewCost, priceLevelCode)) ||
+    isPaymentBlocked(toLinePrices(lines, priceLevelCode), paymentMethod, splitParts)
 
   const onInStock = (device: DeviceDetailView) => {
     if (mode === "nasiya") return consign.openFor(device)
@@ -99,11 +106,14 @@ export function usePosTerminal() {
     setMode,
     inputMode,
     setInputMode,
+    priceLevelCode,
     scanner,
     excludeUnitIds,
     onPickUnit,
     onPickQuantity,
     canViewCost,
+    canOverridePrice,
+    canDiscountUnlimited,
     minMargin,
     me,
     blocked,

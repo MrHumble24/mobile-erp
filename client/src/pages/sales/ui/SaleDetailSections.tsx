@@ -80,6 +80,13 @@ export function CustomerSection({ sale }: { sale: SaleView }) {
   )
 }
 
+function saleLevelLabel(code: string | null | undefined, t: (k: string) => string): string | null {
+  if (!code || code === "RETAIL") return null
+  if (code === "WHOLESALE") return t("pricing.levelWholesale")
+  if (code === "PARTNER") return t("pricing.levelPartner")
+  return code
+}
+
 export function MoneySection({
   sale,
   canViewProfit,
@@ -89,8 +96,17 @@ export function MoneySection({
 }) {
   const { t } = useI18n()
   const showProfit = canViewProfit && sale.netProfit !== undefined
+  const discount = Number(sale.discountAmount ?? 0)
+  const levelLabel = saleLevelLabel(sale.priceLevelCode, t)
   return (
     <Section title={t("sales.moneySection")}>
+      {levelLabel && <Row label={t("pricing.priceLevel")} value={levelLabel} />}
+      {discount > 0 && sale.listPrice != null && (
+        <>
+          <Row label={t("pricing.listPrice")} value={formatMoney(sale.listPrice)} />
+          <Row label={t("pricing.discount")} value={`− ${formatMoney(sale.discountAmount)}`} />
+        </>
+      )}
       <Row label={t("sales.salePrice")} value={formatMoney(sale.salePrice)} />
       {sale.payments.length > 0 && (
         <Row label={t("balance.paidWith")} value={<PaymentSummary payments={sale.payments} />} />

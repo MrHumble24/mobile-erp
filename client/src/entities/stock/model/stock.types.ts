@@ -13,6 +13,8 @@ export interface StockLevelView {
   quantity: number
   averageCost: string | null
   value: string | null
+  /** Per-piece prices per level (ADR 0034); null where unset. */
+  prices?: { RETAIL: string | null; WHOLESALE: string | null; PARTNER: string | null }
 }
 
 /** One signed movement row; `unitCostSnapshot` is null without the cost permission. */
@@ -52,6 +54,13 @@ export interface AdjustStockDto {
   note?: string
 }
 
+/** Per-piece prices per level (ADR 0034); null where unset. */
+export type ProductLevelPrices = {
+  RETAIL: string | null
+  WHOLESALE: string | null
+  PARTNER: string | null
+}
+
 /** The quantity product the scan endpoint returns for a barcode. */
 export interface StockScanProduct {
   modelId: string
@@ -60,6 +69,7 @@ export interface StockScanProduct {
   barcode: string | null
   salePrice: string | null
   quantity: number
+  prices?: ProductLevelPrices
 }
 
 /** A product row from GET /sync/changes products[] — written into the offline cache. */
@@ -70,4 +80,5 @@ export interface ProductChange {
   barcode: string | null
   salePrice: string | null
   quantity: number
+  prices?: ProductLevelPrices
 }

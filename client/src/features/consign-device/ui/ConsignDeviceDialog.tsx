@@ -11,6 +11,7 @@ export function ConsignDeviceDialog({
   initialAgreedPrice,
   initialPartnerId,
   lockPartner,
+  partnerPriceUsed,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -19,6 +20,7 @@ export function ConsignDeviceDialog({
   initialAgreedPrice?: string
   initialPartnerId?: string
   lockPartner?: boolean
+  partnerPriceUsed?: boolean
 }) {
   const { t } = useI18n()
 
@@ -37,6 +39,7 @@ export function ConsignDeviceDialog({
             initialAgreedPrice={initialAgreedPrice}
             initialPartnerId={initialPartnerId}
             lockPartner={lockPartner}
+            partnerPriceUsed={partnerPriceUsed}
           />
         )}
       </DialogPopup>

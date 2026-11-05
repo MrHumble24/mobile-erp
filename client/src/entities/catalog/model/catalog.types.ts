@@ -21,6 +21,8 @@ export interface CatalogEntry {
   minTargetPrice: string | null
   maxTargetPrice: string | null
   salePrice: string | null
+  /** Product-level prices at "any storage", per level (ADR 0034); null where unset. */
+  prices?: { RETAIL: string | null; WHOLESALE: string | null; PARTNER: string | null }
 }
 
 /** One in-stock unit of a unit product, picked after tapping a card. */
@@ -31,6 +33,8 @@ export interface CatalogUnit {
   specs: Record<string, unknown>
   gradeCode: string | null
   targetPrice: string | null
+  /** Prices resolved for this unit's own storage, per level (ADR 0034). */
+  prices?: { RETAIL: string | null; WHOLESALE: string | null; PARTNER: string | null }
 }
 
 export interface CatalogFilters {

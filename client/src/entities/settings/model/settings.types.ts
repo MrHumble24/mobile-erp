@@ -11,6 +11,14 @@ export interface StoreSettings {
   lowStockThreshold: number
   defaultNasiyaDueDays: number
   overdueReminderDays: number
+  /** Discounts (ADR 0034). */
+  discountsEnabled: boolean
+  discountPercentAllowed: boolean
+  discountAmountAllowed: boolean
+  discountPresetsPercent: number[]
+  discountPresetsAmount: number[]
+  /** The cashier ceiling, a 2-dp percent string. */
+  maxDiscountPercent: string
   updatedAt: string
 }
 
@@ -26,4 +34,11 @@ export interface UpdateSettingsDto {
   lowStockThreshold: number
   defaultNasiyaDueDays: number
   overdueReminderDays: number
+  /** Discounts (ADR 0034). Omitted = left unchanged server-side. */
+  discountsEnabled?: boolean
+  discountPercentAllowed?: boolean
+  discountAmountAllowed?: boolean
+  discountPresetsPercent?: number[]
+  discountPresetsAmount?: number[]
+  maxDiscountPercent?: number
 }

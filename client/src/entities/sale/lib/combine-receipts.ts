@@ -16,6 +16,9 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
   )
   const total = receipts.reduce((sum, r) => sum + Number(r.total), 0)
   const payments = mergePayments(receipts)
+  // Sum the list prices + discounts so the combined receipt shows "given away" (ADR 0034).
+  const discountAmount = receipts.reduce((sum, r) => sum + Number(r.discountAmount ?? 0), 0)
+  const listPrice = receipts.reduce((sum, r) => sum + Number(r.listPrice ?? r.total), 0)
 
   return {
     saleId: first.saleId,
@@ -24,6 +27,9 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
     customer: first.customer,
     items,
     total: String(total),
+    listPrice: discountAmount > 0 ? String(listPrice) : null,
+    discountAmount: discountAmount > 0 ? String(discountAmount) : null,
+    priceLevelCode: first.priceLevelCode ?? null,
     warranty: null,
     payments,
   }

@@ -27,9 +27,25 @@ export const settingsSchema = z.object({
   lowStockThreshold: numField(1000),
   defaultNasiyaDueDays: numField(3650),
   overdueReminderDays: numField(365),
+  discountsEnabled: z.boolean(),
+  discountPercentAllowed: z.boolean(),
+  discountAmountAllowed: z.boolean(),
+  maxDiscountPercent: numField(100, false),
+  // Comma-separated quick values; parsed + capped to five on submit.
+  discountPresetsPercent: z.string(),
+  discountPresetsAmount: z.string(),
 })
 
 export type SettingsValues = z.infer<typeof settingsSchema>
+
+/** Parse a comma-separated preset list into up to five positive numbers. */
+function parsePresets(raw: string): number[] {
+  return raw
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n) => Number.isFinite(n) && n > 0)
+    .slice(0, 5)
+}
 
 export function toFormValues(s: StoreSettings): SettingsValues {
   return {
@@ -44,6 +60,12 @@ export function toFormValues(s: StoreSettings): SettingsValues {
     lowStockThreshold: String(s.lowStockThreshold),
     defaultNasiyaDueDays: String(s.defaultNasiyaDueDays),
     overdueReminderDays: String(s.overdueReminderDays),
+    discountsEnabled: s.discountsEnabled,
+    discountPercentAllowed: s.discountPercentAllowed,
+    discountAmountAllowed: s.discountAmountAllowed,
+    maxDiscountPercent: String(Number(s.maxDiscountPercent)),
+    discountPresetsPercent: (s.discountPresetsPercent ?? []).join(", "),
+    discountPresetsAmount: (s.discountPresetsAmount ?? []).join(", "),
   }
 }
 
@@ -60,5 +82,11 @@ export function toUpdateDto(v: SettingsValues): UpdateSettingsDto {
     lowStockThreshold: Number(v.lowStockThreshold),
     defaultNasiyaDueDays: Number(v.defaultNasiyaDueDays),
     overdueReminderDays: Number(v.overdueReminderDays),
+    discountsEnabled: v.discountsEnabled,
+    discountPercentAllowed: v.discountPercentAllowed,
+    discountAmountAllowed: v.discountAmountAllowed,
+    maxDiscountPercent: Number(v.maxDiscountPercent),
+    discountPresetsPercent: parsePresets(v.discountPresetsPercent),
+    discountPresetsAmount: parsePresets(v.discountPresetsAmount),
   }
 }

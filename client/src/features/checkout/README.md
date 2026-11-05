@@ -3,29 +3,41 @@
 The sale cart: a multi-line draft that turns scanned devices into `POST /sales` calls.
 
 ## Owns
-- `cart.store.ts` — Zustand (persisted under `mobile-erp-pos-cart`, v1): a list of
-  `CartLine` — a discriminated union of `UnitCartLine` (a phone/serial device, priced
-  whole, with warranty) and `QuantityCartLine` (a counted product: `modelId`, editable
-  `unitPrice` per piece, `quantity`, `onHand` for the over-stock warning; no warranty,
-  ADR 0030). Plus one shared `customer` and the cart-wide `paymentMethod` + `splitParts`.
-  Each line keeps its own `clientMutationId` so a retry is idempotent.
-- `lib/line-total.ts` — `lineTotal(line)` (unit price, or `unitPrice × quantity` in
-  cents); `payment.ts`'s `toLinePrices` projects a mixed cart onto the id+total the
-  split maths needs, so Cash/Card/Split work across phones and quantity lines alike.
-- `use-checkout.ts` — mutation that submits lines sequentially, one `POST /sales` each.
-  Succeeded lines are removed as they complete; the first failure stops and throws
-  `CheckoutLineError` (which IMEI, status code, already-succeeded sale ids).
-- UI: `CartLines`, `CartLine`, `PriceGuidance`, `CustomerPanel`, `CustomerSearch`,
-  `NewCustomerForm`, `TotalsPanel`, `PaymentPanel`, `CheckoutReceiptModal`.
+- `cart.store.ts` — Zustand (persisted under `mobile-erp-pos-cart`, v2): a list of
+  `CartLine` — a discriminated union of `UnitCartLine` and `QuantityCartLine`. Each line
+  now carries its resolved `listPrices` (per level), a per-line `discount`, and an
+  `overrideActive` flag; the cart has a `priceLevelCode` (ADR 0034). Plus one shared
+  `customer` (with its level + standing discount) and the cart-wide `paymentMethod` +
+  `splitParts`. `setCustomer` sets the level from the customer and prefills its standing
+  discount; `setPriceLevel` re-prices every line (prices are derived, not stored);
+  `applyCartDiscount` spreads a whole-cart discount into per-line AMOUNT discounts.
+- `lib/line-pricing.ts` — pure: `lineListCents`, `lineFinalPrice` (list − discount, or
+  the typed price when there is no list / an override), `toLinePrices`, `cartTotals`.
+- `lib/cart-discount.ts` — `spreadCartDiscount` (cent-exact largest-remainder), tested
+  in `cart-discount.spec.ts`. The list-price/discount money rules live in
+  `entities/pricing` (`discount.ts`), mirroring the server.
+- `use-checkout.ts` — submits lines sequentially; sends `priceLevelCode`, `discount` and
+  (for offline replay) `listPrice` per line; the first failure throws `CheckoutLineError`.
+- UI: `CartLines`, `CartLine`, `QuantityCartLine`, `LinePriceSection`, `DiscountControl`,
+  `CartDiscountControl`, `PriceLevelControl`, `PriceGuidance`, `CustomerPanel`,
+  `CustomerSearch`, `NewCustomerForm`, `TotalsPanel`, `PaymentPanel`, `CheckoutReceiptModal`.
 - `lib/to-sale-dto.ts`, `lib/line-blockers.ts`, `lib/payment.ts` — pure mappers/rules.
-  `payment.ts`'s `buildCartPayments` turns the cart's method + split parts into each
-  line's `payments` (`cash` → omitted, `card` → one CARD line, `split` →
-  `allocateSplit`); `isPaymentBlocked` stops an unbalanced split checking out. Tested
-  in `lib/payment.spec.ts`.
+  `payment.ts`'s `buildCartPayments`/`allocateSplit`/`isPaymentBlocked` work on the final
+  amounts-to-pay; tested in `lib/payment.spec.ts`.
 
 ## Exposes (index.ts)
-`useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `CartLines`,
-`CustomerPanel`, `TotalsPanel`, `CheckoutReceiptModal`, and cart/checkout types.
+`useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `toLinePrices`,
+`lineFinalPrice`, `lineListCents`, `lineHasList`, `cartTotals`, `CartLines`,
+`PriceLevelControl`, `CartDiscountControl`, `CustomerPanel`, `TotalsPanel`,
+`CheckoutReceiptModal`, and cart/checkout types.
+
+## Pricing (ADR 0034)
+Each line shows its list price for the cart's level. When a list price exists the price
+field is read-only (only `sale.price.override` gets a "type a price" toggle); a line with
+no list price at any level keeps the old typed-price behaviour. A per-line discount
+(percent/amount, as the settings allow, with preset buttons) is stopped before the server:
+`entities/pricing`'s `discountError` surfaces `errorDiscountTooHigh`/`errorDiscountAboveList`.
+A whole-cart discount is a convenience that spreads into per-line AMOUNT discounts.
 
 ## Must never
 - Import another feature (auth, consign-device). Permissions and the cashier id are

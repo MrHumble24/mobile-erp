@@ -14,6 +14,12 @@ import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { CustomerPurchaseList } from "./CustomerPurchaseList"
 
+function levelLabel(code: string, t: (k: string) => string): string {
+  if (code === "WHOLESALE") return t("pricing.levelWholesale")
+  if (code === "PARTNER") return t("pricing.levelPartner")
+  return t("pricing.levelRetail")
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
@@ -63,6 +69,11 @@ function DetailBody({
         <Stat label={t("customers.statActiveWarranties")} value={String(customer.activeWarranties)} />
         <Stat label={t("customers.statReturns")} value={String(customer.returnsCount)} />
         <Stat label={t("customers.statSince")} value={formatDate(customer.createdAt)} />
+        <Stat label={t("pricing.customerType")} value={levelLabel(customer.priceLevelCode, t)} />
+        <Stat
+          label={t("pricing.standingDiscount")}
+          value={`${Number(customer.standingDiscountPercent ?? 0)}%`}
+        />
       </div>
 
       {customer.notes && (

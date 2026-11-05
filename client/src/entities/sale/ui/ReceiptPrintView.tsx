@@ -86,6 +86,24 @@ function ItemIdentity({ item }: { item: ReceiptItem }) {
   )
 }
 
+function ChequeDiscount({ receipt }: { receipt: ReceiptView }) {
+  const { t } = useI18n()
+  const discount = Number(receipt.discountAmount ?? 0)
+  if (discount <= 0 || receipt.listPrice == null) return null
+  return (
+    <div className="py-2 border-b border-dashed border-black/30 space-y-0.5 text-[10px]">
+      <div className="flex justify-between">
+        <span>{t("pricing.listPrice")}</span>
+        <span className="font-mono">{formatMoney(receipt.listPrice)}</span>
+      </div>
+      <div className="flex justify-between">
+        <span>{t("pricing.discount")}</span>
+        <span className="font-mono">− {formatMoney(receipt.discountAmount)}</span>
+      </div>
+    </div>
+  )
+}
+
 function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) {
   const { t } = useI18n()
   return (
@@ -157,6 +175,7 @@ export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
     <div className="printable-cheque w-full max-w-[320px] sm:w-[58mm] bg-white text-black p-4 font-mono text-[11px] leading-snug rounded-[8px] border border-[#d4d4d4] shadow-[var(--shadow-md)] print:shadow-none print:border-none print:p-0">
       <ChequeHeader soldAt={receipt.soldAt} />
       <ChequeMeta receipt={receipt} />
+      <ChequeDiscount receipt={receipt} />
       <ChequeItems items={receipt.items} total={receipt.total} />
       <ChequePayments payments={receipt.payments} />
       <ChequeWarranty warranty={receipt.warranty} />

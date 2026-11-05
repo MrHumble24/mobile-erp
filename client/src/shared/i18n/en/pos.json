@@ -1,5 +1,6 @@
 {
   "title": "POS Terminal",
+  "cart": "Cart",
   "scanPrompt": "Scan or enter IMEI (15 digits)",
   "cartEmpty": "No devices in the cart yet",
   "deviceCard": "Selected Device",

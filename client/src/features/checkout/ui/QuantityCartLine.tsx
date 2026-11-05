@@ -1,11 +1,20 @@
 import { Trash2, Minus, Plus, AlertTriangle, Package } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import type { LevelCode } from "@/entities/pricing"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { useCartStore, type QuantityCartLine as QuantityCartLineModel } from "../model/cart.store"
-import { lineTotal } from "../lib/line-total"
+import { LinePriceSection } from "./LinePriceSection"
+import { lineFinalPrice } from "../lib/line-pricing"
+
+export interface QuantityCartLineProps {
+  line: QuantityCartLineModel
+  level: LevelCode
+  canOverridePrice: boolean
+  canDiscountUnlimited: boolean
+}
 
 function QuantityStepper({ line }: { line: QuantityCartLineModel }) {
   const { t } = useI18n()
@@ -46,10 +55,31 @@ function QuantityStepper({ line }: { line: QuantityCartLineModel }) {
   )
 }
 
-export function QuantityCartLine({ line }: { line: QuantityCartLineModel }) {
+function TypedUnitPrice({ line }: { line: QuantityCartLineModel }) {
+  const { t } = useI18n()
+  const setLineUnitPrice = useCartStore((s) => s.setLineUnitPrice)
+  return (
+    <div className="space-y-1">
+      <Label>{t("catalog.unitPrice")}</Label>
+      <Input
+        type="number"
+        min={0}
+        value={line.unitPrice || ""}
+        onChange={(e) => setLineUnitPrice(line.lineId, Number(e.target.value))}
+        className="h-10 text-lg font-bold"
+      />
+    </div>
+  )
+}
+
+export function QuantityCartLine({
+  line,
+  level,
+  canOverridePrice,
+  canDiscountUnlimited,
+}: QuantityCartLineProps) {
   const { t } = useI18n()
   const removeLine = useCartStore((s) => s.removeLine)
-  const setLineUnitPrice = useCartStore((s) => s.setLineUnitPrice)
   const overStock = line.quantity > line.onHand
 
   return (
@@ -81,19 +111,15 @@ export function QuantityCartLine({ line }: { line: QuantityCartLineModel }) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <QuantityStepper line={line} />
-        <div className="space-y-1">
-          <Label>{t("catalog.unitPrice")}</Label>
-          <Input
-            type="number"
-            min={0}
-            value={line.unitPrice || ""}
-            onChange={(e) => setLineUnitPrice(line.lineId, Number(e.target.value))}
-            className="h-10 text-lg font-bold"
-          />
-        </div>
-      </div>
+      <QuantityStepper line={line} />
+      <LinePriceSection
+        line={line}
+        level={level}
+        canOverridePrice={canOverridePrice}
+        canDiscountUnlimited={canDiscountUnlimited}
+      >
+        <TypedUnitPrice line={line} />
+      </LinePriceSection>
 
       {overStock && (
         <div className="flex items-center gap-2 rounded-[10px] border border-amber-300 bg-amber-50/60 p-2 text-xs text-amber-700">
@@ -104,7 +130,7 @@ export function QuantityCartLine({ line }: { line: QuantityCartLineModel }) {
 
       <div className="flex items-center justify-between border-t border-[#e8e8e8] pt-2 text-sm">
         <span className="text-muted-foreground">{t("catalog.lineTotal")}</span>
-        <span className="text-lg font-bold text-primary">{formatMoney(lineTotal(line))}</span>
+        <span className="text-lg font-bold text-primary">{formatMoney(lineFinalPrice(line, level))}</span>
       </div>
     </div>
   )
