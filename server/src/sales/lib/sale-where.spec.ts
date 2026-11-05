@@ -14,11 +14,15 @@ describe('buildSaleWhere', () => {
     expect(buildSaleWhere(base).consignmentId).toBeUndefined();
   });
 
-  it('searches IMEI exactly and customer name/phone case-insensitively', () => {
+  it('searches unit codes, quantity product fields and customer name/phone', () => {
     const where = buildSaleWhere({ ...base, search: ' 359 ' });
     expect(where.OR).toEqual([
       { device: { imei: { contains: '359' } } },
       { device: { imei2: { contains: '359' } } },
+      { device: { serialNumber: { contains: '359', mode: 'insensitive' } } },
+      { model: { name: { contains: '359', mode: 'insensitive' } } },
+      { model: { barcode: { contains: '359', mode: 'insensitive' } } },
+      { model: { modelCode: { contains: '359', mode: 'insensitive' } } },
       { customer: { name: { contains: '359', mode: 'insensitive' } } },
       { customer: { phone: { contains: '359', mode: 'insensitive' } } },
     ]);
