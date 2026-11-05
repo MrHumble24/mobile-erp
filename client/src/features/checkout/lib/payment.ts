@@ -1,16 +1,9 @@
 import type { PaymentMethod, PaymentPart } from "@/entities/ledger"
-import type { CartLine } from "../model/cart.store"
-import { lineTotal } from "./line-total.ts"
 
-/** The two fields the payment maths reads off a cart line: its id and its total. */
+/** The two fields the payment maths reads off a cart line: its id and its final total. */
 export interface LinePrice {
   lineId: string
   salePrice: number
-}
-
-/** Projects cart lines (unit or quantity) onto the id+total the payment maths needs. */
-export function toLinePrices(lines: CartLine[]): LinePrice[] {
-  return lines.map((line) => ({ lineId: line.lineId, salePrice: lineTotal(line) }))
 }
 
 /** Integer minor units, so amounts never drift through float arithmetic. */

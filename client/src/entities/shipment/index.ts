@@ -1,5 +1,6 @@
 export type {
   ShipmentView,
+  ShipmentStockLine,
   CreateShipmentDto,
   UpdateShipmentDto,
   RegisterDeviceItem,

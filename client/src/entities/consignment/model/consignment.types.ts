@@ -54,7 +54,8 @@ export interface CreateConsignmentDto {
   imei?: string
   serialNumber?: string
   partnerId: string
-  agreedPrice: number
+  /** Optional: omitted means the unit's PARTNER list price (ADR 0034; 400 if none). */
+  agreedPrice?: number
   dueDate: string
   notes?: string
   clientMutationId?: string

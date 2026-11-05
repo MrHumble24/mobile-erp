@@ -16,6 +16,22 @@ export interface ShipmentView {
   customsFeeTotal?: string
   /** Count of its phones whose customs fee is 0 — drives a warning. */
   devicesWithoutCustomsFee: number
+  /** Sum of the quantity purchase lines; cost-restricted (absent without permission). */
+  stockLinesTotal?: string
+  /** The shipment's quantity purchases, built from its PURCHASE stock movements (ADR 0034). GET /:id only. */
+  stockLines?: ShipmentStockLine[]
+}
+
+/** One quantity purchase into a shipment. `unitCost`/`lineTotal` null without cost permission. */
+export interface ShipmentStockLine {
+  id: string
+  modelId: string
+  brand: string
+  name: string
+  quantity: number
+  unitCost: string | null
+  lineTotal: string | null
+  occurredAt: string
 }
 
 export interface CreateShipmentDto {

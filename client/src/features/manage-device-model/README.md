@@ -46,3 +46,10 @@ code, active, spec schema — ADR 0029).
   stays editable on edit; the server 409 → `catalog.kindLocked` when it has units.
 - Barcode vs name 409 is ambiguous (same server message); the barcode heuristic
   above is a best-effort guess.
+
+## Pricing (ADR 0034)
+Editing a model, a `price.manage` user gets `ProductPriceGrid`: a storage × level
+grid (an "any storage" row plus the model's storage options; a quantity product has
+only the "any storage" row), saved in one `PUT /pricing/products/:modelId` via
+`entities/pricing`. A blank cell clears that price. `canManagePrices` is threaded
+from the page (features cannot read auth).

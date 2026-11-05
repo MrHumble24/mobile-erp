@@ -100,6 +100,7 @@ export function InventoryPage() {
   const [tab, setTab] = useUrlTab<InventoryTab>("devices", { validTabs: INVENTORY_TABS })
   const hasPermission = useAuthStore((s) => s.hasPermission)
   const canManageModels = hasPermission("device.update")
+  const canManagePrices = hasPermission("price.manage")
   const canViewStock = hasPermission("device.read")
   const canManageStock = hasPermission("settings.manage")
   const browser = useDeviceBrowser()
@@ -128,7 +129,7 @@ export function InventoryPage() {
         </TabsContent>
         {canManageModels && (
           <TabsContent value="models">
-            <DeviceModelsPanel />
+            <DeviceModelsPanel canManagePrices={canManagePrices} />
           </TabsContent>
         )}
         {canManageModels && (

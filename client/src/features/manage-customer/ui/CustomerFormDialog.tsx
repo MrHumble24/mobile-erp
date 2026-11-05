@@ -40,6 +40,8 @@ function CustomerForm({
       name: customer?.name ?? "",
       phone: customer?.phone ?? "",
       notes: customer?.notes ?? "",
+      priceLevelCode: customer?.priceLevelCode ?? "RETAIL",
+      standingDiscountPercent: String(Number(customer?.standingDiscountPercent ?? 0)),
     },
   })
   const pending = create.isPending || update.isPending
@@ -49,6 +51,8 @@ function CustomerForm({
       name: values.name,
       phone: values.phone?.replace(/[\s-]/g, "") || undefined,
       notes: values.notes || undefined,
+      priceLevelCode: values.priceLevelCode,
+      standingDiscountPercent: Number(values.standingDiscountPercent),
     }
     const opts = {
       onSuccess: () => {

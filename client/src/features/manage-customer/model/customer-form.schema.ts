@@ -14,6 +14,14 @@ export function buildCustomerFormSchema(t: (key: string) => string) {
         message: t("customers.errPhoneFormat"),
       }),
     notes: z.string().trim().max(500).optional(),
+    priceLevelCode: z.string().min(1),
+    standingDiscountPercent: z.string().refine(
+      (v) => {
+        const n = Number(v)
+        return v.trim() !== "" && !Number.isNaN(n) && n >= 0 && n <= 100
+      },
+      { message: t("pricing.standingDiscount") }
+    ),
   })
 }
 

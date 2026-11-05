@@ -2,6 +2,7 @@ import * as React from "react"
 import { User, UserPlus, X } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useCustomerSales } from "@/entities/customer"
+import type { LevelCode } from "@/entities/pricing"
 import { Button } from "@/shared/ui/button"
 import { Label } from "@/shared/ui/label"
 import { CustomerSearch } from "./CustomerSearch"
@@ -77,7 +78,13 @@ export function CustomerPanel({ searchOpen, onSearchOpenChange }: CustomerPanelP
           open={searchOpen}
           onOpenChange={onSearchOpenChange}
           onSelect={(c) =>
-            setCustomer({ id: c.id, name: c.name, phone: c.phone || undefined })
+            setCustomer({
+              id: c.id,
+              name: c.name,
+              phone: c.phone || undefined,
+              priceLevelCode: (c.priceLevelCode as LevelCode) || "RETAIL",
+              standingDiscountPercent: Number(c.standingDiscountPercent ?? 0),
+            })
           }
         />
       )}

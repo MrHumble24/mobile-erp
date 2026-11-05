@@ -16,3 +16,8 @@ One feature: create or edit a customer (PRD Module 3).
 
 - Talk HTTP directly or hold server lists — mutations/queries come from
   `entities/customer`.
+
+## Pricing (ADR 0034)
+The form carries the customer type (price level, labels from the `pricing` keys)
+and a standing discount percent; both ride on create/update and show on the
+customer row and detail. Level options come from `entities/pricing`.

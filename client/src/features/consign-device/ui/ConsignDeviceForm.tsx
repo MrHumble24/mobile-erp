@@ -51,6 +51,7 @@ export function ConsignDeviceForm({
   initialAgreedPrice,
   initialPartnerId,
   lockPartner,
+  partnerPriceUsed,
   onCancel,
   onSuccess,
 }: {
@@ -58,6 +59,7 @@ export function ConsignDeviceForm({
   initialAgreedPrice?: string
   initialPartnerId?: string
   lockPartner?: boolean
+  partnerPriceUsed?: boolean
   onCancel: () => void
   onSuccess?: (consignment: ConsignmentView) => void
 }) {
@@ -85,6 +87,9 @@ export function ConsignDeviceForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4 my-2">
       <PartnerSelectField value={form.partnerId} onChange={form.setPartnerId} disabled={lockPartner} />
+      {partnerPriceUsed && (
+        <p className="text-xs text-muted-foreground">{t("pricing.partnerPriceUsed")}</p>
+      )}
 
       <div className="space-y-2">
         {form.rows.map((row, i) => (

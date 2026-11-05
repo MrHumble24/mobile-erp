@@ -21,6 +21,7 @@ import {
 } from "../model/device-model-form.schema"
 import { AttributeEditor } from "./AttributeEditor"
 import { ModelPictureField } from "./ModelPictureField"
+import { ProductPriceGrid } from "./ProductPriceGrid"
 import {
   KindField,
   CategoryField,
@@ -87,7 +88,15 @@ function ActiveField({ form }: { form: FormApi }) {
   )
 }
 
-function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: () => void }) {
+function ModelForm({
+  model,
+  canManagePrices,
+  onDone,
+}: {
+  model: DeviceModelView | null
+  canManagePrices: boolean
+  onDone: () => void
+}) {
   const { t } = useI18n()
   const createMutation = useCreateDeviceModel()
   const updateMutation = useUpdateDeviceModel()
@@ -175,6 +184,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? t("common.loading") : t("common.save")}
         </Button>
+        {model && canManagePrices && <ProductPriceGrid model={model} />}
       </form>
     </Form>
   )
@@ -184,10 +194,12 @@ export function DeviceModelDialog({
   model,
   open,
   onOpenChange,
+  canManagePrices = false,
 }: {
   model: DeviceModelView | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  canManagePrices?: boolean
 }) {
   const { t } = useI18n()
   return (
@@ -196,7 +208,14 @@ export function DeviceModelDialog({
         <DialogHeader>
           <DialogTitle>{model ? t("inventory.editModel") : t("inventory.newModel")}</DialogTitle>
         </DialogHeader>
-        {open && <ModelForm key={model?.id ?? "new"} model={model} onDone={() => onOpenChange(false)} />}
+        {open && (
+          <ModelForm
+            key={model?.id ?? "new"}
+            model={model}
+            canManagePrices={canManagePrices}
+            onDone={() => onOpenChange(false)}
+          />
+        )}
       </DialogPopup>
     </Dialog>
   )

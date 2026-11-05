@@ -1,5 +1,6 @@
 {
   "title": "Kassa terminali (POS)",
+  "cart": "Cart",
   "scanPrompt": "IMEI skanerlang yoki kiriting (15 xona)",
   "cartEmpty": "Savatda qurilma yo'q",
   "deviceCard": "Tanlangan qurilma",

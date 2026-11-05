@@ -1,9 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { allocateSplit, buildCartPayments, isPaymentBlocked, toLinePrices } from "./payment.ts"
-import { lineTotal } from "./line-total.ts"
-import type { CartLine } from "../model/cart.store.ts"
+import { allocateSplit, buildCartPayments, cartTotal, isPaymentBlocked } from "./payment.ts"
 
 const lines = [
   { lineId: "a", salePrice: 500 },
@@ -65,20 +63,12 @@ test("isPaymentBlocked only when a split does not add up to the cart total", () 
 })
 
 test("mixed cart: a phone + a quantity line split across cash/card, each line sums right", () => {
-  // One phone (500) + 3 cables @ 35 (105) = 605 total.
-  const cart = [
-    { kind: "unit", lineId: "phone", salePrice: 500 },
-    { kind: "quantity", lineId: "cables", unitPrice: 35, quantity: 3 },
-  ] as unknown as CartLine[]
-
-  assert.equal(lineTotal(cart[0]), 500)
-  assert.equal(lineTotal(cart[1]), 105)
-
-  const prices = toLinePrices(cart)
-  assert.deepEqual(prices, [
+  // The amounts-to-pay the till computed: phone 500, 3 cables 105. Total 605.
+  const prices = [
     { lineId: "phone", salePrice: 500 },
     { lineId: "cables", salePrice: 105 },
-  ])
+  ]
+  assert.equal(cartTotal(prices), 605)
 
   const parts = [
     { accountCode: "CASH", amount: 300 },
@@ -97,4 +87,19 @@ test("mixed cart: a phone + a quantity line split across cash/card, each line su
     { accountCode: "CARD", amount: 200 },
   ])
   assert.deepEqual(alloc.cables, [{ accountCode: "CARD", amount: 105 }])
+})
+
+test("a line's discounted amount-to-pay feeds the split", () => {
+  // List 1000 at WHOLESALE − 10% = 900 (see discount.spec); 900 is what the split covers.
+  const prices = [{ lineId: "p", salePrice: 900 }]
+  assert.equal(cartTotal(prices), 900)
+
+  const parts = [
+    { accountCode: "CASH", amount: 400 },
+    { accountCode: "CARD", amount: 500 },
+  ]
+  assert.equal(isPaymentBlocked(prices, "split", parts), false)
+  const alloc = allocateSplit(prices, parts)
+  const sum = (ps: { amount: number }[]) => ps.reduce((s, p) => s + p.amount, 0)
+  assert.equal(sum(alloc.p), 900)
 })

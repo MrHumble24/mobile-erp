@@ -48,6 +48,12 @@ export interface SaleView {
   quantity: number | null
   customer: SaleCustomerRef | null
   salePrice: string
+  /** The list price before discount, snapshotted at checkout (ADR 0034); null when no list price. */
+  listPrice?: string | null
+  /** Derived (listPrice − salePrice); present when a list price was snapshotted. */
+  discountAmount?: string | null
+  /** The price level the sale was tendered at. */
+  priceLevelCode?: string | null
   landedCostSnapshot?: string
   netProfit?: string
   soldAt: string
@@ -91,6 +97,10 @@ export interface ReceiptView {
   cashier: string
   items: ReceiptItem[]
   total: string
+  /** Sum of list prices and total discount, when a discount was given (ADR 0034). */
+  listPrice?: string | null
+  discountAmount?: string | null
+  priceLevelCode?: string | null
   warranty: { days: number; endsAt: string } | null
   customer?: { name: string; phone: string | null }
   /** How the sale was tendered; [] when the sale predates ledger posting. */
@@ -125,6 +135,12 @@ export interface CreateSaleDto {
   expectedVersion?: number
   /** Omit for a single CASH payment of the full price; else amounts must sum to salePrice. */
   payments?: { accountCode: string; amount: number }[]
+  /** The price level to resolve the list price at (default: customer's, else RETAIL). ADR 0034. */
+  priceLevelCode?: string
+  /** A discount off the list price. Needs discounts enabled + its mode allowed. */
+  discount?: { mode: "PERCENT" | "AMOUNT"; value: number }
+  /** Only honoured on the offline-replay path: the list price the till used. */
+  listPrice?: number
 }
 
 export interface ReturnSaleDto {

@@ -3,7 +3,7 @@ import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
-import { cartTotal, toLinePrices } from "../lib/payment"
+import { cartTotals } from "../lib/line-pricing"
 import { PaymentPanel } from "./PaymentPanel"
 
 export interface TotalsPanelProps {
@@ -24,20 +24,27 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProps) {
   const { t } = useI18n()
   const lines = useCartStore((s) => s.lines)
-  const total = cartTotal(toLinePrices(lines))
+  const level = useCartStore((s) => s.priceLevelCode)
+  const totals = cartTotals(lines, level)
   const withWarranty = lines.filter((line) => line.kind === "unit" && line.warrantyDays > 0).length
 
   return (
     <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
       <div className="space-y-2 text-sm">
         <SummaryRow label={t("pos.lineCount")} value={String(lines.length)} />
-        <SummaryRow label={t("pos.subtotal")} value={formatMoney(total)} />
+        <SummaryRow label={t("pricing.listPrice")} value={formatMoney(totals.listTotal)} />
+        {totals.discountTotal > 0 && (
+          <SummaryRow
+            label={t("pricing.discount")}
+            value={`− ${formatMoney(totals.discountTotal)}`}
+          />
+        )}
         <SummaryRow
           label={t("pos.warrantySummary")}
           value={t("pos.warrantyCount", { count: withWarranty })}
         />
         <div className="border-t border-[#e8e8e8] pt-2">
-          <SummaryRow label={t("pos.totalDue")} value={formatMoney(total)} strong />
+          <SummaryRow label={t("pos.totalDue")} value={formatMoney(totals.dueTotal)} strong />
         </div>
       </div>
       {lines.length > 0 && <PaymentPanel />}

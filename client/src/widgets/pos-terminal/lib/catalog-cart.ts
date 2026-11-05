@@ -19,6 +19,7 @@ export function catalogUnitToDevice(entry: CatalogEntry, unit: CatalogUnit): Dev
     modelId: entry.modelId,
     specs: (unit.specs ?? {}) as DeviceSpecs,
     targetPrice: unit.targetPrice,
+    prices: unit.prices,
     statusCode: "IN_STOCK",
     intakeDate: now,
     version: 0,
@@ -41,5 +42,6 @@ export function catalogEntryToProduct(entry: CatalogEntry): StockScanProduct {
     barcode: null,
     salePrice: entry.salePrice,
     quantity: entry.inStock,
+    prices: entry.prices,
   }
 }

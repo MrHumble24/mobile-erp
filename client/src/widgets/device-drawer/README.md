@@ -25,3 +25,8 @@ Permissions (`device.cost.view`, `device.status.change`, `device.update`,
 ## Must never
 - Hold server data in local state or call repositories directly (hooks only).
 - Render native form/table controls — use `shared/ui`.
+
+## Pricing (ADR 0034)
+A `price.manage` user sees `UnitPriceSection`: the unit's own three level prices
+(empty = use the product price) with the resolved price shown beside each, saved
+via `entities/pricing` (`PUT /pricing/units/:deviceId`).

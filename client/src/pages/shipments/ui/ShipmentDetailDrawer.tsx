@@ -2,7 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import type { ShipmentView } from "@/entities/shipment"
 import type { SupplierView } from "@/entities/supplier"
-import { AddStockDialog, type PurchasedLineView } from "@/features/add-stock-to-shipment"
+import { AddStockDialog } from "@/features/add-stock-to-shipment"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/shared/ui/sheet"
 import { Button } from "@/shared/ui/button"
 import { ShipmentSummary } from "./ShipmentSummary"
@@ -33,10 +33,8 @@ function DrawerBody({
   shipment,
   supplier,
   canViewCost,
-  stockLines,
 }: Pick<ShipmentDetailDrawerProps, "shipment" | "supplier" | "canViewCost"> & {
   shipment: ShipmentView
-  stockLines: PurchasedLineView[]
 }) {
   const data = useShipmentDevices(shipment.id)
   const fresh = data.shipment ?? shipment
@@ -58,7 +56,7 @@ function DrawerBody({
         onPageChange={data.setPage}
         onPageSizeChange={data.setPageSize}
       />
-      <ShipmentStockSection lines={stockLines} />
+      <ShipmentStockSection lines={fresh.stockLines ?? []} />
     </div>
   )
 }
@@ -89,10 +87,6 @@ export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
   const { t } = useI18n()
   const { shipment, supplier, open, onClose, canViewCost, canIntake, canManage, onIntake, onEdit } = props
   const [addOpen, setAddOpen] = React.useState(false)
-  const [stockLines, setStockLines] = React.useState<PurchasedLineView[]>([])
-  React.useEffect(() => {
-    if (!open) setStockLines([])
-  }, [open, shipment?.id])
   return (
     <Sheet open={open} onOpenChange={(val) => !val && onClose()}>
       <SheetPopup className="w-full sm:max-w-3xl lg:max-w-5xl">
@@ -102,7 +96,7 @@ export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
         </SheetHeader>
         {shipment && (
           <>
-            <DrawerBody shipment={shipment} supplier={supplier} canViewCost={canViewCost} stockLines={stockLines} />
+            <DrawerBody shipment={shipment} supplier={supplier} canViewCost={canViewCost} />
             <DrawerActions
               shipment={shipment}
               canIntake={canIntake}
@@ -116,7 +110,6 @@ export function ShipmentDetailDrawer(props: ShipmentDetailDrawerProps) {
               paymentAccountCode={shipment.paymentAccountCode}
               open={addOpen}
               onOpenChange={setAddOpen}
-              onAdded={(lines) => setStockLines((prev) => [...prev, ...lines])}
             />
           </>
         )}

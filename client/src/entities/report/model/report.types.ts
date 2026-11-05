@@ -7,6 +7,8 @@ export interface ProfitReport {
   netOperatingIncome: number
   byChannel: { retail: number; b2b: number }
   returnsRefunded: number
+  /** Σ (listPriceSnapshot − salePrice) over snapshotted sales (ADR 0034). */
+  discountsGiven: number
 }
 
 export type TrendBucket = "day" | "week" | "month"
