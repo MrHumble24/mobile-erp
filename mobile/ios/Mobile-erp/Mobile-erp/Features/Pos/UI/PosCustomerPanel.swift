@@ -17,6 +17,7 @@ struct PosCustomerPanel: View {
                 Text(i18n.t("pos.customer"))
                     .font(.ui(.heading))
                     .foregroundStyle(Tokens.text)
+                levelControl
                 if let customer = cart.customer {
                     attached(customer)
                 } else {
@@ -36,9 +37,19 @@ struct PosCustomerPanel: View {
         }
         .sheet(isPresented: $showSearch) {
             PosCustomerSearchSheet(model: model) { hit in
-                cart.customer = PosCartCustomer(id: hit.id, name: hit.name, phone: hit.phone)
+                model.attachCustomer(hit)
                 showSearch = false
             }
+        }
+    }
+
+    /// The price-level control: follows the chosen customer, the seller may
+    /// switch it, and changing it re-prices every line (ADR 0034).
+    private var levelControl: some View {
+        AppFormField(label: i18n.t("pricing.priceLevel")) {
+            SegmentedControl(
+                selection: Binding(get: { cart.level }, set: { cart.setLevel($0) }),
+                segments: PriceLevels.all.map { ($0, i18n.t(PriceLevels.labelKey($0))) })
         }
     }
 
@@ -52,7 +63,8 @@ struct PosCustomerPanel: View {
             }
             Spacer()
             Button(i18n.t("common.clear", default: "Clear"), role: .destructive) {
-                cart.customer = nil
+                cart.detachCustomer()
+                cart.setLevel(PriceLevels.defaultCode)
                 addNew = false
             }
             .buttonStyle(.pillGhost)

@@ -63,6 +63,7 @@ struct PosView: View {
             #if DEBUG
             _ = PosSelfCheck.ran
             _ = PosPaymentsSelfCheck.ran
+            _ = PricingSelfCheck.ran
             _ = CatalogSelfCheck.ran
             runDebugLaunch()
             #endif
@@ -101,6 +102,8 @@ struct PosView: View {
     /// Launch-argument screenshot / end-to-end helpers (see SCREENS.md).
     private func runDebugLaunch() {
         if let mode = KitDebugLaunch.consume("posDemo") { model.seedDemo(mode) }
+        if let mode = KitDebugLaunch.consume("posPriceDemo") { model.debugPriceDemo(mode) }
+        if let arg = KitDebugLaunch.consume("posSellDiscount") { model.debugSellDiscount(arg, container: container) }
         if let code = KitDebugLaunch.consume("posScan") { model.scan(code); model.confirmScan() }
         if let code = KitDebugLaunch.consume("posSell") {
             model.scan(code); model.confirmScan(); model.checkout()
@@ -112,6 +115,7 @@ struct PosView: View {
         // seed + open the cart, or run a real catalog checkout. Each "<u>,<q>" is
         // a unit model id and a quantity model id.
         if KitDebugLaunch.consume("posCatalog") != nil { model.mode = .catalog }
+        if let level = KitDebugLaunch.consume("posLevel") { model.cart.setLevel(level) }
         if let arg = KitDebugLaunch.consume("posCatalogAdd") {
             model.mode = .catalog
             Task { await model.debugCatalogAdd(arg, container: container) }

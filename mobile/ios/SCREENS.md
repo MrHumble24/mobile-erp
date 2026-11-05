@@ -399,3 +399,53 @@ open the cart); `-posSellCatalog "<u>,<q>"` (seed from the catalog and run a rea
 checkout); `-intakeBox <code>` (prefill the intake box-code field so a capture
 shows the found / pick / not-found result).
 
+
+---
+
+## Appendix: Price levels & discounts (ADR 0034, Change 12/7)
+
+Three price levels — **Walk-in** (RETAIL), **Wholesale**, **Shops** (PARTNER) —
+set on the product per storage and overridable per unit. The till's price follows
+the customer's type, the seller may switch it, and lowering a price is a
+**discount** within the owner's limit (never a free-typed price, unless the user
+has `sale.price.override`). A support slice, `Features/Pricing/`, owns the level
+codes, the resolved-prices value type, the pure checkout math, the price-manage
+repository and the two editor sheets; its README has the details.
+
+| Screen / Sheet | File Path | Role | Description |
+| :--- | :--- | :--- | :--- |
+| **Product price editor** (`PricingProductSheet`) | `Features/Pricing/UI/PricingProductSheet.swift` | Owner (`price.manage`) | Storage × level grid with an "any storage" row (a quantity product has only that row); saved in one `PUT /pricing/products`. Opened from `ModelFormSheet`. |
+| **Unit price editor** (`PricingUnitSheet`) | `Features/Pricing/UI/PricingUnitSheet.swift` | Owner (`price.manage`) | A unit's own three prices (empty = use the product price, with the resolved price shown). Opened from `DeviceSheet`. |
+| **Discount sheet** (`PosDiscountSheet`) | `Features/Pos/UI/PosDiscountSheet.swift` | Cashier | Per-line or whole-sale discount: percent/amount as settings allow, preset chips, the final price live, and the `pricing.error…` the server would raise. |
+
+Till changes (`Features/Pos`): `PosCart` is now level- and discount-aware
+(`listPrice`/`finalTotal`/`discountAmount`/`validationErrorKey`/`subtotalList`/
+`totalDiscount`, plus `applyCartDiscount` which spreads a whole-sale discount over
+the lines as per-line AMOUNT discounts that sum exactly). A price-level control
+sits next to the customer (`PosCustomerPanel`); each line shows its list and final
+price (`PosCartLineRow`); the totals card shows the list total, the discount and
+the amount to pay (`PosCheckoutBar`). `PosDiscountConfig` carries the settings +
+the user's price permissions. The checkout sends `priceLevelCode`, `discount` and
+(offline) the `listPrice` the till used; the server's 400s map to `pricing.error…`.
+
+Other slices: the customer form/row/detail (type + standing discount), the
+Discounts settings section (six settings), the consignment form (prefills the
+agreed price with the unit's PARTNER price — `pricing.partnerPriceUsed`), sale
+detail + the POS receipt (list price / discount / level when non-trivial), the
+profit report (`discountsGiven`), and the shipment detail (quantity lines read
+from `stockLines` on `GET /shipments/:id`, replacing the session-only list).
+Reads carry `prices` into the offline cache (`DeviceEntity`/`ProductEntity`
+`pricesJSON`). The "take a photo" button now uses the scanner's VisionKit camera
+gate (`CameraPhotoPicker.isAvailable`), so it hides on the Simulator.
+
+DEBUG self-check: `PricingSelfCheck` (price per level; percent + amount discounts;
+the cashier cap and the standing discount raising it; a cart discount spread over
+three awkward prices that sums exactly; the amount to pay feeding the split).
+
+DEBUG args added: `-posPriceDemo retail|wholesale|lines|over|cart3` (seed a priced
+cart); `-posSellDiscount "<code>,<level>,<pct>"` (real discounted checkout);
+`-posLevel <level>` (set the till level); `-openModelPrices <id>` (product price
+editor); `-openDevicePrices 1` (unit price editor); `-openCustomerForm 1`;
+`-openConsignForm <code>` (consign form with the partner price prefilled);
+`-openShipmentDetail first`; `-settingsBottom 1` (anchor settings at the discounts
+section).

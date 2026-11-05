@@ -11,6 +11,8 @@ struct CustomerFormSheet: View {
     @State private var name: String
     @State private var phone: String
     @State private var notes: String
+    @State private var level: String
+    @State private var standing: String
     @State private var busy = false
     @State private var error: String?
 
@@ -20,6 +22,9 @@ struct CustomerFormSheet: View {
         _name = State(initialValue: editing?.name ?? "")
         _phone = State(initialValue: editing?.phone ?? "")
         _notes = State(initialValue: editing?.notes ?? "")
+        _level = State(initialValue: editing?.level ?? PriceLevels.defaultCode)
+        let pct = editing?.standing ?? 0
+        _standing = State(initialValue: pct > 0 ? NSDecimalNumber(decimal: pct).stringValue : "")
     }
 
     var body: some View {
@@ -34,6 +39,16 @@ struct CustomerFormSheet: View {
                     AppTextField(placeholder: i18n.t("customers.phone"), text: $phone, keyboard: .phonePad,
                                  autocapitalization: .never, disableAutocorrection: true, font: .data(.regular))
                         .sanitizePhone($phone)
+                }
+                AppFormField(label: i18n.t("pricing.customerType")) {
+                    AppSelect(placeholder: i18n.t("pricing.customerType"), selection: $level,
+                              options: PriceLevels.all.map { ($0, i18n.t(PriceLevels.labelKey($0))) })
+                }
+                AppFormField(label: i18n.t("pricing.standingDiscount")) {
+                    AppTextField(placeholder: "0", text: $standing,
+                                 keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                        .sanitizeDecimal($standing)
+                    Text(i18n.t("pricing.standingDiscountHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
                 AppFormField(label: i18n.t("customers.notes")) {
                     AppTextField(placeholder: i18n.t("customers.notesPlaceholder"), text: $notes)
@@ -62,12 +77,16 @@ struct CustomerFormSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let phoneValue = CustomersInput.orNil(phone)
         let notesValue = CustomersInput.orNil(notes)
+        let standingValue = NSDecimalNumber(decimal: Decimal(string: standing.trimmingCharacters(in: .whitespaces)) ?? 0).doubleValue
+        let levelValue = level
         Task {
             let message: String?
             if let editing {
-                message = await model.update(id: editing.id, name: trimmedName, phone: phoneValue, notes: notesValue)
+                message = await model.update(id: editing.id, name: trimmedName, phone: phoneValue, notes: notesValue,
+                                             priceLevelCode: levelValue, standingDiscountPercent: standingValue)
             } else {
-                message = await model.create(name: trimmedName, phone: phoneValue, notes: notesValue)
+                message = await model.create(name: trimmedName, phone: phoneValue, notes: notesValue,
+                                             priceLevelCode: levelValue, standingDiscountPercent: standingValue)
             }
             busy = false
             if let message {

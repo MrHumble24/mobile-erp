@@ -96,6 +96,20 @@ struct PosReceiptSheet: View {
 
                 dashedDivider
 
+                // Pricing (ADR 0034): shown only when a discount was given or the
+                // level was not walk-in.
+                if sale.showsPricing {
+                    if sale.priceLevelCode != nil && sale.priceLevelCode != PriceLevels.retail {
+                        row(i18n.t("pricing.priceLevel"), i18n.t(PriceLevels.labelKey(sale.priceLevelCode!)))
+                    }
+                    if let listPrice = sale.listPrice {
+                        row(i18n.t("pricing.listPrice"), MoneyText.format(listPrice))
+                    }
+                    if let discount = sale.discountAmount {
+                        row(i18n.t("pricing.discount"), "− \(MoneyText.format(discount))")
+                    }
+                }
+
                 // Financial Total
                 HStack(alignment: .firstTextBaseline) {
                     Text(i18n.t("pos.totalDue", default: "TOTAL DUE"))

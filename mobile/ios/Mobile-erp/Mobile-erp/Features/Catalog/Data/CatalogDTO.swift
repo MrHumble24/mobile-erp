@@ -16,6 +16,10 @@ struct CatalogEntry: Decodable, Identifiable {
     let minTargetPrice: String?
     let maxTargetPrice: String?
     let salePrice: String?
+    /// Product-level list prices per level at "any storage" (ADR 0034). For a
+    /// unit product this is the card's per-level price; for a quantity product
+    /// it is the per-piece price per level. `GET /catalog` always sends it.
+    let prices: PriceLevelPrices
 
     var id: String { modelId }
     var label: String { "\(brand) \(name)".trimmingCharacters(in: .whitespaces) }
@@ -32,16 +36,18 @@ struct CatalogUnit: Decodable, Identifiable {
     let specs: [String: String]
     let gradeCode: String?
     let targetPrice: String?
+    /// The unit's resolved list prices per level (ADR 0034); empty when none.
+    let prices: PriceLevelPrices
 
     var storage: String? { specs["storage"].flatMap { $0.isEmpty ? nil : $0 } }
     var color: String? { specs["color"].flatMap { $0.isEmpty ? nil : $0 } }
 
-    enum CodingKeys: String, CodingKey { case id, code, specs, gradeCode, targetPrice }
+    enum CodingKeys: String, CodingKey { case id, code, specs, gradeCode, targetPrice, prices }
 
     init(id: String, code: String, specs: [String: String],
-         gradeCode: String?, targetPrice: String?) {
+         gradeCode: String?, targetPrice: String?, prices: PriceLevelPrices = PriceLevelPrices()) {
         self.id = id; self.code = code; self.specs = specs
-        self.gradeCode = gradeCode; self.targetPrice = targetPrice
+        self.gradeCode = gradeCode; self.targetPrice = targetPrice; self.prices = prices
     }
 
     init(from decoder: Decoder) throws {
@@ -50,6 +56,7 @@ struct CatalogUnit: Decodable, Identifiable {
         code = try c.decodeIfPresent(String.self, forKey: .code) ?? ""
         gradeCode = try c.decodeIfPresent(String.self, forKey: .gradeCode)
         targetPrice = try c.decodeIfPresent(String.self, forKey: .targetPrice)
+        prices = try c.decodeIfPresent(PriceLevelPrices.self, forKey: .prices) ?? PriceLevelPrices()
         // Specs is open-ended JSON (ADR 0013): keep only the string-ish values the
         // picker shows (storage, color), stringifying numbers.
         specs = (try? c.decode([String: JSONScalar].self, forKey: .specs))?

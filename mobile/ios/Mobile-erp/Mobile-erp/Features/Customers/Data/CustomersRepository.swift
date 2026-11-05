@@ -26,20 +26,26 @@ struct CustomersRepository {
 
     /// `POST /customers`. The response is a bare `CustomerView`; the caller
     /// refreshes the list to pick up aggregates.
-    func create(name: String, phone: String?, notes: String?) async throws {
+    func create(name: String, phone: String?, notes: String?,
+                priceLevelCode: String, standingDiscountPercent: Double) async throws {
         struct Created: Decodable { let id: String }
         let _: Created = try await api.post(
             "/customers",
-            body: CustomerPayload(name: name, phone: phone, notes: notes)
+            body: CustomerPayload(name: name, phone: phone, notes: notes,
+                                  priceLevelCode: priceLevelCode,
+                                  standingDiscountPercent: standingDiscountPercent)
         )
     }
 
     /// `PATCH /customers/:id` (needs `customer.manage`). The caller refreshes
     /// the list to pick up aggregates, so the response is not read.
-    func update(_ id: String, name: String, phone: String?, notes: String?) async throws {
+    func update(_ id: String, name: String, phone: String?, notes: String?,
+                priceLevelCode: String, standingDiscountPercent: Double) async throws {
         try await api.patchVoid(
             "/customers/\(id)",
-            body: CustomerPayload(name: name, phone: phone, notes: notes)
+            body: CustomerPayload(name: name, phone: phone, notes: notes,
+                                  priceLevelCode: priceLevelCode,
+                                  standingDiscountPercent: standingDiscountPercent)
         )
     }
 }

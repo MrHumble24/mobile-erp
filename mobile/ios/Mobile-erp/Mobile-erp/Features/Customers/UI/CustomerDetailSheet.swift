@@ -28,6 +28,13 @@ struct CustomerDetailSheet: View {
                     }
                 }
                 VStack(spacing: 0) {
+                    FactRow(label: i18n.t("pricing.customerType")) {
+                        Text(i18n.t(PriceLevels.labelKey(customer.level))).font(.ui(.body))
+                    }
+                    FactRow(label: i18n.t("pricing.standingDiscount")) {
+                        Text(customer.standing > 0 ? "\(NSDecimalNumber(decimal: customer.standing).stringValue)%" : "—")
+                            .font(.data(.regular))
+                    }
                     FactRow(label: i18n.t("customers.statPurchases")) { Text("\(customer.purchaseCount)").font(.data(.regular)) }
                     FactRow(label: i18n.t("customers.statTotalSpent")) { MoneyText(value: customer.totalSpentString, size: 15) }
                     FactRow(label: i18n.t("customers.statActiveWarranties")) { Text("\(customer.activeWarranties)").font(.data(.regular)) }

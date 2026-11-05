@@ -14,8 +14,17 @@ struct CustomerListItem: Decodable, Identifiable {
     let lastPurchaseAt: String?
     let activeWarranties: Int
     let returnsCount: Int
+    /// The customer's price level (ADR 0034); nil on an old response → walk-in.
+    let priceLevelCode: String?
+    /// Standing discount as a 2-dp percent string; nil/"0.00" = none.
+    let standingDiscountPercent: String?
 
     var totalSpentString: String { NSDecimalNumber(value: totalSpent).stringValue }
+
+    /// The level to use, defaulting to walk-in when the server omitted it.
+    var level: String { priceLevelCode ?? PriceLevels.defaultCode }
+    /// The standing discount as an exact percent (0 when none).
+    var standing: Decimal { Decimal(string: standingDiscountPercent ?? "") ?? 0 }
 }
 
 struct CustomerPage: Decodable {
@@ -64,6 +73,9 @@ struct CustomerPayload: Encodable {
     let name: String?
     let phone: String?
     let notes: String?
+    /// Price level and standing discount (ADR 0034). Sent on create and update.
+    let priceLevelCode: String?
+    let standingDiscountPercent: Double?
 }
 
 /// Slice-local input helper (duplicated from Pos's global on purpose — a slice

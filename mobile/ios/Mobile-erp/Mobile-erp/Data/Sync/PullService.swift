@@ -40,6 +40,7 @@ struct PullService {
             e.latestSaleJSON = r.latestSaleJSON; e.gradeCode = r.gradeCode
             e.inspectionNotes = r.inspectionNotes; e.updatedAt = r.updatedAt
             e.modelImageUrl = r.modelImageUrl; e.modelCategoryId = r.modelCategoryId
+            e.pricesJSON = r.pricesJSON
         } else {
             context.insert(DeviceEntity(
                 id: r.id, imei: r.imei, imei2: r.imei2, serialNumber: r.serialNumber,
@@ -48,7 +49,8 @@ struct PullService {
                 modelBrand: r.modelBrand, modelName: r.modelName,
                 latestSaleJSON: r.latestSaleJSON, gradeCode: r.gradeCode,
                 inspectionNotes: r.inspectionNotes, updatedAt: r.updatedAt,
-                modelImageUrl: r.modelImageUrl, modelCategoryId: r.modelCategoryId))
+                modelImageUrl: r.modelImageUrl, modelCategoryId: r.modelCategoryId,
+                pricesJSON: r.pricesJSON))
         }
     }
 
@@ -76,11 +78,13 @@ struct PullService {
             e.brand = r.brand; e.name = r.name; e.barcode = r.barcode
             e.salePrice = r.salePrice; e.quantity = r.quantity
             e.imageUrl = r.imageUrl; e.categoryId = r.categoryId
+            e.pricesJSON = r.pricesJSON
         } else {
             context.insert(ProductEntity(
                 modelId: r.modelId, brand: r.brand, name: r.name,
                 barcode: r.barcode, salePrice: r.salePrice, quantity: r.quantity,
-                imageUrl: r.imageUrl, categoryId: r.categoryId))
+                imageUrl: r.imageUrl, categoryId: r.categoryId,
+                pricesJSON: r.pricesJSON))
         }
     }
 

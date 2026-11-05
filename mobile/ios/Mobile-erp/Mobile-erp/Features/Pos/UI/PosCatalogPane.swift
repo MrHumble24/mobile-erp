@@ -29,6 +29,7 @@ struct PosCatalogPane: View {
     private var grid: CatalogGridView {
         CatalogGridView(
             browser: model.catalog,
+            level: model.cart.level,
             excludeCodes: { model.cartUnitCodes },
             onPickUnit: { model.addCatalogUnit($0, entry: $1) },
             onPickQuantity: { model.addCatalogQuantity($0) })

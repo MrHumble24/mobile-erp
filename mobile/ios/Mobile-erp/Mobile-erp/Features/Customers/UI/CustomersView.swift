@@ -58,6 +58,9 @@ struct CustomersView: View {
         .task {
             model.configure(container)
             if model.pager.items.isEmpty { model.reload() }
+            #if DEBUG
+            if KitDebugLaunch.consume("openCustomerForm") != nil { showCreate = true }
+            #endif
         }
         #if DEBUG
         // Screenshot helper: `-openCustomer first` opens the first row's detail.
@@ -114,6 +117,12 @@ private struct CustomerRow: View {
                     }
                     Text(i18n.t("pos.purchaseCount", ["count": String(customer.purchaseCount)]))
                         .font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                    HStack(spacing: Tokens.Space.xs) {
+                        StatusBadge(i18n.t(PriceLevels.labelKey(customer.level)), color: Tokens.info)
+                        if customer.standing > 0 {
+                            StatusBadge("−\(NSDecimalNumber(decimal: customer.standing).stringValue)%", color: Tokens.success)
+                        }
+                    }
                 }
                 Spacer(minLength: Tokens.Space.sm)
                 VStack(alignment: .trailing, spacing: Tokens.Space.xs) {

@@ -7,6 +7,8 @@ import SwiftUI
 /// offered again. Feeds the shared POS cart through the two callbacks.
 struct CatalogGridView: View {
     @Bindable var browser: CatalogBrowser
+    /// The current price level (ADR 0034) — cards and the unit picker price it.
+    var level: String = PriceLevels.retail
     let excludeCodes: () -> Set<String>
     let onPickUnit: (CatalogUnit, CatalogEntry) -> Void
     let onPickQuantity: (CatalogEntry) -> Void
@@ -27,7 +29,7 @@ struct CatalogGridView: View {
         }
         .padding(.top, Tokens.Space.sm)
         .appSheet(item: $picker) { data in
-            CatalogUnitPickerSheet(entry: data.entry, units: data.units) { onPickUnit($0, data.entry) }
+            CatalogUnitPickerSheet(entry: data.entry, units: data.units, level: level) { onPickUnit($0, data.entry) }
         }
         .task {
             browser.configure(container)
@@ -64,7 +66,7 @@ struct CatalogGridView: View {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: Tokens.Space.md) {
                     ForEach(browser.entries) { entry in
-                        CatalogCard(entry: entry) { tap(entry) }
+                        CatalogCard(entry: entry, level: level) { tap(entry) }
                     }
                 }
                 .padding(.horizontal, Tokens.Space.gutter)

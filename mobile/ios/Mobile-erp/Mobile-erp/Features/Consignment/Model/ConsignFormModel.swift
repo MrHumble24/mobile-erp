@@ -12,6 +12,8 @@ final class ConsignFormModel {
         let id = UUID()
         var imei = ""
         var agreedPrice = ""
+        /// The agreed price was prefilled from the unit's PARTNER price (ADR 0034).
+        var partnerPriceUsed = false
     }
 
     struct SubmitResult {
@@ -23,6 +25,8 @@ final class ConsignFormModel {
     @ObservationIgnored private let writer: ConsignmentWriter
     @ObservationIgnored private let partnerRepo: PartnerRepository
     @ObservationIgnored private let isOnline: () -> Bool
+    /// Resolve a unit's PARTNER list price from the local cache (ADR 0034).
+    @ObservationIgnored private let partnerPrice: (String) -> Decimal?
 
     var partnerId: String
     let lockPartner: Bool
@@ -33,12 +37,31 @@ final class ConsignFormModel {
     private(set) var isSubmitting = false
 
     init(writer: ConsignmentWriter, partnerRepo: PartnerRepository,
-         isOnline: @escaping () -> Bool, initialPartnerId: String?, lockPartner: Bool) {
+         isOnline: @escaping () -> Bool, initialPartnerId: String?, lockPartner: Bool,
+         partnerPrice: @escaping (String) -> Decimal? = { _ in nil },
+         initialCode: String? = nil) {
         self.writer = writer
         self.partnerRepo = partnerRepo
         self.isOnline = isOnline
         self.partnerId = initialPartnerId ?? ""
         self.lockPartner = lockPartner
+        self.partnerPrice = partnerPrice
+        if let code = initialCode, !code.isEmpty {
+            rows = [DeviceRow(imei: code)]
+            fillPartnerPrice(rows[0].id)
+        }
+    }
+
+    /// Prefill a row's agreed price with the unit's PARTNER price when the code
+    /// resolves and the field is still empty; the seller may change it.
+    func fillPartnerPrice(_ id: UUID) {
+        guard let i = rows.firstIndex(where: { $0.id == id }) else { return }
+        let code = rows[i].imei.trimmingCharacters(in: .whitespaces)
+        guard !code.isEmpty,
+              rows[i].agreedPrice.trimmingCharacters(in: .whitespaces).isEmpty,
+              let price = partnerPrice(code) else { return }
+        rows[i].agreedPrice = NSDecimalNumber(decimal: price).stringValue
+        rows[i].partnerPriceUsed = true
     }
 
     func loadPartners() async {

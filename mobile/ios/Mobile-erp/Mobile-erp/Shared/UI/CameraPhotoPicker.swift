@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import VisionKit
 
 /// Takes a single photo with the device camera (ADR 0031 product pictures),
 /// wrapping `UIImagePickerController`. The camera needs the usage description the
@@ -9,7 +10,13 @@ struct CameraPhotoPicker: UIViewControllerRepresentable {
     let onImage: (UIImage) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    static var isAvailable: Bool { UIImagePickerController.isSourceTypeAvailable(.camera) }
+    /// A real camera is present. `UIImagePickerController.isSourceTypeAvailable`
+    /// reports a camera on the Simulator, so use the same VisionKit gate the
+    /// scanner trusts (`DataScannerViewController` needs genuine hardware) — this
+    /// hides the "take a photo" button everywhere it is checked.
+    static var isAvailable: Bool {
+        DataScannerViewController.isSupported && DataScannerViewController.isAvailable
+    }
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()

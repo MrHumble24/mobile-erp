@@ -79,8 +79,18 @@ struct SaleView: Decodable, Identifiable {
     let returnedAt: String?
     /// How the sale was tendered; `[]` when none, nil for pre-feature cached data.
     let payments: [SalePaymentLine]?
+    /// Pricing (ADR 0034): the list price the sale was priced from, the discount
+    /// given and the level. Optional — a pre-feature sale has none.
+    let listPrice: MoneyValue?
+    let discountAmount: MoneyValue?
+    let priceLevelCode: String?
 
     var isB2B: Bool { consignmentId != nil }
+    /// Show the pricing block when a discount was given or the level is not retail.
+    var showsPricing: Bool {
+        (Decimal(string: discountAmount?.string ?? "0") ?? 0) > 0
+            || (priceLevelCode != nil && priceLevelCode != PriceLevels.retail)
+    }
     var isReturned: Bool { returnedAt != nil }
     /// A quantity sale (ADR 0030): no unit, carries `model` + `quantity`.
     var isQuantitySale: Bool { quantity != nil }

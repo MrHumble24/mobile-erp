@@ -27,6 +27,8 @@ nonisolated struct ProductRow {
     /// Picture path + category (ADR 0031) for the offline catalog grid.
     let imageUrl: String?
     let categoryId: String?
+    /// Resolved per-level prices (ADR 0034) as a JSON string, or nil.
+    let pricesJSON: String?
 
     init(_ p: [String: Any]) {
         modelId = p["modelId"] as? String ?? ""
@@ -39,6 +41,7 @@ nonisolated struct ProductRow {
         quantity = (p["quantity"] as? NSNumber)?.intValue ?? 0
         imageUrl = p["imageUrl"] as? String
         categoryId = p["categoryId"] as? String
+        pricesJSON = PriceLevelPrices.from(json: p["prices"] as? [String: Any]).jsonString()
     }
 }
 
@@ -56,6 +59,8 @@ nonisolated struct DeviceRow {
     let gradeCode, inspectionNotes: String?
     /// The model's picture path + category (ADR 0031), on the feed's model row.
     let modelImageUrl, modelCategoryId: String?
+    /// The unit's resolved per-level prices (ADR 0034) as a JSON string, or nil.
+    let pricesJSON: String?
 
     init(_ d: [String: Any]) {
         id = d["id"] as? String ?? ""
@@ -73,6 +78,7 @@ nonisolated struct DeviceRow {
         kindCode = model["kindCode"] as? String
         modelImageUrl = model["imageUrl"] as? String
         modelCategoryId = model["categoryId"] as? String
+        pricesJSON = PriceLevelPrices.from(json: d["prices"] as? [String: Any]).jsonString()
         latestSaleJSON = d["latestSale"].flatMap { $0 is NSNull ? nil : Self.encode($0) }
         let inspection = d["latestInspection"] as? [String: Any]
         gradeCode = inspection?["gradeCode"] as? String

@@ -93,6 +93,24 @@ struct SaleDetailSheet: View {
 
     private var facts: some View {
         VStack(spacing: 0) {
+            if sale.showsPricing {
+                if sale.priceLevelCode != nil && sale.priceLevelCode != PriceLevels.retail {
+                    fact(i18n.t("pricing.priceLevel")) {
+                        Text(i18n.t(PriceLevels.labelKey(sale.priceLevelCode!))).font(.ui(.body))
+                    }
+                }
+                if let listPrice = sale.listPrice {
+                    fact(i18n.t("pricing.listPrice")) {
+                        MoneyText(value: listPrice.string, size: 15).foregroundStyle(Tokens.muted)
+                    }
+                }
+                if let discount = sale.discountAmount, (Decimal(string: discount.string) ?? 0) > 0 {
+                    fact(i18n.t("pricing.discount")) {
+                        Text("− \(MoneyText.format(discount.string))").font(.data(.regular))
+                            .foregroundStyle(Tokens.success)
+                    }
+                }
+            }
             fact(i18n.t("sales.salePrice")) {
                 MoneyText(value: sale.salePrice.string, size: 15).foregroundStyle(Tokens.text)
             }

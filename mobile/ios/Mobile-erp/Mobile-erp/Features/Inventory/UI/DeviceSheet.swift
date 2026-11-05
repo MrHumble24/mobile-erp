@@ -120,6 +120,7 @@ private struct DeviceSheetBody: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
+    @State private var showPrices = false
 
     private var canSell: Bool {
         device.statusCode == "IN_STOCK" && container.session.can("sale.create")
@@ -127,10 +128,11 @@ private struct DeviceSheetBody: View {
     private var canInspect: Bool {
         ["IN_STOCK", "DEFECTIVE"].contains(device.statusCode) && container.session.can("qc.create")
     }
+    private var canManagePrices: Bool { container.session.can("price.manage") }
 
     var body: some View {
         header
-        if canSell || canInspect || canEdit || canEditExpense || canEditCustoms { actions }
+        if canSell || canInspect || canEdit || canEditExpense || canEditCustoms || canManagePrices { actions }
         DeviceBarcode(imei: device.unitCode)
         DeviceSpecsGrid(device: device, canViewCost: canViewCost)
         section(i18n.t("inventory.qcInspection")) { QcSummarySection(qc: device.latestInspection) }
@@ -186,7 +188,16 @@ private struct DeviceSheetBody: View {
             if canEdit { pill(i18n.t("inventory.editDevice"), .pillGhost, action: onEdit) }
             if canEditExpense { pill(i18n.t("inventory.editUnitExpense"), .pillGhost, action: onEditExpense) }
             if canEditCustoms { pill(i18n.t("inventory.editCustomsFee"), .pillGhost, action: onEditCustoms) }
+            if canManagePrices { pill(i18n.t("pricing.unitPrices"), .pillGhost) { showPrices = true } }
         }
+        .sheet(isPresented: $showPrices) {
+            PricingUnitSheet(deviceId: device.id, label: device.modelLabel,
+                             resolved: device.prices) { Task { await onChanged() } }
+        }
+        #if DEBUG
+        // `-openDevicePrices 1` opens the unit own-price editor for a capture.
+        .onAppear { if KitDebugLaunch.consume("openDevicePrices") != nil { showPrices = true } }
+        #endif
     }
 
     private func pill(_ title: String, _ style: PillButton, action: @escaping () -> Void) -> some View {

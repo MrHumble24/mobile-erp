@@ -34,6 +34,10 @@ final class PosViewModel {
     // Customer typeahead.
     var customerHits: [PosCustomerHit] = []
 
+    /// DEBUG only: a seeder has set `cart.config` by hand, so the async settings
+    /// load must not overwrite it (used to show the cashier-limit error).
+    @ObservationIgnored var debugLockConfig = false
+
     @ObservationIgnored private var container: AppContainer?
     private var repo: PosRepository {
         PosRepository(context: container!.modelContext, api: container!.api)
@@ -46,6 +50,20 @@ final class PosViewModel {
         Task {
             payment.setAccounts(await PaymentAccounts.load(api: container.api, i18n: container.i18n))
         }
+        Task { await loadDiscountConfig(container) }
+    }
+
+    /// Load the discount settings + the user's price permissions into the cart,
+    /// so the till can price lines, cap discounts and offer the presets (ADR 0034).
+    private func loadDiscountConfig(_ container: AppContainer) async {
+        guard !debugLockConfig else { return }
+        guard let settings: StoreSettings = try? await container.api.get("/settings") else {
+            cart.config = PosDiscountConfig(
+                canOverridePrice: container.session.can("sale.price.override"),
+                canDiscountUnlimited: container.session.can("sale.discount.unlimited"))
+            return
+        }
+        cart.config = PosDiscountConfig.from(settings, session: container.session)
     }
 
     /// Resolve a scanned code. A unit (IMEI/serial) wins and is staged for the
@@ -115,7 +133,8 @@ final class PosViewModel {
         let device = ScannedDevice(
             id: unit.id, imei: isImei ? unit.code : nil, imei2: nil,
             serialNumber: isImei ? nil : unit.code, version: nil,
-            statusCode: "IN_STOCK", modelLabel: entry.label, targetPrice: unit.targetPrice)
+            statusCode: "IN_STOCK", modelLabel: entry.label, targetPrice: unit.targetPrice,
+            prices: unit.prices)
         cart.add(device, warrantyDays: defaultWarrantyDays)
     }
 
@@ -123,7 +142,14 @@ final class PosViewModel {
     func addCatalogQuantity(_ entry: CatalogEntry) {
         cart.addProduct(PosCartProduct(modelId: entry.modelId, name: entry.label,
                                        barcode: nil, salePrice: entry.salePrice,
-                                       quantityInStock: entry.inStock))
+                                       quantityInStock: entry.inStock, prices: entry.prices))
+    }
+
+    /// Attach an existing customer and follow their price level + standing
+    /// discount (ADR 0034).
+    func attachCustomer(_ hit: PosCustomerHit) {
+        cart.attach(PosCartCustomer(id: hit.id, name: hit.name, phone: hit.phone,
+                                    level: hit.level, standing: hit.standing))
     }
 
     /// Unit codes already in the cart — the catalog won't offer them again.
@@ -151,7 +177,7 @@ final class PosViewModel {
         let lines = cart.lines
         let perLinePayments = allocateSalePayments(
             breakdown: payment.breakdown(total: cart.subtotal),
-            linePrices: lines.map { $0.lineTotal })
+            linePrices: lines.map { cart.finalTotal($0) })
 
         Task {
             var results: [CompletedSale] = []
@@ -195,7 +221,17 @@ final class PosViewModel {
     /// total; a new inline customer is re-sent per line (mirrors the web).
     private func payload(for line: PosCartLine, customer: PosCartCustomer?,
                          payments: [SalePaymentPost]) -> SaleCreatePayload {
-        let total = NSDecimalNumber(decimal: line.lineTotal).doubleValue
+        let total = NSDecimalNumber(decimal: cart.finalTotal(line)).doubleValue
+        let list = cart.listPrice(line)
+        let listDouble = list.map { NSDecimalNumber(decimal: $0).doubleValue }
+        // Send a discount only on a list-priced, non-overridden line with one set.
+        let discount: SaleDiscountPost? = {
+            guard list != nil, !line.priceOverridden,
+                  line.discountMode != .none, line.discountDecimal > 0 else { return nil }
+            return SaleDiscountPost(
+                mode: line.discountMode == .percent ? "PERCENT" : "AMOUNT",
+                value: NSDecimalNumber(decimal: line.discountDecimal).doubleValue)
+        }()
         if let product = line.product {
             return buildSalePayload(
                 modelId: product.modelId, quantity: line.quantity, salePrice: total,
@@ -203,7 +239,8 @@ final class PosViewModel {
                 customerId: customer?.id,
                 customerName: customer?.id == nil ? customer?.name : nil,
                 customerPhone: customer?.id == nil ? customer?.phone : nil,
-                warrantyDays: nil, notes: line.notes, payments: payments)
+                warrantyDays: nil, notes: line.notes, payments: payments,
+                priceLevelCode: cart.level, discount: discount, listPrice: listDouble)
         }
         return buildSalePayload(
             imei: line.device?.imei, serialNumber: line.device?.serialNumber, salePrice: total,
@@ -212,12 +249,16 @@ final class PosViewModel {
             customerName: customer?.id == nil ? customer?.name : nil,
             customerPhone: customer?.id == nil ? customer?.phone : nil,
             warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
-            notes: line.notes, payments: payments)
+            notes: line.notes, payments: payments,
+            priceLevelCode: cart.level, discount: discount, listPrice: listDouble)
     }
 
     private func completedSale(_ line: PosCartLine, receiptId: String, cashier: String,
                                customer: PosCartCustomer?, at now: Date, pending: Bool) -> CompletedSale {
         let days = line.isProduct ? nil : Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
+        let final = cart.finalTotal(line)
+        let list = cart.listPrice(line)
+        let discount = list != nil ? (list! - final) : 0
         return CompletedSale(
             receiptId: receiptId,
             imei: line.device?.imei,
@@ -226,13 +267,16 @@ final class PosViewModel {
             modelLabel: line.modelLabel,
             quantity: line.isProduct ? line.quantity : nil,
             unitPrice: line.isProduct ? line.price : nil,
-            salePrice: NSDecimalNumber(decimal: line.lineTotal).stringValue,
+            salePrice: NSDecimalNumber(decimal: final).stringValue,
             soldAt: now,
             cashier: cashier,
             warrantyDays: days,
             warrantyEndsAt: days.map { now.addingTimeInterval(Double($0) * 86_400) },
             customerName: nonEmpty(customer?.name),
-            pending: pending
+            pending: pending,
+            listPrice: list.map { NSDecimalNumber(decimal: $0).stringValue },
+            discountAmount: discount > 0 ? NSDecimalNumber(decimal: discount).stringValue : nil,
+            priceLevelCode: cart.level
         )
     }
 

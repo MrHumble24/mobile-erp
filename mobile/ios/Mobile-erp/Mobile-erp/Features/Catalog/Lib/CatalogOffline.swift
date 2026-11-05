@@ -17,6 +17,7 @@ struct CatalogCachedDevice {
     let name: String
     let categoryId: String?
     let imageUrl: String?
+    let prices: PriceLevelPrices
 }
 
 /// A cached quantity product, flattened from `ProductEntity`.
@@ -28,6 +29,7 @@ struct CatalogCachedProduct {
     let quantity: Int
     let categoryId: String?
     let imageUrl: String?
+    let prices: PriceLevelPrices
 }
 
 /// Pure offline-catalog transformation (ADR 0031), mirroring the web
@@ -60,7 +62,8 @@ enum CatalogOffline {
                 if let s = d.storage, !s.isEmpty { specs["storage"] = s }
                 if let c = d.color, !c.isEmpty { specs["color"] = c }
                 return CatalogUnit(id: d.id, code: d.imei ?? d.serialNumber ?? "",
-                                   specs: specs, gradeCode: d.gradeCode, targetPrice: d.targetPrice)
+                                   specs: specs, gradeCode: d.gradeCode, targetPrice: d.targetPrice,
+                                   prices: d.prices)
             }
     }
 
@@ -84,7 +87,8 @@ enum CatalogOffline {
                     modelId: modelId, brand: first.brand, name: first.name,
                     kindCode: first.kindCode ?? "IMEI", categoryId: first.categoryId,
                     categoryName: nil, imageUrl: first.imageUrl, inStock: units.count,
-                    minTargetPrice: min, maxTargetPrice: max, salePrice: nil),
+                    minTargetPrice: min, maxTargetPrice: max, salePrice: nil,
+                    prices: first.prices),
                 storage: units.compactMap(\.storage).joined(separator: " "))
         }
     }
@@ -93,7 +97,8 @@ enum CatalogOffline {
         Row(entry: CatalogEntry(
             modelId: p.modelId, brand: p.brand, name: p.name, kindCode: "QUANTITY",
             categoryId: p.categoryId, categoryName: nil, imageUrl: p.imageUrl,
-            inStock: p.quantity, minTargetPrice: nil, maxTargetPrice: nil, salePrice: p.salePrice),
+            inStock: p.quantity, minTargetPrice: nil, maxTargetPrice: nil, salePrice: p.salePrice,
+            prices: p.prices),
             storage: "")
     }
 

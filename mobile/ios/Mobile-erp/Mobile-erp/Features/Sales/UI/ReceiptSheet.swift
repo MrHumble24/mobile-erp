@@ -66,6 +66,13 @@ struct ReceiptSheet: View {
                 }
             }
             rule
+            if r.showsPricing {
+                if r.priceLevelCode != nil && r.priceLevelCode != PriceLevels.retail {
+                    row(i18n.t("pricing.priceLevel"), i18n.t(PriceLevels.labelKey(r.priceLevelCode!)))
+                }
+                if let listPrice = r.listPrice { row(i18n.t("pricing.listPrice"), MoneyText.format(listPrice.string)) }
+                if let discount = r.discountAmount { row(i18n.t("pricing.discount"), "− \(MoneyText.format(discount.string))") }
+            }
             row(i18n.t("pos.totalDue"), MoneyText.format(r.total.string), bold: true)
             if !payments.isEmpty {
                 ForEach(payments) { p in

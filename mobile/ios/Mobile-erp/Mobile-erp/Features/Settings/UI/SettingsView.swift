@@ -62,6 +62,7 @@ struct SettingsView: View {
                     }
                     number("settings.closingTime", $model.form.closingTime, "closingTime", placeholder: "20:00")
                 }
+                discountsSection($model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
@@ -81,6 +82,39 @@ struct SettingsView: View {
             .padding(.vertical, Tokens.Space.md)
         }
         .scrollDismissesKeyboard(.interactively)
+        .modifier(SettingsDebugAnchor())
+    }
+
+    /// Discounts (ADR 0034): the six discount settings in one card.
+    private func discountsSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("pricing.settingsTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("pricing.settingsEnabled"), isOn: model.form.discountsEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                if model.wrappedValue.form.discountsEnabled {
+                    Toggle(i18n.t("pricing.settingsPercent"), isOn: model.form.discountPercentAllowed)
+                        .font(.ui(.body)).foregroundStyle(Tokens.text)
+                    Toggle(i18n.t("pricing.settingsAmount"), isOn: model.form.discountAmountAllowed)
+                        .font(.ui(.body)).foregroundStyle(Tokens.text)
+                    AppFormField(label: i18n.t("pricing.settingsPresetsPercent")) {
+                        AppTextField(placeholder: "5, 10, 15", text: model.form.discountPresetsPercent,
+                                     keyboard: .numbersAndPunctuation, font: .data(.regular))
+                    }
+                    AppFormField(label: i18n.t("pricing.settingsPresetsAmount")) {
+                        AppTextField(placeholder: "50000, 100000", text: model.form.discountPresetsAmount,
+                                     keyboard: .numbersAndPunctuation, font: .data(.regular))
+                        Text(i18n.t("pricing.settingsPresetsHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                    }
+                    AppFormField(label: i18n.t("pricing.settingsMax")) {
+                        AppTextField(placeholder: "0", text: model.form.maxDiscountPercent,
+                                     keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                            .sanitizeDecimal(model.form.maxDiscountPercent)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     /// One section card: heading + description, then the fields.
@@ -114,6 +148,20 @@ struct SettingsView: View {
                 .modifier(SettingFieldSanitizer(binding: binding, decimal: decimal, isTime: isTime))
             if invalid { FormErrorLine(message: i18n.t("common.required")) }
         }
+    }
+}
+
+/// Screenshot helper: `-settingsBottom 1` anchors the scroll at the bottom so
+/// the Discounts section is captured.
+private struct SettingsDebugAnchor: ViewModifier {
+    func body(content: Content) -> some View {
+        #if DEBUG
+        if UserDefaults.standard.string(forKey: "settingsBottom") == "1" {
+            content.defaultScrollAnchor(.bottom)
+        } else { content }
+        #else
+        content
+        #endif
     }
 }
 

@@ -33,6 +33,8 @@ struct DeviceDetail {
     var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     let specs: [String: String]
     let targetPrice: String?
+    /// Resolved list prices per level (ADR 0034); empty when none are set.
+    let prices: PriceLevelPrices
     let landedCost: String?
     /// Cost-restricted (absent for users without `device.cost.view`, ADR 0026/0027).
     let unitExpense: String?
@@ -59,6 +61,7 @@ struct DeviceDetail {
         self.modelLabel = "\(brand) \(name)".trimmingCharacters(in: .whitespaces)
         self.specs = DeviceSpecs.stringify(json["specs"] as? [String: Any] ?? [:])
         self.targetPrice = DeviceSpecs.scalar(json["targetPrice"])
+        self.prices = PriceLevelPrices.from(json: json["prices"] as? [String: Any])
         self.landedCost = DeviceSpecs.scalar(json["landedCost"])
         self.unitExpense = DeviceSpecs.scalar(json["unitExpense"])
         self.unitExpenseNote = json["unitExpenseNote"] as? String
