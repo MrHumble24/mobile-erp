@@ -18,8 +18,9 @@ import { NasiyaTab } from "./NasiyaTab"
 import { InventoryTab } from "./InventoryTab"
 import { PricingTab } from "./PricingTab"
 import { ClosingTab } from "./ClosingTab"
+import { CustomsFeesTab } from "./CustomsFeesTab"
 
-const REPORT_TABS = [
+const BASE_TABS = [
   "overview",
   "sales",
   "expenses",
@@ -28,30 +29,34 @@ const REPORT_TABS = [
   "pricing",
   "closing",
 ] as const
-type ReportTab = (typeof REPORT_TABS)[number]
+type ReportTab = (typeof BASE_TABS)[number] | "customs"
 
 export function ReportsPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
-  const [tab, setTab] = useUrlTab<ReportTab>("overview", { validTabs: REPORT_TABS })
-  const range = useReportRange()
-  const [breakdown, setBreakdown] = React.useState<BreakdownRequest | null>(null)
   const canViewCost = useAuthStore(
     (s) => s.user?.permissions?.includes("device.cost.view") ?? false
   )
+  const canReadCustoms = useAuthStore(
+    (s) => s.user?.permissions?.includes("customs.read") ?? false
+  )
+  const tabs: ReportTab[] = canReadCustoms ? [...BASE_TABS, "customs"] : [...BASE_TABS]
+  const [tab, setTab] = useUrlTab<ReportTab>("overview", { validTabs: tabs })
+  const range = useReportRange()
+  const [breakdown, setBreakdown] = React.useState<BreakdownRequest | null>(null)
   const props = { range, onBreakdown: setBreakdown, canViewCost }
 
   return (
     <div className="space-y-6">
       <PageHeader title={t("reports.title")} description={t("reports.subtitle")} />
-      {tab !== "inventory" && tab !== "pricing" && <ReportFilterRow range={range} />}
+      {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && <ReportFilterRow range={range} />}
 
       <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto pb-1">
           <TabsList className="inline-flex w-auto">
-            {REPORT_TABS.map((value) => (
+            {tabs.map((value) => (
               <TabsTrigger key={value} value={value}>
-                {t(`reports.tab_${value}`)}
+                {value === "customs" ? t("reports.customsTab") : t(`reports.tab_${value}`)}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -63,6 +68,7 @@ export function ReportsPage() {
         <TabsContent value="inventory" className="mt-5"><InventoryTab {...props} /></TabsContent>
         <TabsContent value="pricing" className="mt-5"><PricingTab {...props} /></TabsContent>
         <TabsContent value="closing" className="mt-5"><ClosingTab {...props} /></TabsContent>
+        {canReadCustoms && <TabsContent value="customs" className="mt-5"><CustomsFeesTab /></TabsContent>}
       </Tabs>
 
       <ReportBreakdownSheet

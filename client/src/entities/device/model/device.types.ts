@@ -16,6 +16,11 @@ export interface DeviceView {
   modelId: string
   specs: DeviceSpecs
   acquisitionCost?: string
+  /** Customs fee stamped at intake; cost-restricted (absent without permission). */
+  customsFee?: string
+  /** Per-phone expense; cost-restricted. */
+  unitExpense?: string
+  unitExpenseNote?: string | null
   landedCost?: string
   targetPrice: string | null
   statusCode: DeviceStatus | string
@@ -88,4 +93,15 @@ export interface ChangeStatusDto {
   toStatusCode: string
   reason?: string
   expectedVersion: number
+}
+
+/** `PATCH /devices/:id/expense` (`device.expense`). Note null clears it. */
+export interface EditExpenseDto {
+  unitExpense: number
+  unitExpenseNote?: string | null
+}
+
+/** `PATCH /devices/:id/customs-fee` (`customs.manage`). */
+export interface EditCustomsFeeDto {
+  customsFee: number
 }

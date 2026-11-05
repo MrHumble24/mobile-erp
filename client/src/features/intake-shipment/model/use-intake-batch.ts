@@ -11,6 +11,9 @@ export interface IntakeDraftValues {
   specs: Record<string, string>
   cost: number
   targetPrice: number
+  /** Per-phone expense; only sent and editable with `device.expense`. */
+  unitExpense: number
+  unitExpenseNote: string
 }
 
 interface ServerProblem {
@@ -95,6 +98,7 @@ export function useIntakeBatch(shipmentId: string) {
     const error = draftError(values, imei, imei2, batch, t)
     if (error) return error
     setErrorMsg("")
+    const note = values.unitExpenseNote.trim()
     setBatch((p) => [
       ...p,
       {
@@ -104,6 +108,8 @@ export function useIntakeBatch(shipmentId: string) {
         specs: values.specs,
         acquisitionCost: values.cost,
         targetPrice: values.targetPrice,
+        unitExpense: values.unitExpense > 0 ? values.unitExpense : undefined,
+        unitExpenseNote: note || undefined,
       },
     ])
     return null

@@ -2,6 +2,7 @@ import { CreditCard, Handshake, Pencil } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDateTime } from "@/shared/lib/format"
 import { type PartnerView, type LedgerEntry, usePartnerLedger } from "@/entities/partner"
+import { accountLabel } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
@@ -28,7 +29,10 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
         </span>
       </div>
       <div className="flex justify-between text-xs text-muted-foreground pt-1">
-        <span>{formatDateTime(entry.at)}</span>
+        <span>
+          {formatDateTime(entry.at)}
+          {entry.accountCode && ` · ${accountLabel(entry.accountCode, undefined, t)}`}
+        </span>
         <span>{t("partners.runningBalance")}: {formatMoney(entry.runningBalance)}</span>
       </div>
       {entry.notes && (

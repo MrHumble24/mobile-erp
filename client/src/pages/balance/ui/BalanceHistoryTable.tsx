@@ -22,11 +22,31 @@ function userName(user: LedgerUserRef | null): string {
   return [user.profile.firstName, user.profile.lastName].filter(Boolean).join(" ") || user.email
 }
 
+function AmountCell({ amount }: { amount: string | null }) {
+  const { t } = useI18n()
+  if (amount == null) {
+    return (
+      <TableCell className="font-mono text-sm whitespace-nowrap text-muted-foreground italic">
+        {t("balance.amountHidden")}
+      </TableCell>
+    )
+  }
+  const negative = Number(amount) < 0
+  return (
+    <TableCell
+      className={`font-mono font-bold text-sm whitespace-nowrap ${
+        negative ? "text-destructive" : "text-emerald-600"
+      }`}
+    >
+      {formatMoney(amount)}
+    </TableCell>
+  )
+}
+
 function HistoryRow({ tx }: { tx: LedgerTransaction }) {
   const { t } = useI18n()
   const accountKey = accountI18nKey(tx.accountCode)
   const typeKey = typeI18nKey(tx.typeCode)
-  const negative = Number(tx.amount) < 0
   return (
     <TableRow>
       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
@@ -36,13 +56,7 @@ function HistoryRow({ tx }: { tx: LedgerTransaction }) {
         <Badge variant="outline">{typeKey ? t(typeKey) : tx.type.label}</Badge>
       </TableCell>
       <TableCell className="text-sm">{accountKey ? t(accountKey) : tx.account.label}</TableCell>
-      <TableCell
-        className={`font-mono font-bold text-sm whitespace-nowrap ${
-          negative ? "text-destructive" : "text-emerald-600"
-        }`}
-      >
-        {formatMoney(tx.amount)}
-      </TableCell>
+      <AmountCell amount={tx.amount} />
       <TableCell className="text-sm text-muted-foreground max-w-[280px] truncate">
         {tx.note || "—"}
       </TableCell>

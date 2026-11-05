@@ -55,7 +55,6 @@ export function ShipmentsTab({ shipments, suppliers, suppliersMap }: ShipmentsTa
       />
       <EditShipmentDialog
         shipment={sel.editShipment}
-        canViewCost={canViewCost}
         open={sel.editOpen}
         onOpenChange={sel.setEditOpen}
       />

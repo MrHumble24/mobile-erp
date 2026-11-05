@@ -2,7 +2,7 @@ import * as React from "react"
 import { Download } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
-import { useSales, type SaleView } from "@/entities/sale"
+import { useSales, type SaleView, type SalePaymentLine } from "@/entities/sale"
 import { WarrantyLookupPanel, ReturnSaleDialog } from "@/features/warranty-lookup"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
@@ -20,7 +20,7 @@ type SalesTab = (typeof SALES_TABS)[number]
 interface ReturnTarget {
   id: string
   salePrice: number
-  payments: { accountCode: string }[]
+  payments: SalePaymentLine[]
 }
 
 function useSaleDialogs() {

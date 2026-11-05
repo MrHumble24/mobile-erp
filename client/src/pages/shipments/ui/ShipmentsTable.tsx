@@ -1,4 +1,4 @@
-import { Truck } from "lucide-react"
+import { Truck, TriangleAlert } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Eye, PackagePlus, Pencil } from "lucide-react"
 import { Button } from "@/shared/ui/button"
@@ -62,12 +62,24 @@ function RowActions({
 }
 
 function ShipmentRow({ shipment, suppliersMap, canViewCost, ...actions }: ShipmentsTableProps & { shipment: ShipmentView }) {
+  const { t } = useI18n()
   return (
     <TableRow>
       <TableCell className="font-medium">{suppliersMap[shipment.supplierId] || shipment.supplierId}</TableCell>
       <TableCell className="text-xs font-mono">{formatDate(shipment.shipmentDate)}</TableCell>
-      <TableCell><ShipmentProgressBadge received={shipment.deviceCount} expected={shipment.expectedCount} /></TableCell>
-      {canViewCost && <TableCell>{formatMoney(shipment.overheadCost)}</TableCell>}
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <ShipmentProgressBadge received={shipment.deviceCount} expected={shipment.expectedCount} />
+          {shipment.devicesWithoutCustomsFee > 0 && (
+            <TriangleAlert
+              className="size-3.5 text-amber-600"
+              aria-label={t("shipments.devicesWithoutCustomsFee", { count: shipment.devicesWithoutCustomsFee })}
+            />
+          )}
+        </div>
+      </TableCell>
+      {canViewCost && <TableCell>{formatMoney(shipment.unitExpenseTotal ?? 0)}</TableCell>}
+      {canViewCost && <TableCell>{formatMoney(shipment.customsFeeTotal ?? 0)}</TableCell>}
       <TableCell className="max-w-[180px] truncate text-xs text-muted-foreground">{shipment.notes || "-"}</TableCell>
       <TableCell className="text-right whitespace-nowrap">
         <RowActions shipment={shipment} {...actions} />
@@ -90,7 +102,8 @@ export function ShipmentsTable(props: ShipmentsTableProps) {
             <TableHead>{t("shipments.supplier")}</TableHead>
             <TableHead>{t("shipments.shipmentDate")}</TableHead>
             <TableHead>{t("shipments.receivedCount")}</TableHead>
-            {canViewCost && <TableHead>{t("shipments.overheadCost")}</TableHead>}
+            {canViewCost && <TableHead>{t("shipments.unitExpenseTotal")}</TableHead>}
+            {canViewCost && <TableHead>{t("shipments.customsFeeTotal")}</TableHead>}
             <TableHead>{t("common.notes")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>

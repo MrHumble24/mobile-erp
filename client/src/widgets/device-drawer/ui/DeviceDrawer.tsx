@@ -15,6 +15,7 @@ import { Link } from "@/shared/ui/link"
 import { toast } from "@/shared/ui/sonner"
 import { StatusChangeForm } from "./StatusChangeForm"
 import { QcSummarySection } from "./QcSummarySection"
+import { DeviceCostSection } from "./DeviceCostSection"
 
 const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
 
@@ -153,6 +154,8 @@ function DrawerBody({
   canViewCost,
   canChangeStatus,
   canEdit,
+  canEditExpense,
+  canManageCustoms,
   onEdit,
   onInspect,
   onSell,
@@ -161,6 +164,8 @@ function DrawerBody({
   canViewCost: boolean
   canChangeStatus: boolean
   canEdit: boolean
+  canEditExpense: boolean
+  canManageCustoms: boolean
   onEdit?: (d: DeviceView) => void
   onInspect?: (d: DeviceDetailView) => void
   onSell?: (d: DeviceDetailView) => void
@@ -175,6 +180,13 @@ function DrawerBody({
         <p className="text-center font-mono text-xs text-[#646464]">IMEI 2: {device.imei2}</p>
       )}
       <DeviceSpecsGrid device={device} canViewCost={canViewCost} />
+      {canViewCost && (
+        <DeviceCostSection
+          device={device}
+          canEditExpense={canEditExpense}
+          canManageCustoms={canManageCustoms}
+        />
+      )}
       <div className="space-y-2">
         <h4 className="text-sm font-semibold">{t("inventory.qcInspection")}</h4>
         <QcSummarySection qc={device.latestInspection} />
@@ -252,6 +264,8 @@ export function DeviceDrawer({ imei, open, onClose, onEdit, onInspect, onSell }:
             canViewCost={hasPermission("device.cost.view")}
             canChangeStatus={hasPermission("device.status.change")}
             canEdit={hasPermission("device.update")}
+            canEditExpense={hasPermission("device.expense")}
+            canManageCustoms={hasPermission("customs.manage")}
             onEdit={handleEdit}
             onInspect={onInspect}
             onSell={onSell}

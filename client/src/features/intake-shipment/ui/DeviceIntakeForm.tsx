@@ -18,7 +18,7 @@ import { IntakeConfirmDialog } from "./IntakeConfirmDialog"
 type Form = UseFormReturn<IntakeDraftValues>
 type Scan = ReturnType<typeof useScanIntake>
 
-const EMPTY: IntakeDraftValues = { imei: "", imei2: "", dualSim: false, modelId: "", specs: {}, cost: 0, targetPrice: 0 }
+const EMPTY: IntakeDraftValues = { imei: "", imei2: "", dualSim: false, modelId: "", specs: {}, cost: 0, targetPrice: 0, unitExpense: 0, unitExpenseNote: "" }
 
 function SlotError({ message }: { message?: string }) {
   if (!message) return null
@@ -116,6 +116,42 @@ function ModelField({ form, models, innerRef }: { form: Form; models: DeviceMode
   )
 }
 
+/** Phone expense (amount + optional note); shown only with `device.expense`. */
+function ExpenseFields({ form }: { form: Form }) {
+  const { t } = useI18n()
+  return (
+    <div className="space-y-3 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+      <Controller
+        control={form.control}
+        name="unitExpense"
+        render={({ field }) => (
+          <div className="space-y-1">
+            <Label>{t("inventory.unitExpense")}</Label>
+            <Input
+              type="number"
+              min={0}
+              value={field.value}
+              onChange={(e) => field.onChange(Number(e.target.value))}
+              className="h-10"
+            />
+          </div>
+        )}
+      />
+      <Controller
+        control={form.control}
+        name="unitExpenseNote"
+        render={({ field }) => (
+          <div className="space-y-1">
+            <Label>{t("inventory.unitExpenseNote")}</Label>
+            <Input value={field.value} onChange={(e) => field.onChange(e.target.value)} className="h-10" />
+          </div>
+        )}
+      />
+      <p className="text-xs text-muted-foreground">{t("inventory.unitExpenseHint")}</p>
+    </div>
+  )
+}
+
 function NumberField({
   form,
   name,
@@ -152,9 +188,11 @@ function NumberField({
 export function DeviceIntakeForm({
   models,
   onAdd,
+  canExpense,
 }: {
   models: DeviceModelView[]
   onAdd: (values: IntakeDraftValues) => string | null
+  canExpense: boolean
 }) {
   const { t } = useI18n()
   const form = useForm<IntakeDraftValues>({ defaultValues: EMPTY })
@@ -172,6 +210,7 @@ export function DeviceIntakeForm({
         <NumberField form={form} name="cost" label={t("shipments.acquisitionCost")} innerRef={scan.costRef} />
         <NumberField form={form} name="targetPrice" label={t("shipments.targetPrice")} />
       </div>
+      {canExpense && <ExpenseFields form={form} />}
       <ImeiBlock form={form} scan={scan} errors={scan.slotErrors} />
       <Button type="button" variant="outline" className="w-full" onClick={scan.stage}>
         + {t("shipments.addDevice")}

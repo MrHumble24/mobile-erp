@@ -8,9 +8,11 @@ import { useIntakeBatch } from "../model/use-intake-batch"
 export function DeviceIntakeLoop({
   shipmentId,
   canViewCost,
+  canExpense,
 }: {
   shipmentId: string
   canViewCost: boolean
+  canExpense: boolean
 }) {
   const { data: modelsData } = useDeviceModels()
   const { data: shipment } = useShipment(shipmentId)
@@ -30,7 +32,7 @@ export function DeviceIntakeLoop({
       {batch.errorMsg && (
         <div className="p-3 text-sm rounded bg-destructive/15 text-destructive font-medium">{batch.errorMsg}</div>
       )}
-      <DeviceIntakeForm models={modelsData || []} onAdd={batch.addItem} />
+      <DeviceIntakeForm models={modelsData || []} onAdd={batch.addItem} canExpense={canExpense} />
       <DeviceBatchList
         items={batch.batch}
         modelsMap={modelsMap}

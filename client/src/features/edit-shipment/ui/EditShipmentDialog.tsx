@@ -11,11 +11,9 @@ import { EditShipmentFields } from "./EditShipmentFields"
 
 function EditShipmentForm({
   shipment,
-  canViewCost,
   onDone,
 }: {
   shipment: ShipmentView
-  canViewCost: boolean
   onDone: () => void
 }) {
   const { t } = useI18n()
@@ -25,14 +23,13 @@ function EditShipmentForm({
     defaultValues: {
       shipmentDate: shipment.shipmentDate.slice(0, 10),
       expectedCount: String(shipment.expectedCount),
-      overheadCost: shipment.overheadCost ?? "",
       notes: shipment.notes ?? "",
     },
   })
 
   const onSubmit = (values: EditShipmentValues) => {
     updateMutation.mutate(
-      { id: shipment.id, dto: toUpdateShipmentDto(values, canViewCost) },
+      { id: shipment.id, dto: toUpdateShipmentDto(values) },
       {
         onSuccess: () => { toast.success(t("common.success")); onDone() },
         onError: (err: { message?: string }) => toast.error(err?.message || t("common.error")),
@@ -43,7 +40,7 @@ function EditShipmentForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 my-2">
-        <EditShipmentFields form={form} canViewCost={canViewCost} />
+        <EditShipmentFields form={form} />
         <Button type="submit" className="w-full" disabled={updateMutation.isPending}>
           {updateMutation.isPending ? t("common.loading") : t("common.save")}
         </Button>
@@ -54,12 +51,10 @@ function EditShipmentForm({
 
 export function EditShipmentDialog({
   shipment,
-  canViewCost,
   open,
   onOpenChange,
 }: {
   shipment: ShipmentView | null
-  canViewCost: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -71,7 +66,7 @@ export function EditShipmentDialog({
           <DialogTitle>{t("shipments.editShipment")}</DialogTitle>
         </DialogHeader>
         {open && shipment && (
-          <EditShipmentForm key={shipment.id} shipment={shipment} canViewCost={canViewCost} onDone={() => onOpenChange(false)} />
+          <EditShipmentForm key={shipment.id} shipment={shipment} onDone={() => onOpenChange(false)} />
         )}
       </DialogPopup>
     </Dialog>

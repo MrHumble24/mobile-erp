@@ -18,6 +18,9 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
 
 - `landedCostSnapshot` / `netProfit` on `SaleView` and `netProfit` on `SaleStats`
   are optional: the server redacts them without `sale.profit.view`.
+- `SaleView.payments` / `ReceiptView.payments` are the tender lines (`{accountCode,
+  amount}`); `[]` for sales predating ledger posting. `combineReceipts` sums them
+  per account across a multi-item cart; the receipt shows "Paid with …".
 - `useReturnSale` invalidates `saleKeys.all` (list + stats + detail) and device lists.
 - Components never import the repository; only hooks do.
 

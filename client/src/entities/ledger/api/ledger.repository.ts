@@ -1,6 +1,7 @@
 import { http } from "@/shared/api/http"
 import type {
   CreateLedgerEntryDto,
+  LedgerAccountOption,
   LedgerBalances,
   LedgerFilters,
   LedgerTransactionPage,
@@ -18,6 +19,10 @@ const toNumber = (value: Money): number =>
   typeof value === "string" ? Number(value) : value
 
 export const ledgerRepository = {
+  accounts: async (): Promise<LedgerAccountOption[]> => {
+    return http<LedgerAccountOption[]>("/ledger/accounts")
+  },
+
   balances: async (): Promise<LedgerBalances> => {
     const dto = await http<BalancesDto>("/ledger/balances")
     return {

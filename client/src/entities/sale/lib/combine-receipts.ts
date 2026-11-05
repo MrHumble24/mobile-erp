@@ -15,6 +15,7 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
     r.items.map((item) => ({ ...item, warranty: r.warranty }))
   )
   const total = receipts.reduce((sum, r) => sum + Number(r.total), 0)
+  const payments = mergePayments(receipts)
 
   return {
     saleId: first.saleId,
@@ -24,5 +25,18 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
     items,
     total: String(total),
     warranty: null,
+    payments,
   }
+}
+
+/** Sum the tender lines of every folded sale by account, so a combined receipt
+ *  still reads "Cash X · Card Y" across the whole cart. */
+function mergePayments(receipts: ReceiptView[]): ReceiptView["payments"] {
+  const byAccount = new Map<string, number>()
+  for (const r of receipts) {
+    for (const p of r.payments ?? []) {
+      byAccount.set(p.accountCode, (byAccount.get(p.accountCode) ?? 0) + Number(p.amount))
+    }
+  }
+  return [...byAccount].map(([accountCode, amount]) => ({ accountCode, amount: String(amount) }))
 }

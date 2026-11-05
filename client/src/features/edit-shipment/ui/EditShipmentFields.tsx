@@ -2,7 +2,7 @@ import type { UseFormReturn } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
 import { Input } from "@/shared/ui/input"
 import { Textarea } from "@/shared/ui/textarea"
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import type { EditShipmentValues } from "../model/edit-shipment.schema"
 
 type Form = UseFormReturn<EditShipmentValues>
@@ -41,26 +41,6 @@ function DateCountRow({ form }: { form: Form }) {
   )
 }
 
-function OverheadField({ form }: { form: Form }) {
-  const { t } = useI18n()
-  return (
-    <FormField
-      control={form.control}
-      name="overheadCost"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{t("shipments.overheadCost")}</FormLabel>
-          <FormControl>
-            <Input type="number" min={0} {...field} value={field.value ?? ""} />
-          </FormControl>
-          <FormDescription>{t("shipments.overheadRespreadHint")}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-}
-
 function NotesField({ form }: { form: Form }) {
   const { t } = useI18n()
   return (
@@ -80,11 +60,10 @@ function NotesField({ form }: { form: Form }) {
   )
 }
 
-export function EditShipmentFields({ form, canViewCost }: { form: Form; canViewCost: boolean }) {
+export function EditShipmentFields({ form }: { form: Form }) {
   return (
     <div className="space-y-4">
       <DateCountRow form={form} />
-      {canViewCost && <OverheadField form={form} />}
       <NotesField form={form} />
     </div>
   )

@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   RefreshCw,
   Wallet,
+  FileSpreadsheet,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -51,6 +52,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: "/partners", labelKey: "nav.partners", permission: "partner.read", icon: Users },
       { to: "/expenses", labelKey: "nav.expenses", permission: "expense.read", icon: DollarSign },
       { to: "/balance", labelKey: "nav.balance", permission: "balance.read", icon: Wallet },
+      { to: "/customs", labelKey: "nav.customs", permission: "customs.read", icon: FileSpreadsheet },
       { to: "/reports", labelKey: "nav.reports", permission: "report.finance", icon: BarChart3 },
     ],
   },

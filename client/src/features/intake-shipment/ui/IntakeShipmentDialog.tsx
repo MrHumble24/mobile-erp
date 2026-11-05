@@ -16,6 +16,7 @@ export function IntakeShipmentDialog({
 }) {
   const { t } = useI18n()
   const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
+  const canExpense = useAuthStore((s) => s.hasPermission("device.expense"))
   const [createdShipmentId, setCreatedShipmentId] = React.useState<string | null>(null)
   const activeShipmentId = existingShipmentId || createdShipmentId
 
@@ -32,9 +33,9 @@ export function IntakeShipmentDialog({
         </DialogHeader>
 
         {activeShipmentId ? (
-          <DeviceIntakeLoop shipmentId={activeShipmentId} canViewCost={canViewCost} />
+          <DeviceIntakeLoop shipmentId={activeShipmentId} canViewCost={canViewCost} canExpense={canExpense} />
         ) : (
-          <ShipmentCreateForm onSuccess={(newId) => setCreatedShipmentId(newId)} canViewCost={canViewCost} />
+          <ShipmentCreateForm onSuccess={(newId) => setCreatedShipmentId(newId)} />
         )}
       </DialogPopup>
     </Dialog>

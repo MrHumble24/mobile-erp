@@ -2,6 +2,7 @@ import * as React from "react"
 import { Printer, Copy, Check } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { accountLabel } from "@/entities/ledger"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 import type { ReceiptView, ReceiptItem } from "../model/sale.types"
@@ -102,6 +103,22 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
   )
 }
 
+function ChequePayments({ payments }: { payments: ReceiptView["payments"] }) {
+  const { t } = useI18n()
+  if (!payments || payments.length === 0) return null
+  return (
+    <div className="py-2 border-b border-dashed border-black/30 space-y-0.5 text-[10px]">
+      <p className="font-semibold">{t("balance.paidWith")}:</p>
+      {payments.map((p) => (
+        <div key={p.accountCode} className="flex justify-between">
+          <span>{accountLabel(p.accountCode, undefined, t)}</span>
+          <span className="font-mono">{formatMoney(p.amount)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ChequeWarranty({ warranty }: { warranty: ReceiptView["warranty"] }) {
   const { t } = useI18n()
   if (!warranty) return null
@@ -125,6 +142,7 @@ export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
       <ChequeHeader soldAt={receipt.soldAt} />
       <ChequeMeta receipt={receipt} />
       <ChequeItems items={receipt.items} total={receipt.total} />
+      <ChequePayments payments={receipt.payments} />
       <ChequeWarranty warranty={receipt.warranty} />
       <BarcodeVisual value={primaryImei} />
       <div className="pt-1 text-center text-[9px] text-black/70 space-y-0.5">
