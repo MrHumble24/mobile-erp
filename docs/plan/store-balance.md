@@ -644,6 +644,21 @@ Progress (updated as each step lands):
 | 2c Telegram: opening and closing balance | building (same branch as step 3) | not needed | not needed | not needed | |
 | 3 Expense per phone, customs fee from a price list, fee history | building | after server | after server | after server | No Excel upload until the client's file arrives. |
 
+Security check of the balance ledger (2026-11-05, read-only): no
+critical problems. Two serious ones, both being fixed on the server
+branch now:
+- A return could refund more than the sale took in. It will be capped
+  at what was paid.
+- A cashier given "see the balance" could read phone purchase costs in
+  the history. Those amounts will be hidden from anyone without the
+  cost permission.
+Also being fixed: two edits of the same expense at the same moment
+could leave the balance wrong; and oversized amounts gave a server
+error.
+Checked and fine: every money row is written together with its sale,
+expense or payment; nothing can edit or delete a ledger row; split
+payments must add up exactly; a replayed offline sale posts once.
+
 Notes for the user:
 - Railway does not run the seed on start. After a push, run
   `pnpm prisma db seed` against the Railway database, or the new
