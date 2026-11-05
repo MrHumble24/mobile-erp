@@ -1,6 +1,7 @@
 import * as React from "react"
 import { ChevronDown, UserPlus, User, X } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { formatNumber } from "@/shared/lib/format"
 import { useDebounce } from "@/shared/lib/hooks/use-debounce"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -76,7 +77,14 @@ function ExistingSearch({ onChange }: { onChange: (v: CustomerSelection) => void
                     setOpen(false)
                   }}
                 >
-                  <span className="truncate">{c.name}</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate">{c.name}</span>
+                    {c.bonusBalance !== null && (
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {t("customers.bonusPickerPoints", { points: formatNumber(c.bonusBalance) })}
+                      </span>
+                    )}
+                  </span>
                   {c.phone && <span className="ml-auto text-xs text-muted-foreground font-mono">{c.phone}</span>}
                 </CommandItem>
               ))}
