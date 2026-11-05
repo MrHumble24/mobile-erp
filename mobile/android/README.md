@@ -26,30 +26,22 @@ Build needs JDK 21: `export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openj
 emulator -avd Pixel_10a -no-window -no-audio -no-boot-anim &
 adb wait-for-device
 
-# 2. Install, then launch.
-cd mobile/android && ./gradlew :app:installDebug
-adb shell monkey -p uz.malika.erp -c android.intent.category.LAUNCHER 1
+# 2. Reach the host dev server. On this machine 10.0.2.2:3000 does not connect
+#    from Pixel_10a, so reverse the port (device 127.0.0.1:3000 -> host).
+adb reverse tcp:3000 tcp:3000
 
-# 3. Sign in without typing: tap "Dasturchi paneli" on the login screen,
-#    then the "Owner (Admin)" card — Quick Login prefills owner@malika.uz and
-#    its password (BOOTSTRAP_ADMIN_PASSWORD) — then tap "Kirish".
-#    Drive the UI with: adb shell input tap <x> <y>  (bounds via `adb shell uiautomator dump`).
+# 3. Install, then launch straight into a screen — pointed at the host, signed in.
+#    PW=$(grep BOOTSTRAP_ADMIN_PASSWORD ../../server/.env | cut -d= -f2)  # never echo it
+cd mobile/android && ./gradlew :app:installDebug
+adb shell am start -n uz.malika.erp/.MainActivity \
+  --es devHost 127.0.0.1 --es devEmail owner@malika.uz --es devPassword "$PW" --es open balance
 ```
 
-Point the app at the local dev server (`:3000` on the build host):
-- The app's **Development** env auto-targets `10.0.2.2:3000` on an emulator. On this
-  machine `10.0.2.2:3000` did **not** connect from Pixel_10a; `adb reverse tcp:3000 tcp:3000`
-  (device `localhost:3000` → host) is the reliable fallback, but the app must then be
-  pointed at `http://127.0.0.1:3000`. That override lives in Developer Console → Environment,
-  whose tab selector is currently unusable (see the SegmentedControl note below), so
-  reaching it needs a temporary one-line local tweak to `DevHost.resolveHost` / the
-  `DevConfig` default — revert before committing.
-- Known bug (foundation, not balance): the Developer Console tab bar
-  (`SegmentedControl` inside a `horizontalScroll` in `DevConsoleScreen`) collapses its
-  unselected segments to ~1 px, so only the currently-selected tab is tappable. Fix is
-  to drop `weight(1f)` / `fillMaxWidth()` when scrollable, in `shared/ui/Tabs.kt`.
-
-To open a screen, sign in then **Yana** (bottom-right) → tap the item (e.g. **Balance**).
+The `devHost`/`devEmail`/`devPassword`/`open` extras are **debug-only** (compiled out of
+release by `BuildConfig.DEBUG`, parsed by `core/LaunchExtras.kt`). Each is optional and
+independent: `devHost` selects Development with that host override, `devEmail` + `devPassword`
+sign in through the normal login path, `open` navigates to a feature route (`balance`, `pos`,
+`expenses`, …). Without extras the app starts normally; sign in by hand via Developer Console.
 
 ## Point the app at a server
 The server has **no URL prefix** and listens on `:3000`. Open the **Developer

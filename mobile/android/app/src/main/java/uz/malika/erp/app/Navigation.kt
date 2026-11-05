@@ -39,14 +39,14 @@ import uz.malika.erp.features.devconsole.ui.DevConsoleScreen
  * and the signed-out graph takes over automatically.
  */
 @Composable
-fun AppNavHost(container: AppContainer, session: SessionViewModel) {
+fun AppNavHost(container: AppContainer, session: SessionViewModel, openRoute: String? = null) {
     val state by session.state.collectAsState()
     val online by container.connectivity.online.collectAsState()
 
     if (state.user == null) {
         UnauthedNav(container, session, online)
     } else {
-        AuthedShell(container, session, online)
+        AuthedShell(container, session, online, openRoute)
     }
 }
 
@@ -96,11 +96,23 @@ private fun UnauthedNav(container: AppContainer, session: SessionViewModel, onli
 }
 
 @Composable
-private fun AuthedShell(container: AppContainer, session: SessionViewModel, online: Boolean) {
+private fun AuthedShell(
+    container: AppContainer,
+    session: SessionViewModel,
+    online: Boolean,
+    openRoute: String? = null,
+) {
     val user = session.state.value.user ?: return
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
+
+    // Debug launch extra `open`: navigate to the requested feature route once, after
+    // sign-in puts us in the shell. A bad/forbidden route is ignored (PermissionGate
+    // renders its own 403 inside the route).
+    LaunchedEffect(openRoute) {
+        if (openRoute != null) runCatching { nav.navigate(openRoute) { launchSingleTop = true } }
+    }
 
     val devUnlocked by DevAccess.unlocked.collectAsState()
     val navItems = FeatureRegistry.navItems.filter { it.permission == null || user.can(it.permission) } +

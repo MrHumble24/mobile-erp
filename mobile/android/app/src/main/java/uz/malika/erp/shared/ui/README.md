@@ -40,6 +40,10 @@ side by side in columns; each piece stacks as a full-width row. Wide windows
 - `SegmentedControl` — a surface-2 track; the selected segment is a white card with
   a text-colour label, the rest muted; radius 12, height 44, no Material border or
   selection check-mark. Labels are single-line and ellipsize on a narrow segment.
+  Segments are laid out by a custom `Layout` (not Row weights): with a bounded
+  width they split it equally; inside a `horizontalScroll` (unbounded width, e.g.
+  the Developer Console tab bar) they size to the widest label and the row scrolls.
+  A weight there used to collapse every segment to ~1 px.
 - `AppBottomSheet` — white card, no drag handle, 20 dp top corners, zero tonal
   elevation, 40%-of-text scrim.
 - `AppConfirmDialog` — white card, radius 20, zero tonal elevation, titleMedium

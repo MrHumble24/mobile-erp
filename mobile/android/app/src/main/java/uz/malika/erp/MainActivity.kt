@@ -7,6 +7,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import uz.malika.erp.core.AppEnv
+import uz.malika.erp.core.Config
+import uz.malika.erp.core.DevHost
+import uz.malika.erp.core.LaunchExtras
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +26,13 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
         val container = (application as MalikaApplication).container
-        setContent { MalikaApp(container) }
+        // Debug-only launch extras (adb am start): point Development at a host and,
+        // optionally, sign in + open a route. Compiled out of release by DEBUG.
+        val launch = if (BuildConfig.DEBUG) LaunchExtras.fromIntent(intent) else null
+        launch?.host?.let { host ->
+            container.devConfig.setEnv(AppEnv.DEVELOPMENT)
+            container.devConfig.setOverride(AppEnv.DEVELOPMENT, DevHost.devUrl(host, Config.DEV_PORT))
+        }
+        setContent { MalikaApp(container, launch) }
     }
 }
