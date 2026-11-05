@@ -563,6 +563,10 @@ Three prices (Change 12) go with step 4 or 5, where products and the
 POS card are built. The device lookup lists
 (`docs/reference/device-lists/`) are loaded in step 5.
 
+Branches update, 2026-11-05 evening: given to Gemini as one task for the
+server and the website (`docs/handoffs/gemini/018-branches-full-stack.md`).
+Phone apps follow after Claude checks it.
+
 Full branches (the rest of Change 9: store picker, users per store,
 moving stock between stores) are built when the client opens a second
 branch, and at the latest before the storefront (step 7).

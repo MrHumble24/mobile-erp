@@ -1,6 +1,6 @@
 # 001 — Full branches on the server (Change 9)
 
-Status: open · Owner: OpenCode · Start only after Claude says step 11 (bonus points) is merged into `main`
+Status: cancelled on 2026-11-05 · replaced by `docs/handoffs/gemini/018-branches-full-stack.md` (the user gave branches to Gemini as a full-stack task). An unfinished attempt is kept on branch `agent/opencode/branches-server` (`bce130b`, does not compile).
 
 ## Why
 The client wants one owner with many branches. The server already has a `stores` table and a
