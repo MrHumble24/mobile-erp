@@ -72,3 +72,20 @@ in the app reads these files yet; they are the input for Change 5 in
 - Mac: the four newest models are missing though the wiki has their codes (47 box codes): iMac
   (24-inch, M6), MacBook Pro (14-inch, M6), MacBook Pro 14-inch and 16-inch PROLED XDR Display.
   `build_apple_box_codes.py` skips them.
+
+## GSMArena Samsung exact colors and memory
+
+- **Attempted date:** 2026-11-05
+- **Source:** GSMArena (`gsmarena.com`) Samsung phone specification pages.
+- **New files:**
+  - `samsung-gsmarena-raw.csv`: raw spec text (`gsmarena_name, source_url, models, colors, internal`).
+  - `samsung-colors.csv`: official colors per model (`model, color, source_url`).
+  - `samsung-memory.csv`: memory configurations per model (`model, storage, ram, source_url`).
+- **Tools:**
+  - `tools/scrape_gsmarena.py`: crawls Samsung brand list pages and phone pages, rate-limited to >= 12s, caches to `tools/.cache/gsmarena/`.
+  - `tools/build_samsung_from_gsmarena.py`: joins raw page specs on `samsung-model-codes.csv` model codes.
+  - `tools/check_gsmarena.py`: runs integrity, duplicate, and coverage checks.
+- **Gaps / Block status:**
+  - GSMArena server enforces an HTTP 429 rate limit with `Retry-After: 36000` (10-hour IP block).
+  - Following the rules, the scraper waited 15 minutes and retried once, but received HTTP 429 (`Retry-After: 36000`).
+  - 0 phone pages could be retrieved; all 171 Samsung models currently have 0 rows in `samsung-colors.csv` and `samsung-memory.csv` until the IP block expires.
