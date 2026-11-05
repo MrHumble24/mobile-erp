@@ -6,10 +6,13 @@ import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
 import type { StockScanProduct } from "@/entities/stock"
+import type { CatalogEntry, CatalogUnit } from "@/entities/catalog"
 import { useCartStore, isLineBlocked, isPaymentBlocked, toLinePrices } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
+import { usePosPrefsStore } from "./pos-prefs.store"
+import { catalogUnitToDevice, catalogEntryToProduct } from "../lib/catalog-cart"
 
 export type PosMode = "sale" | "nasiya"
 
@@ -33,6 +36,8 @@ export function usePosTerminal() {
 
   const [mode, setMode] = React.useState<PosMode>("sale")
   const [customerOpen, setCustomerOpen] = React.useState(false)
+  const inputMode = usePosPrefsStore((s) => s.inputMode)
+  const setInputMode = usePosPrefsStore((s) => s.setInputMode)
 
   const lines = useCartStore((s) => s.lines)
   const paymentMethod = useCartStore((s) => s.paymentMethod)
@@ -61,6 +66,15 @@ export function usePosTerminal() {
     addProduct(product)
   }
 
+  // Units already in the cart are never offered again in catalog mode.
+  const excludeUnitIds = React.useMemo(
+    () => new Set(lines.filter((l) => l.kind === "unit").map((l) => l.device.id)),
+    [lines]
+  )
+  const onPickUnit = (unit: CatalogUnit, entry: CatalogEntry) =>
+    onInStock(catalogUnitToDevice(entry, unit))
+  const onPickQuantity = (entry: CatalogEntry) => onProduct(catalogEntryToProduct(entry))
+
   const scanner = usePosScanner(onInStock, onProduct)
   const checkout = usePosCheckout(blocked, () => {
     clearCart()
@@ -83,7 +97,12 @@ export function usePosTerminal() {
   return {
     mode,
     setMode,
+    inputMode,
+    setInputMode,
     scanner,
+    excludeUnitIds,
+    onPickUnit,
+    onPickQuantity,
     canViewCost,
     minMargin,
     me,

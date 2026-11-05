@@ -54,10 +54,45 @@ export function configureHttp(options: {
   if (options.onUnauthorized) unauthorizedHandler = options.onUnauthorized
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+/** The API origin. Exported so an `<img>` can load a `/uploads/...` asset path. */
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+
+/** Turns a server-relative asset path (`/uploads/x.png`) into an absolute URL. */
+export function apiAssetUrl(path: string | null | undefined): string | null {
+  if (!path) return null
+  if (/^https?:\/\//.test(path)) return path
+  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    let errorBody: { statusCode?: number; message?: string | string[]; error?: string; [key: string]: unknown } = {}
+    try {
+      errorBody = await response.json()
+    } catch {
+      errorBody = { message: response.statusText }
+    }
+
+    const message = Array.isArray(errorBody.message)
+      ? errorBody.message.join(", ")
+      : errorBody.message || `Request failed with status ${response.status}`
+
+    if (response.status === 401) {
+      unauthorizedHandler()
+    }
+
+    throw new HttpError(response.status, message, errorBody.error, errorBody)
+  }
+
+  if (response.status === 204) {
+    return {} as T
+  }
+
+  return response.json()
+}
 
 export async function http<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  let url = `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
+  let url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
 
   if (options.params) {
     const searchParams = new URLSearchParams()
@@ -94,28 +129,32 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     throw new NetworkError(err)
   }
 
-  if (!response.ok) {
-    let errorBody: { statusCode?: number; message?: string | string[]; error?: string; [key: string]: unknown } = {}
-    try {
-      errorBody = await response.json()
-    } catch {
-      errorBody = { message: response.statusText }
-    }
+  return handleResponse<T>(response)
+}
 
-    const message = Array.isArray(errorBody.message)
-      ? errorBody.message.join(", ")
-      : errorBody.message || `Request failed with status ${response.status}`
+/**
+ * Multipart upload of one file. Lets the browser set the `Content-Type`
+ * boundary; everything else (auth, error normalization) matches `http`.
+ */
+export async function uploadFile<T>(
+  path: string,
+  file: File,
+  fieldName = "file"
+): Promise<T> {
+  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
+  const form = new FormData()
+  form.append(fieldName, file)
 
-    if (response.status === 401) {
-      unauthorizedHandler()
-    }
+  const headers: Record<string, string> = {}
+  const token = tokenGetter()
+  if (token) headers.Authorization = `Bearer ${token}`
 
-    throw new HttpError(response.status, message, errorBody.error, errorBody)
+  let response: Response
+  try {
+    response = await fetch(url, { method: "POST", headers, body: form })
+  } catch (err) {
+    throw new NetworkError(err)
   }
 
-  if (response.status === 204) {
-    return {} as T
-  }
-
-  return response.json()
+  return handleResponse<T>(response)
 }

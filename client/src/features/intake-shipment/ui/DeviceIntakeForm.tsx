@@ -10,8 +10,10 @@ import { Combobox } from "@/shared/ui/combobox"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { useScanIntake } from "../model/use-scan-intake"
+import { useIntakeLookup } from "../model/use-intake-lookup"
 import type { IntakeDraftValues } from "../model/use-intake-batch"
 import { IntakeConfirmDialog } from "./IntakeConfirmDialog"
+import { IntakeLookupPanel } from "./IntakeLookupPanel"
 import { ImeiBlock, SerialBlock } from "./IntakeIdentifierFields"
 
 type Form = UseFormReturn<IntakeDraftValues>
@@ -126,10 +128,12 @@ export function DeviceIntakeForm({
   models,
   onAdd,
   canExpense,
+  canUpdate,
 }: {
   models: DeviceModelView[]
   onAdd: (values: IntakeDraftValues) => string | null
   canExpense: boolean
+  canUpdate: boolean
 }) {
   const { t } = useI18n()
   const form = useForm<IntakeDraftValues>({ defaultValues: EMPTY })
@@ -139,6 +143,7 @@ export function DeviceIntakeForm({
   const scan = useScanIntake(form, onAdd)
   // QUANTITY products are not stocked as units here (server rejects them, ADR 0029).
   const intakeModels = models.filter((m) => m.kindCode !== "QUANTITY")
+  const lookup = useIntakeLookup(form, intakeModels, canUpdate)
   const modelLabel = models.find((m) => m.id === modelId)
   const isSerial = kindCode === "SERIAL"
   const confirmCode = isSerial ? form.getValues("serialNumber") : form.getValues("imei")
@@ -158,6 +163,7 @@ export function DeviceIntakeForm({
       ) : (
         <ImeiBlock form={form} scan={scan} errors={scan.slotErrors} />
       )}
+      <IntakeLookupPanel lookup={lookup} models={intakeModels} />
       <Button type="button" variant="outline" className="w-full" onClick={scan.stage}>
         + {t("shipments.addDevice")}
       </Button>
