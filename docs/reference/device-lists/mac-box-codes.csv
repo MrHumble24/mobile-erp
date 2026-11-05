@@ -1,0 +1,415 @@
+model,a_numbers,identifier,color,storage,ram,box_code,unit_type
+"iMac (Retina 4K, 21.5-inch, 2019)",A2116,"iMac19,2",,1TB,,MRT42,retail
+"iMac (Retina 4K, 21.5-inch, 2019)",A2116,"iMac19,2",,256GB,,MHK33,retail
+"iMac (Retina 4K, 21.5-inch, 2019)",A2116,"iMac19,2",,1TB,,MRT32,retail
+"iMac (Retina 4K, 21.5-inch, 2019)",A2116,"iMac19,2",,256GB,,MHK23,retail
+"iMac (Retina 5K, 27-inch, 2019)",A2115,"iMac19,1",,,,MRQY2,retail
+"iMac (Retina 5K, 27-inch, 2019)",A2115,"iMac19,1",,,,MRR02,retail
+"iMac (Retina 5K, 27-inch, 2019)",A2115,"iMac19,1",,,,MRR12,retail
+"iMac (Retina 5K, 27-inch, 2020)",A2115,"iMac20,1 iMac20,2",,,,MXWT2,retail
+"iMac (Retina 5K, 27-inch, 2020)",A2115,"iMac20,1 iMac20,2",,,,MXWU2,retail
+"iMac (Retina 5K, 27-inch, 2020)",A2115,"iMac20,1 iMac20,2",,,,MXWV2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Silver,128GB,,MREA2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Silver,256GB,,MREC2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Silver,512GB,,MUQU2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Space Gray,128GB,,MRE82,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Space Gray,256GB,,MRE92,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Space Gray,512GB,,MUQT2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Gold,128GB,,MREE2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Gold,256GB,,MREF2,retail
+"MacBook Air (Retina, 13-inch, 2018)",A1932,,Gold,512GB,,MUQV2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Silver,128GB,,MVFK2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Silver,256GB,,MVFL2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Space Gray,128GB,,MVFH2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Space Gray,256GB,,MVFJ2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Space Gray,512GB,,MVH62,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Gold,128GB,,MVFM2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Gold,256GB,,MVFN2,retail
+"MacBook Air (Retina, 13-inch, 2019)",A1932,,Gold,512GB,,MVH82,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Silver,,,MWTK2,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Silver,,,MVH42,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Space Gray,,,MWTJ2,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Space Gray,,,MVH22,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Gold,,,MWTL2,retail
+"MacBook Air (Retina, 13-inch, 2020)",A2179,,Gold,,,MVH52,retail
+"MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",A1989,,Silver,256GB,,MR9U2,retail
+"MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",A1989,,Silver,512GB,,MR9V2,retail
+"MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",A1989,,Space Gray,256GB,,MR9Q2,retail
+"MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",A1989,,Space Gray,512GB,,MR9R2,retail
+"MacBook Pro (13-inch, 2018, Four Thunderbolt 3 ports)",A1989,,Space Gray,1TB,,MR9T2,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Silver,,,MR962,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Silver,,,MR972,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Space Gray,,,MR932,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Space Gray,,,MR942,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Space Gray,,,MR952,retail
+"MacBook Pro (15-inch, 2018)",A1990,,Space Gray,,,MUQH2,retail
+"MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",A2159,,Silver,128GB,,MUHQ2,retail
+"MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",A2159,,Silver,256GB,,MUHR2,retail
+"MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",A2159,,Space Gray,128GB,,MUHN2,retail
+"MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)",A2159,,Space Gray,256GB,,MUHP2,retail
+"MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",A1989,,Silver,256GB,,MV992,retail
+"MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",A1989,,Silver,512GB,,MV9A2,retail
+"MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",A1989,,Space Gray,256GB,,MV962,retail
+"MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",A1989,,Space Gray,512GB,,MV972,retail
+"MacBook Pro (13-inch, 2019, Four Thunderbolt 3 ports)",A1989,,,,,MV982,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Silver,,,MV932,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Silver,,,MV952,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Silver,,,MV922,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Space Gray,,,MV912,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Space Gray,,,MV942,retail
+"MacBook Pro (15-inch, 2019)",A1990,,Space Gray,,,MV902,retail
+"MacBook Pro (16-inch, 2019)",A2141,,Silver,,,MVVM2,retail
+"MacBook Pro (16-inch, 2019)",A2141,,Silver,,,MVVL2,retail
+"MacBook Pro (16-inch, 2019)",A2141,,Space Gray,,,MVVK2,retail
+"MacBook Pro (16-inch, 2019)",A2141,,Space Gray,,,MVVJ2,retail
+"MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",A2289,,Silver,256GB,,MXK62,retail
+"MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",A2289,,Silver,512GB,,MXK72,retail
+"MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",A2289,,Space Gray,256GB,,MXK32,retail
+"MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)",A2289,,Space Gray,512GB,,MXK52,retail
+"MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",A2251,,Silver,512GB,,MWP72,retail
+"MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",A2251,,Silver,1TB,,MWP82,retail
+"MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",A2251,,Space Gray,512GB,,MWP42,retail
+"MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",A2251,,Space Gray,1TB,,MWP52,retail
+"MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)",A2251,,Space Gray,2TB,,MWP62,retail
+Mac mini (Late 2018),A1993,,,,,MRTT2,retail
+Mac mini (Late 2018),A1993,,,,,MXNF2,retail
+Mac mini (Late 2018),A1993,,,,,MRTR2,retail
+Mac mini (Late 2018),A1993,,,,,MXNG2,retail
+"iMac (24-inch, M1, 2021)",A2438,"iMac21,1",Silver,256GB,,MGTF3,retail
+"iMac (24-inch, M1, 2021)",A2438,"iMac21,1",Pink,256GB,,MJVA3,retail
+"iMac (24-inch, M1, 2021)",A2438,"iMac21,1",Blue,256GB,,MJV93,retail
+"iMac (24-inch, M1, 2021)",A2438,"iMac21,1",Green,256GB,,MJV83,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Silver,256GB,,MGPC3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Silver,512GB,,MGPD3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Pink,256GB,,MGPM3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Pink,512GB,,MGPN3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Blue,256GB,,MGPK3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Blue,512GB,,MGPL3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Green,256GB,,MGPH3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Green,512GB,,MGPJ3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Yellow,256GB,,MGPF3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Yellow,512GB,,MGPG3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Orange,256GB,,MGPR3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Orange,512GB,,MGPT3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Purple,256GB,,MGPP3,retail
+"iMac (24-inch, M1, 2021)",A2439,"iMac21,2",Purple,512GB,,MGPQ3,retail
+"iMac (24-inch, 2023)",A2874,"Mac15,4",Silver,256GB,,MQR93,retail
+"iMac (24-inch, 2023)",A2874,"Mac15,4",Pink,256GB,,MQRD3,retail
+"iMac (24-inch, 2023)",A2874,"Mac15,4",Blue,256GB,,MQRC3,retail
+"iMac (24-inch, 2023)",A2874,"Mac15,4",Green,256GB,,MQRA3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Silver,256GB,,MQRJ3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Silver,512GB,,MQRK3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Pink,256GB,,MQRT3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Pink,256GB,,3M718,demo
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Pink,512GB,,MQRU3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Blue,256GB,,MQRQ3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Blue,256GB,,3M717,demo
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Blue,512GB,,MQRR3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Green,256GB,,MQRN3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Green,256GB,,3M712,demo
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Green,512GB,,MQRP3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Yellow,256GB,,MQRL3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Yellow,512GB,,MQRM3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Orange,256GB,,MQRX3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Orange,512GB,,MQRY3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Purple,256GB,,MQRV3,retail
+"iMac (24-inch, 2023)",A2873,"Mac15,5",Purple,512GB,,MQRW3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Silver,256GB,,MWUC3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Pink,256GB,,MWUG3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Blue,256GB,,MWUF3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Green,256GB,,MWUE3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Yellow,256GB,,MWUD3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Orange,256GB,,MWUJ3,retail
+"iMac (24-inch, 2024)",A3247,"Mac16,2",Purple,256GB,,MWUH3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Silver (Nano-Texture),256GB,,MD3H4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Silver,256GB,,MWUU3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Silver,512GB,16GB,MWUV3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Silver,512GB,24GB,MCR24,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Pink,256GB,,MWV43,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Pink,512GB,16GB,MWV53,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Pink,512GB,24GB,MD2U4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Blue,256GB,,MDEH4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Blue,256GB,,MWV13,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Blue,512GB,16GB,MWV33,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Blue,512GB,24GB,MD2T4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Green,256GB,,MWUY3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Green,512GB,16GB,MWV03,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Green,512GB,24GB,MD2Q4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Yellow,256GB,,MWUW3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Yellow,512GB,16GB,MWUX3,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Yellow,512GB,24GB,MD2P4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Orange,256GB,,MWV83,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Orange,512GB,16GB,MWV93,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Orange,512GB,24GB,MD2W4,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Purple,256GB,,MWV63,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Purple,512GB,16GB,MWV73,retail
+"iMac (24-inch, 2024)",A3137,"Mac16,3",Purple,512GB,24GB,MD2V4,retail
+"Mac mini (M1, 2020)",A2348,"Macmini9,1",,256GB,,MGNR3,retail
+"Mac mini (M1, 2020)",A2348,"Macmini9,1",,512GB,,MGNT3,retail
+Mac mini (2023),A2686,"Mac14,3",,256GB,,MMFJ3,retail
+Mac mini (2023),A2686,"Mac14,3",,256GB,,3L479,demo
+Mac mini (2023),A2686,"Mac14,3",,512GB,,MMFK3,retail
+Mac mini (2023),A2816,"Mac14,12",,512GB,,MNH73,retail
+Mac mini (2024),A3238,"Mac16,10",,256GB,,MU9D3,retail
+Mac mini (2024),A3238,"Mac16,10",,256GB,,3M536,demo
+Mac mini (2024),A3238,"Mac16,10",,512GB,16GB,MU9E3,retail
+Mac mini (2024),A3238,"Mac16,10",,512GB,24GB,MCYT4,retail
+Mac mini (2024),A3239,"Mac16,11",,512GB,,MCX44,retail
+Mac mini (M6 or M5 Pro),A3534,"Mac18,5",,256GB,,MHQK4,retail
+Mac mini (M6 or M5 Pro),A3534,"Mac18,5",,512GB,16GB,MHQL4,retail
+Mac mini (M6 or M5 Pro),A3534,"Mac18,5",,512GB,24GB,MHQM4,retail
+Mac mini (M6 or M5 Pro),A3534,"Mac18,5",,1TB,32GB,MHQV4,retail
+Mac mini (M6 or M5 Pro),A3535,"Mac17,16",,512GB,24GB,MHQN4,retail
+Mac mini (M6 or M5 Pro),A3535,"Mac17,16",,1TB,64GB,MHQU4,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Space Gray,256GB,,MGN63,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Space Gray,512GB,,MGN73,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Silver,256GB,,MGN93,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Silver,512GB,,MGNA3,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Gold,256GB,,MGND3,retail
+"MacBook Air (M1, 2020)",A2337,"MacBookAir10,1",Gold,512GB,,MGNE3,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Space Gray,256GB,8GB,MLXY3,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Space Gray,256GB,16GB,MC7U4,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Space Gray,512GB,,MLXX3,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Silver,256GB,8GB,MLXW3,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Silver,256GB,16GB,MC7V4,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Silver,512GB,,MLY03,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Starlight,256GB,8GB,MLY13,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Starlight,256GB,16GB,MC7W4,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Starlight,512GB,,MLY23,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Midnight,256GB,8GB,MLY33,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Midnight,256GB,16GB,MC7X4,retail
+"MacBook Air (M2, 2022)",A2681,"Mac14,2",Midnight,512GB,,MLY43,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Space Gray,256GB,,MQKP3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Space Gray,512GB,,MQKQ3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Silver,256GB,,MQKR3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Silver,512GB,,MQKT3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Starlight,256GB,,MQKU3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Starlight,512GB,,MQKV3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Midnight,256GB,,MQKW3,retail
+"MacBook Air (15-inch, M2, 2023)",A2941,"Mac14,5",Midnight,512GB,,MQKX3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Space Gray,256GB,8GB,MRXN3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Space Gray,256GB,16GB,MC8G4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Space Gray,512GB,8GB,MRXP3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Space Gray,512GB,16GB,MXCR3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Space Gray,512GB,24GB,MC8M4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Silver,256GB,8GB,MRXQ3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Silver,256GB,16GB,MC8H4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Silver,512GB,8GB,MRXR3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Silver,512GB,16GB,MXCT3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Silver,512GB,24GB,MC8N4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Starlight,256GB,8GB,MRXT3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Starlight,256GB,16GB,MC8J4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Starlight,512GB,8GB,MRXU3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Starlight,512GB,16GB,MXCU3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Starlight,512GB,24GB,MC8P4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,256GB,8GB,MRXV3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,256GB,8GB,3M534,demo
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,256GB,16GB,MC8K4,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,512GB,8GB,MRXW3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,512GB,16GB,MXCV3,retail
+"MacBook Air (13-inch, M3, 2024)",A3113,"Mac15,12",Midnight,512GB,24GB,MC8Q4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Space Gray,256GB,8GB,MRYM3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Space Gray,256GB,16GB,MC9D4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Space Gray,512GB,8GB,MRYN3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Space Gray,512GB,16GB,MXD13,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Space Gray,512GB,24GB,MC9H4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Silver,256GB,8GB,MRYP3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Silver,256GB,16GB,MC9E4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Silver,512GB,8GB,MRYQ3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Silver,512GB,16GB,MXD23,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Silver,512GB,24GB,MC9J4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Starlight,256GB,8GB,MRYR3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Starlight,256GB,16GB,MC9F4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Starlight,512GB,8GB,MRYT3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Starlight,512GB,16GB,MXD33,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Starlight,512GB,24GB,MC9K4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Midnight,256GB,8GB,MRYU3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Midnight,256GB,16GB,MC9G4,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Midnight,512GB,8GB,MRYV3,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Midnight,512GB,16GB,MXD43,retail
+"MacBook Air (15-inch, M3, 2024)",A3114,"Mac15,13",Midnight,512GB,24GB,MC9L4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Sky Blue,256GB,,MC6T4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Sky Blue,512GB,16GB,MC6U4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Sky Blue,512GB,24GB,MC6V4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Sky Blue,1TB,,MDG24,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Silver,256GB,,MW0W3,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Silver,512GB,16GB,MW0X3,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Silver,512GB,24GB,MC654,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Starlight,256GB,,MW0Y3,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Starlight,512GB,16GB,MW103,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Starlight,512GB,24GB,MC6A4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Starlight,1TB,,MDG54,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Midnight,256GB,,MW123,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Midnight,512GB,16GB,MW133,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Midnight,512GB,24GB,MC6C4,retail
+"MacBook Air (13-inch, M4, 2025)",A3240,"Mac16,12",Midnight,1TB,,MDG64,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Sky Blue,256GB,,MC7A4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Sky Blue,512GB,16GB,MC7C4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Sky Blue,512GB,24GB,MC7D4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Sky Blue,1TB,,MDG34,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Silver,256GB,,MW1G3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Silver,512GB,16GB,MW1H3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Silver,512GB,24GB,MC6J4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Starlight,256GB,,MW1J3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Starlight,512GB,16GB,MW1K3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Starlight,512GB,24GB,MC6K4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Starlight,1TB,,MDG84,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Midnight,256GB,,MW1L3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Midnight,256GB,,3M795,demo
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Midnight,512GB,16GB,MW1M3,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Midnight,512GB,24GB,MC6L4,retail
+"MacBook Air (15-inch, M4, 2025)",A3241,"Mac16,13",Midnight,1TB,,MDG94,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Sky Blue,512GB,16GB,MDHH4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Sky Blue,512GB,24GB,MGP94,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Sky Blue,1TB,16GB,MDHJ4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Sky Blue,1TB,24GB,MDHK4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Silver,512GB,16GB,MDH74,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Silver,1TB,16GB,MDH84,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Silver,1TB,24GB,MDH94,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Starlight,512GB,16GB,MDHA4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Starlight,512GB,24GB,MGP74,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Starlight,1TB,16GB,MDHC4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Starlight,1TB,24GB,MDHD4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Midnight,512GB,16GB,MDHE4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Midnight,512GB,24GB,MGP84,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Midnight,1TB,16GB,MDHF4,retail
+"MacBook Air (13-inch, M5)",A3449,"Mac17,3",Midnight,1TB,24GB,MDHG4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Sky Blue,512GB,16GB,MDVQ4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Sky Blue,512GB,16GB,3P272,demo
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Sky Blue,512GB,24GB,MGPE4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Sky Blue,1TB,16GB,MDVT4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Sky Blue,1TB,24GB,MDVU4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Silver,512GB,16GB,MDV94,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Silver,1TB,16GB,MDVA4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Silver,1TB,24GB,MDVC4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Starlight,512GB,16GB,MDVD4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Starlight,512GB,24GB,MGPC4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Starlight,1TB,16GB,MDVE4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Starlight,1TB,24GB,MDVF4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Midnight,512GB,16GB,MDVH4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Midnight,512GB,24GB,MGPD4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Midnight,1TB,16GB,MDVK4,retail
+"MacBook Air (15-inch, M5)",A3448,"Mac17,4",Midnight,1TB,24GB,MDVN4,retail
+MacBook Neo,A3404,"Mac17,5",Silver,256GB,,MHFA4,retail
+MacBook Neo,A3404,"Mac17,5",Silver,256GB,,3P442,demo
+MacBook Neo,A3404,"Mac17,5",Silver,512GB,,MHFC4,retail
+MacBook Neo,A3404,"Mac17,5",Blush,256GB,,MHFH4,retail
+MacBook Neo,A3404,"Mac17,5",Blush,512GB,,MHFJ4,retail
+MacBook Neo,A3404,"Mac17,5",Citrus,256GB,,MHFD4,retail
+MacBook Neo,A3404,"Mac17,5",Citrus,512GB,,MHFE4,retail
+MacBook Neo,A3404,"Mac17,5",Indigo,256GB,,MHFF4,retail
+MacBook Neo,A3404,"Mac17,5",Indigo,512GB,,MHFG4,retail
+"MacBook Pro (13-inch, M1, 2020)",A2338,"MacBookPro17,1",Space Gray,256GB,,MYD82,retail
+"MacBook Pro (13-inch, M1, 2020)",A2338,"MacBookPro17,1",Space Gray,512GB,,MYD92,retail
+"MacBook Pro (13-inch, M1, 2020)",A2338,"MacBookPro17,1",Silver,256GB,,MYDA2,retail
+"MacBook Pro (13-inch, M1, 2020)",A2338,"MacBookPro17,1",Silver,512GB,,MYDC2,retail
+"MacBook Pro (14-inch, 2021)",A2442,"MacBookPro18,3",Space Gray,512GB,,MKGP3,retail
+"MacBook Pro (14-inch, 2021)",A2442,"MacBookPro18,3",Space Gray,1TB,,MKGQ3,retail
+"MacBook Pro (14-inch, 2021)",A2442,"MacBookPro18,3",Silver,512GB,,MKGR3,retail
+"MacBook Pro (14-inch, 2021)",A2442,"MacBookPro18,3",Silver,1TB,,MKGT3,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,1",Space Gray,512GB,,MK183,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,1",Space Gray,1TB,,MK193,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,1",Silver,512GB,,MK1E3,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,1",Silver,1TB,,MK1F3,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,2",Space Gray,1TB,,MK1A3,retail
+"MacBook Pro (16-inch, 2021)",A2485,"MacBookPro18,2",Silver,1TB,,MK1H3,retail
+"MacBook Pro (13-inch, M2, 2022)",A2338,"Mac14,7",Space Gray,256GB,,MNEH3,retail
+"MacBook Pro (13-inch, M2, 2022)",A2338,"Mac14,7",Space Gray,512GB,,MNEJ3,retail
+"MacBook Pro (13-inch, M2, 2022)",A2338,"Mac14,7",Silver,256GB,,MNEP3,retail
+"MacBook Pro (13-inch, M2, 2022)",A2338,"Mac14,7",Silver,512GB,,MNEQ3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,5",Space Gray,1TB,,MPHG3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,5",Silver,1TB,,MPHK3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,9",Space Gray,512GB,,MPHE3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,9",Space Gray,1TB,,MPHF3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,9",Silver,512GB,,MPHH3,retail
+"MacBook Pro (14-inch, 2023)",A2779,"Mac14,9",Silver,1TB,,MPHJ3,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,6",Space Gray,1TB,,MNWA3,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,6",Silver,1TB,,MNWE3,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,10",Space Gray,512GB,,MNW83,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,10",Space Gray,1TB,,MNW93,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,10",Silver,512GB,,MNWC3,retail
+"MacBook Pro (16-inch, 2023)",A2780,"Mac14,10",Silver,1TB,,MNWD3,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Space Grey,512GB,,MTL73,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Space Grey,1TB,,MTL83,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Space Grey,1TB,16GB,MXE03,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Silver,512GB,,MR7J3,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Silver,1TB,,MR7K3,retail
+"MacBook Pro (14-inch, Nov 2023)",A2918,"Mac15,3",Silver,1TB,16GB,MXE13,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,6",Space Black,512GB,,MRX33,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,6",Space Black,1TB,18GB,MRX43,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,6",Silver,512GB,,MRX63,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,6",Silver,1TB,18GB,MRX73,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,10",Space Black,1TB,36GB,MRX53,retail
+"MacBook Pro (14-inch, Nov 2023)",A2992,"Mac15,10",Silver,1TB,36GB,MRX83,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,7",Space Black,512GB,18GB,MRW13,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,7",Space Black,512GB,18GB,3M526,demo
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,7",Space Black,512GB,36GB,MRW23,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,7",Silver,512GB,18GB,MRW43,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,7",Silver,512GB,36GB,MRW63,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,9",Space Black,1TB,48GB,MUW63,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,9",Silver,1TB,48GB,MUW73,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,11",Space Black,1TB,36GB,MRW33,retail
+"MacBook Pro (16-inch, Nov 2023)",A2991,"Mac15,11",Silver,1TB,36GB,MRW73,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,512GB,,MW2U3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,512GB,,3N283,demo
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,512GB,,3N887,demo
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,512GB,,3N888,demo
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,1TB,16GB,MW2V3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black,1TB,24GB,MCX04,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Space Black (Nano Texture),1TB,16GB,MXCM3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Silver,512GB,,MW2W3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Silver,512GB,,3N282,demo
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Silver,1TB,16GB,MW2X3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3112,"Mac16,1",Silver,1TB,24GB,MCX14,retail
+"MacBook Pro (14-inch, Nov 2024)",A3401,"Mac16,8",Space Black,512GB,,MX2H3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3401,"Mac16,8",Space Black,1TB,,MX2J3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3401,"Mac16,8",Space Black (Nano Texture),2TB,48GB,MXE63,retail
+"MacBook Pro (14-inch, Nov 2024)",A3401,"Mac16,8",Silver,512GB,,MX2E3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3401,"Mac16,8",Silver,1TB,,MX2F3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3185,"Mac16,6",Space Black,1TB,,MX2K3,retail
+"MacBook Pro (14-inch, Nov 2024)",A3185,"Mac16,6",Silver,1TB,,MX2G3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3403,"Mac16,7",Space Black,512GB,24GB,MX2X3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3403,"Mac16,7",Space Black,512GB,48GB,MX2Y3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3403,"Mac16,7",Silver,512GB,24GB,MX2T3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3403,"Mac16,7",Silver,512GB,48GB,MX2U3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3186,"Mac16,5",Space Black,512GB,36GB,MX303,retail
+"MacBook Pro (16-inch, Nov 2024)",A3186,"Mac16,5",Space Black,512GB,48GB,MX313,retail
+"MacBook Pro (16-inch, Nov 2024)",A3186,"Mac16,5",Silver,1TB,36GB,MX2V3,retail
+"MacBook Pro (16-inch, Nov 2024)",A3186,"Mac16,5",Silver,1TB,48GB,MX2W3,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,512GB,,MDE04,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,512GB,,3P044,demo
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,1TB,16GB,MDE14,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,1TB,16GB,MEQJ4,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,1TB,24GB,MDE64,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Space Black,1TB,32GB,MJ3D4,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Silver,512GB,,MDE44,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Silver,1TB,16GB,MDE54,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Silver,1TB,24GB,MDE34,retail
+"MacBook Pro (14-inch, M5)",A3434,"Mac17,2",Silver,1TB,32GB,MJ3E4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3426,"Mac17,9",Space Black,1TB,,MGDR4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3426,"Mac17,9",Space Black,2TB,,MJLW4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3426,"Mac17,9",Space Black,2TB,,MGDT4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3426,"Mac17,9",Silver,1TB,,MGDN4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3426,"Mac17,9",Silver,2TB,,MJLV4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3427,"Mac17,7",Space Black,2TB,,MGDU4,retail
+"MacBook Pro (14-inch, M5 Pro or M5 Max)",A3427,"Mac17,7",Silver,2TB,,MGDQ4,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3428,"Mac17,8",Space Black,1TB,24GB,MGEA4,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3428,"Mac17,8",Space Black,1TB,24GB,3P356,demo
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3428,"Mac17,8",Space Black,1TB,48GB,MGEC4,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3428,"Mac17,8",Silver,1TB,24GB,MGE44,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3428,"Mac17,8",Silver,1TB,48GB,MGE64,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3429,"Mac17,6",Space Black,2TB,36GB,MGED4,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3429,"Mac17,6",Space Black,2TB,48GB,MGEE4,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3429,"Mac17,6",Silver,2TB,36GB,MGE74,retail
+"MacBook Pro (16-inch, M5 Pro or M5 Max)",A3429,"Mac17,6",Silver,2TB,48GB,MGE94,retail
+Mac Pro (2023),A2786,"Mac14,8",,,,Z1712,retail
+Mac Studio (2022),A2615,"Mac13,1",,,,MJMV3,retail
+Mac Studio (2022),A2615,"Mac13,2",,,,MJMW3,retail
+Mac Studio (2023),A2901,"Mac14,13",,,,MQH73,retail
+Mac Studio (2023),A2901,"Mac14,13",,,,3L618,demo
+Mac Studio (2023),A2901,"Mac14,14",,,,MQH63,retail
+Mac Studio (2025),A3143,"Mac16,9",,,,MU963,retail
+Mac Studio (2025),A3143,"Mac16,9",,,,3M535,demo
+Mac Studio (2025),A3389,"Mac15,14",,,,MU973,retail
+Mac Studio (M5 Max or M5 Ultra),A3545,"Mac17,14",,,,MHL64,retail
+Mac Studio (M5 Max or M5 Ultra),A3546,"Mac17,15",,,,MHL74,retail

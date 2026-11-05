@@ -1,0 +1,1109 @@
+model,a_numbers,identifier,color,storage,box_code,unit_type
+iPad (6th generation),A1893,"iPad7,5",Gold,32GB,MRJN2,retail
+iPad (6th generation),A1893,"iPad7,5",Gold,128GB,MRJP2,retail
+iPad (6th generation),A1893,"iPad7,5",Silver,32GB,MR7G2,retail
+iPad (6th generation),A1893,"iPad7,5",Silver,128GB,MR7K2,retail
+iPad (6th generation),A1893,"iPad7,5",Space Gray,32GB,MR7F2,retail
+iPad (6th generation),A1893,"iPad7,5",Space Gray,32GB,3D575,demo
+iPad (6th generation),A1893,"iPad7,5",Space Gray,128GB,MR7J2,retail
+iPad (6th generation),A1954,"iPad7,6",Gold,32GB,MRM52,retail
+iPad (6th generation),A1954,"iPad7,6",Gold,128GB,MRM82,retail
+iPad (6th generation),A1954,"iPad7,6",Silver,32GB,MR702,retail
+iPad (6th generation),A1954,"iPad7,6",Silver,128GB,MR7D2,retail
+iPad (6th generation),A1954,"iPad7,6",Space Gray,32GB,MR6Y2,retail
+iPad (6th generation),A1954,"iPad7,6",Space Gray,128GB,MR7C2,retail
+iPad (7th generation),A2197,"iPad7,11",Gold,32GB,MW762,retail
+iPad (7th generation),A2197,"iPad7,11",Gold,32GB,3F837,demo
+iPad (7th generation),A2197,"iPad7,11",Gold,128GB,MW792,retail
+iPad (7th generation),A2197,"iPad7,11",Silver,32GB,MW752,retail
+iPad (7th generation),A2197,"iPad7,11",Silver,128GB,MW782,retail
+iPad (7th generation),A2197,"iPad7,11",Space Gray,32GB,MW742,retail
+iPad (7th generation),A2197,"iPad7,11",Space Gray,32GB,3F835,demo
+iPad (7th generation),A2197,"iPad7,11",Space Gray,128GB,MW772,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,32GB,MW6D2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,32GB,MW6R2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,32GB,MW6Y2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,128GB,MW6G2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,128GB,MW6V2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Gold,128GB,MW722,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,32GB,MW6C2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,32GB,MW6Q2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,32GB,MW6X2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,128GB,MW6F2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,128GB,MW6U2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Silver,128GB,MW712,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,32GB,MW6A2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,32GB,MW6P2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,32GB,MW6W2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,128GB,MW6E2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,128GB,MW6T2,retail
+iPad (7th generation),A2198 A2200,"iPad7,12",Space Gray,128GB,MW702,retail
+iPad (8th generation),A2270,"iPad11,6",Gold,32GB,MYLC2,retail
+iPad (8th generation),A2270,"iPad11,6",Gold,32GB,3YLC2,demo
+iPad (8th generation),A2270,"iPad11,6",Gold,128GB,MYLF2,retail
+iPad (8th generation),A2270,"iPad11,6",Silver,32GB,MYLA2,retail
+iPad (8th generation),A2270,"iPad11,6",Silver,32GB,3YLA2,demo
+iPad (8th generation),A2270,"iPad11,6",Silver,128GB,MYLE2,retail
+iPad (8th generation),A2270,"iPad11,6",Space Gray,32GB,MYL92,retail
+iPad (8th generation),A2270,"iPad11,6",Space Gray,32GB,3YL92,demo
+iPad (8th generation),A2270,"iPad11,6",Space Gray,128GB,MYLD2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Gold,32GB,MYMK2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Gold,32GB,MYN62,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Gold,128GB,MYMN2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Gold,128GB,MYN92,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Silver,32GB,MYMJ2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Silver,32GB,MYN52,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Silver,128GB,MYMM2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Silver,128GB,MYN82,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Space Gray,32GB,MYMH2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Space Gray,32GB,MYN32,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Space Gray,32GB,3YMH2,demo
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Space Gray,128GB,MYML2,retail
+iPad (8th generation),A2428 A2429 A2430,"iPad11,7",Space Gray,128GB,MYN72,retail
+iPad (9th generation),A2602,"iPad12,1",Silver,64GB,MK2L3,retail
+iPad (9th generation),A2602,"iPad12,1",Silver,256GB,MK2P3,retail
+iPad (9th generation),A2602,"iPad12,1",Space Gray,64GB,MK2K3,retail
+iPad (9th generation),A2602,"iPad12,1",Space Gray,64GB,3K2K3,demo
+iPad (9th generation),A2602,"iPad12,1",Space Gray,256GB,MK2N3,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Silver,64GB,MK493,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Silver,64GB,MK673,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Silver,256GB,MK4H3,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Silver,256GB,MK6A3,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Space Gray,64GB,MK473,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Space Gray,64GB,MK663,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Space Gray,64GB,3J350,demo
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Space Gray,256GB,MK4E3,retail
+iPad (9th generation),A2603 A2604 A2605,"iPad12,2",Space Gray,256GB,MK693,retail
+iPad (10th generation),A2696,"iPad13,18",Silver,64GB,MPQ03,retail
+iPad (10th generation),A2696,"iPad13,18",Silver,64GB,MCM74,retail
+iPad (10th generation),A2696,"iPad13,18",Silver,64GB,3L203,demo
+iPad (10th generation),A2696,"iPad13,18",Silver,64GB,3L207,demo
+iPad (10th generation),A2696,"iPad13,18",Silver,256GB,MPQ83,retail
+iPad (10th generation),A2696,"iPad13,18",Silver,256GB,MCMD4,retail
+iPad (10th generation),A2696,"iPad13,18",Pink,64GB,MPQ33,retail
+iPad (10th generation),A2696,"iPad13,18",Pink,64GB,MCMC4,retail
+iPad (10th generation),A2696,"iPad13,18",Pink,64GB,3L210,demo
+iPad (10th generation),A2696,"iPad13,18",Pink,256GB,MPQC3,retail
+iPad (10th generation),A2696,"iPad13,18",Pink,256GB,MCMH4,retail
+iPad (10th generation),A2696,"iPad13,18",Blue,64GB,MPQ13,retail
+iPad (10th generation),A2696,"iPad13,18",Blue,64GB,MCM84,retail
+iPad (10th generation),A2696,"iPad13,18",Blue,64GB,3L204,demo
+iPad (10th generation),A2696,"iPad13,18",Blue,64GB,3L208,demo
+iPad (10th generation),A2696,"iPad13,18",Blue,256GB,MPQ93,retail
+iPad (10th generation),A2696,"iPad13,18",Blue,256GB,MCMF4,retail
+iPad (10th generation),A2696,"iPad13,18",Yellow,64GB,MPQ23,retail
+iPad (10th generation),A2696,"iPad13,18",Yellow,64GB,MCM94,retail
+iPad (10th generation),A2696,"iPad13,18",Yellow,64GB,3L209,demo
+iPad (10th generation),A2696,"iPad13,18",Yellow,256GB,MPQA3,retail
+iPad (10th generation),A2696,"iPad13,18",Yellow,256GB,MCMG4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,64GB,MQ6J3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,64GB,MQ6X3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,64GB,MCMJ4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,256GB,MQ6T3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,256GB,MQ763,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Silver,256GB,MCMN4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Pink,64GB,MQ6M3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Pink,64GB,MQ713,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Pink,256GB,MQ6W3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Pink,256GB,MQ793,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Pink,256GB,MCMR4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,64GB,MQ6K3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,64GB,MQ6Y3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,64GB,MCMK4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,256GB,MQ6U3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,256GB,MQ773,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Blue,256GB,MCMP4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,64GB,MQ6L3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,64GB,MQ703,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,64GB,MCML4,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,256GB,MQ6V3,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,256GB,MQ783,retail
+iPad (10th generation),A2757 A2777,"iPad13,19",Yellow,256GB,MCMQ4,retail
+iPad (10th generation),A3162,"iPad13,19",Silver,64GB,MUQY3,retail
+iPad (10th generation),A3162,"iPad13,19",Silver,256GB,MUU53,retail
+iPad (10th generation),A3162,"iPad13,19",Pink,64GB,MUU33,retail
+iPad (10th generation),A3162,"iPad13,19",Pink,256GB,MUU83,retail
+iPad (10th generation),A3162,"iPad13,19",Blue,64GB,MUU03,retail
+iPad (10th generation),A3162,"iPad13,19",Blue,64GB,3L296,demo
+iPad (10th generation),A3162,"iPad13,19",Blue,256GB,MUU63,retail
+iPad (10th generation),A3162,"iPad13,19",Yellow,64GB,MUU13,retail
+iPad (10th generation),A3162,"iPad13,19",Yellow,256GB,MUU73,retail
+iPad (A16),A3354,"iPad15,7",Silver,128GB,MD3Y4,retail
+iPad (A16),A3354,"iPad15,7",Silver,128GB,3N674,demo
+iPad (A16),A3354,"iPad15,7",Silver,128GB,3N789,demo
+iPad (A16),A3354,"iPad15,7",Silver,128GB,3N793,demo
+iPad (A16),A3354,"iPad15,7",Silver,256GB,MD4G4,retail
+iPad (A16),A3354,"iPad15,7",Silver,512GB,MD4Q4,retail
+iPad (A16),A3354,"iPad15,7",Pink,128GB,MD4E4,retail
+iPad (A16),A3354,"iPad15,7",Pink,128GB,3N792,demo
+iPad (A16),A3354,"iPad15,7",Pink,128GB,3N796,demo
+iPad (A16),A3354,"iPad15,7",Pink,256GB,MD4P4,retail
+iPad (A16),A3354,"iPad15,7",Pink,512GB,MD5C4,retail
+iPad (A16),A3354,"iPad15,7",Blue,128GB,MD4A4,retail
+iPad (A16),A3354,"iPad15,7",Blue,128GB,3N790,demo
+iPad (A16),A3354,"iPad15,7",Blue,128GB,3N794,demo
+iPad (A16),A3354,"iPad15,7",Blue,256GB,MD4H4,retail
+iPad (A16),A3354,"iPad15,7",Blue,512GB,MD4Y4,retail
+iPad (A16),A3354,"iPad15,7",Yellow,128GB,MD4D4,retail
+iPad (A16),A3354,"iPad15,7",Yellow,128GB,3N791,demo
+iPad (A16),A3354,"iPad15,7",Yellow,128GB,3N795,demo
+iPad (A16),A3354,"iPad15,7",Yellow,256GB,MD4J4,retail
+iPad (A16),A3354,"iPad15,7",Yellow,512GB,MD5A4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,128GB,MD7F4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,128GB,MD7U4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,128GB,3N797,demo
+iPad (A16),A3355 A3356,"iPad15,8",Silver,256GB,MD7K4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,256GB,MD7Y4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,512GB,MD7P4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Silver,512GB,MD8D4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,128GB,MD7J4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,128GB,MD7X4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,128GB,3N800,demo
+iPad (A16),A3355 A3356,"iPad15,8",Pink,256GB,MD7N4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,256GB,MD8C4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,512GB,MD7T4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Pink,512GB,MD8G4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,128GB,MD7G4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,128GB,MD7V4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,128GB,3N798,demo
+iPad (A16),A3355 A3356,"iPad15,8",Blue,256GB,MD7L4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,256GB,MDAJ4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,512GB,MD7Q4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Blue,512GB,MD8E4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,128GB,MD7H4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,128GB,MD7W4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,128GB,3N799,demo
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,256GB,MD7M4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,256GB,MD8A4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,512GB,MD7R4,retail
+iPad (A16),A3355 A3356,"iPad15,8",Yellow,512GB,MD8F4,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Gold,64GB,MUUL2,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Gold,256GB,MUUT2,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Silver,64GB,MUUK2,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Silver,256GB,MUUR2,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Space Gray,64GB,MUUJ2,retail
+iPad Air (3rd generation),A2152,"iPad11,3",Space Gray,256GB,MUUQ2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Gold,64GB,MV172,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Gold,64GB,MV0F2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Gold,256GB,MV1G2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Gold,256GB,MV0Q2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Silver,64GB,MV162,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Silver,64GB,MV0E2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Silver,256GB,MV1F2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Silver,256GB,MV0P2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Space Gray,64GB,MV152,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Space Gray,64GB,MV0D2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Space Gray,256GB,MV1D2,retail
+iPad Air (3rd generation),A2123 A2153 A2154,"iPad11,4",Space Gray,256GB,MV0N2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Rose Gold,64GB,MYFP2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Rose Gold,256GB,MYFX2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Silver,64GB,MYFN2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Silver,256GB,MYFW2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Space Gray,64GB,MYFM2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Space Gray,64GB,3H182,demo
+iPad Air (4th generation),A2316,"iPad13,1",Space Gray,256GB,MYFT2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Green,64GB,MYFR2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Green,256GB,MYG02,retail
+iPad Air (4th generation),A2316,"iPad13,1",Sky Blue,64GB,MYFQ2,retail
+iPad Air (4th generation),A2316,"iPad13,1",Sky Blue,64GB,3H185,demo
+iPad Air (4th generation),A2316,"iPad13,1",Sky Blue,256GB,MYFY2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Rose Gold,64GB,MYGY2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Rose Gold,64GB,MYJ02,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Rose Gold,256GB,MYH52,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Rose Gold,256GB,MYJ52,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Silver,64GB,MYGX2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Silver,64GB,MYHY2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Silver,256GB,MYH42,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Silver,256GB,MYJ42,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Space Gray,64GB,MYGW2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Space Gray,64GB,MYHX2,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Space Gray,256GB,MYH22,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Space Gray,256GB,MYJ32,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Green,64GB,MYH12,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Green,64GB,MYJ22,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Green,256GB,MYH72,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Green,256GB,MYJ72,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Sky Blue,64GB,MYH02,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Sky Blue,64GB,MYJ12,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Sky Blue,256GB,MYH62,retail
+iPad Air (4th generation),A2324 A2325 A2072,"iPad13,2",Sky Blue,256GB,MYJ62,retail
+iPad Air (5th generation),A2588,"iPad13,16",Space Gray,64GB,MM9C3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Space Gray,64GB,3M9C3,demo
+iPad Air (5th generation),A2588,"iPad13,16",Space Gray,256GB,MM9L3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Pink,64GB,MM9D3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Pink,64GB,3M9D3,demo
+iPad Air (5th generation),A2588,"iPad13,16",Pink,256GB,MM9M3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Purple,64GB,MME23,retail
+iPad Air (5th generation),A2588,"iPad13,16",Purple,256GB,MME63,retail
+iPad Air (5th generation),A2588,"iPad13,16",Blue,64GB,MM9E3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Blue,64GB,3M9E3,demo
+iPad Air (5th generation),A2588,"iPad13,16",Blue,256GB,MM9N3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Starlight,64GB,MM9F3,retail
+iPad Air (5th generation),A2588,"iPad13,16",Starlight,256GB,MM9P3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Space Gray,64GB,MM6R3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Space Gray,64GB,MM753,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Space Gray,256GB,MM713,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Space Gray,256GB,MM7E3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Pink,64GB,MM6T3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Pink,256GB,MM723,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Pink,256GB,MM7F3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Purple,64GB,MME93,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Purple,256GB,MMED3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Blue,64GB,MM6U3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Blue,64GB,MM773,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Blue,256GB,MM733,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Blue,256GB,MM7G3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Starlight,64GB,MM6V3,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Starlight,64GB,MM783,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Starlight,256GB,MM743,retail
+iPad Air (5th generation),A2589 A2591,"iPad13,17",Starlight,256GB,MM7H3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,128GB,MUWC3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,128GB,3M670,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,128GB,3M694,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,256GB,MUWG3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,512GB,MUWL3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Space Gray,1TB,MUWQ3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,128GB,MUWF3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,128GB,3M673,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,128GB,3M697,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,256GB,MUWK3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,512GB,MUWP3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Purple,1TB,MUWU3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,128GB,MUWD3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,128GB,3M671,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,128GB,3M695,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,256GB,MUWH3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,512GB,MUWM3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Blue,1TB,MUWR3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,128GB,MUWE3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,128GB,3M672,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,128GB,3M696,demo
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,256GB,MUWJ3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,512GB,MUWN3,retail
+iPad Air 11-inch (M2),A2902,"iPad14,8",Starlight,1TB,MUWT3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Space Gray,128GB,MUXD3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Space Gray,256GB,MUXH3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Space Gray,512GB,MUXM3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Space Gray,1TB,MUXR3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Purple,128GB,MUXG3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Purple,256GB,MUXL3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Purple,512GB,MUXQ3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Purple,1TB,MUXV3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Blue,128GB,MUXE3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Blue,256GB,MUXJ3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Blue,512GB,MUXN3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Blue,1TB,MUXT3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Starlight,128GB,MUXF3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Starlight,256GB,MUXK3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Starlight,512GB,MUXP3,retail
+iPad Air 11-inch (M2),A2903 A2904,"iPad14,9",Starlight,1TB,MUXU3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,128GB,MV273,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,128GB,3M682,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,128GB,3M686,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,256GB,MV2D3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,512GB,MV2J3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Space Gray,1TB,MV2P3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,128GB,MV2C3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,128GB,3M685,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,128GB,3M689,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,256GB,MV2H3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,512GB,MV2N3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Purple,1TB,MV2T3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Blue,128GB,MV283,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Blue,128GB,3M687,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Blue,256GB,MV2F3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Blue,512GB,MV2K3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Blue,1TB,MV2Q3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Starlight,128GB,MV293,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Starlight,128GB,3M688,demo
+iPad Air 13-inch (M2),A2898,"iPad14,10",Starlight,256GB,MV2G3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Starlight,512GB,MV2L3,retail
+iPad Air 13-inch (M2),A2898,"iPad14,10",Starlight,1TB,MV2R3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Space Gray,128GB,MV6Q3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Space Gray,128GB,3M719,demo
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Space Gray,256GB,MV6V3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Space Gray,512GB,MV703,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Space Gray,1TB,MV743,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Purple,128GB,MV6U3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Purple,256GB,MV6Y3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Purple,512GB,MV733,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Purple,1TB,MV773,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Blue,128GB,MV6R3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Blue,256GB,MV6W3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Blue,512GB,MV713,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Blue,1TB,MV753,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Starlight,128GB,MV6T3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Starlight,256GB,MV6X3,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Starlight,512GB,MV723,retail
+iPad Air 13-inch (M2),A2899 A2900,"iPad14,11",Starlight,1TB,MV763,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Space Gray,128GB,MC9W4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Space Gray,256GB,MCA14,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Space Gray,512GB,MCA74,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Space Gray,1TB,MCAH4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,128GB,MCA04,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,128GB,3N673,demo
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,128GB,3N677,demo
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,256GB,MCA64,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,512GB,MCAE4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Purple,1TB,MCAU4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Blue,128GB,MC9X4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Blue,128GB,3N675,demo
+iPad Air 11-inch (M3),A3266,"iPad15,3",Blue,256GB,MCA34,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Blue,512GB,MCA94,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Blue,1TB,MCAJ4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Starlight,128GB,MC9Y4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Starlight,128GB,3N676,demo
+iPad Air 11-inch (M3),A3266,"iPad15,3",Starlight,256GB,MCA44,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Starlight,512GB,MCAA4,retail
+iPad Air 11-inch (M3),A3266,"iPad15,3",Starlight,1TB,MCAQ4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,128GB,MCFV4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,128GB,MCGD4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,128GB,3N686,demo
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,256GB,MCG04,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,256GB,MCGH4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,512GB,MCG44,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,512GB,MCGM4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,1TB,MCG84,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Space Gray,1TB,MCGR4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,128GB,MCFY4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,128GB,MCGG4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,128GB,3N681,demo
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,256GB,MCG34,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,256GB,MCGL4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,512GB,MCG74,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,512GB,MCGQ4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,1TB,MCGC4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Purple,1TB,MCGV4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,128GB,MCFW4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,128GB,MCGE4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,256GB,MCG14,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,256GB,MCGJ4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,512GB,MCG54,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,512GB,MCGN4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,1TB,MCG94,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Blue,1TB,MCGT4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,128GB,MCFX4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,128GB,MCGF4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,256GB,MCG24,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,256GB,MCGK4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,512GB,MCG64,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,512GB,MCGP4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,1TB,MCGA4,retail
+iPad Air 11-inch (M3),A3267 A3270,"iPad15,4",Starlight,1TB,MCGU4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,128GB,MCNH4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,128GB,3N727,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,128GB,3N731,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,256GB,MCNN4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,512GB,MCNT4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Space Gray,1TB,MCQ04,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,128GB,MCNL4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,128GB,3N730,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,128GB,3N734,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,256GB,MCNR4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,512GB,MCNY4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Purple,1TB,MCQ34,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Blue,128GB,MCNJ4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Blue,128GB,3N732,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Blue,256GB,MCNP4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Blue,512GB,MCNW4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Blue,1TB,MCQ14,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,128GB,MCNK4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,128GB,3N733,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,128GB,3N672,demo
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,256GB,MCNQ4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,512GB,MCNX4,retail
+iPad Air 13-inch (M3),A3268,"iPad15,5",Starlight,1TB,MCQ24,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,128GB,MCJ14,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,128GB,MCJJ4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,256GB,MCJ54,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,256GB,MCJN4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,512GB,MCJ94,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,512GB,MCJU4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,1TB,MCJE4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Space Gray,1TB,MCJY4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,128GB,MCJ44,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,128GB,MCJM4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,256GB,MCJ84,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,256GB,MCJT4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,512GB,MCJD4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,512GB,MCJX4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,1TB,MCJH4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Purple,1TB,MCL34,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,128GB,MCJ24,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,128GB,MCJK4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,256GB,MCJ64,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,256GB,MCJP4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,512GB,MCJA4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,512GB,MCJV4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,1TB,MCJF4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Blue,1TB,MCL14,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,128GB,MCJ34,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,128GB,MCJL4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,256GB,MCJ74,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,256GB,MCJQ4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,512GB,MCJC4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,512GB,MCJW4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,1TB,MCJG4,retail
+iPad Air 13-inch (M3),A3269 A3271,"iPad15,6",Starlight,1TB,MCL24,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Space Gray,128GB,MH304,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Space Gray,128GB,3P388,demo
+iPad Air 11-inch (M4),A3459,"iPad16,8",Space Gray,256GB,MH354,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Space Gray,512GB,MH3A4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Space Gray,1TB,MH3G4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Purple,128GB,MH344,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Purple,128GB,3P391,demo
+iPad Air 11-inch (M4),A3459,"iPad16,8",Purple,256GB,MH394,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Purple,512GB,MH3E4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Purple,1TB,MH3K4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,128GB,MH314,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,128GB,3P389,demo
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,128GB,3P393,demo
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,256GB,MH364,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,512GB,MH3C4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Blue,1TB,MH3H4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Starlight,128GB,MH334,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Starlight,128GB,3P390,demo
+iPad Air 11-inch (M4),A3459,"iPad16,8",Starlight,256GB,MH374,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Starlight,512GB,MH3D4,retail
+iPad Air 11-inch (M4),A3459,"iPad16,8",Starlight,1TB,MH3J4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,128GB,MH784,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,128GB,MH8A4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,128GB,3P422,demo
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,256GB,MH7D4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,256GB,MH8F4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,512GB,MH7H4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,512GB,MH8K4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,1TB,MH7M4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Space Gray,1TB,MH8Q4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,128GB,MH7C4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,128GB,MH8E4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,128GB,3P425,demo
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,256GB,MH7G4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,256GB,MH8J4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,512GB,MH7L4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,512GB,MH8P4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,1TB,MH7Q4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Purple,1TB,MH8U4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,128GB,MH794,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,128GB,MH8C4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,128GB,3P423,demo
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,256GB,MH7E4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,256GB,MH8G4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,512GB,MH7J4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,512GB,MH8M4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,1TB,MH7N4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Blue,1TB,MH8R4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,128GB,MH7A4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,128GB,MH8D4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,128GB,3P424,demo
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,256GB,MH7F4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,256GB,MH8H4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,512GB,MH7K4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,512GB,MH8N4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,1TB,MH7P4,retail
+iPad Air 11-inch (M4),A3460 A3463,"iPad16,9",Starlight,1TB,MH8T4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Space Gray,128GB,MH5N4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Space Gray,128GB,3P396,demo
+iPad Air 13-inch (M4),A3461,"iPad16,10",Space Gray,256GB,MH5U4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Space Gray,512GB,MH5Y4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Space Gray,1TB,MH634,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Purple,128GB,MH5T4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Purple,128GB,3P399,demo
+iPad Air 13-inch (M4),A3461,"iPad16,10",Purple,256GB,MH5X4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Purple,512GB,MH624,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Purple,1TB,MHDK4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Blue,128GB,MH5P4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Blue,128GB,3P397,demo
+iPad Air 13-inch (M4),A3461,"iPad16,10",Blue,256GB,MH5V4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Blue,512GB,MH604,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Blue,1TB,MH644,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Starlight,128GB,MH5Q4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Starlight,128GB,3P398,demo
+iPad Air 13-inch (M4),A3461,"iPad16,10",Starlight,256GB,MH5W4,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Starlight,512GB,MH614,retail
+iPad Air 13-inch (M4),A3461,"iPad16,10",Starlight,1TB,MH654,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,128GB,MH9D4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,128GB,MH9W4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,128GB,3P430,demo
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,256GB,MH9H4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,256GB,MHC14,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,512GB,MH9M4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,512GB,MHC54,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,1TB,MH9R4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Space Gray,1TB,MHC94,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,128GB,MH9G4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,128GB,MHC04,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,128GB,3P433,demo
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,256GB,MH9L4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,256GB,MHC44,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,512GB,MH9Q4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,512GB,MHC84,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,1TB,MH9V4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Purple,1TB,MHCD4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,128GB,MH9E4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,128GB,MH9X4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,128GB,3P431,demo
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,256GB,MH9J4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,256GB,MHC24,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,512GB,MH9N4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,512GB,MHC64,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,1TB,MH9T4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Blue,1TB,MHCA4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,128GB,MH9F4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,128GB,MH9Y4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,128GB,3P432,demo
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,256GB,MH9K4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,256GB,MHC34,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,512GB,MH9P4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,512GB,MHC74,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,1TB,MH9U4,retail
+iPad Air 13-inch (M4),A3462 A3464,"iPad16,11",Starlight,1TB,MHCC4,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Silver,64GB,MTXP2,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Silver,64GB,3E149,demo
+iPad Pro (11-inch),A1980,"iPad8,1",Silver,256GB,MTXR2,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Silver,512GB,MTXU2,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Space Gray,64GB,MTXN2,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Space Gray,256GB,MTXQ2,retail
+iPad Pro (11-inch),A1980,"iPad8,1",Space Gray,512GB,MTXT2,retail
+iPad Pro (11-inch),A1980,"iPad8,2",Silver,1TB,MTXW2,retail
+iPad Pro (11-inch),A1980,"iPad8,2",Space Gray,1TB,MTXV2,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Silver,64GB,MU0U2,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Silver,64GB,3E080,demo
+iPad Pro (11-inch),A1934,"iPad8,3",Silver,256GB,MU172,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Silver,512GB,MU1M2,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Space Gray,64GB,MU0M2,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Space Gray,256GB,MU102,retail
+iPad Pro (11-inch),A1934,"iPad8,3",Space Gray,512GB,MU1F2,retail
+iPad Pro (11-inch),A1934,"iPad8,4",Silver,1TB,MU222,retail
+iPad Pro (11-inch),A1934,"iPad8,4",Space Gray,1TB,MU1V2,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Silver,64GB,MU0X2,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Silver,256GB,MU1C2,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Silver,512GB,MU1T2,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Space Gray,64GB,MU0Q2,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Space Gray,256GB,MU152,retail
+iPad Pro (11-inch),A1979,"iPad8,3",Space Gray,512GB,MU1J2,retail
+iPad Pro (11-inch),A1979,"iPad8,4",Silver,1TB,MU272,retail
+iPad Pro (11-inch),A1979,"iPad8,4",Space Gray,1TB,MU1Y2,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Silver,64GB,MU0Y2,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Silver,256GB,MU1D2,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Silver,512GB,MU1U2,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Space Gray,64GB,MU0T2,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Space Gray,256GB,MU162,retail
+iPad Pro (11-inch),A2013,"iPad8,3",Space Gray,512GB,MU1K2,retail
+iPad Pro (11-inch),A2013,"iPad8,4",Silver,1TB,MU282,retail
+iPad Pro (11-inch),A2013,"iPad8,4",Space Gray,1TB,MU202,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Silver,64GB,MTEM2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Silver,64GB,3D942,demo
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Silver,256GB,MTFN2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Silver,512GB,MTFQ2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Space Gray,64GB,MTEL2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Space Gray,256GB,MTFL2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,5",Space Gray,512GB,MTFP2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,6",Silver,1TB,MTFT2,retail
+iPad Pro (12.9-inch) (3rd generation),A1876,"iPad8,6",Space Gray,1TB,MTFR2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Silver,64GB,MTHP2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Silver,256GB,MTJ62,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Silver,512GB,MTJJ2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Space Gray,64GB,MTHJ2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Space Gray,256GB,MTHV2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,7",Space Gray,512GB,MTJD2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,8",Silver,1TB,MTJV2,retail
+iPad Pro (12.9-inch) (3rd generation),A1895,"iPad8,8",Space Gray,1TB,MTJP2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Silver,64GB,MTHT2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Silver,256GB,MTJ92,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Silver,512GB,MTJM2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Space Gray,64GB,MTHM2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Space Gray,256GB,MTHY2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,7",Space Gray,512GB,MTJG2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,8",Silver,1TB,MTJY2,retail
+iPad Pro (12.9-inch) (3rd generation),A1983,"iPad8,8",Space Gray,1TB,MTJT2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Silver,64GB,MTHU2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Silver,256GB,MTJA2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Silver,512GB,MTJN2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Space Gray,64GB,MTHN2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Space Gray,256GB,MTJ02,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,7",Space Gray,512GB,MTJH2,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,8",Silver,1TB,MTL02,retail
+iPad Pro (12.9-inch) (3rd generation),A2014,"iPad8,8",Space Gray,1TB,MTJU2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Silver,128GB,MY252,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Silver,128GB,3G932,demo
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Silver,256GB,MXDD2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Silver,512GB,MXDF2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Silver,1TB,MXDH2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Space Gray,128GB,MY232,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Space Gray,128GB,3G931,demo
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Space Gray,256GB,MXDC2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Space Gray,512GB,MXDE2,retail
+iPad Pro (11-inch) (2nd generation),A2228,"iPad8,9",Space Gray,1TB,MXDG2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,128GB,MY2W2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,128GB,MY342,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,128GB,3G936,demo
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,256GB,MXE52,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,256GB,MXEX2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,512GB,MXE72,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,512GB,MXF02,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,1TB,MXE92,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Silver,1TB,MXF22,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,128GB,MY2V2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,128GB,MY332,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,256GB,MXE42,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,256GB,MXEW2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,512GB,MXE62,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,512GB,MXEY2,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,1TB,MXE82,retail
+iPad Pro (11-inch) (2nd generation),A2068 A2230 A2231,"iPad8,10",Space Gray,1TB,MXF12,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Silver,128GB,MY2J2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Silver,256GB,MXAU2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Silver,512GB,MXAW2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Silver,1TB,MXAY2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Space Gray,128GB,MY2H2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Space Gray,128GB,3G933,demo
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Space Gray,256GB,MXAT2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Space Gray,512GB,MXAV2,retail
+iPad Pro (12.9-inch) (4th generation),A2229,"iPad8,11",Space Gray,1TB,MXAX2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,128GB,MY3D2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,128GB,MY3K2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,256GB,MXF62,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,256GB,MXFY2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,512GB,MXF82,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,512GB,MXG12,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,1TB,MXFA2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Silver,1TB,MXG32,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,128GB,MY3C2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,128GB,MY3J2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,256GB,MXF52,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,256GB,MXFX2,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,512GB,MXF72,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,512GB,MXG02,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,1TB,MXF92,retail
+iPad Pro (12.9-inch) (4th generation),A2069 A2232 A2233,"iPad8,12",Space Gray,1TB,MXG22,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Silver,128GB,MHQT3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Silver,128GB,3K873,demo
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Silver,256GB,MHQV3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Silver,512GB,MHQX3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Space Gray,128GB,MHQR3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Space Gray,128GB,3HQR3,demo
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Space Gray,128GB,3J402,demo
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Space Gray,256GB,MHQU3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,4",Space Gray,512GB,MHQW3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,5",Silver,1TB,MHR03,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,5",Silver,2TB,MHR33,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,5",Space Gray,1TB,MHQY3,retail
+iPad Pro (11-inch) (3rd generation),A2377,"iPad13,5",Space Gray,2TB,MHR23,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,128GB,MHMU3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,128GB,MHW63,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,128GB,MHWH3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,128GB,3HW63,demo
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,256GB,MHMW3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,256GB,MHW83,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,256GB,MHWK3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,512GB,MHMY3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,512GB,MHWA3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Silver,512GB,MHWM3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,128GB,MHMT3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,128GB,MHW53,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,128GB,MHWG3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,256GB,MHMV3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,256GB,MHW73,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,256GB,MHWJ3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,512GB,MHMX3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,512GB,MHW93,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,6",Space Gray,512GB,MHWL3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,1TB,MHN13,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,1TB,MHWD3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,1TB,MHWP3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,2TB,MHN33,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,2TB,MHWF3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Silver,2TB,MHWR3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,1TB,MHN03,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,1TB,MHWC3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,1TB,MHWN3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,2TB,MHN23,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,2TB,MHWE3,retail
+iPad Pro (11-inch) (3rd generation),A2301 A2459 A2460,"iPad13,7",Space Gray,2TB,MHWQ3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Silver,128GB,MHNG3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Silver,256GB,MHNJ3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Silver,512GB,MHNL3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Space Gray,128GB,MHNF3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Space Gray,256GB,MHNH3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Space Gray,256GB,3H901,demo
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,8",Space Gray,512GB,MHNK3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,9",Silver,1TB,MHNN3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,9",Silver,2TB,MHNQ3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,9",Space Gray,1TB,MHNM3,retail
+iPad Pro (12.9-inch) (5th generation),A2378,"iPad13,9",Space Gray,2TB,MHNP3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,128GB,MHNT3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,128GB,MHR53,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,128GB,MHRG3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,256GB,MHNX3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,256GB,MHR73,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,256GB,MHRJ3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,512GB,MHP03,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,512GB,MHR93,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Silver,512GB,MHRL3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,128GB,MHNR3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,128GB,MHR43,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,128GB,MHRF3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,256GB,MHNW3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,256GB,MHR63,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,256GB,MHRH3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,512GB,MHNY3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,512GB,MHR83,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,10",Space Gray,512GB,MHRK3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,1TB,MHP23,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,1TB,MHRC3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,1TB,MHRN3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,2TB,MHP53,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,2TB,MHRE3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Silver,2TB,MHRQ3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,1TB,MHP13,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,1TB,MHRA3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,1TB,MHRM3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,2TB,MHP43,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,2TB,MHRD3,retail
+iPad Pro (12.9-inch) (5th generation),A2379 A2461 A2462,"iPad13,11",Space Gray,2TB,MHRP3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Silver,128GB,MNXE3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Silver,256GB,MNXG3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Silver,512GB,MNXJ3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Silver,1TB,MNXL3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Silver,2TB,MNXN3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,128GB,MNXD3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,128GB,3K874,demo
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,256GB,MNXF3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,512GB,MNXH3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,1TB,MNXK3,retail
+iPad Pro (11-inch) (4th generation),A2759,"iPad14,3",Space Gray,2TB,MNXM3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,128GB,MP563,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,128GB,MNYD3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,128GB,MJQJ3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,128GB,3K909,demo
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,256GB,MP583,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,256GB,MNYF3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,256GB,MNYR3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,512GB,MP5D3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,512GB,MNYH3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,512GB,MNYU3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,1TB,MP5F3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,1TB,MNYK3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,1TB,MNYW3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,2TB,MP5H3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,2TB,MNYM3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Silver,2TB,MNYY3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,128GB,MP553,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,128GB,MNYC3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,128GB,MNYN3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,256GB,MP573,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,256GB,MNYE3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,256GB,MNYQ3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,512GB,MP593,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,512GB,MNYG3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,512GB,MNYT3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,1TB,MP5E3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,1TB,MNYJ3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,1TB,MNYV3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,2TB,MP5G3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,2TB,MNYL3,retail
+iPad Pro (11-inch) (4th generation),A2435 A2761 A2762,"iPad14,4",Space Gray,2TB,MNYX3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,128GB,MNXQ3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,128GB,3K905,demo
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,256GB,MNXT3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,512GB,MNXV3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,1TB,MNXX3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Silver,2TB,MNY03,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,128GB,MNXP3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,128GB,3K904,demo
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,128GB,3K906,demo
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,256GB,MNXR3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,512GB,MNXU3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,1TB,MNXW3,retail
+iPad Pro (12.9-inch) (6th generation),A2436,"iPad14,5",Space Gray,2TB,MNXY3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,128GB,MP5Y3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,128GB,MP1Y3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,128GB,MP293,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,256GB,MP613,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,256GB,MP213,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,256GB,MP2C3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,512GB,MP633,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,512GB,MP233,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,512GB,MP2E3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,1TB,MP653,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,1TB,MP253,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,1TB,MP2G3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,2TB,MP673,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,2TB,MP273,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Silver,2TB,MP2J3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,128GB,MP5X3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,128GB,MP1X3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,128GB,MP283,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,256GB,MP603,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,256GB,MP203,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,256GB,MP2A3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,512GB,MP623,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,512GB,MP223,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,512GB,MP2D3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,1TB,MP643,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,1TB,MP243,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,1TB,MP2F3,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,2TB,MP663,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,2TB,MP263,retail
+iPad Pro (12.9-inch) (6th generation),A2437 A2764 A2766,"iPad14,6",Space Gray,2TB,MP2H3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,256GB,MVV83,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,256GB,3M774,demo
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,512GB,MVVC3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,1TB,MVVE3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,1TB,MWR63,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,2TB,MVVG3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Space Black,2TB,MWR83,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,256GB,MVV93,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,256GB,3M773,demo
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,256GB,3M775,demo
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,512GB,MVVD3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,1TB,MVVF3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,1TB,MWR73,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,2TB,MVVH3,retail
+iPad Pro 11-inch (M4),A2836,"iPad16,3",Silver,2TB,MWR93,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,256GB,MVW13,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,512GB,MVW33,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,1TB,MVW53,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,1TB,MWRP3,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,2TB,MVW73,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Space Black,2TB,MWRR3,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,256GB,MVW23,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,256GB,3M777,demo
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,512GB,MVW43,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,1TB,MVW63,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,1TB,MWRQ3,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,2TB,MVW83,retail
+iPad Pro 11-inch (M4),A2837 A3006,"iPad16,4",Silver,2TB,MWRT3,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,256GB,MVX23,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,256GB,3M780,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,256GB,3M782,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,512GB,MVX43,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,1TB,MVX63,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,1TB,MWRF3,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,1TB,3N194,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,2TB,MVX83,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Space Black,2TB,MWRH3,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,256GB,MVX33,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,256GB,3M781,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,256GB,3M783,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,512GB,MVX53,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,1TB,MVX73,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,1TB,MWRG3,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,1TB,3N195,demo
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,2TB,MVX93,retail
+iPad Pro 13-inch (M4),A2925,"iPad16,5",Silver,2TB,MWRJ3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,256GB,MVXR3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,256GB,3M786,demo
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,512GB,MVXU3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,1TB,MVXW3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,1TB,MWRY3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,2TB,MVXY3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Space Black,2TB,MWT13,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,256GB,MVXT3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,512GB,MVXV3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,1TB,MVXX3,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,1TB,MWT03,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,2TB,MVY03,retail
+iPad Pro 13-inch (M4),A2926 A3007,"iPad16,6",Silver,2TB,MWT23,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,256GB,MDWK4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,256GB,3P001,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,256GB,3P005,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,512GB,MDWM4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,1TB,MDWP4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,1TB,MDWR4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,1TB,3P003,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,2TB,MDWU4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Space Black,2TB,MDWW4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,256GB,MDWL4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,256GB,3P002,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,256GB,3P006,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,512GB,MDWN4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,1TB,MDWQ4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,1TB,MDWT4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,1TB,3P004,demo
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,2TB,MDWV4,retail
+iPad Pro 11-inch (M5),A3357,"iPad17,1",Silver,2TB,MDWX4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,256GB,ME2N4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,256GB,ME6E4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,256GB,3P026,demo
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,512GB,ME2Q4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,512GB,ME6G4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,1TB,ME2U4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,1TB,ME6J4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,1TB,ME2W4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,1TB,ME6L4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,1TB,3P028,demo
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,2TB,ME2Y4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,2TB,ME6N4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,2TB,ME6C4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Space Black,2TB,ME6Q4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,256GB,ME2P4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,256GB,ME6F4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,256GB,3P027,demo
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,512GB,ME2T4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,512GB,ME6H4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,1TB,ME2V4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,1TB,ME6K4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,1TB,ME2X4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,1TB,ME6M4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,1TB,3P029,demo
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,2TB,ME6A4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,2TB,ME6P4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,2TB,ME6D4,retail
+iPad Pro 11-inch (M5),A3358 A3359,"iPad17,2",Silver,2TB,ME6R4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,256GB,MDYJ4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,256GB,3P009,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,256GB,3P013,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,512GB,MDYL4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,1TB,MDYN4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,1TB,3P015,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,1TB,MDYQ4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,1TB,3P011,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,2TB,MDYT4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Space Black,2TB,MDYV4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,256GB,MDYK4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,256GB,3P010,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,256GB,3P014,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,512GB,MDYM4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,1TB,MDYP4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,1TB,MDYR4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,1TB,3P012,demo
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,2TB,MDYU4,retail
+iPad Pro 13-inch (M5),A3360,"iPad17,3",Silver,2TB,MDYW4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,256GB,ME7W4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,256GB,ME8Q4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,256GB,3P034,demo
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,512GB,ME7Y4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,512GB,ME8T4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,1TB,ME8D4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,1TB,ME8V4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,1TB,ME8G4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,1TB,ME8X4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,1TB,3P036,demo
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,2TB,ME8J4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,2TB,ME9D4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,2TB,ME8M4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Space Black,2TB,ME9C4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,256GB,ME7X4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,256GB,3P035,demo
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,512GB,ME8C4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,1TB,ME8F4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,1TB,ME8H4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,1TB,3P037,demo
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,2TB,ME8K4,retail
+iPad Pro 13-inch (M5),A3361 A3362,"iPad17,4",Silver,2TB,ME8N4,retail
+iPad mini (5th generation),A2133,"iPad11,1",Gold,64GB,MUQY2,retail
+iPad mini (5th generation),A2133,"iPad11,1",Gold,256GB,MUU62,retail
+iPad mini (5th generation),A2133,"iPad11,1",Silver,64GB,MUQX2,retail
+iPad mini (5th generation),A2133,"iPad11,1",Silver,256GB,MUU52,retail
+iPad mini (5th generation),A2133,"iPad11,1",Space Gray,64GB,MUQW2,retail
+iPad mini (5th generation),A2133,"iPad11,1",Space Gray,256GB,MUU32,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Gold,64GB,MUXH2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Gold,64GB,MUX72,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Gold,256GB,MUXP2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Gold,256GB,MUXE2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Silver,64GB,MUXG2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Silver,64GB,MUX62,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Silver,256GB,MUXN2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Silver,256GB,MUXD2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Space Gray,64GB,MUXF2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Space Gray,64GB,MUX52,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Space Gray,256GB,MUXM2,retail
+iPad mini (5th generation),A2124 A2125 A2126,"iPad11,2",Space Gray,256GB,MUXC2,retail
+iPad mini (6th generation),A2567,"iPad14,1",Space Gray,64GB,MK7M3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Space Gray,64GB,3J362,demo
+iPad mini (6th generation),A2567,"iPad14,1",Space Gray,256GB,MK7T3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Pink,64GB,MLWL3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Pink,256GB,MLWR3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Purple,64GB,MK7R3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Purple,64GB,3J366,demo
+iPad mini (6th generation),A2567,"iPad14,1",Purple,256GB,MK7X3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Starlight,64GB,MK7P3,retail
+iPad mini (6th generation),A2567,"iPad14,1",Starlight,256GB,MK7V3,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Space Gray,64GB,MK893,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Space Gray,256GB,MK8F3,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Pink,64GB,MLX43,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Pink,256GB,MLX93,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Purple,64GB,MK8E3,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Purple,256GB,MK8K3,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Starlight,64GB,MK8C3,retail
+iPad mini (6th generation),A2568 A2569,"iPad14,2",Starlight,256GB,MK8H3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Space Gray,128GB,MXN63,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Space Gray,128GB,3N302,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Space Gray,128GB,3N306,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Space Gray,256GB,MXNA3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Space Gray,512GB,MYGY3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Blue,128GB,MXN73,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Blue,128GB,3N303,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Blue,128GB,3N307,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Blue,256GB,MXNC3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Blue,512GB,MYH13,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Purple,128GB,MXN93,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Purple,128GB,3N305,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Purple,128GB,3N309,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Purple,256GB,MXNE3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Purple,512GB,MYH33,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Starlight,128GB,MXN83,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Starlight,128GB,3N304,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Starlight,128GB,3N308,demo
+iPad mini (A17 Pro),A2993,"iPad16,1",Starlight,256GB,MXND3,retail
+iPad mini (A17 Pro),A2993,"iPad16,1",Starlight,512GB,MYH23,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,128GB,MXPN3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,128GB,MXQ03,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,128GB,3N317,demo
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,256GB,MXPT3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,256GB,MXQ43,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,512GB,MYHC3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Space Gray,512GB,MYHG3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,128GB,MXPP3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,128GB,MXQ13,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,128GB,3N318,demo
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,256GB,MXPW3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,256GB,MXQ53,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,512GB,MYHD3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Blue,512GB,MYHH3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,128GB,MXPR3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,128GB,MXQ33,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,128GB,3N320,demo
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,256GB,MXPY3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,256GB,MXQ73,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,512GB,MYHF3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Purple,512GB,MYHK3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,128GB,MXPQ3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,128GB,MXQ23,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,128GB,3N319,demo
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,256GB,MXPX3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,256GB,MXQ63,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,512GB,MYHE3,retail
+iPad mini (A17 Pro),A2995 A2996,"iPad16,2",Starlight,512GB,MYHJ3,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Midnight,128GB,MJ6F4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Midnight,256GB,MJ6Q4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Midnight,256GB,ML2Q4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Midnight,512GB,MJ6V4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Midnight,512GB,MJ6X4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Starlight,128GB,MJ6J4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Starlight,256GB,MJ6R4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Starlight,256GB,ML2T4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Starlight,512GB,MJ6W4,retail
+iPad mini (A20 Pro),A3595,"iPad19,1",Starlight,512GB,MJ6Y4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,128GB,MJ674,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,128GB,MJ704,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,256GB,MJ6C4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,256GB,MJ744,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,256GB,ML2W4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,256GB,ML344,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,512GB,MJ6H4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,512GB,MJ784,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,512GB,MJ6M4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Midnight,512GB,MJ7A4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,128GB,MJ684,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,128GB,MJ714,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,256GB,MJ6D4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,256GB,MJ754,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,256GB,ML2X4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,256GB,ML364,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,512GB,MJ6K4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,512GB,MJ794,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,512GB,MJ6P4,retail
+iPad mini (A20 Pro),A3596 A3597,"iPad19,2",Starlight,512GB,MJ7C4,retail

@@ -1,0 +1,25 @@
+Galaxy S10+ (ram+storage_pairs): '8+128 8+512 8+1024 12+1024' -> '8+128 8+512 12+1024'
+Galaxy S20+ (ram+storage_pairs): '8+128' -> '8+128 8+512 12+128 12+512'
+Galaxy S22 Ultra (ram+storage_pairs): '8+128 12+128 12+256 12+512' -> '8+128 12+256 12+512 12+1024'
+Galaxy S23 Ultra (storage_gb): '128 256 512 1024' -> '256 512 1024'
+Galaxy S23 Ultra (ram+storage_pairs): '8+256 12+128 12+256 12+512' -> '8+256 12+256 12+512 12+1024'
+Galaxy S24+ (ram_gb): '8 12' -> '12'
+Galaxy S24+ (ram+storage_pairs): '8+256 12+256 12+512' -> '12+256 12+512'
+Galaxy S24 Ultra (storage_gb): '128 256 512 1024' -> '256 512 1024'
+Galaxy S24 Ultra (ram+storage_pairs): '12+128 12+256 12+512' -> '12+256 12+512 12+1024'
+Galaxy Note20 Ultra (ram+storage_pairs): '8+256 12+128 12+256' -> '8+256 8+512 12+128 12+256 12+512'
+Galaxy Z Fold4 (ram+storage_pairs): '12+256 12+512' -> '12+256 12+512 12+1024'
+Galaxy Z Fold5 (ram+storage_pairs): '12+256 12+512' -> '12+256 12+512 12+1024'
+Galaxy Z Flip6 (storage_gb): '128 256 512' -> '256 512'
+Galaxy S25 Ultra (ram+storage_pairs): '12+256 12+512' -> '12+256 12+512 16+1024'
+Galaxy S26 (ram+storage_pairs): '' -> '12+256 12+512'
+Galaxy S26+ (ram+storage_pairs): '' -> '12+256 12+512'
+Added missing model: Galaxy A3 Core (RAM: 1GB, Storage: 16 32GB)
+Added missing model: Galaxy A9s (RAM: 6 8GB, Storage: 128GB)
+Added missing model: Galaxy A22s 5G (RAM: 4GB, Storage: 64 128GB)
+Added missing model: Galaxy A23 5G UW (RAM: 4GB, Storage: 64GB)
+Added missing model: Galaxy A53 5G UW (RAM: 6GB, Storage: 128GB)
+Added missing model: Galaxy A08 (RAM: 4GB, Storage: 64 128GB)
+Added missing model: Galaxy A18 (RAM: 4GB, Storage: 64 128GB)
+Added missing model: Galaxy A27 5G (RAM: 6GB, Storage: 128 256GB)
+Added missing model: Galaxy Z Flip8 (RAM: 12GB, Storage: 256 512GB)

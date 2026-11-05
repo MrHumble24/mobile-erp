@@ -1,0 +1,949 @@
+series,model,model_code,codename
+S,Galaxy S9,SC-02K,SC-02K
+S,Galaxy S9,SCV38,SCV38
+S,Galaxy S9,SM-G9600,starqltechn
+S,Galaxy S9,SM-G9608,starqltecmcc
+S,Galaxy S9,SM-G960F,starlte
+S,Galaxy S9,SM-G960N,starlteks
+S,Galaxy S9,SM-G960U,starqltesq
+S,Galaxy S9,SM-G960U1,starqlteue
+S,Galaxy S9,SM-G960W,starqltecs
+S,Galaxy S9+,SC-03K,SC-03K
+S,Galaxy S9+,SCV39,SCV39
+S,Galaxy S9+,SM-G9650,star2qltechn
+S,Galaxy S9+,SM-G965F,star2lte
+S,Galaxy S9+,SM-G965N,star2lteks
+S,Galaxy S9+,SM-G965U,star2qltesq
+S,Galaxy S9+,SM-G965U1,star2qlteue
+S,Galaxy S9+,SM-G965W,star2qltecs
+S,Galaxy S10,SC-03L,SC-03L
+S,Galaxy S10,SCV41,SCV41
+S,Galaxy S10,SM-G9730,beyond1q
+S,Galaxy S10,SM-G9738,beyond1q
+S,Galaxy S10,SM-G973C,beyond1q
+S,Galaxy S10,SM-G973F,beyond1
+S,Galaxy S10,SM-G973N,beyond1
+S,Galaxy S10,SM-G973U,beyond1q
+S,Galaxy S10,SM-G973U1,beyond1q
+S,Galaxy S10,SM-G973W,beyond1q
+S,Galaxy S10 5G,SM-G977B,beyondx
+S,Galaxy S10 5G,SM-G977N,beyondx
+S,Galaxy S10 5G,SM-G977P,beyondxq
+S,Galaxy S10 5G,SM-G977T,beyondxq
+S,Galaxy S10 5G,SM-G977U,beyondxq
+S,Galaxy S10 Lite,SM-G770F,r5q
+S,Galaxy S10 Lite,SM-G770U1,r5q
+S,Galaxy S10+,SC-04L,SC-04L
+S,Galaxy S10+,SCV42,SCV42
+S,Galaxy S10+,SM-G9750,beyond2q
+S,Galaxy S10+,SM-G9758,beyond2q
+S,Galaxy S10+,SM-G975F,beyond2
+S,Galaxy S10+,SM-G975N,beyond2
+S,Galaxy S10+,SM-G975U,beyond2q
+S,Galaxy S10+,SM-G975U1,beyond2q
+S,Galaxy S10+,SM-G975W,beyond2q
+S,Galaxy S10+ Olympic Games Edition,SC-05L,SC-05L
+S,Galaxy S10e,SM-G9700,beyond0q
+S,Galaxy S10e,SM-G9708,beyond0q
+S,Galaxy S10e,SM-G970F,beyond0
+S,Galaxy S10e,SM-G970N,beyond0
+S,Galaxy S10e,SM-G970U,beyond0q
+S,Galaxy S10e,SM-G970U1,beyond0q
+S,Galaxy S10e,SM-G970W,beyond0q
+S,Galaxy S20,SM-G980F,x1s
+S,Galaxy S20 5G,SC-51A,SC-51A
+S,Galaxy S20 5G,SC51Aa,SC51Aa
+S,Galaxy S20 5G,SCG01,SCG01
+S,Galaxy S20 5G,SM-G9810,x1q
+S,Galaxy S20 5G,SM-G981B,x1s
+S,Galaxy S20 5G,SM-G981N,x1q
+S,Galaxy S20 5G,SM-G981U,x1q
+S,Galaxy S20 5G,SM-G981U1,x1q
+S,Galaxy S20 5G,SM-G981V,x1q
+S,Galaxy S20 5G,SM-G981W,x1q
+S,Galaxy S20 FE,SM-G780F,r8s
+S,Galaxy S20 FE,SM-G780G,r8q
+S,Galaxy S20 FE 5G,SM-G7810,r8q
+S,Galaxy S20 FE 5G,SM-G781B,r8q
+S,Galaxy S20 FE 5G,SM-G781N,r8q
+S,Galaxy S20 FE 5G,SM-G781U,r8q
+S,Galaxy S20 FE 5G,SM-G781U1,r8q
+S,Galaxy S20 FE 5G,SM-G781V,r8q
+S,Galaxy S20 FE 5G,SM-G781W,r8q
+S,Galaxy S20 Ultra 5G,SCG03,SCG03
+S,Galaxy S20 Ultra 5G,SM-G9880,z3q
+S,Galaxy S20 Ultra 5G,SM-G988B,z3s
+S,Galaxy S20 Ultra 5G,SM-G988N,z3q
+S,Galaxy S20 Ultra 5G,SM-G988Q,z3q
+S,Galaxy S20 Ultra 5G,SM-G988U,z3q
+S,Galaxy S20 Ultra 5G,SM-G988U1,z3q
+S,Galaxy S20 Ultra 5G,SM-G988W,z3q
+S,Galaxy S20+,SM-G985F,y2s
+S,Galaxy S20+ 5G,SC-52A,SC-52A
+S,Galaxy S20+ 5G,SCG02,SCG02
+S,Galaxy S20+ 5G,SM-G9860,y2q
+S,Galaxy S20+ 5G,SM-G986B,y2s
+S,Galaxy S20+ 5G,SM-G986N,y2q
+S,Galaxy S20+ 5G,SM-G986U,y2q
+S,Galaxy S20+ 5G,SM-G986U1,y2q
+S,Galaxy S20+ 5G,SM-G986W,y2q
+S,Galaxy S21 5G,SC-51B,SC-51B
+S,Galaxy S21 5G,SCG09,SCG09
+S,Galaxy S21 5G,SM-G9910,o1q
+S,Galaxy S21 5G,SM-G991B,o1s
+S,Galaxy S21 5G,SM-G991N,o1s
+S,Galaxy S21 5G,SM-G991Q,o1q
+S,Galaxy S21 5G,SM-G991U1,o1q
+S,Galaxy S21 5G,SM-G991W,o1q
+S,Galaxy S21 FE 5G,SM-G9900,r9q
+S,Galaxy S21 FE 5G,SM-G990B,r9q
+S,Galaxy S21 FE 5G,SM-G990B2,r9q
+S,Galaxy S21 FE 5G,SM-G990E,r9s
+S,Galaxy S21 FE 5G,SM-G990U,r9q
+S,Galaxy S21 FE 5G,SM-G990U1,r9q
+S,Galaxy S21 FE 5G,SM-G990U2,r9q
+S,Galaxy S21 FE 5G,SM-G990U3,r9q
+S,Galaxy S21 FE 5G,SM-G990W,r9q
+S,Galaxy S21 FE 5G,SM-G990W2,r9q
+S,Galaxy S21 Ultra 5G,SC-52B,SC-52B
+S,Galaxy S21 Ultra 5G,SM-G9980,p3q
+S,Galaxy S21 Ultra 5G,SM-G998B,p3s
+S,Galaxy S21 Ultra 5G,SM-G998N,p3s
+S,Galaxy S21 Ultra 5G,SM-G998U,p3q
+S,Galaxy S21 Ultra 5G,SM-G998U1,p3q
+S,Galaxy S21 Ultra 5G,SM-G998W,p3q
+S,Galaxy S21+ 5G,SCG10,SCG10
+S,Galaxy S21+ 5G,SM-G9960,t2q
+S,Galaxy S21+ 5G,SM-G996B,t2s
+S,Galaxy S21+ 5G,SM-G996N,t2s
+S,Galaxy S21+ 5G,SM-G996U,t2q
+S,Galaxy S21+ 5G,SM-G996U1,t2q
+S,Galaxy S21+ 5G,SM-G996W,t2q
+S,Galaxy S22,SC-51C,SC-51C
+S,Galaxy S22,SCG13,SCG13
+S,Galaxy S22,SM-S9010,r0q
+S,Galaxy S22,SM-S901B,r0s
+S,Galaxy S22,SM-S901E,r0q
+S,Galaxy S22,SM-S901N,r0q
+S,Galaxy S22,SM-S901U,r0q
+S,Galaxy S22,SM-S901U1,r0q
+S,Galaxy S22,SM-S901W,r0q
+S,Galaxy S22 Ultra,SC-52C,SC-52C
+S,Galaxy S22 Ultra,SCG14,SCG14
+S,Galaxy S22 Ultra,SM-S9080,b0q
+S,Galaxy S22 Ultra,SM-S908B,b0s
+S,Galaxy S22 Ultra,SM-S908E,b0q
+S,Galaxy S22 Ultra,SM-S908N,b0q
+S,Galaxy S22 Ultra,SM-S908U,b0q
+S,Galaxy S22 Ultra,SM-S908U1,b0q
+S,Galaxy S22 Ultra,SM-S908W,b0q
+S,Galaxy S22+,SM-S9060,g0q
+S,Galaxy S22+,SM-S906B,g0s
+S,Galaxy S22+,SM-S906E,g0q
+S,Galaxy S22+,SM-S906N,g0q
+S,Galaxy S22+,SM-S906U,g0q
+S,Galaxy S22+,SM-S906U1,g0q
+S,Galaxy S22+,SM-S906W,g0q
+S,Galaxy S23,SC-51D,SC-51D
+S,Galaxy S23,SCG19,SCG19
+S,Galaxy S23,SM-S9110,dm1q
+S,Galaxy S23,SM-S911B,dm1q
+S,Galaxy S23,SM-S911C,dm1q
+S,Galaxy S23,SM-S911N,dm1q
+S,Galaxy S23,SM-S911U,dm1q
+S,Galaxy S23,SM-S911U1,dm1q
+S,Galaxy S23,SM-S911W,dm1q
+S,Galaxy S23 FE,SCG24,SCG24
+S,Galaxy S23 FE,SM-S7110,r11q
+S,Galaxy S23 FE,SM-S711B,r11s
+S,Galaxy S23 FE,SM-S711N,r11s
+S,Galaxy S23 FE,SM-S711U,r11q
+S,Galaxy S23 FE,SM-S711U1,r11q
+S,Galaxy S23 FE,SM-S711W,r11q
+S,Galaxy S23 Ultra,SC-52D,SC-52D
+S,Galaxy S23 Ultra,SCG20,SCG20
+S,Galaxy S23 Ultra,SM-S9180,dm3q
+S,Galaxy S23 Ultra,SM-S918B,dm3q
+S,Galaxy S23 Ultra,SM-S918N,dm3q
+S,Galaxy S23 Ultra,SM-S918Q,dm3q
+S,Galaxy S23 Ultra,SM-S918U,dm3q
+S,Galaxy S23 Ultra,SM-S918U1,dm3q
+S,Galaxy S23 Ultra,SM-S918W,dm3q
+S,Galaxy S23+,SM-S9160,dm2q
+S,Galaxy S23+,SM-S916B,dm2q
+S,Galaxy S23+,SM-S916N,dm2q
+S,Galaxy S23+,SM-S916U,dm2q
+S,Galaxy S23+,SM-S916U1,dm2q
+S,Galaxy S23+,SM-S916W,dm2q
+S,Galaxy S24,SC-51E,SC-51E
+S,Galaxy S24,SCG25,SCG25
+S,Galaxy S24,SM-S9210,e1q
+S,Galaxy S24,SM-S921B,e1s
+S,Galaxy S24,SM-S921E,e1q
+S,Galaxy S24,SM-S921N,e1s
+S,Galaxy S24,SM-S921Q,e1q
+S,Galaxy S24,SM-S921U,e1q
+S,Galaxy S24,SM-S921U1,e1q
+S,Galaxy S24,SM-S921W,e1q
+S,Galaxy S24 FE,SCG30,SCG30
+S,Galaxy S24 FE,SM-S7210,r12s
+S,Galaxy S24 FE,SM-S721B,r12s
+S,Galaxy S24 FE,SM-S721N,r12s
+S,Galaxy S24 FE,SM-S721Q,r12s
+S,Galaxy S24 FE,SM-S721U,r12s
+S,Galaxy S24 FE,SM-S721U1,r12s
+S,Galaxy S24 FE,SM-S721W,r12s
+S,Galaxy S24 Ultra,SC-52E,SC-52E
+S,Galaxy S24 Ultra,SCG26,SCG26
+S,Galaxy S24 Ultra,SM-S9280,e3q
+S,Galaxy S24 Ultra,SM-S928B,e3q
+S,Galaxy S24 Ultra,SM-S928N,e3q
+S,Galaxy S24 Ultra,SM-S928Q,e3q
+S,Galaxy S24 Ultra,SM-S928U,e3q
+S,Galaxy S24 Ultra,SM-S928U1,e3q
+S,Galaxy S24 Ultra,SM-S928W,e3q
+S,Galaxy S24+,SM-S9260,e2q
+S,Galaxy S24+,SM-S926B,e2s
+S,Galaxy S24+,SM-S926N,e2s
+S,Galaxy S24+,SM-S926U,e2q
+S,Galaxy S24+,SM-S926U1,e2q
+S,Galaxy S24+,SM-S926W,e2q
+S,Galaxy S25,SC-51F,SC-51F
+S,Galaxy S25,SCG31,SCG31
+S,Galaxy S25,SM-S9310,pa1q
+S,Galaxy S25,SM-S931B,pa1q
+S,Galaxy S25,SM-S931N,pa1q
+S,Galaxy S25,SM-S931Q,pa1q
+S,Galaxy S25,SM-S931U,pa1q
+S,Galaxy S25,SM-S931U1,pa1q
+S,Galaxy S25,SM-S931W,pa1q
+S,Galaxy S25,SM-S931Z,pa1q
+S,Galaxy S25 Edge,SM-S9370,psq
+S,Galaxy S25 Edge,SM-S937B,psq
+S,Galaxy S25 Edge,SM-S937N,psq
+S,Galaxy S25 Edge,SM-S937U,psq
+S,Galaxy S25 Edge,SM-S937U1,psq
+S,Galaxy S25 Edge,SM-S937W,psq
+S,Galaxy S25 FE,SM-S731B,r13s
+S,Galaxy S25 FE,SM-S731N,r13s
+S,Galaxy S25 FE,SM-S731U,r13s
+S,Galaxy S25 FE,SM-S731U1,r13s
+S,Galaxy S25 FE,SM-S731W,r13s
+S,Galaxy S25 Ultra,SC-52F,SC-52F
+S,Galaxy S25 Ultra,SCG32,SCG32
+S,Galaxy S25 Ultra,SM-S9380,pa3q
+S,Galaxy S25 Ultra,SM-S938B,pa3q
+S,Galaxy S25 Ultra,SM-S938N,pa3q
+S,Galaxy S25 Ultra,SM-S938Q,pa3q
+S,Galaxy S25 Ultra,SM-S938U,pa3q
+S,Galaxy S25 Ultra,SM-S938U1,pa3q
+S,Galaxy S25 Ultra,SM-S938W,pa3q
+S,Galaxy S25 Ultra,SM-S938Z,pa3q
+S,Galaxy S25+,SM-S9360,pa2q
+S,Galaxy S25+,SM-S936B,pa2q
+S,Galaxy S25+,SM-S936N,pa2q
+S,Galaxy S25+,SM-S936U,pa2q
+S,Galaxy S25+,SM-S936U1,pa2q
+S,Galaxy S25+,SM-S936W,pa2q
+S,Galaxy S26,SC-51G,m1q
+S,Galaxy S26,SCG36,m1q
+S,Galaxy S26,SM-S9420,m1q
+S,Galaxy S26,SM-S942B,m1s
+S,Galaxy S26,SM-S942C,m1q
+S,Galaxy S26,SM-S942N,m1s
+S,Galaxy S26,SM-S942Q,m1q
+S,Galaxy S26,SM-S942U,m1q
+S,Galaxy S26,SM-S942U1,m1q
+S,Galaxy S26,SM-S942W,m1q
+S,Galaxy S26,SM-S942Z,m1q
+S,Galaxy S26 FE,SM-S741B,r14s
+S,Galaxy S26 FE,SM-S741N,r14s
+S,Galaxy S26 FE,SM-S741U,r14s
+S,Galaxy S26 FE,SM-S741U1,r14s
+S,Galaxy S26 FE,SM-S741W,r14s
+S,Galaxy S26 Ultra,SC-53G,m3q
+S,Galaxy S26 Ultra,SCG37,m3q
+S,Galaxy S26 Ultra,SM-S9480,m3q
+S,Galaxy S26 Ultra,SM-S948B,m3q
+S,Galaxy S26 Ultra,SM-S948C,m3q
+S,Galaxy S26 Ultra,SM-S948N,m3q
+S,Galaxy S26 Ultra,SM-S948Q,m3q
+S,Galaxy S26 Ultra,SM-S948U,m3q
+S,Galaxy S26 Ultra,SM-S948U1,m3q
+S,Galaxy S26 Ultra,SM-S948W,m3q
+S,Galaxy S26 Ultra,SM-S948Z,m3q
+S,Galaxy S26+,SC-52G,m2q
+S,Galaxy S26+,SCG38,m2q
+S,Galaxy S26+,SM-S9470,m2q
+S,Galaxy S26+,SM-S947B,m2s
+S,Galaxy S26+,SM-S947C,m2q
+S,Galaxy S26+,SM-S947N,m2s
+S,Galaxy S26+,SM-S947Q,m2q
+S,Galaxy S26+,SM-S947U,m2q
+S,Galaxy S26+,SM-S947U1,m2q
+S,Galaxy S26+,SM-S947W,m2q
+S,Galaxy S26+,SM-S947Z,m2q
+Note,Galaxy Note9,SC-01L,SC-01L
+Note,Galaxy Note9,SCV40,SCV40
+Note,Galaxy Note9,SM-N9600,crownqltechn
+Note,Galaxy Note9,SM-N960F,crownlte
+Note,Galaxy Note9,SM-N960N,crownlteks
+Note,Galaxy Note9,SM-N960U,crownqltesq
+Note,Galaxy Note9,SM-N960U1,crownqlteue
+Note,Galaxy Note9,SM-N960W,crownqltecs
+Note,Galaxy Note10,SM-N9700,d1q
+Note,Galaxy Note10,SM-N970F,d1
+Note,Galaxy Note10,SM-N970U,d1q
+Note,Galaxy Note10,SM-N970U1,d1q
+Note,Galaxy Note10,SM-N970W,d1q
+Note,Galaxy Note10 5G,SM-N971N,d1x
+Note,Galaxy Note10 Lite,SM-N770F,r7
+Note,Galaxy Note10 Lite,SM-N770X,r7
+Note,Galaxy Note10+,SC-01M,SC-01M
+Note,Galaxy Note10+,SCV45,SCV45
+Note,Galaxy Note10+,SM-N9750,d2q
+Note,Galaxy Note10+,SM-N975C,d2q
+Note,Galaxy Note10+,SM-N975F,d2s
+Note,Galaxy Note10+,SM-N975U,d2q
+Note,Galaxy Note10+,SM-N975U1,d2q
+Note,Galaxy Note10+,SM-N975W,d2q
+Note,Galaxy Note10+ 5G,SM-N9760,d2xq
+Note,Galaxy Note10+ 5G,SM-N976B,d2x
+Note,Galaxy Note10+ 5G,SM-N976N,d2x
+Note,Galaxy Note10+ 5G,SM-N976Q,d2xq
+Note,Galaxy Note10+ 5G,SM-N976U,d2xq2
+Note,Galaxy Note10+ 5G,SM-N976V,d2xq
+Note,Galaxy Note20,SM-N980F,c1s
+Note,Galaxy Note20 5G,SM-N9810,c1q
+Note,Galaxy Note20 5G,SM-N981B,c1s
+Note,Galaxy Note20 5G,SM-N981N,c1q
+Note,Galaxy Note20 5G,SM-N981U,c1q
+Note,Galaxy Note20 5G,SM-N981U1,c1q
+Note,Galaxy Note20 5G,SM-N981W,c1q
+Note,Galaxy Note20 Ultra,SM-N985F,c2s
+Note,Galaxy Note20 Ultra 5G,SC-53A,SC-53A
+Note,Galaxy Note20 Ultra 5G,SCG06,SCG06
+Note,Galaxy Note20 Ultra 5G,SM-N9860,c2q
+Note,Galaxy Note20 Ultra 5G,SM-N986B,c2s
+Note,Galaxy Note20 Ultra 5G,SM-N986N,c2q
+Note,Galaxy Note20 Ultra 5G,SM-N986U,c2q
+Note,Galaxy Note20 Ultra 5G,SM-N986U1,c2q
+Note,Galaxy Note20 Ultra 5G,SM-N986W,c2q
+A,Galaxy A01,SM-A015A,a01q
+A,Galaxy A01,SM-A015AZ,a01q
+A,Galaxy A01,SM-A015F,a01q
+A,Galaxy A01,SM-A015G,a01q
+A,Galaxy A01,SM-A015M,a01q
+A,Galaxy A01,SM-A015T1,a01q
+A,Galaxy A01,SM-A015U,a01q
+A,Galaxy A01,SM-A015U1,a01q
+A,Galaxy A01,SM-A015V,a01q
+A,Galaxy A01,SM-S111DL,a01q
+A,Galaxy A01 Core,SM-A013F,a01core
+A,Galaxy A01 Core,SM-A013G,a01core
+A,Galaxy A01 Core,SM-A013M,a01core
+A,Galaxy A02,SM-A022F,a02
+A,Galaxy A02,SM-A022G,a02
+A,Galaxy A02,SM-A022M,a02
+A,Galaxy A2 Core,SM-A260F,a2corelte
+A,Galaxy A2 Core,SM-A260G,a2corelte
+A,Galaxy A02s,SM-A025A,a02q
+A,Galaxy A02s,SM-A025AZ,a02q
+A,Galaxy A02s,SM-A025F,a02q
+A,Galaxy A02s,SM-A025G,a02q
+A,Galaxy A02s,SM-A025M,a02q
+A,Galaxy A02s,SM-A025U,a02q
+A,Galaxy A02s,SM-A025U1,a02q
+A,Galaxy A02s,SM-A025V,a02q
+A,Galaxy A02s,SM-S124DL,a02q
+A,Galaxy A03,SM-A035F,a03
+A,Galaxy A03,SM-A035G,a03
+A,Galaxy A03,SM-A035M,a03
+A,Galaxy A3 Core,SM-A013G,a01core
+A,Galaxy A03 Core,SM-A032F,a3core
+A,Galaxy A03 Core,SM-A032M,a3core
+A,Galaxy A03s,SM-A037F,a03s
+A,Galaxy A03s,SM-A037G,a03s
+A,Galaxy A03s,SM-A037M,a03s
+A,Galaxy A03s,SM-A037U,a03su
+A,Galaxy A03s,SM-A037U1,a03su
+A,Galaxy A03s,SM-A037W,a03su
+A,Galaxy A03s,SM-S134DL,a03su
+A,Galaxy A03s,SM-S135DL,a03su
+A,Galaxy A04,SM-A045F,a04
+A,Galaxy A04,SM-A045M,a04
+A,Galaxy A04e,SM-A042F,a04e
+A,Galaxy A04e,SM-A042M,a04e
+A,Galaxy A04s,SM-A047F,a04s
+A,Galaxy A04s,SM-A047M,a04s
+A,Galaxy A05,SM-A055F,a05m
+A,Galaxy A05,SM-A055M,a05m
+A,Galaxy A05s,SM-A057F,a05s
+A,Galaxy A05s,SM-A057G,a05s
+A,Galaxy A05s,SM-A057M,a05s
+A,Galaxy A06,SM-A065F,a06
+A,Galaxy A06,SM-A065M,a06
+A,Galaxy A6,SM-A600A,a6elteatt
+A,Galaxy A6,SM-A600AZ,a6elteaio
+A,Galaxy A6,SM-A600F,a6lte
+A,Galaxy A6,SM-A600FN,a6lte
+A,Galaxy A6,SM-A600G,a6lte
+A,Galaxy A6,SM-A600GN,a6lte
+A,Galaxy A6,SM-A600N,a6lteks
+A,Galaxy A6,SM-A600P,a6eltespr
+A,Galaxy A6,SM-A600T,a6eltetmo
+A,Galaxy A6,SM-A600T1,a6eltemtr
+A,Galaxy A6,SM-A600U,a6elteue
+A,Galaxy A06 5G,SM-A066B,a06x
+A,Galaxy A06 5G,SM-A066E,a06x
+A,Galaxy A06 5G,SM-A066M,a06x
+A,Galaxy A6+,SM-A6050,a6pltechn
+A,Galaxy A6+,SM-A605F,a6plte
+A,Galaxy A6+,SM-A605FN,a6plte
+A,Galaxy A6+,SM-A605G,a6plte
+A,Galaxy A6+,SM-A605GN,a6plte
+A,Galaxy A07,SM-A075F,a07
+A,Galaxy A07,SM-A075M,a07
+A,Galaxy A7,SM-A750C,a7y18ve
+A,Galaxy A07 5G,SM-A076B,a07x
+A,Galaxy A07 5G,SM-A076E,a07x
+A,Galaxy A07 5G,SM-A076M,a07x
+A,Galaxy A7 (2018),SM-A750F,a7y18lte
+A,Galaxy A7 (2018),SM-A750FN,a7y18lte
+A,Galaxy A7 (2018),SM-A750G,a7y18lte
+A,Galaxy A7 (2018),SM-A750GN,a7y18lte
+A,Galaxy A7 (2018),SM-A750N,a7y18lteks
+A,Galaxy A07s,SM-A077F,a07ve
+A,Galaxy A07s,SM-A077M,a07ve
+A,Galaxy A08,SM-A085F,a08
+A,Galaxy A08,SM-A085M,a08
+A,Galaxy A8 Star,SM-G8850,astarqltechn
+A,Galaxy A8 Star,SM-G885F,astarqlte
+A,Galaxy A8 Star,SM-G885S,astarqlteskt
+A,Galaxy A8 Star,SM-G885Y,astarqlte
+A,Galaxy A8(2018),SM-A530F,jackpotlte
+A,Galaxy A8(2018),SM-A530N,jackpotlteks
+A,Galaxy A8(2018),SM-A530W,jackpotltecan
+A,Galaxy A8(2018),SM-A530X,jackpotlte
+A,Galaxy A8+(2018),SM-A730F,jackpot2lte
+A,Galaxy A8+(2018),SM-A730X,jackpot2lte
+A,Galaxy A8s,SM-G8870,a8sqltechn
+A,Galaxy A8s,SM-G887F,a8sqlte
+A,Galaxy A9 2018,SM-A9200,a9y18qltechn
+A,Galaxy A9 (2018),SM-A920F,a9y18qlte
+A,Galaxy A9 (2018),SM-A920N,a9y18qltekx
+A,Galaxy A9 Pro,SM-G887N,a8sqlteks
+A,Galaxy A9 Star,SM-G8850,astarqltechn
+A,Galaxy A9 Star,SM-G8858,astarqltecmcc
+A,Galaxy A9 Star Lite,SM-A6050,a6pltechn
+A,Galaxy A9 Star Lite,SM-A6058,a6pltecmcc
+A,Galaxy A9 Star Lite,SM-A605XC,a6pltechn
+A,Galaxy A9s,SM-A9200,a9y18qltechn
+A,Galaxy A10,SM-A105F,a10
+A,Galaxy A10,SM-A105FN,a10
+A,Galaxy A10,SM-A105G,a10
+A,Galaxy A10,SM-A105M,a10
+A,Galaxy A10,SM-A105N,a10
+A,Galaxy A10e,SM-A102N,a10ekx
+A,Galaxy A10e,SM-A102U,a10e
+A,Galaxy A10e,SM-A102U1,a10e
+A,Galaxy A10e,SM-A102W,a10e
+A,Galaxy A10e,SM-S102DL,a10e
+A,Galaxy A10s,SM-A107F,a10s
+A,Galaxy A10s,SM-A107M,a10s
+A,Galaxy A11,SM-A115A,a11q
+A,Galaxy A11,SM-A115AP,a11q
+A,Galaxy A11,SM-A115AZ,a11q
+A,Galaxy A11,SM-A115F,a11q
+A,Galaxy A11,SM-A115M,a11q
+A,Galaxy A11,SM-A115U,a11q
+A,Galaxy A11,SM-A115U1,a11q
+A,Galaxy A11,SM-A115W,a11q
+A,Galaxy A11,SM-S115DL,a11q
+A,Galaxy A12,SM-A125F,a12
+A,Galaxy A12,SM-A125M,a12
+A,Galaxy A12,SM-A125N,a12
+A,Galaxy A12,SM-A125U,a12u
+A,Galaxy A12,SM-A125U1,a12u
+A,Galaxy A12,SM-A125W,a12u
+A,Galaxy A12,SM-A127F,a12s
+A,Galaxy A12,SM-A127M,a12s
+A,Galaxy A12,SM-S127DL,a12u
+A,Galaxy A13,SM-A135F,a13
+A,Galaxy A13,SM-A135M,a13
+A,Galaxy A13,SM-A135N,a13
+A,Galaxy A13,SM-A135U,a13
+A,Galaxy A13,SM-A135U1,a13
+A,Galaxy A13,SM-A137F,a13ve
+A,Galaxy A13 5G,SM-A136B,a13x
+A,Galaxy A13 5G,SM-A136M,a13x
+A,Galaxy A13 5G,SM-A136S,a13x
+A,Galaxy A13 5G,SM-A136U,a13x
+A,Galaxy A13 5G,SM-A136U1,a13x
+A,Galaxy A13 5G,SM-A136W,a13x
+A,Galaxy A13 5G,SM-S136DL,a13x
+A,Galaxy A14,SM-A145F,a14
+A,Galaxy A14,SM-A145FB,a14
+A,Galaxy A14,SM-A145M,a14
+A,Galaxy A14,SM-A145MB,a14
+A,Galaxy A14,SM-A145P,a14m
+A,Galaxy A14,SM-A145R,a14m
+A,Galaxy A14 5G,SM-A146B,a14x
+A,Galaxy A14 5G,SM-A146M,a14x
+A,Galaxy A14 5G,SM-A146P,a14xm
+A,Galaxy A14 5G,SM-A146U,a14xm
+A,Galaxy A14 5G,SM-A146U1,a14xm
+A,Galaxy A14 5G,SM-A146W,a14xm
+A,Galaxy A14 5G,SM-S146VL,a14xm
+A,Galaxy A15,SM-A155F,a15
+A,Galaxy A15,SM-A155M,a15
+A,Galaxy A15,SM-A155N,a15
+A,Galaxy A15 5G,SM-A1560,a15x
+A,Galaxy A15 5G,SM-A156B,a15x
+A,Galaxy A15 5G,SM-A156E,a15x
+A,Galaxy A15 5G,SM-A156M,a15x
+A,Galaxy A15 5G,SM-A156U,a15x
+A,Galaxy A15 5G,SM-A156U1,a15x
+A,Galaxy A15 5G,SM-A156W,a15x
+A,Galaxy A15 5G,SM-S156V,a15x
+A,Galaxy A16,SM-A165F,a16
+A,Galaxy A16,SM-A165M,a16
+A,Galaxy A16,SM-A165N,a16
+A,Galaxy A16 5G,SM-A1660,a16x
+A,Galaxy A16 5G,SM-A166B,a16x
+A,Galaxy A16 5G,SM-A166E,a16x
+A,Galaxy A16 5G,SM-A166M,a16x
+A,Galaxy A16 5G,SM-A166P,a16xm
+A,Galaxy A16 5G,SM-A166U,a16x
+A,Galaxy A16 5G,SM-A166U1,a16x
+A,Galaxy A16 5G,SM-A166W,a16x
+A,Galaxy A16 5G,SM-S166V,a16x
+A,Galaxy A17,SM-A175F,a17
+A,Galaxy A17,SM-A175N,a17
+A,Galaxy A17 5G,SM-A1760,a17x
+A,Galaxy A17 5G,SM-A176B,a17x
+A,Galaxy A17 5G,SM-A176U,a17x
+A,Galaxy A17 5G,SM-A176U1,a17x
+A,Galaxy A17 5G,SM-A176W,a17x
+A,Galaxy A17 5G,SM-S176V,a17x
+A,Galaxy A18,SM-A185F,a18
+A,Galaxy A18,SM-A185G,a18m
+A,Galaxy A18,SM-A185N,a18
+A,Galaxy A20,SC-02M,SC-02M
+A,Galaxy A20,SCV46,SCV46
+A,Galaxy A20,SCV46-j,SCV46
+A,Galaxy A20,SCV46-u,SCV46
+A,Galaxy A20,SM-A205F,a20
+A,Galaxy A20,SM-A205FN,a20
+A,Galaxy A20,SM-A205G,a20
+A,Galaxy A20,SM-A205GN,a20
+A,Galaxy A20,SM-A205U,a20p
+A,Galaxy A20,SM-A205U1,a20p
+A,Galaxy A20,SM-A205W,a20
+A,Galaxy A20,SM-A205YN,a20
+A,Galaxy A20,SM-S205DL,a20p
+A,Galaxy A20e,SM-A202F,a20e
+A,Galaxy A20s,SM-A2070,a20s
+A,Galaxy A20s,SM-A207F,a20s
+A,Galaxy A20s,SM-A207M,a20s
+A,Galaxy A21,SC-42A,SC-42A
+A,Galaxy A21,SCV49,SCV49
+A,Galaxy A21,SM-A215U,a21
+A,Galaxy A21,SM-A215U1,a21
+A,Galaxy A21,SM-A215W,a21
+A,Galaxy A21,SM-S215DL,a21
+A,Galaxy A21s,SM-A217F,a21s
+A,Galaxy A21s,SM-A217M,a21s
+A,Galaxy A21s,SM-A217N,a21s
+A,Galaxy A22,SM-A225F,a22
+A,Galaxy A22,SM-A225M,a22
+A,Galaxy A22 5G,SC-56B,SC-56B
+A,Galaxy A22 5G,SM-A226B,a22x
+A,Galaxy A22 5G,SM-A226BR,a22x
+A,Galaxy A22s 5G,SM-A226B,a22x
+A,Galaxy A23,SM-A235F,a23
+A,Galaxy A23,SM-A235M,a23
+A,Galaxy A23,SM-A235N,a23
+A,Galaxy A23 5G,SC-56C,SC-56C
+A,Galaxy A23 5G,SCG18,SCG18
+A,Galaxy A23 5G,SM-A233C,a23ex
+A,Galaxy A23 5G,SM-A2360,a23xq
+A,Galaxy A23 5G,SM-A236B,a23xq
+A,Galaxy A23 5G,SM-A236E,a23xq
+A,Galaxy A23 5G,SM-A236M,a23xq
+A,Galaxy A23 5G,SM-A236U,a23xq
+A,Galaxy A23 5G,SM-A236U1,a23xq
+A,Galaxy A23 5G,SM-S236DL,a23xq
+A,Galaxy A23 5G,SM-S237VL,a23xq
+A,Galaxy A23 5G UW,SM-A236V,a23xq
+A,Galaxy A24,SM-A245F,a24
+A,Galaxy A24,SM-A245M,a24
+A,Galaxy A24,SM-A245N,a24
+A,Galaxy A25 5G,SC-53F,SC-53F
+A,Galaxy A25 5G,SCG33,SCG33
+A,Galaxy A25 5G,SM-A253C,a25ex
+A,Galaxy A25 5G,SM-A253Q,a25ex
+A,Galaxy A25 5G,SM-A253Z,a25ex
+A,Galaxy A25 5G,SM-A2560,a25x
+A,Galaxy A25 5G,SM-A256B,a25x
+A,Galaxy A25 5G,SM-A256E,a25x
+A,Galaxy A25 5G,SM-A256N,a25x
+A,Galaxy A25 5G,SM-A256U,a25x
+A,Galaxy A25 5G,SM-A256U1,a25x
+A,Galaxy A25 5G,SM-S256VL,a25x
+A,Galaxy A26 5G,SM-A266B,a26x
+A,Galaxy A26 5G,SM-A266M,a26xs
+A,Galaxy A26 5G,SM-A266U,a26x
+A,Galaxy A26 5G,SM-A266U1,a26x
+A,Galaxy A26 5G,SM-S266V,a26x
+A,Galaxy A27 5G,SM-A2760,a27xq
+A,Galaxy A27 5G,SM-A276B,a27xq
+A,Galaxy A27 5G,SM-A276U,a27xq
+A,Galaxy A27 5G,SM-A276U1,a27xq
+A,Galaxy A27 5G,SM-S276V,a27xq
+A,Galaxy A30,SCV43,SCV43
+A,Galaxy A30,SCV43-j,SCV43-j
+A,Galaxy A30,SCV43-u,SCV43-u
+A,Galaxy A30,SM-A305F,a30
+A,Galaxy A30,SM-A305FN,a30
+A,Galaxy A30,SM-A305G,a30
+A,Galaxy A30,SM-A305GN,a30
+A,Galaxy A30,SM-A305GT,a30
+A,Galaxy A30,SM-A305N,a30
+A,Galaxy A30,SM-A305YN,a30
+A,Galaxy A30s,SM-A307FN,a30s
+A,Galaxy A30s,SM-A307G,a30s
+A,Galaxy A30s,SM-A307GN,a30s
+A,Galaxy A30s,SM-A307GT,a30s
+A,Galaxy A31,SM-A315F,a31
+A,Galaxy A31,SM-A315G,a31
+A,Galaxy A31,SM-A315N,a31
+A,Galaxy A32,SM-A325F,a32
+A,Galaxy A32,SM-A325M,a32
+A,Galaxy A32,SM-A325N,a32
+A,Galaxy A32 5G,SCG08,SCG08
+A,Galaxy A32 5G,SM-A326B,a32x
+A,Galaxy A32 5G,SM-A326BR,a32x
+A,Galaxy A32 5G,SM-A326U,a32x
+A,Galaxy A32 5G,SM-A326U1,a32x
+A,Galaxy A32 5G,SM-A326W,a32x
+A,Galaxy A32 5G,SM-S326DL,a32x
+A,Galaxy A33 5G,SM-A3360,a33x
+A,Galaxy A33 5G,SM-A336B,a33x
+A,Galaxy A33 5G,SM-A336E,a33x
+A,Galaxy A33 5G,SM-A336M,a33x
+A,Galaxy A33 5G,SM-A336N,a33x
+A,Galaxy A34 5G,SM-A3460,a34x
+A,Galaxy A34 5G,SM-A346B,a34x
+A,Galaxy A34 5G,SM-A346E,a34x
+A,Galaxy A34 5G,SM-A346M,a34x
+A,Galaxy A34 5G,SM-A346N,a34x
+A,Galaxy A35 5G,SM-A3560,a35x
+A,Galaxy A35 5G,SM-A356B,a35x
+A,Galaxy A35 5G,SM-A356E,a35x
+A,Galaxy A35 5G,SM-A356N,a35x
+A,Galaxy A35 5G,SM-A356U,a35x
+A,Galaxy A35 5G,SM-A356U1,a35x
+A,Galaxy A35 5G,SM-A356W,a35x
+A,Galaxy A35 5G,SM-S356V,a35x
+A,Galaxy A36 5G,SC-54F,SC-54F
+A,Galaxy A36 5G,SM-A3660,a36xq
+A,Galaxy A36 5G,SM-A366B,a36xq
+A,Galaxy A36 5G,SM-A366E,a36xq
+A,Galaxy A36 5G,SM-A366N,a36xq
+A,Galaxy A36 5G,SM-A366Q,a36xq
+A,Galaxy A36 5G,SM-A366U,a36xq
+A,Galaxy A36 5G,SM-A366U1,a36xq
+A,Galaxy A36 5G,SM-A366W,a36xq
+A,Galaxy A36 5G,SM-S366V,a36xq
+A,Galaxy A37 5G,SM-A3760,a37x
+A,Galaxy A37 5G,SM-A376B,a37x
+A,Galaxy A37 5G,SM-A376E,a37x
+A,Galaxy A37 5G,SM-A376N,a37x
+A,Galaxy A37 5G,SM-A376U,a37x
+A,Galaxy A37 5G,SM-A376U1,a37x
+A,Galaxy A37 5G,SM-A376W,a37x
+A,Galaxy A37 5G,SM-S376V,a37x
+A,Galaxy A40,SM-A405FM,a40
+A,Galaxy A40,SM-A405FN,a40
+A,Galaxy A40,SM-A405S,a40
+A,Galaxy A40s,SM-A3050,a30c
+A,Galaxy A40s,SM-A3051,a30c
+A,Galaxy A40s,SM-A3058,a30c
+A,Galaxy A41,SC-41A,SC-41A
+A,Galaxy A41,SCV48,SCV48
+A,Galaxy A41,SM-A415F,a41
+A,Galaxy A42 5G,SM-A4260,a42xq
+A,Galaxy A42 5G,SM-A426B,a42xq
+A,Galaxy A42 5G,SM-A426N,a42xq
+A,Galaxy A42 5G,SM-A426U,a42xuq
+A,Galaxy A42 5G,SM-A426U1,a42xuq
+A,Galaxy A42 5G,SM-S426DL,a42xuq
+A,Galaxy A50,SM-A505F,a50
+A,Galaxy A50,SM-A505FM,a50
+A,Galaxy A50,SM-A505FN,a50
+A,Galaxy A50,SM-A505G,a50
+A,Galaxy A50,SM-A505GN,a50
+A,Galaxy A50,SM-A505GT,a50
+A,Galaxy A50,SM-A505N,a50
+A,Galaxy A50,SM-A505U,a50
+A,Galaxy A50,SM-A505U1,a50
+A,Galaxy A50,SM-A505W,a50
+A,Galaxy A50,SM-A505YN,a50
+A,Galaxy A50,SM-S506DL,a50
+A,Galaxy A50s,SM-A5070,a50s
+A,Galaxy A50s,SM-A507FN,a50s
+A,Galaxy A51,SM-A515F,a51
+A,Galaxy A51,SM-A515U,a51
+A,Galaxy A51,SM-A515U1,a51
+A,Galaxy A51,SM-A515W,a51
+A,Galaxy A51,SM-A515X,a51
+A,Galaxy A51,SM-S515DL,a51
+A,Galaxy A51 5G,SC-54A,SC-54A
+A,Galaxy A51 5G,SCG07,SCG07
+A,Galaxy A51 5G,SM-A5160,a51x
+A,Galaxy A51 5G,SM-A516B,a51x
+A,Galaxy A51 5G,SM-A516N,a51x
+A,Galaxy A51 5G,SM-A516U,a51x
+A,Galaxy A51 5G,SM-A516U1,a51x
+A,Galaxy A51 5G,SM-A516V,a51xq
+A,Galaxy A52,SM-A525F,a52q
+A,Galaxy A52,SM-A525M,a52q
+A,Galaxy A52 5G,SC-53B,SC-53B
+A,Galaxy A52 5G,SM-A5260,a52xq
+A,Galaxy A52 5G,SM-A526B,a52xq
+A,Galaxy A52 5G,SM-A526N,a52xq
+A,Galaxy A52 5G,SM-A526U,a52xq
+A,Galaxy A52 5G,SM-A526U1,a52xq
+A,Galaxy A52 5G,SM-A526W,a52xq
+A,Galaxy A52s 5G,SM-A528B,a52sxq
+A,Galaxy A52s 5G,SM-A528N,a52sxq
+A,Galaxy A53 5G,SC-53C,SC-53C
+A,Galaxy A53 5G,SCG15,SCG15
+A,Galaxy A53 5G,SM-A5360,a53x
+A,Galaxy A53 5G,SM-A536B,a53x
+A,Galaxy A53 5G,SM-A536E,a53x
+A,Galaxy A53 5G,SM-A536N,a53x
+A,Galaxy A53 5G,SM-A536U,a53x
+A,Galaxy A53 5G,SM-A536U1,a53x
+A,Galaxy A53 5G,SM-A536W,a53x
+A,Galaxy A53 5G,SM-S536DL,a53x
+A,Galaxy A53 5G UW,SM-A536V,a53x
+A,Galaxy A54 5G,SC-53D,SC-53D
+A,Galaxy A54 5G,SCG21,SCG21
+A,Galaxy A54 5G,SM-A5460,a54x
+A,Galaxy A54 5G,SM-A546B,a54x
+A,Galaxy A54 5G,SM-A546E,a54x
+A,Galaxy A54 5G,SM-A546U,a54x
+A,Galaxy A54 5G,SM-A546U1,a54x
+A,Galaxy A54 5G,SM-A546V,a54x
+A,Galaxy A54 5G,SM-A546W,a54x
+A,Galaxy A54 5G,SM-S546VL,a54x
+A,Galaxy A55 5G,SC-53E,SC-53E
+A,Galaxy A55 5G,SCG27,SCG27
+A,Galaxy A55 5G,SM-A5560,a55x
+A,Galaxy A55 5G,SM-A556B,a55x
+A,Galaxy A55 5G,SM-A556E,a55x
+A,Galaxy A56 5G,SM-A5660,a56x
+A,Galaxy A56 5G,SM-A566B,a56x
+A,Galaxy A56 5G,SM-A566E,a56x
+A,Galaxy A56 5G,SM-A566U1,a56x
+A,Galaxy A56 5G,SM-A566W,a56x
+A,Galaxy A57 5G,SC-54G,SC-54G
+A,Galaxy A57 5G,SM-A5760,a57x
+A,Galaxy A57 5G,SM-A576B,a57x
+A,Galaxy A57 5G,SM-A576Q,a57x
+A,Galaxy A57 5G,SM-A576U,a57x
+A,Galaxy A57 5G,SM-A576U1,a57x
+A,Galaxy A57 5G,SM-A576W,a57x
+A,Galaxy A57 5G,SM-A576Z,a57x
+A,Galaxy A60,SM-A6060,a60q
+A,Galaxy A60,SM-A606Y,a60q
+A,Galaxy A70,SM-A7050,a70q
+A,Galaxy A70,SM-A705F,a70q
+A,Galaxy A70,SM-A705FN,a70q
+A,Galaxy A70,SM-A705GM,a70q
+A,Galaxy A70,SM-A705MN,a70q
+A,Galaxy A70,SM-A705U,a70q
+A,Galaxy A70,SM-A705W,a70q
+A,Galaxy A70,SM-A705YN,a70q
+A,Galaxy A70s,SM-A7070,a70s
+A,Galaxy A70s,SM-A707F,a70s
+A,Galaxy A71,SM-A715F,a71
+A,Galaxy A71,SM-A715W,a71
+A,Galaxy A71,SM-A715X,a71
+A,Galaxy A71 5G,SM-A7160,a71x
+A,Galaxy A71 5G,SM-A716B,a71x
+A,Galaxy A71 5G,SM-A716U,a71xq
+A,Galaxy A71 5G,SM-A716U1,a71xq
+A,Galaxy A71 5G,SM-A716V,a71xq
+A,Galaxy A72,SM-A725F,a72q
+A,Galaxy A72,SM-A725M,a72q
+A,Galaxy A73 5G,SM-A736B,a73xq
+A,Galaxy A80,SM-A8050,r1q
+A,Galaxy A80,SM-A805F,r1q
+A,Galaxy A80,SM-A805N,r1q
+A,Galaxy A90 5G,SM-A9080,r3q
+A,Galaxy A90 5G,SM-A908B,r3q
+A,Galaxy A90 5G,SM-A908N,r3q
+Z,Galaxy Fold,SCV44,SCV44
+Z,Galaxy Fold,SM-F9000,winner
+Z,Galaxy Fold,SM-F900F,winner
+Z,Galaxy Fold,SM-F900U,winner
+Z,Galaxy Fold,SM-F900U1,winner
+Z,Galaxy Fold,SM-F900W,winner
+Z,Galaxy Fold 5G,SM-F907B,winner
+Z,Galaxy Fold 5G,SM-F907N,winner
+Z,Galaxy Z Flip,SCV47,SCV47
+Z,Galaxy Z Flip,SM-F7000,bloomq
+Z,Galaxy Z Flip,SM-F700F,bloomq
+Z,Galaxy Z Flip,SM-F700N,bloomq
+Z,Galaxy Z Flip,SM-F700U,bloomq
+Z,Galaxy Z Flip,SM-F700U1,bloomq
+Z,Galaxy Z Flip,SM-F700W,bloomq
+Z,Galaxy Z Flip3 5G,SC-54B,SC-54B
+Z,Galaxy Z Flip3 5G,SCG12,SCG12
+Z,Galaxy Z Flip3 5G,SM-F7110,b2q
+Z,Galaxy Z Flip3 5G,SM-F711B,b2q
+Z,Galaxy Z Flip3 5G,SM-F711N,b2q
+Z,Galaxy Z Flip3 5G,SM-F711U,b2q
+Z,Galaxy Z Flip3 5G,SM-F711U1,b2q
+Z,Galaxy Z Flip3 5G,SM-F711W,b2q
+Z,Galaxy Z Flip4,SC-54C,SC-54C
+Z,Galaxy Z Flip4,SCG17,SCG17
+Z,Galaxy Z Flip4,SM-F7210,b4q
+Z,Galaxy Z Flip4,SM-F721B,b4q
+Z,Galaxy Z Flip4,SM-F721C,b4q
+Z,Galaxy Z Flip4,SM-F721N,b4q
+Z,Galaxy Z Flip4,SM-F721U,b4q
+Z,Galaxy Z Flip4,SM-F721U1,b4q
+Z,Galaxy Z Flip4,SM-F721W,b4q
+Z,Galaxy Z Flip5,SC-54D,SC-54D
+Z,Galaxy Z Flip5,SCG23,SCG23
+Z,Galaxy Z Flip5,SM-F7310,b5q
+Z,Galaxy Z Flip5,SM-F731B,b5q
+Z,Galaxy Z Flip5,SM-F731N,b5q
+Z,Galaxy Z Flip5,SM-F731Q,b5q
+Z,Galaxy Z Flip5,SM-F731U,b5q
+Z,Galaxy Z Flip5,SM-F731U1,b5q
+Z,Galaxy Z Flip5,SM-F731W,b5q
+Z,Galaxy Z Flip6,SC-54E,SC-54E
+Z,Galaxy Z Flip6,SCG29,SCG29
+Z,Galaxy Z Flip6,SM-F7410,b6q
+Z,Galaxy Z Flip6,SM-F741B,b6q
+Z,Galaxy Z Flip6,SM-F741N,b6q
+Z,Galaxy Z Flip6,SM-F741Q,b6q
+Z,Galaxy Z Flip6,SM-F741U,b6q
+Z,Galaxy Z Flip6,SM-F741U1,b6q
+Z,Galaxy Z Flip6,SM-F741W,b6q
+Z,Galaxy Z Flip7,SC-55F,SC-55F
+Z,Galaxy Z Flip7,SCG35,SCG35
+Z,Galaxy Z Flip7,SM-F7660,b7s
+Z,Galaxy Z Flip7,SM-F766B,b7s
+Z,Galaxy Z Flip7,SM-F766N,b7s
+Z,Galaxy Z Flip7,SM-F766Q,b7s
+Z,Galaxy Z Flip7,SM-F766U,b7s
+Z,Galaxy Z Flip7,SM-F766U1,b7s
+Z,Galaxy Z Flip7,SM-F766W,b7s
+Z,Galaxy Z Flip7,SM-F766Z,b7s
+Z,Galaxy Z Flip7 FE,SM-F7610,b7r
+Z,Galaxy Z Flip7 FE,SM-F761B,b7r
+Z,Galaxy Z Flip7 FE,SM-F761N,b7r
+Z,Galaxy Z Flip7 FE,SM-F761U,b7r
+Z,Galaxy Z Flip7 FE,SM-F761U1,b7r
+Z,Galaxy Z Flip8,SC-55G,b8q
+Z,Galaxy Z Flip8,SCG40,b8q
+Z,Galaxy Z Flip8,SM-F7760,b8q
+Z,Galaxy Z Flip8,SM-F776B,b8s
+Z,Galaxy Z Flip8,SM-F776C,b8q
+Z,Galaxy Z Flip8,SM-F776N,b8s
+Z,Galaxy Z Flip8,SM-F776Q,b8q
+Z,Galaxy Z Flip8,SM-F776U,b8q
+Z,Galaxy Z Flip8,SM-F776U1,b8q
+Z,Galaxy Z Flip8,SM-F776W,b8q
+Z,Galaxy Z Flip8,SM-F776Z,b8q
+Z,Galaxy Z Flip 5G,SCG04,SCG04
+Z,Galaxy Z Flip 5G,SM-F7070,bloomxq
+Z,Galaxy Z Flip 5G,SM-F707B,bloomxq
+Z,Galaxy Z Flip 5G,SM-F707N,bloomxq
+Z,Galaxy Z Flip 5G,SM-F707U,bloomxq
+Z,Galaxy Z Flip 5G,SM-F707U1,bloomxq
+Z,Galaxy Z Flip 5G,SM-F707W,bloomxq
+Z,Galaxy Z Fold2 5G,SM-F9160,f2q
+Z,Galaxy Z Fold2 5G,SM-F916B,f2q
+Z,Galaxy Z Fold2 5G,SM-F916N,f2q
+Z,Galaxy Z Fold2 5G,SM-F916Q,f2q
+Z,Galaxy Z Fold2 5G,SM-F916U,f2q
+Z,Galaxy Z Fold2 5G,SM-F916U1,f2q
+Z,Galaxy Z Fold2 5G,SM-F916W,f2q
+Z,Galaxy Z Fold3 5G,SC-55B,SC-55B
+Z,Galaxy Z Fold3 5G,SCG11,SCG11
+Z,Galaxy Z Fold3 5G,SM-F9260,q2q
+Z,Galaxy Z Fold3 5G,SM-F926B,q2q
+Z,Galaxy Z Fold3 5G,SM-F926N,q2q
+Z,Galaxy Z Fold3 5G,SM-F926U,q2q
+Z,Galaxy Z Fold3 5G,SM-F926U1,q2q
+Z,Galaxy Z Fold3 5G,SM-F926W,q2q
+Z,Galaxy Z Fold4,SC-55C,SC-55C
+Z,Galaxy Z Fold4,SCG16,SCG16
+Z,Galaxy Z Fold4,SM-F9360,q4q
+Z,Galaxy Z Fold4,SM-F936B,q4q
+Z,Galaxy Z Fold4,SM-F936N,q4q
+Z,Galaxy Z Fold4,SM-F936U,q4q
+Z,Galaxy Z Fold4,SM-F936U1,q4q
+Z,Galaxy Z Fold4,SM-F936W,q4q
+Z,Galaxy Z Fold5,SC-55D,SC-55D
+Z,Galaxy Z Fold5,SCG22,SCG22
+Z,Galaxy Z Fold5,SM-F9460,q5q
+Z,Galaxy Z Fold5,SM-F946B,q5q
+Z,Galaxy Z Fold5,SM-F946N,q5q
+Z,Galaxy Z Fold5,SM-F946Q,q5q
+Z,Galaxy Z Fold5,SM-F946U,q5q
+Z,Galaxy Z Fold5,SM-F946U1,q5q
+Z,Galaxy Z Fold5,SM-F946W,q5q
+Z,Galaxy Z Fold6,SC-55E,SC-55E
+Z,Galaxy Z Fold6,SCG28,SCG28
+Z,Galaxy Z Fold6,SM-F9560,q6q
+Z,Galaxy Z Fold6,SM-F956B,q6q
+Z,Galaxy Z Fold6,SM-F956N,q6q
+Z,Galaxy Z Fold6,SM-F956Q,q6q
+Z,Galaxy Z Fold6,SM-F956U,q6q
+Z,Galaxy Z Fold6,SM-F956U1,q6q
+Z,Galaxy Z Fold6,SM-F956W,q6q
+Z,Galaxy Z Fold7,SC-56F,SC-56F
+Z,Galaxy Z Fold7,SCG34,SCG34
+Z,Galaxy Z Fold7,SM-F9660,q7q
+Z,Galaxy Z Fold7,SM-F966B,q7q
+Z,Galaxy Z Fold7,SM-F966N,q7q
+Z,Galaxy Z Fold7,SM-F966Q,q7q
+Z,Galaxy Z Fold7,SM-F966U,q7q
+Z,Galaxy Z Fold7,SM-F966U1,q7q
+Z,Galaxy Z Fold7,SM-F966W,q7q
+Z,Galaxy Z Fold7,SM-F966Z,q7q
+Z,Galaxy Z Fold8,SC-57G,h8q
+Z,Galaxy Z Fold8,SCG41,h8q
+Z,Galaxy Z Fold8,SM-F9710,h8q
+Z,Galaxy Z Fold8,SM-F971B,h8q
+Z,Galaxy Z Fold8,SM-F971C,h8q
+Z,Galaxy Z Fold8,SM-F971N,h8q
+Z,Galaxy Z Fold8,SM-F971Q,h8q
+Z,Galaxy Z Fold8,SM-F971U,h8q
+Z,Galaxy Z Fold8,SM-F971U1,h8q
+Z,Galaxy Z Fold8,SM-F971W,h8q
+Z,Galaxy Z Fold8,SM-F971Z,h8q
+Z,Galaxy Z Fold8 Ultra,SC-56G,q8q
+Z,Galaxy Z Fold8 Ultra,SCG39,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F9760,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976B,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976C,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976N,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976Q,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976U,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976U1,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976W,q8q
+Z,Galaxy Z Fold8 Ultra,SM-F976Z,q8q
+Z,Galaxy Z Fold Special Edition,SM-F958N,q6aq
+Z,Galaxy Z TriFold,SM-F9680,q7mq
+Z,Galaxy Z TriFold,SM-F968B,q7mq
+Z,Galaxy Z TriFold,SM-F968N,q7mq
+Z,Galaxy Z TriFold,SM-F968U1,q7mq

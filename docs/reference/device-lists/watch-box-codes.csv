@@ -1,0 +1,622 @@
+model,a_numbers,identifier,color,storage,box_code,unit_type
+Apple Watch Series 4,A1977,"Watch4,1",Gold Aluminum,40mm,MU682,retail
+Apple Watch Series 4,A1977,"Watch4,1",Gold Aluminum,40mm,MU692,retail
+Apple Watch Series 4,A1977,"Watch4,1",Silver Aluminum,40mm,MU642,retail
+Apple Watch Series 4,A1977,"Watch4,1",Silver Aluminum,40mm,MU652,retail
+Apple Watch Series 4,A1977,"Watch4,1",Silver Aluminum,40mm,MU6H2,retail
+Apple Watch Series 4,A1977,"Watch4,1",Silver Aluminum,40mm,MU7F2,retail
+Apple Watch Series 4,A1977,"Watch4,1",Space Gray Aluminum,40mm,MU662,retail
+Apple Watch Series 4,A1977,"Watch4,1",Space Gray Aluminum,40mm,MU672,retail
+Apple Watch Series 4,A1977,"Watch4,1",Space Gray Aluminum,40mm,MU6J2,retail
+Apple Watch Series 4,A1977,"Watch4,1",Space Gray Aluminum,40mm,MU7G2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Gold Aluminum,44mm,MU6F2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Gold Aluminum,44mm,MU6G2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Silver Aluminum,44mm,MU6A2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Silver Aluminum,44mm,MU6C2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Silver Aluminum,44mm,MU6K2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Silver Aluminum,44mm,MU7H2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Space Gray Aluminum,44mm,MU6D2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Space Gray Aluminum,44mm,MU6E2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Space Gray Aluminum,44mm,MU6L2,retail
+Apple Watch Series 4,A1978,"Watch4,2",Space Gray Aluminum,44mm,MU7J2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Aluminum,40mm,MTUJ2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Aluminum,40mm,MTUK2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Aluminum,40mm,MTVG2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Aluminum,40mm,MTVH2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTUD2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTUF2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTV92,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTX72,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTVA2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTVC2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTX62,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Aluminum,40mm,MTXF2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTUG2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTUN2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTX82,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTX92,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTVD2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTVF2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTXG2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Gray Aluminum,40mm,MTXH2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Stainless Steel,40mm,MTUR2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Stainless Steel,40mm,MTUT2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Stainless Steel,40mm,MTVN2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Gold Stainless Steel,40mm,MTVQ2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MTUL2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MTUM2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU7K2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6R2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6N2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6Q2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6P2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6M2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MTVJ2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MTVK2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU7L2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU732,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU702,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU722,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU712,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Silver Stainless Steel,40mm,MU6Y2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Black Stainless Steel,40mm,MTUQ2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Black Stainless Steel,40mm,MTVL2,retail
+Apple Watch Series 4,A1975 A2007,"Watch4,3",Space Black Stainless Steel,40mm,MTVM2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Aluminum,44mm,MTV02,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Aluminum,44mm,MTV12,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Aluminum,44mm,MTVW2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Aluminum,44mm,MTVX2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTUU2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTUV2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MU6X2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTXC2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTXA2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTVR2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTVT2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTXK2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Aluminum,44mm,MTXJ2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTUW2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTUX2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTXE2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTXD2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTVU2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTVV2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTXM2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Gray Aluminum,44mm,MTXL2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Stainless Steel,44mm,MTV72,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Stainless Steel,44mm,MTV82,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Stainless Steel,44mm,MTX42,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Gold Stainless Steel,44mm,MTX52,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MTV22,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MTV42,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU6W2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU6V2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU9D2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU6U2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU6T2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU782,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU772,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU762,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU9E2,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU752,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Silver Stainless Steel,44mm,MU742,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Black Stainless Steel,44mm,MTV52,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Black Stainless Steel,44mm,MTV62,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Black Stainless Steel,44mm,MTX22,retail
+Apple Watch Series 4,A1976 A2008,"Watch4,4",Space Black Stainless Steel,44mm,MTX32,retail
+Apple Watch Series 5,A2092,"Watch5,1",Gold Aluminum,40mm,MWRY2,retail
+Apple Watch Series 5,A2092,"Watch5,1",Gold Aluminum,40mm,MWV72,retail
+Apple Watch Series 5,A2092,"Watch5,1",Silver Aluminum,40mm,MWRX2,retail
+Apple Watch Series 5,A2092,"Watch5,1",Silver Aluminum,40mm,MX3R2,retail
+Apple Watch Series 5,A2092,"Watch5,1",Silver Aluminum,40mm,MWV62,retail
+Apple Watch Series 5,A2092,"Watch5,1",Space Gray Aluminum,40mm,MWT02,retail
+Apple Watch Series 5,A2092,"Watch5,1",Space Gray Aluminum,40mm,MWV82,retail
+Apple Watch Series 5,A2093,"Watch5,2",Gold Aluminum,44mm,MWT42,retail
+Apple Watch Series 5,A2093,"Watch5,2",Silver Aluminum,44mm,MWVD2,retail
+Apple Watch Series 5,A2093,"Watch5,2",Silver Aluminum,44mm,MX3V2,retail
+Apple Watch Series 5,A2093,"Watch5,2",Silver Aluminum,44mm,MWT62,retail
+Apple Watch Series 5,A2093,"Watch5,2",Silver Aluminum,44mm,MWT32,retail
+Apple Watch Series 5,A2093,"Watch5,2",Space Gray Aluminum,44mm,MWT52,retail
+Apple Watch Series 5,A2093,"Watch5,2",Space Gray Aluminum,44mm,MWVF2,retail
+Apple Watch Series 5,A2093,"Watch5,2",Space Gray Aluminum,44mm,MWT72,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Aluminum,40mm,MWPU2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Aluminum,40mm,MWQ72,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MWWN2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MWX12,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MX372,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MX3C2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MWPT2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MWQ62,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Aluminum,40mm,MWQG2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWPV2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWQ82,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWWQ2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWX32,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWQ42,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Gray Aluminum,40mm,MWQH2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Stainless Steel,40mm,MWPW2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Stainless Steel,40mm,MWX62,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Stainless Steel,40mm,MWWV2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Gold Stainless Steel,40mm,MWWU2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MWPX2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MWQA2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MX5L2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MX5K2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MWWT2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MWX52,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MWQJ2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MX5M2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Silver Stainless Steel,40mm,MX5N2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Stainless Steel,40mm,MWPY2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Stainless Steel,40mm,MWQC2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Stainless Steel,40mm,MWX02,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Stainless Steel,40mm,MWXC2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Stainless Steel,40mm,MWXA2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Titanium,40mm,MWQ12,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Titanium,40mm,MWQE2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Titanium,40mm,MWQ02,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",Space Black Titanium,40mm,MWQD2,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",White Ceramic,40mm,MWQ22,retail
+Apple Watch Series 5,A2094 A2156,"Watch5,3",White Ceramic,40mm,MWQF2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Aluminum,44mm,MWQL2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Aluminum,44mm,MWR02,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWVY2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWWC2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MX392,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MX3E2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWQV2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MXR12,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWQK2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWQY2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Aluminum,44mm,MWR82,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWQM2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWR12,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWW12,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWWE2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWQW2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MX3A2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Gray Aluminum,44mm,MWR92,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWQN2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWWH2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWW62,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWW52,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWR22,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Gold Stainless Steel,44mm,MWWJ2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWQP2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWR32,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWQX2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWW32,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWWG2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MWRA2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Silver Stainless Steel,44mm,MX5C2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Stainless Steel,44mm,MWQQ2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Stainless Steel,44mm,MWR42,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Stainless Steel,44mm,MWW92,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Stainless Steel,44mm,MWWM2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Titanium,44mm,MWQT2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Titanium,44mm,MWR62,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Titanium,44mm,MWQR2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",Space Black Titanium,44mm,MWR52,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",White Ceramic,44mm,MWQU2,retail
+Apple Watch Series 5,A2095 A2157,"Watch5,4",White Ceramic,44mm,MWR72,retail
+Apple Watch SE,A2351,"Watch5,9",Gold Aluminum,40mm,MYDY2,retail
+Apple Watch SE,A2351,"Watch5,9",Gold Aluminum,40mm,3H134,demo
+Apple Watch SE,A2351,"Watch5,9",Silver Aluminum,40mm,MYDX2,retail
+Apple Watch SE,A2351,"Watch5,9",Space Gray Aluminum,40mm,MYE02,retail
+Apple Watch SE,A2352,"Watch5,10",Gold Aluminum,44mm,MYE22,retail
+Apple Watch SE,A2352,"Watch5,10",Silver Aluminum,44mm,MYE12,retail
+Apple Watch SE,A2352,"Watch5,10",Space Gray Aluminum,44mm,MYE32,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Gold Aluminum,40mm,MYF32,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Gold Aluminum,40mm,MYF62,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Gold Aluminum,40mm,3H149,demo
+Apple Watch SE,A2353 A2355,"Watch5,11",Silver Aluminum,40mm,MYF22,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Silver Aluminum,40mm,MYF52,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Space Gray Aluminum,40mm,MYF42,retail
+Apple Watch SE,A2353 A2355,"Watch5,11",Space Gray Aluminum,40mm,MYF72,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Gold Aluminum,44mm,MYF92,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Gold Aluminum,44mm,MYFD2,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Silver Aluminum,44mm,MYF82,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Silver Aluminum,44mm,MYFC2,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Space Gray Aluminum,44mm,MYFA2,retail
+Apple Watch SE,A2354 A2356,"Watch5,12",Space Gray Aluminum,44mm,MYFE2,retail
+Apple Watch Series 6,A2291,"Watch6,1",Gold Aluminum,40mm,MG193,retail
+Apple Watch Series 6,A2291,"Watch6,1",Silver Aluminum,40mm,MG183,retail
+Apple Watch Series 6,A2291,"Watch6,1",Space Gray Aluminum,40mm,MG1A3,retail
+Apple Watch Series 6,A2291,"Watch6,1",Blue Aluminum,40mm,MG2A3,retail
+Apple Watch Series 6,A2291,"Watch6,1",(PRODUCT)RED Aluminum,40mm,M02C3,retail
+Apple Watch Series 6,A2292,"Watch6,2",Gold Aluminum,44mm,M02E3,retail
+Apple Watch Series 6,A2292,"Watch6,2",Silver Aluminum,44mm,M02D3,retail
+Apple Watch Series 6,A2292,"Watch6,2",Space Gray Aluminum,44mm,M02F3,retail
+Apple Watch Series 6,A2292,"Watch6,2",Blue Aluminum,44mm,M02G3,retail
+Apple Watch Series 6,A2292,"Watch6,2",(PRODUCT)RED Aluminum,44mm,M02H3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Gold Aluminum,40mm,M0DP3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Gold Aluminum,40mm,M0D53,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Silver Aluminum,40mm,M0DM3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Silver Aluminum,40mm,M0D23,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Gray Aluminum,40mm,M0DQ3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Gray Aluminum,40mm,M0D63,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Blue Aluminum,40mm,M0DR3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Blue Aluminum,40mm,M0D73,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",(PRODUCT)RED Aluminum,40mm,M0DT3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",(PRODUCT)RED Aluminum,40mm,M0D83,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Gold Stainless Steel,40mm,M0DU3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Gold Stainless Steel,40mm,M0D93,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Silver Stainless Steel,40mm,M0DV3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Silver Stainless Steel,40mm,M0DC3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Graphite Stainless Steel,40mm,M0DW3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Graphite Stainless Steel,40mm,M0DF3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Black Stainless Steel,40mm,MG363,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Black Stainless Steel,40mm,MG303,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Titanium,40mm,M0DY3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Titanium,40mm,M0DH3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Black Titanium,40mm,M0DX3,retail
+Apple Watch Series 6,A2293 A2375,"Watch6,3",Space Black Titanium,40mm,M0DG3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Gold Aluminum,44mm,M0GQ3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Gold Aluminum,44mm,M0G73,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Silver Aluminum,44mm,M0GP3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Silver Aluminum,44mm,M0G63,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Space Gray Aluminum,44mm,M0GR3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Space Gray Aluminum,44mm,M0G83,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Blue Aluminum,44mm,M0GT3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Blue Aluminum,44mm,M0G93,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Blue Aluminum,44mm,3H321,demo
+Apple Watch Series 6,A2294 A2376,"Watch6,4",(PRODUCT)RED Aluminum,44mm,M0GU3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",(PRODUCT)RED Aluminum,44mm,M0GC3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Gold Stainless Steel,44mm,M0GV3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Gold Stainless Steel,44mm,M0GD3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Silver Stainless Steel,44mm,M0GW3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Silver Stainless Steel,44mm,M0GF3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Graphite Stainless Steel,44mm,M0GX3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Graphite Stainless Steel,44mm,M0GG3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Titanium,44mm,M0H23,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Titanium,44mm,M0GJ3,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Space Black Titanium,44mm,M0H13,retail
+Apple Watch Series 6,A2294 A2376,"Watch6,4",Space Black Titanium,44mm,M0GH3,retail
+Apple Watch Series 7,A2473,"Watch6,6",Green Aluminum,41mm,MKNF3,retail
+Apple Watch Series 7,A2473,"Watch6,6",Starlight Aluminum,41mm,MKNP3,retail
+Apple Watch Series 7,A2473,"Watch6,6",Midnight Aluminum,41mm,MKMX3,retail
+Apple Watch Series 7,A2473,"Watch6,6",Blue Aluminum,41mm,MKNH3,retail
+Apple Watch Series 7,A2473,"Watch6,6",(PRODUCT)RED Aluminum,41mm,MKNJ3,retail
+Apple Watch Series 7,A2474,"Watch6,7",Green Aluminum,45mm,MKNQ3,retail
+Apple Watch Series 7,A2474,"Watch6,7",Starlight Aluminum,45mm,3J562,demo
+Apple Watch Series 7,A2474,"Watch6,7",Midnight Aluminum,45mm,MKN53,retail
+Apple Watch Series 7,A2474,"Watch6,7",Blue Aluminum,45mm,MKNR3,retail
+Apple Watch Series 7,A2474,"Watch6,7",(PRODUCT)RED Aluminum,45mm,MKNT3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Green Aluminum,41mm,MKLA3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Green Aluminum,41mm,MKLP3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Starlight Aluminum,41mm,MKL93,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Starlight Aluminum,41mm,MKLN3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Midnight Aluminum,41mm,MKH73,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Midnight Aluminum,41mm,MKHQ3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Blue Aluminum,41mm,MKLC3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Blue Aluminum,41mm,MKLQ3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",(PRODUCT)RED Aluminum,41mm,MKLD3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",(PRODUCT)RED Aluminum,41mm,MKLR3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Gold Stainless Steel,41mm,MKLE3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Gold Stainless Steel,41mm,MKLT3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Silver Stainless Steel,41mm,MKLF3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Silver Stainless Steel,41mm,MKHX3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Graphite Stainless Steel,41mm,MKHK3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Graphite Stainless Steel,41mm,MKJ23,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Space Black Stainless Steel,41mm,MKLL3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Space Black Stainless Steel,41mm,MKM23,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Titanium,41mm,ML8U3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Titanium,41mm,ML913,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Space Black Titanium,41mm,ML8V3,retail
+Apple Watch Series 7,A2475 A2476,"Watch6,8",Space Black Titanium,41mm,ML903,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Green Aluminum,45mm,MKM63,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Green Aluminum,45mm,MKML3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Starlight Aluminum,45mm,MKM53,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Starlight Aluminum,45mm,MKMK3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Starlight Aluminum,45mm,3J423,demo
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Midnight Aluminum,45mm,MKJ73,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Midnight Aluminum,45mm,MKJP3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Blue Aluminum,45mm,MKM73,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Blue Aluminum,45mm,MKMM3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",(PRODUCT)RED Aluminum,45mm,MKM83,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",(PRODUCT)RED Aluminum,45mm,MKMN3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Gold Stainless Steel,45mm,MKM93,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Gold Stainless Steel,45mm,ML7W3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Silver Stainless Steel,45mm,MKJE3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Silver Stainless Steel,45mm,MKJW3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Graphite Stainless Steel,45mm,MKJJ3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Graphite Stainless Steel,45mm,MKL33,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Space Black Stainless Steel,45mm,MKMH3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Space Black Stainless Steel,45mm,MKMW3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Titanium,45mm,ML8W3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Titanium,45mm,ML8Y3,retail
+Apple Watch Series 7,A2477 A2478,"Watch6,9",Space Black Titanium,45mm,ML8X3,retail
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,MNL83,retail
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,MRTR3,retail
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,MA9A4,retail
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,MXFH3,retail
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,3K597,demo
+Apple Watch SE,A2722,"Watch6,10",Midnight Aluminum,40mm,3N287,demo
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,MNL73,retail
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,MRTQ3,retail
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,MA9D4,retail
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,MXFK3,retail
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,3K596,demo
+Apple Watch SE,A2722,"Watch6,10",Starlight Aluminum,40mm,3N289,demo
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,MNL93,retail
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,MRTT3,retail
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,MA9C4,retail
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,MXFJ3,retail
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,3K598,demo
+Apple Watch SE,A2722,"Watch6,10",Silver Aluminum,40mm,3N288,demo
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,MNLC3,retail
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,MRTX3,retail
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,MA7W4,retail
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,MXFL3,retail
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,3K600,demo
+Apple Watch SE,A2723,"Watch6,11",Midnight Aluminum,44mm,3N290,demo
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,MNLA3,retail
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,MRTW3,retail
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,MA7Y4,retail
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,MXFN3,retail
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,3K599,demo
+Apple Watch SE,A2723,"Watch6,11",Starlight Aluminum,44mm,3N292,demo
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,MNLD3,retail
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,MRW03,retail
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,MA7X4,retail
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,MXFM3,retail
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,3K601,demo
+Apple Watch SE,A2723,"Watch6,11",Silver Aluminum,44mm,3N291,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MNQ83,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MNQ73,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MNQ93,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MRWK3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MRWJ3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MRWL3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MA9E4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MA9H4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,MXJ33,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,3N293,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,3K779,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,3K780,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Midnight Aluminum,40mm,3K781,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MNQ53,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MNQ43,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MNQ63,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MRWG3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MRWF3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MRWH3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MA9G4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MA9K4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,MXJ53,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,3K776,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,3K777,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Starlight Aluminum,40mm,3K778,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MNQC3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MNQA3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MNQD3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MRWN3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MRWM3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MRWP3,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MA9F4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MA9J4,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,MXJ43,retail
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,3K782,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,3K783,demo
+Apple Watch SE,A2725 A2726 A2855,"Watch6,12",Silver Aluminum,40mm,3K784,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MNQJ3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MNQH3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MNQK3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MRWV3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MRWU3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MRWW3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MA9L4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MA9P4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,MXJ63,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,3K788,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,3K789,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Midnight Aluminum,44mm,3K790,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MNQF3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MNQE3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MNQG3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MRWR3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MRWQ3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MRWT3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MA9N4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MA9R4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,MXJ83,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,3K785,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,3K786,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Starlight Aluminum,44mm,3K787,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MNQM3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MNQL3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MNQN3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MRWY3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MRWX3,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MRX03,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MA9M4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MA9Q4,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,MXJ73,retail
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,3K791,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,3K792,demo
+Apple Watch SE,A2724 A2727 A2856,"Watch6,13",Silver Aluminum,44mm,3K793,demo
+Apple Watch Series 8,A2770,"Watch6,14",Midnight Aluminum,41mm,MNPC3,retail
+Apple Watch Series 8,A2770,"Watch6,14",Starlight Aluminum,41mm,MNPD3,retail
+Apple Watch Series 8,A2770,"Watch6,14",Silver Aluminum,41mm,MP6R3,retail
+Apple Watch Series 8,A2770,"Watch6,14",Silver Aluminum,41mm,3K917,demo
+Apple Watch Series 8,A2770,"Watch6,14",(PRODUCT)RED Aluminum,41mm,MNPF3,retail
+Apple Watch Series 8,A2770,"Watch6,14",(PRODUCT)RED Aluminum,41mm,3K763,demo
+Apple Watch Series 8,A2771,"Watch6,15",Midnight Aluminum,45mm,MNP83,retail
+Apple Watch Series 8,A2771,"Watch6,15",Starlight Aluminum,45mm,MNP93,retail
+Apple Watch Series 8,A2771,"Watch6,15",Silver Aluminum,45mm,MP6T3,retail
+Apple Watch Series 8,A2771,"Watch6,15",(PRODUCT)RED Aluminum,45mm,MNPA3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Midnight Aluminum,41mm,MNLF3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Midnight Aluminum,41mm,MNLE3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Midnight Aluminum,41mm,MNLG3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Starlight Aluminum,41mm,MNLJ3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Starlight Aluminum,41mm,MNLH3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Starlight Aluminum,41mm,MNLK3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Aluminum,41mm,MP4Y3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Aluminum,41mm,MP4X3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Aluminum,41mm,MP503,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",(PRODUCT)RED Aluminum,41mm,MNLM3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",(PRODUCT)RED Aluminum,41mm,MNLL3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",(PRODUCT)RED Aluminum,41mm,MNLN3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Gold Stainless Steel,41mm,MNLQ3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Gold Stainless Steel,41mm,MNLP3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Gold Stainless Steel,41mm,MNLR3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNLU3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNN13,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNLT3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNN03,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNLV3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Silver Stainless Steel,41mm,MNN23,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Graphite Stainless Steel,41mm,MNLX3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Graphite Stainless Steel,41mm,MNLW3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Graphite Stainless Steel,41mm,MNLY3,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Space Black Stainless Steel,41mm,MNN33,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Space Black Stainless Steel,41mm,MNN43,retail
+Apple Watch Series 8,A2772 A2773 A2857,"Watch6,16",Space Black Stainless Steel,41mm,MNN53,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Midnight Aluminum,45mm,MNN73,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Midnight Aluminum,45mm,MNN63,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Midnight Aluminum,45mm,MNN83,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Midnight Aluminum,45mm,3K640,demo
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Starlight Aluminum,45mm,MNNA3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Starlight Aluminum,45mm,MNN93,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Starlight Aluminum,45mm,MNNC3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Aluminum,45mm,MP523,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Aluminum,45mm,MP513,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Aluminum,45mm,MP533,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",(PRODUCT)RED Aluminum,45mm,MNNE3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",(PRODUCT)RED Aluminum,45mm,MNND3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",(PRODUCT)RED Aluminum,45mm,MNNF3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Gold Stainless Steel,45mm,MNNH3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Gold Stainless Steel,45mm,MNNG3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Gold Stainless Steel,45mm,MNNJ3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNL3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNT3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNK3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNR3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNM3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Silver Stainless Steel,45mm,MNNW3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Graphite Stainless Steel,45mm,MNNP3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Graphite Stainless Steel,45mm,MNNN3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Graphite Stainless Steel,45mm,MNNQ3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Space Black Stainless Steel,45mm,MNNY3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Space Black Stainless Steel,45mm,MNNX3,retail
+Apple Watch Series 8,A2774 A2775 A2858,"Watch6,17",Space Black Stainless Steel,45mm,MNP03,retail
+Apple Watch Ultra,A2622 A2684 A2859,"Watch6,18",Titanium,49mm,MQFY3,retail
+Apple Watch Ultra,A2622 A2684 A2859,"Watch6,18",Titanium,49mm,MQG03,retail
+Apple Watch Ultra,A2622 A2684 A2859,"Watch6,18",Titanium,49mm,MQG13,retail
+Apple Watch Ultra,A2622 A2684 A2859,"Watch6,18",Titanium,49mm,3K591,demo
+Apple Watch Series 9,A2978,"Watch7,1",Midnight Aluminum,41mm,MR9L3,retail
+Apple Watch Series 9,A2978,"Watch7,1",Starlight Aluminum,41mm,MR9K3,retail
+Apple Watch Series 9,A2978,"Watch7,1",Silver Aluminum,41mm,MR9M3,retail
+Apple Watch Series 9,A2978,"Watch7,1",(PRODUCT)RED Aluminum,41mm,MRXL3,retail
+Apple Watch Series 9,A2978,"Watch7,1",Pink Aluminum,41mm,MR9N3,retail
+Apple Watch Series 9,A2978,"Watch7,1",Pink Aluminum,41mm,3M585,demo
+Apple Watch Series 9,A2978,"Watch7,1",Pink Aluminum,41mm,3M586,demo
+Apple Watch Series 9,A2980,"Watch7,2",Midnight Aluminum,45mm,MR9Q3,retail
+Apple Watch Series 9,A2980,"Watch7,2",Midnight Aluminum,45mm,3M590,demo
+Apple Watch Series 9,A2980,"Watch7,2",Starlight Aluminum,45mm,MR973,retail
+Apple Watch Series 9,A2980,"Watch7,2",Starlight Aluminum,45mm,MR9P3,retail
+Apple Watch Series 9,A2980,"Watch7,2",Silver Aluminum,45mm,MR9R3,retail
+Apple Watch Series 9,A2980,"Watch7,2",Silver Aluminum,45mm,3M591,demo
+Apple Watch Series 9,A2980,"Watch7,2",(PRODUCT)RED Aluminum,45mm,MRXM3,retail
+Apple Watch Series 9,A2980,"Watch7,2",Pink Aluminum,45mm,MR9T3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Midnight Aluminum,41mm,MRPX3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Midnight Aluminum,41mm,MRQ73,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Starlight Aluminum,41mm,MRPW3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Starlight Aluminum,41mm,MRQ63,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Silver Aluminum,41mm,MRPY3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Silver Aluminum,41mm,MRQ83,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",(PRODUCT)RED Aluminum,41mm,MRYA3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",(PRODUCT)RED Aluminum,41mm,MRYD3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Pink Aluminum,41mm,MRQ03,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Pink Aluminum,41mm,MRQ93,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Pink Aluminum,41mm,3M508,demo
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Gold Stainless Steel,41mm,MRQ23,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Gold Stainless Steel,41mm,MRQC3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Silver Stainless Steel,41mm,MRQ13,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Silver Stainless Steel,41mm,MRQA3,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Graphite Stainless Steel,41mm,MRQ33,retail
+Apple Watch Series 9,A2982 A2983,"Watch7,3",Graphite Stainless Steel,41mm,MRQD3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Midnight Aluminum,45mm,MRQH3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Midnight Aluminum,45mm,MRQT3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Midnight Aluminum,45mm,3M597,demo
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Midnight Aluminum,45mm,3M598,demo
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Starlight Aluminum,45mm,MRQG3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Starlight Aluminum,45mm,MRQR3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Silver Aluminum,45mm,MRQJ3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Silver Aluminum,45mm,MRQU3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",(PRODUCT)RED Aluminum,45mm,MRYJ3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",(PRODUCT)RED Aluminum,45mm,MRYL3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Pink Aluminum,45mm,MRQK3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Pink Aluminum,45mm,MRQV3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Gold Stainless Steel,45mm,MRQL3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Gold Stainless Steel,45mm,MRQW3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Silver Stainless Steel,45mm,MRQM3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Silver Stainless Steel,45mm,MRQX3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Graphite Stainless Steel,45mm,MRQN3,retail
+Apple Watch Series 9,A2984 A2985,"Watch7,4",Graphite Stainless Steel,45mm,MRQY3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MRFU3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MRFV3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MYT73,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MYT93,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MYT33,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,MYT03,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3L891,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3L892,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3M577,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3M578,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3M583,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3M584,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3N256,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3N284,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Natural Titanium,49mm,3N668,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,MYTJ3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,MYTC3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,MYTH3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,MYTF3,retail
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,3N246,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,3N285,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,3N441,demo
+Apple Watch Ultra 2,A2986 A2987,"Watch7,5",Black Titanium,49mm,3N457,demo
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Midnight Aluminum,40mm,MEHX4,retail
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Midnight Aluminum,40mm,MEHY4,retail
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Starlight Aluminum,40mm,MEHV4,retail
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Starlight Aluminum,40mm,MEHW4,retail
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Starlight Aluminum,40mm,3P331,demo
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Starlight Aluminum,40mm,3P341,demo
+Apple Watch SE 3,A3324 A3391,"Watch7,13",Starlight Aluminum,40mm,3P438,demo
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Midnight Aluminum,44mm,MEP34,retail
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Midnight Aluminum,44mm,MEP54,retail
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Midnight Aluminum,44mm,3P050,demo
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Midnight Aluminum,44mm,3P333,demo
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Starlight Aluminum,44mm,MEP04,retail
+Apple Watch SE 3,A3325 A3392,"Watch7,14",Starlight Aluminum,44mm,MEP24,retail
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Midnight Aluminum,40mm,MEQ24,retail
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Midnight Aluminum,40mm,MEQ64,retail
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Starlight Aluminum,40mm,MEQ14,retail
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Starlight Aluminum,40mm,MEQ54,retail
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Starlight Aluminum,40mm,3P334,demo
+Apple Watch SE 3,A3326 A3327,"Watch7,15",Starlight Aluminum,40mm,3P440,demo
+Apple Watch SE 3,A3328 A3329,"Watch7,16",Midnight Aluminum,44mm,MEQ44,retail
+Apple Watch SE 3,A3328 A3329,"Watch7,16",Midnight Aluminum,44mm,MEQ84,retail
+Apple Watch SE 3,A3328 A3329,"Watch7,16",Midnight Aluminum,44mm,3P336,demo
+Apple Watch SE 3,A3328 A3329,"Watch7,16",Starlight Aluminum,44mm,MEQ34,retail
+Apple Watch SE 3,A3328 A3329,"Watch7,16",Starlight Aluminum,44mm,MEQ74,retail
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Natural Titanium,49mm,MF1V4,retail
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Natural Titanium,49mm,MF1W4,retail
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Natural Titanium,49mm,3P337,demo
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Natural Titanium,49mm,3P338,demo
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Black Titanium,49mm,MF254,retail
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Black Titanium,49mm,MF274,retail
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Black Titanium,49mm,3P065,demo
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Black Titanium,49mm,3P339,demo
+Apple Watch Ultra 3,A3281 A3282,"Watch7,12",Black Titanium,49mm,3P340,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Natural Titanium,49mm,MJCR4,retail
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Natural Titanium,49mm,MJCW4,retail
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Natural Titanium,49mm,3Q044,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Natural Titanium,49mm,3Q045,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Natural Titanium,49mm,3P757,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Black Titanium,49mm,MJCT4,retail
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Black Titanium,49mm,MJCX4,retail
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Black Titanium,49mm,3Q046,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Black Titanium,49mm,3Q047,demo
+Apple Watch Ultra 4,A3579 A3580,"Watch8,1",Black Titanium,49mm,3P758,demo
