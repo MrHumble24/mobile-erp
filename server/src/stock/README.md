@@ -1,9 +1,12 @@
 # stock
 
 Quantity-product stock (ADR 0030). Owns `stock_movements` and the
-`stock_movement_types` lookup. Append-only and signed, like the cash ledger: a
-product's quantity in a store is the SUM of its movements, never a stored
-number. Only `QUANTITY` models (ADR 0029) have stock.
+`stock_movement_types` lookup (PURCHASE, SALE, RETURN, WRITE_OFF,
+COUNT_CORRECTION, and `REPAIR_USE` — pieces taken for a repair, signed: out on
+add, back in on remove; ADR 0040, posted by the repairs module via
+`postMovement`). Append-only and signed, like the cash ledger: a product's
+quantity in a store is the SUM of its movements, never a stored number. Only
+`QUANTITY` models (ADR 0029) have stock.
 
 ## Arithmetic (`lib/stock-math.ts`, pure, unit-tested)
 

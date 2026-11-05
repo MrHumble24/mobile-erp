@@ -17,7 +17,9 @@ payments / purchases / overhead post rows automatically.
   links to its shift via `shiftId` and reconciles a closing cash count. A
   `CUSTOMER_PURCHASE` row (ADR 0039) links via `customerPurchaseId` to a phone
   bought from a customer (money out); a trade-in posts no row. It is a cost type
-  (hidden in history without `device.cost.view`).
+  (hidden in history without `device.cost.view`). Repairs (ADR 0040) add
+  `REPAIR_PAYMENT` (customer money in / refund out, signed; `repairPaymentId`)
+  and `REPAIR_OUTSIDE` (money out to an outside master, a cost type; `repairId`).
 - The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
   transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
   and deriving a source's current account from its rows (`lib/source-nets.ts`).
@@ -33,8 +35,8 @@ payments / purchases / overhead post rows automatically.
   `accountCode`/`typeCode`/`from`/`to`; every item carries the five nullable
   source ids (`balance.read`). A caller **without** `device.cost.view` gets
   `amount: null` on cost-type rows (`PURCHASE`/`OVERHEAD`/`DEVICE_EXPENSE`/
-  `CUSTOMS`/`CUSTOMER_PURCHASE`, listed in `COST_TYPE_CODES`) — ADR 0028/0039;
-  balances are not redacted.
+  `CUSTOMS`/`CUSTOMER_PURCHASE`/`REPAIR_OUTSIDE`, listed in `COST_TYPE_CODES`) —
+  ADR 0028/0039/0040; balances are not redacted.
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
@@ -48,6 +50,9 @@ payments / purchases / overhead post rows automatically.
 - `LedgerService.shiftRows(userId, from, to)` / `shiftDifferences(shiftIds)` —
   the shift report's raw input (a cashier's cash rows in a window) and the net
   `SHIFT_DIFFERENCE` per shift for the shifts list (ADR 0036).
+- `LedgerRepairReadService.outsidePaid(ids)` / `outsideSum(from, to)` — the
+  repairs module's derived REPAIR_OUTSIDE reads (ADR 0040), kept in its own
+  service so neither file grows past its size limit; still only the repo reads.
 - `LedgerService.digestBalances(dayStart)` — per-account opening (rows before
   `dayStart`) and closing (now) balances for the Telegram closing digest (2c);
   the telegram module calls this instead of reading ledger tables.

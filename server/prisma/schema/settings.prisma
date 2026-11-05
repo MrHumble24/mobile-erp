@@ -37,6 +37,9 @@ model StoreSettings {
   /// needs an open shift (offline replays excepted). Card is never counted by
   /// hand; only cash.
   shiftsEnabled          Boolean  @default(false)
+  /// Repairs (Change 13, ADR 0040). Off by default. When off, every /repairs
+  /// route refuses with 403 REPAIRS_DISABLED.
+  repairsEnabled         Boolean  @default(false)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

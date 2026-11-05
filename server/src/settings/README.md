@@ -27,6 +27,9 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 - Cashier shifts (ADR 0036): `shiftsEnabled` (default false). Optional on the
   write DTO. Read by the shifts module to gate selling (a sale/credit needs an
   open shift when on).
+- Repairs (ADR 0040): `repairsEnabled` (default false). Optional on the write
+  DTO. Read by the repairs module; when off every `/repairs` route refuses
+  403 `REPAIRS_DISABLED`.
 
 ## Exposes
 

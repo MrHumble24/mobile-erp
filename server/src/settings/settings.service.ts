@@ -37,6 +37,7 @@ const DEFAULTS: StoreSettings = {
   customerCreditEnabled: false,
   defaultCreditLimit: null,
   shiftsEnabled: false,
+  repairsEnabled: false,
   digestSentOn: null,
   updatedAt: new Date(0),
 };

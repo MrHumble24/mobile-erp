@@ -28,6 +28,7 @@ export const COST_TYPE_CODES: ReadonlySet<string> = new Set([
   'DEVICE_EXPENSE',
   'CUSTOMS',
   'CUSTOMER_PURCHASE',
+  'REPAIR_OUTSIDE',
 ]);
 
 export interface AccountBalance {
@@ -78,7 +79,9 @@ export type LedgerSourceField =
   | 'partnerPaymentId'
   | 'deviceId'
   | 'shipmentId'
-  | 'customerPurchaseId';
+  | 'customerPurchaseId'
+  | 'repairPaymentId'
+  | 'repairId';
 
 /**
  * One signed row ready to append. The sole write shape: manual entries and
@@ -107,6 +110,10 @@ export interface LedgerPost {
   customerPurchaseId?: string;
   /** Ties a SHIFT_DIFFERENCE row to the shift it reconciles (ADR 0036). */
   shiftId?: string;
+  /** Ties a REPAIR_PAYMENT row to the customer payment it records (ADR 0040). */
+  repairPaymentId?: string;
+  /** Ties a REPAIR_OUTSIDE row to the ticket it paid an outside master for (ADR 0040). */
+  repairId?: string;
   createdById: string;
 }
 

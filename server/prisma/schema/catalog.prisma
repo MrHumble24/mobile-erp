@@ -78,6 +78,8 @@ model DeviceModel {
   stockMovements StockMovement[]
   referenceLinks ReferenceModelLink[]
   productPrices  ProductPrice[]
+  repairs        Repair[]
+  repairParts    RepairPart[]
 
   @@unique([brand, name])
   @@unique([barcode])

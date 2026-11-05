@@ -26,6 +26,7 @@ model Store {
   customerCredits   CustomerCredit[]
   shifts            Shift[]
   customerPurchases CustomerPurchase[]
+  repairs           Repair[]
 
   @@map("stores")
 }
