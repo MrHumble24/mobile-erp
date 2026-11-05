@@ -12,7 +12,8 @@ struct AppShell: View {
 
     private var visible: [FeatureModule] {
         var mods = FeatureRegistry.all.filter {
-            $0.permission == nil || container.session.can($0.permission!)
+            ($0.permission == nil || container.session.can($0.permission!))
+                && ($0.isEnabled?(container) ?? true)
         }
         if container.devAccess.showsTab { mods.append(DevConsoleModule.feature) }
         return mods
@@ -74,7 +75,7 @@ struct AppShell: View {
                         .toolbarBackground(Tokens.ground, for: .navigationBar)
                         .toolbar { toolbarContent }
                 }
-                .tabItem { Label(i18n.t(module.labelKey), systemImage: module.systemImage) }
+                .tabItem { Label(module.label(i18n), systemImage: module.systemImage) }
                 .tag(module.id)
             }
             if !more.isEmpty {

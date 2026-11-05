@@ -29,6 +29,8 @@ struct StoreSettings: Decodable {
     /// Default credit ceiling per customer; nil = no cap.
     let defaultCreditLimit: String?
     let shiftsEnabled: Bool
+    /// Repairs (ADR 0040), off by default. Hides the whole repairs feature.
+    let repairsEnabled: Bool
 
     enum CodingKeys: String, CodingKey {
         case storeName, storeAddress, storePhone, receiptFooter, telegramChatId
@@ -36,7 +38,7 @@ struct StoreSettings: Decodable {
         case defaultNasiyaDueDays, overdueReminderDays, updatedAt
         case discountsEnabled, discountPercentAllowed, discountAmountAllowed
         case discountPresetsPercent, discountPresetsAmount, maxDiscountPercent
-        case customerCreditEnabled, defaultCreditLimit, shiftsEnabled
+        case customerCreditEnabled, defaultCreditLimit, shiftsEnabled, repairsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -62,6 +64,7 @@ struct StoreSettings: Decodable {
         customerCreditEnabled = (try? c.decode(Bool.self, forKey: .customerCreditEnabled)) ?? false
         defaultCreditLimit = Self.optNumberString(c, .defaultCreditLimit)
         shiftsEnabled = (try? c.decode(Bool.self, forKey: .shiftsEnabled)) ?? false
+        repairsEnabled = (try? c.decode(Bool.self, forKey: .repairsEnabled)) ?? false
     }
 
     /// A nullable money field → canonical string, or nil when null / missing.
@@ -119,10 +122,11 @@ struct SettingsValues: Equatable {
     var discountPresetsPercent = ""
     var discountPresetsAmount = ""
     var maxDiscountPercent = ""
-    // Customer credit (ADR 0035) + shifts (ADR 0036).
+    // Customer credit (ADR 0035) + shifts (ADR 0036) + repairs (ADR 0040).
     var customerCreditEnabled = false
     var defaultCreditLimit = ""
     var shiftsEnabled = false
+    var repairsEnabled = false
 
     init() {}
 
@@ -147,6 +151,7 @@ struct SettingsValues: Equatable {
         customerCreditEnabled = s.customerCreditEnabled
         defaultCreditLimit = s.defaultCreditLimit ?? ""
         shiftsEnabled = s.shiftsEnabled
+        repairsEnabled = s.repairsEnabled
     }
 
     /// Parse a comma/space-separated preset field into up to five numbers.
@@ -182,6 +187,7 @@ struct SettingsValues: Equatable {
             "customerCreditEnabled": customerCreditEnabled,
             "defaultCreditLimit": defaultCreditLimit.isEmpty ? NSNull() : (Double(defaultCreditLimit) ?? NSNull()),
             "shiftsEnabled": shiftsEnabled,
+            "repairsEnabled": repairsEnabled,
         ]
     }
 }

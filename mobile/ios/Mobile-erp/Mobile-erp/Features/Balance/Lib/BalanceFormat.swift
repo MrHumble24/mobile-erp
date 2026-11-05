@@ -20,6 +20,8 @@ enum BalanceFormat {
         case "PARTNER_PAYMENT": "balance.typePartnerPayment"
         case "PURCHASE": "balance.typePurchase"
         case "CUSTOMER_PURCHASE": "balance.typeCustomerPurchase"
+        case "REPAIR_PAYMENT": "balance.typeRepairPayment"
+        case "REPAIR_OUTSIDE": "balance.typeRepairOutside"
         case "OVERHEAD": "balance.typeOverhead"
         case "EXPENSE": "balance.typeExpense"
         case "DEVICE_EXPENSE": "balance.typeDeviceExpense"
@@ -33,7 +35,8 @@ enum BalanceFormat {
     static let allTypeCodes = [
         "OPENING", "DEPOSIT", "WITHDRAWAL", "CORRECTION", "TRANSFER",
         "SALE", "REFUND", "PARTNER_PAYMENT", "PURCHASE", "CUSTOMER_PURCHASE",
-        "OVERHEAD", "EXPENSE", "DEVICE_EXPENSE", "CUSTOMS", "SHIFT_DIFFERENCE",
+        "REPAIR_PAYMENT", "REPAIR_OUTSIDE", "OVERHEAD", "EXPENSE",
+        "DEVICE_EXPENSE", "CUSTOMS", "SHIFT_DIFFERENCE",
     ]
 
     static func account(_ code: String, label: String?, _ i18n: I18n) -> String {

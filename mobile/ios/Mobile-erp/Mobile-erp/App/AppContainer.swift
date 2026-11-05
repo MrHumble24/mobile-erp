@@ -20,6 +20,8 @@ final class AppContainer {
     let devAccess = DevConsoleAccess()
     let router = KitRouter()
     let toasts = KitToastCenter()
+    /// Store-setting flags that gate navigation (repairs hidden while off, ADR 0040).
+    let storeFlags = StoreFlags()
 
     var modelContext: ModelContext { modelContainer.mainContext }
     var outbox: Outbox { Outbox(context: modelContext) }
@@ -59,8 +61,9 @@ final class AppContainer {
         self.sync = sync
 
         // Cross-wire the three runtime edges now that every part exists.
+        let flags = storeFlags
         api.onUnauthorized = { session.clear() }   // 401 → force re-login
-        session.onLogin = { sync.syncNow() }        // login → hydrate cache
+        session.onLogin = { sync.syncNow(); Task { await flags.refresh(api: api) } } // login → hydrate
         connectivity.onReconnect = { sync.syncNow() } // regain network → sync
     }
 
@@ -70,7 +73,10 @@ final class AppContainer {
         runDebugSelfChecks()
         KitSelfCheck.run()
         #endif
-        if connectivity.isOnline { sync.syncNow() }
+        if connectivity.isOnline {
+            sync.syncNow()
+            Task { await storeFlags.refresh(api: api) }
+        }
     }
 
     #if DEBUG

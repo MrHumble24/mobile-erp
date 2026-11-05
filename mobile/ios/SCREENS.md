@@ -542,3 +542,41 @@ unit's shipment, so nothing breaks (the field is simply absent).
 DEBUG self-check: `TradeInAllocationSelfCheck`. DEBUG args: `-open purchases`,
 `-openBuyPhone 1` (buy sheet), `-buyModel <modelId>` (preselect a model in the
 buy sheet), `-tradeInModel <modelId>` (preselect in the till trade-in sheet).
+
+### Repairs (Step 10, ADR 0040)
+
+Repair tickets, optional per store (`repairsEnabled`, off by default). **The
+whole feature is hidden while off** — `RepairsModule.isEnabled` reads
+`AppContainer.storeFlags` (a tiny `GET /settings` flag cache loaded after
+sign-in and on save). Lives in `Features/Repairs`. **Online only. No passcode /
+pattern / ID field anywhere.**
+
+| Screen | File | Permission | Purpose |
+|---|---|---|---|
+| **Repairs list** (`RepairsView`) | `Features/Repairs/UI/RepairsView.swift` | `repair.read` + setting | Status chips (all / received / in repair / ready / given back / cancelled), search (ticket / IMEI / serial / customer), rows with a status chip + left-to-pay. |
+| **New ticket** (`NewRepairSheet`) | `Features/Repairs/UI/NewRepairSheet.swift` | `repair.manage` | Customer, device name, optional model + IMEI/serial, problem, agreed price, warranty days per ticket, our master or an outside master (name/phone/cost), notes. |
+| **Ticket detail** (`RepairDetailSheet` + `RepairDetailSections`) | `Features/Repairs/UI/RepairDetailSheet.swift` | `repair.read` | Money summary, master, legal next-status buttons, parts (add/remove), payments, outside payment, status history, warranty once given back. Cost rows hidden without `device.cost.view`. |
+| **Change status** (`RepairStatusSheet`) | `Features/Repairs/UI/RepairStatusSheet.swift` | `repair.manage` | Legal moves only; cancel + give-back-while-owed require a note. |
+| **Add part** (`RepairPartsSheet`) | `Features/Repairs/UI/RepairPartsSheet.swift` | `repair.manage` | A quantity product + pieces (`REPAIR_USE` stock out). |
+| **Money** (`RepairMoneySheet`) | `Features/Repairs/UI/RepairMoneySheet.swift` | `repair.payment` | One amount + account; take payment / refund / pay the outside master. |
+| **Report** (`RepairReportSheet`) | `Features/Repairs/UI/RepairReportSheet.swift` | `repair.read` | Income (always), parts/outside cost + profit (cost permission), optional date range. |
+
+`RepairStatus` (pure, `RepairStatusSelfCheck`) mirrors the server state machine
+(RECEIVED→IN_REPAIR|READY|CANCELLED; IN_REPAIR→READY|RECEIVED|CANCELLED;
+READY→GIVEN_BACK|IN_REPAIR|CANCELLED; last two terminal). `RepairError` maps the
+409/403 codes. Settings gains the repairs switch (`repairsEnabled`); toggling it
+refreshes `storeFlags` so the tab appears/disappears at once. The
+`REPAIR_PAYMENT` / `REPAIR_OUTSIDE` ledger-type labels are in `BalanceFormat`;
+`REPAIR_USE` stock movements show the server's own label.
+
+Deliberately deferred: the ticket **edit** form (`PATCH /repairs/:id`) — not in
+the handoff's detail list; create + status + parts + money + report cover it.
+
+DEBUG args: `-open repairs`, `-openNewRepair 1` (new ticket), `-openRepair 1`
+(first ticket's detail), `-openRepairReport 1` (report).
+
+## i18n (Steps 9 & 10)
+
+`purchases` is bundled from the web (English in both locales). `repairs` is not
+in the client yet, so every `repairs.*` key uses an English `default:` fallback
+until the web adds the namespace; the keys are listed in the build report.

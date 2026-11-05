@@ -65,11 +65,16 @@ struct SettingsView: View {
                 discountsSection($model)
                 creditSection($model)
                 shiftsSection($model)
+                repairsSection($model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
                     Haptic.tick.play()
-                    Task { await model.save() }
+                    Task {
+                        await model.save()
+                        // Repairs hides/shows the whole feature — refresh the nav gate.
+                        if model.saved { await container.storeFlags.refresh(api: container.api) }
+                    }
                 } label: {
                     if model.saving { ProgressView().tint(Tokens.onAction).frame(maxWidth: .infinity) }
                     else { Text(i18n.t("common.save")).frame(maxWidth: .infinity) }
@@ -147,6 +152,21 @@ struct SettingsView: View {
                 Toggle(i18n.t("shifts.settingsEnabled"), isOn: model.form.shiftsEnabled)
                     .font(.ui(.body)).foregroundStyle(Tokens.text)
                 Text(i18n.t("shifts.settingsHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Repairs (ADR 0040): the switch only; the repairs screen lives in the More
+    /// tab and is hidden entirely while this is off.
+    private func repairsSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("repairs.settingsTitle", default: "Repairs")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("repairs.settingsEnabled", default: "Enable repairs"), isOn: model.form.repairsEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                Text(i18n.t("repairs.settingsHint", default: "Take in phones for repair, track parts and payments."))
+                    .font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

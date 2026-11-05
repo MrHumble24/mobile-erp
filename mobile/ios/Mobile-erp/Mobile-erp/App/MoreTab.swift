@@ -45,7 +45,7 @@ struct MoreTab: View {
             .navigationDestination(for: String.self) { id in
                 if let module = modules.first(where: { $0.id == id }) {
                     PermissionGate(permission: module.permission, content: module.root)
-                        .navigationTitle(i18n.t(module.labelKey))
+                        .navigationTitle(module.label(i18n))
                         .navigationBarTitleDisplayMode(.inline)
                 }
             }
@@ -62,7 +62,7 @@ struct MoreTab: View {
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Tokens.text)
                 .frame(width: 24)
-            Text(i18n.t(module.labelKey)).font(.ui(.body)).foregroundStyle(Tokens.text).lineLimit(1)
+            Text(module.label(i18n)).font(.ui(.body)).foregroundStyle(Tokens.text).lineLimit(1)
             Spacer(minLength: Tokens.Space.sm)
             Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Tokens.muted)
         }
