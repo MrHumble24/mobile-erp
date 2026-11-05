@@ -1,6 +1,6 @@
 # 020 — Step 11 on the website: bonus points, printing, buying back a sold phone
 
-Status: open · Owner: Gemini (Antigravity) · Start only after Claude says handoff 019 (branches) is merged into `main`
+Status: split on 2026-11-06 into small parts for OpenCode (`docs/handoffs/opencode/003` to `008`). Gemini does not build this. Kept as the full description of the work.
 
 ## Why
 The server part of step 11 is in `main` (merge `f9b6307`): loyalty bonus points, printing switches,
