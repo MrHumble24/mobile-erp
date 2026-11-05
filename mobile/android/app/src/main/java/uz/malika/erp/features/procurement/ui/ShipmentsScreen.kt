@@ -218,7 +218,6 @@ private fun ShipmentSheets(
     setSheet: (Sheet?) -> Unit,
 ) {
     val dismiss = { setSheet(null) }
-    val addedItems by vm.items.collectAsState()
     when (sheet) {
         null -> Unit
         Sheet.NewSupplier -> SupplierFormSheet(null, online, repo, vm::refreshSuppliers, dismiss)
@@ -241,9 +240,7 @@ private fun ShipmentSheets(
             onContinueIntake = { setSheet(Sheet.Intake(sheet.shipment)) },
             onDismiss = dismiss,
             quantityModels = deviceModels.filter { it.isQuantity },
-            addedLines = addedItems[sheet.shipment.id].orEmpty(),
             online = online,
-            onItemsAdded = { vm.recordItems(sheet.shipment.id, it) },
         )
         is Sheet.Intake -> IntakeSheet(
             shipment = sheet.shipment, models = deviceModels, online = online, repo = repo, vm = vm,

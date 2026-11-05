@@ -80,7 +80,7 @@ class CatalogLogicTest {
         val products = listOf(
             ProductEntity(modelId = "q1", brand = "Generic", name = "Cable", quantity = 42, salePrice = "15"),
         )
-        val cards = OfflineCatalog.build(devices, products, categoryId = null, search = "")
+        val cards = OfflineCatalog.build(devices, products, emptyMap(), categoryId = null, search = "")
 
         val a = cards.first { it.modelId == "mA" }
         assertEquals(2, a.inStock) // the SOLD unit dropped out
@@ -103,12 +103,12 @@ class CatalogLogicTest {
             device("1", "IN_STOCK", "mA", "Apple", "iPhone 15", "100").copy(categoryId = "cat-phone"),
             device("4", "IN_STOCK", "mB", "Samsung", "A54", "80").copy(categoryId = "cat-phone"),
         )
-        val bySearch = OfflineCatalog.build(devices, emptyList(), categoryId = null, search = "samsung")
+        val bySearch = OfflineCatalog.build(devices, emptyList(), emptyMap(), categoryId = null, search = "samsung")
         assertEquals(listOf("mB"), bySearch.map { it.modelId })
 
-        val byCategory = OfflineCatalog.build(devices, emptyList(), categoryId = "cat-phone", search = "")
+        val byCategory = OfflineCatalog.build(devices, emptyList(), emptyMap(), categoryId = "cat-phone", search = "")
         assertEquals(2, byCategory.size)
-        val byOther = OfflineCatalog.build(devices, emptyList(), categoryId = "cat-none", search = "")
+        val byOther = OfflineCatalog.build(devices, emptyList(), emptyMap(), categoryId = "cat-none", search = "")
         assertTrue(byOther.isEmpty())
     }
 }

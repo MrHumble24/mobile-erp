@@ -23,7 +23,7 @@ import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.PurchaseItemBody
-import uz.malika.erp.features.procurement.data.PurchasedLineDto
+import uz.malika.erp.features.procurement.data.ShipmentStockLineDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
@@ -39,19 +39,19 @@ import java.math.BigDecimal
 /**
  * Add quantity stock to a shipment (ADR 0030): pick a QUANTITY product, enter the
  * pieces and the cost per piece, see the line total and the account the money
- * leaves. Each add posts `POST /shipments/:id/items`. The lines added this
- * session are listed (the server exposes no read-back for them).
+ * leaves. Each add posts `POST /shipments/:id/items`; [stockLines] are the
+ * shipment's persisted purchase lines from `GET /shipments/:id` (ADR 0034).
  */
 @Composable
 fun ShipmentStockLines(
     shipmentId: String,
     paymentAccountCode: String?,
     quantityModels: List<DeviceModelDto>,
-    modelNames: Map<String, String>,
-    addedLines: List<PurchasedLineDto>,
+    stockLines: List<ShipmentStockLineDto>,
+    stockLinesTotal: String?,
     online: Boolean,
     repo: ProcurementRepository,
-    onAdded: (List<PurchasedLineDto>) -> Unit,
+    onChanged: () -> Unit,
 ) {
     val t = LocalT.current
     val scope = rememberCoroutineScope()
@@ -72,8 +72,8 @@ fun ShipmentStockLines(
         error = null
         scope.launch {
             try {
-                val lines = repo.addItems(shipmentId, listOf(PurchaseItemBody(m.id, qty!!, cost!!)))
-                onAdded(lines)
+                repo.addItems(shipmentId, listOf(PurchaseItemBody(m.id, qty!!, cost!!)))
+                onChanged()
                 model = null; quantity = ""; unitCost = ""
             } catch (e: Exception) {
                 error = (e as? AppException)?.message ?: "error"
@@ -143,20 +143,29 @@ fun ShipmentStockLines(
             enabled = valid && !busy && online,
         )
 
-        if (addedLines.isNotEmpty()) {
+        if (stockLines.isNotEmpty()) {
             Spacer(Modifier.height(Tokens.Space.md))
-            addedLines.forEach { line ->
+            stockLines.forEach { line ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
-                        "${modelNames[line.modelId] ?: line.modelId}  × ${line.quantity}",
+                        "${line.label}  × ${line.quantity}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Tokens.text,
                     )
-                    Text(
-                        formatMoney(parseMoney(line.unitCost).multiply(BigDecimal(line.quantity)).toPlainString()),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
-                        color = Tokens.text,
-                    )
+                    line.lineTotal?.let {
+                        Text(
+                            formatMoney(it),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+                            color = Tokens.text,
+                        )
+                    }
+                }
+            }
+            stockLinesTotal?.let {
+                Spacer(Modifier.height(Tokens.Space.xs))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t("catalog.stockValue", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
+                    Text(formatMoney(it), style = MaterialTheme.typography.titleSmall.copy(fontFamily = MonoFamily), color = Tokens.text)
                 }
             }
         }

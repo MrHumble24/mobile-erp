@@ -70,12 +70,14 @@ fun InventoryScreen(container: AppContainer) {
                 canUpdate = canUpdate,
                 featureNav = container.featureNav,
                 toaster = container.toaster,
+                pricingRepo = vms.pricingRepo,
                 onShowAlerts = { selected = InventoryTab.ALERTS },
             )
             InventoryTab.MODELS -> DeviceModelsTab(
                 catalogVm = catalogVm,
                 online = online,
                 baseUrl = container.devConfig.currentBaseUrl,
+                pricingRepo = vms.pricingRepo,
                 onToast = { container.toaster.success(it) },
             )
             InventoryTab.ALERTS -> StockAlertsTab(

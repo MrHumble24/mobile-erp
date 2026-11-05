@@ -1,17 +1,21 @@
 package uz.malika.erp.features.admin.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import uz.malika.erp.features.admin.model.SettingsErrors
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.ui.theme.Tokens
 import androidx.compose.foundation.layout.fillMaxWidth
 import uz.malika.erp.shared.ui.FactRow
@@ -89,6 +93,37 @@ fun TelegramSection(form: SettingsFormState, errors: SettingsErrors) {
                 error = if (errors.closingTime) t("common.required", null) else null,
             )
         }
+    }
+}
+
+/** Discounts (Change 7/12, ADR 0034): off by default; reveals its options when on. */
+@Composable
+fun DiscountsSection(form: SettingsFormState) {
+    val t = LocalT.current
+    SectionCard(t("pricing.settingsTitle", null), t("pricing.settingsEnabled", null)) {
+        Column {
+            ToggleRow(t("pricing.settingsEnabled", null), form.discountsEnabled) { form.discountsEnabled = it }
+            if (form.discountsEnabled) {
+                Spacer(Modifier.height(Tokens.Space.sm))
+                ToggleRow(t("pricing.settingsPercent", null), form.discountPercentAllowed) { form.discountPercentAllowed = it }
+                Spacer(Modifier.height(Tokens.Space.sm))
+                ToggleRow(t("pricing.settingsAmount", null), form.discountAmountAllowed) { form.discountAmountAllowed = it }
+                Spacer(Modifier.height(Tokens.Space.md))
+                NumField(t("pricing.settingsMax", null), form.maxDiscountPercent, { form.maxDiscountPercent = it }, invalid = false, decimal = true)
+                Spacer(Modifier.height(Tokens.Space.md))
+                AppFormField(t("pricing.settingsPresetsPercent", null), form.discountPresetsPercent, { form.discountPresetsPercent = it }, placeholder = t("pricing.settingsPresetsHint", null))
+                Spacer(Modifier.height(Tokens.Space.md))
+                AppFormField(t("pricing.settingsPresetsAmount", null), form.discountPresetsAmount, { form.discountPresetsAmount = it }, placeholder = t("pricing.settingsPresetsHint", null))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+        AppSwitch(checked = checked, onCheckedChange = onChange)
     }
 }
 

@@ -40,6 +40,7 @@ import uz.malika.erp.core.nowIso
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomersRepository
 import uz.malika.erp.features.sales.data.SalesApi
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.lib.customersCsv
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
@@ -140,7 +141,10 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
                 customer = c,
                 vm = vm,
                 canManage = canManage,
-                onEdit = { formFor = FormTarget(c.id, c.name, c.phone, c.notes); selected = null },
+                onEdit = {
+                    formFor = FormTarget(c.id, c.name, c.phone, c.notes, c.priceLevelCode, c.standingDiscountPercent)
+                    selected = null
+                },
             )
         }
     }
@@ -167,6 +171,10 @@ private fun CustomerCard(c: CustomerListItem, onClick: () -> Unit) {
                 Text(c.name, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 c.phone?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted) }
                 Text(t("pos.purchaseCount", mapOf("count" to c.purchaseCount)), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+                val standing = c.standingDiscountPercent.toDoubleOrNull() ?: 0.0
+                val levelLabel = t(PriceLevel.labelKey(c.priceLevelCode), null)
+                val sub = if (standing > 0) "$levelLabel · ${t("pricing.standingDiscount", null)} ${c.standingDiscountPercent}%" else levelLabel
+                Text(sub, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
             Spacer(Modifier.width(Tokens.Space.gap))
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(Tokens.Space.xs)) {

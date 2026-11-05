@@ -2,7 +2,10 @@ package uz.malika.erp.features.admin.data
 
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import uz.malika.erp.core.runApi
 
 /** Store-settings form values (text as typed; parsed/validated on submit). */
@@ -18,7 +21,18 @@ data class SettingsForm(
     val lowStockThreshold: String,
     val defaultNasiyaDueDays: String,
     val overdueReminderDays: String,
+    // Discounts (ADR 0034). Presets are comma-separated values, capped at 5.
+    val discountsEnabled: Boolean = false,
+    val discountPercentAllowed: Boolean = true,
+    val discountAmountAllowed: Boolean = true,
+    val discountPresetsPercent: String = "",
+    val discountPresetsAmount: String = "",
+    val maxDiscountPercent: String = "0",
 )
+
+/** Parse a comma-separated preset list into at most five non-negative numbers. */
+private fun csvPresets(raw: String): List<Double> =
+    raw.split(',').mapNotNull { it.trim().toDoubleOrNull()?.takeIf { v -> v >= 0 } }.take(5)
 
 /**
  * The only place that talks to `/settings`. The PUT body is built as explicit
@@ -42,6 +56,12 @@ class SettingsRepository(private val api: AdminApi) {
             put("lowStockThreshold", JsonPrimitive(form.lowStockThreshold.trim().toInt()))
             put("defaultNasiyaDueDays", JsonPrimitive(form.defaultNasiyaDueDays.trim().toInt()))
             put("overdueReminderDays", JsonPrimitive(form.overdueReminderDays.trim().toInt()))
+            put("discountsEnabled", JsonPrimitive(form.discountsEnabled))
+            put("discountPercentAllowed", JsonPrimitive(form.discountPercentAllowed))
+            put("discountAmountAllowed", JsonPrimitive(form.discountAmountAllowed))
+            put("discountPresetsPercent", buildJsonArray { csvPresets(form.discountPresetsPercent).forEach { add(JsonPrimitive(it)) } })
+            put("discountPresetsAmount", buildJsonArray { csvPresets(form.discountPresetsAmount).forEach { add(JsonPrimitive(it)) } })
+            put("maxDiscountPercent", JsonPrimitive(form.maxDiscountPercent.trim().toDoubleOrNull() ?: 0.0))
         }
         api.updateSettings(body)
     }

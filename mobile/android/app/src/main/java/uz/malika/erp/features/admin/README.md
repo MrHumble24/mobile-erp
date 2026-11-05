@@ -4,6 +4,10 @@ Ports the web client's **Users & Access (RBAC)**, **Settings**, and **Sync**
 pages to the native Android app. One `FeatureModule` (`AdminFeature`) contributes
 all three nav items and routes.
 
+Settings carries a **Discounts** section (ADR 0034, `SettingsSections.DiscountsSection`):
+allow/percent/amount toggles, the cashier maximum, and up to five preset values
+each (comma-separated in the form, parsed to `number[]` on PUT). Off by default.
+
 ## Owns
 - `data/` — `AdminApi` (Retrofit interface for `/users`, `/access`, `/settings`,
   built via `container.retrofit.create(...)`), `UsersRepository`,

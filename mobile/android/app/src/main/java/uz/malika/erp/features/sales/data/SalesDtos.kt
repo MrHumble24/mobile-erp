@@ -56,6 +56,10 @@ data class SaleDto(
     @SerialName("return") val returnInfo: SaleReturnDto? = null,
     /** How the sale was tendered; `[]` when none. Optional so older cached rows decode. */
     val payments: List<SalePaymentDto> = emptyList(),
+    // Pricing (ADR 0034). Null for pre-feature sales or a line that had no list price.
+    val listPrice: String? = null,
+    val discountAmount: String? = null,
+    val priceLevelCode: String? = null,
 )
 
 /** One tender line of a sale (its SALE ledger rows). `amount` is a decimal string. */
@@ -153,6 +157,8 @@ data class DeviceByImeiDto(
     val statusCode: String = "",
     val model: ModelRefDto = ModelRefDto(),
     val targetPrice: String? = null,
+    /** Resolved list prices per level (ADR 0034): `{ RETAIL, WHOLESALE, PARTNER }`. */
+    val prices: Map<String, String?>? = null,
 )
 
 // ── Scan + quantity products (ADR 0030) ───────────────────────────────────────
@@ -179,10 +185,24 @@ data class QuantityProductDto(
     val barcode: String? = null,
     val salePrice: String? = null,
     val quantity: Int = 0,
+    /** Resolved list prices per level (ADR 0034). */
+    val prices: Map<String, String?>? = null,
 )
 
+/**
+ * `GET /settings` — only the till-relevant fields. Discount fields (ADR 0034)
+ * are optional so older/partial payloads decode; money is a Decimal string.
+ */
 @Serializable
-data class SettingsDto(val defaultWarrantyDays: Int = 0)
+data class SettingsDto(
+    val defaultWarrantyDays: Int = 0,
+    val discountsEnabled: Boolean = false,
+    val discountPercentAllowed: Boolean = true,
+    val discountAmountAllowed: Boolean = true,
+    val discountPresetsPercent: List<Double> = emptyList(),
+    val discountPresetsAmount: List<Double> = emptyList(),
+    val maxDiscountPercent: String? = null,
+)
 
 /** The `latestSale` blob cached on a device row by `/sync/changes` (offline warranty). */
 @Serializable
@@ -202,6 +222,9 @@ data class CustomerDto(
     val phone: String? = null,
     val notes: String? = null,
     val createdAt: String? = null,
+    /** Pricing (ADR 0034): the customer's price level and standing discount. */
+    val priceLevelCode: String = "RETAIL",
+    val standingDiscountPercent: String = "0",
 )
 
 /** `/customers/stats` aggregate tiles. */
@@ -233,6 +256,8 @@ data class CustomerListItemDto(
     val lastPurchaseAt: String? = null,
     val activeWarranties: Int = 0,
     val returnsCount: Int = 0,
+    val priceLevelCode: String = "RETAIL",
+    val standingDiscountPercent: String = "0",
 )
 
 // ── Request bodies (online writes) ─────────────────────────────────────────────
@@ -245,7 +270,19 @@ data class ReturnBody(
 )
 
 @Serializable
-data class CreateCustomerBody(val name: String, val phone: String? = null, val notes: String? = null)
+data class CreateCustomerBody(
+    val name: String,
+    val phone: String? = null,
+    val notes: String? = null,
+    val priceLevelCode: String? = null,
+    val standingDiscountPercent: Double? = null,
+)
 
 @Serializable
-data class UpdateCustomerBody(val name: String? = null, val phone: String? = null, val notes: String? = null)
+data class UpdateCustomerBody(
+    val name: String? = null,
+    val phone: String? = null,
+    val notes: String? = null,
+    val priceLevelCode: String? = null,
+    val standingDiscountPercent: Double? = null,
+)

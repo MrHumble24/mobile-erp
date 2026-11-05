@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.compose.runtime.collectAsState
 import uz.malika.erp.AppContainer
+import uz.malika.erp.app.LocalCan
 import uz.malika.erp.data.remote.HttpClient
 import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.sales.data.PosRepository
@@ -62,12 +63,19 @@ private const val POS_MODE_KEY = "pos_mode"
 fun PosScreen(container: AppContainer, api: SalesApi) {
     val t = LocalT.current
     val online by container.connectivity.online.collectAsState()
+    val canOverride = LocalCan.current("sale.price.override")
+    val canUnlimited = LocalCan.current("sale.discount.unlimited")
     val vm: PosViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
                 val u = container.authRepository.cachedUser()
                 val cashier = u?.fullName?.takeIf { it.isNotBlank() } ?: u?.email ?: ""
-                PosViewModel(PosRepository(api, container.db, container.outbox, HttpClient.json), cashier)
+                PosViewModel(
+                    PosRepository(api, container.db, container.outbox, HttpClient.json),
+                    cashier,
+                    canOverride = canOverride,
+                    canUnlimited = canUnlimited,
+                )
             }
         },
     )
@@ -90,6 +98,8 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     LaunchedEffect(Unit) {
         container.featureNav.consumeArg("pos")?.let { mode = PosMode.SCAN; vm.scan(it, online) }
     }
+    // Discount settings follow the connection (online fetch + cache, else last-known).
+    LaunchedEffect(online) { vm.loadDiscountSettings(online) }
     // Toast the checkout result once the receipt is built; close the cart sheet.
     LaunchedEffect(state.completed?.receiptId) {
         state.completed?.let {

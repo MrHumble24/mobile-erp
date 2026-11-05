@@ -19,15 +19,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.AppSelect
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.Tokens
 
 /** The customer being created (id == null) or edited, with its current values. */
-data class FormTarget(val id: String?, val name: String, val phone: String?, val notes: String?)
+data class FormTarget(
+    val id: String?,
+    val name: String,
+    val phone: String?,
+    val notes: String?,
+    val priceLevelCode: String = PriceLevel.DEFAULT,
+    val standingDiscountPercent: String = "0",
+)
 
 /**
  * New / edit customer as a Warm Card sheet. Creating and updating are
@@ -42,6 +51,8 @@ fun CustomerFormSheet(vm: CustomersViewModel, target: FormTarget, online: Boolea
     var name by remember { mutableStateOf(target.name) }
     var phone by remember { mutableStateOf(target.phone ?: "") }
     var notes by remember { mutableStateOf(target.notes ?: "") }
+    var level by remember { mutableStateOf(target.priceLevelCode) }
+    var standingDiscount by remember { mutableStateOf(target.standingDiscountPercent.takeIf { it != "0" } ?: "") }
     var nameError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(ui.done) {
@@ -66,12 +77,31 @@ fun CustomerFormSheet(vm: CustomersViewModel, target: FormTarget, online: Boolea
             AppFormField(t("customers.name", null), name, { name = it; nameError = null }, enabled = !ui.busy, error = nameError)
             AppFormField(t("customers.phone", null), phone, { phone = it }, enabled = !ui.busy, keyboardType = KeyboardType.Phone)
             AppFormField(t("customers.notes", null), notes, { notes = it }, enabled = !ui.busy, placeholder = t("customers.notesPlaceholder", null))
+            AppSelect(
+                value = level,
+                options = PriceLevel.ALL,
+                optionLabel = { t(PriceLevel.labelKey(it), null) },
+                onSelect = { level = it ?: PriceLevel.DEFAULT },
+                enabled = !ui.busy,
+                label = t("pricing.customerType", null),
+            )
+            AppFormField(
+                t("pricing.standingDiscount", null),
+                standingDiscount,
+                { standingDiscount = it },
+                enabled = !ui.busy,
+                keyboardType = KeyboardType.Decimal,
+                placeholder = t("pricing.standingDiscountHint", null),
+            )
             ui.error?.let { Text(t(it, null), color = Tokens.danger, style = MaterialTheme.typography.bodySmall) }
             PillButton(
                 text = t("common.save", null),
                 onClick = {
                     if (name.trim().isEmpty()) { nameError = t("customers.errNameRequired", null); return@PillButton }
-                    vm.submit(target.id, name.trim(), phone.trim(), notes.trim(), online)
+                    vm.submit(
+                        target.id, name.trim(), phone.trim(), notes.trim(),
+                        level, standingDiscount.trim().toDoubleOrNull() ?: 0.0, online,
+                    )
                 },
                 enabled = !ui.busy && online,
                 modifier = Modifier.fillMaxWidth(),

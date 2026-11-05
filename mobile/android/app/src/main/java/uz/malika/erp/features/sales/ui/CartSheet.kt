@@ -32,11 +32,18 @@ fun CartSheet(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
     ) {
         PosCartList(
-            lines = state.lines,
-            onPrice = vm::setLinePrice,
-            onWarranty = vm::setLineWarranty,
-            onQuantity = vm::setLineQuantity,
-            onRemove = vm::removeLine,
+            priced = state.priced,
+            settings = state.settings,
+            cartDiscountActive = state.cartDiscount != null,
+            canOverride = state.canOverride,
+            actions = CartActions(
+                onPrice = vm::setLinePrice,
+                onWarranty = vm::setLineWarranty,
+                onQuantity = vm::setLineQuantity,
+                onRemove = vm::removeLine,
+                onLineDiscount = vm::setLineDiscount,
+                onToggleOverride = vm::toggleOverride,
+            ),
             enabled = !state.busy,
         )
         Spacer(Modifier.height(Tokens.Space.lg))

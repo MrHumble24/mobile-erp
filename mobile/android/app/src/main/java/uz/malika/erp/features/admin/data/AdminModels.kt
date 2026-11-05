@@ -109,10 +109,20 @@ data class StoreSettingsDto(
     val lowStockThreshold: Int = 0,
     val defaultNasiyaDueDays: Int = 0,
     val overdueReminderDays: Int = 0,
+    // Discounts (Change 7/12, ADR 0034).
+    val discountsEnabled: Boolean = false,
+    val discountPercentAllowed: Boolean = true,
+    val discountAmountAllowed: Boolean = true,
+    val discountPresetsPercent: List<Double> = emptyList(),
+    val discountPresetsAmount: List<Double> = emptyList(),
+    val maxDiscountPercent: JsonElement? = null,
 ) {
     /** Decimal arrives as a JSON number or string; keep it as a plain string. */
     val minMarginPercentStr: String
         get() = minMarginPercent?.jsonPrimitive?.content ?: "0"
+
+    val maxDiscountPercentStr: String
+        get() = maxDiscountPercent?.jsonPrimitive?.content ?: "0"
 }
 
 // ── Write bodies ──────────────────────────────────────────────────────────────

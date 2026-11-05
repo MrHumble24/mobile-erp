@@ -2,6 +2,7 @@ package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.data.local.DeviceEntity
 import uz.malika.erp.data.local.ProductEntity
+import uz.malika.erp.features.sales.lib.PriceCache
 import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.payments.AccountAmount
 
@@ -18,6 +19,7 @@ data class ScannedDevice(
     val statusCode: String,
     val modelLabel: String,
     val targetPrice: String?,
+    val prices: Map<String, String?>? = null,
 ) {
     val inStock: Boolean get() = statusCode == "IN_STOCK"
 
@@ -34,6 +36,7 @@ data class ScannedDevice(
             statusCode = d.statusCode,
             modelLabel = "${d.modelBrand} ${d.modelName}".trim(),
             targetPrice = d.targetPrice,
+            prices = PriceCache.parse(d.pricesJson),
         )
 
         fun fromDto(d: DeviceByImeiDto) = ScannedDevice(
@@ -45,6 +48,7 @@ data class ScannedDevice(
             statusCode = d.statusCode,
             modelLabel = "${d.model.brand} ${d.model.name}".trim(),
             targetPrice = d.targetPrice,
+            prices = d.prices,
         )
     }
 }
@@ -67,6 +71,7 @@ data class CartProduct(
     val barcode: String?,
     val salePrice: String?,
     val inStock: Int,
+    val prices: Map<String, String?>? = null,
 ) {
     val label: String get() = "$brand $name".trim()
 
@@ -78,6 +83,7 @@ data class CartProduct(
             barcode = p.barcode,
             salePrice = p.salePrice,
             inStock = p.quantity,
+            prices = PriceCache.parse(p.pricesJson),
         )
 
         fun fromDto(p: QuantityProductDto) = CartProduct(
@@ -87,6 +93,7 @@ data class CartProduct(
             barcode = p.barcode,
             salePrice = p.salePrice,
             inStock = p.quantity,
+            prices = p.prices,
         )
     }
 }
@@ -119,6 +126,10 @@ data class ReceiptData(
     val pending: Boolean = false,
     /** How it was tendered (cart-level), for the "Paid with" lines; empty shows nothing. */
     val payments: List<AccountAmount> = emptyList(),
+    // Pricing (ADR 0034): shown when there was a discount or a non-retail level.
+    val priceLevelCode: String? = null,
+    val listTotal: String? = null,
+    val discountTotal: String? = null,
 )
 
 /** Map the server receipt payload into the shared render model. */

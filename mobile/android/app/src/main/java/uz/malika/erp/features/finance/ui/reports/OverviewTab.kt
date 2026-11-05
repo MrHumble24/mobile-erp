@@ -91,6 +91,7 @@ private fun Headline(r: ProfitReport, onDrill: (ReportDrill) -> Unit, onReturns:
             tile(t("dashboard.grossProfit", null), r.grossProfit, emphasis = signTint(r.grossProfit)),
             tile(t("dashboard.expenses", null), r.expenses, emphasis = Tokens.danger),
             tile(t("dashboard.returnsRefunded", null), r.returnsRefunded, onTap = onReturns),
+            tile(t("pricing.discountsGiven", null), r.discountsGiven, emphasis = Tokens.danger),
             tile(t("dashboard.unitsSold", null), r.unitsSold.toString(), money = false),
         ),
     )
@@ -109,6 +110,7 @@ private fun profitDrill(title: String, r: ProfitReport, t: (String, Map<String, 
             DrillLine(t("dashboard.expenses", null), formatMoney(r.expenses)),
             DrillLine(t("dashboard.netOperatingIncome", null), formatMoney(r.netOperatingIncome)),
             DrillLine(t("dashboard.returnsRefunded", null), formatMoney(r.returnsRefunded)),
+            DrillLine(t("pricing.discountsGiven", null), formatMoney(r.discountsGiven)),
             DrillLine(t("dashboard.unitsSold", null), r.unitsSold.toString()),
         ),
     )

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomerSale
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatDate
@@ -52,6 +53,8 @@ fun CustomerDetailSheet(customer: CustomerListItem, vm: CustomersViewModel, canM
         }
         Spacer(Modifier.height(Tokens.Space.lg))
 
+        FactRow(t("pricing.customerType", null)) { Text(t(PriceLevel.labelKey(customer.priceLevelCode), null), style = mono) }
+        FactRow(t("pricing.standingDiscount", null)) { Text("${customer.standingDiscountPercent}%", style = mono) }
         FactRow(t("customers.statPurchases", null)) { Text(customer.purchaseCount.toString(), style = mono) }
         FactRow(t("customers.statTotalSpent", null)) { Text(formatMoney(customer.totalSpent.toString()), style = mono) }
         FactRow(t("customers.statActiveWarranties", null)) { Text(customer.activeWarranties.toString(), style = mono) }

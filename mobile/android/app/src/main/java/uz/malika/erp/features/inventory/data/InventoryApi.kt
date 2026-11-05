@@ -103,6 +103,8 @@ data class DeviceDetailDto(
     val model: ModelRefDto? = null,
     val specs: JsonElement? = null,
     val latestInspection: QcDto? = null,
+    /** Resolved list prices per level (ADR 0034). */
+    val prices: Map<String, String?>? = null,
 )
 
 @Serializable

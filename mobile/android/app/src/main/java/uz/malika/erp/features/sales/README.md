@@ -5,6 +5,25 @@ Native port of the web `pages/pos`, `pages/sales`, `pages/customers`,
 `entities/sale`, `entities/customer`. One `FeatureModule` (`SalesFeature`) with
 three permission-gated routes.
 
+## Pricing & discounts (ADR 0034)
+- `lib/Pricing.kt` — pure, unit-tested money rules ported 1:1 from the server's
+  `checkout-pricing.ts`: `levelPrice`, `discountAmount`/`finalPrice`,
+  `discountRejection` (the cashier limit + the customer standing that raises it),
+  and `spreadCartDiscount` (largest-remainder in integer cents, parts add up
+  exactly). `lib/CartPricing.kt` prices the whole cart at the current level into
+  `PricedLine`s + `CartTotals`. `lib/PriceCache.kt` encodes/decodes the resolved
+  `{RETAIL,WHOLESALE,PARTNER}` blob cached on devices/products for offline pricing.
+- `PosViewModel` holds the level (follows the customer, seller may switch), the
+  discount settings (`PosRepository.discountSettings` — online fetch cached in
+  `sync_meta`, else last-known), per-line + whole-cart discounts, and the override
+  set. Checkout sends `priceLevelCode`, `discount` and `listPrice` per line
+  (`SaleCreate`). The till refuses a discount before the server does; since the
+  app always drains through `/sync/push` (`trustClientPrice`), this client-side
+  limit is the only enforcement for the Android path.
+- The customer form carries the price level + standing discount; the till's
+  customer picker applies them (`applyCustomer`). Catalog cards + the unit picker
+  show the current level's price.
+
 ## Owns
 - **POS** (`pos`, `sale.create`): scan IMEIs into a **multi-device cart** (each
   line: editable price + warranty), one shared customer (typeahead search of

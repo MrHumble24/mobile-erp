@@ -15,11 +15,17 @@ import uz.malika.erp.features.sales.data.SaleCreate
 import uz.malika.erp.features.sales.data.SaleDto
 import uz.malika.erp.features.sales.data.ScannedDevice
 import uz.malika.erp.features.sales.data.toDomain
-import uz.malika.erp.features.sales.data.totalPrice
+import uz.malika.erp.features.sales.lib.CartPricing
+import uz.malika.erp.features.sales.lib.DiscountSettings
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.lib.remainingWarrantyDays
 import uz.malika.erp.shared.payments.AccountAmount
 import uz.malika.erp.shared.payments.PaymentSplit
 import java.math.BigDecimal
+
+/** Price a cart with discounts off at RETAIL — the baseline these tests assume. */
+private fun pricedLines(lines: List<CartLine>) =
+    CartPricing.price(lines, PriceLevel.RETAIL, null, emptySet(), DiscountSettings(), BigDecimal.ZERO, false, false)
 
 private fun device(imei: String, version: Int) = ScannedDevice(
     id = "d-$imei", imei = imei, version = version, statusCode = "IN_STOCK",
@@ -85,7 +91,7 @@ class SalesLogicTest {
             unitLine("123456789012345", version = 3, price = "100", warranty = "30"),
             unitLine("543210987654321", version = 7, price = "250.50"),
         )
-        val ops = SaleCreate.ops(lines, customerId = "cust-1", notes = "paid cash")
+        val ops = SaleCreate.ops(pricedLines(lines).lines, PriceLevel.RETAIL, customerId = "cust-1", notes = "paid cash")
 
         assertEquals(2, ops.size)
         // Each op carries its own device version as the optimistic-lock token.
@@ -107,7 +113,7 @@ class SalesLogicTest {
             unitLine("1", 1, "100"),
             unitLine("2", 1, "250.50"),
         )
-        assertEquals("350.50", lines.totalPrice())
+        assertEquals("350.50", pricedLines(lines).totals.payable.toPlainString())
     }
 
     @Test
@@ -117,7 +123,7 @@ class SalesLogicTest {
             unitLine("123456789012345", 1, "100"),
             CartLine.Quantity(product("cable"), quantity = 3, unitPrice = "50"),
         )
-        assertEquals("250", lines.totalPrice())
+        assertEquals("250", pricedLines(lines).totals.payable.toPlainString())
     }
 
     @Test
@@ -128,7 +134,8 @@ class SalesLogicTest {
             CartLine.Quantity(product("cable"), quantity = 3, unitPrice = "50"),
         )
         val parts = listOf(AccountAmount("CASH", BigDecimal("100")), AccountAmount("CARD", BigDecimal("150")))
-        val allocation = PaymentSplit.allocate(lines.map { it.lineTotal }, parts)
+        val priced = pricedLines(lines)
+        val allocation = PaymentSplit.allocate(priced.lines.map { it.finalPrice }, parts)
 
         // The phone drains CASH; the cables are paid from CARD.
         assertEquals(1, allocation[0].size)
@@ -138,7 +145,7 @@ class SalesLogicTest {
         assertEquals("CARD", allocation[1][0].accountCode)
         assertEquals(BigDecimal("150"), allocation[1][0].amount)
 
-        val ops = SaleCreate.ops(lines, payments = allocation)
+        val ops = SaleCreate.ops(priced.lines, PriceLevel.RETAIL, payments = allocation)
         assertEquals(2, ops.size)
         // The unit op keeps its version; the quantity op carries no lock.
         assertEquals(4, ops[0].baseVersion)

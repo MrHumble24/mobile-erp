@@ -45,10 +45,29 @@ data class ShipmentDto(
     val customsFeeTotal: String? = null,
     /** How many of the shipment's phones still have a 0 customs fee (warn UI). */
     val devicesWithoutCustomsFee: Int = 0,
+    /** Σ of the shipment's quantity PURCHASE lines; cost-redacted (ADR 0034). */
+    val stockLinesTotal: String? = null,
+    /** The shipment's quantity PURCHASE lines; present on `GET /shipments/:id` (ADR 0034). */
+    val stockLines: List<ShipmentStockLineDto> = emptyList(),
 ) {
     val isComplete: Boolean get() = deviceCount >= expectedCount
     /** `yyyy-MM-dd` slice of the ISO date for display. */
     val dateLabel: String get() = shipmentDate.substringBefore('T')
+}
+
+/** One quantity PURCHASE line of a shipment (unitCost/lineTotal cost-redacted). */
+@Serializable
+data class ShipmentStockLineDto(
+    val id: String = "",
+    val modelId: String = "",
+    val brand: String = "",
+    val name: String = "",
+    val quantity: Int = 0,
+    val unitCost: String? = null,
+    val lineTotal: String? = null,
+    val occurredAt: String? = null,
+) {
+    val label: String get() = "$brand $name".trim()
 }
 
 @Serializable

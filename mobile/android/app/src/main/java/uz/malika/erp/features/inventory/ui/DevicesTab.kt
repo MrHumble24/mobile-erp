@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import uz.malika.erp.app.FeatureNav
 import uz.malika.erp.features.inventory.data.DeviceListItem
 import uz.malika.erp.features.inventory.data.DeviceStatusMeta
+import uz.malika.erp.features.inventory.data.PricingRepository
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.DevicesViewModel
 import uz.malika.erp.features.inventory.model.StockAlertsViewModel
@@ -57,6 +58,7 @@ fun DevicesTab(
     canUpdate: Boolean,
     featureNav: FeatureNav,
     toaster: Toaster,
+    pricingRepo: PricingRepository,
     onShowAlerts: () -> Unit,
 ) {
     val t = LocalT.current
@@ -81,6 +83,7 @@ fun DevicesTab(
             canUpdate = canUpdate,
             featureNav = featureNav,
             toaster = toaster,
+            pricingRepo = pricingRepo,
             onClose = onClose,
         )
     }

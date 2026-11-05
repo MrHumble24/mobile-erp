@@ -16,16 +16,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase
     entities = [
         DeviceEntity::class,
         ProductEntity::class,
+        CategoryEntity::class,
         PartnerEntity::class,
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun deviceDao(): DeviceDao
     abstract fun productDao(): ProductDao
+    abstract fun categoryDao(): CategoryDao
     abstract fun partnerDao(): PartnerDao
     abstract fun outboxDao(): OutboxDao
     abstract fun syncMetaDao(): SyncMetaDao
@@ -99,9 +101,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Price levels + category chips (ADR 0034): adds a cached `pricesJson`
+         * column to `devices` and `products` (the resolved per-level list prices,
+         * so an offline till can switch level) and a new `categories` table (so
+         * the offline grid has its chips). Plain ALTERs + CREATE — existing rows
+         * and the outbox are untouched; the next pull fills them.
+         */
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE devices ADD COLUMN pricesJson TEXT")
+                db.execSQL("ALTER TABLE products ADD COLUMN pricesJson TEXT")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `categories` (`id` TEXT NOT NULL, " +
+                        "`name` TEXT NOT NULL, PRIMARY KEY(`id`))",
+                )
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
     }
 }
