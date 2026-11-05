@@ -79,7 +79,6 @@ function PriceListForm({ current, onDone }: { current: CurrentPriceList | null; 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 my-2">
-        <p className="text-xs text-muted-foreground">{t("customs.newListHint")}</p>
         <MetaFields form={form} />
         <PriceListRowsField form={form} />
         <Button type="submit" className="w-full" disabled={createMutation.isPending}>

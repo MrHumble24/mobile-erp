@@ -39,7 +39,7 @@ function FeeLineChart({ data, config }: { data: FeeHistoryPoint[]; config: Chart
             />
           }
         />
-        <Line dataKey="fee" type="monotone" stroke="var(--color-fee)" strokeWidth={2} dot />
+        <Line dataKey="fee" type="stepAfter" stroke="var(--color-fee)" strokeWidth={2} dot />
       </LineChart>
     </ChartContainer>
   )
