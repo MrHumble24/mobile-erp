@@ -23,6 +23,16 @@ extension PosViewModel {
         }
     }
 
+    /// Seed a priced cart + a saved customer, then open the credit sheet, for
+    /// screenshots of the till credit flow (`-posCredit`). The customer id/phone
+    /// are a real dev customer so the sheet's summary + sell button are live.
+    func debugOpenCredit() {
+        seedDemo("cash")
+        cart.attach(PosCartCustomer(id: "00db5413-e1a6-408e-b51a-2687ca065345",
+                                    name: "Walkthrough Buyer", phone: "+9989179117152"))
+        showCredit = true
+    }
+
     /// Seed a mixed cart from the cache: a scanned unit plus three pieces of a
     /// quantity product. `arg` is "<unitCode>,<barcode>" (`-posMix`).
     func debugSeedMix(_ arg: String) {

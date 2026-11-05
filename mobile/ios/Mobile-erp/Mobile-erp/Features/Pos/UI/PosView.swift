@@ -40,6 +40,13 @@ struct PosView: View {
             ScrollView { PosCartColumn(model: model).padding(Tokens.Space.gutter) }
                 .background(Tokens.card)
         }
+        .sheet(isPresented: $model.showCredit) {
+            CreditSheet(
+                lines: model.creditLines(), dueTotal: model.cart.subtotal,
+                customerId: model.creditCustomerId, customerName: model.creditCustomerName,
+                customerPhone: model.creditCustomerPhone,
+                onSold: { model.onCreditSold() })
+        }
         // Capture spring (list insertions) + the haptic vocabulary: a completed
         // sale is success, a rejected/duplicate scan is error.
         .sensoryFeedback(trigger: model.completed?.count ?? 0) { old, new in new > old ? .success : nil }
@@ -105,6 +112,7 @@ struct PosView: View {
         if let mode = KitDebugLaunch.consume("posPriceDemo") { model.debugPriceDemo(mode) }
         if let arg = KitDebugLaunch.consume("posSellDiscount") { model.debugSellDiscount(arg, container: container) }
         if let code = KitDebugLaunch.consume("posScan") { model.scan(code); model.confirmScan() }
+        if KitDebugLaunch.consume("posCredit") != nil { model.debugOpenCredit() }
         if let code = KitDebugLaunch.consume("posSell") {
             model.scan(code); model.confirmScan(); model.checkout()
         }

@@ -63,6 +63,7 @@ struct SettingsView: View {
                     number("settings.closingTime", $model.form.closingTime, "closingTime", placeholder: "20:00")
                 }
                 discountsSection($model)
+                creditSection($model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
@@ -110,6 +111,26 @@ struct SettingsView: View {
                         AppTextField(placeholder: "0", text: model.form.maxDiscountPercent,
                                      keyboard: .decimalPad, font: .mono(15, weight: .medium))
                             .sanitizeDecimal(model.form.maxDiscountPercent)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Customer credit (ADR 0035): the switch and the default per-customer limit.
+    private func creditSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("credit.settingsTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("credit.settingsEnabled"), isOn: model.form.customerCreditEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                if model.wrappedValue.form.customerCreditEnabled {
+                    AppFormField(label: i18n.t("credit.settingsDefaultLimit")) {
+                        AppTextField(placeholder: i18n.t("credit.noLimit"), text: model.form.defaultCreditLimit,
+                                     keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                            .sanitizeDecimal(model.form.defaultCreditLimit)
+                        Text(i18n.t("credit.creditLimitHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                     }
                 }
             }

@@ -28,6 +28,12 @@ final class PosViewModel {
         didSet { if mode != oldValue { PosMode.remember(mode) } }
     }
 
+    /// Customer credit (ADR 0035): the "On credit" sheet and whether the shop has
+    /// the setting on. The entry also needs the `sale.credit` permission, which is
+    /// read via `canSellCredit`. Credit is online only.
+    var showCredit = false
+    var creditEnabled = false
+
     /// The catalog grid, built lazily so it only loads when the mode is used.
     let catalog = CatalogBrowser()
 
@@ -38,7 +44,7 @@ final class PosViewModel {
     /// load must not overwrite it (used to show the cashier-limit error).
     @ObservationIgnored var debugLockConfig = false
 
-    @ObservationIgnored private var container: AppContainer?
+    @ObservationIgnored private(set) var container: AppContainer?
     private var repo: PosRepository {
         PosRepository(context: container!.modelContext, api: container!.api)
     }
@@ -64,6 +70,7 @@ final class PosViewModel {
             return
         }
         cart.config = PosDiscountConfig.from(settings, session: container.session)
+        creditEnabled = settings.customerCreditEnabled
     }
 
     /// Resolve a scanned code. A unit (IMEI/serial) wins and is staged for the

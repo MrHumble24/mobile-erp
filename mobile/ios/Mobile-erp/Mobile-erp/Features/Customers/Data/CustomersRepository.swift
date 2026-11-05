@@ -24,28 +24,41 @@ struct CustomersRepository {
         try await api.get("/customers/\(id)/sales")
     }
 
-    /// `POST /customers`. The response is a bare `CustomerView`; the caller
-    /// refreshes the list to pick up aggregates.
+    /// `POST /customers`. A JSON body so a blank phone/notes/credit limit is sent
+    /// as explicit null (the credit limit then uses the shop default, ADR 0035).
     func create(name: String, phone: String?, notes: String?,
-                priceLevelCode: String, standingDiscountPercent: Double) async throws {
-        struct Created: Decodable { let id: String }
-        let _: Created = try await api.post(
-            "/customers",
-            body: CustomerPayload(name: name, phone: phone, notes: notes,
-                                  priceLevelCode: priceLevelCode,
-                                  standingDiscountPercent: standingDiscountPercent)
-        )
+                priceLevelCode: String, standingDiscountPercent: Double,
+                creditLimit: Double?) async throws {
+        _ = try await api.postJSON("/customers",
+                                   body: Self.body(name: name, phone: phone, notes: notes,
+                                                   priceLevelCode: priceLevelCode,
+                                                   standingDiscountPercent: standingDiscountPercent,
+                                                   creditLimit: creditLimit))
     }
 
-    /// `PATCH /customers/:id` (needs `customer.manage`). The caller refreshes
-    /// the list to pick up aggregates, so the response is not read.
+    /// `PATCH /customers/:id` (needs `customer.manage`). JSON body, as `create`,
+    /// so a blank credit limit clears back to the shop default.
     func update(_ id: String, name: String, phone: String?, notes: String?,
-                priceLevelCode: String, standingDiscountPercent: Double) async throws {
-        try await api.patchVoid(
-            "/customers/\(id)",
-            body: CustomerPayload(name: name, phone: phone, notes: notes,
-                                  priceLevelCode: priceLevelCode,
-                                  standingDiscountPercent: standingDiscountPercent)
-        )
+                priceLevelCode: String, standingDiscountPercent: Double,
+                creditLimit: Double?) async throws {
+        try await api.patchJSONVoid("/customers/\(id)",
+                                    Self.body(name: name, phone: phone, notes: notes,
+                                              priceLevelCode: priceLevelCode,
+                                              standingDiscountPercent: standingDiscountPercent,
+                                              creditLimit: creditLimit))
+    }
+
+    /// The write body: blanks become explicit JSON null so a field can be cleared.
+    private static func body(name: String, phone: String?, notes: String?,
+                             priceLevelCode: String, standingDiscountPercent: Double,
+                             creditLimit: Double?) -> [String: Any] {
+        [
+            "name": name,
+            "phone": phone.map { $0 as Any } ?? NSNull(),
+            "notes": notes.map { $0 as Any } ?? NSNull(),
+            "priceLevelCode": priceLevelCode,
+            "standingDiscountPercent": standingDiscountPercent,
+            "creditLimit": creditLimit.map { $0 as Any } ?? NSNull(),
+        ]
     }
 }

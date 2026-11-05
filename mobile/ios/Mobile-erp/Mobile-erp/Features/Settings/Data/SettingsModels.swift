@@ -24,6 +24,11 @@ struct StoreSettings: Decodable {
     let discountPresetsPercent: [String]
     let discountPresetsAmount: [String]
     let maxDiscountPercent: String
+    // Customer credit (ADR 0035) + cashier shifts (ADR 0036). Both off by default.
+    let customerCreditEnabled: Bool
+    /// Default credit ceiling per customer; nil = no cap.
+    let defaultCreditLimit: String?
+    let shiftsEnabled: Bool
 
     enum CodingKeys: String, CodingKey {
         case storeName, storeAddress, storePhone, receiptFooter, telegramChatId
@@ -31,6 +36,7 @@ struct StoreSettings: Decodable {
         case defaultNasiyaDueDays, overdueReminderDays, updatedAt
         case discountsEnabled, discountPercentAllowed, discountAmountAllowed
         case discountPresetsPercent, discountPresetsAmount, maxDiscountPercent
+        case customerCreditEnabled, defaultCreditLimit, shiftsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -53,6 +59,18 @@ struct StoreSettings: Decodable {
         discountPresetsPercent = Self.numberArray(c, .discountPresetsPercent)
         discountPresetsAmount = Self.numberArray(c, .discountPresetsAmount)
         maxDiscountPercent = Self.numberString(c, .maxDiscountPercent)
+        customerCreditEnabled = (try? c.decode(Bool.self, forKey: .customerCreditEnabled)) ?? false
+        defaultCreditLimit = Self.optNumberString(c, .defaultCreditLimit)
+        shiftsEnabled = (try? c.decode(Bool.self, forKey: .shiftsEnabled)) ?? false
+    }
+
+    /// A nullable money field → canonical string, or nil when null / missing.
+    private static func optNumberString(_ c: KeyedDecodingContainer<CodingKeys>, _ k: CodingKeys) -> String? {
+        if let s = try? c.decode(String.self, forKey: k) { return s }
+        if let d = try? c.decode(Double.self, forKey: k) {
+            return d == d.rounded() ? String(Int(d)) : String(d)
+        }
+        return nil
     }
 
     /// A JSON array of numbers (or strings) → canonical decimal strings.
@@ -101,6 +119,10 @@ struct SettingsValues: Equatable {
     var discountPresetsPercent = ""
     var discountPresetsAmount = ""
     var maxDiscountPercent = ""
+    // Customer credit (ADR 0035) + shifts (ADR 0036).
+    var customerCreditEnabled = false
+    var defaultCreditLimit = ""
+    var shiftsEnabled = false
 
     init() {}
 
@@ -122,6 +144,9 @@ struct SettingsValues: Equatable {
         discountPresetsPercent = s.discountPresetsPercent.joined(separator: ", ")
         discountPresetsAmount = s.discountPresetsAmount.joined(separator: ", ")
         maxDiscountPercent = s.maxDiscountPercent
+        customerCreditEnabled = s.customerCreditEnabled
+        defaultCreditLimit = s.defaultCreditLimit ?? ""
+        shiftsEnabled = s.shiftsEnabled
     }
 
     /// Parse a comma/space-separated preset field into up to five numbers.
@@ -154,6 +179,9 @@ struct SettingsValues: Equatable {
             "discountPresetsPercent": presets(discountPresetsPercent),
             "discountPresetsAmount": presets(discountPresetsAmount),
             "maxDiscountPercent": Double(maxDiscountPercent) ?? 0,
+            "customerCreditEnabled": customerCreditEnabled,
+            "defaultCreditLimit": defaultCreditLimit.isEmpty ? NSNull() : (Double(defaultCreditLimit) ?? NSNull()),
+            "shiftsEnabled": shiftsEnabled,
         ]
     }
 }

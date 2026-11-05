@@ -78,22 +78,30 @@ struct ReportsView: View {
             DailyClosingTab()
         case .customs:
             CustomsFeesTab()
+        case .credit:
+            CreditReportTab()
         }
     }
 }
 
 /// The report sections, in display order.
 enum FinReportTab: String, CaseIterable, Identifiable {
-    case overview, expenses, nasiya, inventory, pricing, closing, customs
+    case overview, expenses, nasiya, inventory, pricing, closing, customs, credit
     var id: String { rawValue }
-    /// Customs reuses the dedicated `reports.customsTab` key; the rest follow the
+    /// Customs and credit reuse dedicated keys; the rest follow the
     /// `reports.tab_<name>` convention.
-    var labelKey: String { self == .customs ? "reports.customsTab" : "reports.tab_\(rawValue)" }
+    var labelKey: String {
+        switch self {
+        case .customs: "reports.customsTab"
+        case .credit: "credit.reportTitle"
+        default: "reports.tab_\(rawValue)"
+        }
+    }
     /// The shared period applies to overview/expenses/nasiya only.
     var usesRange: Bool {
         switch self {
         case .overview, .expenses, .nasiya: true
-        case .inventory, .pricing, .closing, .customs: false
+        case .inventory, .pricing, .closing, .customs, .credit: false
         }
     }
 }

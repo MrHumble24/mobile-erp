@@ -48,18 +48,22 @@ final class CustomersModel {
 
     /// Create a customer, then refresh the list. Returns an error string or nil.
     func create(name: String, phone: String?, notes: String?,
-                priceLevelCode: String, standingDiscountPercent: Double) async -> String? {
+                priceLevelCode: String, standingDiscountPercent: Double,
+                creditLimit: Double?) async -> String? {
         await write { try await $0.create(name: name, phone: phone, notes: notes,
                                           priceLevelCode: priceLevelCode,
-                                          standingDiscountPercent: standingDiscountPercent) }
+                                          standingDiscountPercent: standingDiscountPercent,
+                                          creditLimit: creditLimit) }
     }
 
     /// Edit a customer, then refresh the list. Returns an error string or nil.
     func update(id: String, name: String, phone: String?, notes: String?,
-                priceLevelCode: String, standingDiscountPercent: Double) async -> String? {
+                priceLevelCode: String, standingDiscountPercent: Double,
+                creditLimit: Double?) async -> String? {
         await write { try await $0.update(id, name: name, phone: phone, notes: notes,
                                           priceLevelCode: priceLevelCode,
-                                          standingDiscountPercent: standingDiscountPercent) }
+                                          standingDiscountPercent: standingDiscountPercent,
+                                          creditLimit: creditLimit) }
     }
 
     private func write(_ body: (CustomersRepository) async throws -> Void) async -> String? {

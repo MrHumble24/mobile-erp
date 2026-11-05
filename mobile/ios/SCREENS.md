@@ -449,3 +449,35 @@ editor); `-openDevicePrices 1` (unit price editor); `-openCustomerForm 1`;
 `-openConsignForm <code>` (consign form with the partner price prefilled);
 `-openShipmentDetail first`; `-settingsBottom 1` (anchor settings at the discounts
 section).
+
+---
+
+### Customer credit (Step 7, ADR 0035)
+
+Sell a cart on credit — **no interest, ever**. Lives in `Features/Credit`; a
+finance screen in the More tab (`sale.read`), with the sell flow at the till.
+
+| Screen / Sheet | File | Role | Description |
+| :--- | :--- | :--- | :--- |
+| **Credits list** (`CreditsView`) | `Features/Credit/UI/CreditsView.swift` | `sale.read` | Status chips (all / open / overdue / paid in full), name/phone search, rows with left-to-pay + an overdue / paid-in-full tag. |
+| **Credit detail** (`CreditDetailSheet`) | `Features/Credit/UI/CreditDetailSheet.swift` | `sale.read` | Agreed / paid / left / overdue, goods, plan parts (paid + overdue), payments; take a payment, refund an overpayment (`sale.return`), contract. |
+| **Take payment / refund** (`CreditPaymentSheet`) | `Features/Credit/UI/CreditPaymentSheet.swift` | `sale.create` / `sale.return` | One amount + cash/card. A refund caps at the overpaid amount. |
+| **Contract** (`CreditContractSheet`) | `Features/Credit/UI/CreditContractSheet.swift` | `sale.read` | The printable contract: store, customer, goods, down payment, plan, no-interest statement. |
+| **On-credit sheet** (`CreditSheet`) | `Features/Credit/UI/CreditSheet.swift` | Till (`sale.credit`) | From the till checkout bar: customer debt/limit, cart total, down payment (cash/card/split), plan builder, sell, result. Online only. |
+
+Till (`Features/Pos`): the "On credit" button (`PosCheckoutBar`) is shown when the
+setting is on and the user has `sale.credit`; disabled offline. `PosCreditEntry`
+builds the cart as `CreditLinePost`s and `PosView` presents `CreditSheet`.
+
+Other slices: the customer form gains a credit-limit field (settings default as
+the placeholder); the customer detail shows current debt + overdue and that
+customer's credits; a credit sale shows a badge in `SaleDetailSheet` and its
+return shows the no-cash note (`ReturnSheet`); Settings gains the credit switch +
+default limit; Reports gains the customer-credit tab (`CreditReportTab`).
+
+Permissions now refresh on app start and on foreground (`Session.refreshUser()`
+in `RootView`), so a newly granted permission applies without signing out.
+
+DEBUG self-check: `CreditPlanSelfCheck`. DEBUG args: `-open credits`,
+`-openCredit first` (first credit's detail), `-posCredit 1` (till credit sheet on a
+seeded cart), `-openTab credit` (report tab).

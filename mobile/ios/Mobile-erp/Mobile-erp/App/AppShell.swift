@@ -30,7 +30,7 @@ struct AppShell: View {
                 if let open = UserDefaults.standard.string(forKey: "open"),
                    let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
                              "inventory": "inventory", "stock": "stock", "shipments": "shipments", "qc": "qc",
-                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "balance": "balance", "users": "users", "reports": "reports", "customs": "customs", "settings": "settings",
+                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "balance": "balance", "credits": "credits", "users": "users", "reports": "reports", "customs": "customs", "settings": "settings",
                              "more": MoreTab.id][open] {
                     container.router.selection = id
                 }

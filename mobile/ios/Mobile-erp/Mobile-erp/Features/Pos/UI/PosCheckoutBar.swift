@@ -32,6 +32,7 @@ struct PosCheckoutBar: View {
             }
             .buttonStyle(.pillPrimary)
             .disabled(model.busy || !allPriced || !paymentValid || cart.hasInvalidDiscount)
+            if model.creditAvailable { creditButton }
         }
         .sheet(isPresented: $showCartDiscount) {
             PosDiscountSheet(
@@ -60,6 +61,18 @@ struct PosCheckoutBar: View {
                         .font(.data(.large)).foregroundStyle(Tokens.text)
                 }
             }
+        }
+    }
+
+    /// "On credit" (ADR 0035): online only — disabled offline with a clear note.
+    @ViewBuilder private var creditButton: some View {
+        Button { model.showCredit = true } label: {
+            Label(i18n.t("credit.payOnCredit"), systemImage: "banknote").frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.pillSecondary)
+        .disabled(!allPriced || !model.isOnline)
+        if !model.isOnline {
+            Text(i18n.t("credit.errorOffline")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
         }
     }
 
