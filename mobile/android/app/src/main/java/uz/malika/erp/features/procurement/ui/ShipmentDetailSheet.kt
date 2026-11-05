@@ -25,6 +25,7 @@ import uz.malika.erp.features.procurement.data.ProcurementRepository
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.PageState
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.EmptyView
@@ -154,9 +155,21 @@ private fun ShipmentMeta(shipment: ShipmentDto) {
     val t = LocalT.current
     val overhead = shipment.overheadCost
     val notes = shipment.notes?.takeIf { it.isNotBlank() }
-    if (overhead == null && notes == null) return
+    val account = shipment.paymentAccountCode
+    if (overhead == null && notes == null && account == null) return
     Spacer(Modifier.height(12.dp))
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.rowV)) {
+        if (account != null) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(
+                    t("balance.payFrom", null),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Tokens.mutedForeground,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(accountLabel(account, emptyList(), t), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         if (overhead != null) {
             Row(Modifier.fillMaxWidth()) {
                 Text(

@@ -46,6 +46,8 @@ data class Expense(
     val incurredAt: String? = null,
     val createdAt: String? = null,
     val createdBy: ExpenseUserRef? = null,
+    /** Account the money left from; optional so older cached rows still decode. */
+    val accountCode: String? = null,
 ) {
     val categoryName: String get() = category?.name ?: ""
 }
@@ -78,6 +80,7 @@ data class CreateExpenseBody(
     val vendor: String? = null,
     val isRecurring: Boolean = false,
     val incurredAt: String? = null,
+    val accountCode: String? = null,
 )
 
 /** Create body for `POST /expense-categories` (online-only write). */

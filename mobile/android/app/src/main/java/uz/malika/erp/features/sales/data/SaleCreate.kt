@@ -2,9 +2,12 @@ package uz.malika.erp.features.sales.data
 
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.payments.AccountAmount
 import java.math.BigDecimal
 
 /** One `sale.create` ready for the outbox: its payload and the device baseVersion. */
@@ -28,9 +31,26 @@ object SaleCreate {
         customerPhone: String? = null,
         warrantyDays: Int? = null,
         notes: String? = null,
+        payments: List<AccountAmount> = emptyList(),
     ): JsonObject = buildJsonObject {
         put("imei", imei)
         put("salePrice", JsonPrimitive(salePrice))
+        // Tender lines for this sale; omitted means the server posts one CASH line.
+        if (payments.isNotEmpty()) {
+            put(
+                "payments",
+                buildJsonArray {
+                    payments.forEach { line ->
+                        add(
+                            buildJsonObject {
+                                put("accountCode", line.accountCode)
+                                put("amount", JsonPrimitive(line.amount))
+                            },
+                        )
+                    }
+                },
+            )
+        }
         when {
             !customerId.isNullOrBlank() -> put("customerId", customerId)
             !customerName.isNullOrBlank() -> put(
@@ -56,7 +76,8 @@ object SaleCreate {
         customerName: String? = null,
         customerPhone: String? = null,
         notes: String? = null,
-    ): List<SaleOp> = lines.map { line ->
+        payments: List<List<AccountAmount>> = emptyList(),
+    ): List<SaleOp> = lines.mapIndexed { i, line ->
         SaleOp(
             payload = payload(
                 imei = line.device.imei,
@@ -66,6 +87,7 @@ object SaleCreate {
                 customerPhone = customerPhone,
                 warrantyDays = line.warrantyDays.trim().toIntOrNull(),
                 notes = notes,
+                payments = payments.getOrElse(i) { emptyList() },
             ),
             baseVersion = line.device.version,
         )

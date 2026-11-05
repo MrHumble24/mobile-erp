@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import uz.malika.erp.AppContainer
 import uz.malika.erp.features.finance.data.CreateExpenseBody
 import uz.malika.erp.features.finance.data.Expense
 import uz.malika.erp.features.finance.data.ExpenseCategory
@@ -29,6 +30,9 @@ import uz.malika.erp.features.finance.ui.components.AppSelectField
 import uz.malika.erp.features.finance.ui.components.DateField
 import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.payments.PaymentSplit
+import uz.malika.erp.shared.payments.ui.AccountPicker
+import uz.malika.erp.shared.payments.ui.rememberAccountOptions
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
@@ -48,6 +52,7 @@ private fun parseIsoDay(iso: String?): Date =
  */
 @Composable
 fun LogExpenseSheet(
+    container: AppContainer,
     vm: ExpensesViewModel,
     categories: List<ExpenseCategory>,
     editing: Expense?,
@@ -60,8 +65,10 @@ fun LogExpenseSheet(
     var vendor by remember { mutableStateOf(editing?.vendor ?: "") }
     var recurring by remember { mutableStateOf(editing?.isRecurring ?: false) }
     var incurredAt by remember { mutableStateOf(parseIsoDay(editing?.incurredAt)) }
+    var account by remember { mutableStateOf(editing?.accountCode ?: PaymentSplit.CASH) }
     var amountError by remember { mutableStateOf<String?>(null) }
     var categoryError by remember { mutableStateOf(false) }
+    val accounts by rememberAccountOptions(container)
 
     fun submit() {
         val amt = amount.trim().toDoubleOrNull()
@@ -75,6 +82,7 @@ fun LogExpenseSheet(
             vendor = vendor.trim().ifBlank { null },
             isRecurring = recurring,
             incurredAt = isoDate(incurredAt),
+            accountCode = account,
         )
         vm.saveExpense(editing?.id, body, onSuccess = onDismiss)
     }
@@ -104,6 +112,12 @@ fun LogExpenseSheet(
                 onValueChange = { amount = it; amountError = null },
                 keyboardType = KeyboardType.Decimal,
                 error = amountError,
+            )
+            AccountPicker(
+                label = t("balance.payFrom", null),
+                selected = account,
+                options = accounts,
+                onSelect = { account = it },
             )
             AppFormField(label = t("expenses.vendor", null), value = vendor, onValueChange = { vendor = it }, placeholder = t("expenses.vendorPlaceholder", null))
             AppFormField(label = t("expenses.description", null), value = description, onValueChange = { description = it }, placeholder = t("expenses.descriptionPlaceholder", null))

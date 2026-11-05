@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import uz.malika.erp.AppContainer
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.CreateShipmentBody
 import uz.malika.erp.features.procurement.data.ProcurementRepository
@@ -27,6 +28,10 @@ import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.features.procurement.data.SupplierDto
 import uz.malika.erp.features.procurement.data.UpdateShipmentBody
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.payments.PaymentSplit
+import uz.malika.erp.shared.payments.ui.AccountPicker
+import uz.malika.erp.shared.payments.ui.accountLabel
+import uz.malika.erp.shared.payments.ui.rememberAccountOptions
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
@@ -39,6 +44,7 @@ import uz.malika.erp.ui.theme.Tokens
  */
 @Composable
 fun ShipmentFormSheet(
+    container: AppContainer,
     existing: ShipmentDto?,
     suppliers: List<SupplierDto>,
     online: Boolean,
@@ -54,6 +60,8 @@ fun ShipmentFormSheet(
     var expected by remember { mutableStateOf(existing?.expectedCount?.toString() ?: "") }
     var overhead by remember { mutableStateOf(existing?.overheadCost ?: "") }
     var notes by remember { mutableStateOf(existing?.notes ?: "") }
+    var account by remember { mutableStateOf(existing?.paymentAccountCode ?: PaymentSplit.CASH) }
+    val accounts by rememberAccountOptions(container)
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -69,7 +77,7 @@ fun ShipmentFormSheet(
             try {
                 val saved = if (existing == null) {
                     repo.createShipment(
-                        CreateShipmentBody(supplierId!!, iso, count, overheadNum, notes.trim().ifBlank { null }),
+                        CreateShipmentBody(supplierId!!, iso, count, overheadNum, notes.trim().ifBlank { null }, account),
                     )
                 } else {
                     repo.updateShipment(
@@ -115,6 +123,19 @@ fun ShipmentFormSheet(
                 t("shipments.overheadCost", null), overhead, { overhead = it },
                 keyboardType = KeyboardType.Decimal,
             )
+            Spacer(Modifier.height(12.dp))
+            if (editing) {
+                // The server fixes the paying account at creation — show it, do not edit it.
+                Text(t("balance.payFrom", null), style = MaterialTheme.typography.labelLarge, color = Tokens.mutedForeground)
+                Text(accountLabel(account, accounts, t), style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
+            } else {
+                AccountPicker(
+                    label = t("balance.payFrom", null),
+                    selected = account,
+                    options = accounts,
+                    onSelect = { account = it },
+                )
+            }
             Spacer(Modifier.height(12.dp))
             AppFormField(t("common.notes", null), notes, { notes = it })
             error?.let {

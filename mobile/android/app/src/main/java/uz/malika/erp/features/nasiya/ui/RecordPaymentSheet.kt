@@ -24,6 +24,9 @@ import uz.malika.erp.features.nasiya.data.RecordPaymentBody
 import uz.malika.erp.features.nasiya.model.PartnerWriteViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.payments.PaymentSplit
+import uz.malika.erp.shared.payments.ui.AccountPicker
+import uz.malika.erp.shared.payments.ui.rememberAccountOptions
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -44,6 +47,8 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
 
     var amount by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
+    var account by remember { mutableStateOf(PaymentSplit.CASH) }
+    val accounts by rememberAccountOptions(container)
     val amountValue = amount.trim().toDoubleOrNull() ?: 0.0
     val outstandingValue = partner.outstanding.toDoubleOrNull() ?: 0.0
 
@@ -63,6 +68,12 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
                     variant = ButtonVariant.GHOST,
                 )
             }
+            AccountPicker(
+                label = t("balance.payFrom", null),
+                selected = account,
+                options = accounts,
+                onSelect = { account = it },
+            )
             AppFormField(t("common.notes", null), notes, { notes = it })
             ActionError(state.error, state.offline)
             PillButton(
@@ -71,7 +82,7 @@ fun RecordPaymentSheet(container: AppContainer, partner: PartnerEntity, onDismis
                     if (amountValue <= 0.0) return@PillButton
                     vm.recordPayment(
                         partner.id,
-                        RecordPaymentBody(amount = amountValue, notes = notes.trim().ifBlank { null }),
+                        RecordPaymentBody(amount = amountValue, notes = notes.trim().ifBlank { null }, accountCode = account),
                     )
                 },
                 enabled = !state.submitting && amountValue > 0.0,

@@ -14,6 +14,9 @@ import uz.malika.erp.features.sales.data.SaleCreate
 import uz.malika.erp.features.sales.data.ScannedDevice
 import uz.malika.erp.features.sales.data.totalPrice
 import uz.malika.erp.shared.lib.formatDateTime
+import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.payments.AccountAmount
+import uz.malika.erp.shared.payments.PaymentSplit
 
 /**
  * A resolved scan awaiting the cashier's confirmation. [device] is the looked-up
@@ -125,19 +128,31 @@ class PosViewModel(
     fun clearError() { _state.value = _state.value.copy(errorKey = null) }
     fun dismissReceipt() { _state.value = _state.value.copy(completed = null) }
 
+    /**
+     * [parts] is the cart-level tender (one amount per account, summing to the
+     * cart total). It is fanned across the cart lines by [PaymentSplit.allocate]
+     * so each sale's payments add up to its own price, and the same parts ride
+     * the receipt. Empty parts → the server posts one CASH line per sale.
+     */
     fun checkout(
         online: Boolean,
         customerId: String? = null,
         customerName: String? = null,
         customerPhone: String? = null,
         notes: String? = null,
+        parts: List<AccountAmount> = emptyList(),
     ) {
         val lines = _state.value.lines
         if (lines.isEmpty()) return
         _state.value = _state.value.copy(busy = true, errorKey = null)
         viewModelScope.launch {
             try {
-                val ops = SaleCreate.ops(lines, customerId, customerName, customerPhone, notes)
+                val allocation = if (parts.isEmpty()) {
+                    emptyList()
+                } else {
+                    PaymentSplit.allocate(lines.map { parseMoney(it.salePrice) }, parts)
+                }
+                val ops = SaleCreate.ops(lines, customerId, customerName, customerPhone, notes, allocation)
                 val ids = ops.map { repo.enqueueSale(it.payload, it.baseVersion) }
                 _state.value = PosState(
                     pendingSold = _state.value.pendingSold,
@@ -153,6 +168,7 @@ class PosViewModel(
                         total = lines.totalPrice(),
                         warrantyUntil = null,
                         pending = !online,
+                        payments = parts.map { AccountAmount(it.accountCode, it.amount) },
                     ),
                 )
             } catch (_: Exception) {

@@ -85,3 +85,8 @@ kit `LoadMoreFooter`). Raw key shows until added.
 ## Notes
 - Date display (`formatDate` / `formatDateTime` / `parseIsoMillis`) moved to
   `shared/lib/DateFmt.kt` so inventory shares it; the slice imports from there.
+- Payment accounts (`shared/payments`): checkout shows the Cash/Card/Split
+  control; the chosen cart-level split is fanned across the cart lines by
+  `PaymentSplit.allocate` and ridden into each `sale.create` payload (online and
+  offline). Sale detail + receipt show the `payments` lines (empty → nothing);
+  the return dialog says the refund returns to those accounts (`sales.refundGoesBack`).

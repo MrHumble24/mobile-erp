@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.AppContainer
 import uz.malika.erp.features.sales.data.CustomersRepository
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.totalPrice
@@ -23,6 +24,9 @@ import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.payments.ui.PaymentMethodField
+import uz.malika.erp.shared.payments.ui.PaymentSelection
+import uz.malika.erp.shared.payments.ui.rememberAccountOptions
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.ui.theme.MonoFamily
@@ -35,6 +39,7 @@ import java.math.BigDecimal
  */
 @Composable
 fun PosCheckoutForm(
+    container: AppContainer,
     vm: PosViewModel,
     state: PosState,
     online: Boolean,
@@ -45,10 +50,14 @@ fun PosCheckoutForm(
 
     var notes by remember { mutableStateOf("") }
     var customer by remember { mutableStateOf(CustomerSelection()) }
+    var payment by remember { mutableStateOf(PaymentSelection()) }
     val lookupRepo = remember { CustomersRepository(api) }
+    val accounts by rememberAccountOptions(container)
 
+    val total = parseMoney(state.lines.totalPrice())
     val pricesValid = state.lines.isNotEmpty() &&
         state.lines.all { parseMoney(it.salePrice) > BigDecimal.ZERO }
+    val payValid = payment.valid(total, accounts)
 
     Column(Modifier.fillMaxWidth()) {
         CustomerPicker(
@@ -62,6 +71,14 @@ fun PosCheckoutForm(
             label = t("pos.notes", null),
             value = notes,
             onValueChange = { notes = it },
+            enabled = !busy,
+        )
+        Spacer(Modifier.height(16.dp))
+        PaymentMethodField(
+            selection = payment,
+            onSelection = { payment = it },
+            accounts = accounts,
+            total = total,
             enabled = !busy,
         )
         Spacer(Modifier.height(16.dp))
@@ -82,10 +99,11 @@ fun PosCheckoutForm(
                     customerName = customer.newName,
                     customerPhone = customer.newPhone,
                     notes = notes.trim(),
+                    parts = payment.parts(total, accounts),
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !busy && pricesValid,
+            enabled = !busy && pricesValid && payValid,
         )
     }
 }

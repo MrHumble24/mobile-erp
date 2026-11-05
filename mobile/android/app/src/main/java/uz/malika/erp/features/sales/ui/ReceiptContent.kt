@@ -22,6 +22,7 @@ import uz.malika.erp.features.sales.lib.PrintRow
 import uz.malika.erp.features.sales.lib.printReceipt
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
@@ -49,6 +50,12 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
         }
         Rule()
         KvRow(t("pos.totalDue", null), formatMoney(data.total), bold = true)
+        if (data.payments.isNotEmpty()) {
+            KvRow(t("balance.paidWith", null), "")
+            data.payments.forEach { p ->
+                KvRow(accountLabel(p.accountCode, emptyList(), t), formatMoney(p.amount.toPlainString()))
+            }
+        }
         data.warrantyUntil?.let { KvRow(t("pos.warrantyUntil", null), it) }
         Spacer(Modifier.height(8.dp))
         Text(t("pos.thankYou", null), style = mono.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())

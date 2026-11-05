@@ -110,3 +110,10 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
 - `ProcurementService` runs on a second HTTP client because the wave-0
   `ApiService` cannot be edited; promote these routes onto it and delete
   `data/ProcurementApi.kt`'s factory.
+
+## Notes
+- Shipment carries an optional `paymentAccountCode` (default `CASH`, fixed at
+  creation). The create form has a "Paid from" `AccountPicker` (`shared/payments`);
+  on edit and in the detail it is read-only, since the server fixes it. The
+  overhead-cost field is still present here but the server now rejects
+  `overheadCost` — a follow-up task removes it from the form.

@@ -168,6 +168,7 @@ fun ShipmentsScreen(container: AppContainer) {
     }
 
     ShipmentSheets(
+        container = container,
         sheet = sheet,
         suppliers = supplierList,
         supplierNames = supplierNames,
@@ -203,6 +204,7 @@ private fun ShipmentsSummary(summary: ShipmentSummary) {
 
 @Composable
 private fun ShipmentSheets(
+    container: AppContainer,
     sheet: Sheet?,
     suppliers: List<SupplierDto>,
     supplierNames: Map<String, String>,
@@ -221,12 +223,12 @@ private fun ShipmentSheets(
         Sheet.NewSupplier -> SupplierFormSheet(null, online, repo, vm::refreshSuppliers, dismiss)
         is Sheet.EditSupplier -> SupplierFormSheet(sheet.supplier, online, repo, vm::refreshSuppliers, dismiss)
         Sheet.NewShipment -> ShipmentFormSheet(
-            existing = null, suppliers = suppliers, online = online, repo = repo,
+            container = container, existing = null, suppliers = suppliers, online = online, repo = repo,
             onSaved = { saved -> vm.refreshShipments(); setSheet(Sheet.Intake(saved)) },
             onDismiss = dismiss,
         )
         is Sheet.EditShipment -> ShipmentFormSheet(
-            existing = sheet.shipment, suppliers = suppliers, online = online, repo = repo,
+            container = container, existing = sheet.shipment, suppliers = suppliers, online = online, repo = repo,
             onSaved = { vm.refreshShipments() }, onDismiss = dismiss,
         )
         is Sheet.Detail -> ShipmentDetailSheet(

@@ -92,7 +92,7 @@ fun RecurringSection(
     }
 
     if (showForm) {
-        RecurrenceSheet(vm = vm, categories = categories, editing = editing, onDismiss = { showForm = false })
+        RecurrenceSheet(container = container, vm = vm, categories = categories, editing = editing, onDismiss = { showForm = false })
     }
 }
 

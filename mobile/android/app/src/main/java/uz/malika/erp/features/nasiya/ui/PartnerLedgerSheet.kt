@@ -31,6 +31,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.ErrorView
@@ -148,7 +149,13 @@ private fun LedgerRow(entry: LedgerEntryDto) {
             )
         }
         Row(Modifier.fillMaxWidth().padding(top = Tokens.Space.xs), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(formatDate(entry.at), style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
+            val date = formatDate(entry.at)
+            val account = entry.accountCode?.takeIf { entry.kind == "payment" }?.let { accountLabel(it, emptyList(), t) }
+            Text(
+                if (account != null) "$date · $account" else date,
+                style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
+                color = Tokens.muted,
+            )
             Text(
                 "${t("partners.runningBalance", null)}: ${formatMoney(entry.runningBalance.money())}",
                 style = MaterialTheme.typography.bodySmall,
