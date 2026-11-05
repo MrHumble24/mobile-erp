@@ -21,6 +21,8 @@ model Supplier {
 /// its devices to produce Device.landedCost.
 model Shipment {
   id            String   @id @default(uuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id])
   supplierId    String
   supplier      Supplier @relation(fields: [supplierId], references: [id])
   shipmentDate  DateTime
@@ -35,5 +37,6 @@ model Shipment {
   devices Device[]
 
   @@index([shipmentDate])
+  @@index([storeId])
   @@map("shipments")
 }

@@ -9,6 +9,7 @@ import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
+import { StoresService } from '../stores/stores.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
 import {
   ShipmentDevicesRegisteredEvent,
@@ -29,6 +30,7 @@ export class ShipmentsService {
     private readonly repo: ShipmentsRepository,
     private readonly suppliers: SuppliersService,
     private readonly models: DeviceModelsService,
+    private readonly stores: StoresService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -43,6 +45,7 @@ export class ShipmentsService {
   async create(dto: CreateShipmentDto, userId: string): Promise<ShipmentView> {
     await this.suppliers.get(dto.supplierId);
     return this.repo.create({
+      storeId: await this.stores.currentStoreId(),
       supplierId: dto.supplierId,
       shipmentDate: new Date(dto.shipmentDate),
       expectedCount: dto.expectedCount,
@@ -87,7 +90,8 @@ export class ShipmentsService {
     userId: string,
   ): Promise<RegisteredDeviceView[]> {
     try {
-      return await this.repo.addDevices(id, devices, userId);
+      const storeId = await this.stores.currentStoreId();
+      return await this.repo.addDevices(id, devices, userId, storeId);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException('A device with this IMEI already exists');

@@ -38,6 +38,10 @@ model ConsignmentStatus {
 model Consignment {
   id               String            @id @default(uuid())
   clientMutationId String?           @unique
+  /// The store that handed out this unit. Not a duplicate of Device.storeId:
+  /// records the originating store once stock can move between stores.
+  storeId          String
+  store            Store             @relation(fields: [storeId], references: [id])
   partnerId        String
   partner          Partner           @relation(fields: [partnerId], references: [id])
   deviceId         String
@@ -59,12 +63,17 @@ model Consignment {
 
   @@index([partnerId, statusCode])
   @@index([dueDate])
+  @@index([storeId])
   @@map("consignments")
 }
 
 /// Full or partial payment from a partner, optionally tied to one consignment.
 model PartnerPayment {
   id            String       @id @default(uuid())
+  /// Store that received the cash. Not a duplicate of the consignment's store:
+  /// a payment can be collected at a different store from the handout.
+  storeId       String
+  store         Store        @relation(fields: [storeId], references: [id])
   partnerId     String
   partner       Partner      @relation(fields: [partnerId], references: [id])
   consignmentId String?
@@ -77,5 +86,6 @@ model PartnerPayment {
   createdAt     DateTime     @default(now())
 
   @@index([partnerId, paidAt])
+  @@index([storeId])
   @@map("partner_payments")
 }

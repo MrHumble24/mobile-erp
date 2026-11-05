@@ -39,6 +39,12 @@ ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;
 
+-- Single store (ADR 0023). Store identity lives here; admins edit it via settings.
+-- Idempotent: insert only when no store exists yet.
+INSERT INTO stores (id, name, "updatedAt")
+SELECT gen_random_uuid(), 'Main store', now()
+WHERE NOT EXISTS (SELECT 1 FROM stores);
+
 -- Permissions: "<resource>.<action>" ----------------------------------------
 INSERT INTO permissions (code, resource, action, description) VALUES
   ('device.read',          'device',      'read',      'View inventory'),

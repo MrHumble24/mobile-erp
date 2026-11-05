@@ -50,6 +50,7 @@ export class ExpenseRecurrencesRepository {
   spawnOccurrence(input: {
     recurrence: {
       id: string;
+      storeId: string;
       categoryId: string;
       amount: Prisma.Decimal;
       description: string | null;
@@ -64,6 +65,9 @@ export class ExpenseRecurrencesRepository {
     return this.prisma.$transaction([
       this.prisma.expense.create({
         data: {
+          // A template belongs to a store; its expenses land in that store,
+          // not the caller's current one.
+          storeId: r.storeId,
           categoryId: r.categoryId,
           amount: r.amount,
           description: r.description,

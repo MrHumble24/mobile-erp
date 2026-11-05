@@ -7,6 +7,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { StoresService } from '../stores/stores.service.js';
 import {
   PartnerPaymentReceivedEvent,
   TelegramEvents,
@@ -27,6 +28,7 @@ import {
 export class PartnersService {
   constructor(
     private readonly repo: PartnersRepository,
+    private readonly stores: StoresService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -90,6 +92,7 @@ export class PartnersService {
       }
     }
     const payment = await this.repo.createPayment({
+      storeId: await this.stores.currentStoreId(),
       partnerId,
       consignmentId: dto.consignmentId,
       amount: new Prisma.Decimal(dto.amount),

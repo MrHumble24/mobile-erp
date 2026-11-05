@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ExpenseCategoriesModule } from '../expense-categories/expense-categories.module.js';
+import { StoresModule } from '../stores/stores.module.js';
 import { ExpenseRecurrencesController } from './expense-recurrences.controller.js';
 import { ExpenseRecurrencesRepository } from './expense-recurrences.repository.js';
 import { ExpenseRecurrencesService } from './expense-recurrences.service.js';
@@ -8,7 +9,7 @@ import { ExpensesRepository } from './expenses.repository.js';
 import { ExpensesService } from './expenses.service.js';
 
 @Module({
-  imports: [ExpenseCategoriesModule],
+  imports: [ExpenseCategoriesModule, StoresModule],
   controllers: [ExpensesController, ExpenseRecurrencesController],
   providers: [
     ExpensesService,

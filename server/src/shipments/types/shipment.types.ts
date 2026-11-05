@@ -13,6 +13,7 @@ export interface ShipmentView {
 }
 
 export interface ShipmentInput {
+  storeId: string;
   supplierId: string;
   shipmentDate: Date;
   expectedCount: number;

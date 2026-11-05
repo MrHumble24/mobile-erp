@@ -21,6 +21,10 @@ model Sale {
   id               String       @id @default(uuid())
   /// Idempotency key from the offline terminal's mutation queue.
   clientMutationId String?      @unique
+  /// Where the sale happened. Not a duplicate of Device.storeId: once a unit can
+  /// move between stores, this freezes where it was sold.
+  storeId          String
+  store            Store        @relation(fields: [storeId], references: [id])
   deviceId         String
   device           Device       @relation(fields: [deviceId], references: [id])
   customerId       String?
@@ -44,6 +48,7 @@ model Sale {
 
   @@index([soldAt])
   @@index([deviceId])
+  @@index([storeId])
   @@map("sales")
 }
 

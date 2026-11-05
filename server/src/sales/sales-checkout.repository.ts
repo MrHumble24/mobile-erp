@@ -32,6 +32,7 @@ export class SalesCheckoutRepository {
       );
       const sale = await tx.sale.create({
         data: {
+          storeId: input.storeId,
           deviceId: input.deviceId,
           customerId,
           soldById: input.soldById,

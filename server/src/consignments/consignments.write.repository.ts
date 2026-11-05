@@ -46,6 +46,7 @@ export class ConsignmentsWriteRepository {
       });
       const row = await tx.consignment.create({
         data: {
+          storeId: input.storeId,
           clientMutationId: input.clientMutationId,
           partnerId: input.partnerId,
           deviceId: device.id,
@@ -69,6 +70,7 @@ export class ConsignmentsWriteRepository {
       });
       await tx.sale.create({
         data: {
+          storeId: input.storeId,
           deviceId: c.device.id,
           consignmentId: id,
           soldById: input.soldById,

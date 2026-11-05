@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { UpdateSettingsDto } from './dto/update-settings.dto.js';
+import type { SettingsRow } from './settings.service.js';
 
 const SINGLETON_ID = 1;
 
@@ -15,11 +15,11 @@ export class SettingsRepository {
     });
   }
 
-  upsert(dto: UpdateSettingsDto) {
+  upsert(data: SettingsRow) {
     return this.prisma.storeSettings.upsert({
       where: { id: SINGLETON_ID },
-      create: { id: SINGLETON_ID, ...dto },
-      update: dto,
+      create: { id: SINGLETON_ID, ...data },
+      update: data,
     });
   }
 

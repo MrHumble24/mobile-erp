@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { StoresService } from '../stores/stores.service.js';
 import { CreateExpenseRecurrenceDto } from './dto/create-expense-recurrence.dto.js';
 import { UpdateExpenseRecurrenceDto } from './dto/update-expense-recurrence.dto.js';
 import { ExpenseRecurrencesRepository } from './expense-recurrences.repository.js';
@@ -6,15 +7,19 @@ import { nextDueDate } from './lib/recurrence.lib.js';
 
 @Injectable()
 export class ExpenseRecurrencesService {
-  constructor(private readonly repo: ExpenseRecurrencesRepository) {}
+  constructor(
+    private readonly repo: ExpenseRecurrencesRepository,
+    private readonly stores: StoresService,
+  ) {}
 
   list() {
     return this.repo.findAll();
   }
 
-  create(createdById: string, dto: CreateExpenseRecurrenceDto) {
+  async create(createdById: string, dto: CreateExpenseRecurrenceDto) {
     return this.repo.create({
       ...dto,
+      storeId: await this.stores.currentStoreId(),
       nextDueAt: new Date(dto.nextDueAt),
       createdById,
     });

@@ -54,6 +54,7 @@ export interface ConsignmentFilters {
 }
 
 export interface CreateTransferInput {
+  storeId: string;
   imei: string;
   partnerId: string;
   agreedPrice: Prisma.Decimal;
@@ -65,6 +66,7 @@ export interface CreateTransferInput {
 }
 
 export interface SettleInput {
+  storeId: string;
   salePrice?: Prisma.Decimal;
   notes?: string;
   expectedVersion?: number;

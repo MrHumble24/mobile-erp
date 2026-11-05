@@ -30,6 +30,7 @@ function build(tx: ReturnType<typeof makeTx>) {
 }
 
 const transfer = {
+  storeId: 'store-1',
   imei: '123456789012345',
   partnerId: 'p1',
   agreedPrice: D(500),
@@ -129,9 +130,9 @@ describe('ConsignmentsWriteRepository.settle', () => {
       agreedPrice: D(500),
       device: { id: 'd1', statusCode: 'SOLD', version: 1, landedCost: D(100) },
     });
-    await expect(build(tx).settle('c1', { soldById: 'u1' })).rejects.toThrow(
-      ConflictException,
-    );
+    await expect(
+      build(tx).settle('c1', { storeId: 'store-1', soldById: 'u1' }),
+    ).rejects.toThrow(ConflictException);
     expect(tx.sale.create).not.toHaveBeenCalled();
   });
 
@@ -163,7 +164,7 @@ describe('ConsignmentsWriteRepository.settle', () => {
       createdById: 'u1',
       createdAt: new Date(),
     });
-    await build(tx).settle('c1', { soldById: 'u1' });
+    await build(tx).settle('c1', { storeId: 'store-1', soldById: 'u1' });
     expect(tx.sale.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         salePrice: D(500),
