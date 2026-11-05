@@ -1,6 +1,6 @@
 # 003 — Step 11, part 1 of 6: settings switches for bonus points and printing
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Handoff `gemini/020-step11-website.md` is too big for one go, so it is given in parts, one after
@@ -62,3 +62,13 @@ Fill the Result section of `docs/handoffs/opencode/003-step11-settings.md`, set 
 - Not done / skipped / failed: Uzbek strings intentionally left in English per the handoff. No check failed; nothing else skipped.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Stayed in its worktree; did every point; helpers moved out, not
+  copied (`SettingsSections.tsx` 230 → 118 lines); tests 68 pass, lint 0 errors, build passes;
+  report matched.
+- One bug, found only in a browser and fixed by Claude on the branch: the sections read the
+  switch with `form.watch(...)`. The React Compiler is on, so the child did not re-render and the
+  percent inputs and paper width never appeared. Now `useWatch({ control, name })`. Later parts
+  are told this up front.
+- Seen in a browser: both switches on, fields appear, 5 / 50 / 58 mm saved, and `GET /settings`
+  returned exactly that.
+- The model cannot use a browser, so every part gets a browser check from Claude.
