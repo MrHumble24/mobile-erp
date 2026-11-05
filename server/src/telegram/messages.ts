@@ -75,6 +75,13 @@ export function overdueConsignments(
   return `⏰ Muddati o'tgan nasiyalar:\n${lines.join('\n')}`;
 }
 
+/** One account's balance at the day's start and now (decimal strings). */
+export interface DigestBalanceLine {
+  label: string;
+  opening: string;
+  closing: string;
+}
+
 export function dailyDigest(p: {
   date: string;
   unitsSold: number;
@@ -82,19 +89,37 @@ export function dailyDigest(p: {
   netProfit: number;
   expenses: number;
   outstanding: number;
+  balances: {
+    accounts: DigestBalanceLine[];
+    openingTotal: string;
+    closingTotal: string;
+  };
 }): string {
+  // English placeholders; Uzbek copy comes from the i18n team later.
+  const balanceLines = [
+    ...p.balances.accounts.map(
+      (a) => `${a.label}: ${moneyStr(a.opening)} -> ${moneyStr(a.closing)}`,
+    ),
+    `Total: ${moneyStr(p.balances.openingTotal)} -> ${moneyStr(p.balances.closingTotal)}`,
+  ];
   return (
     `📊 Kunlik yakuniy hisobot (${p.date}):\n` +
     `Sotilgan tovarlar: ${p.unitsSold} ta\n` +
     `Tushum: ${money(p.revenue)}\n` +
     `Sof foyda: ${money(p.netProfit)}\n` +
     `Xarajatlar: ${money(p.expenses)}\n` +
-    `Nasiyadagi qoldiq: ${money(p.outstanding)}`
+    `Nasiyadagi qoldiq: ${money(p.outstanding)}\n` +
+    `Balance (start -> now):\n${balanceLines.join('\n')}`
   );
 }
 
 function money(n: number): string {
   return `$${n.toLocaleString('en-US')}`;
+}
+
+/** Balance strings are already 2-dp and may be negative; prefix only. */
+function moneyStr(s: string): string {
+  return `$${s}`;
 }
 
 function date(d: Date): string {

@@ -61,10 +61,11 @@ export class LedgerRepository {
     return { items, total };
   }
 
-  sumByAccount(storeId: string) {
+  /** Per-account sum; pass `before` to get the balance as of the day's start. */
+  sumByAccount(storeId: string, before?: Date) {
     return this.prisma.cashTransaction.groupBy({
       by: ['accountCode'],
-      where: { storeId },
+      where: { storeId, occurredAt: before ? { lt: before } : undefined },
       _sum: { amount: true },
     });
   }

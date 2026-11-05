@@ -61,6 +61,66 @@ describe('LedgerService.getBalances', () => {
   });
 });
 
+describe('LedgerService.digestBalances', () => {
+  it('returns opening (before the day start) and closing (now) per account', async () => {
+    const dayStart = new Date('2026-11-05T00:00:00.000Z');
+    const sumByAccount = jest
+      .fn()
+      // first call = opening (before dayStart), second = closing (all rows)
+      .mockResolvedValueOnce([
+        { accountCode: 'CASH', _sum: { amount: 1000 } },
+        { accountCode: 'CARD', _sum: { amount: 200 } },
+      ])
+      .mockResolvedValueOnce([
+        { accountCode: 'CASH', _sum: { amount: 1500 } },
+        { accountCode: 'CARD', _sum: { amount: 200 } },
+      ]);
+    const { service, repo } = build({
+      listAccounts: jest.fn().mockResolvedValue([
+        { code: 'CASH', label: 'Cash' },
+        { code: 'CARD', label: 'Card' },
+      ]),
+      sumByAccount,
+    });
+    const result = await service.digestBalances(dayStart);
+    expect(repo.sumByAccount).toHaveBeenNthCalledWith(1, STORE, dayStart);
+    expect(repo.sumByAccount).toHaveBeenNthCalledWith(2, STORE);
+    expect(result.accounts).toEqual([
+      {
+        accountCode: 'CASH',
+        label: 'Cash',
+        opening: '1000.00',
+        closing: '1500.00',
+      },
+      {
+        accountCode: 'CARD',
+        label: 'Card',
+        opening: '200.00',
+        closing: '200.00',
+      },
+    ]);
+    expect(result.openingTotal).toBe('1200.00');
+    expect(result.closingTotal).toBe('1700.00');
+  });
+
+  it('shows zero opening for an account with only same-day rows', async () => {
+    const { service } = build({
+      listAccounts: jest
+        .fn()
+        .mockResolvedValue([{ code: 'CASH', label: 'Cash' }]),
+      sumByAccount: jest
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          { accountCode: 'CASH', _sum: { amount: 500 } },
+        ]),
+    });
+    const result = await service.digestBalances(new Date());
+    expect(result.accounts[0].opening).toBe('0.00');
+    expect(result.accounts[0].closing).toBe('500.00');
+  });
+});
+
 describe('LedgerService.createEntry', () => {
   it('signs a withdrawal negative before persisting', async () => {
     const { service, repo } = build();

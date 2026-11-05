@@ -29,6 +29,22 @@ export interface BalanceSummary {
   total: string;
 }
 
+/** One account's balance at the day's start and now, for the Telegram digest. */
+export interface DigestAccountBalance {
+  accountCode: string;
+  label: string;
+  /** Sum of rows before the day boundary, 2-dp string. */
+  opening: string;
+  /** Sum of all rows up to now, 2-dp string. */
+  closing: string;
+}
+
+export interface DigestBalances {
+  accounts: DigestAccountBalance[];
+  openingTotal: string;
+  closingTotal: string;
+}
+
 export interface LedgerFilter {
   storeId: string;
   accountCode?: string;

@@ -15,6 +15,7 @@ import { currentAccount, foldSourceNets } from './lib/source-nets.js';
 import type {
   AccountNet,
   BalanceSummary,
+  DigestBalances,
   LedgerPost,
   LedgerSourceField,
 } from './types/ledger.types.js';
@@ -36,9 +37,7 @@ export class LedgerService {
       this.repo.listAccounts(),
       this.repo.sumByAccount(storeId),
     ]);
-    const byCode = new Map(
-      sums.map((s) => [s.accountCode, s._sum.amount ?? new Prisma.Decimal(0)]),
-    );
+    const byCode = sumMap(sums);
     let total = new Prisma.Decimal(0);
     const rows = accounts.map((a) => {
       const balance = byCode.get(a.code) ?? new Prisma.Decimal(0);
@@ -50,6 +49,41 @@ export class LedgerService {
       };
     });
     return { accounts: rows, total: total.toFixed(2) };
+  }
+
+  /**
+   * Per-account balance at the start of `dayStart` (opening) and now (closing),
+   * both summed from the rows — for the Telegram closing digest (2c). The
+   * Telegram module never touches ledger tables itself.
+   */
+  async digestBalances(dayStart: Date): Promise<DigestBalances> {
+    const storeId = await this.stores.currentStoreId();
+    const [accounts, opening, closing] = await Promise.all([
+      this.repo.listAccounts(),
+      this.repo.sumByAccount(storeId, dayStart),
+      this.repo.sumByAccount(storeId),
+    ]);
+    const openingBy = sumMap(opening);
+    const closingBy = sumMap(closing);
+    let openingTotal = new Prisma.Decimal(0);
+    let closingTotal = new Prisma.Decimal(0);
+    const rows = accounts.map((a) => {
+      const o = openingBy.get(a.code) ?? new Prisma.Decimal(0);
+      const c = closingBy.get(a.code) ?? new Prisma.Decimal(0);
+      openingTotal = openingTotal.plus(o);
+      closingTotal = closingTotal.plus(c);
+      return {
+        accountCode: a.code,
+        label: a.label,
+        opening: o.toFixed(2),
+        closing: c.toFixed(2),
+      };
+    });
+    return {
+      accounts: rows,
+      openingTotal: openingTotal.toFixed(2),
+      closingTotal: closingTotal.toFixed(2),
+    };
   }
 
   /** Active account codes, for validating caller-supplied payment accounts. */
@@ -185,4 +219,13 @@ export class LedgerService {
 
 function parseDate(value?: string): Date | undefined {
   return value ? new Date(value) : undefined;
+}
+
+/** Account code → summed amount, from a Prisma groupBy result. */
+function sumMap(
+  sums: { accountCode: string; _sum: { amount: Prisma.Decimal | null } }[],
+): Map<string, Prisma.Decimal> {
+  return new Map(
+    sums.map((s) => [s.accountCode, s._sum.amount ?? new Prisma.Decimal(0)]),
+  );
 }

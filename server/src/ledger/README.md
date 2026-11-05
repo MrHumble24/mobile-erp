@@ -33,6 +33,9 @@ payments / purchases / overhead post rows automatically.
 - `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
   activeAccountCodes` — derived reads 2b modules use to shape their responses
   and validate caller-supplied accounts.
+- `LedgerService.digestBalances(dayStart)` — per-account opening (rows before
+  `dayStart`) and closing (now) balances for the Telegram closing digest (2c);
+  the telegram module calls this instead of reading ledger tables.
 
 ## Must never
 
@@ -43,5 +46,6 @@ payments / purchases / overhead post rows automatically.
 
 ## Open questions
 
-- The Telegram balance digest is 2c. Acquisition-cost edit and device-delete
-  posters are specified in ADR 0025 but dormant (no such path exists yet).
+- Acquisition-cost edit and device-delete posters are specified in ADR 0025 but
+  dormant (no such path exists yet). The Telegram balance digest (2c) is done:
+  `digestBalances` above.
