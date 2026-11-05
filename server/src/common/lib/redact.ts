@@ -13,6 +13,7 @@ export const COST_KEYS = [
   'stockLinesTotal',
   'customsFee',
   'customsFeeTotal',
+  'pricePaid',
   'repairCostEstimate',
   'cogs',
   'inStockLandedValue',

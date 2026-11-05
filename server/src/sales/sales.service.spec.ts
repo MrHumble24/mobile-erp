@@ -11,8 +11,10 @@ import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesPricingService } from './sales-pricing.service.js';
+import { SalesReadService } from './sales-read.service.js';
 import { SalesRepository } from './sales.repository.js';
 import { SalesService } from './sales.service.js';
+import { SalesTradeInService } from './sales-trade-in.service.js';
 
 const caller: AuthenticatedUser = {
   id: 'cashier-1',
@@ -20,9 +22,9 @@ const caller: AuthenticatedUser = {
   permissions: new Set(['sale.create']),
 };
 
-function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
+function build(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  const { findByClientMutationId, ...readsOverrides } = overrides;
   const reads = {
-    findByClientMutationId: jest.fn().mockResolvedValue(null),
     findDeviceByImei: jest.fn().mockResolvedValue({
       id: 'dev-1',
       statusCode: 'IN_STOCK',
@@ -30,42 +32,29 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
       landedCost: 100,
       targetPrice: 300,
     }),
-    customerExists: jest.fn().mockResolvedValue(true),
     customerPricing: jest.fn().mockResolvedValue(null),
     modelSalePrice: jest.fn().mockResolvedValue(null),
     defaultWarrantyDays: jest.fn().mockResolvedValue(14),
-    findById: jest.fn().mockResolvedValue({
-      id: 'sale-1',
-      device: {
-        imei: '123456789012345',
-        model: { brand: 'Apple', name: '15' },
-      },
-    }),
-    findSaleForReturn: jest.fn().mockResolvedValue({
-      id: 'sale-1',
-      deviceId: 'dev-1',
-      modelId: null,
-      quantity: null,
-      storeId: 'store-1',
-      salePrice: new Prisma.Decimal(250),
-      landedCostSnapshot: new Prisma.Decimal(100),
-    }),
-    findDeviceState: jest.fn().mockResolvedValue({ version: 5 }),
+    findById: jest.fn().mockResolvedValue({ id: 'sale-1' }),
     ...readsOverrides,
+  };
+  // Read service (list / lookups / view enrichment) — delegated to by SalesService.
+  const read = {
+    findByClientMutationId:
+      findByClientMutationId ?? jest.fn().mockResolvedValue(null),
+    withPayments: jest.fn((v: unknown) => Promise.resolve(v)),
+    require: jest.fn((id: string) => Promise.resolve({ id })),
+    receipt: jest.fn().mockResolvedValue({ saleId: 'sale-1' }),
   };
   const checkout = {
     checkout: jest.fn().mockResolvedValue('sale-1'),
     checkoutQuantity: jest.fn().mockResolvedValue('sale-1'),
-    processReturn: jest.fn().mockResolvedValue(undefined),
   };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
   const ledger = {
     activeAccountCodes: jest.fn().mockResolvedValue(['CASH', 'CARD']),
-    salePayments: jest.fn().mockResolvedValue(new Map()),
   };
-  const stock = {
-    assertQuantityModel: jest.fn().mockResolvedValue(undefined),
-  };
+  const stock = { assertQuantityModel: jest.fn().mockResolvedValue(undefined) };
   const outcome = (dto: { salePrice: number }) => ({
     salePrice: new Prisma.Decimal(dto.salePrice),
     listPriceSnapshot: null,
@@ -79,27 +68,44 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
       Promise.resolve(outcome(dto)),
     ),
   };
-  const events = { emit: jest.fn() };
   const shifts = { assertCanSell: jest.fn(() => Promise.resolve()) };
+  // No trade-ins by default: prepare() returns null, run() just executes checkout.
+  const tradeIn = {
+    prepare: jest.fn().mockResolvedValue(null),
+    dueAmount: jest.fn((price: number) => price),
+    run: jest.fn(
+      (
+        _prepared: unknown,
+        _caller: unknown,
+        _storeId: unknown,
+        fn: (tx?: unknown) => Promise<string>,
+      ) => fn(),
+    ),
+  };
+  const events = { emit: jest.fn() };
   const service = new SalesService(
     reads as unknown as SalesRepository,
+    read as unknown as SalesReadService,
     checkout as unknown as SalesCheckoutRepository,
     stores as unknown as StoresService,
     ledger as unknown as LedgerService,
     stock as unknown as StockService,
     salesPricing as unknown as SalesPricingService,
     shifts as never,
+    tradeIn as unknown as SalesTradeInService,
     events as unknown as EventEmitter2,
   );
   return {
     service,
     reads,
+    read,
     checkout,
     stores,
     ledger,
     stock,
     salesPricing,
     shifts,
+    tradeIn,
     events,
   };
 }
@@ -153,7 +159,6 @@ describe('SalesService.create', () => {
       targetPrice: 300,
     });
     const { service, checkout } = build({ findDeviceByImei });
-    // The scanned value is the unit's imei2; the repository resolves either column.
     await service.create(caller, {
       imei: '999888777666555',
       salePrice: 250,
@@ -161,6 +166,7 @@ describe('SalesService.create', () => {
     expect(findDeviceByImei).toHaveBeenCalledWith('999888777666555');
     expect(checkout.checkout).toHaveBeenCalledWith(
       expect.objectContaining({ deviceId: 'dev-1' }),
+      undefined,
     );
   });
 
@@ -173,13 +179,11 @@ describe('SalesService.create', () => {
       targetPrice: 300,
     });
     const { service, checkout } = build({ findDeviceByImei });
-    await service.create(caller, {
-      serialNumber: ' sn-9 ',
-      salePrice: 250,
-    });
+    await service.create(caller, { serialNumber: ' sn-9 ', salePrice: 250 });
     expect(findDeviceByImei).toHaveBeenCalledWith('SN-9');
     expect(checkout.checkout).toHaveBeenCalledWith(
       expect.objectContaining({ deviceId: 'dev-9' }),
+      undefined,
     );
   });
 
@@ -201,6 +205,7 @@ describe('SalesService.create', () => {
         soldById: 'cashier-1',
         warranty: expect.objectContaining({ days: 14 }),
       }),
+      undefined,
     );
   });
 
@@ -220,6 +225,7 @@ describe('SalesService.create', () => {
         quantity: 3,
         salePrice: new Prisma.Decimal(90),
       }),
+      undefined,
     );
     expect(checkout.checkout).not.toHaveBeenCalled();
   });
@@ -238,29 +244,40 @@ describe('SalesService.create', () => {
     expect(result).toMatchObject({ id: 'q-prev' });
     expect(checkout.checkoutQuantity).not.toHaveBeenCalled();
   });
+
+  it('tenders only sale price − trade-in total, and wraps checkout in one tx', async () => {
+    const { service, checkout, tradeIn } = build({
+      customerPricing: jest.fn().mockResolvedValue({
+        priceLevelCode: 'RETAIL',
+        standingDiscountPercent: new Prisma.Decimal(0),
+      }),
+    });
+    tradeIn.prepare.mockResolvedValue({
+      tradeIns: [{ unit: {}, value: new Prisma.Decimal(100) }],
+      total: new Prisma.Decimal(100),
+      customerId: 'cust-1',
+    });
+    tradeIn.dueAmount.mockReturnValue(150);
+    await service.create(caller, {
+      imei: '123456789012345',
+      salePrice: 250,
+      customerId: 'cust-1',
+    });
+    // payments resolved against the due amount (250 − 100 = 150) → one CASH line.
+    expect(checkout.checkout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payments: [{ accountCode: 'CASH', amount: new Prisma.Decimal(150) }],
+      }),
+      undefined,
+    );
+    expect(tradeIn.run).toHaveBeenCalled();
+  });
 });
 
-describe('SalesService.receipt', () => {
-  it('attaches the sale payments from its SALE ledger rows', async () => {
-    const svc = build({
-      receipt: jest.fn().mockResolvedValue({ saleId: 'sale-1', payments: [] }),
-    });
-    svc.ledger.salePayments.mockResolvedValue(
-      new Map([
-        ['sale-1', [{ accountCode: 'CARD', amount: new Prisma.Decimal(500) }]],
-      ]),
-    );
-    const receipt = await svc.service.receipt('sale-1');
-    expect(receipt.payments).toEqual([
-      { accountCode: 'CARD', amount: new Prisma.Decimal(500) },
-    ]);
-  });
-
-  it('returns [] payments when the sale has no ledger rows', async () => {
-    const svc = build({
-      receipt: jest.fn().mockResolvedValue({ saleId: 'sale-1', payments: [] }),
-    });
-    const receipt = await svc.service.receipt('sale-1');
-    expect(receipt.payments).toEqual([]);
+describe('SalesService delegates reads', () => {
+  it('receipt delegates to the read service', async () => {
+    const { service, read } = build();
+    await service.receipt('sale-1');
+    expect(read.receipt).toHaveBeenCalledWith('sale-1');
   });
 });

@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 
 model Store {
-  id String @id @default(uuid())
+  id      String  @id @default(uuid())
   /// Store identity, shown on receipts and the app shell.
   name    String
   address String?
@@ -14,17 +14,18 @@ model Store {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  devices         Device[]
-  shipments       Shipment[]
-  sales           Sale[]
-  expenses        Expense[]
-  recurrences     ExpenseRecurrence[]
-  consignments    Consignment[]
-  partnerPayments PartnerPayment[]
-  cashTransactions CashTransaction[]
-  stockMovements   StockMovement[]
-  customerCredits  CustomerCredit[]
-  shifts           Shift[]
+  devices           Device[]
+  shipments         Shipment[]
+  sales             Sale[]
+  expenses          Expense[]
+  recurrences       ExpenseRecurrence[]
+  consignments      Consignment[]
+  partnerPayments   PartnerPayment[]
+  cashTransactions  CashTransaction[]
+  stockMovements    StockMovement[]
+  customerCredits   CustomerCredit[]
+  shifts            Shift[]
+  customerPurchases CustomerPurchase[]
 
   @@map("stores")
 }

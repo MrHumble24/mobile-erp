@@ -61,6 +61,10 @@ filter every by-code lookup across sales/consignment/QC/sync/warranty uses) and
 is the single home of the landed-cost rule (ADR 0026); `shipments` (intake) and
 the customs module import it so the formula is never duplicated.
 
+A unit's `shipmentId` is nullable (ADR 0039): a phone bought from a customer has
+no shipment. A unit-expense / customs-fee edit on such a unit posts from the
+device's own store and CASH (there is no shipment account).
+
 ## Must never
 
 - Expose `acquisitionCost`/`landedCost`/`unitExpense`/`customsFee` unredacted

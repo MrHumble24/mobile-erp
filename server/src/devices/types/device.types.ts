@@ -4,7 +4,7 @@ export interface DeviceView {
   imei: string | null;
   imei2: string | null;
   serialNumber: string | null;
-  shipmentId: string;
+  shipmentId: string | null;
   modelId: string;
   specs: Record<string, unknown>;
   acquisitionCost: string;

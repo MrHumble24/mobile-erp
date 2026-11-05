@@ -6,7 +6,7 @@ export interface DeviceScalarRow {
   imei: string | null;
   imei2: string | null;
   serialNumber: string | null;
-  shipmentId: string;
+  shipmentId: string | null;
   modelId: string;
   specs: unknown;
   acquisitionCost: { toString(): string };

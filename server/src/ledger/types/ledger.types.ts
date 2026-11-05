@@ -27,6 +27,7 @@ export const COST_TYPE_CODES: ReadonlySet<string> = new Set([
   'OVERHEAD',
   'DEVICE_EXPENSE',
   'CUSTOMS',
+  'CUSTOMER_PURCHASE',
 ]);
 
 export interface AccountBalance {
@@ -72,7 +73,12 @@ export interface LedgerFilter {
 
 /** A single money column linking a cash row back to what moved it. */
 export type LedgerSourceField =
-  'saleId' | 'expenseId' | 'partnerPaymentId' | 'deviceId' | 'shipmentId';
+  | 'saleId'
+  | 'expenseId'
+  | 'partnerPaymentId'
+  | 'deviceId'
+  | 'shipmentId'
+  | 'customerPurchaseId';
 
 /**
  * One signed row ready to append. The sole write shape: manual entries and
@@ -97,6 +103,8 @@ export interface LedgerPost {
   shipmentId?: string;
   /** Ties a CREDIT_PAYMENT row to its credit payment (ADR 0035). */
   creditPaymentId?: string;
+  /** Ties a CUSTOMER_PURCHASE row to the purchase it paid for (ADR 0039). */
+  customerPurchaseId?: string;
   /** Ties a SHIFT_DIFFERENCE row to the shift it reconciles (ADR 0036). */
   shiftId?: string;
   createdById: string;

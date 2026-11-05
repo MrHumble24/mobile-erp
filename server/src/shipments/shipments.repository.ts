@@ -79,20 +79,28 @@ export class ShipmentsRepository {
         _count: { _all: true },
       }),
     ]);
-    const noFeeBy = new Map(noFee.map((r) => [r.shipmentId, r._count._all]));
+    // shipmentId is nullable since ADR 0039 (customer-bought units); the `in`
+    // filter guarantees non-null here, so drop any null defensively.
+    const noFeeBy = new Map(
+      noFee
+        .filter((r) => r.shipmentId !== null)
+        .map((r) => [r.shipmentId!, r._count._all]),
+    );
     return new Map(
-      sums.map((r) => [
-        r.shipmentId,
-        {
-          unitExpenseTotal: (
-            r._sum.unitExpense ?? new Prisma.Decimal(0)
-          ).toFixed(2),
-          customsFeeTotal: (r._sum.customsFee ?? new Prisma.Decimal(0)).toFixed(
-            2,
-          ),
-          devicesWithoutCustomsFee: noFeeBy.get(r.shipmentId) ?? 0,
-        },
-      ]),
+      sums
+        .filter((r) => r.shipmentId !== null)
+        .map((r) => [
+          r.shipmentId!,
+          {
+            unitExpenseTotal: (
+              r._sum.unitExpense ?? new Prisma.Decimal(0)
+            ).toFixed(2),
+            customsFeeTotal: (
+              r._sum.customsFee ?? new Prisma.Decimal(0)
+            ).toFixed(2),
+            devicesWithoutCustomsFee: noFeeBy.get(r.shipmentId!) ?? 0,
+          },
+        ]),
     );
   }
 }

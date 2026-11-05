@@ -37,6 +37,7 @@ import { LookupModule } from './lookup/lookup.module.js';
 import { PricingModule } from './pricing/pricing.module.js';
 import { CreditsModule } from './credits/credits.module.js';
 import { ShiftsModule } from './shifts/shifts.module.js';
+import { CustomerPurchasesModule } from './customer-purchases/customer-purchases.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -78,6 +79,7 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     PricingModule,
     CreditsModule,
     ShiftsModule,
+    CustomerPurchasesModule,
   ],
   controllers: [AppController],
   providers: [

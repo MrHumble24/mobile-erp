@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
@@ -29,12 +30,17 @@ function build() {
   };
   const checkout = { processReturn: jest.fn().mockResolvedValue(undefined) };
   const ledger = { salePayments: jest.fn().mockResolvedValue(new Map()) };
+  const purchases = {
+    tradeInTotalForSale: jest.fn().mockResolvedValue(new Prisma.Decimal(0)),
+    tradeInsBySale: jest.fn().mockResolvedValue(new Map()),
+  };
   const service = new SalesReturnsService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
     ledger as unknown as LedgerService,
+    purchases as unknown as CustomerPurchasesService,
   );
-  return { service, reads, checkout, ledger };
+  return { service, reads, checkout, ledger, purchases };
 }
 
 const ret = (refundAmount: number) =>
@@ -73,6 +79,35 @@ describe('SalesReturnsService refund cap (ADR 0028)', () => {
     const bad = build();
     await expect(
       bad.service.processReturn(caller, 'sale-1', ret(250.01)),
+    ).rejects.toThrow(BadRequestException);
+    expect(bad.checkout.processReturn).not.toHaveBeenCalled();
+  });
+
+  it('raises the cap by the trade-in value: paid + trade-in passes (ADR 0039)', async () => {
+    const svc = build();
+    svc.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(150) }]],
+      ]),
+    );
+    svc.purchases.tradeInTotalForSale.mockResolvedValue(
+      new Prisma.Decimal(100),
+    );
+    // 150 paid + 100 trade-in = 250 cap.
+    await svc.service.processReturn(caller, 'sale-1', ret(250));
+    expect(svc.checkout.processReturn).toHaveBeenCalled();
+
+    const bad = build();
+    bad.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(150) }]],
+      ]),
+    );
+    bad.purchases.tradeInTotalForSale.mockResolvedValue(
+      new Prisma.Decimal(100),
+    );
+    await expect(
+      bad.service.processReturn(caller, 'sale-1', ret(251)),
     ).rejects.toThrow(BadRequestException);
     expect(bad.checkout.processReturn).not.toHaveBeenCalled();
   });

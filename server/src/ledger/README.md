@@ -14,7 +14,10 @@ payments / purchases / overhead post rows automatically.
   in both `seed.sql` and the migration — `migrate deploy` never runs the seed).
   A `CREDIT_PAYMENT` row links to its payment via `creditPaymentId` (ADR 0035);
   a credit sale itself posts no SALE row. A `SHIFT_DIFFERENCE` row (ADR 0036)
-  links to its shift via `shiftId` and reconciles a closing cash count.
+  links to its shift via `shiftId` and reconciles a closing cash count. A
+  `CUSTOMER_PURCHASE` row (ADR 0039) links via `customerPurchaseId` to a phone
+  bought from a customer (money out); a trade-in posts no row. It is a cost type
+  (hidden in history without `device.cost.view`).
 - The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
   transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
   and deriving a source's current account from its rows (`lib/source-nets.ts`).
@@ -30,7 +33,8 @@ payments / purchases / overhead post rows automatically.
   `accountCode`/`typeCode`/`from`/`to`; every item carries the five nullable
   source ids (`balance.read`). A caller **without** `device.cost.view` gets
   `amount: null` on cost-type rows (`PURCHASE`/`OVERHEAD`/`DEVICE_EXPENSE`/
-  `CUSTOMS`, listed in `COST_TYPE_CODES`) — ADR 0028; balances are not redacted.
+  `CUSTOMS`/`CUSTOMER_PURCHASE`, listed in `COST_TYPE_CODES`) — ADR 0028/0039;
+  balances are not redacted.
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
@@ -39,8 +43,8 @@ payments / purchases / overhead post rows automatically.
   `LedgerPost` (signed amount + at most one source id); no module ever injects
   `LedgerRepository`.
 - `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
-  activeAccountCodes` — derived reads 2b modules use to shape their responses
-  and validate caller-supplied accounts.
+  customerPurchaseAccounts / activeAccountCodes` — derived reads 2b modules use
+  to shape their responses and validate caller-supplied accounts.
 - `LedgerService.shiftRows(userId, from, to)` / `shiftDifferences(shiftIds)` —
   the shift report's raw input (a cashier's cash rows in a window) and the net
   `SHIFT_DIFFERENCE` per shift for the shifts list (ADR 0036).

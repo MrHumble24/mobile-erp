@@ -12,8 +12,10 @@ interface CostState {
   acquisitionCost: Prisma.Decimal;
   customsFee: Prisma.Decimal;
   unitExpense: Prisma.Decimal;
-  shipmentId: string;
-  shipment: { storeId: string; paymentAccountCode: string };
+  storeId: string;
+  /** Null for a unit bought from a customer (no shipment, ADR 0039). */
+  shipmentId: string | null;
+  shipment: { paymentAccountCode: string } | null;
 }
 
 /**
@@ -93,8 +95,9 @@ export class DevicesExpenseRepository {
         acquisitionCost: true,
         customsFee: true,
         unitExpense: true,
+        storeId: true,
         shipmentId: true,
-        shipment: { select: { storeId: true, paymentAccountCode: true } },
+        shipment: { select: { paymentAccountCode: true } },
       },
     });
   }
@@ -109,14 +112,15 @@ export class DevicesExpenseRepository {
     userId: string,
   ): Promise<void> {
     if (diff.isZero()) return;
+    // A customer-bought unit has no shipment; its cost moves from CASH (ADR 0039).
     await this.ledger.post(
       {
-        storeId: before.shipment.storeId,
-        accountCode: before.shipment.paymentAccountCode,
+        storeId: before.storeId,
+        accountCode: before.shipment?.paymentAccountCode ?? 'CASH',
         typeCode,
         amount: diff.negated(),
         deviceId,
-        shipmentId: before.shipmentId,
+        shipmentId: before.shipmentId ?? undefined,
         createdById: userId,
       },
       tx,

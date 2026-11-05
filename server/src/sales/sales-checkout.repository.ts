@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { resolveCustomerId } from '../common/lib/resolve-customer.js';
 import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -41,7 +42,7 @@ export class SalesCheckoutRepository {
   }
 
   private async doCheckout(tx: Tx, input: CheckoutInput): Promise<string> {
-    const customerId = await this.resolveCustomer(tx, input);
+    const customerId = await resolveCustomerId(tx, input);
     await this.advanceDevice(
       tx,
       input.deviceId,
@@ -118,7 +119,7 @@ export class SalesCheckoutRepository {
     tx: Tx,
     input: QuantityCheckoutInput,
   ): Promise<string> {
-    const customerId = await this.resolveCustomer(tx, input);
+    const customerId = await resolveCustomerId(tx, input);
     const unitCost = await this.stock.averageCost(
       input.storeId,
       input.modelId,
@@ -225,32 +226,6 @@ export class SalesCheckoutRepository {
         tx,
       );
     }
-  }
-
-  private async resolveCustomer(
-    tx: Tx,
-    input: {
-      customerId?: string;
-      inlineCustomer?: { name: string; phone?: string };
-    },
-  ): Promise<string | undefined> {
-    if (input.customerId) return input.customerId;
-    const inline = input.inlineCustomer;
-    if (!inline) return undefined;
-    if (inline.phone) {
-      const c = await tx.customer.upsert({
-        where: { phone: inline.phone },
-        update: { name: inline.name },
-        create: { name: inline.name, phone: inline.phone },
-        select: { id: true },
-      });
-      return c.id;
-    }
-    const c = await tx.customer.create({
-      data: { name: inline.name },
-      select: { id: true },
-    });
-    return c.id;
   }
 
   private async advanceDevice(
