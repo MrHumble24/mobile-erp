@@ -5,6 +5,7 @@ import {
   IsIn,
   IsInt,
   IsNumber,
+  IsObject,
   IsOptional,
   IsPositive,
   IsString,
@@ -40,6 +41,40 @@ export class SalePaymentDto {
   @IsPositive()
   @Max(1_000_000_000)
   amount!: number;
+}
+
+/**
+ * A phone the customer gives as part payment (Change 14, ADR 0039). Each
+ * becomes a customer purchase and enters stock at `value`; the values lower
+ * what the customer pays. Online only — refused on the sync replay path.
+ */
+export class SaleTradeInDto {
+  @IsUUID()
+  modelId!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
+  imei?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
+  imei2?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(SERIAL_REGEX, { message: SERIAL_MESSAGE })
+  serialNumber?: string;
+
+  @IsOptional()
+  @IsObject()
+  specs?: Record<string, unknown>;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  @Max(1_000_000_000)
+  value!: number;
 }
 
 /** A per-line discount (Change 7/12, ADR 0034). Final = list − discount. */
@@ -150,4 +185,17 @@ export class CreateSaleDto {
   @Min(0)
   @Max(1_000_000_000)
   listPrice?: number;
+
+  /**
+   * Phones taken in part payment (ADR 0039). Their values lower what the
+   * customer pays: `payments` must sum to `salePrice` − Σ values. A customer
+   * (id or inline) is required, and the total may not exceed `salePrice`.
+   * Online only — rejected on the offline replay path.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => SaleTradeInDto)
+  tradeIns?: SaleTradeInDto[];
 }

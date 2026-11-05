@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CustomerPurchasesModule } from '../customer-purchases/customer-purchases.module.js';
 import { LedgerModule } from '../ledger/ledger.module.js';
 import { PricingModule } from '../pricing/pricing.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
@@ -9,8 +10,10 @@ import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesController } from './sales.controller.js';
 import { SalesCreditService } from './sales-credit.service.js';
 import { SalesPricingService } from './sales-pricing.service.js';
+import { SalesReadService } from './sales-read.service.js';
 import { SalesRepository } from './sales.repository.js';
 import { SalesReturnsService } from './sales-returns.service.js';
+import { SalesTradeInService } from './sales-trade-in.service.js';
 import { SalesService } from './sales.service.js';
 
 @Module({
@@ -21,14 +24,17 @@ import { SalesService } from './sales.service.js';
     PricingModule,
     SettingsModule,
     ShiftsModule,
+    CustomerPurchasesModule,
   ],
   controllers: [SalesController],
   providers: [
     SalesService,
+    SalesReadService,
     SalesRepository,
     SalesCheckoutRepository,
     SalesPricingService,
     SalesReturnsService,
+    SalesTradeInService,
     SalesCreditService,
   ],
   exports: [SalesService, SalesCreditService],

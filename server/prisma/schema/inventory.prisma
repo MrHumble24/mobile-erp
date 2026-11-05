@@ -23,26 +23,28 @@ model DeviceStatus {
 /// { storage: "256GB", color: "Black", ram: "8GB", region: "KR", ... }
 /// Filter with `specs->>'storage'`; the GIN index covers containment queries.
 model Device {
-  id         String      @id @default(uuid())
+  id           String      @id @default(uuid())
   /// 15-digit IMEI for an IMEI-kind unit; null for a serial-kind unit. Exactly
   /// one of `imei`/`serialNumber` is set (a CHECK in the migration backstops the
   /// service rule). Unique index also prevents duplicate scans.
-  imei       String?     @unique @db.VarChar(15)
+  imei         String?     @unique @db.VarChar(15)
   /// Optional second IMEI for dual-SIM units. Only an IMEI-kind unit may carry
   /// it. Unique on its own column; the service also rejects collisions across
   /// `imei`/`imei2` and imei2 == imei (CHECKs in the migration backstop both).
-  imei2      String?     @unique @db.VarChar(15)
+  imei2        String?     @unique @db.VarChar(15)
   /// Identifier for a serial-kind unit (console/laptop/watch); null for an
   /// IMEI-kind unit. Trimmed, upper-cased, 3-64 chars, no spaces (service rule).
-  serialNumber String?   @unique @db.VarChar(64)
+  serialNumber String?     @unique @db.VarChar(64)
   /// Where this unit currently lives. Will be mutable once stock transfers exist.
-  storeId    String
-  store      Store       @relation(fields: [storeId], references: [id])
-  shipmentId String
-  shipment   Shipment    @relation(fields: [shipmentId], references: [id])
-  modelId    String
-  model      DeviceModel @relation(fields: [modelId], references: [id])
-  specs      Json        @default("{}") @db.JsonB
+  storeId      String
+  store        Store       @relation(fields: [storeId], references: [id])
+  /// The supplier shipment this unit arrived in; null for a unit bought directly
+  /// from a customer (ADR 0039), which has a CustomerPurchase instead.
+  shipmentId   String?
+  shipment     Shipment?   @relation(fields: [shipmentId], references: [id])
+  modelId      String
+  model        DeviceModel @relation(fields: [modelId], references: [id])
+  specs        Json        @default("{}") @db.JsonB
 
   /// Price paid to supplier for this unit.
   acquisitionCost Decimal  @db.Decimal(14, 2)
@@ -69,13 +71,14 @@ model Device {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inspections      QcInspection[]
-  statusHistory    DeviceStatusHistory[]
-  sales            Sale[]
-  consignments     Consignment[]
-  conflicts        SyncConflict[]
-  cashTransactions CashTransaction[]
-  unitPrices       UnitPrice[]
+  inspections       QcInspection[]
+  statusHistory     DeviceStatusHistory[]
+  sales             Sale[]
+  consignments      Consignment[]
+  conflicts         SyncConflict[]
+  cashTransactions  CashTransaction[]
+  unitPrices        UnitPrice[]
+  customerPurchases CustomerPurchase[]
 
   @@index([statusCode])
   @@index([modelId])

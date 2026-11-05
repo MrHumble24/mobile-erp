@@ -1,4 +1,5 @@
 import type { Prisma } from '../../generated/client/client.js';
+import type { TradeInView } from '../../customer-purchases/types/customer-purchase.types.js';
 
 type Money = Prisma.Decimal;
 
@@ -95,6 +96,8 @@ export interface SaleView {
   return: SaleReturnView | null;
   /** How the sale was tendered (its SALE ledger rows); [] when none exist. */
   payments: SalePayment[];
+  /** Phones taken in part payment (ADR 0039); [] when none. */
+  tradeIns: TradeInView[];
 }
 
 /** Filters shared by `GET /sales` and `GET /sales/stats`. */
@@ -155,6 +158,8 @@ export interface ReceiptView {
   customer?: { name: string; phone: string | null };
   /** How the sale was tendered (its SALE ledger rows); [] when none exist. */
   payments: SalePayment[];
+  /** Phones taken in part payment, for printing (ADR 0039); [] when none. */
+  tradeIns: TradeInView[];
 }
 
 /** Validated checkout input handed to the repository transaction. */

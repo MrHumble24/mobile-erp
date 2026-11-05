@@ -16,13 +16,18 @@ export function assertRefundWithinSale(
   salePrice: Prisma.Decimal,
   saleNets: { amount: Prisma.Decimal }[],
   isCreditSale = false,
+  tradeInTotal: Prisma.Decimal = new Prisma.Decimal(0),
 ): void {
-  const cap =
+  // A sale with a trade-in took in cash/card (saleNets) plus a phone worth the
+  // trade-in value; the customer may be refunded up to both (ADR 0039). The
+  // traded-in phone stays ours — the return never undoes the purchase.
+  const base =
     saleNets.length > 0
       ? saleNets.reduce((sum, n) => sum.plus(n.amount), new Prisma.Decimal(0))
       : isCreditSale
         ? new Prisma.Decimal(0)
         : salePrice;
+  const cap = base.plus(tradeInTotal);
   if (new Prisma.Decimal(refundAmount).greaterThan(cap)) {
     throw new BadRequestException(
       `Refund ${refundAmount} exceeds the sale's ${cap.toFixed(2)}`,

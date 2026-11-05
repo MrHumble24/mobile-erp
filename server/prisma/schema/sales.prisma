@@ -3,25 +3,27 @@
 // ---------------------------------------------------------------------------
 
 model Customer {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String?  @unique
-  notes     String?
+  id                      String     @id @default(uuid())
+  name                    String
+  phone                   String?    @unique
+  notes                   String?
   /// The price level the till defaults to for this customer (Change 12). A
   /// walk-in with no card is RETAIL; a shop is PARTNER; a reseller WHOLESALE.
-  priceLevelCode String     @default("RETAIL")
-  priceLevel     PriceLevel @relation(fields: [priceLevelCode], references: [code])
+  priceLevelCode          String     @default("RETAIL")
+  priceLevel              PriceLevel @relation(fields: [priceLevelCode], references: [code])
   /// A standing discount percent on the customer's card (0 = none). Raises the
   /// cashier's discount ceiling for this customer (ADR 0034).
-  standingDiscountPercent Decimal @default(0) @db.Decimal(5, 2)
+  standingDiscountPercent Decimal    @default(0) @db.Decimal(5, 2)
   /// This customer's own credit ceiling (ADR 0035). Overrides the settings
   /// default when set; null means "use the default" (and no default = no cap).
-  creditLimit             Decimal? @db.Decimal(14, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  creditLimit             Decimal?   @db.Decimal(14, 2)
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
 
-  sales   Sale[]
-  credits CustomerCredit[]
+  sales     Sale[]
+  credits   CustomerCredit[]
+  /// Phones this customer sold to the shop (ADR 0039).
+  purchases CustomerPurchase[]
 
   @@index([priceLevelCode])
   @@map("customers")
@@ -34,36 +36,36 @@ model Customer {
 /// sales_unit_xor_quantity, ADR 0030). For a quantity sale `salePrice` is the
 /// line total and `landedCostSnapshot` is quantity × average cost at sale time.
 model Sale {
-  id               String       @id @default(uuid())
+  id               String          @id @default(uuid())
   /// Idempotency key from the offline terminal's mutation queue.
-  clientMutationId String?      @unique
+  clientMutationId String?         @unique
   /// Where the sale happened. Not a duplicate of Device.storeId: once a unit can
   /// move between stores, this freezes where it was sold.
   storeId          String
-  store            Store        @relation(fields: [storeId], references: [id])
+  store            Store           @relation(fields: [storeId], references: [id])
   /// The unit sold (null for a quantity sale).
   deviceId         String?
-  device           Device?      @relation(fields: [deviceId], references: [id])
+  device           Device?         @relation(fields: [deviceId], references: [id])
   /// The QUANTITY product sold (null for a unit sale).
   modelId          String?
-  model            DeviceModel? @relation(fields: [modelId], references: [id])
+  model            DeviceModel?    @relation(fields: [modelId], references: [id])
   /// Pieces sold (null for a unit sale; whole and positive for a quantity sale).
   quantity         Int?
   customerId       String?
-  customer         Customer?    @relation(fields: [customerId], references: [id])
-  consignmentId    String?      @unique
-  consignment      Consignment? @relation(fields: [consignmentId], references: [id])
+  customer         Customer?       @relation(fields: [customerId], references: [id])
+  consignmentId    String?         @unique
+  consignment      Consignment?    @relation(fields: [consignmentId], references: [id])
   /// The credit agreement this sale belongs to (ADR 0035), null for a normal
   /// paid sale. A credit sale posts NO SALE ledger rows; its money flows through
   /// CreditPayment. A returned credit sale drops out of the agreed total.
   creditId         String?
   credit           CustomerCredit? @relation(fields: [creditId], references: [id])
   soldById         String
-  soldBy           User         @relation(fields: [soldById], references: [id])
+  soldBy           User            @relation(fields: [soldById], references: [id])
 
-  salePrice          Decimal @db.Decimal(14, 2)
+  salePrice          Decimal     @db.Decimal(14, 2)
   /// Device.landedCost at sale time so later edits don't rewrite history.
-  landedCostSnapshot Decimal @db.Decimal(14, 2)
+  landedCostSnapshot Decimal     @db.Decimal(14, 2)
   /// The list price (before discount) at sale time for the level used, frozen
   /// so reports can show "given away in discounts" (ADR 0034). Null when the
   /// shop had set no price for the line (old behaviour: salePrice is the price)
@@ -83,6 +85,9 @@ model Sale {
   return           SaleReturn?
   cashTransactions CashTransaction[]
   stockMovements   StockMovement[]
+  /// Trade-ins taken as part payment on this sale (ADR 0039). A return never
+  /// undoes them — the traded-in phone stays ours.
+  tradeIns         CustomerPurchase[]
 
   @@index([soldAt])
   @@index([deviceId])

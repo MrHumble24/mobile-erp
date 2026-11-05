@@ -1,0 +1,44 @@
+// ---------------------------------------------------------------------------
+// Buying used phones from customers, and trade-in at the till (Change 14, ADR
+// 0039). A second way a unit enters stock besides a supplier shipment.
+//
+// NO PASSPORT DATA, ANYWHERE. Storing it is illegal here. The seller is the
+// Customer record (name + phone only) — there is deliberately no passport
+// number, document number, ID photo or free "document" column on this table.
+// ---------------------------------------------------------------------------
+
+/// One unit bought directly from a customer. Creates the unit in stock at
+/// `pricePaid` (its acquisition + landed cost — no customs fee, no shipment).
+/// A plain purchase posts a CUSTOMER_PURCHASE ledger row (money out) for
+/// `pricePaid`; a trade-in (`saleId` set) posts NO row — its value was netted
+/// against the sale total, so no money moved for it.
+model CustomerPurchase {
+  id          String   @id @default(uuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+  /// The seller — name and phone only (no passport, ever).
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  /// The unit this purchase brought into stock (one per purchase).
+  deviceId    String
+  device      Device   @relation(fields: [deviceId], references: [id])
+  /// Price paid to the seller. Cost data: redacted without `device.cost.view`.
+  pricePaid   Decimal  @db.Decimal(14, 2)
+  /// Set when this was a trade-in against a sale; null for a plain purchase. A
+  /// return of the sale never undoes the purchase — the phone stays ours.
+  saleId      String?
+  sale        Sale?    @relation(fields: [saleId], references: [id])
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  cashTransactions CashTransaction[]
+
+  @@index([storeId])
+  @@index([customerId])
+  @@index([deviceId])
+  @@index([saleId])
+  @@index([occurredAt])
+  @@map("customer_purchases")
+}

@@ -50,6 +50,7 @@ export function toSaleView(row: SaleRow): SaleView {
     creditId: row.creditId,
     notes: row.notes,
     payments: [],
+    tradeIns: [],
     return: row.return
       ? {
           returnedAt: row.return.returnedAt,
@@ -92,5 +93,6 @@ export function toReceiptView(row: SaleRow): ReceiptView {
       ? { name: row.customer.name, phone: row.customer.phone }
       : undefined,
     payments: [], // filled by the service from the sale's SALE ledger rows
+    tradeIns: [], // filled by the service from the sale's customer purchases
   };
 }

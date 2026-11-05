@@ -93,6 +93,27 @@ unless the caller has an open shift (`ShiftsService.assertCanSell`, called
 before target resolution). An offline replay passes `fromSync` and is never
 rejected — the sale already happened at the counter.
 
+## Trade-in at the till (ADR 0039)
+
+`POST /sales` also accepts `tradeIns?: [{ modelId, imei?|serialNumber?, imei2?,
+specs?, value }]` — phones the customer gives in part payment. A customer (id or
+inline) is required. Each becomes a customer purchase in the **same transaction**
+as the sale (reusing `CustomerPurchasesWriteRepository` — one implementation)
+and enters stock at `value`, posting **no** ledger row. The sale books its full
+`salePrice` (revenue intact); `payments` must sum to `salePrice − Σ values`, so
+the cash/card balances move by exactly the tender. Trade-in total above the sale
+price → 400 `TRADE_IN_EXCEEDS_SALE`. Online only: refused on the sync replay
+path (`TRADE_IN_OFFLINE`) and on credit (`CreditLineDto` has no `tradeIns`).
+`SaleView` + `ReceiptView` carry `tradeIns: [{ deviceId, imei, serialNumber,
+model, value }]` so clients can print them (the value is customer-facing, not
+cost-redacted). `SalesTradeInService` owns validation + the transaction wrap;
+the read side (list / lookups / view enrichment with payments + trade-ins) lives
+in `SalesReadService`, split from the write orchestration in `SalesService`.
+
+A **return** of a sale that had a trade-in keeps the traded-in phone (its
+purchase is never undone); the refund cap becomes net SALE rows + Σ trade-in
+values (ADR 0028 extended).
+
 ## Customer credit (ADR 0035)
 
 `SaleView` carries `creditId` (null for a normal paid sale). `SalesCreditService`

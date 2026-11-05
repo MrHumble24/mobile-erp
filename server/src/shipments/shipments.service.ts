@@ -12,7 +12,7 @@ import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
-import { normalizeSerial } from '../devices/lib/unit-code.js';
+import { assertUnitKind, normalizeSerial } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { StockService } from '../stock/stock.service.js';
 import type { PurchasedLineView } from '../stock/types/stock.types.js';
@@ -187,34 +187,7 @@ export class ShipmentsService {
   ): void {
     const kindById = new Map(models.map((m) => [m.id, m.kindCode]));
     for (const d of devices) {
-      const kind = kindById.get(d.modelId);
-      if (kind === 'QUANTITY') {
-        throw new BadRequestException(
-          'Quantity products are not stocked as units; use quantity stock',
-        );
-      }
-      if (kind === 'SERIAL') {
-        if (!d.serialNumber) {
-          throw new BadRequestException(
-            'A serial product requires a serialNumber',
-          );
-        }
-        if (d.imei || d.imei2) {
-          throw new BadRequestException(
-            'A serial product must not carry an IMEI',
-          );
-        }
-      } else {
-        // IMEI kind (default).
-        if (!d.imei) {
-          throw new BadRequestException('An IMEI product requires an imei');
-        }
-        if (d.serialNumber) {
-          throw new BadRequestException(
-            'An IMEI product must not carry a serialNumber',
-          );
-        }
-      }
+      assertUnitKind(kindById.get(d.modelId) ?? 'IMEI', d);
     }
   }
 

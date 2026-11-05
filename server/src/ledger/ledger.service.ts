@@ -11,10 +11,10 @@ import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
 import { LedgerQueryDto } from './dto/ledger-query.dto.js';
 import { TransferDto } from './dto/transfer.dto.js';
 import { LedgerRepository } from './ledger.repository.js';
+import { hideCostAmount, parseDate, sumMap } from './lib/ledger-shaping.js';
 import { signedManualAmount } from './lib/signed-amount.js';
 import { currentAccount, foldSourceNets } from './lib/source-nets.js';
 import {
-  COST_TYPE_CODES,
   type AccountNet,
   type BalanceSummary,
   type DigestBalances,
@@ -122,6 +122,16 @@ export class LedgerService {
   /** The account each expense's money currently sits against, or none. */
   async expenseAccounts(ids: string[]): Promise<Map<string, string>> {
     const nets = await this.sourceNets('expenseId', ['EXPENSE'], ids);
+    return this.toCurrentAccounts(nets);
+  }
+
+  /** The account each customer purchase was paid from (ADR 0039); a trade-in has none. */
+  async customerPurchaseAccounts(ids: string[]): Promise<Map<string, string>> {
+    const nets = await this.sourceNets(
+      'customerPurchaseId',
+      ['CUSTOMER_PURCHASE'],
+      ids,
+    );
     return this.toCurrentAccounts(nets);
   }
 
@@ -269,24 +279,4 @@ export class LedgerService {
       throw new BadRequestException(`Unknown or inactive account ${code}`);
     }
   }
-}
-
-function parseDate(value?: string): Date | undefined {
-  return value ? new Date(value) : undefined;
-}
-
-/** Null the `amount` of a cost-type row; leave everything else untouched. */
-function hideCostAmount<T extends { typeCode: string; amount: unknown }>(
-  row: T,
-): T | (Omit<T, 'amount'> & { amount: null }) {
-  return COST_TYPE_CODES.has(row.typeCode) ? { ...row, amount: null } : row;
-}
-
-/** Account code → summed amount, from a Prisma groupBy result. */
-function sumMap(
-  sums: { accountCode: string; _sum: { amount: Prisma.Decimal | null } }[],
-): Map<string, Prisma.Decimal> {
-  return new Map(
-    sums.map((s) => [s.accountCode, s._sum.amount ?? new Prisma.Decimal(0)]),
-  );
 }
