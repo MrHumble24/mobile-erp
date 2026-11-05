@@ -36,10 +36,15 @@ data class ShipmentDto(
     val shipmentDate: String,
     val expectedCount: Int,
     val deviceCount: Int = 0,
-    val overheadCost: String? = null,
     val notes: String? = null,
-    /** Account the purchase + overhead left from; fixed at creation. Optional so older rows decode. */
+    /** Account the purchase + per-phone expense left from; fixed at creation. Optional so older rows decode. */
     val paymentAccountCode: String? = null,
+    /** Sum of the shipment's phones' expenses; cost-redacted (absent without the cost permission). */
+    val unitExpenseTotal: String? = null,
+    /** Sum of the shipment's phones' customs fees; cost-redacted. */
+    val customsFeeTotal: String? = null,
+    /** How many of the shipment's phones still have a 0 customs fee (warn UI). */
+    val devicesWithoutCustomsFee: Int = 0,
 ) {
     val isComplete: Boolean get() = deviceCount >= expectedCount
     /** `yyyy-MM-dd` slice of the ISO date for display. */
@@ -51,7 +56,6 @@ data class CreateShipmentBody(
     val supplierId: String,
     val shipmentDate: String,
     val expectedCount: Int,
-    val overheadCost: Double? = null,
     val notes: String? = null,
     val paymentAccountCode: String? = null,
 )
@@ -60,7 +64,6 @@ data class CreateShipmentBody(
 data class UpdateShipmentBody(
     val shipmentDate: String? = null,
     val expectedCount: Int? = null,
-    val overheadCost: Double? = null,
     val notes: String? = null,
 )
 
@@ -75,6 +78,9 @@ data class RegisterDeviceBody(
     val acquisitionCost: Double,
     val targetPrice: Double? = null,
     val imei2: String? = null,
+    /** Per-phone expense at intake; a non-zero value needs `device.expense` (server 403s otherwise). */
+    val unitExpense: Double? = null,
+    val unitExpenseNote: String? = null,
 )
 
 @Serializable
@@ -84,6 +90,9 @@ data class RegisteredDeviceDto(
     val modelId: String,
     val statusCode: String,
     val landedCost: String? = null,
+    /** Customs fee stamped by the server at intake; cost-redacted (null without the permission). */
+    val customsFee: String? = null,
+    val unitExpense: String? = null,
 )
 
 @Serializable
@@ -129,6 +138,11 @@ data class IntakeDraft(
     val acquisitionCost: Double,
     val targetPrice: Double?,
     val imei2: String? = null,
+    val unitExpense: Double? = null,
+    val unitExpenseNote: String? = null,
 ) {
-    fun toBody() = RegisterDeviceBody(imei, modelId, specs, acquisitionCost, targetPrice, imei2)
+    fun toBody() = RegisterDeviceBody(
+        imei, modelId, specs, acquisitionCost, targetPrice, imei2,
+        unitExpense, unitExpenseNote?.trim()?.ifBlank { null },
+    )
 }

@@ -16,6 +16,8 @@ fun ledgerTypeKey(code: String): String? = when (code) {
     "PARTNER_PAYMENT" -> "balance.typePartnerPayment"
     "PURCHASE" -> "balance.typePurchase"
     "OVERHEAD" -> "balance.typeOverhead"
+    "DEVICE_EXPENSE" -> "balance.typeDeviceExpense"
+    "CUSTOMS" -> "balance.typeCustoms"
     "EXPENSE" -> "balance.typeExpense"
     else -> null
 }
@@ -29,5 +31,6 @@ fun ledgerAccountKey(code: String): String? = when (code) {
 /** Type codes offered in the history filter (manual + automatic sets). */
 val LEDGER_FILTER_TYPES: List<String> = listOf(
     "OPENING", "DEPOSIT", "WITHDRAWAL", "CORRECTION", "TRANSFER",
-    "SALE", "REFUND", "PARTNER_PAYMENT", "PURCHASE", "OVERHEAD", "EXPENSE",
+    "SALE", "REFUND", "PARTNER_PAYMENT", "PURCHASE", "OVERHEAD",
+    "DEVICE_EXPENSE", "CUSTOMS", "EXPENSE",
 )

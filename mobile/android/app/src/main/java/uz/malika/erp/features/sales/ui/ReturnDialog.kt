@@ -19,8 +19,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import java.math.BigDecimal
 import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppFormField
@@ -43,6 +45,7 @@ fun ReturnDialog(
     online: Boolean,
     toaster: Toaster,
     refundAccounts: List<String> = emptyList(),
+    maxRefund: BigDecimal = BigDecimal.ZERO,
     onClose: () -> Unit,
 ) {
     val t = LocalT.current
@@ -50,6 +53,9 @@ fun ReturnDialog(
     var refund by remember { mutableStateOf("") }
     var reason by remember { mutableStateOf("") }
     var condition by remember { mutableStateOf("IN_STOCK") }
+    // The server rejects a refund above what was paid; cap the field at it client-side.
+    val capped = maxRefund.signum() > 0
+    val overCap = capped && parseMoney(refund) > maxRefund
 
     LaunchedEffect(ui.done) {
         if (ui.done) { toaster.success(t("sales.returnSuccess", null)); vm.resetReturn(); onClose() }
@@ -70,6 +76,14 @@ fun ReturnDialog(
                     enabled = !ui.busy,
                     keyboardType = KeyboardType.Decimal,
                 )
+                if (overCap) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "${t("sales.refundTooHigh", null)} (${formatMoney(maxRefund.toPlainString())})",
+                        color = Tokens.danger,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 Spacer(Modifier.height(12.dp))
                 AppFormField(
                     label = t("sales.returnReason", null),
@@ -109,7 +123,7 @@ fun ReturnDialog(
                 onClick = {
                     vm.submitReturn(saleId, parseMoney(refund).toDouble(), condition, reason.trim(), online)
                 },
-                enabled = !ui.busy,
+                enabled = !ui.busy && !overCap,
             )
         },
         dismissButton = {

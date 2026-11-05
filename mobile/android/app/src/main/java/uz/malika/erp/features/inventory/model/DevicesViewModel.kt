@@ -51,6 +51,10 @@ class DevicesViewModel(private val repo: DeviceRepository) : ViewModel() {
     suspend fun history(id: String): List<DeviceHistoryEntry> = repo.history(id)
     suspend fun update(id: String, specs: Map<String, Any>, targetPrice: Double?, imei2: String?) =
         repo.update(id, specs, targetPrice, imei2)
+    suspend fun setExpense(id: String, unitExpense: Double, unitExpenseNote: String?) =
+        repo.setExpense(id, unitExpense, unitExpenseNote)
+    suspend fun setCustomsFee(id: String, customsFee: Double) =
+        repo.setCustomsFee(id, customsFee)
     suspend fun changeStatus(id: String, toStatusCode: String, expectedVersion: Int, reason: String?) =
         repo.changeStatus(id, toStatusCode, expectedVersion, reason)
 }

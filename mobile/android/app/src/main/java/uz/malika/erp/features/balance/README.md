@@ -41,6 +41,11 @@ total, and the ledger of every movement, plus the owner's manual entries.
   is unit-tested in `test/.../balance/BalanceLogicTest.kt`.
 - Code → i18n mapping (`ledgerTypeKey`, `ledgerAccountKey`) falls back to the
   server `label` for an unknown code, so new server types render with no change.
+  `DEVICE_EXPENSE` and `CUSTOMS` (ADR 0026/0027) are mapped and in the type filter.
+- `LedgerTxn.amount` is nullable: the server sends `null` on a cost-type row for a
+  caller without `device.cost.view` (ADR 0028), and `LedgerRow` shows
+  `balance.amountHidden` instead of a figure. Decoding a null amount is unit-tested
+  in `test/.../balance/LedgerAmountDecodeTest.kt`.
 - Left out (simplest correct option, no server/kit support needed): the optional
   `occurredAt` date input (entries default to now; the kit ships no single-date
   field) and a split From/To filter (one range field instead). `balance.date`,

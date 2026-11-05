@@ -4,18 +4,15 @@ import kotlinx.serialization.Serializable
 import retrofit2.http.GET
 
 /**
- * The accounts half of `GET /ledger/balances` — just the codes + labels the
- * pickers need (balances/totals are the balance slice's concern). Its own
- * Retrofit interface, built via `container.retrofit.create(...)` on the one
- * shared pipeline. Requires `balance.read`; cashiers use [AccountOption.FALLBACK].
+ * `GET /ledger/accounts` — the codes + labels every money picker needs. No
+ * permission (cashiers pick cash/card at checkout without `balance.read`), so it
+ * replaces the old `/ledger/balances` + CASH/CARD fallback. Its own Retrofit
+ * interface, built via `container.retrofit.create(...)` on the one shared pipeline.
  */
 interface AccountsApi {
-    @GET("ledger/balances")
-    suspend fun balances(): BalancesResponse
+    @GET("ledger/accounts")
+    suspend fun accounts(): List<AccountRefDto>
 }
-
-@Serializable
-data class BalancesResponse(val accounts: List<AccountRefDto> = emptyList())
 
 @Serializable
 data class AccountRefDto(val accountCode: String = "", val label: String = "")

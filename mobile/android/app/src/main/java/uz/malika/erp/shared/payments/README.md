@@ -18,8 +18,9 @@ it carries domain meaning (CASH/CARD accounts) but no slice's state.
     assign = 0" gate). Used by online checkout **and** the offline outbox payload.
   - Unit-tested in `test/.../shared/payments/PaymentSplitTest.kt`.
 - `AccountOption` + `accountLabelKey` + `canonicalOrder` (CASH, CARD, then rest).
-- `AccountsApi` / `AccountsRepository` — `GET /ledger/balances` → options, with
-  `balance.read`; otherwise the two known codes `CASH`/`CARD`.
+- `AccountsApi` / `AccountsRepository` — `GET /ledger/accounts` → options (any
+  signed-in user, no permission). CASH/CARD is the fallback on an empty list or a
+  failed call; the Split control uses `balance.paySplit` (short "Split").
 - `ui/AccountPicker.kt` — the labelled picker + `rememberAccountOptions(container)`.
 - `ui/PaymentMethodField.kt` — the Cash/Card/Split control + `PaymentSelection`
   (per-account split text, live "left to assign", split-adds-up validity).
@@ -27,8 +28,3 @@ it carries domain meaning (CASH/CARD accounts) but no slice's state.
 ## Must never
 - Hold a slice's state, or know what a "device"/"expense"/"shipment" is.
 - Open a second OkHttp client — uses `container.retrofit.create(...)`.
-
-## Server gap (noted, not fixed here)
-`GET /ledger/balances` needs `balance.read`; cashiers lack it, so they get the
-CASH/CARD fallback. A small permission-free accounts endpoint would let cashiers
-see any non-default accounts too.

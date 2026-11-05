@@ -80,7 +80,10 @@ fun IntakeStagedList(
     }
 }
 
-/** Per-device landed cost returned by the server after a batch is registered. */
+/**
+ * Per-device result after a batch is registered: landed cost on the right and
+ * the server-stamped customs fee beneath it (shown when the server sent it).
+ */
 @Composable
 fun LandedResults(results: List<RegisteredDeviceDto>) {
     val t = LocalT.current
@@ -91,6 +94,12 @@ fun LandedResults(results: List<RegisteredDeviceDto>) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 ImeiText(r.imei, style = MaterialTheme.typography.bodySmall)
                 MoneyText(r.landedCost, style = MaterialTheme.typography.bodySmall)
+            }
+            r.customsFee?.let { fee ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t("inventory.customsFee", null), style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground)
+                    MoneyText(fee, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
+                }
             }
             Spacer(Modifier.height(Tokens.Space.rowV))
         }

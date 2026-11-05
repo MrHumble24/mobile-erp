@@ -8,12 +8,13 @@ class CatalogRepository(private val api: InventoryApi) {
     suspend fun list(): List<DeviceModelView> =
         runApi { api.deviceModels().map(DeviceModelView::fromDto) }
 
-    suspend fun create(brand: String, name: String, attributes: List<AttributeDef>) = runApi {
+    suspend fun create(brand: String, name: String, attributes: List<AttributeDef>, customsCode: String?) = runApi {
         api.createModel(
             ModelWriteBody(
                 brand = brand,
                 name = name,
                 attributes = attributes.map { it.toDto() },
+                customsCode = customsCode,
             ),
         )
     }
@@ -24,6 +25,7 @@ class CatalogRepository(private val api: InventoryApi) {
         name: String,
         isActive: Boolean,
         attributes: List<AttributeDef>,
+        customsCode: String?,
     ) = runApi {
         api.updateModel(
             id,
@@ -32,6 +34,7 @@ class CatalogRepository(private val api: InventoryApi) {
                 name = name,
                 attributes = attributes.map { it.toDto() },
                 isActive = isActive,
+                customsCode = customsCode,
             ),
         )
     }

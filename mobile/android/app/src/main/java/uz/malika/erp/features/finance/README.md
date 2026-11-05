@@ -71,3 +71,6 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
 - Expenses and recurring templates carry an optional `accountCode` (default
   `CASH`); the forms use the shared `AccountPicker` (`shared/payments`) and the
   expense row + detail show the account. `balance.payFrom` labels the picker.
+- Reports has a "Customs fees" tab (`reports.customsTab`, `CustomsFeesTab`): pick a
+  customs code, see its fee over time as a `BarChart` (the report chart) + the
+  points listed. It reads the `features/customs` data layer (ADR 0027).

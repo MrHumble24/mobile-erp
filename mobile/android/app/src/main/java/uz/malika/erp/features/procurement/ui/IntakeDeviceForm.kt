@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.lib.imeiSlotsFilled
@@ -27,6 +28,8 @@ import uz.malika.erp.features.procurement.lib.isValidImei
 import uz.malika.erp.features.procurement.lib.validateIntake
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.rememberHaptics
+import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.AppSwitch
 import uz.malika.erp.shared.ui.ScanConfirmSheet
 import uz.malika.erp.shared.ui.ScannerField
@@ -46,6 +49,7 @@ import uz.malika.erp.ui.theme.Tokens
 @Composable
 fun IntakeDeviceForm(
     models: List<DeviceModelDto>,
+    canExpense: Boolean,
     onAdd: (IntakeDraft) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,6 +58,9 @@ fun IntakeDeviceForm(
     val specs = remember { mutableStateMapOf<String, String>() }
     var cost by remember { mutableStateOf("") }
     var target by remember { mutableStateOf("") }
+    // Per-phone expense + note, carried onto each staged unit (editable between units).
+    var expense by remember { mutableStateOf("") }
+    var expenseNote by remember { mutableStateOf("") }
     // Toggle + model + cost persist across the batch; the IMEI slots reset per unit.
     var dualSim by remember { mutableStateOf(false) }
     var imei1 by remember { mutableStateOf("") }
@@ -86,7 +93,11 @@ fun IntakeDeviceForm(
             return
         }
         hintKey = null
-        val draft = IntakeDraft(imei1.trim(), m.id, specs.toMap(), costNum, target.trim().toDoubleOrNull(), second)
+        val draft = IntakeDraft(
+            imei1.trim(), m.id, specs.toMap(), costNum, target.trim().toDoubleOrNull(), second,
+            if (canExpense) expense.trim().toDoubleOrNull() else null,
+            if (canExpense) expenseNote.trim().ifBlank { null } else null,
+        )
         // Camera reads are confirmed first; a wedge/typed scan stages straight away.
         if (fromCamera) pending = draft else commit(draft)
     }
@@ -148,6 +159,15 @@ fun IntakeDeviceForm(
             onTargetChange = { target = it },
             hintKey = hintKey,
         )
+        if (canExpense) {
+            Spacer(Modifier.height(Tokens.Space.section))
+            ExpenseDefaults(
+                expense = expense,
+                onExpenseChange = { expense = it; stageIfComplete(false) },
+                note = expenseNote,
+                onNoteChange = { expenseNote = it },
+            )
+        }
     }
 
     pending?.let { d ->
@@ -187,6 +207,33 @@ private fun ImeiSlotLabel(
             Spacer(Modifier.width(Tokens.Space.gap))
             AppSwitch(checked = dualSim, onCheckedChange = null)
         }
+    }
+}
+
+/**
+ * Per-phone expense + note defaults, shown only with `device.expense`. They
+ * carry onto each unit staged while they are set (editable between units), so
+ * the server posts a `DEVICE_EXPENSE` ledger row for the entered amount.
+ */
+@Composable
+private fun ExpenseDefaults(
+    expense: String,
+    onExpenseChange: (String) -> Unit,
+    note: String,
+    onNoteChange: (String) -> Unit,
+) {
+    val t = LocalT.current
+    AppCard {
+        Text(t("inventory.unitExpense", null), style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(Tokens.Space.section))
+        AppFormField(
+            t("inventory.unitExpense", null), expense, onExpenseChange,
+            keyboardType = KeyboardType.Decimal,
+        )
+        Spacer(Modifier.height(Tokens.Space.rowV))
+        Text(t("inventory.unitExpenseHint", null), style = MaterialTheme.typography.bodySmall, color = Tokens.slate)
+        Spacer(Modifier.height(Tokens.Space.section))
+        AppFormField(t("inventory.unitExpenseNote", null), note, onNoteChange)
     }
 }
 

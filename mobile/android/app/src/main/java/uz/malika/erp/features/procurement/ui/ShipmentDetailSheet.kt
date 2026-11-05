@@ -67,8 +67,8 @@ fun ShipmentDetailSheet(
 /**
  * The detail body itself — reused as a phone bottom sheet ([ShipmentDetailSheet])
  * and as the tablet master-detail pane. The batch is its own identity (supplier,
- * date, intake progress, overhead, notes); the registered devices load one page
- * at a time (load-more), surfacing a retriable error if a page fails.
+ * date, intake progress, phone/customs totals, notes); the registered devices
+ * load one page at a time (load-more), surfacing a retriable error if a page fails.
  */
 @Composable
 fun ShipmentDetailContent(
@@ -149,48 +149,37 @@ fun ShipmentDetailContent(
     }
 }
 
-/** Overhead and notes rows, each shown only when the batch carries that value. */
+/**
+ * Paying account, the per-phone expense + customs-fee totals (each shown only
+ * when the server sent it — absent for users without the cost permission), the
+ * notes, and a warning line when any phone still lacks a customs fee.
+ */
 @Composable
 private fun ShipmentMeta(shipment: ShipmentDto) {
     val t = LocalT.current
-    val overhead = shipment.overheadCost
     val notes = shipment.notes?.takeIf { it.isNotBlank() }
     val account = shipment.paymentAccountCode
-    if (overhead == null && notes == null && account == null) return
     Spacer(Modifier.height(12.dp))
     Column(verticalArrangement = Arrangement.spacedBy(Tokens.Space.rowV)) {
-        if (account != null) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    t("balance.payFrom", null),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Tokens.mutedForeground,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(accountLabel(account, emptyList(), t), style = MaterialTheme.typography.bodyMedium)
-            }
+        account?.let { MetaRow(t("balance.payFrom", null)) { Text(accountLabel(it, emptyList(), t), style = MaterialTheme.typography.bodyMedium) } }
+        shipment.unitExpenseTotal?.let { MetaRow(t("shipments.unitExpenseTotal", null)) { MoneyText(it, style = MaterialTheme.typography.bodyMedium) } }
+        shipment.customsFeeTotal?.let { MetaRow(t("shipments.customsFeeTotal", null)) { MoneyText(it, style = MaterialTheme.typography.bodyMedium) } }
+        notes?.let { MetaRow(t("common.notes", null)) { Text(it, style = MaterialTheme.typography.bodyMedium) } }
+        if (shipment.devicesWithoutCustomsFee > 0) {
+            Text(
+                t("shipments.devicesWithoutCustomsFee", mapOf("count" to shipment.devicesWithoutCustomsFee)),
+                style = MaterialTheme.typography.bodySmall,
+                color = Tokens.warning,
+            )
         }
-        if (overhead != null) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    t("shipments.overheadCost", null),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Tokens.mutedForeground,
-                    modifier = Modifier.weight(1f),
-                )
-                MoneyText(overhead, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        if (notes != null) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    t("common.notes", null),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Tokens.mutedForeground,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(notes, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
+    }
+}
+
+/** A label/value meta row: muted label on the left, the caller's value on the right. */
+@Composable
+private fun MetaRow(label: String, value: @Composable () -> Unit) {
+    Row(Modifier.fillMaxWidth()) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = Tokens.mutedForeground, modifier = Modifier.weight(1f))
+        value()
     }
 }

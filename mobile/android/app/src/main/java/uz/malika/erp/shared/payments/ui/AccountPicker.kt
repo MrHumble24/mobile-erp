@@ -6,7 +6,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import uz.malika.erp.AppContainer
-import uz.malika.erp.app.LocalCan
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.payments.AccountOption
@@ -22,16 +21,15 @@ fun accountLabel(code: String, options: List<AccountOption>, t: Translate): Stri
         ?: code
 
 /**
- * The account options for the current user, fetched once. `balance.read` → the
- * live `/ledger/balances` accounts; otherwise the CASH/CARD fallback. A failed
- * fetch also falls back, so a picker always has at least two choices.
+ * The account options for the current user, fetched once from `GET
+ * /ledger/accounts` (no permission needed). A failed fetch falls back to
+ * CASH/CARD, so a picker always has at least two choices.
  */
 @Composable
 fun rememberAccountOptions(container: AppContainer): State<List<AccountOption>> {
-    val canRead = LocalCan.current("balance.read")
     val repo = remember { AccountsRepository(container.retrofit.create(AccountsApi::class.java)) }
-    return produceState(initialValue = AccountOption.FALLBACK, canRead) {
-        value = runCatching { repo.options(canRead) }.getOrDefault(AccountOption.FALLBACK)
+    return produceState(initialValue = AccountOption.FALLBACK) {
+        value = runCatching { repo.options() }.getOrDefault(AccountOption.FALLBACK)
     }
 }
 

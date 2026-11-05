@@ -42,6 +42,19 @@ class DeviceRepository(private val api: InventoryApi, private val dao: DeviceDao
         api.updateDevice(id, body)
     }
 
+    /** Sets a phone's own expense; the server posts the ledger difference. Note null clears it. */
+    suspend fun setExpense(id: String, unitExpense: Double, unitExpenseNote: String?) = runApi {
+        api.setExpense(id, buildJsonObject {
+            put("unitExpense", JsonPrimitive(unitExpense))
+            put("unitExpenseNote", unitExpenseNote?.let { JsonPrimitive(it) } ?: JsonNull)
+        })
+    }
+
+    /** Hand-fixes a phone's customs fee; the server posts the CUSTOMS difference. */
+    suspend fun setCustomsFee(id: String, customsFee: Double) = runApi {
+        api.setCustomsFee(id, buildJsonObject { put("customsFee", JsonPrimitive(customsFee)) })
+    }
+
     /** Throws [uz.malika.erp.core.AppException] with statusCode 409 on a version mismatch. */
     suspend fun changeStatus(id: String, toStatusCode: String, expectedVersion: Int, reason: String?) =
         runApi {

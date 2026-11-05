@@ -67,7 +67,7 @@ fun PaymentMethodField(
             options = listOf(
                 SegmentOption(PaymentMethod.CASH, t("balance.payCash", null)),
                 SegmentOption(PaymentMethod.CARD, t("balance.payCard", null)),
-                SegmentOption(PaymentMethod.SPLIT, t("balance.splitPayment", null)),
+                SegmentOption(PaymentMethod.SPLIT, t("balance.paySplit", null)),
             ),
             selected = selection.method,
             onSelect = { if (enabled) onSelection(selection.copy(method = it)) },

@@ -90,3 +90,6 @@ kit `LoadMoreFooter`). Raw key shows until added.
   `PaymentSplit.allocate` and ridden into each `sale.create` payload (online and
   offline). Sale detail + receipt show the `payments` lines (empty → nothing);
   the return dialog says the refund returns to those accounts (`sales.refundGoesBack`).
+- The return dialog caps the refund at what was paid (sum of the sale's `payments`,
+  else `salePrice`); over the cap it shows `sales.refundTooHigh` and blocks submit,
+  matching the server's 400 (ADR 0028).
