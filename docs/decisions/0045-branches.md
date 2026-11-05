@@ -17,6 +17,9 @@ customers, and partners remain shared. Stock moves between stores via transfers.
   auto-resolves; with multiple returns 400 `STORE_REQUIRED`; unauthorized store returns 403.
 - **Read & write scoping**: All queries on store-scoped tables filter by active store.
   `X-Store-Id: all` allowed only on `@AllowAllStores()` endpoints (reports, ledger balances).
+- **Warranty cross-store lookup**: Warranty is honoured across all branches (`GET /sales/warranty/:imei`
+  remains company-wide). When a sale belongs to another branch, `salePrice` and cost/profit
+  fields are redacted (`null`), and `storeName` identifies the branch that sold it.
 - **Stock transfers** (`/stock-transfers`): Lines are `UNIT` (device) or `QUANTITY` (stock).
   Sending puts units in `IN_TRANSIT` and debits origin quantity stock (frozen cost).
   Receiving credits target store. Cancelling returns items to origin. In-transit units
@@ -24,4 +27,5 @@ customers, and partners remain shared. Stock moves between stores via transfers.
 
 ## Consequences
 - Single resolution point in `StoresService` ensures complete scoping without leaking rows.
-- Daily closing digests format breakdown blocks per store.
+- Daily closing digests iterate active stores and evaluate schedule/sent markers per store
+  inside `runWithStoreSelection`, formatting breakdown blocks per store.

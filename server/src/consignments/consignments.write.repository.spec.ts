@@ -138,9 +138,9 @@ describe('ConsignmentsWriteRepository.settle', () => {
       agreedPrice: D(500),
       device: { id: 'd1', statusCode: 'SOLD', version: 1, landedCost: D(100) },
     });
-    await expect(build(tx).settle('c1', { soldById: 'u1' })).rejects.toThrow(
-      ConflictException,
-    );
+    await expect(
+      build(tx).settle('c1', { soldById: 'u1', storeId: 'store-1' }),
+    ).rejects.toThrow(ConflictException);
     expect(tx.sale.create).not.toHaveBeenCalled();
   });
 
@@ -178,7 +178,7 @@ describe('ConsignmentsWriteRepository.settle', () => {
       createdById: 'u1',
       createdAt: new Date(),
     });
-    await build(tx).settle('c1', { soldById: 'u1' });
+    await build(tx).settle('c1', { soldById: 'u1', storeId: 'store-1' });
     expect(tx.sale.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         salePrice: D(500),

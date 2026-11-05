@@ -113,15 +113,18 @@ export class ExpensesService {
   }
 
   async summary(query: ExpenseSummaryQueryDto): Promise<ExpenseSummary> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = parseDate(query.from);
     const to = parseDate(query.to);
     const prev = previousPeriod(from, to);
     const [agg, prevAgg, grouped, categories, daily] = await Promise.all([
-      this.repo.sumAgg(this.repo.toWhere({ from, to })),
-      this.repo.sumAgg(this.repo.toWhere({ from: prev.from, to: prev.to })),
-      this.repo.sumByCategory(this.repo.toWhere({ from, to })),
+      this.repo.sumAgg(this.repo.toWhere({ storeIds, from, to })),
+      this.repo.sumAgg(
+        this.repo.toWhere({ storeIds, from: prev.from, to: prev.to }),
+      ),
+      this.repo.sumByCategory(this.repo.toWhere({ storeIds, from, to })),
       this.categories.list(),
-      this.repo.dailySeries(from, to),
+      this.repo.dailySeries(from, to, storeIds),
     ]);
     const nameOf = new Map(categories.map((c) => [c.id, c.name]));
     const byCategory: ExpenseCategoryTotal[] = grouped

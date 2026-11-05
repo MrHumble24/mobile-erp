@@ -41,10 +41,10 @@ export class ShiftsRepository {
     });
   }
 
-  findById(id: string, storeIds?: string[]): Promise<ShiftRow | null> {
+  findById(id: string, storeIds: string[]): Promise<ShiftRow | null> {
     const where: Prisma.ShiftWhereInput = {
       id,
-      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
     };
     return this.prisma.shift.findFirst({
       where,

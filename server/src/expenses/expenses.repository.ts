@@ -92,12 +92,12 @@ export class ExpensesRepository {
     return { items, total };
   }
 
-  findById(id: string, storeIds?: string[]) {
+  findById(id: string, storeIds: string[]) {
     return this.prisma.expense.findFirst({
       where: {
         id,
         deletedAt: null,
-        ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
       },
       include: LIST_INCLUDE,
     });
@@ -194,9 +194,19 @@ export class ExpensesRepository {
     });
   }
 
-  async dailySeries(from?: Date, to?: Date): Promise<ExpenseDailyPoint[]> {
+  async dailySeries(
+    from?: Date,
+    to?: Date,
+    storeIds?: string[],
+  ): Promise<ExpenseDailyPoint[]> {
     const lower = from ?? new Date(0);
     const upper = to ?? new Date();
+    const storeClause =
+      storeIds === undefined
+        ? Prisma.empty
+        : storeIds.length === 0
+          ? Prisma.sql`AND 1=0`
+          : Prisma.sql`AND "storeId" IN (${Prisma.join(storeIds)})`;
     const rows = await this.prisma.$queryRaw<
       { date: string; total: number }[]
     >(Prisma.sql`
@@ -205,6 +215,7 @@ export class ExpensesRepository {
       FROM expenses
       WHERE "deletedAt" IS NULL
         AND "incurredAt" >= ${lower} AND "incurredAt" <= ${upper}
+        ${storeClause}
       GROUP BY 1
       ORDER BY 1
     `);

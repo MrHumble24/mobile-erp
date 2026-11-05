@@ -156,7 +156,8 @@ export interface WarrantyLookupView {
   serialNumber: string | null;
   saleId: string;
   purchasedAt: Date;
-  salePrice: Money;
+  salePrice: Money | null;
+  storeName: string | null;
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
   remainingDays: number;
   latestInspection: { grade: string | null; notes: string | null } | null;

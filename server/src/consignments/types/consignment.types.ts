@@ -73,7 +73,7 @@ export interface SettleInput {
   notes?: string;
   expectedVersion?: number;
   soldById: string;
-  storeId?: string;
+  storeId: string;
 }
 
 export interface ReturnInput {
@@ -82,5 +82,5 @@ export interface ReturnInput {
   condition?: 'IN_STOCK' | 'DEFECTIVE';
   expectedVersion?: number;
   changedById: string;
-  storeId?: string;
+  storeId: string;
 }

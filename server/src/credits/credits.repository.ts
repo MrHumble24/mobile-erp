@@ -96,12 +96,12 @@ export class CreditsRepository {
 
   findRawById(
     id: string,
+    storeIds: string[],
     client: PrismaTx | PrismaService = this.prisma,
-    storeIds?: string[],
   ): Promise<CreditRaw | null> {
     const where: Prisma.CustomerCreditWhereInput = {
       id,
-      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
     };
     return client.customerCredit.findFirst({
       where,

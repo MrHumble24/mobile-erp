@@ -36,11 +36,11 @@ export class ExpenseRecurrencesRepository {
     });
   }
 
-  findById(id: string, storeIds?: string[]) {
+  findById(id: string, storeIds: string[]) {
     return this.prisma.expenseRecurrence.findFirst({
       where: {
         id,
-        ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
       },
       include: INCLUDE,
     });

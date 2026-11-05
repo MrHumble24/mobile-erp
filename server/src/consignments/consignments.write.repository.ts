@@ -103,12 +103,12 @@ export class ConsignmentsWriteRepository {
   private async loadDeviceByCode(
     tx: Tx,
     code: string,
-    storeId?: string,
+    storeId: string,
   ): Promise<DeviceLock> {
     const device = await tx.device.findFirst({
       where: {
         ...unitCodeWhere(code),
-        ...(storeId ? { storeId } : {}),
+        storeId,
       },
       select: { id: true, statusCode: true, version: true, landedCost: true },
     });
@@ -119,14 +119,14 @@ export class ConsignmentsWriteRepository {
   private async loadOut(
     tx: Tx,
     id: string,
-    storeId?: string,
+    storeId: string,
   ): Promise<{
     storeId: string;
     agreedPrice: Prisma.Decimal;
     device: DeviceLock;
   }> {
     const c = await tx.consignment.findFirst({
-      where: { id, ...(storeId ? { storeId } : {}) },
+      where: { id, storeId },
       select: {
         statusCode: true,
         storeId: true,

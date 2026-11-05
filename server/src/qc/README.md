@@ -15,8 +15,9 @@ Owns `qc_inspections` and `qc_defects`, plus full management of the QC lookups
   grade/defect code (400).
 - `GET /inspections` (`qc.read`) — paginated `{ items, total, page, pageSize }`;
   filters `deviceId|imei|passed|gradeCode|defectCode|inspectedById|from|to`
-  (`imei` matches either IMEI column), `page`, `pageSize`. Each item adds
-  `device` (incl. `imei2`) and `inspectedBy { id, name }`.
+  (`imei` matches either IMEI column), `page`, `pageSize`. Scoped to devices of
+  the active store (`currentStoreIds()`). Each item adds `device` (incl. `imei2`)
+  and `inspectedBy { id, name }`.
 - `GET /stats?from&to` (`qc.read`) — `{ inspected, passed, failed, passRate
   (0–1), byGrade, topDefects, avgBatteryHealth, awaitingInspection }`. One
   aggregate query per field; `awaitingInspection` comes from

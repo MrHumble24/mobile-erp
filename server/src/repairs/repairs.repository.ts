@@ -43,10 +43,10 @@ export type RepairRaw = Prisma.RepairGetPayload<{
 export class RepairsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findRawById(id: string, storeIds?: string[]): Promise<RepairRaw | null> {
+  findRawById(id: string, storeIds: string[]): Promise<RepairRaw | null> {
     const where: Prisma.RepairWhereInput = {
       id,
-      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
     };
     return this.prisma.repair.findFirst({
       where,

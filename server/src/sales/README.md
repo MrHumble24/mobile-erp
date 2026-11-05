@@ -36,9 +36,12 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
 - `GET /sales/:id` (`sale.read`) → `SaleView`.
 - `GET /sales/warranty/:imei` (`sale.read`; the `:imei` path segment is any unit
   code — matches imei, imei2 or serialNumber) → `WarrantyLookupView`
-  `{ imei, serialNumber, saleId, purchasedAt, salePrice,
+  `{ imei, serialNumber, saleId, purchasedAt, salePrice, storeName,
   warranty{days,startsAt,endsAt}|null, remainingDays,
   latestInspection{grade,notes}|null, alreadyReturned }`.
+  Lookup is company-wide so warranties are honoured across all branches;
+  when sold in another branch, `salePrice` is redacted to `null` and `storeName`
+  names the selling branch.
 - `POST /sales/:id/return` (`sale.return`) `{ refundAmount, reason?,
   deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView`
   (409 if already returned). The refund is capped at the sale's net `SALE` total

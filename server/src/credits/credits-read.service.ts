@@ -184,7 +184,7 @@ export class CreditsReadService {
 
   private async require(id: string, tx?: PrismaTx): Promise<CreditRaw> {
     const storeIds = await this.stores.currentStoreIds();
-    const raw = await this.repo.findRawById(id, tx, storeIds);
+    const raw = await this.repo.findRawById(id, storeIds, tx);
     if (!raw) throw new NotFoundException(`Credit ${id} not found`);
     return raw;
   }

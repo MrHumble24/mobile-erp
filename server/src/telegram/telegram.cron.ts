@@ -55,16 +55,7 @@ export class TelegramCron {
   async closingDigest(): Promise<void> {
     await this.run(async () => {
       const now = new Date();
-      const { closingTime, digestSentOn } = await this.settings.get();
-      if (!shouldSendDigest(now, closingTime, digestSentOn)) return;
-
       const activeStores = await this.stores.list(false);
-      const partners = await this.partners.list();
-      const outstanding = partners.reduce(
-        (sum, p) => sum + Number(p.outstanding),
-        0,
-      );
-
       const storeBlocks: messages.DigestStoreBlock[] = [];
       let digestDate = '';
 
@@ -72,6 +63,9 @@ export class TelegramCron {
         await runWithStoreSelection(
           { all: false, storeIds: [store.id] },
           async () => {
+            const { closingTime, digestSentOn } = await this.settings.get();
+            if (!shouldSendDigest(now, closingTime, digestSentOn)) return;
+
             const closing = await this.reports.dailyClosing({});
             digestDate = closing.date;
             const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
@@ -84,9 +78,18 @@ export class TelegramCron {
               expenses: closing.expenses,
               balances,
             });
+            await this.settings.markDigestSent(todayMarker(now));
           },
         );
       }
+
+      if (storeBlocks.length === 0) return;
+
+      const partners = await this.partners.list();
+      const outstanding = partners.reduce(
+        (sum, p) => sum + Number(p.outstanding),
+        0,
+      );
 
       await this.telegram.send(
         messages.dailyDigest({
@@ -95,7 +98,6 @@ export class TelegramCron {
           stores: storeBlocks,
         }),
       );
-      await this.settings.markDigestSent(todayMarker(now));
     });
   }
 

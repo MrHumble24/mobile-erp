@@ -130,7 +130,7 @@ export class ShiftsService {
         });
       }
     });
-    const closed = await this.repo.findById(shift.id);
+    const closed = await this.repo.findById(shift.id, [storeId]);
     return this.read.buildReport(closed!);
   }
 

@@ -147,8 +147,8 @@ export class SalesReturnsService {
     return buildRefundPostings(dto.refundAmount, saleNets);
   }
 
-  private async require(id: string, storeId?: string): Promise<SaleView> {
-    const view = await this.reads.findById(id, storeId ? [storeId] : undefined);
+  private async require(id: string, storeId: string): Promise<SaleView> {
+    const view = await this.reads.findById(id, [storeId]);
     if (!view) throw new NotFoundException(`Sale ${id} not found`);
     const [payments, tradeIns, bonus] = await Promise.all([
       this.ledger.salePayments([id]),

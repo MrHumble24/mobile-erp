@@ -55,12 +55,12 @@ export class SalesRepository {
 
   async listByCustomer(
     customerId: string,
-    storeIds?: string[],
+    storeIds: string[],
   ): Promise<SaleView[]> {
     const rows = await this.prisma.sale.findMany({
       where: {
         customerId,
-        ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
       },
       orderBy: { soldAt: 'desc' },
       select: saleSelect,
@@ -129,7 +129,7 @@ export class SalesRepository {
 
   findDeviceByImei(
     code: string,
-    storeId?: string,
+    storeId: string,
   ): Promise<{
     id: string;
     statusCode: string;
@@ -143,7 +143,7 @@ export class SalesRepository {
     return this.prisma.device.findFirst({
       where: {
         ...unitCodeWhere(code),
-        ...(storeId ? { storeId } : {}),
+        storeId,
       },
       select: {
         id: true,
@@ -184,11 +184,11 @@ export class SalesRepository {
 
   findSaleForReturn(
     id: string,
-    storeId?: string,
+    storeId: string,
   ): Promise<SaleForReturn | null> {
     const where: Prisma.SaleWhereInput = {
       id,
-      ...(storeId ? { storeId } : {}),
+      storeId,
     };
     return this.prisma.sale.findFirst({
       where,
@@ -206,10 +206,10 @@ export class SalesRepository {
     });
   }
 
-  findDeviceState(id: string, storeId?: string): Promise<DeviceState | null> {
+  findDeviceState(id: string, storeId: string): Promise<DeviceState | null> {
     const where: Prisma.DeviceWhereInput = {
       id,
-      ...(storeId ? { storeId } : {}),
+      storeId,
     };
     return this.prisma.device.findFirst({
       where,
@@ -230,12 +230,17 @@ export class SalesRepository {
     return row?.defaultWarrantyDays ?? 14;
   }
 
-  async warrantyLookup(code: string): Promise<WarrantyLookupView | null> {
+  async warrantyLookup(
+    code: string,
+    activeStoreId?: string,
+  ): Promise<WarrantyLookupView | null> {
     const sale = await this.prisma.sale.findFirst({
       where: { device: unitCodeWhere(code) },
       orderBy: { soldAt: 'desc' },
       select: {
         id: true,
+        storeId: true,
+        store: { select: { name: true } },
         salePrice: true,
         soldAt: true,
         deviceId: true,
@@ -250,12 +255,15 @@ export class SalesRepository {
       orderBy: { inspectedAt: 'desc' },
       select: { gradeCode: true, notes: true },
     });
+    const isSameStore =
+      activeStoreId !== undefined && sale.storeId === activeStoreId;
     return {
       imei: sale.device.imei,
       serialNumber: sale.device.serialNumber,
       saleId: sale.id,
       purchasedAt: sale.soldAt,
-      salePrice: sale.salePrice,
+      salePrice: isSameStore ? sale.salePrice : null,
+      storeName: sale.store?.name ?? null,
       warranty: sale.warranty,
       remainingDays: sale.warranty
         ? remainingWarrantyDays(sale.warranty.endsAt)

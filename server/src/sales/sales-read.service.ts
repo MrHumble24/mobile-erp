@@ -59,7 +59,9 @@ export class SalesReadService {
   }
 
   async warrantyLookup(imei: string): Promise<WarrantyLookupView> {
-    const lookup = await this.reads.warrantyLookup(imei);
+    const storeIds = await this.stores.currentStoreIds();
+    const activeStoreId = storeIds.length === 1 ? storeIds[0] : undefined;
+    const lookup = await this.reads.warrantyLookup(imei, activeStoreId);
     if (!lookup) throw new NotFoundException(`No sale found for IMEI ${imei}`);
     return lookup;
   }

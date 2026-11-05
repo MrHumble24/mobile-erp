@@ -16,11 +16,11 @@ export class DevicesStatusRepository {
 
   findState(
     id: string,
-    storeIds?: string[],
+    storeIds: string[],
   ): Promise<{ statusCode: string; version: number } | null> {
     const where: Prisma.DeviceWhereInput = {
       id,
-      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
     };
     return this.prisma.device.findFirst({
       where,
