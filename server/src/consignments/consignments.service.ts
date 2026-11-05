@@ -150,11 +150,12 @@ export class ConsignmentsService {
     return c;
   }
 
-  settle(
+  async settle(
     caller: AuthenticatedUser,
     id: string,
     dto: SettleConsignmentDto,
   ): Promise<ConsignmentView> {
+    const storeId = await this.stores.currentStoreId();
     return this.writes.settle(id, {
       salePrice:
         dto.salePrice === undefined
@@ -163,19 +164,22 @@ export class ConsignmentsService {
       notes: dto.notes,
       expectedVersion: dto.expectedVersion,
       soldById: caller.id,
+      storeId,
     });
   }
 
-  returnToStock(
+  async returnToStock(
     caller: AuthenticatedUser,
     id: string,
     dto: ReturnConsignmentDto,
   ): Promise<ConsignmentView> {
+    const storeId = await this.stores.currentStoreId();
     return this.writes.returnToStock(id, {
       reason: dto.reason,
       condition: dto.condition,
       expectedVersion: dto.expectedVersion,
       changedById: caller.id,
+      storeId,
     });
   }
 }

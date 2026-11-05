@@ -35,10 +35,19 @@ export class StockTransfersService {
     return this.repo.list(storeIds, query);
   }
 
-  async get(id: string): Promise<StockTransferView> {
+  async get(caller: AuthenticatedUser, id: string): Promise<StockTransferView> {
     const transfer = await this.repo.findById(id);
     if (!transfer)
       throw new NotFoundException(`Stock transfer ${id} not found`);
+
+    const allowed = await this.stores.allowedStoreIds(caller);
+    if (
+      !allowed.includes(transfer.sourceStoreId) &&
+      !allowed.includes(transfer.targetStoreId)
+    ) {
+      throw new NotFoundException(`Stock transfer ${id} not found`);
+    }
+
     return transfer;
   }
 

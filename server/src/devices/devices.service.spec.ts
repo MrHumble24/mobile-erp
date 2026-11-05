@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
@@ -92,6 +96,14 @@ describe('DevicesService.changeStatus', () => {
     await expect(
       service.changeStatus('d1', 'SOLD', 'u1', undefined, 0),
     ).rejects.toThrow(ConflictException);
+  });
+
+  it('throws 404 when device belongs to another store', async () => {
+    const { service, status } = build(null);
+    await expect(
+      service.changeStatus('d1', 'DEFECTIVE', 'u1', 'QC'),
+    ).rejects.toThrow(NotFoundException);
+    expect(status.applyStatusChange).not.toHaveBeenCalled();
   });
 });
 

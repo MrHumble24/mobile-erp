@@ -32,7 +32,7 @@ export class MutationDto {
   baseVersion?: number;
 
   @IsOptional()
-  @IsString()
+  @IsUUID()
   storeId?: string;
 
   @IsString()

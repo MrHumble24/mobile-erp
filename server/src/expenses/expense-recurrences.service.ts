@@ -18,8 +18,9 @@ export class ExpenseRecurrencesService {
     private readonly ledger: LedgerService,
   ) {}
 
-  list() {
-    return this.repo.findAll();
+  async list() {
+    const storeIds = await this.stores.currentStoreIds();
+    return this.repo.findAll(storeIds);
   }
 
   async create(createdById: string, dto: CreateExpenseRecurrenceDto) {
@@ -72,7 +73,8 @@ export class ExpenseRecurrencesService {
   }
 
   private async require(id: string) {
-    const found = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const found = await this.repo.findById(id, storeIds);
     if (!found) {
       throw new NotFoundException(`Recurrence ${id} not found`);
     }

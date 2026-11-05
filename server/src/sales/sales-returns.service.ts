@@ -9,6 +9,7 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
 import {
   assertRefundWithinSale,
@@ -32,6 +33,7 @@ export class SalesReturnsService {
     private readonly ledger: LedgerService,
     private readonly purchases: CustomerPurchasesService,
     private readonly bonus: BonusService,
+    private readonly stores: StoresService,
   ) {}
 
   async processReturn(
@@ -39,7 +41,8 @@ export class SalesReturnsService {
     id: string,
     dto: ReturnSaleDto,
   ): Promise<SaleView> {
-    const sale = await this.reads.findSaleForReturn(id);
+    const storeId = await this.stores.currentStoreId();
+    const sale = await this.reads.findSaleForReturn(id, storeId);
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
     await this.assertNotBoughtBack(sale);
 
@@ -72,10 +75,10 @@ export class SalesReturnsService {
         },
         reverseBonus,
       );
-      return this.require(id);
+      return this.require(id, storeId);
     }
 
-    const device = await this.reads.findDeviceState(sale.deviceId);
+    const device = await this.reads.findDeviceState(sale.deviceId, storeId);
     if (!device) throw new NotFoundException(`Sale ${id} device missing`);
     await this.checkout.processReturn(
       {
@@ -85,7 +88,7 @@ export class SalesReturnsService {
       },
       reverseBonus,
     );
-    return this.require(id);
+    return this.require(id, storeId);
   }
 
   /**
@@ -144,8 +147,8 @@ export class SalesReturnsService {
     return buildRefundPostings(dto.refundAmount, saleNets);
   }
 
-  private async require(id: string): Promise<SaleView> {
-    const view = await this.reads.findById(id);
+  private async require(id: string, storeId?: string): Promise<SaleView> {
+    const view = await this.reads.findById(id, storeId ? [storeId] : undefined);
     if (!view) throw new NotFoundException(`Sale ${id} not found`);
     const [payments, tradeIns, bonus] = await Promise.all([
       this.ledger.salePayments([id]),

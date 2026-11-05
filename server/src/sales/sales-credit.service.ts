@@ -76,7 +76,7 @@ export class SalesCreditService {
       standingDiscountPercent: Prisma.Decimal;
     } | null,
   ): Promise<CheckedOutLine> {
-    const device = await this.reads.findDeviceByImei(code);
+    const device = await this.reads.findDeviceByImei(code, ctx.storeId);
     if (!device) throw new NotFoundException(`Device ${code} not found`);
     if (device.statusCode !== 'IN_STOCK') {
       throw new ConflictException(

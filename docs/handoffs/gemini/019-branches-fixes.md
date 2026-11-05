@@ -1,6 +1,6 @@
 # 019 — Branches: fixes after Claude's check of 018
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: handoff 018, branch `agent/gemini/branches`
+Status: done · Owner: Gemini (Antigravity) · Depends on: handoff 018, branch `agent/gemini/branches`
 
 ## Why
 Claude checked handoff 018 on 2026-11-06: build, 540 tests and lint pass; the header rules, the
@@ -46,12 +46,35 @@ Fill the Result section below and set Status to done. Report only what you ran; 
 
 ## Result (Gemini fills)
 - Commits:
+  - `fix(branches): fix write scoping security vulnerabilities S1-S8 and client bugs W1-W4`
 - S1 to S8, one line each (fixed how, test name):
+  - S1: Validated `storeId` as UUID in `push.dto.ts`, rejected stores outside caller membership with `STORE_FORBIDDEN` and missing storeId with `STORE_REQUIRED`, wrapped execution in store selection context (`sync.service.spec.ts`: "rejects replay targeting store outside caller membership with STORE_FORBIDDEN").
+  - S2: Scoped `findDeviceByImei(code, storeId?)` in `sales.repository.ts` to active store; passed active store in create and credit services (`sales-create.service.spec.ts`: "rejects sale when device belongs to another store with 404").
+  - S3: Scoped `findSaleForReturn` and `findDeviceState` in `sales.repository.ts` to active store; injected `StoresService` in `sales-returns.service.ts` throwing 404 if sale or device belongs to another store (`sales-returns.service.spec.ts`: "throws NotFoundException when sale belongs to another store").
+  - S4: Added `storeId?: string` to `SettleInput` and `ReturnInput`; scoped `loadDeviceByCode` and `loadOut` in `consignments.write.repository.ts` by active store passed from service (`consignments.write.repository.spec.ts`: "rejects loading consignment out of another store with NotFoundException").
+  - S5: Inside transactions, added atomic conditional updates: `tx.device.updateMany({ where: { id, statusCode: 'IN_STOCK' } })` on send, `tx.stockTransfer.updateMany({ where: { id, status: 'SENT' }, data: { status: 'RECEIVED' } })` on receive, and `updateMany({ where: { id, status: 'SENT' }, data: { status: 'CANCELLED' } })` on cancel, throwing `ConflictException` if count === 0 (`stock-transfers.service.spec.ts`: "rejects concurrent or double receive with ConflictException").
+  - S6: Scoped `get(caller, id)` in `stock-transfers.service.ts` and controller by checking caller belongs to source or target store via `allowedStoreIds(caller)`, throwing 404 otherwise (`stock-transfers.service.spec.ts`: "throws NotFoundException when caller belongs to neither source nor target store").
+  - S7: Scoped `listByCustomer(customerId, storeIds?)` in `sales.repository.ts` to active stores; retrieved `stores.currentStoreIds()` in `sales-read.service.ts` (`sales-read.service.spec.ts`: "scopes customer sales query to active store ids").
+  - S8: `StoresService.currentStoreId()` throws `BadRequestException({ code: STORE_REQUIRED, message: 'No store selected; send X-Store-Id' })` when no store selected (`stores.service.spec.ts`: "throws BadRequestException with STORE_REQUIRED when no store selected").
 - Extra unscoped places found and fixed:
+  - `server/src/expenses/expense-recurrences.repository.ts` (`findAll`, `findById`) and `expense-recurrences.service.ts` (`list`, `require`): scoped by `stores.currentStoreIds()`.
+  - `server/src/devices/devices-status.repository.ts` (`findState`) and `devices.service.ts` (`changeStatus`): scoped by active store, throwing 404 if device is in another store (tested in `devices.service.spec.ts`).
 - W1 to W4, one line each:
+  - W1: In `client/src/features/switch-store/model/store.store.ts`, invoked `await qc.invalidateQueries()` after `qc.clear()` on store switch so active mounted queries refetch immediately.
+  - W2: In `client/src/pages/balance/ui/StoreBreakdownTable.tsx`, dynamically generated account column headers from server returned `stores` accounts array instead of hardcoded `"cash"` and `"bank"`.
+  - W3: Added `"created": "Created"` to `client/src/shared/i18n/en/common.json` and `"created": "Yaratilgan"` to `client/src/shared/i18n/uz/common.json`.
+  - W4: Removed module-level `storeOverride` / `setHttpStoreOverride` from `client/src/shared/api/http.ts`; created `ReportAllStoresProvider` and `useReportAllStores()` in `entities/report/model/report-store-context.tsx`, passing `{ 'X-Store-Id': 'all' }` via query headers and wrapping `ReportsPage`.
 - Browser walk-through, what was seen at each step:
+  - Inventory store switch: Main store inventory rendered (40 rows), switched StorePicker dropdown to Branch 2; table refreshed immediately with Branch 2 items without page reload (path remained `/inventory`).
+  - Balance page "All stores": Toggled `#all-stores-balance` switch; `StoreBreakdownTable` rendered rows for Main store (`CASH -$19,045,776.71, CARD -$1,680,634.29, TOTAL -$20,726,411`) and Branch 2 (`CASH -$285,100, CARD $0, TOTAL -$285,100`), correctly summing up to company total.
+  - Transfers: Intaked 1 phone and 2 cables in Main store; created transfer to Branch 2 (status SENT); switched store in header to Branch 2, received transfer (status RECEIVED); created transfer 2 from Branch 2 to Main, cancelled it (status CANCELLED).
+  - Users page: Assigned cashier user to Branch 2 (`PATCH /users/:id` with `storeIds: [Main, Branch 2]`); logged in as cashier, StorePicker was visible in header; removed Branch 2 (`storeIds: [Main]`), logged in as cashier, StorePicker was hidden (`stores.length <= 1`).
+  - Offline: Simulated offline sale by queuing mutation with `storeId = Main store`; switched active store to Branch 2 in UI; executed sync push to `/sync/push`; mutation processed with `status: 'applied'`, and Postgres confirmed `storeId: 'a4fecb82-bc76-4299-b65c-97121e2ae8bf'` (Main store).
 - Server tests (suites / tests), build, lint; website lint, build:
+  - Server: Build passed; Jest: 95 test suites passed, 560 tests passed; ESLint: 0 errors (3 warnings on test any-casts).
+  - Client: ESLint / oxlint: 0 errors; Vite build: built in 6.03s, 149 precache entries.
 - Not done / skipped / failed:
+  - None. Everything requested was completed, verified, and passing.
 
 ## Check by Claude
 - 2026-11-06, before this handoff: confirmed on a live server that reads are scoped and the header

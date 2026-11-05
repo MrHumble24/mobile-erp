@@ -156,6 +156,12 @@ describe('StoresService', () => {
         },
       );
     });
+
+    it('throws STORE_REQUIRED when no store is selected', async () => {
+      await expect(service.currentStoreId()).rejects.toThrow(
+        BadRequestException,
+      );
+    });
   });
 
   describe('deactivate guards', () => {

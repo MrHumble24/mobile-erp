@@ -34,7 +34,7 @@ export class ConsignmentsWriteRepository {
 
   async createTransfer(input: CreateTransferInput): Promise<ConsignmentView> {
     return this.prisma.$transaction(async (tx) => {
-      const device = await this.loadDeviceByCode(tx, input.code);
+      const device = await this.loadDeviceByCode(tx, input.code, input.storeId);
       if (device.statusCode !== 'IN_STOCK') {
         throw new ConflictException(
           `Device ${input.code} is ${device.statusCode}, not IN_STOCK`,
@@ -63,7 +63,7 @@ export class ConsignmentsWriteRepository {
 
   async settle(id: string, input: SettleInput): Promise<ConsignmentView> {
     return this.prisma.$transaction(async (tx) => {
-      const c = await this.loadOut(tx, id);
+      const c = await this.loadOut(tx, id, input.storeId);
       await this.moveDevice(tx, c.device, 'SOLD', input.expectedVersion, {
         changedById: input.soldById,
         reason: 'consignment settled',
@@ -90,7 +90,7 @@ export class ConsignmentsWriteRepository {
     input: ReturnInput,
   ): Promise<ConsignmentView> {
     return this.prisma.$transaction(async (tx) => {
-      const c = await this.loadOut(tx, id);
+      const c = await this.loadOut(tx, id, input.storeId);
       const to = input.condition ?? 'IN_STOCK';
       await this.moveDevice(tx, c.device, to, input.expectedVersion, {
         changedById: input.changedById,
@@ -100,9 +100,16 @@ export class ConsignmentsWriteRepository {
     });
   }
 
-  private async loadDeviceByCode(tx: Tx, code: string): Promise<DeviceLock> {
+  private async loadDeviceByCode(
+    tx: Tx,
+    code: string,
+    storeId?: string,
+  ): Promise<DeviceLock> {
     const device = await tx.device.findFirst({
-      where: unitCodeWhere(code),
+      where: {
+        ...unitCodeWhere(code),
+        ...(storeId ? { storeId } : {}),
+      },
       select: { id: true, statusCode: true, version: true, landedCost: true },
     });
     if (!device) throw new NotFoundException(`Device ${code} not found`);
@@ -112,13 +119,14 @@ export class ConsignmentsWriteRepository {
   private async loadOut(
     tx: Tx,
     id: string,
+    storeId?: string,
   ): Promise<{
     storeId: string;
     agreedPrice: Prisma.Decimal;
     device: DeviceLock;
   }> {
-    const c = await tx.consignment.findUnique({
-      where: { id },
+    const c = await tx.consignment.findFirst({
+      where: { id, ...(storeId ? { storeId } : {}) },
       select: {
         statusCode: true,
         storeId: true,

@@ -6,57 +6,16 @@ import { buildSaleWhere } from './lib/sale-where.js';
 import { toReceiptView, toSaleView } from './lib/sale.mapper.js';
 import { remainingWarrantyDays } from './lib/warranty.js';
 import type {
+  DeviceState,
   ReceiptView,
   SaleFilters,
+  SaleForReturn,
   SaleRow,
   SaleStatsView,
   SaleView,
   WarrantyLookupView,
 } from './types/sale.types.js';
-
-const saleSelect = {
-  id: true,
-  salePrice: true,
-  landedCostSnapshot: true,
-  listPriceSnapshot: true,
-  priceLevelCode: true,
-  soldAt: true,
-  consignmentId: true,
-  creditId: true,
-  notes: true,
-  quantity: true,
-  device: {
-    select: {
-      imei: true,
-      imei2: true,
-      serialNumber: true,
-      specs: true,
-      model: { select: { brand: true, name: true, kindCode: true } },
-    },
-  },
-  model: { select: { brand: true, name: true, kindCode: true } },
-  customer: { select: { id: true, name: true, phone: true } },
-  soldBy: {
-    select: {
-      id: true,
-      profile: { select: { firstName: true, lastName: true } },
-    },
-  },
-  warranty: { select: { days: true, startsAt: true, endsAt: true } },
-  return: {
-    select: {
-      returnedAt: true,
-      refundAmount: true,
-      reason: true,
-      processedBy: {
-        select: {
-          id: true,
-          profile: { select: { firstName: true, lastName: true } },
-        },
-      },
-    },
-  },
-} as const;
+import { saleSelect } from './lib/sale-select.js';
 
 /** Read-side Prisma access for sales. Transactional writes live in the checkout repository. */
 @Injectable()
@@ -94,9 +53,15 @@ export class SalesRepository {
     return row ? toSaleView(row) : null;
   }
 
-  async listByCustomer(customerId: string): Promise<SaleView[]> {
+  async listByCustomer(
+    customerId: string,
+    storeIds?: string[],
+  ): Promise<SaleView[]> {
     const rows = await this.prisma.sale.findMany({
-      where: { customerId },
+      where: {
+        customerId,
+        ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+      },
       orderBy: { soldAt: 'desc' },
       select: saleSelect,
     });
@@ -162,7 +127,10 @@ export class SalesRepository {
     };
   }
 
-  findDeviceByImei(code: string): Promise<{
+  findDeviceByImei(
+    code: string,
+    storeId?: string,
+  ): Promise<{
     id: string;
     statusCode: string;
     version: number;
@@ -173,7 +141,10 @@ export class SalesRepository {
     model: { salePrice: Prisma.Decimal | null };
   } | null> {
     return this.prisma.device.findFirst({
-      where: unitCodeWhere(code),
+      where: {
+        ...unitCodeWhere(code),
+        ...(storeId ? { storeId } : {}),
+      },
       select: {
         id: true,
         statusCode: true,
@@ -211,19 +182,16 @@ export class SalesRepository {
     return row?.salePrice ?? null;
   }
 
-  findSaleForReturn(id: string): Promise<{
-    id: string;
-    deviceId: string | null;
-    modelId: string | null;
-    quantity: number | null;
-    storeId: string;
-    creditId: string | null;
-    salePrice: Prisma.Decimal;
-    landedCostSnapshot: Prisma.Decimal;
-    soldAt: Date;
-  } | null> {
-    return this.prisma.sale.findUnique({
-      where: { id },
+  findSaleForReturn(
+    id: string,
+    storeId?: string,
+  ): Promise<SaleForReturn | null> {
+    const where: Prisma.SaleWhereInput = {
+      id,
+      ...(storeId ? { storeId } : {}),
+    };
+    return this.prisma.sale.findFirst({
+      where,
       select: {
         id: true,
         deviceId: true,
@@ -238,11 +206,13 @@ export class SalesRepository {
     });
   }
 
-  findDeviceState(
-    id: string,
-  ): Promise<{ id: string; statusCode: string; version: number } | null> {
-    return this.prisma.device.findUnique({
-      where: { id },
+  findDeviceState(id: string, storeId?: string): Promise<DeviceState | null> {
+    const where: Prisma.DeviceWhereInput = {
+      id,
+      ...(storeId ? { storeId } : {}),
+    };
+    return this.prisma.device.findFirst({
+      where,
       select: { id: true, statusCode: true, version: true },
     });
   }

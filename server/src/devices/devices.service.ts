@@ -163,7 +163,8 @@ export class DevicesService {
     reason?: string,
     expectedVersion?: number,
   ): Promise<DeviceView> {
-    const state = await this.status.findState(deviceId);
+    const storeIds = await this.stores.currentStoreIds();
+    const state = await this.status.findState(deviceId, storeIds);
     if (!state) throw new NotFoundException(`Device ${deviceId} not found`);
     if (!isAllowedTransition(state.statusCode, toStatusCode)) {
       throw new BadRequestException(

@@ -1,5 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import type { StoresService } from '../stores/stores.service.js';
 import { SyncHandlerRegistry } from './handlers/handler-registry.js';
 import { SyncRepository } from './sync.repository.js';
 import { SyncService } from './sync.service.js';
@@ -18,7 +19,10 @@ const caller = (perms: string[] = ['sale.create']): AuthenticatedUser => ({
   permissions: new Set(perms),
 });
 
-function build(handlerOverrides: Record<string, unknown> = {}) {
+function build(
+  handlerOverrides: Record<string, unknown> = {},
+  storesOverrides: Record<string, unknown> = {},
+) {
   const handler = {
     permission: 'sale.create',
     dtoClass: DummyDto,
@@ -31,11 +35,16 @@ function build(handlerOverrides: Record<string, unknown> = {}) {
   const repo = {
     insertConflict: jest.fn().mockResolvedValue({ id: 'conf-1' }),
   };
+  const stores = {
+    allowedStoreIds: jest.fn().mockResolvedValue(['store-1']),
+    ...storesOverrides,
+  };
   const service = new SyncService(
     registry as unknown as SyncHandlerRegistry,
     repo as unknown as SyncRepository,
+    stores as unknown as StoresService,
   );
-  return { service, handler, registry, repo };
+  return { service, handler, registry, repo, stores };
 }
 
 const mutation = {
@@ -114,5 +123,46 @@ describe('SyncService.push dispatch', () => {
     const result = await pushOne(service);
     expect(result.status).toBe('rejected');
     expect(result.error).toContain('Unknown mutation type');
+  });
+
+  it('rejects mutation with STORE_FORBIDDEN when mutation storeId is not in caller allowed stores', async () => {
+    const { service, handler } = build(
+      {},
+      { allowedStoreIds: jest.fn().mockResolvedValue(['store-1']) },
+    );
+    const result = await pushOne(service, caller(), {
+      ...mutation,
+      storeId: 'store-2',
+    });
+    expect(result.status).toBe('rejected');
+    expect(result.error).toBe('STORE_FORBIDDEN');
+    expect(handler.apply).not.toHaveBeenCalled();
+  });
+
+  it('rejects mutation with STORE_REQUIRED when user works in several stores and mutation lacks storeId', async () => {
+    const { service, handler } = build(
+      {},
+      { allowedStoreIds: jest.fn().mockResolvedValue(['store-1', 'store-2']) },
+    );
+    const result = await pushOne(service, caller(), {
+      ...mutation,
+      storeId: undefined,
+    });
+    expect(result.status).toBe('rejected');
+    expect(result.error).toBe('STORE_REQUIRED');
+    expect(handler.apply).not.toHaveBeenCalled();
+  });
+
+  it('applies mutation in user single store when mutation lacks storeId', async () => {
+    const { service, handler } = build(
+      {},
+      { allowedStoreIds: jest.fn().mockResolvedValue(['store-1']) },
+    );
+    const result = await pushOne(service, caller(), {
+      ...mutation,
+      storeId: undefined,
+    });
+    expect(result.status).toBe('applied');
+    expect(handler.apply).toHaveBeenCalled();
   });
 });

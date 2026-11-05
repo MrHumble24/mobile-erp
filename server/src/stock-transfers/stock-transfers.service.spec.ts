@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -20,7 +25,7 @@ describe('StockTransfersService', () => {
     permissions: new Set(['transfer.create', 'transfer.receive']),
   };
 
-  const sampleTransfer: StockTransferView = {
+  const sampleTransfer = {
     id: 'tr-1',
     transferNumber: 'TR-1',
     sourceStoreId: 's1',
@@ -35,34 +40,28 @@ describe('StockTransfersService', () => {
     receivedById: null,
     cancelledAt: null,
     cancelledById: null,
-    lines: [
-      {
-        id: 'line-1',
-        transferId: 'tr-1',
-        lineType: 'UNIT',
-        deviceId: 'd1',
-        modelId: null,
-        quantity: null,
-        unitCostSnapshot: null,
-        previousStatusCode: 'IN_STOCK',
-        note: null,
-        createdAt: '2026-11-05T00:00:00.000Z',
-      },
-      {
-        id: 'line-2',
-        transferId: 'tr-1',
-        lineType: 'QUANTITY',
-        deviceId: null,
-        modelId: 'm1',
-        quantity: 5,
-        unitCostSnapshot: '10.00',
-        previousStatusCode: null,
-        note: null,
-        createdAt: '2026-11-05T00:00:00.000Z',
-      },
-    ],
+    lines: [],
     createdAt: '2026-11-05T00:00:00.000Z',
-  };
+  } as unknown as StockTransferView;
+
+  function mockTxCount(transferCount = 1, devCount = 1) {
+    prisma.$transaction.mockImplementationOnce(
+      (cb: (tx: unknown) => Promise<unknown>) =>
+        cb({
+          stockTransfer: {
+            create: jest.fn().mockResolvedValue({ id: 'tr-1' }),
+            updateMany: jest.fn().mockResolvedValue({ count: transferCount }),
+          },
+          stockTransferLine: { create: jest.fn() },
+          device: {
+            update: jest.fn(),
+            updateMany: jest.fn().mockResolvedValue({ count: devCount }),
+          },
+          deviceStatusHistory: { create: jest.fn() },
+          stockMovement: { create: jest.fn() },
+        }),
+    );
+  }
 
   beforeEach(() => {
     prisma = {
@@ -72,9 +71,13 @@ describe('StockTransfersService', () => {
             stockTransfer: {
               create: jest.fn().mockResolvedValue({ id: 'tr-1' }),
               update: jest.fn().mockResolvedValue({ id: 'tr-1' }),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
             },
             stockTransferLine: { create: jest.fn() },
-            device: { update: jest.fn() },
+            device: {
+              update: jest.fn(),
+              updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+            },
             deviceStatusHistory: { create: jest.fn() },
             stockMovement: { create: jest.fn() },
           });
@@ -113,6 +116,34 @@ describe('StockTransfersService', () => {
     } as unknown as jest.Mocked<StockRepository>;
 
     service = new StockTransfersService(prisma, repo, stores, stockRepo);
+  });
+
+  describe('get (S6)', () => {
+    it('throws 404 when transfer does not exist', async () => {
+      repo.findById.mockResolvedValueOnce(null);
+      await expect(service.get(caller, 'tr-missing')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('throws 404 when caller does not belong to source or target store', async () => {
+      stores.allowedStoreIds.mockResolvedValueOnce(['s3']);
+      await expect(service.get(caller, 'tr-1')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('returns transfer when caller belongs to source store', async () => {
+      stores.allowedStoreIds.mockResolvedValueOnce(['s1']);
+      const res = await service.get(caller, 'tr-1');
+      expect(res.id).toBe('tr-1');
+    });
+
+    it('returns transfer when caller belongs to target store', async () => {
+      stores.allowedStoreIds.mockResolvedValueOnce(['s2']);
+      const res = await service.get(caller, 'tr-1');
+      expect(res.id).toBe('tr-1');
+    });
   });
 
   describe('create', () => {
@@ -181,11 +212,26 @@ describe('StockTransfersService', () => {
       expect(res.id).toBe('tr-1');
       expect(prisma.$transaction).toHaveBeenCalled();
     });
+
+    it('throws ConflictException when device is concurrently modified during send (S5)', async () => {
+      (prisma.device.findUnique as jest.Mock).mockResolvedValueOnce({
+        id: 'd1',
+        storeId: 's1',
+        statusCode: 'IN_STOCK',
+      });
+      mockTxCount(1, 0);
+      await expect(
+        service.create(caller, {
+          targetStoreId: 's2',
+          lines: [{ lineType: 'UNIT', deviceId: 'd1' }],
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
   });
 
   describe('receive', () => {
     it('refuses receive when current store is not target store', async () => {
-      stores.currentStoreId.mockResolvedValueOnce('s1'); // Current store is s1, but target is s2
+      stores.currentStoreId.mockResolvedValueOnce('s1');
       await expect(service.receive(caller, 'tr-1')).rejects.toThrow(
         BadRequestException,
       );
@@ -197,11 +243,19 @@ describe('StockTransfersService', () => {
       expect(res.id).toBe('tr-1');
       expect(prisma.$transaction).toHaveBeenCalled();
     });
+
+    it('throws ConflictException when transfer is concurrently received or cancelled (S5)', async () => {
+      stores.currentStoreId.mockResolvedValueOnce('s2');
+      mockTxCount(0, 1);
+      await expect(service.receive(caller, 'tr-1')).rejects.toThrow(
+        ConflictException,
+      );
+    });
   });
 
   describe('cancel', () => {
     it('refuses cancel when caller does not belong to source store', async () => {
-      stores.allowedStoreIds.mockResolvedValueOnce(['s2']); // Caller not in s1
+      stores.allowedStoreIds.mockResolvedValueOnce(['s2']);
       await expect(service.cancel(caller, 'tr-1')).rejects.toThrow(
         ForbiddenException,
       );
@@ -212,6 +266,14 @@ describe('StockTransfersService', () => {
       const res = await service.cancel(caller, 'tr-1');
       expect(res.id).toBe('tr-1');
       expect(prisma.$transaction).toHaveBeenCalled();
+    });
+
+    it('throws ConflictException when transfer is concurrently received or cancelled (S5)', async () => {
+      stores.allowedStoreIds.mockResolvedValueOnce(['s1']);
+      mockTxCount(0, 1);
+      await expect(service.cancel(caller, 'tr-1')).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 });

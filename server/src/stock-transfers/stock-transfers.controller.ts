@@ -18,8 +18,8 @@ export class StockTransfersController {
 
   @Get(':id')
   @RequirePermissions('transfer.read')
-  get(@Param('id') id: string) {
-    return this.transfers.get(id);
+  get(@CurrentUser() caller: AuthenticatedUser, @Param('id') id: string) {
+    return this.transfers.get(caller, id);
   }
 
   @Post()

@@ -36,6 +36,7 @@ export async function switchActiveStore(
 ): Promise<void> {
   useStoreSelectionStore.getState().setStoreId(newStoreId)
   qc.clear()
+  await qc.invalidateQueries()
   await idbClear(STORES.devices)
   await clearCursor()
   await pullChanges()

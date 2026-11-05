@@ -106,6 +106,7 @@ export class StoresService {
 
   /** The single active store for the current request — write resolution point. */
   async currentStoreId(): Promise<string> {
+    await Promise.resolve();
     const ctx = getStoreSelection();
     if (ctx?.pendingMultiple) {
       throw new BadRequestException({
@@ -122,7 +123,10 @@ export class StoresService {
     if (ctx && ctx.storeIds.length === 1) {
       return ctx.storeIds[0];
     }
-    return this.repo.currentId();
+    throw new BadRequestException({
+      code: STORE_REQUIRED,
+      message: 'No store selected; send X-Store-Id',
+    });
   }
 
   getIdentity(storeId?: string): Promise<StoreIdentity> {

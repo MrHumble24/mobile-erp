@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { Prisma } from '../../generated/client/client.js';
 import type { StockTransferView } from '../types/stock-transfer.types.js';
 
@@ -66,10 +67,16 @@ async function createTransferUnitLines(
         note: u.note,
       },
     });
-    await tx.device.update({
-      where: { id: u.deviceId },
+    const updated = await tx.device.updateMany({
+      where: { id: u.deviceId, statusCode: 'IN_STOCK' },
       data: { statusCode: 'IN_TRANSIT' },
     });
+    if (updated.count === 0) {
+      throw new ConflictException({
+        code: 'DEVICE_NOT_IN_STOCK',
+        message: `Device ${u.deviceId} is not IN_STOCK`,
+      });
+    }
     await tx.deviceStatusHistory.create({
       data: {
         deviceId: u.deviceId,
@@ -115,56 +122,74 @@ async function createTransferQuantityLines(
   }
 }
 
+async function applyTransferLine(
+  tx: Prisma.TransactionClient,
+  transfer: StockTransferView,
+  line: StockTransferView['lines'][number],
+  callerId: string,
+  isReceive: boolean,
+): Promise<void> {
+  if (line.lineType === 'UNIT' && line.deviceId) {
+    const restoreStatus = line.previousStatusCode ?? 'IN_STOCK';
+    const storeData = isReceive ? { storeId: transfer.targetStoreId } : {};
+    await tx.device.update({
+      where: { id: line.deviceId },
+      data: { ...storeData, statusCode: restoreStatus },
+    });
+    await tx.deviceStatusHistory.create({
+      data: {
+        deviceId: line.deviceId,
+        fromStatusCode: 'IN_TRANSIT',
+        toStatusCode: restoreStatus,
+        changedById: callerId,
+      },
+    });
+  } else if (line.lineType === 'QUANTITY' && line.modelId && line.quantity) {
+    const cost = line.unitCostSnapshot
+      ? new Prisma.Decimal(line.unitCostSnapshot)
+      : new Prisma.Decimal(0);
+    const storeId = isReceive ? transfer.targetStoreId : transfer.sourceStoreId;
+    const note = isReceive
+      ? (line.note ?? `Transfer from ${transfer.sourceStore.name}`)
+      : 'Transfer cancelled';
+    await tx.stockMovement.create({
+      data: {
+        storeId,
+        modelId: line.modelId,
+        typeCode: 'TRANSFER_IN',
+        quantity: line.quantity,
+        unitCostSnapshot: cost,
+        transferId: transfer.id,
+        createdById: callerId,
+        note,
+      },
+    });
+  }
+}
+
 export async function executeReceiveTransfer(
   tx: Prisma.TransactionClient,
   transfer: StockTransferView,
   callerId: string,
 ): Promise<void> {
-  for (const line of transfer.lines) {
-    if (line.lineType === 'UNIT' && line.deviceId) {
-      const restoreStatus = line.previousStatusCode ?? 'IN_STOCK';
-      await tx.device.update({
-        where: { id: line.deviceId },
-        data: {
-          storeId: transfer.targetStoreId,
-          statusCode: restoreStatus,
-        },
-      });
-      await tx.deviceStatusHistory.create({
-        data: {
-          deviceId: line.deviceId,
-          fromStatusCode: 'IN_TRANSIT',
-          toStatusCode: restoreStatus,
-          changedById: callerId,
-        },
-      });
-    } else if (line.lineType === 'QUANTITY' && line.modelId && line.quantity) {
-      const cost = line.unitCostSnapshot
-        ? new Prisma.Decimal(line.unitCostSnapshot)
-        : new Prisma.Decimal(0);
-      await tx.stockMovement.create({
-        data: {
-          storeId: transfer.targetStoreId,
-          modelId: line.modelId,
-          typeCode: 'TRANSFER_IN',
-          quantity: line.quantity,
-          unitCostSnapshot: cost,
-          transferId: transfer.id,
-          createdById: callerId,
-          note: line.note ?? `Transfer from ${transfer.sourceStore.name}`,
-        },
-      });
-    }
-  }
-
-  await tx.stockTransfer.update({
-    where: { id: transfer.id },
+  const res = await tx.stockTransfer.updateMany({
+    where: { id: transfer.id, status: 'SENT' },
     data: {
       status: 'RECEIVED',
       receivedAt: new Date(),
       receivedById: callerId,
     },
   });
+  if (res.count === 0) {
+    throw new ConflictException({
+      code: 'TRANSFER_NOT_SENT',
+      message: `Transfer ${transfer.id} is no longer in SENT status`,
+    });
+  }
+
+  for (const line of transfer.lines) {
+    await applyTransferLine(tx, transfer, line, callerId, true);
+  }
 }
 
 export async function executeCancelTransfer(
@@ -172,46 +197,22 @@ export async function executeCancelTransfer(
   transfer: StockTransferView,
   callerId: string,
 ): Promise<void> {
-  for (const line of transfer.lines) {
-    if (line.lineType === 'UNIT' && line.deviceId) {
-      const restoreStatus = line.previousStatusCode ?? 'IN_STOCK';
-      await tx.device.update({
-        where: { id: line.deviceId },
-        data: { statusCode: restoreStatus },
-      });
-      await tx.deviceStatusHistory.create({
-        data: {
-          deviceId: line.deviceId,
-          fromStatusCode: 'IN_TRANSIT',
-          toStatusCode: restoreStatus,
-          changedById: callerId,
-        },
-      });
-    } else if (line.lineType === 'QUANTITY' && line.modelId && line.quantity) {
-      const cost = line.unitCostSnapshot
-        ? new Prisma.Decimal(line.unitCostSnapshot)
-        : new Prisma.Decimal(0);
-      await tx.stockMovement.create({
-        data: {
-          storeId: transfer.sourceStoreId,
-          modelId: line.modelId,
-          typeCode: 'TRANSFER_IN',
-          quantity: line.quantity,
-          unitCostSnapshot: cost,
-          transferId: transfer.id,
-          createdById: callerId,
-          note: 'Transfer cancelled',
-        },
-      });
-    }
-  }
-
-  await tx.stockTransfer.update({
-    where: { id: transfer.id },
+  const res = await tx.stockTransfer.updateMany({
+    where: { id: transfer.id, status: 'SENT' },
     data: {
       status: 'CANCELLED',
       cancelledAt: new Date(),
       cancelledById: callerId,
     },
   });
+  if (res.count === 0) {
+    throw new ConflictException({
+      code: 'TRANSFER_NOT_SENT',
+      message: `Transfer ${transfer.id} is no longer in SENT status`,
+    });
+  }
+
+  for (const line of transfer.lines) {
+    await applyTransferLine(tx, transfer, line, callerId, false);
+  }
 }

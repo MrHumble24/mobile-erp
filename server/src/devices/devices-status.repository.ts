@@ -16,9 +16,14 @@ export class DevicesStatusRepository {
 
   findState(
     id: string,
+    storeIds?: string[],
   ): Promise<{ statusCode: string; version: number } | null> {
-    return this.prisma.device.findUnique({
-      where: { id },
+    const where: Prisma.DeviceWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    return this.prisma.device.findFirst({
+      where,
       select: { statusCode: true, version: true },
     });
   }

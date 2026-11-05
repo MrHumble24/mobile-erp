@@ -1,30 +1,22 @@
 # stores
 
-The store a stock or money row belongs to (ADR 0023). One store today; born
-multi-store so the upcoming cash/card ledger carries a store from day one.
+Store management and request-scoped active store resolution (ADR 0023, ADR 0045).
 
-## Owns
+## HTTP (`/stores`)
 
-- `stores` table: `id`, `name`, `address?`, `phone?`. Store identity lives here,
-  not in `store_settings`.
-- The decision of which store a write targets.
+- `GET /stores` — list active stores (or all if `store.manage`).
+- `POST /stores` (`store.manage`) — create store; initializes cash/card ledger accounts.
+- `PUT /stores/:id` (`store.manage`) — update store details.
+- `POST /stores/:id/deactivate` (`store.manage`) — deactivates store (checks 0 stock, no open shifts).
 
-## Exposes
+## Resolution Service
 
-- `StoresService.currentStoreId()` — the single resolution point. Today returns
-  the only store; later the signed-in user's chosen store. Every create of a
-  store-scoped row (device, shipment, sale, expense, recurrence template,
-  consignment, partner payment) routes through this.
-- `StoresService.getIdentity()` / `updateIdentity(data)` — identity read/write,
-  used by `SettingsService` so the settings API shape stays unchanged.
+- `StoresService.currentStoreId()` — resolves active store from `X-Store-Id` header and user permissions.
+  Throws `STORE_REQUIRED` (400) if user has multiple stores and no header sent; `STORE_FORBIDDEN` (403)
+  if user lacks access to selected store.
+- `StoresService.currentStoreIds()` — returns array of active store IDs or allowed stores when `all` requested.
+- `runWithStoreSelection(selection, fn)` — executes `fn` in an explicit store context (e.g. sync replay).
 
 ## Must never
 
-- Let another module query `stores` to pick a store, or inject
-  `StoresRepository` directly — import `StoresModule`, inject the service.
-- Grow a controller or route: nothing is exposed over HTTP yet.
-
-## Open questions
-
-- Scoping `currentStoreId()` to the user (store picker) and stock transfers
-  between stores — future work, out of this skeleton.
+Bypass `StoresService` to infer active store; leak unscoped store rows to callers.

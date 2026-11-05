@@ -52,7 +52,10 @@ export class SalesReadService {
   }
 
   async listByCustomer(customerId: string): Promise<SaleView[]> {
-    return this.attachPayments(await this.reads.listByCustomer(customerId));
+    const storeIds = await this.stores.currentStoreIds();
+    return this.attachPayments(
+      await this.reads.listByCustomer(customerId, storeIds),
+    );
   }
 
   async warrantyLookup(imei: string): Promise<WarrantyLookupView> {
