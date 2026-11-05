@@ -1,6 +1,6 @@
 # 004 — Step 11, part 2 of 6: the customer's bonus points
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: 003 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 003 (merged)
 
 ## Why
 Part 2 of the step 11 website work (see 003 for the list of parts). The server keeps a points
@@ -61,3 +61,14 @@ Fill the Result section of `docs/handoffs/opencode/004-step11-customer-points.md
   - No failures. Nothing else intentionally skipped.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Stayed in its worktree; every point done; used `useWatch` as
+  told; tests 73 pass, lint 0 errors, build passes; report matched and said plainly that the
+  screens were not seen.
+- Seen in a browser (owner, bonus on): the customer detail shows the points panel; an empty
+  correction is refused with messages; +1,000 with a reason saved; balance 1,000; the history row
+  shows type, date, reason and who; success toast.
+- Left for part 3 (005): the schema's validation messages are hard-coded English
+  (`adjust-bonus.schema.ts`); they must go through `t` like the other schemas. The points next to
+  the name in the till's customer picker were read in code, not seen; part 3's check covers it.
+- `entities/bonus` imports the key factory of `entities/customer`. Entities already do this here
+  (sale → ledger, repair → stock), so it is accepted.
