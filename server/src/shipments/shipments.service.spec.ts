@@ -4,9 +4,11 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
 import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
+import { ShipmentsQuantityRepository } from './shipments-quantity.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
 import { ShipmentsService } from './shipments.service.js';
 
@@ -22,6 +24,9 @@ function build(
   const intakeRepo = {
     addDevices: jest.fn().mockResolvedValue([]),
   } as unknown as ShipmentsIntakeRepository;
+  const quantityRepo = {
+    purchase: jest.fn().mockResolvedValue([]),
+  } as unknown as ShipmentsQuantityRepository;
   const suppliers = {
     get: jest.fn().mockResolvedValue({ name: 'S' }),
   } as unknown as SuppliersService;
@@ -39,6 +44,9 @@ function build(
     currentStoreId: jest.fn().mockResolvedValue('store-1'),
   } as unknown as StoresService;
   const ledger = {} as unknown as LedgerService;
+  const stock = {
+    assertQuantityModel: jest.fn().mockResolvedValue(undefined),
+  } as unknown as StockService;
   const customs = {
     currentFeeMap: jest.fn().mockResolvedValue(customsFees),
   } as unknown as CustomsService;
@@ -46,14 +54,16 @@ function build(
   const service = new ShipmentsService(
     repo,
     intakeRepo,
+    quantityRepo,
     suppliers,
     models,
     stores,
     ledger,
+    stock,
     customs,
     events,
   );
-  return { service, intakeRepo };
+  return { service, intakeRepo, quantityRepo, stock };
 }
 
 const user = (perms: string[]): AuthenticatedUser => ({

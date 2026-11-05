@@ -54,6 +54,21 @@ export class CreateSaleDto {
   @Matches(SERIAL_REGEX, { message: SERIAL_MESSAGE })
   serialNumber?: string;
 
+  /**
+   * Quantity-product sale: send `modelId` + `quantity` instead of an
+   * `imei`/`serialNumber` (ADR 0030). The model must be a QUANTITY product.
+   * `salePrice` is then the line total for all `quantity` pieces.
+   */
+  @IsOptional()
+  @IsUUID()
+  modelId?: string;
+
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  @Max(1_000_000)
+  quantity?: number;
+
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Max(1_000_000_000)

@@ -54,6 +54,10 @@ model DeviceModel {
   /// How customs writes this model on its price list (ADR 0027). Several of our
   /// models may share one code. A phone's customs fee is matched on this.
   customsCode String?
+  /// Default price per piece the till offers for a QUANTITY product (ADR 0030).
+  /// The seller may still change it at checkout, as with phones. Null = no
+  /// default; irrelevant for IMEI/SERIAL units (they price per unit).
+  salePrice Decimal? @db.Decimal(14, 2)
   /// Per-model spec schema driving device intake/edit forms. Array of:
   /// [{ key: "storage", label: "Storage", type: "select",
   ///    options: ["128GB","256GB"], required: true, sortOrder: 10 }, ...]
@@ -64,8 +68,10 @@ model DeviceModel {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  devices    Device[]
-  alertRules StockAlertRule[]
+  devices        Device[]
+  alertRules     StockAlertRule[]
+  sales          Sale[]
+  stockMovements StockMovement[]
 
   @@unique([brand, name])
   @@unique([barcode])

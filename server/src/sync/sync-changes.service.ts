@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { PartnersService } from '../partners/partners.service.js';
+import { StockService } from '../stock/stock.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { ChangesQueryDto } from './dto/changes.query.dto.js';
 import { SyncChangesRepository } from './sync-changes.repository.js';
 import type { ChangesResponse, PartnerChange } from './types/sync.types.js';
 
-/** Builds the offline-cache feed: changed devices + all active partners. */
+/**
+ * Builds the offline-cache feed: changed devices, active partners, and every
+ * quantity product with its current stock so an offline till can sell them.
+ */
 @Injectable()
 export class SyncChangesService {
   constructor(
     private readonly repo: SyncChangesRepository,
     private readonly partners: PartnersService,
+    private readonly stock: StockService,
+    private readonly stores: StoresService,
   ) {}
 
   async changes(
@@ -21,11 +28,13 @@ export class SyncChangesService {
     // Partner balances (creditLimit/outstanding) require partner.read; device
     // terminals without it get an empty partners block, not every partner's debt.
     const canReadPartners = caller.permissions.has('partner.read');
-    const [devices, partners] = await Promise.all([
+    const storeId = await this.stores.currentStoreId();
+    const [devices, partners, products] = await Promise.all([
       this.repo.devicesSince(since),
       canReadPartners
         ? this.partners.list()
         : Promise.resolve<Awaited<ReturnType<PartnersService['list']>>>([]),
+      this.stock.productsForFeed(storeId),
     ]);
     // ponytail: cursor skips devices sharing the last millisecond; acceptable at
     // bazaar scale (a few thousand units). Switch to (updatedAt, id) if it bites.
@@ -37,6 +46,7 @@ export class SyncChangesService {
         : null,
       devices,
       partners: partners.filter((p) => p.isActive).map(toPartnerChange),
+      products,
     };
   }
 }

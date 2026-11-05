@@ -14,7 +14,7 @@ devices may have). Validation of that schema lives in `lib/attribute-schema.ts`.
 - `GET /:id` — one model, same fields (`device.read`).
 - `GET /:id/attributes` — just the `AttributeDef[]` for dynamic forms (`device.read`).
 - `POST /` — create `{ brand, name, kindCode?, categoryId?, barcode?, modelCode?,
-  customsCode?, attributes? }` (`device.update`). `kindCode` defaults to `IMEI`
+  customsCode?, salePrice?, attributes? }` (`device.update`). `kindCode` defaults to `IMEI`
   (must be an active `product_kinds` row, else 400). `categoryId` is validated
   (404 if missing). Omit `attributes` → seeded with default `storage`(required)
   + `color` selects. Duplicate `(brand, name)` → 409; duplicate `barcode` → 409.
@@ -28,7 +28,9 @@ devices may have). Validation of that schema lives in `lib/attribute-schema.ts`.
 (ADR 0029). `barcode` is the box EAN (used later for quantity scanning);
 `modelCode` is the maker's code (Apple `A2894`, Samsung `SM-S918B`), indexed for
 search. `customsCode` is how customs writes this model; the customs module
-stamps a phone's fee from it at intake (ADR 0027).
+stamps a phone's fee from it at intake (ADR 0027). `salePrice` (optional money,
+2-dp string in responses) is the default till price per piece for a `QUANTITY`
+product (ADR 0030); `null` clears it. `PATCH` also accepts `salePrice`.
 
 ## Attribute schema (`lib/attribute-schema.ts`)
 

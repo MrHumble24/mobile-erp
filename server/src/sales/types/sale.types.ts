@@ -2,6 +2,13 @@ import type { Prisma } from '../../generated/client/client.js';
 
 type Money = Prisma.Decimal;
 
+/** A model reference on a sale (quantity sale) or under a device (unit sale). */
+export interface SaleModelRef {
+  brand: string;
+  name: string;
+  kindCode: string;
+}
+
 /** Row shape fetched by the repository for a full sale view. */
 export interface SaleRow {
   id: string;
@@ -10,13 +17,18 @@ export interface SaleRow {
   soldAt: Date;
   consignmentId: string | null;
   notes: string | null;
+  /** Null for a quantity sale. */
   device: {
     imei: string | null;
     imei2: string | null;
     serialNumber: string | null;
     specs: Prisma.JsonValue;
-    model: { brand: string; name: string; kindCode: string };
-  };
+    model: SaleModelRef;
+  } | null;
+  /** Pieces sold (quantity sale); null for a unit sale. */
+  quantity: number | null;
+  /** The quantity product (quantity sale); null for a unit sale. */
+  model: SaleModelRef | null;
   customer: { id: string; name: string; phone: string | null } | null;
   soldBy: {
     id: string;
@@ -49,13 +61,17 @@ export interface SalePayment {
 
 export interface SaleView {
   id: string;
+  /** Null for a quantity sale (see `model` + `quantity`). */
   device: {
     imei: string | null;
     imei2: string | null;
     serialNumber: string | null;
-    model: { brand: string; name: string; kindCode: string };
+    model: SaleModelRef;
     specs: Prisma.JsonValue;
-  };
+  } | null;
+  /** Set for a quantity sale: the product and how many pieces. */
+  model: SaleModelRef | null;
+  quantity: number | null;
   customer: { id: string; name: string; phone: string | null } | null;
   salePrice: Money;
   landedCostSnapshot: Money;
@@ -119,6 +135,8 @@ export interface ReceiptView {
     model: string;
     storage: string | null;
     color: string | null;
+    /** Pieces, for a quantity sale; null for a unit sale. */
+    quantity: number | null;
     price: Money;
   }[];
   total: Money;
@@ -146,9 +164,29 @@ export interface CheckoutInput {
   payments: SalePayment[];
 }
 
+/**
+ * A quantity sale: no device, no warranty. The checkout transaction computes
+ * the moving-average cost at that moment, sets `landedCostSnapshot = quantity ×
+ * average` and posts a SALE stock movement with that per-piece snapshot.
+ */
+export interface QuantityCheckoutInput {
+  storeId: string;
+  modelId: string;
+  quantity: number;
+  salePrice: number;
+  soldById: string;
+  soldAt: Date;
+  notes?: string;
+  clientMutationId?: string;
+  customerId?: string;
+  inlineCustomer?: { name: string; phone?: string };
+  payments: SalePayment[];
+}
+
 export interface ReturnInput {
   saleId: string;
-  deviceId: string;
+  /** Null for a quantity sale (no device to move). */
+  deviceId: string | null;
   expectedVersion: number;
   toStatusCode: string;
   refundAmount: number;
@@ -157,4 +195,6 @@ export interface ReturnInput {
   storeId: string;
   /** Per-account refund rows (positive magnitudes) posted inside the return tx. */
   refundPostings: SalePayment[];
+  /** Quantity sale: restore this many pieces at `unitCost` (a RETURN movement). */
+  quantityRestore?: { modelId: string; quantity: number; unitCost: Money };
 }

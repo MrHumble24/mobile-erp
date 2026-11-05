@@ -40,6 +40,7 @@ model Shipment {
 
   devices          Device[]
   cashTransactions CashTransaction[]
+  stockMovements   StockMovement[]
 
   @@index([shipmentDate])
   @@index([storeId])

@@ -7,6 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
@@ -40,14 +41,18 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     findSaleForReturn: jest.fn().mockResolvedValue({
       id: 'sale-1',
       deviceId: 'dev-1',
+      modelId: null,
+      quantity: null,
       storeId: 'store-1',
       salePrice: new Prisma.Decimal(250),
+      landedCostSnapshot: new Prisma.Decimal(100),
     }),
     findDeviceState: jest.fn().mockResolvedValue({ version: 5 }),
     ...readsOverrides,
   };
   const checkout = {
     checkout: jest.fn().mockResolvedValue('sale-1'),
+    checkoutQuantity: jest.fn().mockResolvedValue('sale-1'),
     processReturn: jest.fn().mockResolvedValue(undefined),
   };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
@@ -55,15 +60,19 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     activeAccountCodes: jest.fn().mockResolvedValue(['CASH', 'CARD']),
     salePayments: jest.fn().mockResolvedValue(new Map()),
   };
+  const stock = {
+    assertQuantityModel: jest.fn().mockResolvedValue(undefined),
+  };
   const events = { emit: jest.fn() };
   const service = new SalesService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
     stores as unknown as StoresService,
     ledger as unknown as LedgerService,
+    stock as unknown as StockService,
     events as unknown as EventEmitter2,
   );
-  return { service, reads, checkout, stores, ledger, events };
+  return { service, reads, checkout, stores, ledger, stock, events };
 }
 
 describe('SalesService.create', () => {
@@ -164,6 +173,41 @@ describe('SalesService.create', () => {
         warranty: expect.objectContaining({ days: 14 }),
       }),
     );
+  });
+
+  it('routes a quantity sale (modelId+quantity) to the quantity checkout', async () => {
+    const { service, checkout, stock } = build();
+    await service.create(caller, {
+      modelId: '11111111-1111-1111-1111-111111111111',
+      quantity: 3,
+      salePrice: 90,
+    });
+    expect(stock.assertQuantityModel).toHaveBeenCalledWith(
+      '11111111-1111-1111-1111-111111111111',
+    );
+    expect(checkout.checkoutQuantity).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelId: '11111111-1111-1111-1111-111111111111',
+        quantity: 3,
+        salePrice: 90,
+      }),
+    );
+    expect(checkout.checkout).not.toHaveBeenCalled();
+  });
+
+  it('replays a quantity sale by clientMutationId without posting twice', async () => {
+    const existing = { id: 'q-prev' };
+    const { service, checkout } = build({
+      findByClientMutationId: jest.fn().mockResolvedValue(existing),
+    });
+    const result = await service.create(caller, {
+      modelId: '11111111-1111-1111-1111-111111111111',
+      quantity: 3,
+      salePrice: 90,
+      clientMutationId: 'q-1',
+    });
+    expect(result).toMatchObject({ id: 'q-prev' });
+    expect(checkout.checkoutQuantity).not.toHaveBeenCalled();
   });
 });
 

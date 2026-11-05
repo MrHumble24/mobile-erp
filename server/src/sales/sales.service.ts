@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
+import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
-import { resolveUnitCode } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
   SaleCreatedEvent,
@@ -17,8 +18,9 @@ import {
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
-import { buildRefundPostings } from './lib/refund.js';
+import { assertRefundWithinSale, buildRefundPostings } from './lib/refund.js';
 import { resolveSalePayments } from './lib/payments.js';
+import { resolveSaleTarget } from './lib/sale-target.js';
 import { warrantyEndsAt } from './lib/warranty.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
@@ -36,6 +38,7 @@ export class SalesService {
     private readonly checkout: SalesCheckoutRepository,
     private readonly stores: StoresService,
     private readonly ledger: LedgerService,
+    private readonly stock: StockService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -52,7 +55,11 @@ export class SalesService {
       const existing = await this.findByClientMutationId(dto.clientMutationId);
       if (existing) return existing; // idempotent replay — no side effects
     }
-    const code = resolveUnitCode(dto);
+    const target = resolveSaleTarget(dto);
+    if (target.kind === 'quantity') {
+      return this.createQuantity(caller, dto, target.modelId, target.quantity);
+    }
+    const code = target.code;
     const device = await this.reads.findDeviceByImei(code);
     if (!device) {
       throw new NotFoundException(`Device ${code} not found`);
@@ -125,6 +132,52 @@ export class SalesService {
     }
   }
 
+  /**
+   * A quantity-product sale (ADR 0030): no device, no warranty, no margin
+   * alert. The checkout transaction snapshots the moving-average cost and posts
+   * the SALE stock movement. Idempotent on `clientMutationId` like any sale.
+   */
+  private async createQuantity(
+    caller: AuthenticatedUser,
+    dto: CreateSaleDto,
+    modelId: string,
+    quantity: number,
+  ): Promise<SaleView> {
+    await this.stock.assertQuantityModel(modelId);
+    if (dto.customerId && !(await this.reads.customerExists(dto.customerId))) {
+      throw new BadRequestException(`Customer ${dto.customerId} not found`);
+    }
+    const payments = resolveSalePayments(
+      dto.payments,
+      dto.salePrice,
+      await this.ledger.activeAccountCodes(),
+    );
+    try {
+      const saleId = await this.checkout.checkoutQuantity({
+        storeId: await this.stores.currentStoreId(),
+        modelId,
+        quantity,
+        salePrice: dto.salePrice,
+        soldById: caller.id,
+        soldAt: new Date(),
+        notes: dto.notes,
+        clientMutationId: dto.clientMutationId,
+        customerId: dto.customerId,
+        inlineCustomer: dto.customer,
+        payments,
+      });
+      return this.require(saleId);
+    } catch (e) {
+      if (dto.clientMutationId && isUniqueViolation(e)) {
+        const existing = await this.findByClientMutationId(
+          dto.clientMutationId,
+        );
+        if (existing) return existing;
+      }
+      throw e;
+    }
+  }
+
   private emitSaleCreated(
     view: SaleView,
     salePrice: number,
@@ -134,8 +187,8 @@ export class SalesService {
       TelegramEvents.saleCreated,
       new SaleCreatedEvent(
         view.id,
-        view.device.imei ?? view.device.serialNumber ?? '',
-        `${view.device.model.brand} ${view.device.model.name}`,
+        view.device?.imei ?? view.device?.serialNumber ?? '',
+        `${view.device?.model.brand ?? ''} ${view.device?.model.name ?? ''}`.trim(),
         salePrice,
         device.targetPrice === null ? null : Number(device.targetPrice),
         Number(device.landedCost),
@@ -182,11 +235,35 @@ export class SalesService {
   ): Promise<SaleView> {
     const sale = await this.reads.findSaleForReturn(id);
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
-    const device = await this.reads.findDeviceState(sale.deviceId);
-    if (!device) throw new NotFoundException(`Sale ${id} device missing`);
 
     const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
-    this.assertRefundWithinSale(dto.refundAmount, sale.salePrice, saleNets);
+    assertRefundWithinSale(dto.refundAmount, sale.salePrice, saleNets);
+    const refundPostings = buildRefundPostings(dto.refundAmount, saleNets);
+
+    if (sale.deviceId === null) {
+      // Quantity sale: restore the pieces at the sale's own unit cost.
+      const unitCost = sale.landedCostSnapshot.div(sale.quantity!);
+      await this.checkout.processReturn({
+        saleId: id,
+        deviceId: null,
+        expectedVersion: 0,
+        toStatusCode: dto.deviceToStatusCode,
+        refundAmount: dto.refundAmount,
+        reason: dto.reason,
+        processedById: caller.id,
+        storeId: sale.storeId,
+        refundPostings,
+        quantityRestore: {
+          modelId: sale.modelId!,
+          quantity: sale.quantity!,
+          unitCost,
+        },
+      });
+      return this.require(id);
+    }
+
+    const device = await this.reads.findDeviceState(sale.deviceId);
+    if (!device) throw new NotFoundException(`Sale ${id} device missing`);
     await this.checkout.processReturn({
       saleId: id,
       deviceId: sale.deviceId,
@@ -196,29 +273,9 @@ export class SalesService {
       reason: dto.reason,
       processedById: caller.id,
       storeId: sale.storeId,
-      refundPostings: buildRefundPostings(dto.refundAmount, saleNets),
+      refundPostings,
     });
     return this.require(id);
-  }
-
-  /**
-   * A refund may never exceed what the sale took in: the net of its SALE ledger
-   * rows, or `salePrice` for a sale with no ledger rows (pre-ledger).
-   */
-  private assertRefundWithinSale(
-    refundAmount: number,
-    salePrice: Prisma.Decimal,
-    saleNets: { amount: Prisma.Decimal }[],
-  ): void {
-    const cap =
-      saleNets.length > 0
-        ? saleNets.reduce((sum, n) => sum.plus(n.amount), new Prisma.Decimal(0))
-        : salePrice;
-    if (new Prisma.Decimal(refundAmount).greaterThan(cap)) {
-      throw new BadRequestException(
-        `Refund ${refundAmount} exceeds the sale's ${cap.toFixed(2)}`,
-      );
-    }
   }
 
   private async require(id: string): Promise<SaleView> {
@@ -237,10 +294,4 @@ export class SalesService {
   private async withPayments(view: SaleView): Promise<SaleView> {
     return (await this.attachPayments([view]))[0];
   }
-}
-
-function isUniqueViolation(e: unknown): boolean {
-  return (
-    e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002'
-  );
 }

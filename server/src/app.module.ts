@@ -30,6 +30,8 @@ import { TelegramModule } from './telegram/telegram.module.js';
 import { StoresModule } from './stores/stores.module.js';
 import { LedgerModule } from './ledger/ledger.module.js';
 import { CustomsModule } from './customs/customs.module.js';
+import { StockModule } from './stock/stock.module.js';
+import { ScanModule } from './scan/scan.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -64,6 +66,8 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     StoresModule,
     LedgerModule,
     CustomsModule,
+    StockModule,
+    ScanModule,
   ],
   controllers: [AppController],
   providers: [

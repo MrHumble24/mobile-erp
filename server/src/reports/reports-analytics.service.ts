@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PartnersService } from '../partners/partners.service.js';
+import { StockService } from '../stock/stock.service.js';
 import {
   ProfitBreakdownQueryDto,
   ReturnsQueryDto,
@@ -32,6 +33,7 @@ export class ReportsAnalyticsService {
     private readonly consignmentsRepo: ReportsConsignmentsRepository,
     private readonly inventoryRepo: ReportsInventoryRepository,
     private readonly partners: PartnersService,
+    private readonly stock: StockService,
   ) {}
 
   async trend(query: TrendQueryDto): Promise<TrendPoint[]> {
@@ -102,13 +104,23 @@ export class ReportsAnalyticsService {
   }
 
   async inventory(): Promise<InventoryReport> {
-    const [totals, byStatus, byModel, agingRaw] = await Promise.all([
-      this.inventoryRepo.totals(),
-      this.inventoryRepo.byStatus(),
-      this.inventoryRepo.byModel(),
-      this.inventoryRepo.agingRaw(),
-    ]);
-    return { ...totals, byStatus, byModel, aging: fillAging(agingRaw) };
+    const [totals, byStatus, byModel, agingRaw, quantityValue] =
+      await Promise.all([
+        this.inventoryRepo.totals(),
+        this.inventoryRepo.byStatus(),
+        this.inventoryRepo.byModel(),
+        this.inventoryRepo.agingRaw(),
+        this.stock.totalStockValue(),
+      ]);
+    // Stock value includes quantity stock (ADR 0030). Units stay phone-centric:
+    // accessory pieces and phones are different units, so only value is folded.
+    return {
+      ...totals,
+      inStockLandedValue: totals.inStockLandedValue + Number(quantityValue),
+      byStatus,
+      byModel,
+      aging: fillAging(agingRaw),
+    };
   }
 }
 

@@ -2,10 +2,13 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
@@ -58,6 +61,14 @@ export class UpdateDeviceModelDto {
   @IsString()
   @MaxLength(255)
   customsCode?: string | null;
+
+  /** Default till price per piece for a QUANTITY product; `null` clears it. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  salePrice?: number | null;
 
   /** Replaces the whole schema; the reserved storage select is re-injected. */
   @IsOptional()

@@ -10,10 +10,7 @@ function fullName(
   return [profile.firstName, profile.lastName].filter(Boolean).join(' ');
 }
 
-function specValue(
-  specs: SaleRow['device']['specs'],
-  key: string,
-): string | null {
+function specValue(specs: unknown, key: string): string | null {
   if (specs && typeof specs === 'object' && !Array.isArray(specs)) {
     const value = (specs as Record<string, unknown>)[key];
     if (typeof value === 'string') return value;
@@ -25,13 +22,17 @@ function specValue(
 export function toSaleView(row: SaleRow): SaleView {
   return {
     id: row.id,
-    device: {
-      imei: row.device.imei,
-      imei2: row.device.imei2,
-      serialNumber: row.device.serialNumber,
-      model: row.device.model,
-      specs: row.device.specs,
-    },
+    device: row.device
+      ? {
+          imei: row.device.imei,
+          imei2: row.device.imei2,
+          serialNumber: row.device.serialNumber,
+          model: row.device.model,
+          specs: row.device.specs,
+        }
+      : null,
+    model: row.model,
+    quantity: row.quantity,
     customer: row.customer,
     salePrice: row.salePrice,
     landedCostSnapshot: row.landedCostSnapshot,
@@ -58,19 +59,21 @@ export function toSaleView(row: SaleRow): SaleView {
 
 /** Receipt payload for the client's thermal printer. Carries no cost fields. */
 export function toReceiptView(row: SaleRow): ReceiptView {
-  const model = `${row.device.model.brand} ${row.device.model.name}`;
+  const ref = row.device?.model ?? row.model;
+  const model = ref ? `${ref.brand} ${ref.name}` : '';
   return {
     saleId: row.id,
     soldAt: row.soldAt,
     cashier: fullName(row.soldBy.profile),
     items: [
       {
-        imei: row.device.imei,
-        imei2: row.device.imei2,
-        serialNumber: row.device.serialNumber,
+        imei: row.device?.imei ?? null,
+        imei2: row.device?.imei2 ?? null,
+        serialNumber: row.device?.serialNumber ?? null,
         model,
-        storage: specValue(row.device.specs, 'storage'),
-        color: specValue(row.device.specs, 'color'),
+        storage: row.device ? specValue(row.device.specs, 'storage') : null,
+        color: row.device ? specValue(row.device.specs, 'color') : null,
+        quantity: row.quantity,
         price: row.salePrice,
       },
     ],

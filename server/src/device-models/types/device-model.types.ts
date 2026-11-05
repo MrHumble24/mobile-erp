@@ -16,6 +16,8 @@ export interface DeviceModelView {
   modelCode: string | null;
   /** How customs writes this model; used to match a price-list fee (ADR 0027). */
   customsCode: string | null;
+  /** Default till price per piece for a QUANTITY product (ADR 0030); 2-dp string. */
+  salePrice: string | null;
   attributes: AttributeDef[];
   createdAt: Date;
   updatedAt: Date;
@@ -29,6 +31,7 @@ export interface DeviceModelInput {
   barcode?: string | null;
   modelCode?: string | null;
   customsCode?: string | null;
+  salePrice?: number | null;
   attributes: AttributeDef[];
 }
 
@@ -41,5 +44,6 @@ export interface DeviceModelPatch {
   barcode?: string | null;
   modelCode?: string | null;
   customsCode?: string | null;
+  salePrice?: number | null;
   attributes?: AttributeDef[];
 }

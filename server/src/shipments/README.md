@@ -41,6 +41,14 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
   or no match) and a `CUSTOMS` row posts when it is > 0 — the client never sends
   it.
 
+- `POST /:id/items` — buy quantity products into the shipment (ADR 0030)
+  `{ items: [{ modelId, quantity, unitCost }] }` (`device.create`). Each line's
+  model must be a `QUANTITY` product (400 otherwise); each writes a `PURCHASE`
+  stock movement and posts one `PURCHASE` ledger row (quantity × unit cost,
+  money out) from the shipment's store and account, in one transaction
+  (`shipments-quantity.repository.ts`). Returns `PurchasedLineView[]`
+  (`{ modelId, quantity, unitCost }`).
+
 ## Must never
 
 - Change a device's status after intake — that is `DevicesService`.
