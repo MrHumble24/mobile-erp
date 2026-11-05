@@ -34,4 +34,9 @@ export class CreateExpenseDto {
   @IsOptional()
   @IsDateString()
   incurredAt?: string;
+
+  /** Account the money left. Defaults to CASH; must be active. */
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
 }

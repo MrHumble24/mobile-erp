@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { computeLandedCost } from './lib/landed-cost.js';
 import {
@@ -21,7 +22,10 @@ const withCount = {
 /** All Prisma access for shipments, including batched device intake. */
 @Injectable()
 export class ShipmentsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledger: LedgerService,
+  ) {}
 
   async findAll(): Promise<ShipmentView[]> {
     const rows = await this.prisma.shipment.findMany({
@@ -39,19 +43,67 @@ export class ShipmentsRepository {
     return row ? toShipmentView(row) : null;
   }
 
+  /** Creates the shipment and, when overhead > 0, posts an OVERHEAD row. */
   async create(input: ShipmentInput): Promise<ShipmentView> {
-    const row = await this.prisma.shipment.create({
-      data: { ...input },
-      ...withCount,
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.shipment.create({
+        data: { ...input },
+        ...withCount,
+      });
+      const overhead = new Prisma.Decimal(input.overheadCost ?? 0);
+      if (overhead.gt(0)) {
+        await this.ledger.post(
+          {
+            storeId: input.storeId,
+            accountCode: input.paymentAccountCode,
+            typeCode: 'OVERHEAD',
+            amount: overhead.negated(),
+            shipmentId: row.id,
+            createdById: input.createdById,
+          },
+          tx,
+        );
+      }
+      return toShipmentView(row);
     });
-    return toShipmentView(row);
   }
 
-  /** Updates fields and, when overhead changes, recomputes landed costs. */
-  async update(id: string, patch: ShipmentPatch): Promise<ShipmentView> {
+  /**
+   * Updates fields and, when overhead changes, recomputes landed costs and
+   * posts the OVERHEAD difference against the shipment's fixed payment account.
+   */
+  async update(
+    id: string,
+    patch: ShipmentPatch,
+    userId: string,
+  ): Promise<ShipmentView> {
     return this.prisma.$transaction(async (tx) => {
+      const before = await tx.shipment.findUniqueOrThrow({
+        where: { id },
+        select: {
+          overheadCost: true,
+          storeId: true,
+          paymentAccountCode: true,
+        },
+      });
       await tx.shipment.update({ where: { id }, data: patch });
-      if (patch.overheadCost !== undefined) await this.recompute(tx, id);
+      if (patch.overheadCost !== undefined) {
+        await this.recompute(tx, id);
+        const delta = before.overheadCost.minus(patch.overheadCost); // -(new-old)
+        if (!delta.isZero()) {
+          await this.ledger.post(
+            {
+              storeId: before.storeId,
+              accountCode: before.paymentAccountCode,
+              typeCode: 'OVERHEAD',
+              amount: delta,
+              shipmentId: id,
+              createdById: userId,
+            },
+            tx,
+          );
+        }
+      }
       const row = await tx.shipment.findUniqueOrThrow({
         where: { id },
         ...withCount,
@@ -68,8 +120,12 @@ export class ShipmentsRepository {
   ): Promise<RegisteredDeviceView[]> {
     return this.prisma.$transaction(async (tx) => {
       await this.assertImeisFree(tx, inputs);
+      const shipment = await tx.shipment.findUniqueOrThrow({
+        where: { id: shipmentId },
+        select: { storeId: true, paymentAccountCode: true },
+      });
       for (const input of inputs) {
-        await tx.device.create({
+        const device = await tx.device.create({
           data: {
             imei: input.imei,
             imei2: input.imei2 ?? null,
@@ -85,7 +141,23 @@ export class ShipmentsRepository {
               create: { toStatusCode: 'IN_STOCK', changedById: userId },
             },
           },
+          select: { id: true },
         });
+        const cost = new Prisma.Decimal(input.acquisitionCost);
+        if (cost.gt(0)) {
+          await this.ledger.post(
+            {
+              storeId: shipment.storeId,
+              accountCode: shipment.paymentAccountCode,
+              typeCode: 'PURCHASE',
+              amount: cost.negated(),
+              deviceId: device.id,
+              shipmentId,
+              createdById: userId,
+            },
+            tx,
+          );
+        }
       }
       return this.recompute(tx, shipmentId);
     });
@@ -173,6 +245,7 @@ interface ShipmentRow {
   shipmentDate: Date;
   expectedCount: number;
   overheadCost: { toString(): string };
+  paymentAccountCode: string;
   notes: string | null;
   createdById: string;
   createdAt: Date;
@@ -187,6 +260,7 @@ function toShipmentView(row: ShipmentRow): ShipmentView {
     shipmentDate: row.shipmentDate,
     expectedCount: row.expectedCount,
     overheadCost: row.overheadCost.toString(),
+    paymentAccountCode: row.paymentAccountCode,
     notes: row.notes,
     createdById: row.createdById,
     createdAt: row.createdAt,

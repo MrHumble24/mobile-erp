@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AgingBucket, bucketOpenConsignments } from './lib/aging.js';
 import { buildLedger } from './lib/ledger.js';
@@ -79,7 +80,10 @@ function balanceWhere(filters: PartnerFilters): Prisma.Sql {
 /** All Prisma access for partners, their balances, ledger and payments. */
 @Injectable()
 export class PartnersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledgerService: LedgerService,
+  ) {}
 
   async listWithBalance(filters: PartnerFilters = {}): Promise<PartnerView[]> {
     const rows = await this.prisma.$queryRaw<BalanceRow[]>(
@@ -129,16 +133,31 @@ export class PartnersRepository {
   }
 
   async createPayment(input: CreatePaymentInput): Promise<PaymentView> {
-    const row = await this.prisma.partnerPayment.create({
-      data: {
-        storeId: input.storeId,
-        partnerId: input.partnerId,
-        consignmentId: input.consignmentId,
-        amount: input.amount,
-        paidAt: input.paidAt,
-        notes: input.notes,
-        receivedById: input.receivedById,
-      },
+    const row = await this.prisma.$transaction(async (tx) => {
+      const payment = await tx.partnerPayment.create({
+        data: {
+          storeId: input.storeId,
+          partnerId: input.partnerId,
+          consignmentId: input.consignmentId,
+          amount: input.amount,
+          paidAt: input.paidAt,
+          notes: input.notes,
+          receivedById: input.receivedById,
+        },
+      });
+      await this.ledgerService.post(
+        {
+          storeId: input.storeId,
+          accountCode: input.accountCode,
+          typeCode: 'PARTNER_PAYMENT',
+          amount: input.amount,
+          occurredAt: input.paidAt,
+          partnerPaymentId: payment.id,
+          createdById: input.receivedById,
+        },
+        tx,
+      );
+      return payment;
     });
     return {
       id: row.id,
@@ -149,6 +168,7 @@ export class PartnersRepository {
       notes: row.notes,
       receivedById: row.receivedById,
       createdAt: row.createdAt,
+      accountCode: input.accountCode,
     };
   }
 

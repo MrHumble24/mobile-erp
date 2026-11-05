@@ -1,15 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 const INCLUDE = {
   category: { select: { id: true, name: true } },
 } satisfies Prisma.ExpenseRecurrenceInclude;
 
+/** The template fields a spawn needs (a full ExpenseRecurrence row satisfies it). */
+interface SpawnTemplate {
+  id: string;
+  storeId: string;
+  categoryId: string;
+  amount: Prisma.Decimal;
+  description: string | null;
+  vendor: string | null;
+  nextDueAt: Date;
+  accountCode: string;
+  createdById: string;
+}
+
 /** All Prisma access for recurring-expense templates. */
 @Injectable()
 export class ExpenseRecurrencesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledger: LedgerService,
+  ) {}
 
   findAll() {
     return this.prisma.expenseRecurrence.findMany({
@@ -44,26 +61,18 @@ export class ExpenseRecurrencesRepository {
   }
 
   /**
-   * Spawn one real expense from a template (incurred at its current due date)
-   * and advance the template to `nextDueAt`, atomically.
+   * Spawn one real expense from a template (incurred at its current due date),
+   * post its EXPENSE row against the template's account, and advance the
+   * template to `nextDueAt` — all atomically.
    */
   spawnOccurrence(input: {
-    recurrence: {
-      id: string;
-      storeId: string;
-      categoryId: string;
-      amount: Prisma.Decimal;
-      description: string | null;
-      vendor: string | null;
-      nextDueAt: Date;
-      createdById: string;
-    };
+    recurrence: SpawnTemplate;
     createdById: string;
     nextDueAt: Date;
   }) {
     const r = input.recurrence;
-    return this.prisma.$transaction([
-      this.prisma.expense.create({
+    return this.prisma.$transaction(async (tx) => {
+      const expense = await tx.expense.create({
         data: {
           // A template belongs to a store; its expenses land in that store,
           // not the caller's current one.
@@ -77,11 +86,26 @@ export class ExpenseRecurrencesRepository {
           incurredAt: r.nextDueAt,
           createdById: input.createdById,
         },
-      }),
-      this.prisma.expenseRecurrence.update({
+      });
+      if (!r.amount.isZero()) {
+        await this.ledger.post(
+          {
+            storeId: r.storeId,
+            accountCode: r.accountCode,
+            typeCode: 'EXPENSE',
+            amount: r.amount.negated(),
+            occurredAt: r.nextDueAt,
+            expenseId: expense.id,
+            createdById: input.createdById,
+          },
+          tx,
+        );
+      }
+      await tx.expenseRecurrence.update({
         where: { id: r.id },
         data: { nextDueAt: input.nextDueAt },
-      }),
-    ]);
+      });
+      return expense;
+    });
   }
 }

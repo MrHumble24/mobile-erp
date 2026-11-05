@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { toNumber } from '../common/lib/to-number.js';
 import { ExpenseCategoriesService } from '../expense-categories/expense-categories.service.js';
+import { Prisma } from '../generated/client/client.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreateExpenseDto } from './dto/create-expense.dto.js';
 import {
@@ -9,6 +15,11 @@ import {
 } from './dto/expense-query.dto.js';
 import { UpdateExpenseDto } from './dto/update-expense.dto.js';
 import { ExpensesRepository } from './expenses.repository.js';
+import {
+  createPostings,
+  deletePostings,
+  updatePostings,
+} from './lib/expense-ledger.js';
 import { pickTopCategory, previousPeriod } from './lib/summary.lib.js';
 import { ExpenseCategoryTotal, ExpenseSummary } from './types/expense.types.js';
 
@@ -18,6 +29,7 @@ export class ExpensesService {
     private readonly repo: ExpensesRepository,
     private readonly categories: ExpenseCategoriesService,
     private readonly stores: StoresService,
+    private readonly ledger: LedgerService,
   ) {}
 
   async list(query: ExpenseQueryDto) {
@@ -37,32 +49,82 @@ export class ExpensesService {
       page,
       pageSize,
     });
-    return { items, total, page, pageSize };
+    return { items: await this.withAccount(items), total, page, pageSize };
   }
 
   async get(id: string) {
-    return this.require(id);
+    return (await this.withAccount([await this.require(id)]))[0];
   }
 
   async create(createdById: string, dto: CreateExpenseDto) {
-    const { incurredAt, ...rest } = dto;
-    return this.repo.create({
-      ...rest,
-      storeId: await this.stores.currentStoreId(),
+    const { incurredAt, accountCode, ...rest } = dto;
+    const account = await this.resolveAccount(accountCode);
+    const row = await this.repo.create(
+      {
+        ...rest,
+        storeId: await this.stores.currentStoreId(),
+        createdById,
+        incurredAt: parseDate(incurredAt),
+      },
+      createPostings(dto.amount, account),
+    );
+    return (await this.withAccount([row]))[0];
+  }
+
+  async update(createdById: string, id: string, dto: UpdateExpenseDto) {
+    const current = await this.require(id);
+    if (dto.accountCode) await this.resolveAccount(dto.accountCode);
+    const { incurredAt, accountCode, ...rest } = dto;
+    const oldAmount = current.amount;
+    const newAmount =
+      dto.amount === undefined ? oldAmount : new Prisma.Decimal(dto.amount);
+    const postings = updatePostings({
+      oldAmount,
+      newAmount,
+      currentAccount: await this.currentAccount(id),
+      newAccountCode: accountCode,
+    });
+    const row = await this.repo.update(
+      id,
+      { ...rest, incurredAt: parseDate(incurredAt) },
+      postings,
+      { storeId: current.storeId, createdById },
+    );
+    return (await this.withAccount([row]))[0];
+  }
+
+  async remove(createdById: string, id: string) {
+    const current = await this.require(id);
+    const postings = deletePostings(
+      current.amount,
+      await this.currentAccount(id),
+    );
+    await this.repo.softRemove(id, postings, {
+      storeId: current.storeId,
       createdById,
-      incurredAt: parseDate(incurredAt),
     });
   }
 
-  async update(id: string, dto: UpdateExpenseDto) {
-    await this.require(id);
-    const { incurredAt, ...rest } = dto;
-    return this.repo.update(id, { ...rest, incurredAt: parseDate(incurredAt) });
+  /** CASH default; reject an unknown or inactive account. */
+  private async resolveAccount(code?: string): Promise<string> {
+    const account = code ?? 'CASH';
+    if (!(await this.ledger.activeAccountCodes()).includes(account)) {
+      throw new BadRequestException(`Unknown or inactive account ${account}`);
+    }
+    return account;
   }
 
-  async remove(id: string) {
-    await this.require(id);
-    await this.repo.softRemove(id);
+  private async currentAccount(id: string): Promise<string | null> {
+    return (await this.ledger.expenseAccounts([id])).get(id) ?? null;
+  }
+
+  /** Decorate rows with the derived account (CASH when there are no rows). */
+  private async withAccount<T extends { id: string }>(
+    rows: T[],
+  ): Promise<(T & { accountCode: string })[]> {
+    if (rows.length === 0) return [];
+    const map = await this.ledger.expenseAccounts(rows.map((r) => r.id));
+    return rows.map((r) => ({ ...r, accountCode: map.get(r.id) ?? 'CASH' }));
   }
 
   async summary(query: ExpenseSummaryQueryDto): Promise<ExpenseSummary> {

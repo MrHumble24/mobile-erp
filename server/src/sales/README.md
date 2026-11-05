@@ -5,11 +5,16 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
 
 ## HTTP
 
-- `POST /sales` (`sale.create`) `{ imei, salePrice, customerId?, customer?{name,phone},
-  warrantyDays?, notes?, clientMutationId?, expectedVersion? }` → `SaleView`.
+- `POST /sales` (`sale.create`) `{ imei, salePrice, payments?[{accountCode,amount}],
+  customerId?, customer?{name,phone}, warrantyDays?, notes?, clientMutationId?,
+  expectedVersion? }` → `SaleView`.
   `imei` is resolved against either IMEI column (dual-SIM), the device must
   exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
-  sellable, see ADR 0007). Idempotent on `clientMutationId` (returns the prior sale).
+  sellable, see ADR 0007). Idempotent on `clientMutationId` (returns the prior
+  sale, posts the ledger rows once). `payments` omitted = one CASH line for the
+  whole price; present = amounts positive, accounts distinct and active, summing
+  to `salePrice` exactly (400 otherwise). One `SALE` ledger row posts per line
+  inside the checkout transaction (ADR 0025).
 - `GET /sales` (`sale.read`)
   `?from&to&soldById&customerId&channel=retail|b2b&search&returned=true|false&warranty=active|expired&page&pageSize`
   → `{ items: SaleView[], total, page, pageSize }`. Channel: retail = `consignmentId`
@@ -27,11 +32,15 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   `{ imei, saleId, purchasedAt, salePrice, warranty{days,startsAt,endsAt}|null,
   remainingDays, latestInspection{grade,notes}|null, alreadyReturned }`.
 - `POST /sales/:id/return` (`sale.return`) `{ refundAmount, reason?,
-  deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView` (409 if already returned).
+  deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView`
+  (409 if already returned). `REFUND` rows (money out) post in proportion to the
+  sale's `SALE` rows (remainder on the largest part); a sale with no ledger rows
+  refunds from CASH. ADR 0025.
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields at all).
 
 `SaleView` = `{ id, device{imei,imei2,model{brand,name},specs}, customer, salePrice,
 landedCostSnapshot, netProfit, soldAt, soldBy{id,name}, warranty, consignmentId, notes,
+payments[{accountCode,amount}] (derived from the SALE rows, [] when none),
 return{returnedAt,refundAmount,reason,processedBy{id,name}}|null }`.
 `netProfit` is derived in the mapper (salePrice − landedCostSnapshot), never stored;
 `CostRedactionInterceptor` strips `landedCostSnapshot`/`netProfit` per permission.

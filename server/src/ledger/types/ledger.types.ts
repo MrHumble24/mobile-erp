@@ -1,3 +1,5 @@
+import type { Prisma } from '../../generated/client/client.js';
+
 /** Manual entry types the owner may post directly (TRANSFER is its own path). */
 export const MANUAL_ENTRY_TYPES = [
   'OPENING',
@@ -17,13 +19,14 @@ export type LedgerSortField = (typeof LEDGER_SORT_FIELDS)[number];
 export interface AccountBalance {
   accountCode: string;
   label: string;
-  /** Sum of every row on this account for the store; may be negative. */
-  balance: number;
+  /** Sum of every row on this account, as a 2-dp decimal string; may be negative. */
+  balance: string;
 }
 
 export interface BalanceSummary {
   accounts: AccountBalance[];
-  total: number;
+  /** Sum of every account, as a 2-dp decimal string. */
+  total: string;
 }
 
 export interface LedgerFilter {
@@ -38,20 +41,36 @@ export interface LedgerFilter {
   pageSize: number;
 }
 
+/** A single money column linking a cash row back to what moved it. */
+export type LedgerSourceField =
+  'saleId' | 'expenseId' | 'partnerPaymentId' | 'deviceId' | 'shipmentId';
+
 /**
  * One signed row ready to append. The sole write shape: manual entries and
  * transfers build it in 2a; 2b's automatic posters (sale, refund, ...) build
  * the same shape and call `LedgerService.post(post, tx)` inside their own
- * transaction so the sale and its ledger rows commit atomically.
+ * transaction so the source row and its ledger rows commit atomically.
  */
 export interface LedgerPost {
   storeId: string;
   accountCode: string;
   typeCode: string;
   /** Signed, non-zero: positive = money in, negative = money out. */
-  amount: number;
+  amount: Prisma.Decimal | number;
   occurredAt?: Date;
   note?: string;
   transferId?: string;
+  /** At most one source link is set (saleId, expenseId, ...). */
+  saleId?: string;
+  expenseId?: string;
+  partnerPaymentId?: string;
+  deviceId?: string;
+  shipmentId?: string;
   createdById: string;
+}
+
+/** Net of a source's rows on one account (money in positive, out negative). */
+export interface AccountNet {
+  accountCode: string;
+  amount: Prisma.Decimal;
 }

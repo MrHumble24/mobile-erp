@@ -26,4 +26,9 @@ export class CreatePaymentDto {
   @IsString()
   @MaxLength(2000)
   notes?: string;
+
+  /** Account the cash landed in. Defaults to CASH; must be active. */
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
 }

@@ -42,10 +42,10 @@ describe('LedgerService.getBalances', () => {
     });
     const result = await service.getBalances();
     expect(result.accounts).toEqual([
-      { accountCode: 'CASH', label: 'Cash', balance: -500 },
-      { accountCode: 'CARD', label: 'Card', balance: 1000 },
+      { accountCode: 'CASH', label: 'Cash', balance: '-500.00' },
+      { accountCode: 'CARD', label: 'Card', balance: '1000.00' },
     ]);
-    expect(result.total).toBe(500);
+    expect(result.total).toBe('500.00');
   });
 
   it('shows zero for an account with no rows', async () => {
@@ -56,8 +56,8 @@ describe('LedgerService.getBalances', () => {
       sumByAccount: jest.fn().mockResolvedValue([]),
     });
     const result = await service.getBalances();
-    expect(result.accounts[0].balance).toBe(0);
-    expect(result.total).toBe(0);
+    expect(result.accounts[0].balance).toBe('0.00');
+    expect(result.total).toBe('0.00');
   });
 });
 

@@ -40,6 +40,7 @@ export function toSaleView(row: SaleRow): SaleView {
     warranty: row.warranty,
     consignmentId: row.consignmentId,
     notes: row.notes,
+    payments: [],
     return: row.return
       ? {
           returnedAt: row.return.returnedAt,

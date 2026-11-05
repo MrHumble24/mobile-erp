@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreateExpenseRecurrenceDto } from './dto/create-expense-recurrence.dto.js';
 import { UpdateExpenseRecurrenceDto } from './dto/update-expense-recurrence.dto.js';
@@ -10,6 +15,7 @@ export class ExpenseRecurrencesService {
   constructor(
     private readonly repo: ExpenseRecurrencesRepository,
     private readonly stores: StoresService,
+    private readonly ledger: LedgerService,
   ) {}
 
   list() {
@@ -17,6 +23,7 @@ export class ExpenseRecurrencesService {
   }
 
   async create(createdById: string, dto: CreateExpenseRecurrenceDto) {
+    await this.assertAccount(dto.accountCode);
     return this.repo.create({
       ...dto,
       storeId: await this.stores.currentStoreId(),
@@ -27,11 +34,19 @@ export class ExpenseRecurrencesService {
 
   async update(id: string, dto: UpdateExpenseRecurrenceDto) {
     await this.require(id);
+    if (dto.accountCode) await this.assertAccount(dto.accountCode);
     const { nextDueAt, ...rest } = dto;
     return this.repo.update(id, {
       ...rest,
       ...(nextDueAt ? { nextDueAt: new Date(nextDueAt) } : {}),
     });
+  }
+
+  private async assertAccount(code?: string): Promise<void> {
+    if (!code) return;
+    if (!(await this.ledger.activeAccountCodes()).includes(code)) {
+      throw new BadRequestException(`Unknown or inactive account ${code}`);
+    }
   }
 
   /**

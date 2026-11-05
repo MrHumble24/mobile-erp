@@ -1,5 +1,7 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   IsInt,
   IsNumber,
   IsOptional,
@@ -24,6 +26,16 @@ class InlineCustomerDto {
   @IsString()
   @MaxLength(32)
   phone?: string;
+}
+
+/** One tender line of a (possibly split) sale. */
+export class SalePaymentDto {
+  @IsString()
+  accountCode!: string;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  amount!: number;
 }
 
 export class CreateSaleDto {
@@ -63,4 +75,16 @@ export class CreateSaleDto {
   @IsInt()
   @Min(0)
   expectedVersion?: number;
+
+  /**
+   * How the sale was tendered. Omit for a single CASH payment of the full
+   * price. When present, amounts must be positive, accounts distinct and
+   * active, and the amounts must sum to `salePrice` exactly.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => SalePaymentDto)
+  payments?: SalePaymentDto[];
 }

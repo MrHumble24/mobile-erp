@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CheckoutInput, ReturnInput } from './types/sale.types.js';
 
@@ -7,7 +8,8 @@ type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
 /**
  * Atomic device-status writes that accompany a sale. Every method runs in one
  * `$transaction` and advances `devices.version` under an optimistic-lock guard
- * (409 on mismatch), appending a `device_status_history` row.
+ * (409 on mismatch), appending a `device_status_history` row. The SALE/REFUND
+ * ledger rows are posted in the same transaction so money and sale commit as one.
  *
  * Cross-module note: the device + history writes below are owned by inventory.
  * They live here only for checkout atomicity; route them through
@@ -15,9 +17,12 @@ type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
  */
 @Injectable()
 export class SalesCheckoutRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ledger: LedgerService,
+  ) {}
 
-  /** Creates the sale, marks the device SOLD and opens the warranty. Returns the sale id. */
+  /** Creates the sale, marks the device SOLD, opens the warranty, posts SALE rows. */
   async checkout(input: CheckoutInput): Promise<string> {
     return this.prisma.$transaction(async (tx) => {
       const customerId = await this.resolveCustomer(tx, input);
@@ -45,11 +50,25 @@ export class SalesCheckoutRepository {
         },
         select: { id: true },
       });
+      for (const p of input.payments) {
+        await this.ledger.post(
+          {
+            storeId: input.storeId,
+            accountCode: p.accountCode,
+            typeCode: 'SALE',
+            amount: p.amount,
+            occurredAt: input.soldAt,
+            saleId: sale.id,
+            createdById: input.soldById,
+          },
+          tx,
+        );
+      }
       return sale.id;
     });
   }
 
-  /** Records a return and moves the device to the chosen status. */
+  /** Records a return, moves the device, and posts REFUND rows (money out). */
   async processReturn(input: ReturnInput): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       const existing = await tx.saleReturn.findUnique({
@@ -76,6 +95,19 @@ export class SalesCheckoutRepository {
           processedById: input.processedById,
         },
       });
+      for (const r of input.refundPostings) {
+        await this.ledger.post(
+          {
+            storeId: input.storeId,
+            accountCode: r.accountCode,
+            typeCode: 'REFUND',
+            amount: r.amount.negated(),
+            saleId: input.saleId,
+            createdById: input.processedById,
+          },
+          tx,
+        );
+      }
     });
   }
 

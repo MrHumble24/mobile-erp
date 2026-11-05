@@ -42,4 +42,9 @@ export class UpdateExpenseRecurrenceDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  /** Account future generated expenses post against; must be active. */
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
 }

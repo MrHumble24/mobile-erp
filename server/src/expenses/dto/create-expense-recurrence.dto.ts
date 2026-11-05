@@ -33,4 +33,9 @@ export class CreateExpenseRecurrenceDto {
 
   @IsDateString()
   nextDueAt!: string;
+
+  /** Account each generated expense posts against. Defaults to CASH. */
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
 }

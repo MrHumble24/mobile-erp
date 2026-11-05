@@ -172,10 +172,10 @@ export class SalesRepository {
 
   findSaleForReturn(
     id: string,
-  ): Promise<{ id: string; deviceId: string } | null> {
+  ): Promise<{ id: string; deviceId: string; storeId: string } | null> {
     return this.prisma.sale.findUnique({
       where: { id },
-      select: { id: true, deviceId: true },
+      select: { id: true, deviceId: true, storeId: true },
     });
   }
 

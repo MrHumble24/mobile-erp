@@ -7,6 +7,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
   PartnerPaymentReceivedEvent,
@@ -29,6 +30,7 @@ export class PartnersService {
   constructor(
     private readonly repo: PartnersRepository,
     private readonly stores: StoresService,
+    private readonly ledgerService: LedgerService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -91,6 +93,14 @@ export class PartnersService {
         );
       }
     }
+    const accountCode = dto.accountCode ?? 'CASH';
+    if (
+      !(await this.ledgerService.activeAccountCodes()).includes(accountCode)
+    ) {
+      throw new BadRequestException(
+        `Unknown or inactive account ${accountCode}`,
+      );
+    }
     const payment = await this.repo.createPayment({
       storeId: await this.stores.currentStoreId(),
       partnerId,
@@ -99,6 +109,7 @@ export class PartnersService {
       paidAt: dto.paidAt ? new Date(dto.paidAt) : undefined,
       notes: dto.notes,
       receivedById: caller.id,
+      accountCode,
     });
     this.events.emit(
       TelegramEvents.partnerPaymentReceived,

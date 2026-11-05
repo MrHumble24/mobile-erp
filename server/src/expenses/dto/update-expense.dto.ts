@@ -36,4 +36,9 @@ export class UpdateExpenseDto {
   @IsOptional()
   @IsDateString()
   incurredAt?: string;
+
+  /** Move the money to another account; reverses the old, posts the new. */
+  @IsOptional()
+  @IsString()
+  accountCode?: string;
 }

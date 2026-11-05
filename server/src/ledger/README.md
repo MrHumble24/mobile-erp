@@ -1,37 +1,47 @@
 # ledger
 
-The store's cash/card money ledger (ADR 0024). Append-only and signed: every
-money movement is one `cash_transactions` row; a balance is the **sum** of rows
-per account, never a stored number. 2a (this module) is the ledger plus the
-owner's manual entries; 2b makes sales/returns/expenses/partner payments/
-purchases post rows automatically.
+The store's cash/card money ledger (ADR 0024, 0025). Append-only and signed:
+every money movement is one `cash_transactions` row; a balance is the **sum** of
+rows per account, never a stored number. 2a is the ledger plus the owner's
+manual entries; 2b (ADR 0025) makes sales / returns / expenses / partner
+payments / purchases / overhead post rows automatically.
 
 ## Owns
 
 - `cash_transactions` (the ledger), `cash_accounts` and `cash_transaction_types`
-  (lookups; CASH/CARD and OPENING/DEPOSIT/WITHDRAWAL/CORRECTION/TRANSFER seeded).
-- The sign convention (`lib/signed-amount.ts`) and the one-opening-per-account
-  and transfer rules.
+  (lookups; CASH/CARD and OPENING/DEPOSIT/WITHDRAWAL/CORRECTION/TRANSFER +
+  SALE/REFUND/PARTNER_PAYMENT/PURCHASE/OVERHEAD/EXPENSE seeded in both
+  `seed.sql` and the migration — `migrate deploy` never runs the seed).
+- The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
+  transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
+  and deriving a source's current account from its rows (`lib/source-nets.ts`).
 
 ## Exposes
 
-- `GET /ledger/balances` — per-account balance + total (`balance.read`).
+- `GET /ledger/balances` — per-account balance + total, as **decimal strings**
+  summed in exact `Decimal` (`balance.read`).
 - `GET /ledger/transactions` — history, newest first, paginated, filter by
-  `accountCode`/`typeCode`/`from`/`to` (`balance.read`).
+  `accountCode`/`typeCode`/`from`/`to`; every item carries the five nullable
+  source ids (`balance.read`).
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
   inject `LedgerService` and call `post(entry, tx)` inside their own
-  `$transaction` so a sale and its ledger row commit atomically. They build a
-  `LedgerPost`; no module ever injects `LedgerRepository`.
+  `$transaction` so a sale and its ledger rows commit atomically. They build a
+  `LedgerPost` (signed amount + at most one source id); no module ever injects
+  `LedgerRepository`.
+- `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
+  activeAccountCodes` — derived reads 2b modules use to shape their responses
+  and validate caller-supplied accounts.
 
 ## Must never
 
-- Update or delete a row. A mistake is fixed by a new row (CORRECTION).
+- Update or delete a row. A mistake is fixed by a new row: a difference, a
+  reversal, or a CORRECTION — never an edit.
 - Store a balance. Always sum. Balances may go below zero; nothing is blocked.
 - Let another module reach past `LedgerService` into the repository.
 
 ## Open questions
 
-- The SALE/REFUND/... types, source-row links and split payments arrive in 2b;
-  the Telegram balance digest in 2c. `currentStoreId()` is store-scoped already.
+- The Telegram balance digest is 2c. Acquisition-cost edit and device-delete
+  posters are specified in ADR 0025 but dormant (no such path exists yet).

@@ -7,6 +7,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
   SaleCreatedEvent,
@@ -15,11 +16,14 @@ import {
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
+import { buildRefundPostings } from './lib/refund.js';
+import { resolveSalePayments } from './lib/payments.js';
 import { warrantyEndsAt } from './lib/warranty.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
 import type {
   ReceiptView,
+  SalePayment,
   SaleView,
   WarrantyLookupView,
 } from './types/sale.types.js';
@@ -30,11 +34,13 @@ export class SalesService {
     private readonly reads: SalesRepository,
     private readonly checkout: SalesCheckoutRepository,
     private readonly stores: StoresService,
+    private readonly ledger: LedgerService,
     private readonly events: EventEmitter2,
   ) {}
 
-  findByClientMutationId(id: string): Promise<SaleView | null> {
-    return this.reads.findByClientMutationId(id);
+  async findByClientMutationId(id: string): Promise<SaleView | null> {
+    const view = await this.reads.findByClientMutationId(id);
+    return view ? this.withPayments(view) : null;
   }
 
   async create(
@@ -42,9 +48,7 @@ export class SalesService {
     dto: CreateSaleDto,
   ): Promise<SaleView> {
     if (dto.clientMutationId) {
-      const existing = await this.reads.findByClientMutationId(
-        dto.clientMutationId,
-      );
+      const existing = await this.findByClientMutationId(dto.clientMutationId);
       if (existing) return existing; // idempotent replay — no side effects
     }
     const device = await this.reads.findDeviceByImei(dto.imei);
@@ -59,10 +63,15 @@ export class SalesService {
     if (dto.customerId && !(await this.reads.customerExists(dto.customerId))) {
       throw new BadRequestException(`Customer ${dto.customerId} not found`);
     }
+    const payments = resolveSalePayments(
+      dto.payments,
+      dto.salePrice,
+      await this.ledger.activeAccountCodes(),
+    );
 
     const days = dto.warrantyDays ?? (await this.reads.defaultWarrantyDays());
     const soldAt = new Date();
-    return this.runCheckout(caller, dto, device, soldAt, days);
+    return this.runCheckout(caller, dto, device, soldAt, days, payments);
   }
 
   private async runCheckout(
@@ -76,6 +85,7 @@ export class SalesService {
     },
     soldAt: Date,
     days: number,
+    payments: SalePayment[],
   ): Promise<SaleView> {
     try {
       const saleId = await this.checkout.checkout({
@@ -95,13 +105,16 @@ export class SalesService {
           startsAt: soldAt,
           endsAt: warrantyEndsAt(soldAt, days),
         },
+        payments,
       });
-      const view = (await this.reads.findById(saleId))!;
+      const view = await this.withPayments(
+        (await this.reads.findById(saleId))!,
+      );
       this.emitSaleCreated(view, dto.salePrice, device);
       return view;
     } catch (e) {
       if (dto.clientMutationId && isUniqueViolation(e)) {
-        const existing = await this.reads.findByClientMutationId(
+        const existing = await this.findByClientMutationId(
           dto.clientMutationId,
         );
         if (existing) return existing;
@@ -128,8 +141,9 @@ export class SalesService {
     );
   }
 
-  list(query: ListSalesQueryDto) {
-    return this.reads.list(query);
+  async list(query: ListSalesQueryDto) {
+    const page = await this.reads.list(query);
+    return { ...page, items: await this.attachPayments(page.items) };
   }
 
   stats(query: ListSalesQueryDto) {
@@ -140,8 +154,8 @@ export class SalesService {
     return this.require(id);
   }
 
-  listByCustomer(customerId: string): Promise<SaleView[]> {
-    return this.reads.listByCustomer(customerId);
+  async listByCustomer(customerId: string): Promise<SaleView[]> {
+    return this.attachPayments(await this.reads.listByCustomer(customerId));
   }
 
   async warrantyLookup(imei: string): Promise<WarrantyLookupView> {
@@ -168,6 +182,7 @@ export class SalesService {
     const device = await this.reads.findDeviceState(sale.deviceId);
     if (!device) throw new NotFoundException(`Sale ${id} device missing`);
 
+    const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
     await this.checkout.processReturn({
       saleId: id,
       deviceId: sale.deviceId,
@@ -176,14 +191,27 @@ export class SalesService {
       refundAmount: dto.refundAmount,
       reason: dto.reason,
       processedById: caller.id,
+      storeId: sale.storeId,
+      refundPostings: buildRefundPostings(dto.refundAmount, saleNets),
     });
-    return (await this.reads.findById(id))!;
+    return this.require(id);
   }
 
   private async require(id: string): Promise<SaleView> {
     const sale = await this.reads.findById(id);
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
-    return sale;
+    return this.withPayments(sale);
+  }
+
+  /** Fill each view's `payments` from its SALE ledger rows. */
+  private async attachPayments(views: SaleView[]): Promise<SaleView[]> {
+    if (views.length === 0) return views;
+    const map = await this.ledger.salePayments(views.map((v) => v.id));
+    return views.map((v) => ({ ...v, payments: map.get(v.id) ?? [] }));
+  }
+
+  private async withPayments(view: SaleView): Promise<SaleView> {
+    return (await this.attachPayments([view]))[0];
   }
 }
 

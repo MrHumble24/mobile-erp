@@ -41,3 +41,9 @@ atomicity while inventory/sales do not yet exist:
 - `device.updateMany` (statusCode + version) + `deviceStatusHistory.create`:
   IN_STOCK→CONSIGNED (create), CONSIGNED→SOLD (settle), CONSIGNED→IN_STOCK (return).
 - `sale.create` with `consignmentId` + `landedCostSnapshot` on settle (no Warranty for B2B).
+
+## Must never
+
+- Post a ledger row on settle. A B2B unit brings money in when the partner pays
+  (`PARTNER_PAYMENT`, in `partners`); posting on the settle sale would
+  double-count it (ADR 0025). This module does not depend on `LedgerModule`.
