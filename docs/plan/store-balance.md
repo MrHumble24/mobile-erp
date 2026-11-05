@@ -640,9 +640,9 @@ Progress (updated as each step lands):
 |---|---|---|---|---|---|
 | 1 Stores skeleton | merged, pushed | not needed | not needed | not needed | ADR 0023 |
 | 2a Ledger core + Balance screen | merged (`025f060`) | merged, clicked through in a browser, one bug fixed (`31afa82`) | merged, seen running on an emulator, raw-text-keys bug fixed (`6401e48`) | merged, seen running on a simulator, large-text fix (`c0967ec`) | ADR 0024. Both phone apps gained or are gaining a debug-only sign-in for screenshots. |
-| 2b Automatic posting, cash/card choice, split payment | merged (`4003240`), live API checked | merged (`29745a4`); a two-phone split sale done in a browser and confirmed on the server | building | merged (`27fc671`), seen running on a simulator, builds from `main` | ADR 0025. Split works for a cart with several phones: the cart total is split, each phone is paid from cash first, then card. |
+| 2b Automatic posting, cash/card choice, split payment | merged (`4003240`), live API checked | merged (`29745a4`); a two-phone split sale done in a browser and confirmed on the server | merged (`21bb957`), seen running on an emulator, builds and tests pass from `main` | merged (`27fc671`), seen running on a simulator, builds from `main` | ADR 0025. Split works for a cart with several phones: the cart total is split, each phone is paid from cash first, then card. |
 | 2c Telegram: opening and closing balance | merged (`542afcf`) | not needed | not needed | not needed | English text for now. |
-| 3 Expense per phone, customs fee from a price list, fee history | merged (`542afcf`, 283 tests), walk-through matched a hand calculation | building | after 2b | building | ADR 0026, 0027. Shipment overhead is gone. No Excel upload until the client's file arrives; the list is typed in. |
+| 3 Expense per phone, customs fee from a price list, fee history | merged (`542afcf`, 283 tests), walk-through matched a hand calculation | merged (`0fbfccc` + polish `df6bfef`); Customs page, new-list form, fee chart and shipments clicked through in a browser | building | building | ADR 0026, 0027. Shipment overhead is gone. No Excel upload until the client's file arrives; the list is typed in. |
 | Security fixes for the ledger | merged (`542afcf`) | part of step 3 work | part of step 3 work | part of step 3 work | ADR 0028. Refund capped; cost amounts hidden in history without the cost permission. |
 | 4a Product kinds, categories, serial-number items | building | after server | after server | after server | Change 8, first half. Tables are not renamed: a model is a product, a device is a unit. |
 | 4b Quantity items (cases, cables) | after 4a | | | | Change 8, second half. |
@@ -663,6 +663,11 @@ expense or payment; nothing can edit or delete a ledger row; split
 payments must add up exactly; a replayed offline sale posts once.
 
 Notes for the user:
+- After an update that adds new permissions (Balance, Customs fees),
+  anyone already signed in on the web must sign out and in again
+  before the new pages appear. The web app reads permissions only at
+  sign-in. Claude hit this itself: the Customs page said "403" until a
+  fresh sign-in.
 - Railway does not run the seed on start. After a push, run
   `pnpm prisma db seed` against the Railway database, or the new
   accounts and the `balance.*` permissions will be missing there.
