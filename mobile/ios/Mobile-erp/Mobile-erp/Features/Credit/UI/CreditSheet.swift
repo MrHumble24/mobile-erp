@@ -135,7 +135,9 @@ struct CreditSheet: View {
                 created = credit
             } catch let e as AppError {
                 busy = false
-                error = CreditError.message(e, i18n)
+                // Shift closed elsewhere (ADR 0036): prompt to open one; keep the cart.
+                error = (e.statusCode == 409 && e.code == "NO_OPEN_SHIFT")
+                    ? i18n.t("shifts.shiftRequired") : CreditError.message(e, i18n)
             } catch {
                 busy = false
                 self.error = error.localizedDescription

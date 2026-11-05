@@ -481,3 +481,32 @@ in `RootView`), so a newly granted permission applies without signing out.
 DEBUG self-check: `CreditPlanSelfCheck`. DEBUG args: `-open credits`,
 `-openCredit first` (first credit's detail), `-posCredit 1` (till credit sheet on a
 seeded cart), `-openTab credit` (report tab).
+
+---
+
+### Cashier shifts (Step 8, ADR 0036)
+
+Optional per store (`shiftsEnabled`, off by default). A cashier counts the drawer
+cash on opening and closing; the closing difference posts to the balance. Lives in
+`Features/Shifts`; the open/close flow is the till bar. Online only.
+
+| Screen / Sheet | File | Role | Description |
+| :--- | :--- | :--- | :--- |
+| **Shift bar** (`ShiftBar`) | `Features/Shifts/UI/ShiftBar.swift` | Till (`sale.create`) | Open since HH:mm + Close shift, or No open shift + Open shift. Hidden when the setting is off. |
+| **Open shift** (`OpenShiftSheet`) | `Features/Shifts/UI/OpenShiftSheet.swift` | `sale.create` | Type the cash counted at the start. |
+| **Close shift** (`CloseShiftSheet`) | `Features/Shifts/UI/CloseShiftSheet.swift` | `sale.create` | Expected cash live, counted cash, the difference preview, an optional note; then the report. |
+| **Shift report** (`ShiftReportSheet`) | `Features/Shifts/UI/ShiftReportSheet.swift` | `sale.read` | Opening / expected / counted / difference / card total + movements by type with per-account totals. Force-close an open shift with `shift.manage`. |
+| **Shifts list** (`ShiftsView`) | `Features/Shifts/UI/ShiftsView.swift` | `sale.read` | Newest first, a date filter, a cashier filter for `shift.manage`. |
+| **Force close** (`ForceCloseSheet`) | `Features/Shifts/UI/ForceCloseSheet.swift` | `shift.manage` | Counted cash + a required note for a forgotten open shift. |
+
+Till (`Features/Pos`): the selling gate (`ShiftModel.blocksSale`) — online needs an
+open shift (checkout is disabled with a message + Open shift button), offline is
+allowed when a shift was open the last time we looked (cached). The server's 409
+`NO_OPEN_SHIFT` on `POST /sales` and `POST /credits` maps to the same prompt and
+keeps the cart. Settings gains the shifts switch; the `SHIFT_DIFFERENCE`
+ledger-type label is added to `BalanceFormat`. Permissions refresh on foreground
+(shared with step 7).
+
+DEBUG self-check: `ShiftMathSelfCheck` (−20,000 on an 11,480,000 vs 11,500,000
+count). DEBUG args: `-open shifts`, `-openShift first` (first shift's report),
+`-posShiftOpen 1`, `-posShiftClose 1` (the till open / close sheets).

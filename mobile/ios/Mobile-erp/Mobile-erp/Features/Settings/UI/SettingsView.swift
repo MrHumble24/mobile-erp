@@ -64,6 +64,7 @@ struct SettingsView: View {
                 }
                 discountsSection($model)
                 creditSection($model)
+                shiftsSection($model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
@@ -133,6 +134,19 @@ struct SettingsView: View {
                         Text(i18n.t("credit.creditLimitHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                     }
                 }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Cashier shifts (ADR 0036): the switch only; the rest lives at the till.
+    private func shiftsSection(_ model: Bindable<SettingsModel>) -> some View {
+        AppCard {
+            VStack(alignment: .leading, spacing: Tokens.Space.md) {
+                Text(i18n.t("shifts.settingsTitle")).font(.ui(.heading)).foregroundStyle(Tokens.text)
+                Toggle(i18n.t("shifts.settingsEnabled"), isOn: model.form.shiftsEnabled)
+                    .font(.ui(.body)).foregroundStyle(Tokens.text)
+                Text(i18n.t("shifts.settingsHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

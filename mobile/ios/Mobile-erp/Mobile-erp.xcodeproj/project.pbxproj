@@ -27,6 +27,7 @@
 				Features/Reports/README.md,
 				Features/Sales/README.md,
 				Features/Settings/README.md,
+				Features/Shifts/README.md,
 				Features/Sync/README.md,
 				Features/Users/README.md,
 				FOUNDATION.md,

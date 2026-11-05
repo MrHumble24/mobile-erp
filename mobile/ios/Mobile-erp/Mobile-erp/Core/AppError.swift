@@ -9,14 +9,18 @@ struct AppError: Error, Identifiable {
     let statusCode: Int
     let message: String
     let error: String?
+    /// A machine-readable code some endpoints add to the body, e.g. the shift
+    /// gate's 409 `NO_OPEN_SHIFT` (ADR 0036). Nil when the body carries none.
+    let code: String?
 
     var isNetwork: Bool { statusCode == 0 }
     var isUnauthorized: Bool { statusCode == 401 }
 
-    init(statusCode: Int, message: String, error: String? = nil) {
+    init(statusCode: Int, message: String, error: String? = nil, code: String? = nil) {
         self.statusCode = statusCode
         self.message = message
         self.error = error
+        self.code = code
     }
 
     /// Decode the envelope from a non-2xx response body.
@@ -25,6 +29,7 @@ struct AppError: Error, Identifiable {
         self.statusCode = statusCode
         self.message = env?.message.joined() ?? "Request failed"
         self.error = env?.error
+        self.code = env?.code
     }
 
     static let network = AppError(statusCode: 0, message: "No connection to the server.")
@@ -32,6 +37,7 @@ struct AppError: Error, Identifiable {
     private struct Envelope: Decodable {
         let message: Message
         let error: String?
+        let code: String?
     }
 
     /// `message` is a string or an array of strings in the envelope.

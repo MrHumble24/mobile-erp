@@ -13,11 +13,14 @@ struct PosCheckoutBar: View {
     private var allPriced: Bool { !cart.isEmpty && cart.lines.allSatisfy { cart.finalTotal($0) > 0 } }
     private var paymentValid: Bool { model.payment.isValid(total: cart.subtotal) }
     private var hasDiscount: Bool { cart.totalDiscount > 0 }
+    /// Shifts (ADR 0036): selling is blocked until a shift is open.
+    private var shiftBlocked: Bool { model.shift.blocksSale(online: model.isOnline) }
 
     var body: some View {
         VStack(spacing: Tokens.Space.lg) {
             totalsCard
             if cart.config.enabled && cart.subtotalList > 0 { cartDiscountButton }
+            if shiftBlocked { shiftBlock }
             AppFormField(label: i18n.t("balance.paidWith")) {
                 PaymentMethodField(selection: model.payment, total: cart.subtotal)
             }
@@ -31,7 +34,7 @@ struct PosCheckoutBar: View {
                 }
             }
             .buttonStyle(.pillPrimary)
-            .disabled(model.busy || !allPriced || !paymentValid || cart.hasInvalidDiscount)
+            .disabled(model.busy || !allPriced || !paymentValid || cart.hasInvalidDiscount || shiftBlocked)
             if model.creditAvailable { creditButton }
         }
         .sheet(isPresented: $showCartDiscount) {
@@ -61,6 +64,18 @@ struct PosCheckoutBar: View {
                         .font(.data(.large)).foregroundStyle(Tokens.text)
                 }
             }
+        }
+    }
+
+    /// Shifts (ADR 0036): a clear message + an "Open shift" button when selling is
+    /// blocked because no shift is open.
+    private var shiftBlock: some View {
+        VStack(spacing: Tokens.Space.sm) {
+            Text(i18n.t("shifts.shiftRequired")).font(.ui(.body)).foregroundStyle(Tokens.danger)
+            Button { model.shift.showOpen = true } label: {
+                Label(i18n.t("shifts.openShift"), systemImage: "clock").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.pillSecondary)
         }
     }
 

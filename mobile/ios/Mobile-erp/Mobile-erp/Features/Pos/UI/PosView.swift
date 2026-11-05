@@ -13,6 +13,7 @@ struct PosView: View {
     var body: some View {
         @Bindable var model = model
         VStack(spacing: 0) {
+            ShiftBar(model: model.shift)
             SegmentedControl(selection: $model.mode,
                              segments: PosMode.allCases.map { ($0, i18n.t($0.labelKey)) })
                 .padding(.horizontal, Tokens.Space.gutter)
@@ -113,6 +114,12 @@ struct PosView: View {
         if let arg = KitDebugLaunch.consume("posSellDiscount") { model.debugSellDiscount(arg, container: container) }
         if let code = KitDebugLaunch.consume("posScan") { model.scan(code); model.confirmScan() }
         if KitDebugLaunch.consume("posCredit") != nil { model.debugOpenCredit() }
+        if KitDebugLaunch.consume("posShiftOpen") != nil {
+            Task { await model.shift.load(); model.shift.showOpen = true }
+        }
+        if KitDebugLaunch.consume("posShiftClose") != nil {
+            Task { await model.shift.load(); model.shift.showClose = true }
+        }
         if let code = KitDebugLaunch.consume("posSell") {
             model.scan(code); model.confirmScan(); model.checkout()
         }
