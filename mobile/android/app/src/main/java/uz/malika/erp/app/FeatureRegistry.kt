@@ -10,6 +10,7 @@ import uz.malika.erp.features.inventory.InventoryFeature
 import uz.malika.erp.features.nasiya.NasiyaFeature
 import uz.malika.erp.features.procurement.ProcurementFeature
 import uz.malika.erp.features.purchases.PurchasesFeature
+import uz.malika.erp.features.repairs.RepairsFeature
 import uz.malika.erp.features.sales.ui.SalesFeature
 import uz.malika.erp.features.shifts.ShiftsFeature
 import uz.malika.erp.features.stock.StockFeature
@@ -32,6 +33,7 @@ object FeatureRegistry {
         ShiftsFeature,
         CustomsFeature,
         PurchasesFeature,
+        RepairsFeature,
         SalesFeature,
         InventoryFeature,
         StockFeature,

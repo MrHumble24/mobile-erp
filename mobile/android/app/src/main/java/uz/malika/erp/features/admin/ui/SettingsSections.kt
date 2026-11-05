@@ -149,6 +149,15 @@ fun ShiftsSettingsSection(form: SettingsFormState) {
     }
 }
 
+/** Repairs (Change 13, ADR 0040): one switch, off by default. */
+@Composable
+fun RepairsSettingsSection(form: SettingsFormState) {
+    val t = LocalT.current
+    SectionCard(t("repairs.settingsTitle", null), t("repairs.settingsHint", null)) {
+        ToggleRow(t("repairs.settingsEnabled", null), form.repairsEnabled) { form.repairsEnabled = it }
+    }
+}
+
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {

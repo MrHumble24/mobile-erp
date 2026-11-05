@@ -168,5 +168,6 @@ private fun movementLabel(code: String, serverLabel: String, t: uz.malika.erp.i1
     "RETURN" -> t("catalog.moveReturn", null)
     "WRITE_OFF" -> t("catalog.moveWriteOff", null)
     "COUNT_CORRECTION" -> t("catalog.moveCount", null)
+    "REPAIR_USE" -> t("repairs.moveRepairUse", null)
     else -> serverLabel.ifBlank { code }
 }

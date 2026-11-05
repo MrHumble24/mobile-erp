@@ -20,6 +20,8 @@ fun ledgerTypeKey(code: String): String? = when (code) {
     "DEVICE_EXPENSE" -> "balance.typeDeviceExpense"
     "CUSTOMS" -> "balance.typeCustoms"
     "EXPENSE" -> "balance.typeExpense"
+    "REPAIR_PAYMENT" -> "repairs.ledgerPayment"
+    "REPAIR_OUTSIDE" -> "repairs.ledgerOutside"
     else -> null
 }
 
