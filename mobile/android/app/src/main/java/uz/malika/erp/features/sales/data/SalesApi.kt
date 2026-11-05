@@ -1,5 +1,6 @@
 package uz.malika.erp.features.sales.data
 
+import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -24,6 +25,10 @@ interface SalesApi {
     /** Find quantity products by name/barcode/model code for the till (ADR 0030). */
     @GET("stock")
     suspend fun stockSearch(@QueryMap query: Map<String, String>): List<QuantityProductDto>
+
+    /** Direct online sale (ADR 0039 trade-in path): posts one sale now, never queued. */
+    @POST("sales")
+    suspend fun createSale(@Body body: JsonObject): SaleDto
 
     @GET("sales")
     suspend fun sales(@QueryMap query: Map<String, String>): SalesPageDto

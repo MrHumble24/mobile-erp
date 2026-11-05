@@ -8,6 +8,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import uz.malika.erp.features.sales.lib.Discount
 import uz.malika.erp.features.sales.lib.PricedLine
+import uz.malika.erp.features.sales.model.TradeInDraft
 import uz.malika.erp.shared.payments.AccountAmount
 import java.math.BigDecimal
 
@@ -41,6 +42,7 @@ object SaleCreate {
         priceLevelCode: String? = null,
         discount: Discount? = null,
         listPrice: BigDecimal? = null,
+        tradeIns: List<TradeInDraft> = emptyList(),
     ): JsonObject = buildJsonObject {
         // Exactly one identifier (ADR 0029): the server resolves it against imei,
         // imei2 or serialNumber. A phone sends `imei`, a serial unit `serialNumber`.
@@ -49,6 +51,7 @@ object SaleCreate {
         appendShared(customerId, customerName, customerPhone, notes, payments)
         warrantyDays?.let { put("warrantyDays", it) }
         appendPricing(priceLevelCode, discount, listPrice)
+        appendTradeIns(tradeIns)
     }
 
     /**
@@ -68,12 +71,44 @@ object SaleCreate {
         priceLevelCode: String? = null,
         discount: Discount? = null,
         listPrice: BigDecimal? = null,
+        tradeIns: List<TradeInDraft> = emptyList(),
     ): JsonObject = buildJsonObject {
         put("modelId", modelId)
         put("quantity", quantity)
         put("salePrice", JsonPrimitive(salePrice))
         appendShared(customerId, customerName, customerPhone, notes, payments)
         appendPricing(priceLevelCode, discount, listPrice)
+        appendTradeIns(tradeIns)
+    }
+
+    /**
+     * The trade-ins put on this one sale line (ADR 0039): each a unit + its value.
+     * Online only — the server refuses `tradeIns` on the sync replay path, so a
+     * cart with trade-ins is posted directly, never queued.
+     */
+    private fun kotlinx.serialization.json.JsonObjectBuilder.appendTradeIns(tradeIns: List<TradeInDraft>) {
+        if (tradeIns.isEmpty()) return
+        put(
+            "tradeIns",
+            buildJsonArray {
+                tradeIns.forEach { ti ->
+                    add(
+                        buildJsonObject {
+                            put("modelId", ti.modelId)
+                            if (ti.serialNumber != null) put("serialNumber", ti.serialNumber)
+                            else {
+                                ti.imei?.let { put("imei", it) }
+                                ti.imei2?.let { put("imei2", it) }
+                            }
+                            if (ti.specs.isNotEmpty()) {
+                                put("specs", buildJsonObject { ti.specs.forEach { (k, v) -> put(k, v) } })
+                            }
+                            put("value", JsonPrimitive(ti.value))
+                        },
+                    )
+                }
+            },
+        )
     }
 
     /** The pricing fields (ADR 0034): the level, a discount, and the till's list price. */

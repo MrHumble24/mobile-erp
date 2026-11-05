@@ -28,13 +28,14 @@ import java.math.BigDecimal
  * to the outbox so it works identically online and offline.
  */
 class PosViewModel(
-    private val repo: PosRepository,
-    private val cashierName: String,
+    internal val repo: PosRepository,
+    internal val cashierName: String,
     canOverride: Boolean = false,
     canUnlimited: Boolean = false,
+    canTradeIn: Boolean = false,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(PosState(canOverride = canOverride, canUnlimited = canUnlimited))
+    internal val _state = MutableStateFlow(PosState(canOverride = canOverride, canUnlimited = canUnlimited, canTradeIn = canTradeIn))
     val state: StateFlow<PosState> = _state.asStateFlow()
 
     init {
@@ -223,7 +224,7 @@ class PosViewModel(
         _state.value = PosState(
             pendingSold = s.pendingSold, defaultWarrantyDays = s.defaultWarrantyDays,
             settings = s.settings, canOverride = s.canOverride, canUnlimited = s.canUnlimited,
-            creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled,
+            creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled, canTradeIn = s.canTradeIn,
         )
     }
 

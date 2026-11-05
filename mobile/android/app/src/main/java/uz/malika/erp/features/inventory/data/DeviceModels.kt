@@ -84,6 +84,8 @@ data class DeviceDetail(
     val unitExpense: String?,
     val unitExpenseNote: String?,
     val intakeDate: String,
+    /** The shipment the unit came in on; null when bought from a customer (ADR 0039). */
+    val shipmentId: String?,
     val version: Int,
     val latestInspection: QcSummary?,
     /** Resolved list prices per level for this unit (ADR 0034). */
@@ -109,6 +111,7 @@ data class DeviceDetail(
             unitExpense = d.unitExpense.asScalar(),
             unitExpenseNote = d.unitExpenseNote,
             intakeDate = d.intakeDate ?: "",
+            shipmentId = d.shipmentId,
             version = d.version,
             latestInspection = d.latestInspection?.let(QcSummary::fromDto),
             prices = d.prices,

@@ -51,6 +51,7 @@ import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.SalesRepository
+import uz.malika.erp.features.sales.data.refundCap
 import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.features.sales.lib.salesCsv
@@ -84,6 +85,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
             initializer { SalesViewModel(SalesRepository(api, container.db, HttpClient.json)) }
         },
     )
+    val detailRepo = remember { SalesRepository(api, container.db, HttpClient.json) }
     val listUi by vm.list.collectAsState()
     val filters by vm.filters.collectAsState()
     val stats by vm.stats.collectAsState()
@@ -204,8 +206,9 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
 
     selected?.let { sale ->
         AppBottomSheet(onDismiss = { selected = null }) {
-            SaleDetailSheet(
+            SaleDetailHost(
                 sale = sale,
+                repo = detailRepo,
                 canReturn = LocalCan.current("sale.return"),
                 onReceipt = { vm.loadReceipt(sale.id) },
                 onReturn = { selected = null; returnSale = sale; returnSaleId = sale.id },
@@ -233,17 +236,14 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
 
     returnSaleId?.let { id ->
         val sale = returnSale?.takeIf { it.id == id }
+        // With a trade-in, the cash paid back is capped at the money tendered; refunding
+        // the trade-in part needs `purchase.create` (ADR 0039), which lifts it to salePrice.
         ReturnDialog(
-            vm,
-            id,
-            online,
-            container.toaster,
+            vm, id, online, container.toaster,
             refundAccounts = sale?.payments?.map { it.accountCode } ?: emptyList(),
-            maxRefund = sale?.let { s ->
-                s.payments.fold(java.math.BigDecimal.ZERO) { acc, p -> acc + p.amount }
-                    .takeIf { it.signum() > 0 } ?: parseMoney(s.salePrice)
-            } ?: java.math.BigDecimal.ZERO,
+            maxRefund = sale?.let { refundCap(it, LocalCan.current("purchase.create")) } ?: java.math.BigDecimal.ZERO,
             onCredit = sale?.onCredit == true,
+            hasTradeIn = sale?.tradeIns?.isNotEmpty() == true,
         ) { returnSaleId = null; returnSale = null }
     }
 

@@ -52,9 +52,20 @@ data class PosState(
     /** Customer credit (ADR 0035) and shifts (ADR 0036) switches, from settings. */
     val creditEnabled: Boolean = false,
     val shiftsEnabled: Boolean = false,
+    /** Trade-ins taken in part payment (ADR 0039); `canTradeIn` = has `purchase.create`. */
+    val tradeIns: List<TradeInDraft> = emptyList(),
+    val canTradeIn: Boolean = false,
 ) {
     /** The whole cart priced at the current level — the single brain the UI reads. */
     val priced: PricedCart
         get() = CartPricing.price(lines, level, cartDiscount, overriding, settings, standingPercent, canOverride, canUnlimited)
     val total: String get() = priced.totals.payable.toPlainString()
+
+    /** The trade-in allocation over the priced lines (ADR 0039): amount to pay + fit check. */
+    val tradeInPlan: uz.malika.erp.features.sales.lib.TradeInPlan.Plan
+        get() = TradeInCheckout.plan(priced.lines, tradeIns)
+
+    /** What the customer still tenders after trade-ins (major units). */
+    val amountToPay: java.math.BigDecimal
+        get() = java.math.BigDecimal(tradeInPlan.amountToPayCents).movePointLeft(2)
 }

@@ -100,6 +100,8 @@ data class DeviceDetailDto(
     val unitExpense: JsonElement? = null,
     val unitExpenseNote: String? = null,
     val intakeDate: String? = null,
+    /** The shipment this unit came in on; null when bought from a customer (ADR 0039). */
+    val shipmentId: String? = null,
     val model: ModelRefDto? = null,
     val specs: JsonElement? = null,
     val latestInspection: QcDto? = null,

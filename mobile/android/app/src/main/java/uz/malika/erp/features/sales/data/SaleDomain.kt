@@ -32,6 +32,8 @@ data class Sale(
     val listPrice: String? = null,
     val discountAmount: String? = null,
     val priceLevelCode: String? = null,
+    /** Phones taken in part payment (ADR 0039); empty for a plain sale. */
+    val tradeIns: List<SaleTradeIn> = emptyList(),
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
 
@@ -48,6 +50,27 @@ data class Sale(
 
     /** The unit's identifier — IMEI or serial number (ADR 0029); empty for a quantity sale. */
     val code: String get() = UnitCode.display(imei, serialNumber)
+
+    /** Σ trade-in values (money netted off the sale, not paid in cash/card). */
+    val tradeInTotal: java.math.BigDecimal get() = tradeIns.fold(java.math.BigDecimal.ZERO) { acc, ti -> acc + parseMoney(ti.value) }
+
+    /** What the customer actually tendered: salePrice − Σ trade-in values. */
+    val amountPaid: java.math.BigDecimal get() = parseMoney(salePrice).subtract(tradeInTotal)
+}
+
+/** A trade-in shown on a sale (ADR 0039): the phone taken and its agreed value. */
+data class SaleTradeIn(val modelLabel: String, val code: String, val value: String)
+
+/**
+ * The client-side refund cap for a return (ADR 0028/0039). The money paid is the
+ * SALE rows (or `salePrice` for a pre-ledger sale). A trade-in's value can be
+ * refunded in cash only by a caller with `purchase.create`, which lifts the cap
+ * to the full `salePrice`.
+ */
+fun refundCap(sale: Sale, canRefundTradeIn: Boolean): java.math.BigDecimal {
+    val paid = sale.payments.fold(java.math.BigDecimal.ZERO) { acc, p -> acc + p.amount }
+        .takeIf { it.signum() > 0 } ?: parseMoney(sale.salePrice)
+    return if (sale.tradeIns.isNotEmpty() && canRefundTradeIn) parseMoney(sale.salePrice) else paid
 }
 
 fun SaleDto.toDomain() = Sale(
@@ -72,6 +95,7 @@ fun SaleDto.toDomain() = Sale(
     listPrice = listPrice,
     discountAmount = discountAmount,
     priceLevelCode = priceLevelCode,
+    tradeIns = tradeIns.map { SaleTradeIn(it.model.let { m -> "${m.brand} ${m.name}".trim() }, UnitCode.display(it.imei, it.serialNumber), it.value) },
 )
 
 /** Aggregate stats for the sales list header. Money stays a string; profit is redacted (nullable). */

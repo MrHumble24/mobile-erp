@@ -88,6 +88,14 @@ class PosRepository(
     suspend fun enqueueSale(payload: kotlinx.serialization.json.JsonObject, baseVersion: Int?): String =
         outbox.enqueue(OutboxType.SALE_CREATE, payload, baseVersion)
 
+    /**
+     * Post one sale directly online (ADR 0039 trade-in path): the server refuses
+     * trade-ins on the sync replay, so a cart with a trade-in is never queued.
+     * Returns the created sale id.
+     */
+    suspend fun createSaleDirect(payload: kotlinx.serialization.json.JsonObject): String =
+        runApi { api.createSale(payload).id }
+
     suspend fun defaultWarrantyDays(): Int = runApi { api.settings().defaultWarrantyDays }
 
     /**

@@ -21,6 +21,9 @@ import uz.malika.erp.features.sales.data.CustomersRepository
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.model.PosState
 import uz.malika.erp.features.sales.model.PosViewModel
+import uz.malika.erp.features.sales.model.addTradeIn
+import uz.malika.erp.features.sales.model.checkoutWithTradeIns
+import uz.malika.erp.features.sales.model.removeTradeIn
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.payments.ui.PaymentMethodField
@@ -56,6 +59,7 @@ fun PosCheckoutForm(
     var customer by remember { mutableStateOf(CustomerSelection()) }
     var payment by remember { mutableStateOf(PaymentSelection()) }
     var creditOpen by remember { mutableStateOf(false) }
+    var tradeInOpen by remember { mutableStateOf(false) }
     val canCredit = LocalCan.current("sale.credit")
     val lookupRepo = remember { CustomersRepository(api) }
     val accounts by rememberAccountOptions(container)
@@ -66,9 +70,13 @@ fun PosCheckoutForm(
     }
 
     val priced = state.priced
-    val total = priced.totals.payable
+    val hasTradeIns = state.tradeIns.isNotEmpty()
+    val customerChosen = !customer.customerId.isNullOrBlank() || !customer.newName.isNullOrBlank()
+    // With trade-ins the customer pays the reduced amount; otherwise the full payable.
+    val total = if (hasTradeIns) state.amountToPay else priced.totals.payable
     val pricesValid = priced.lines.isNotEmpty() && !priced.hasRejection && priced.lines.all { it.finalPrice > BigDecimal.ZERO }
     val payValid = payment.valid(total, accounts)
+    val tradeInOk = !hasTradeIns || (customerChosen && state.tradeInPlan.ok)
 
     Column(Modifier.fillMaxWidth()) {
         LevelControl(level = state.level, onSelect = vm::setLevel)
@@ -87,6 +95,14 @@ fun PosCheckoutForm(
             onChange = vm::setCartDiscount,
         )
         Spacer(Modifier.height(12.dp))
+        TradeInSection(
+            state = state,
+            online = online,
+            customerChosen = customerChosen,
+            onOpenAdd = { tradeInOpen = true },
+            onRemove = vm::removeTradeIn,
+        )
+        Spacer(Modifier.height(12.dp))
         AppFormField(label = t("pos.notes", null), value = notes, onValueChange = { notes = it }, enabled = !busy)
         Spacer(Modifier.height(16.dp))
         PaymentMethodField(selection = payment, onSelection = { payment = it }, accounts = accounts, total = total, enabled = !busy)
@@ -102,19 +118,18 @@ fun PosCheckoutForm(
         PillButton(
             text = if (busy) t("pos.completingSale", null) else t("pos.checkoutButton", null),
             onClick = {
-                vm.checkout(
-                    online = online,
-                    customerId = customer.customerId,
-                    customerName = customer.newName,
-                    customerPhone = customer.newPhone,
-                    notes = notes.trim(),
-                    parts = payment.parts(total, accounts),
-                )
+                val parts = payment.parts(total, accounts)
+                if (hasTradeIns) {
+                    vm.checkoutWithTradeIns(online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts)
+                } else {
+                    vm.checkout(online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts)
+                }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !busy && pricesValid && payValid && !shiftBlocked,
+            enabled = !busy && pricesValid && payValid && tradeInOk && !shiftBlocked,
         )
-        if (state.creditEnabled && canCredit) {
+        // "On credit" is never offered with a trade-in (ADR 0039).
+        if (state.creditEnabled && canCredit && !hasTradeIns) {
             Spacer(Modifier.height(12.dp))
             if (!online) Text(t("credit.errorOffline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
             PillButton(
@@ -137,6 +152,12 @@ fun PosCheckoutForm(
                 onSold = { vm.resetCart() },
                 onDismiss = { creditOpen = false },
             )
+        }
+    }
+
+    if (tradeInOpen) {
+        AppBottomSheet(onDismiss = { tradeInOpen = false }) {
+            TradeInSheet(container = container, onAdd = vm::addTradeIn, onDismiss = { tradeInOpen = false })
         }
     }
 }

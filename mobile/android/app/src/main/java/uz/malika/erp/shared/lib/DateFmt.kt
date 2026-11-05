@@ -17,6 +17,7 @@ private fun utc(pattern: String) =
     SimpleDateFormat(pattern, Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
 
 private val localDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+private val localTime = SimpleDateFormat("HH:mm", Locale.US)
 
 /** Epoch millis for an ISO string, tolerant of a trailing `Z`/offset/millis. */
 fun parseIsoMillis(iso: String?): Long? {
@@ -36,3 +37,9 @@ fun formatDateTime(iso: String?): String {
 }
 
 fun formatDateTime(millis: Long?): String = millis?.let { localDateTime.format(Date(it)) } ?: DASH
+
+/** `HH:mm` in local time, or the raw time slice when unparseable. */
+fun formatTime(iso: String?): String {
+    val millis = parseIsoMillis(iso) ?: return iso?.takeIf { it.length >= 16 }?.substring(11, 16) ?: DASH
+    return localTime.format(Date(millis))
+}

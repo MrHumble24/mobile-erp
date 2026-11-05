@@ -57,6 +57,7 @@ class SettingsFormState(s: StoreSettingsDto) {
     var customerCreditEnabled by mutableStateOf(s.customerCreditEnabled)
     var defaultCreditLimit by mutableStateOf(s.defaultCreditLimitStr)
     var shiftsEnabled by mutableStateOf(s.shiftsEnabled)
+    var repairsEnabled by mutableStateOf(s.repairsEnabled)
 
     fun toForm() = SettingsForm(
         storeName, storeAddress, storePhone, receiptFooter, telegramChatId,
@@ -64,7 +65,7 @@ class SettingsFormState(s: StoreSettingsDto) {
         defaultNasiyaDueDays, overdueReminderDays,
         discountsEnabled, discountPercentAllowed, discountAmountAllowed,
         discountPresetsPercent, discountPresetsAmount, maxDiscountPercent,
-        customerCreditEnabled, defaultCreditLimit, shiftsEnabled,
+        customerCreditEnabled, defaultCreditLimit, shiftsEnabled, repairsEnabled,
     )
 }
 
@@ -106,6 +107,7 @@ private fun SettingsForm(vm: SettingsViewModel, settings: StoreSettingsDto, onli
             DiscountsSection(form)
             CreditSettingsSection(form)
             ShiftsSettingsSection(form)
+            RepairsSettingsSection(form)
             NasiyaSection(form, errors)
             TelegramSection(form, errors)
             if (message != null) {

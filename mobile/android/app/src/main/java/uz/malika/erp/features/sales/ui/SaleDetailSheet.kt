@@ -127,6 +127,17 @@ fun SaleDetailSheet(
         sale.warrantyDays?.let { Fact(t("pos.warrantyDays", null)) { Text(it.toString(), style = monoStyle()) } }
         sale.returnedAt?.let { Fact(t("sales.returnedAt", null)) { Text(formatDateTime(it), style = monoStyle()) } }
 
+        if (sale.tradeIns.isNotEmpty()) {
+            Spacer(Modifier.height(Tokens.Space.md))
+            Text(t("purchases.tradeInLabel", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            sale.tradeIns.forEach { ti ->
+                Fact("${ti.modelLabel} ${ti.code}".trim()) {
+                    Text("− ${uz.malika.erp.shared.lib.formatMoney(ti.value)}", style = monoStyle().copy(color = Tokens.danger))
+                }
+            }
+            Fact(t("purchases.amountPaid", null)) { MoneyText(sale.amountPaid.toPlainString(), style = valueStyle().copy(fontFamily = MonoFamily)) }
+        }
+
         if (sale.payments.isNotEmpty()) {
             Spacer(Modifier.height(Tokens.Space.md))
             Text(t("balance.paidWith", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)

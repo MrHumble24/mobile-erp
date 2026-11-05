@@ -62,11 +62,23 @@ data class SaleDto(
     val listPrice: String? = null,
     val discountAmount: String? = null,
     val priceLevelCode: String? = null,
+    /** Phones taken in part payment (ADR 0039); their values lower the amount paid. */
+    val tradeIns: List<SaleTradeInDto> = emptyList(),
 )
 
 /** One tender line of a sale (its SALE ledger rows). `amount` is a decimal string. */
 @Serializable
 data class SalePaymentDto(val accountCode: String = "", val amount: String = "0")
+
+/** A trade-in on a sale / receipt (ADR 0039). `value` is customer-facing (not redacted). */
+@Serializable
+data class SaleTradeInDto(
+    val deviceId: String = "",
+    val imei: String? = null,
+    val serialNumber: String? = null,
+    val model: ModelRefDto = ModelRefDto(),
+    val value: String = "0",
+)
 
 @Serializable
 data class SaleDeviceDto(
@@ -126,6 +138,8 @@ data class ReceiptDto(
     val total: String = "0",
     val warranty: ReceiptWarrantyDto? = null,
     val customer: ReceiptCustomerDto? = null,
+    /** Trade-ins taken in part payment (ADR 0039), for the printed receipt. */
+    val tradeIns: List<SaleTradeInDto> = emptyList(),
 )
 
 @Serializable

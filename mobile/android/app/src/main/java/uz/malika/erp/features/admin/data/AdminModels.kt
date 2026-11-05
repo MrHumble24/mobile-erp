@@ -120,6 +120,8 @@ data class StoreSettingsDto(
     val customerCreditEnabled: Boolean = false,
     val defaultCreditLimit: JsonElement? = null,
     val shiftsEnabled: Boolean = false,
+    // Repairs (Change 13, ADR 0040).
+    val repairsEnabled: Boolean = false,
 ) {
     /** Decimal arrives as a JSON number or string; keep it as a plain string. */
     val minMarginPercentStr: String

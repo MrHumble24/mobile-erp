@@ -72,6 +72,7 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     val online by container.connectivity.online.collectAsState()
     val canOverride = LocalCan.current("sale.price.override")
     val canUnlimited = LocalCan.current("sale.discount.unlimited")
+    val canTradeIn = LocalCan.current("purchase.create")
     val vm: PosViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -82,6 +83,7 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
                     cashier,
                     canOverride = canOverride,
                     canUnlimited = canUnlimited,
+                    canTradeIn = canTradeIn,
                 )
             }
         },

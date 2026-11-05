@@ -33,6 +33,8 @@ data class SettingsForm(
     val defaultCreditLimit: String = "",
     // Cashier shifts (ADR 0036).
     val shiftsEnabled: Boolean = false,
+    // Repairs (ADR 0040).
+    val repairsEnabled: Boolean = false,
 )
 
 /** Parse a comma-separated preset list into at most five non-negative numbers. */
@@ -70,6 +72,7 @@ class SettingsRepository(private val api: AdminApi) {
             put("customerCreditEnabled", JsonPrimitive(form.customerCreditEnabled))
             put("defaultCreditLimit", form.defaultCreditLimit.trim().toDoubleOrNull()?.let { JsonPrimitive(it) } ?: JsonNull)
             put("shiftsEnabled", JsonPrimitive(form.shiftsEnabled))
+            put("repairsEnabled", JsonPrimitive(form.repairsEnabled))
         }
         api.updateSettings(body)
     }
