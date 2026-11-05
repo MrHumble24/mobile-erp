@@ -69,11 +69,36 @@ You must look at the pages in a browser; a build that passes proves nothing here
   `git add -A`. Never commit to `main`, never push.
 
 ## Result (builder fills)
-- Branch / commits:
+- Branch / commits: `agent/opus48/money-overflow`, branched off `4190bcc`, rebased onto
+  `main` (`d8f99be`) because the worktree predated the balance/credits/customs/purchases/
+  repairs/shifts/stock pages; one squashed commit on top of `d8f99be`.
 - The shared rule, in two lines:
-- Routes checked (route · widths · what was wrong · what fixed it):
-- Not edited because out of scope (file:line · the change needed):
+  1. Every amount is one non-wrapping `tabular-nums` line; tables carry it on `TableCell` and
+     scroll inside their own box, so the page never scrolls sideways and exact figures stay intact.
+  2. Headline numbers shrink to fit (`useFitText`, 0.4 floor so the full 13-digit figure stays
+     uncut even in a ~120px card); the shared `Money headline` adds a `$19.05M` short form + exact
+     tooltip past the legible floor. `formatMoney` is unchanged; `formatMoneyShort` is additive.
+- Routes checked (every route in `routes.tsx`, at 1440/1280/1024/768/390, with ×1000 and ×8e6 stress):
+  | Route | Was wrong | Fixed by |
+  |---|---|---|
+  | **all routes @ 768** | app-shell top bar overflowed ~70px (sidebar shows at `md`, fixed-width search box can't fit) | search box moved to `lg:flex`, a search icon stands in below (`AppShellHeader.tsx`) |
+  | `/` dashboard, `/reports`, `/balance`, `/expenses`, `/consignments`, `/partners`, `/customers`, `/sales`, `/users`, `/qc`, `/inventory` | metric-card headline numbers overflowed the card | `MetricCard` value shrinks to fit (root fix, no page edits) |
+  | all list routes (`/stock /shipments /credits /shifts /purchases /customs /sync /settings` …) | wide money tables pushed the page sideways | tables already scroll in their `overflow-x-auto` box; `TableCell` now `tabular-nums` |
+  | `/sales/:id/receipt`, `/credits/:id/contract`, `/repairs/:id/ticket`, sale-detail sheet | — | verified clean: label-left/amount-right rows, mono/`shrink-0`, no overlap at 390 |
+  - Verified in a real browser (same-origin iframe at each width + a per-route overflow probe): **no page scrolls sideways at any of the five widths on any route**; metric cards shown uncut up to `$10,000,000,000` in the narrowest 2-column phone card.
+- Not edited because out of scope (file:line · the change needed): **none needed.** `/pos`
+  (`features/checkout/**`, `widgets/pos-terminal/**`) and `/balance` (`StoreBreakdownTable.tsx`)
+  were opened at all five widths and showed no sideways scroll or clipped amount; `pos-terminal`'s
+  `SessionPanel` uses `MetricCard`, so it inherits the root shrink fix without being touched.
 - `pnpm test`, `pnpm lint`, `pnpm build` (last lines):
-- Not done / not seen:
+  - test: `ℹ tests 75 · ℹ pass 75 · ℹ fail 0`
+  - lint: exit 0 (only pre-existing `max-lines-per-function` warnings in untouched files; none in changed files)
+  - build: `✓ built in 5.73s` (PWA precache generated)
+- Not done / not seen: the stress figures came from a temporary `formatMoney` ×N multiplier used
+  only locally and fully reverted before commit (not in the diff). Dialogs/sheets were spot-checked
+  (sale-detail sheet, receipt), not every one of the ~30 overlays opened individually; their money
+  rows share the same label-left/amount-right pattern that held at 390. `Money`'s compact+tooltip
+  last-resort path is implemented and unit-logic-tested but was not seen firing in the browser
+  (metric cards reach the 0.4 shrink floor before it would trigger for in-spec amounts).
 
 ## Check by Claude
