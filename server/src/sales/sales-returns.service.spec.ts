@@ -25,6 +25,7 @@ function build() {
       creditId: null,
       salePrice: new Prisma.Decimal(250),
       landedCostSnapshot: new Prisma.Decimal(100),
+      soldAt: new Date('2026-01-01'),
     }),
     findDeviceState: jest.fn().mockResolvedValue({ version: 5 }),
     findById: jest.fn().mockResolvedValue({ id: 'sale-1' }),
@@ -34,6 +35,7 @@ function build() {
   const purchases = {
     tradeInTotalForSale: jest.fn().mockResolvedValue(new Prisma.Decimal(0)),
     tradeInsBySale: jest.fn().mockResolvedValue(new Map()),
+    wasUnitBoughtBackAfter: jest.fn().mockResolvedValue(false),
   };
   const bonus = {
     reverseForSale: jest.fn().mockResolvedValue(undefined),
@@ -51,6 +53,17 @@ function build() {
 
 const ret = (refundAmount: number) =>
   ({ refundAmount, deviceToStatusCode: 'IN_STOCK' }) as never;
+
+describe('SalesReturnsService buy-back gate (ADR 0044)', () => {
+  it('refuses a return once the unit has been bought back', async () => {
+    const svc = build();
+    svc.purchases.wasUnitBoughtBackAfter.mockResolvedValue(true);
+    await expect(
+      svc.service.processReturn(caller, 'sale-1', ret(250)),
+    ).rejects.toMatchObject({ response: { code: 'SALE_UNIT_BOUGHT_BACK' } });
+    expect(svc.checkout.processReturn).not.toHaveBeenCalled();
+  });
+});
 
 describe('SalesReturnsService refund cap (ADR 0028)', () => {
   it('allows a refund equal to the sale net (ledger sale)', async () => {

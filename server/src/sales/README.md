@@ -118,6 +118,10 @@ A **return** of a sale that had a trade-in keeps the traded-in phone (its
 purchase is never undone); the refund cap becomes net SALE rows + Σ trade-in
 values (ADR 0028 extended).
 
+A sale whose unit has since been **bought back** (ADR 0044) can no longer be
+returned: `POST /sales/:id/return` refuses 409 `code: "SALE_UNIT_BOUGHT_BACK"`
+(the unit is in stock again, maybe re-sold; its warranty ended at buy-back).
+
 ## Bonus points (ADR 0043)
 
 `POST /sales` also accepts `bonusRedeem?` (points to spend, online only). It

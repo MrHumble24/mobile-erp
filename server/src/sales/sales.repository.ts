@@ -207,6 +207,7 @@ export class SalesRepository {
     creditId: string | null;
     salePrice: Prisma.Decimal;
     landedCostSnapshot: Prisma.Decimal;
+    soldAt: Date;
   } | null> {
     return this.prisma.sale.findUnique({
       where: { id },
@@ -219,6 +220,7 @@ export class SalesRepository {
         creditId: true,
         salePrice: true,
         landedCostSnapshot: true,
+        soldAt: true,
       },
     });
   }

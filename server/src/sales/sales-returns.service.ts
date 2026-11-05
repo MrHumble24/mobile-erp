@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { BonusService } from '../bonus/bonus.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
@@ -32,6 +36,7 @@ export class SalesReturnsService {
   ): Promise<SaleView> {
     const sale = await this.reads.findSaleForReturn(id);
     if (!sale) throw new NotFoundException(`Sale ${id} not found`);
+    await this.assertNotBoughtBack(sale);
 
     const refundPostings = await this.cappedPostings(id, sale, dto);
     // A return takes back points earned and gives back points spent (ADR 0043),
@@ -76,6 +81,26 @@ export class SalesReturnsService {
       reverseBonus,
     );
     return this.require(id);
+  }
+
+  /**
+   * A unit we have since bought back is in stock again (maybe re-sold); its old
+   * sale can no longer be returned (ADR 0044). Its warranty ended at buy-back.
+   */
+  private async assertNotBoughtBack(sale: {
+    deviceId: string | null;
+    soldAt: Date;
+  }): Promise<void> {
+    if (!sale.deviceId) return;
+    if (
+      await this.purchases.wasUnitBoughtBackAfter(sale.deviceId, sale.soldAt)
+    ) {
+      throw new ConflictException({
+        message:
+          'This unit was bought back; the sale can no longer be returned',
+        code: 'SALE_UNIT_BOUGHT_BACK',
+      });
+    }
   }
 
   /**

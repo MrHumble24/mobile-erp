@@ -69,6 +69,19 @@ export class CustomerPurchasesRepository {
     return agg._sum.pricePaid ?? new Prisma.Decimal(0);
   }
 
+  /**
+   * Was this unit bought back (from a customer or as a trade-in) at or after the
+   * given moment? Signals a sale whose unit has been bought back (ADR 0044),
+   * which must no longer be returned. Excludes the sale's own trade-ins (a
+   * different device) by keying on the sold unit's id.
+   */
+  async boughtBackAfter(deviceId: string, after: Date): Promise<boolean> {
+    const count = await this.prisma.customerPurchase.count({
+      where: { deviceId, occurredAt: { gte: after } },
+    });
+    return count > 0;
+  }
+
   findTradeInsForSales(saleIds: string[]): Promise<PurchaseRow[]> {
     if (saleIds.length === 0) return Promise.resolve([]);
     return this.prisma.customerPurchase.findMany({

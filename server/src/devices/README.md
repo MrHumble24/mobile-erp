@@ -65,6 +65,12 @@ A unit's `shipmentId` is nullable (ADR 0039): a phone bought from a customer has
 no shipment. A unit-expense / customs-fee edit on such a unit posts from the
 device's own store and CASH (there is no shipment account).
 
+Buy-back (ADR 0044): a **SOLD** unit bought back from a customer is resurrected
+in place by `customer-purchases` — the same `devices` row flips SOLD→IN_STOCK
+with a status-history row and a fresh `acquisitionCost`/`landedCost`
+(customsFee/unitExpense reset to 0), `version += 1`. The old sale keeps its
+frozen snapshot. A unit may cycle sold→bought-back many times.
+
 ## Must never
 
 - Expose `acquisitionCost`/`landedCost`/`unitExpense`/`customsFee` unredacted
