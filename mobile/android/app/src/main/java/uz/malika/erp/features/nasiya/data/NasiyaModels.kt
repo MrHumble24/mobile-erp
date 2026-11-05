@@ -122,8 +122,9 @@ data class ConsignmentViewDto(
     val partnerId: String,
     val partnerShopName: String = "",
     val deviceId: String = "",
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val agreedPrice: JsonElement? = null,
     val dueDate: String,
     val statusCode: String,
@@ -151,9 +152,14 @@ data class ConsignmentStatsDto(
 
 // ── consignment write bodies (REST fast-path) ──────────────────────────────
 
+/** The consigned unit's identifier for display — IMEI or serial number (ADR 0029). */
+val ConsignmentViewDto.code: String
+    get() = uz.malika.erp.shared.lib.UnitCode.display(imei, serialNumber)
+
 @Serializable
 data class CreateConsignmentBody(
-    val imei: String,
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val partnerId: String,
     val agreedPrice: Double,
     val dueDate: String,

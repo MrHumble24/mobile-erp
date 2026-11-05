@@ -1,6 +1,7 @@
 package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.shared.payments.AccountAmount
+import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.lib.parseMoney
 
 /** Sale channel is DERIVED from `consignmentId` (never a stored column). */
@@ -9,8 +10,9 @@ enum class SaleChannel { RETAIL, B2B }
 /** One completed sale for the list + detail sheet. Cost/profit are nullable (redacted). */
 data class Sale(
     val id: String,
-    val imei: String,
+    val imei: String?,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val modelLabel: String,
     val customerName: String?,
     val customerPhone: String?,
@@ -24,13 +26,17 @@ data class Sale(
     val payments: List<AccountAmount> = emptyList(),
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
+
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = UnitCode.display(imei, serialNumber)
 }
 
 fun SaleDto.toDomain() = Sale(
     id = id,
-    imei = device.imei,
-    imei2 = device.imei2,
-    modelLabel = "${device.model.brand} ${device.model.name}".trim(),
+    imei = device?.imei,
+    imei2 = device?.imei2,
+    serialNumber = device?.serialNumber,
+    modelLabel = device?.let { "${it.model.brand} ${it.model.name}".trim() } ?: "",
     customerName = customer?.name,
     customerPhone = customer?.phone,
     salePrice = salePrice,
@@ -72,7 +78,8 @@ fun UserOptionDto.toOption() = UserOption(
 
 /** Warranty status for a returning customer, keyed by IMEI. Built online or offline. */
 data class Warranty(
-    val imei: String,
+    val imei: String?,
+    val serialNumber: String? = null,
     val saleId: String,
     val salePrice: String,
     val remainingDays: Int,
@@ -82,10 +89,14 @@ data class Warranty(
     val alreadyReturned: Boolean,
 ) {
     val active: Boolean get() = hasWarranty && remainingDays > 0
+
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = UnitCode.display(imei, serialNumber)
 }
 
 fun WarrantyDto.toDomain() = Warranty(
     imei = imei,
+    serialNumber = serialNumber,
     saleId = saleId,
     salePrice = salePrice,
     remainingDays = remainingDays,

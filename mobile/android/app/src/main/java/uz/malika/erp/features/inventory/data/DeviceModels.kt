@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import uz.malika.erp.data.local.DeviceEntity
 import uz.malika.erp.data.remote.HttpClient
+import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.ui.theme.Tokens
 import java.math.BigDecimal
@@ -21,8 +22,9 @@ import java.math.RoundingMode
  */
 data class DeviceListItem(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val statusCode: String,
     val modelId: String,
     val modelLabel: String,
@@ -31,12 +33,16 @@ data class DeviceListItem(
 ) {
     val storage: String? get() = specs["storage"]
 
-    /** Search by either IMEI or the model label (case-insensitive). */
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = UnitCode.display(imei, serialNumber)
+
+    /** Search by either IMEI, the serial number or the model label (case-insensitive). */
     fun matches(query: String): Boolean {
         if (query.isBlank()) return true
         val q = query.trim().lowercase()
-        return imei.lowercase().contains(q) ||
+        return imei?.lowercase()?.contains(q) == true ||
             imei2?.lowercase()?.contains(q) == true ||
+            serialNumber?.lowercase()?.contains(q) == true ||
             modelLabel.lowercase().contains(q)
     }
 
@@ -45,6 +51,7 @@ data class DeviceListItem(
             id = e.id,
             imei = e.imei,
             imei2 = e.imei2,
+            serialNumber = e.serialNumber,
             statusCode = e.statusCode,
             modelId = e.modelId,
             modelLabel = "${e.modelBrand} ${e.modelName}".trim(),
@@ -62,8 +69,9 @@ data class QcSummary(val passed: Boolean, val gradeCode: String?, val batteryHea
 
 data class DeviceDetail(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val modelId: String,
     val modelLabel: String,
     val statusCode: String,
@@ -79,11 +87,15 @@ data class DeviceDetail(
     val version: Int,
     val latestInspection: QcSummary?,
 ) {
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = UnitCode.display(imei, serialNumber)
+
     companion object {
         fun fromDto(d: DeviceDetailDto) = DeviceDetail(
             id = d.id,
             imei = d.imei,
             imei2 = d.imei2,
+            serialNumber = d.serialNumber,
             modelId = d.modelId,
             modelLabel = "${d.model?.brand ?: ""} ${d.model?.name ?: ""}".trim(),
             statusCode = d.statusCode,

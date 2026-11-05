@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,9 +39,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Product kinds + serial units (ADR 0029): adds `serialNumber`/`kindCode`
+         * and makes `imei` nullable. SQLite cannot drop NOT NULL in place, so the
+         * devices cache is rebuilt — it re-hydrates from `/sync/changes`, while the
+         * outbox and other tables are untouched, so queued offline mutations survive.
+         */
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE `devices_new` (`id` TEXT NOT NULL, `imei` TEXT, `imei2` TEXT, " +
+                        "`serialNumber` TEXT, `kindCode` TEXT, `statusCode` TEXT NOT NULL, " +
+                        "`version` INTEGER NOT NULL, `targetPrice` TEXT, `specs` TEXT NOT NULL, " +
+                        "`modelId` TEXT NOT NULL, `modelBrand` TEXT NOT NULL, `modelName` TEXT NOT NULL, " +
+                        "`latestSale` TEXT, `gradeCode` TEXT, `inspectionNotes` TEXT, " +
+                        "`updatedAt` TEXT NOT NULL, PRIMARY KEY(`id`))",
+                )
+                db.execSQL(
+                    "INSERT INTO `devices_new` (id, imei, imei2, statusCode, version, targetPrice, " +
+                        "specs, modelId, modelBrand, modelName, latestSale, gradeCode, inspectionNotes, " +
+                        "updatedAt) SELECT id, imei, imei2, statusCode, version, targetPrice, specs, " +
+                        "modelId, modelBrand, modelName, latestSale, gradeCode, inspectionNotes, " +
+                        "updatedAt FROM `devices`",
+                )
+                db.execSQL("DROP TABLE `devices`")
+                db.execSQL("ALTER TABLE `devices_new` RENAME TO `devices`")
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }

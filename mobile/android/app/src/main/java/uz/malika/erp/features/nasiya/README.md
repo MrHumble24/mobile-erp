@@ -68,3 +68,8 @@ same partner mirror — so there is no cross-slice import to duplicate.
   so `LedgerEntryDto.accountCode` is decoded optionally and the row shows it
   once the server adds it. Server gap: include `accountCode` on ledger payment
   lines, or expose the payments list.
+
+## Serial units (ADR 0029)
+- Consign / settle / return accept a serial unit: the device field validates an
+  IMEI **or** a serial (`isValidUnitCode`), `ConsignmentWriter` sends `imei` or
+  `serialNumber` (REST + outbox), and cards/sheets show `ConsignmentViewDto.code`.

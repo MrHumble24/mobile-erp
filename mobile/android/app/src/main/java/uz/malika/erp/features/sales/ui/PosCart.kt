@@ -48,9 +48,9 @@ fun PosCartList(
         Text(t("pos.lineCount", mapOf("count" to lines.size)), style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(8.dp))
         lines.forEach { line ->
-            key(line.device.imei) {
+            key(line.device.code) {
                 CaptureSpringItem(
-                    isNew = tracker.isNew(line.device.imei),
+                    isNew = tracker.isNew(line.device.code),
                     pulse = lines.size,
                     reduceMotion = reduceMotion,
                 ) {
@@ -71,14 +71,14 @@ private fun CartLineCard(
     enabled: Boolean,
 ) {
     val t = LocalT.current
-    val imei = line.device.imei
+    val code = line.device.code
     AppCard(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text(line.device.modelLabel, style = MaterialTheme.typography.titleSmall)
-                Text(imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+                Text(code, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
             }
-            IconButton(onClick = { onRemove(imei) }, enabled = enabled) {
+            IconButton(onClick = { onRemove(code) }, enabled = enabled) {
                 Icon(Icons.Outlined.Close, contentDescription = t("pos.removeLine", null), tint = Tokens.slate)
             }
         }
@@ -87,7 +87,7 @@ private fun CartLineCard(
             AppFormField(
                 label = t("pos.salePrice", null),
                 value = line.salePrice,
-                onValueChange = { onPrice(imei, it) },
+                onValueChange = { onPrice(code, it) },
                 keyboardType = KeyboardType.Decimal,
                 enabled = enabled,
                 modifier = Modifier.weight(1f),
@@ -96,7 +96,7 @@ private fun CartLineCard(
             AppFormField(
                 label = t("pos.warrantyDays", null),
                 value = line.warrantyDays,
-                onValueChange = { onWarranty(imei, it) },
+                onValueChange = { onWarranty(code, it) },
                 keyboardType = KeyboardType.Number,
                 enabled = enabled,
                 modifier = Modifier.weight(1f),

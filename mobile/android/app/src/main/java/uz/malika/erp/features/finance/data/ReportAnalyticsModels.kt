@@ -57,13 +57,16 @@ data class ConsignmentsReport(
 data class ReturnRow(
     val id: String = "",
     val saleId: String = "",
-    val imei: String = "",
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val model: String = "",
     @Serializable(with = FlexMoneySerializer::class) val refundAmount: String = "0",
     val reason: String? = null,
     val returnedAt: String = "",
     val processedBy: String = "",
-)
+) {
+    val code: String get() = imei ?: serialNumber ?: ""
+}
 
 /** One page of [ReturnRow]s (`{ items, total, page, pageSize }`). */
 @Serializable

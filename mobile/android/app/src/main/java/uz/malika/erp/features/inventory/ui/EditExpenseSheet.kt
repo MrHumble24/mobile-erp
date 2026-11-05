@@ -66,7 +66,7 @@ fun EditExpenseSheet(
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(t("inventory.editUnitExpense", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
-        Text(device.imei, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+        Text(device.code, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         Spacer(Modifier.height(Tokens.Space.lg))
         AppFormField(
             label = t("inventory.unitExpense", null),

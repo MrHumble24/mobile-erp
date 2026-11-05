@@ -1,6 +1,7 @@
 package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.data.local.DeviceEntity
+import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.payments.AccountAmount
 
 /**
@@ -9,8 +10,9 @@ import uz.malika.erp.shared.payments.AccountAmount
  */
 data class ScannedDevice(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val version: Int,
     val statusCode: String,
     val modelLabel: String,
@@ -18,11 +20,15 @@ data class ScannedDevice(
 ) {
     val inStock: Boolean get() = statusCode == "IN_STOCK"
 
+    /** The identifier shown and keyed on — IMEI or serial number (ADR 0029). */
+    val code: String get() = UnitCode.display(imei, serialNumber)
+
     companion object {
         fun fromCache(d: DeviceEntity) = ScannedDevice(
             id = d.id,
             imei = d.imei,
             imei2 = d.imei2,
+            serialNumber = d.serialNumber,
             version = d.version,
             statusCode = d.statusCode,
             modelLabel = "${d.modelBrand} ${d.modelName}".trim(),
@@ -33,6 +39,7 @@ data class ScannedDevice(
             id = d.id,
             imei = d.imei,
             imei2 = d.imei2,
+            serialNumber = d.serialNumber,
             version = d.version,
             statusCode = d.statusCode,
             modelLabel = "${d.model.brand} ${d.model.name}".trim(),
@@ -41,8 +48,8 @@ data class ScannedDevice(
     }
 }
 
-/** One printed line item. */
-data class ReceiptLineItem(val model: String, val imei: String, val price: String, val sub: String?)
+/** One printed line item; [code] is the unit's IMEI or serial number. */
+data class ReceiptLineItem(val model: String, val code: String, val price: String, val sub: String?)
 
 /**
  * The single render model for both receipts: the POS post-checkout receipt
@@ -71,7 +78,7 @@ fun ReceiptDto.toReceiptData() = ReceiptData(
     items = items.map {
         ReceiptLineItem(
             model = it.model,
-            imei = it.imei,
+            code = UnitCode.display(it.imei.ifBlank { null }, it.serialNumber),
             price = it.price,
             sub = listOfNotNull(it.storage, it.color).joinToString(" · ").ifEmpty { null },
         )

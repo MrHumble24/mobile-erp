@@ -159,7 +159,7 @@ private fun DeviceList(list: List<DeviceListItem>, emptyMessage: String, onOpen:
     }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
         items(list, key = { it.id }) { device ->
-            DeviceRow(device = device, onClick = { onOpen(device.imei) })
+            DeviceRow(device = device, onClick = { onOpen(device.code) })
         }
     }
 }
@@ -170,10 +170,10 @@ private fun DeviceRow(device: DeviceListItem, onClick: () -> Unit) {
     AppCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(device.modelLabel.ifEmpty { device.imei }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                Text(device.modelLabel.ifEmpty { device.code }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 val suffix = device.storage?.let { " · $it" } ?: ""
                 Text(
-                    device.imei + suffix,
+                    device.code + suffix,
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
                     color = Tokens.text,
                 )

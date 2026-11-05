@@ -45,6 +45,20 @@ data class AttributeDef(
     }
 }
 
+/**
+ * A product's stocking kind (ADR 0029). Each carries the i18n keys for its
+ * label and one-line hint; the raw [code] is what the API sends/receives.
+ */
+enum class ProductKind(val code: String, val labelKey: String, val hintKey: String) {
+    IMEI("IMEI", "catalog.kindImei", "catalog.kindImeiHint"),
+    SERIAL("SERIAL", "catalog.kindSerial", "catalog.kindSerialHint"),
+    QUANTITY("QUANTITY", "catalog.kindQuantity", "catalog.kindQuantityHint");
+
+    companion object {
+        fun fromCode(code: String?): ProductKind = entries.firstOrNull { it.code == code } ?: IMEI
+    }
+}
+
 /** A device model plus its dynamic attribute schema. */
 data class DeviceModelView(
     val id: String,
@@ -54,6 +68,10 @@ data class DeviceModelView(
     val attributes: List<AttributeDef>,
     /** How customs writes this model (ADR 0027); null when unset. */
     val customsCode: String? = null,
+    val kind: ProductKind = ProductKind.IMEI,
+    val categoryId: String? = null,
+    val barcode: String? = null,
+    val modelCode: String? = null,
 ) {
     val label: String get() = "$brand $name"
 
@@ -65,6 +83,10 @@ data class DeviceModelView(
             isActive = d.isActive,
             attributes = d.attributes.map(AttributeDef::fromDto),
             customsCode = d.customsCode,
+            kind = ProductKind.fromCode(d.kindCode),
+            categoryId = d.categoryId,
+            barcode = d.barcode,
+            modelCode = d.modelCode,
         )
     }
 }

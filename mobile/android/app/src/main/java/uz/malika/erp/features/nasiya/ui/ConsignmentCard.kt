@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.ui
 
+import uz.malika.erp.features.nasiya.data.code
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,7 +45,7 @@ fun ConsignmentCard(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(item.partnerShopName.ifBlank { "—" }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                Text(item.imei, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                Text(item.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 item.imei2?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
                 }

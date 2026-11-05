@@ -49,15 +49,15 @@ fun IntakeStagedList(
         )
         Spacer(Modifier.height(Tokens.Space.rowV))
         drafts.forEachIndexed { i, d ->
-            key(d.imei) {
+            key(d.code) {
                 CaptureSpringItem(
-                    isNew = tracker.isNew(d.imei),
+                    isNew = tracker.isNew(d.code),
                     pulse = drafts.size,
                     reduceMotion = reduceMotion,
                 ) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
+                            ImeiText(d.code, style = MaterialTheme.typography.bodyMedium)
                             Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.gap)) {
                                 Text(modelNames[d.modelId] ?: d.modelId, style = MaterialTheme.typography.bodySmall)
                                 MoneyText(d.acquisitionCost.toString(), style = MaterialTheme.typography.bodySmall)
@@ -92,7 +92,7 @@ fun LandedResults(results: List<RegisteredDeviceDto>) {
         Spacer(Modifier.height(Tokens.Space.rowV))
         results.forEach { r ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                ImeiText(r.imei, style = MaterialTheme.typography.bodySmall)
+                ImeiText(r.code, style = MaterialTheme.typography.bodySmall)
                 MoneyText(r.landedCost, style = MaterialTheme.typography.bodySmall)
             }
             r.customsFee?.let { fee ->

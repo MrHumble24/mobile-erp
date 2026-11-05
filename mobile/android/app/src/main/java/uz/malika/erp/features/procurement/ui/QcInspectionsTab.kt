@@ -83,8 +83,8 @@ private fun InspectionRow(item: QcInspectionDto) {
     AppCard(Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(item.modelLabel.ifBlank { item.imei }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                Text(item.imei, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                Text(item.modelLabel.ifBlank { item.code }, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                Text(item.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 Text(meta, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
             }
             Spacer(Modifier.width(Tokens.Space.gap))

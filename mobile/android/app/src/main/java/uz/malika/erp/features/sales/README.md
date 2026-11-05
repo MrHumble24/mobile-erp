@@ -93,3 +93,11 @@ kit `LoadMoreFooter`). Raw key shows until added.
 - The return dialog caps the refund at what was paid (sum of the sale's `payments`,
   else `salePrice`); over the cap it shows `sales.refundTooHigh` and blocks submit,
   matching the server's 400 (ADR 0028).
+
+## Serial units (ADR 0029)
+- POS resolves and sells a serial unit exactly like a phone: `ScannedDevice.code`
+  keys the cart; `SaleCreate.payload` sends `imei` **or** `serialNumber` (one), and
+  the offline queue carries whichever was scanned (`PosRepository.codeOf`). The
+  receipt, sales list and detail (`catalog.unitCode` label when serial) show the
+  unit's `code` via the shared `UnitCode` helper. `SaleDto.device` is nullable so a
+  sale whose device row is gone degrades (blank code) instead of failing the list.

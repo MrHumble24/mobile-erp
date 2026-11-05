@@ -32,7 +32,7 @@ import uz.malika.erp.ui.theme.Tokens
 private enum class CustomsSection(val labelKey: String) {
     CURRENT("customs.currentList"),
     VERSIONS("customs.versions"),
-    UNMATCHED("customs.unmatchedTitle"),
+    UNMATCHED("customs.unmatchedShort"),
 }
 
 /**
@@ -59,7 +59,7 @@ fun CustomsScreen(container: AppContainer) {
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Tokens.Space.section),
         verticalArrangement = Arrangement.spacedBy(Tokens.Space.section),
     ) {
-        Text(t("customs.title", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
+        // Title is already shown in the app bar (FeatureRegistry nav); avoid a second copy.
         Text(t("customs.pageDescription", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
 
         if (canManage) {

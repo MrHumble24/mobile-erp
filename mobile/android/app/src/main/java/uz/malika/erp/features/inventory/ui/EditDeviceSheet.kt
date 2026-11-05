@@ -100,34 +100,37 @@ fun EditDeviceSheet(
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp)) {
         Text(t("inventory.editDevice", null), style = MaterialTheme.typography.titleLarge)
-        Text(device.imei, style = MaterialTheme.typography.bodySmall)
+        Text(device.code, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                t("inventory.dualSim", null),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.weight(1f),
-            )
-            AppSwitch(
-                checked = dualSim,
-                onCheckedChange = { dualSim = it; if (!it) imei2 = "" },
-            )
-        }
-        if (dualSim) {
-            Spacer(Modifier.height(12.dp))
-            Text(t("inventory.imei2", null), style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(6.dp))
-            ScannerField(
-                onScan = { code, _ -> imei2 = code.trim() },
-                placeholder = t("inventory.imei2Hint", null),
-                autofocus = false,
-            )
-            imei2.takeIf { it.isNotBlank() }?.let {
-                Spacer(Modifier.height(6.dp))
-                Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+        // IMEI 2 applies to phones only; a serial unit has no second IMEI (server 400s).
+        if (device.imei != null) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    t("inventory.dualSim", null),
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                AppSwitch(
+                    checked = dualSim,
+                    onCheckedChange = { dualSim = it; if (!it) imei2 = "" },
+                )
             }
+            if (dualSim) {
+                Spacer(Modifier.height(12.dp))
+                Text(t("inventory.imei2", null), style = MaterialTheme.typography.labelLarge)
+                Spacer(Modifier.height(6.dp))
+                ScannerField(
+                    onScan = { code, _ -> imei2 = code.trim() },
+                    placeholder = t("inventory.imei2Hint", null),
+                    autofocus = false,
+                )
+                imei2.takeIf { it.isNotBlank() }?.let {
+                    Spacer(Modifier.height(6.dp))
+                    Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily))
+                }
+            }
+            Spacer(Modifier.height(16.dp))
         }
-        Spacer(Modifier.height(16.dp))
         DynamicSpecFields(
             attributes = attrs,
             values = specs,

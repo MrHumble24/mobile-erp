@@ -41,8 +41,9 @@ data class ChangesResponse(
 @Serializable
 data class DeviceSyncDto(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val statusCode: String,
     val version: Int,
     val targetPrice: JsonElement? = null,
@@ -54,7 +55,12 @@ data class DeviceSyncDto(
 )
 
 @Serializable
-data class ModelDto(val id: String = "", val brand: String = "", val name: String = "")
+data class ModelDto(
+    val id: String = "",
+    val brand: String = "",
+    val name: String = "",
+    val kindCode: String? = null,
+)
 
 @Serializable
 data class InspectionDto(val gradeCode: String? = null, val notes: String? = null)

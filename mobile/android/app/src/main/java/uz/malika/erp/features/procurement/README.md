@@ -122,3 +122,12 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
   `customsFeeTotal` instead. Intake (`IntakeDeviceForm`) takes an optional
   per-phone expense + note (gated by `device.expense`); the server stamps each
   phone's customs fee from the current list and the landed-cost results show it.
+
+## Serial units at intake (ADR 0029)
+- The intake station follows the selected model's **kind**: an `IMEI` model keeps
+  the IMEI-slot flow (+ Dual SIM); a `SERIAL` model shows one serial-number field
+  (`catalog.serialNumber`, trimmed/upper-cased, 3-64 letters/digits, no spaces,
+  via `UnitCode`), no IMEI/IMEI 2. `QUANTITY` models are not offered (server 400s).
+  `IntakeDraft` carries `imei` **or** `serialNumber`; the staged list and results
+  show `draft.code`. Shipment device rows / `DeviceRowDto` / QC devices show the
+  unit's `code`; the QC-device table header is `catalog.unitCode`.

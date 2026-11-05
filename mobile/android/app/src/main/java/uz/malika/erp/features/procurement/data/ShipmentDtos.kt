@@ -72,7 +72,8 @@ data class RegisterDevicesBody(val devices: List<RegisterDeviceBody>)
 
 @Serializable
 data class RegisterDeviceBody(
-    val imei: String,
+    val imei: String? = null, // IMEI models; null for a serial unit (one of imei/serialNumber)
+    val serialNumber: String? = null, // SERIAL models; null for a phone
     val modelId: String,
     val specs: Map<String, String>,
     val acquisitionCost: Double,
@@ -86,14 +87,18 @@ data class RegisterDeviceBody(
 @Serializable
 data class RegisteredDeviceDto(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val modelId: String,
     val statusCode: String,
     val landedCost: String? = null,
     /** Customs fee stamped by the server at intake; cost-redacted (null without the permission). */
     val customsFee: String? = null,
     val unitExpense: String? = null,
-)
+) {
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = imei ?: serialNumber ?: ""
+}
 
 @Serializable
 data class AttributeDefDto(
@@ -110,19 +115,26 @@ data class DeviceModelDto(
     val brand: String,
     val name: String,
     val attributes: List<AttributeDefDto> = emptyList(),
+    val kindCode: String = "IMEI",
 ) {
     val label: String get() = "$brand $name"
+    val isSerial: Boolean get() = kindCode == "SERIAL"
+    val isQuantity: Boolean get() = kindCode == "QUANTITY"
 }
 
 @Serializable
 data class DeviceRowDto(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val modelId: String,
     val statusCode: String,
     val landedCost: String? = null,
     val imei2: String? = null,
-)
+) {
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = imei ?: serialNumber ?: ""
+}
 
 @Serializable
 data class PaginatedDevicesDto(
@@ -130,9 +142,13 @@ data class PaginatedDevicesDto(
     val total: Int = 0,
 )
 
-/** One unit staged in the intake loop before the batch is POSTed. */
+/**
+ * One unit staged in the intake loop before the batch is POSTed. Exactly one of
+ * [imei] / [serialNumber] is set, following the model's kind (ADR 0029).
+ */
 data class IntakeDraft(
-    val imei: String,
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val modelId: String,
     val specs: Map<String, String>,
     val acquisitionCost: Double,
@@ -141,8 +157,18 @@ data class IntakeDraft(
     val unitExpense: Double? = null,
     val unitExpenseNote: String? = null,
 ) {
+    /** The code shown in the staged list — IMEI or serial number. */
+    val code: String get() = imei ?: serialNumber ?: ""
+
     fun toBody() = RegisterDeviceBody(
-        imei, modelId, specs, acquisitionCost, targetPrice, imei2,
-        unitExpense, unitExpenseNote?.trim()?.ifBlank { null },
+        imei = imei,
+        serialNumber = serialNumber,
+        modelId = modelId,
+        specs = specs,
+        acquisitionCost = acquisitionCost,
+        targetPrice = targetPrice,
+        imei2 = imei2,
+        unitExpense = unitExpense,
+        unitExpenseNote = unitExpenseNote?.trim()?.ifBlank { null },
     )
 }

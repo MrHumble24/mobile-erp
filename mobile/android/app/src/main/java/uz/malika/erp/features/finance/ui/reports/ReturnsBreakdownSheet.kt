@@ -112,7 +112,7 @@ private fun ReturnRowView(row: ReturnRow) {
         Column(Modifier.weight(1f).padding(end = Tokens.Space.sm)) {
             Text(row.model, style = MaterialTheme.typography.bodyMedium, color = Tokens.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                row.imei,
+                row.code,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily),
                 color = Tokens.muted,
             )

@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 /** Reactive access to cached [DeviceEntity]. `watch*` emits on every change. */
 @Dao
 interface DeviceDao {
-    @Query("SELECT * FROM devices ORDER BY imei ASC")
+    @Query("SELECT * FROM devices ORDER BY COALESCE(imei, serialNumber) ASC")
     fun watchAll(): Flow<List<DeviceEntity>>
 
-    /** Matches either IMEI so a dual-SIM device resolves from either number. */
-    @Query("SELECT * FROM devices WHERE imei = :code OR imei2 = :code LIMIT 1")
+    /** Matches either IMEI or the serial number so any scanned code resolves (ADR 0029). */
+    @Query("SELECT * FROM devices WHERE imei = :code OR imei2 = :code OR serialNumber = :code LIMIT 1")
     suspend fun findByImei(code: String): DeviceEntity?
 
     @Upsert
