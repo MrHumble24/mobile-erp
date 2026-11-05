@@ -1,8 +1,13 @@
 import type { CreateSaleDto } from "@/entities/sale"
+import type { PaymentPart } from "@/entities/ledger"
 import type { CartCustomer, CartLine } from "../model/cart.store"
 
 /** Maps one cart line + the shared customer to a POST /sales payload. */
-export function toSaleDto(line: CartLine, customer: CartCustomer | null): CreateSaleDto {
+export function toSaleDto(
+  line: CartLine,
+  customer: CartCustomer | null,
+  payments?: PaymentPart[]
+): CreateSaleDto {
   return {
     imei: line.device.imei,
     salePrice: line.salePrice,
@@ -15,5 +20,6 @@ export function toSaleDto(line: CartLine, customer: CartCustomer | null): Create
     notes: line.notes.trim() || undefined,
     clientMutationId: line.clientMutationId,
     expectedVersion: line.device.version,
+    payments,
   }
 }

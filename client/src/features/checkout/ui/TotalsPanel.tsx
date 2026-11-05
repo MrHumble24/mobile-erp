@@ -3,6 +3,7 @@ import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
+import { PaymentPanel } from "./PaymentPanel"
 
 export interface TotalsPanelProps {
   isPending: boolean
@@ -38,6 +39,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
           <SummaryRow label={t("pos.totalDue")} value={formatMoney(total)} strong />
         </div>
       </div>
+      {lines.length > 0 && <PaymentPanel />}
       <Button
         type="button"
         size="lg"

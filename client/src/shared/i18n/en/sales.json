@@ -65,5 +65,6 @@
   "noCustomersFound": "No customers found",
   "customerSaved": "Customer saved successfully",
   "receipt": "Receipt",
-  "printReceipt": "Print Receipt"
+  "printReceipt": "Print Receipt",
+  "refundGoesBack": "Refund returns the same way it was paid: {accounts}"
 }

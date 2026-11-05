@@ -4,7 +4,7 @@ import { toast } from "@/shared/ui/sonner"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
-import { useCartStore, isLineBlocked } from "@/features/checkout"
+import { useCartStore, isLineBlocked, isPaymentBlocked } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
@@ -33,6 +33,8 @@ export function usePosTerminal() {
   const [customerOpen, setCustomerOpen] = React.useState(false)
 
   const lines = useCartStore((s) => s.lines)
+  const paymentMethod = useCartStore((s) => s.paymentMethod)
+  const splitParts = useCartStore((s) => s.splitParts)
   const addLine = useCartStore((s) => s.addLine)
   const removeLastLine = useCartStore((s) => s.removeLastLine)
   const clearCart = useCartStore((s) => s.clear)
@@ -40,7 +42,10 @@ export function usePosTerminal() {
 
   const defaultWarranty = settings?.defaultWarrantyDays ?? 14
   const minMargin = Number(settings?.minMarginPercent ?? 0)
-  const blocked = lines.length === 0 || lines.some((line) => isLineBlocked(line, canViewCost))
+  const blocked =
+    lines.length === 0 ||
+    lines.some((line) => isLineBlocked(line, canViewCost)) ||
+    isPaymentBlocked(lines, paymentMethod, splitParts)
 
   const onInStock = (device: DeviceDetailView) => {
     if (mode === "nasiya") return consign.openFor(device)

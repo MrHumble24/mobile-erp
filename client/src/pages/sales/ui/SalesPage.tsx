@@ -20,6 +20,7 @@ type SalesTab = (typeof SALES_TABS)[number]
 interface ReturnTarget {
   id: string
   salePrice: number
+  payments: { accountCode: string }[]
 }
 
 function useSaleDialogs() {
@@ -45,7 +46,11 @@ export function SalesPage() {
       onOpenDetail: (sale: SaleView) => d.setDetailId(sale.id),
       onOpenReceipt: (id: string) => d.setReceiptId(id),
       onReturn: (sale: SaleView) =>
-        d.setReturnTarget({ id: sale.id, salePrice: Number(sale.salePrice) }),
+        d.setReturnTarget({
+          id: sale.id,
+          salePrice: Number(sale.salePrice),
+          payments: sale.payments,
+        }),
     }),
     [d]
   )
@@ -110,6 +115,7 @@ export function SalesPage() {
         <ReturnSaleDialog
           saleId={d.returnTarget.id}
           salePrice={d.returnTarget.salePrice}
+          payments={d.returnTarget.payments}
           open={Boolean(d.returnTarget)}
           onOpenChange={(open) => !open && d.setReturnTarget(null)}
         />

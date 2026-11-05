@@ -28,6 +28,12 @@ Two tabs (`Sales` | `Warranty lookup`), ClickUp style like `pages/qc` /
   composes it (features never import each other).
 - Date presets come from `shared/lib/date-range`; no business logic in presets.
 
+## Payment
+
+How a sale was paid (`sale.payments`) shows via `entities/ledger`'s `PaymentSummary`
+in the detail sheet and under the price in the list; an empty array renders nothing.
+The return dialog notes the refund goes back to those accounts (no new input).
+
 ## Never
 
 Import another page. Call `useQuery` here (entity hooks only). Render native

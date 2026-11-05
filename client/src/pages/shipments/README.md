@@ -33,3 +33,5 @@ Intake needs `device.create`; shipment/supplier writes need `shipment.manage`.
 ## Open questions
 - Avg landed cost in the drawer is over the loaded devices page only (exact when
   the batch fits one page). The shipments list endpoint is not paginated.
+- The drawer summary shows the shipment's `paymentAccountCode` read-only; it is
+  fixed at creation (set in the create form, `features/intake-shipment`).

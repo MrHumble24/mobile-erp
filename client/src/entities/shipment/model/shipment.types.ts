@@ -9,6 +9,8 @@ export interface ShipmentView {
   createdAt: string
   updatedAt: string
   deviceCount: number
+  /** Account the purchase + overhead money left from; fixed at creation. */
+  paymentAccountCode: string
 }
 
 export interface CreateShipmentDto {
@@ -17,6 +19,8 @@ export interface CreateShipmentDto {
   expectedCount: number
   overheadCost?: number
   notes?: string
+  /** Fixed after creation; defaults to CASH server-side. */
+  paymentAccountCode?: string
 }
 
 export interface UpdateShipmentDto {

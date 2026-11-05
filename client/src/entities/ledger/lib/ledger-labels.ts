@@ -28,6 +28,16 @@ export function accountI18nKey(code: string): string | undefined {
   return ACCOUNT_KEYS[code]
 }
 
+/** Display label for an account: the translated key, else the server label, else the code. */
+export function accountLabel(
+  code: string,
+  serverLabel: string | undefined,
+  t: (key: string) => string
+): string {
+  const key = ACCOUNT_KEYS[code]
+  return key ? t(key) : (serverLabel ?? code)
+}
+
 export function typeI18nKey(code: string): string | undefined {
   return TYPE_KEYS[code]
 }

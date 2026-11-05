@@ -27,6 +27,7 @@ export function makeExpenseFormSchema(t: Translate) {
       .min(1, t("expenses.dateNotFuture"))
       .refine((v) => v <= todayIso(), t("expenses.dateNotFuture")),
     isRecurring: z.boolean(),
+    accountCode: z.string().min(1),
   })
 }
 
@@ -40,6 +41,7 @@ export function toFormValues(expense?: ExpenseView | null): ExpenseFormValues {
     description: expense?.description ?? "",
     incurredAt: (expense?.incurredAt ?? todayIso()).slice(0, 10),
     isRecurring: expense?.isRecurring ?? false,
+    accountCode: expense?.accountCode ?? "CASH",
   }
 }
 
@@ -56,6 +58,7 @@ function toBaseDto(values: ExpenseFormValues) {
     description: trimOrUndefined(values.description),
     isRecurring: values.isRecurring,
     incurredAt: new Date(values.incurredAt).toISOString(),
+    accountCode: values.accountCode,
   }
 }
 

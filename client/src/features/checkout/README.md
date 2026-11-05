@@ -5,18 +5,22 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
 ## Owns
 - `cart.store.ts` — Zustand (persisted under `mobile-erp-pos-cart`): a list of `CartLine`
   `{ lineId, device, salePrice, warrantyDays, notes, clientMutationId, belowCostConfirmed }`
-  plus one shared `customer`. Each line keeps its own `clientMutationId` so a retry is
-  idempotent per device.
+  plus one shared `customer`, plus the cart-wide `paymentMethod` + `splitParts`. Each line
+  keeps its own `clientMutationId` so a retry is idempotent per device.
 - `use-checkout.ts` — mutation that submits lines sequentially, one `POST /sales` each.
   Succeeded lines are removed as they complete; the first failure stops and throws
   `CheckoutLineError` (which IMEI, status code, already-succeeded sale ids).
 - UI: `CartLines`, `CartLine`, `PriceGuidance`, `CustomerPanel`, `CustomerSearch`,
-  `NewCustomerForm`, `TotalsPanel`, `CheckoutReceiptModal`.
-- `lib/to-sale-dto.ts`, `lib/line-blockers.ts` — pure mappers/rules.
+  `NewCustomerForm`, `TotalsPanel`, `PaymentPanel`, `CheckoutReceiptModal`.
+- `lib/to-sale-dto.ts`, `lib/line-blockers.ts`, `lib/payment.ts` — pure mappers/rules.
+  `payment.ts`'s `buildCartPayments` turns the cart's method + split parts into each
+  line's `payments` (`cash` → omitted, `card` → one CARD line, `split` →
+  `allocateSplit`); `isPaymentBlocked` stops an unbalanced split checking out. Tested
+  in `lib/payment.spec.ts`.
 
 ## Exposes (index.ts)
-`useCartStore`, `useCheckout`, `isLineBlocked`, `CartLines`, `CustomerPanel`,
-`TotalsPanel`, `CheckoutReceiptModal`, and cart/checkout types.
+`useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `CartLines`,
+`CustomerPanel`, `TotalsPanel`, `CheckoutReceiptModal`, and cart/checkout types.
 
 ## Must never
 - Import another feature (auth, consign-device). Permissions and the cashier id are
@@ -28,6 +32,14 @@ On a transport failure (not a 4xx/5xx), `use-checkout` enqueues the line via
 `entities/sync` (same `clientMutationId`, device `version` → `baseVersion`),
 clears the line, and returns `queuedCount`; the POS shows a "queued" toast.
 
+## Payment
+The cashier picks Cash, Card or Split (`PaymentPanel` → `entities/ledger`'s
+`PaymentMethodField`). Split divides the whole **cart total** into one amount per
+account (cash X, card Y, X + Y = total). At checkout `allocateSplit` walks the
+phones in cart order and pays each from the parts in order (cash until used up,
+then card), cent-exact; a phone that straddles the boundary gets two payment
+lines, every other phone one, and each sale's `payments` sums to its own price.
+The same allocation feeds the offline outbox, so a queued split survives reload.
+
 ## Open questions
-- No payment method / split tender (server contract has none).
 - Below-cost confirm only fires when the user can see cost (`device.cost.view`).

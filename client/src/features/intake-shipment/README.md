@@ -48,3 +48,7 @@ Create a shipment, then scan devices into it in a running batch.
 ## Gating
 - Overhead and landed cost render only for `device.cost.view`. Caller gates the
   dialog behind `device.create` / `shipment.manage`.
+
+## Payment
+- The create form has a "Paid from" `AccountSelect` (default Cash) from
+  `entities/ledger`, sent as `paymentAccountCode`. It is fixed after creation.

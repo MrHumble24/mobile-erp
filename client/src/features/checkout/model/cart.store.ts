@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import type { DeviceDetailView } from "@/entities/device"
+import type { PaymentMethod, PaymentPart } from "@/entities/ledger"
 
 export interface CartCustomer {
   id?: string
@@ -25,6 +26,10 @@ export interface LineDefaults {
 export interface CartState {
   lines: CartLine[]
   customer: CartCustomer | null
+  /** How the whole cart is tendered. Split is only valid for a single line. */
+  paymentMethod: PaymentMethod
+  /** Per-account amounts when paymentMethod is "split". */
+  splitParts: PaymentPart[]
   /** Adds a device line. Returns false if the IMEI is already in the cart. */
   addLine: (device: DeviceDetailView, defaults: LineDefaults) => boolean
   removeLine: (lineId: string) => void
@@ -34,6 +39,8 @@ export interface CartState {
   setLineNotes: (lineId: string, notes: string) => void
   setLineBelowCostConfirmed: (lineId: string, confirmed: boolean) => void
   setCustomer: (customer: CartCustomer | null) => void
+  setPaymentMethod: (method: PaymentMethod) => void
+  setSplitParts: (parts: PaymentPart[]) => void
   clear: () => void
 }
 
@@ -52,6 +59,8 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       lines: [],
       customer: null,
+      paymentMethod: "cash",
+      splitParts: [],
 
       addLine: (device, defaults) => {
         if (get().lines.some((line) => line.device.imei === device.imei)) return false
@@ -87,7 +96,12 @@ export const useCartStore = create<CartState>()(
 
       setCustomer: (customer) => set({ customer }),
 
-      clear: () => set({ lines: [], customer: null }),
+      setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
+
+      setSplitParts: (splitParts) => set({ splitParts }),
+
+      clear: () =>
+        set({ lines: [], customer: null, paymentMethod: "cash", splitParts: [] }),
     }),
     { name: "mobile-erp-pos-cart" }
   )

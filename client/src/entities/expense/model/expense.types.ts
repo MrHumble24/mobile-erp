@@ -22,6 +22,8 @@ export interface ExpenseView {
   createdById: string
   createdBy: ExpenseUserRef | null
   createdAt: string
+  /** Account the money left (its EXPENSE ledger row); derived server-side. */
+  accountCode: string
 }
 
 export interface ExpenseCategoryTotal {
@@ -75,6 +77,8 @@ export interface CreateExpenseDto {
   vendor?: string
   isRecurring?: boolean
   incurredAt?: string
+  /** Account the money left. Defaults to CASH server-side. */
+  accountCode?: string
 }
 
 export interface UpdateExpenseDto {
@@ -84,6 +88,8 @@ export interface UpdateExpenseDto {
   vendor?: string
   isRecurring?: boolean
   incurredAt?: string
+  /** Moving the account reverses the old ledger row and posts the new. */
+  accountCode?: string
 }
 
 export type ExpenseFrequency = "monthly" | "weekly"
@@ -99,6 +105,8 @@ export interface ExpenseRecurrenceView {
   nextDueAt: string
   isActive: boolean
   createdAt: string
+  /** Account each generated expense posts against. */
+  accountCode: string
 }
 
 export interface CreateExpenseRecurrenceDto {
@@ -108,6 +116,8 @@ export interface CreateExpenseRecurrenceDto {
   vendor?: string
   frequency: ExpenseFrequency
   nextDueAt: string
+  /** Defaults to CASH server-side. */
+  accountCode?: string
 }
 
 export interface UpdateExpenseRecurrenceDto {
@@ -118,4 +128,5 @@ export interface UpdateExpenseRecurrenceDto {
   frequency?: ExpenseFrequency
   nextDueAt?: string
   isActive?: boolean
+  accountCode?: string
 }

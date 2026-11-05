@@ -3,6 +3,7 @@ import { Eye, Pencil, Repeat, Trash2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useDeleteExpense, type ExpenseView } from "@/entities/expense"
+import { accountLabel } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
 import { Button } from "@/shared/ui/button"
 import {
@@ -93,6 +94,9 @@ function ExpenseTableRow({
       <TableCell className="font-mono font-bold text-sm text-destructive whitespace-nowrap">
         {formatMoney(expense.amount)}
       </TableCell>
+      <TableCell className="text-sm">
+        {accountLabel(expense.accountCode, undefined, t)}
+      </TableCell>
       <TableCell className="text-xs text-muted-foreground">
         {recordedByName(expense.createdBy) || "—"}
       </TableCell>
@@ -144,6 +148,7 @@ export function ExpensesTable({
             <TableHead>{t("expenses.description")}</TableHead>
             <TableHead>{t("expenses.vendor")}</TableHead>
             <TableHead>{t("expenses.amount")}</TableHead>
+            <TableHead>{t("balance.colAccount")}</TableHead>
             <TableHead>{t("expenses.recordedBy")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>
