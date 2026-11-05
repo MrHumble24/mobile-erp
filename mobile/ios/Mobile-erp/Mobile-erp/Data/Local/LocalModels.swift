@@ -25,6 +25,11 @@ final class DeviceEntity {
     var gradeCode: String?
     var inspectionNotes: String?
     var updatedAt: String
+    /// The model's picture path + category (ADR 0031), carried on the feed so the
+    /// offline catalog grid can draw a card. Optional — an older cached row loads
+    /// without them (migrates by adding the columns).
+    var modelImageUrl: String?
+    var modelCategoryId: String?
 
     /// The code to show the user: the IMEI when present, else the serial number.
     var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
@@ -33,7 +38,8 @@ final class DeviceEntity {
          statusCode: String, version: Int,
          targetPrice: String?, specsJSON: String, modelId: String,
          modelBrand: String, modelName: String, latestSaleJSON: String?,
-         gradeCode: String?, inspectionNotes: String?, updatedAt: String) {
+         gradeCode: String?, inspectionNotes: String?, updatedAt: String,
+         modelImageUrl: String? = nil, modelCategoryId: String? = nil) {
         self.id = id
         self.imei = imei
         self.imei2 = imei2
@@ -50,6 +56,8 @@ final class DeviceEntity {
         self.gradeCode = gradeCode
         self.inspectionNotes = inspectionNotes
         self.updatedAt = updatedAt
+        self.modelImageUrl = modelImageUrl
+        self.modelCategoryId = modelCategoryId
     }
 }
 
@@ -84,15 +92,22 @@ final class ProductEntity {
     var barcode: String?
     var salePrice: String?
     var quantity: Int
+    /// Picture path + category (ADR 0031) for the offline catalog grid. Optional
+    /// so an existing cached row migrates without them.
+    var imageUrl: String?
+    var categoryId: String?
 
     init(modelId: String, brand: String, name: String,
-         barcode: String?, salePrice: String?, quantity: Int) {
+         barcode: String?, salePrice: String?, quantity: Int,
+         imageUrl: String? = nil, categoryId: String? = nil) {
         self.modelId = modelId
         self.brand = brand
         self.name = name
         self.barcode = barcode
         self.salePrice = salePrice
         self.quantity = quantity
+        self.imageUrl = imageUrl
+        self.categoryId = categoryId
     }
 }
 

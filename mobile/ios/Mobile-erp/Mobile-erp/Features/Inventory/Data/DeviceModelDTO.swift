@@ -59,13 +59,17 @@ struct DeviceModelView: Codable, Identifiable {
     /// Default till price per piece for a QUANTITY product (ADR 0030); 2-dp
     /// string, nil when unset. Only meaningful for QUANTITY models.
     let salePrice: String?
+    /// The model's picture path (`/uploads/...`, served without a token), or nil
+    /// (ADR 0031). The file name itself stays internal to the server.
+    let imageUrl: String?
 
     var label: String { "\(brand) \(name)" }
 
     init(id: String, brand: String, name: String,
          isActive: Bool, attributes: [AttributeDef], customsCode: String? = nil,
          kindCode: String = "IMEI", categoryId: String? = nil,
-         barcode: String? = nil, modelCode: String? = nil, salePrice: String? = nil) {
+         barcode: String? = nil, modelCode: String? = nil, salePrice: String? = nil,
+         imageUrl: String? = nil) {
         self.id = id
         self.brand = brand
         self.name = name
@@ -77,6 +81,7 @@ struct DeviceModelView: Codable, Identifiable {
         self.barcode = barcode
         self.modelCode = modelCode
         self.salePrice = salePrice
+        self.imageUrl = imageUrl
     }
 
     init(from decoder: Decoder) throws {
@@ -99,5 +104,6 @@ struct DeviceModelView: Codable, Identifiable {
         } else {
             salePrice = nil
         }
+        imageUrl = try c.decodeIfPresent(String.self, forKey: .imageUrl)
     }
 }

@@ -96,7 +96,9 @@ private struct ModelRow: View {
     }
 
     var body: some View {
-        HStack(spacing: Tokens.Space.sm) {
+        HStack(spacing: Tokens.Space.md) {
+            ProductImageView(path: model.imageUrl)
+                .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.label).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
                 Text(subtitle).font(.ui(.caption)).foregroundStyle(Tokens.muted)

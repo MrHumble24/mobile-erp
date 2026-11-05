@@ -51,6 +51,11 @@ struct ModelFormSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                 titleRow
+                // The picture needs the model's id to upload to, so it shows only
+                // once the model exists (create → save → reopen to add a picture).
+                if let model {
+                    ModelPictureField(model: model, store: store)
+                }
                 AppFormField(label: i18n.t("inventory.brand")) {
                     AppTextField(placeholder: i18n.t("inventory.brand"), text: $brand, autocapitalization: .words)
                 }

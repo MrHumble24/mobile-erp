@@ -54,6 +54,31 @@ extension PosViewModel {
         checkout()
     }
 
+    /// Seed the cart from the catalog: a unit (first free one of the unit model)
+    /// plus a quantity product (ADR 0031). `arg` is "<unitModelId>,<quantityModelId>".
+    func debugCatalogAdd(_ arg: String, container: AppContainer) async {
+        catalog.configure(container)
+        let parts = arg.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard parts.count == 2 else { return }
+        if defaultWarrantyDays == nil { defaultWarrantyDays = 365 }
+        let repo = CatalogRepository(context: container.modelContext, api: container.api,
+                                     isOnline: container.connectivity.isOnline)
+        let entries = (try? await repo.list(categoryId: nil, search: nil)) ?? []
+        if let unitEntry = entries.first(where: { $0.modelId == parts[0] }),
+           let unit = (try? await repo.units(modelId: parts[0]))?.first {
+            addCatalogUnit(unit, entry: unitEntry)
+        }
+        if let qtyEntry = entries.first(where: { $0.modelId == parts[1] && $0.isQuantity }) {
+            addCatalogQuantity(qtyEntry)
+        }
+    }
+
+    /// Seed from the catalog and run a real end-to-end checkout (`-posSellCatalog`).
+    func debugSellCatalog(_ arg: String, container: AppContainer) async {
+        await debugCatalogAdd(arg, container: container)
+        checkout()
+    }
+
     private func ensureDemoAccounts() {
         if payment.accounts.isEmpty {
             payment.setAccounts([PaymentAccount(code: "CASH", label: "Cash"),
