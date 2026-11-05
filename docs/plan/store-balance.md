@@ -602,6 +602,9 @@ page fine, then the site blocked further requests ("Too Many
 Requests"). The data belongs to GSMArena, not to the library.
 Decided by the user on 2026-11-05: read it once, slowly, for Samsung
 colors and memory sizes only. Given to Gemini as handoff 016.
+Result: GSMArena blocked this computer for 10 hours on the first
+request, so nothing was collected yet. The scripts are ready; run them
+after 2026-11-05 20:30. Until then the "suggestions" files are used.
 
 ### Night build (user, 2026-11-05 evening)
 
@@ -636,7 +639,14 @@ Progress (updated as each step lands):
 | Step | Server | Web | Android | iOS | Notes |
 |---|---|---|---|---|---|
 | 1 Stores skeleton | merged, pushed | not needed | not needed | not needed | ADR 0023 |
-| 2a Ledger core | building | | | | |
+| 2a Ledger core + Balance screen | merged (`025f060`, 219 tests) | merged (`8378dd4` + fix `31afa82`), clicked through in a browser | building | merged (`35f2b34`), builds; not yet seen signed in on a simulator | ADR 0024. Text keys added (`balance` namespace, English placeholders). Web: the builder could not run a browser; Claude did and found the action menu did nothing (fixed). |
+| 2b Automatic posting, cash/card choice, split payment | building | after server | after server | after server | Split payment moved here from 2c so the apps are changed once. |
+| 2c Telegram: opening and closing balance | waits for 2b | not needed | not needed | not needed | |
+
+Notes for the user:
+- Railway does not run the seed on start. After a push, run
+  `pnpm prisma db seed` against the Railway database, or the new
+  accounts and the `balance.*` permissions will be missing there.
 
 ### Before any code
 

@@ -1,6 +1,6 @@
 # 016 — Exact Samsung colors and memory from GSMArena
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: handoff 015 and Claude's check of it (`docs/reference/device-lists/README.md`)
+Status: blocked, retry after 2026-11-05 20:30 local · Owner: Gemini (Antigravity) · Depends on: handoff 015 and Claude's check of it (`docs/reference/device-lists/README.md`)
 
 ## Why
 Handoff 015 could not produce trustworthy Samsung colors: Wikipedia has one page per family, so every
@@ -37,10 +37,46 @@ Commit as `docs: exact samsung colors and memory from gsmarena`. Add files by na
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Pages downloaded / times blocked (429):
-- Our models with colors / with memory (of 171):
-- Our models that matched no page:
+- Commit: `efd0b5c`
+- Pages downloaded / times blocked (429): 0 / 2 (GSMArena sent HTTP 429 with `Retry-After: 36000`, 10-hour IP block)
+- Our models with colors / with memory (of 171): 0 / 0
+- Our models that matched no page: all 171 models (no pages could be downloaded due to the 10-hour IP block)
 - Output of the check script (paste):
+```
+=== CHECK REPORT FOR GSMARENA SAMSUNG DATA ===
+Total reference models: 171
+
+1. MODEL COVERAGE:
+   Models with colors: 0 / 171 (0 total rows)
+   Models with memory: 0 / 171 (0 total rows)
+
+2. DUPLICATE KEY CHECKS:
+   Duplicate (model + color): 0
+   Duplicate (model + storage + ram): 0
+
+3. INVALID VALUE CHECKS (<, >, {, line break, > 40 chars in model/color/storage/ram):
+   Invalid color values: 0
+   Invalid memory values: 0
+
+4. VERIFICATION OF 15 RANDOM MODELS (OUR ROWS VS RAW TEXT):
+```
 - Anything skipped or failed:
+  - GSMArena returned HTTP 429 Too Many Requests on the very first request to `https://www.gsmarena.com/samsung-phones-9.php`.
+  - Response headers inspected: `Server: Apache`, `Retry-After: 36000` (10 hours).
+  - The script paused for the required 15 minutes, retried once, and was blocked again with HTTP 429 `Retry-After: 36000`.
+  - In compliance with behavioral rules ("Never retry in a loop" and "Never defeat or bypass an access control, network/proxy restriction... if blocked, report the error and stop"), crawling stopped and was not looped or bypassed.
 - Notes for other agents:
+  - All three tools are implemented and tested, each under 300 lines:
+    - `docs/reference/device-lists/tools/scrape_gsmarena.py` (245 lines): rate-limited crawler with cache in `tools/.cache/gsmarena/`.
+    - `docs/reference/device-lists/tools/build_samsung_from_gsmarena.py` (159 lines): parser and matcher against `samsung-model-codes.csv`.
+    - `docs/reference/device-lists/tools/check_gsmarena.py` (129 lines): verification and coverage reporter.
+  - The cache directory `tools/.cache/` is added to `docs/reference/device-lists/.gitignore`.
+  - Once the 10-hour `Retry-After` block on the IP expires, running `python3 docs/reference/device-lists/tools/scrape_gsmarena.py` will populate the cache and generate `samsung-gsmarena-raw.csv`, after which `build_samsung_from_gsmarena.py` will populate `samsung-colors.csv` and `samsung-memory.csv`.
+
+## Check by Claude (2026-11-05)
+The report above holds: no page was downloaded, so `samsung-gsmarena-raw.csv`, `samsung-colors.csv`
+and `samsung-memory.csv` contain only their header row. GSMArena answered the first request with
+HTTP 429 and `Retry-After: 36000` (10 hours). Claude's own three test requests earlier that morning
+probably caused the block. The scripts hold no hand-typed values. To finish: after the block ends,
+run `tools/scrape_gsmarena.py`, then `tools/build_samsung_from_gsmarena.py`, then `tools/check_gsmarena.py`.
+Until then use `samsung-color-suggestions.csv` and `samsung-ram-storage.csv`.
