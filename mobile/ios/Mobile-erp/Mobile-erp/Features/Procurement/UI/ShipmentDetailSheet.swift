@@ -35,6 +35,19 @@ struct ShipmentDetailSheet: View {
                         }
                         .font(.subheadline)
                     }
+                    if let total = shipment.unitExpenseTotal {
+                        totalRow(i18n.t("shipments.unitExpenseTotal"), total)
+                    }
+                    if let total = shipment.customsFeeTotal {
+                        totalRow(i18n.t("shipments.customsFeeTotal"), total)
+                    }
+                    if shipment.devicesWithoutCustomsFee > 0 {
+                        Label(i18n.t("shipments.devicesWithoutCustomsFee",
+                                     ["count": "\(shipment.devicesWithoutCustomsFee)"]),
+                              systemImage: "exclamationmark.triangle")
+                            .font(.subheadline)
+                            .foregroundStyle(Tokens.warning)
+                    }
                     actions
                 }
                 Section(i18n.t("shipments.deviceList")) {
@@ -66,6 +79,15 @@ struct ShipmentDetailSheet: View {
                 IntakeSheet(shipment: s)
             }
         }
+    }
+
+    private func totalRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label).foregroundStyle(Tokens.muted)
+            Spacer()
+            MoneyText(value: value, size: 15)
+        }
+        .font(.subheadline)
     }
 
     @ViewBuilder

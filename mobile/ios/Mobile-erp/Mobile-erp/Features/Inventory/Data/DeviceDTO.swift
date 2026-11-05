@@ -27,6 +27,10 @@ struct DeviceDetail {
     let specs: [String: String]
     let targetPrice: String?
     let landedCost: String?
+    /// Cost-restricted (absent for users without `device.cost.view`, ADR 0026/0027).
+    let unitExpense: String?
+    let unitExpenseNote: String?
+    let customsFee: String?
     let intakeDate: String
     let version: Int
     let latestInspection: QcSummary?
@@ -48,6 +52,9 @@ struct DeviceDetail {
         self.specs = DeviceSpecs.stringify(json["specs"] as? [String: Any] ?? [:])
         self.targetPrice = DeviceSpecs.scalar(json["targetPrice"])
         self.landedCost = DeviceSpecs.scalar(json["landedCost"])
+        self.unitExpense = DeviceSpecs.scalar(json["unitExpense"])
+        self.unitExpenseNote = json["unitExpenseNote"] as? String
+        self.customsFee = DeviceSpecs.scalar(json["customsFee"])
         self.intakeDate = DeviceSpecs.scalar(json["intakeDate"]) ?? ""
         self.version = (json["version"] as? NSNumber)?.intValue ?? 0
         self.latestInspection = QcSummary(json: json["latestInspection"])

@@ -10,12 +10,17 @@ struct IntakeDraft: Identifiable {
     let specs: [String: String]
     let acquisitionCost: Decimal
     let targetPrice: Decimal?
+    /// Per-phone expense entered at intake (ADR 0026); nil = not entered / no
+    /// permission, so the field is omitted and the server defaults it to 0.
+    let unitExpense: Decimal?
+    let unitExpenseNote: String?
 
     var id: String { imei }
     var specsSummary: String { specs.values.sorted().joined(separator: " · ") }
 
     var dto: IntakeDeviceDTO {
         IntakeDeviceDTO(imei: imei, imei2: imei2, modelId: modelId, specs: specs,
-                        acquisitionCost: acquisitionCost, targetPrice: targetPrice)
+                        acquisitionCost: acquisitionCost, targetPrice: targetPrice,
+                        unitExpense: unitExpense, unitExpenseNote: unitExpenseNote)
     }
 }

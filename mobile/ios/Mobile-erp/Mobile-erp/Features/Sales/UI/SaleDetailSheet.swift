@@ -16,6 +16,15 @@ struct SaleDetailSheet: View {
 
     private var canReturn: Bool { container.session.can("sale.return") && !sale.isReturned }
 
+    /// The refund ceiling: what was tendered (sum of payment lines), or the sale
+    /// price when there are no tender lines — mirrors the server cap (ADR 0028).
+    private var maxRefund: Decimal {
+        if let lines = sale.payments, !lines.isEmpty {
+            return lines.reduce(.zero) { $0 + (Decimal(string: $1.amount.string) ?? .zero) }
+        }
+        return Decimal(string: sale.salePrice.string) ?? .zero
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.gutter) {
@@ -30,7 +39,7 @@ struct SaleDetailSheet: View {
         .background(Tokens.card)
         .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id, payments: sale.payments ?? []) }
         .sheet(isPresented: $showReturn) {
-            ReturnSheet(saleId: sale.id, payments: sale.payments ?? []) {
+            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund) {
                 container.toasts.success(i18n.t("sales.returnSuccess"))
                 onChanged()
                 dismiss()

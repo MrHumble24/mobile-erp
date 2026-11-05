@@ -61,13 +61,15 @@ struct BalanceUserRef: Decodable {
     }
 }
 
-/// One ledger movement. `amount` is a signed decimal string; `account`/`type`
-/// carry the server-sent label used when a code is unknown to the app.
+/// One ledger movement. `amount` is a signed decimal string, or **nil** when the
+/// server redacts a cost-type row's amount from a caller without
+/// `device.cost.view` (ADR 0028). `account`/`type` carry the server-sent label
+/// used when a code is unknown to the app.
 struct BalanceTransaction: Decodable, Identifiable {
     let id: String
     let accountCode: String
     let typeCode: String
-    let amount: String
+    let amount: String?
     let occurredAt: String
     let note: String?
     let transferId: String?

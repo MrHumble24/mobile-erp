@@ -72,7 +72,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Record Payment Sheet** (`RecordPaymentSheet`) | `Features/Consignment/UI/RecordPaymentSheet.swift` | Cashier / Owner | Collecting cash or bank transfer payments against a partner's outstanding debt. |
 | **Floor Inventory Lookup** (`DevicesTab`) | `Features/Inventory/UI/DevicesTab.swift` | All Staff | Real-time stock search by IMEI, model, color, and storage. |
 | **Device Filter Sheet** (`DeviceFilterSheet`) | `Features/Inventory/UI/DeviceFilterSheet.swift` | All Staff | Bottom sheet housing stock status tiles (In-stock, Consigned, Defective), model selector, and storage picker. |
-| **Device Detail Sheet** (`DeviceSheet`) | `Features/Inventory/UI/DeviceSheet.swift` | All Staff | Bottom sheet showing barcode, full technical specifications, QC history, acquisition cost (permission-gated), and status change actions. |
+| **Device Detail Sheet** (`DeviceSheet`) | `Features/Inventory/UI/DeviceSheet.swift` | All Staff | Bottom sheet showing barcode, full technical specifications, QC history, the cost block (customs fee, phone expense + note, landed cost, margin — permission-gated), status change, and — on sold phones too — edit phone expense (`device.expense`) and edit customs fee (`customs.manage`) sheets (`DeviceCostSheets.swift`). |
 | **Warranty Lookup** (`WarrantyLookupSheet`) | `Features/Sales/UI/WarrantyLookupSheet.swift` | Cashier / Support | Quick IMEI/phone number lookup to verify active warranty coverage and initiate warranty claims. |
 
 ---
@@ -84,8 +84,8 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | :--- | :--- | :--- | :--- |
 | **Dashboard** (`DashboardView`) | `Features/Dashboard/UI/DashboardView.swift` | Owner / Manager | Visual hub showing today's revenue, profit margins, overdue consignment alerts ([`OverdueCard`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Dashboard/UI/DashboardLists.swift)), and low stock warnings ([`LowStockCard`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Dashboard/UI/DashboardLists.swift)). |
 | **Shipments List** (`ShipmentsListView`) | `Features/Procurement/UI/ShipmentsListView.swift` | Inventory Lead | Batch procurement registry displaying overseas shipments, landing dates, and supplier details. |
-| **Shipment Form** (`ShipmentFormSheet`) | `Features/Procurement/UI/ShipmentFormSheet.swift` | Inventory Lead | Create shipment batch and record bulk freight/customs overhead expenses for automatic landed-cost distribution. |
-| **Device Intake Flow** (`IntakeSheet`) | `Features/Procurement/UI/IntakeSheet.swift` | Inventory Specialist | Multi-device intake screen for scanning newly arrived IMEIs, setting unit base costs, and generating barcodes. |
+| **Shipment Form** (`ShipmentFormSheet`) | `Features/Procurement/UI/ShipmentFormSheet.swift` | Inventory Lead | Create a shipment batch (supplier, date, expected count, paid-from account). A shipment has no expense of its own (ADR 0026) — no overhead field. Detail shows the computed phone-expense + customs-fee totals and a warning when any phone has no customs fee. |
+| **Device Intake Flow** (`IntakeSheet`) | `Features/Procurement/UI/IntakeSheet.swift` | Inventory Specialist | Multi-device intake: scan IMEIs, set acquisition cost, optional per-phone expense + note (`device.expense`), generate barcodes. The customs fee is stamped server-side from the current list and shown in the results. |
 | **QC Portal** (`QcScreen`) | `Features/Procurement/UI/QcScreen.swift` | QC Specialist | Inspection portal with persistent IMEI scanner and tabs for queue, history, and defect stats. |
 | **Device Grading Sheet** (`GradeDeviceSheet`) | `Features/Procurement/UI/GradeDeviceSheet.swift` | QC Specialist | Device grading form with interactive checklist ([`DefectsChecklist`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Procurement/UI/DefectsChecklist.swift)) to mark units as Passed or Defective. |
 | **Daily Register Closing** (`DailyClosingTab`) | `Features/Reports/UI/DailyClosingTab.swift` | Cashier / Owner | Shift-end reconciliation: Tallying cash in drawer, credit card slips, returns deduction, and net cash balance. |
@@ -106,7 +106,8 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Partner Directory** (`PartnersView`) | `Features/Consignment/UI/PartnersView.swift` | Owner / Manager | Overview of all Malika Bazaar partner shops, total outstanding receivables, and credit limits. |
 | **Partners Filter Sheet** (`PartnersFilterSheet`) | `Features/Consignment/UI/PartnersFilterSheet.swift` | Owner / Manager | Bottom sheet housing partner debt overview, active/inactive filter, and overdue debt toggle. |
 | **Partner Detail & Ledger** (`PartnerDetailView`) | `Features/Consignment/UI/PartnerDetailView.swift` | Owner / Manager | Deep dive into a partner's account: aging debt buckets (0-30, 31-60, 60+ days) and running debit/credit transaction ledger. |
-| **Financial Reports** (`ReportsView` → `FinOverviewTab`) | `Features/Reports/UI/ReportsView.swift`, `Features/Reports/UI/OverviewTab.swift` | Store Owner | Revenue, COGS, gross profit and net operating income with a day/week/month trend chart and channel breakdown. |
+| **Financial Reports** (`ReportsView` → `FinOverviewTab`) | `Features/Reports/UI/ReportsView.swift`, `Features/Reports/UI/OverviewTab.swift` | Store Owner | Revenue, COGS, gross profit and net operating income with a day/week/month trend chart and channel breakdown. A **Customs fees** tab (`CustomsFeesTab`, visible with `customs.read`) picks a customs code and charts its fee over time (reusing `BarChartCard`) with the numbers listed. |
+| **Customs Price Lists** (`CustomsView`) | `Features/Customs/UI/CustomsView.swift` | Store Owner | More-tab finance entry (`nav.customs`, `customs.read`). Segmented sections: the current list (fee, previous fee, up/down/same/new marker, used-by-model), every version, and models with no fee. "New price list" sheet (`CustomsNewListSheet`, `customs.manage`) — effective date, note, code/description/fee rows pre-filled from the current list; rejects duplicate codes and an empty list. No file import (ADR 0027). |
 | **Expense Analytics** (`ExpensesReportTab`) | `Features/Reports/UI/ExpensesReportTab.swift` | Store Owner | Breakdown of overhead spending by category and recurring vs one-off analysis. |
 | **Store Balance** (`BalanceView`) | `Features/Balance/UI/BalanceView.swift` | Store Owner | Cash and card money accounts with their total, and the full ledger history (paged, newest first) filtered by account/type/date. Balances may be below zero (shown in danger). Online-only. Entry: More tab, perm `balance.read`. |
 | **Balance Entry Sheet** (`BalanceEntrySheet`) | `Features/Balance/UI/BalanceEntrySheet.swift` | Store Owner | Manual ledger entry — set starting balance, deposit, withdraw, correction (signed amount + reason) — gated on `balance.manage`. |
@@ -115,7 +116,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Model Pricing Benchmarks** (`ModelPricingTab`) | `Features/Reports/UI/ModelPricingTab.swift` | Store Owner | Setting model benchmark prices, target margins, and minimum allowable selling prices. |
 | **Customer CRM** (`CustomersView`) | `Features/Customers/UI/CustomersView.swift` | Sales / Owner | Customer directory with purchase history filter and detail sheet ([`CustomerDetailSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Customers/UI/CustomerDetailSheet.swift)). |
 | **Customer Filter Sheet** (`CustomerFilterSheet`) | `Features/Customers/UI/CustomerFilterSheet.swift` | Sales / Owner | Bottom sheet housing customer sort order (recent vs alphabetical) and purchase history toggle. |
-| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing phone catalog definitions and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). |
+| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing phone catalog definitions, a `customsCode` (how customs writes the model, ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). |
 | **Stock Alert Rules** (`StockAlertsTab`) | `Features/Inventory/UI/StockAlertsTab.swift` | Inventory Lead | Configuring minimum inventory reorder thresholds per model ([`AlertRuleForm`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AlertRuleForm.swift)). |
 | **Supplier Directory** (`SuppliersListView`) | `Features/Procurement/UI/SuppliersListView.swift` | Store Owner | Supplier records and fulfillment contact information ([`SupplierFormSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Procurement/UI/SupplierFormSheet.swift)). |
 
@@ -237,8 +238,8 @@ Device status becomes "Consigned" -> Partner ledger balance increases
 
 Every money movement is recorded against a ledger account (`CASH`, `CARD`, …).
 Two shared controls in the kit carry this everywhere; account options come from
-`GET /ledger/balances` when the user has `balance.read`, else the two known codes
-`CASH`/`CARD` (cashiers).
+`GET /ledger/accounts` (any signed-in user — no `balance.read`), falling back to
+the two known codes `CASH`/`CARD`.
 
 - **`AccountPicker`** (`Shared/UI/AccountPicker.swift`) — one account, default
   Cash. Used by Log Expense, Recurring Expense, Record Payment, Shipment Form.
@@ -251,13 +252,17 @@ Two shared controls in the kit carry this everywhere; account options come from
 | :--- | :--- |
 | **POS Checkout** (`PosCheckoutBar`) | Cash / Card / Split; a split must add up to the cart total before Pay enables. One `POST /sales` per phone, so the cart-level split is allocated across the lines by `allocateSalePayments` (`Features/Pos/Lib/PosPayments.swift`, pure, Decimal) — each sale's `payments` sum to its own price. The chosen split rides in the offline outbox too. |
 | **Sale Detail / Receipt** (`SaleDetailSheet`, `ReceiptSheet`) | Shows the tender line(s); nothing when `payments` is empty. |
-| **Sale Return** (`ReturnSheet`) | One read-only line naming the account(s) the refund returns to. |
+| **Sale Return** (`ReturnSheet`) | One read-only line naming the account(s) the refund returns to. The refund field is capped at what was paid; over that shows `sales.refundTooHigh` (the server also rejects 400 — ADR 0028). |
 | **Expenses** (`LogExpenseSheet`, `ExpenseDetailSheet`, rows) | Account picker (default Cash); detail + rows show the account. |
 | **Recurring Expense** (`ExpenseRecurrenceSheet`) | Account picker (default Cash). |
-| **Partner Payment** (`RecordPaymentSheet`) | Account picker (default Cash). Note: the partner ledger endpoint does not carry the account, so history cannot show it yet. |
-| **Shipment Form / Detail** (`ShipmentFormSheet`, `ShipmentDetailSheet`) | "Paid from" picker on create (default Cash), read-only afterwards. |
-| **Store Balance** (`BalanceView`) | History already renders the automatic types (`SALE`, `REFUND`, `PARTNER_PAYMENT`, `PURCHASE`, `OVERHEAD`, `EXPENSE`) and offers them in the type filter; `balance`/`total` decode from number or decimal string. |
+| **Partner Payment** (`RecordPaymentSheet`) | Account picker (default Cash). Payment rows in the partner ledger now show the account (`GET /partners/:id/ledger` carries `accountCode`; null for old rows). |
+| **Shipment Form / Detail** (`ShipmentFormSheet`, `ShipmentDetailSheet`) | "Paid from" picker on create (default Cash), read-only afterwards. No overhead field (ADR 0026). |
+| **Store Balance** (`BalanceView`) | History renders every type (`SALE`, `REFUND`, `PARTNER_PAYMENT`, `PURCHASE`, `OVERHEAD`, `EXPENSE`, `DEVICE_EXPENSE`, `CUSTOMS`) and offers them in the type filter. A row's `amount` can be `null` (cost hidden from this user) → shows `balance.amountHidden`. The split control's segment reads `balance.paySplit`. |
 
 DEBUG screenshot args added: `-posDemo cash|split` (seeds a demo checkout line),
-`-openExpense new`, `-openShipmentForm new`, `-openPartnerPayment 1`.
+`-openExpense new`, `-openShipmentForm new`, `-openPartnerPayment 1`,
+`-openShipmentDetail <id>`, `-openIntake <id>`, `-openDeviceEdit expense|customs`
+(within a device sheet opened by `-openDevice <imei>`), `-openCustomsTab
+current|versions|unmatched`, `-openCustomsNew 1`, `-open customs`, and
+`-openTab customs` on the reports screen.
 

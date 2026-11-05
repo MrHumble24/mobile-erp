@@ -126,6 +126,9 @@ private struct LedgerRow: View {
             }
             HStack {
                 Text(KitDate.day(entry.at)).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                if let code = entry.accountCode {
+                    Text("· \(PaymentAccounts.label(code, i18n))").font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
                 Spacer()
                 Text("\(i18n.t("partners.runningBalance")): \(MoneyText.format(entry.runningBalance))")
                     .font(.ui(.caption)).foregroundStyle(Tokens.muted)

@@ -30,11 +30,15 @@ struct BalanceHistoryRow: View {
                     }
                 }
                 Spacer(minLength: Tokens.Space.sm)
-                MoneyText(value: tx.amount, size: 15)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(BalanceFormat.amountTint(tx.amount))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
+                if let amount = tx.amount {
+                    MoneyText(value: amount, size: 15)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(BalanceFormat.amountTint(amount))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                } else {
+                    Text(i18n.t("balance.amountHidden")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
             }
         }
     }

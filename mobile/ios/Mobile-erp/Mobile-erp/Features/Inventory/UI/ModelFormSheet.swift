@@ -14,6 +14,7 @@ struct ModelFormSheet: View {
     @State private var brand: String
     @State private var name: String
     @State private var isActive: Bool
+    @State private var customsCode: String
     @State private var attributes: [AttributeDef]
     @State private var saving = false
     @State private var error: String?
@@ -28,6 +29,7 @@ struct ModelFormSheet: View {
         _brand = State(initialValue: model?.brand ?? "")
         _name = State(initialValue: model?.name ?? "")
         _isActive = State(initialValue: model?.isActive ?? true)
+        _customsCode = State(initialValue: model?.customsCode ?? "")
         _attributes = State(initialValue: model?.attributes ?? [])
         savedKeys = Set((model?.attributes ?? []).map(\.key))
     }
@@ -61,6 +63,11 @@ struct ModelFormSheet: View {
                         .font(.ui(.body))
                         .foregroundStyle(Tokens.text)
                         .frame(minHeight: Tokens.Space.minTouch)
+                }
+                AppFormField(label: i18n.t("inventory.customsCode")) {
+                    AppTextField(placeholder: i18n.t("inventory.customsCode"), text: $customsCode,
+                                 autocapitalization: .characters)
+                    Text(i18n.t("inventory.customsCodeHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
                 AttributesEditor(attributes: $attributes, savedKeys: savedKeys)
                 if let error {
@@ -99,11 +106,13 @@ struct ModelFormSheet: View {
         }
         do {
             let repo = DeviceModelRepository(container)
+            let code = customsCode.trimmingCharacters(in: .whitespaces)
+            let codeOrNil = code.isEmpty ? nil : code
             if let model {
                 try await repo.update(id: model.id, brand: b, name: n,
-                                      isActive: isActive, attributes: reindexed)
+                                      isActive: isActive, customsCode: codeOrNil, attributes: reindexed)
             } else {
-                try await repo.create(brand: b, name: n, attributes: reindexed)
+                try await repo.create(brand: b, name: n, customsCode: codeOrNil, attributes: reindexed)
             }
             await store.loadModels()
             container.toasts.success(i18n.t("common.success"))

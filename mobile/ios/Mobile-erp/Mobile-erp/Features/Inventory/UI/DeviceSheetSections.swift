@@ -68,19 +68,21 @@ struct DeviceSpecsGrid: View {
                 }
             }
             if canViewCost, let landed = device.landedCost {
-                MarginBlock(targetPrice: device.targetPrice, landedCost: landed)
+                CostBlock(device: device, landedCost: landed)
             }
         }
     }
 }
 
-private struct MarginBlock: View {
-    let targetPrice: String?
+/// The cost breakdown for cost-visible users: customs fee + phone expense
+/// (ADR 0026/0027) feed the landed cost, then the margin against the target.
+private struct CostBlock: View {
+    let device: DeviceDetail
     let landedCost: String
     @Environment(I18n.self) private var i18n
 
     var body: some View {
-        let price = Decimal(string: targetPrice ?? "") ?? .zero
+        let price = Decimal(string: device.targetPrice ?? "") ?? .zero
         let cost = Decimal(string: landedCost) ?? .zero
         let margin = price - cost
         let positive = margin >= .zero
@@ -88,6 +90,22 @@ private struct MarginBlock: View {
             ? (NSDecimalNumber(decimal: margin).doubleValue / NSDecimalNumber(decimal: cost).doubleValue) * 100
             : 0
         FactBlock {
+            if let fee = device.customsFee {
+                FactRow(label: i18n.t("inventory.customsFee")) {
+                    Text(MoneyText.format(fee)).font(.data(.regular))
+                }
+            }
+            if let expense = device.unitExpense {
+                FactRow(label: i18n.t("inventory.unitExpense"),
+                        last: device.unitExpenseNote == nil) {
+                    Text(MoneyText.format(expense)).font(.data(.regular))
+                }
+            }
+            if let note = device.unitExpenseNote, !note.isEmpty {
+                FactRow(label: i18n.t("inventory.unitExpenseNote")) {
+                    Text(note).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
+            }
             FactRow(label: i18n.t("inventory.landedCost")) {
                 Text(MoneyText.format(landedCost)).font(.data(.regular))
             }

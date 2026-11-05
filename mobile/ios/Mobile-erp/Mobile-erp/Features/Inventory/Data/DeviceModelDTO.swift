@@ -47,16 +47,19 @@ struct DeviceModelView: Codable, Identifiable {
     let name: String
     let isActive: Bool
     let attributes: [AttributeDef]
+    /// How customs writes this model (ADR 0027); nil when unset.
+    let customsCode: String?
 
     var label: String { "\(brand) \(name)" }
 
     init(id: String, brand: String, name: String,
-         isActive: Bool, attributes: [AttributeDef]) {
+         isActive: Bool, attributes: [AttributeDef], customsCode: String? = nil) {
         self.id = id
         self.brand = brand
         self.name = name
         self.isActive = isActive
         self.attributes = attributes
+        self.customsCode = customsCode
     }
 
     init(from decoder: Decoder) throws {
@@ -66,5 +69,6 @@ struct DeviceModelView: Codable, Identifiable {
         name = try c.decode(String.self, forKey: .name)
         isActive = try c.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
         attributes = try c.decodeIfPresent([AttributeDef].self, forKey: .attributes) ?? []
+        customsCode = try c.decodeIfPresent(String.self, forKey: .customsCode)
     }
 }

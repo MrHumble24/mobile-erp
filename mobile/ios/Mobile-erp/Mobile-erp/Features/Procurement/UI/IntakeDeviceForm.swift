@@ -12,11 +12,16 @@ struct IntakeDeviceForm: View {
     /// True when an IMEI is already staged in the batch — gates the draft at
     /// confirm time (the error variant of the sheet).
     var isDuplicate: (String) -> Bool = { _ in false }
+    /// Shows the per-phone expense fields only for users with `device.expense`;
+    /// a non-zero expense without it is a 403 at submit.
+    var canSetExpense = false
 
     @State private var modelId: String?
     @State private var specs: [String: String] = [:]
     @State private var cost = ""
     @State private var target = ""
+    @State private var expense = ""
+    @State private var expenseNote = ""
     @State private var dualSim = false
     @State private var imei1 = ""
     @State private var imei2 = ""
@@ -44,6 +49,11 @@ struct IntakeDeviceForm: View {
         LabeledField(i18n.t("shipments.acquisitionCost"), text: $cost, keyboard: .decimalPad)
             .onChange(of: cost) { stageIfComplete(showHints: false) }
         LabeledField(i18n.t("shipments.targetPrice"), text: $target, keyboard: .decimalPad)
+
+        if canSetExpense {
+            LabeledField(i18n.t("inventory.unitExpense"), text: $expense, keyboard: .decimalPad)
+            LabeledField(i18n.t("inventory.unitExpenseNote"), text: $expenseNote)
+        }
 
         imeiBlock
     }
@@ -128,7 +138,9 @@ struct IntakeDeviceForm: View {
         let draft = IntakeDraft(
             imei: imei1, imei2: second, modelId: model.id,
             specs: specs.filter { !$0.value.trimmed.isEmpty },
-            acquisitionCost: c, targetPrice: target.asDecimal
+            acquisitionCost: c, targetPrice: target.asDecimal,
+            unitExpense: canSetExpense ? expense.asDecimal : nil,
+            unitExpenseNote: canSetExpense ? expenseNote.trimmedOrNil : nil
         )
         pending = IntakePendingScan(code: imei1, draft: draft, error: nil)
     }
@@ -137,6 +149,7 @@ struct IntakeDeviceForm: View {
         if let draft = pending?.draft {
             onAdd(draft)
             imei1 = ""; imei2 = ""   // per-device — next unit starts clean
+            expense = ""; expenseNote = ""   // phone-specific, never carried over
             error = nil
         }
         pending = nil

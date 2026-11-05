@@ -61,7 +61,7 @@ struct PaymentMethodField: View {
             SegmentedControl(selection: $selection.method, segments: [
                 (.cash, i18n.t("balance.payCash")),
                 (.card, i18n.t("balance.payCard")),
-                (.split, i18n.t("balance.splitPayment")),
+                (.split, i18n.t("balance.paySplit")),
             ])
             if selection.method == .split { splitRows }
         }
