@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import uzAuth from "./uz/auth.json"
 import uzBalance from "./uz/balance.json"
+import uzCatalog from "./uz/catalog.json"
 import uzCommon from "./uz/common.json"
 import uzConsignments from "./uz/consignments.json"
 import uzCustoms from "./uz/customs.json"
@@ -21,6 +22,7 @@ import uzUsers from "./uz/users.json"
 
 import enAuth from "./en/auth.json"
 import enBalance from "./en/balance.json"
+import enCatalog from "./en/catalog.json"
 import enCommon from "./en/common.json"
 import enConsignments from "./en/consignments.json"
 import enCustoms from "./en/customs.json"
@@ -45,6 +47,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
   uz: {
     auth: uzAuth,
     balance: uzBalance,
+    catalog: uzCatalog,
     common: uzCommon,
     consignments: uzConsignments,
     customs: uzCustoms,
@@ -66,6 +69,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
   en: {
     auth: enAuth,
     balance: enBalance,
+    catalog: enCatalog,
     common: enCommon,
     consignments: enConsignments,
     customs: enCustoms,

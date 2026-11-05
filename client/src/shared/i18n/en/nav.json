@@ -26,5 +26,7 @@
   "expandSidebar": "Expand sidebar",
   "sync": "Sync",
   "balance": "Balance",
-  "customs": "Customs fees"
+  "customs": "Customs fees",
+  "stock": "Stock",
+  "categories": "Categories"
 }
