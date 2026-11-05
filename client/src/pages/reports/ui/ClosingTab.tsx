@@ -3,6 +3,7 @@ import { Download } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
 import { downloadCsv } from "@/shared/lib/csv"
+import { todayIso } from "@/shared/lib/local-date"
 import {
   useDailyClosingReport,
   useDailyClosingRange,
@@ -98,7 +99,7 @@ function ClosingRangeTable({ rows }: { rows: DailyClosingReport[] }) {
 
 export function ClosingTab({ range }: ReportTabProps) {
   const { t } = useI18n()
-  const [date, setDate] = React.useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = React.useState(todayIso)
   const day = useDailyClosingReport(date)
   const rangeData = useDailyClosingRange(range.from, range.to)
 

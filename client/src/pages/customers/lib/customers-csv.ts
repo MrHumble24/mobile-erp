@@ -1,4 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
+import { todayIso } from "@/shared/lib/local-date"
 import type { CustomerListItem } from "@/entities/customer"
 
 /** Export the current filtered page of customers with their purchase aggregates. */
@@ -23,5 +24,5 @@ export function exportCustomersCsv(customers: CustomerListItem[]): void {
     c.returnsCount,
     c.createdAt.slice(0, 10),
   ])
-  downloadCsv(`customers-${new Date().toISOString().slice(0, 10)}`, headers, rows)
+  downloadCsv(`customers-${todayIso()}`, headers, rows)
 }

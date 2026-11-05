@@ -1,4 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
+import { todayIso } from "@/shared/lib/local-date"
 import { saleUnitCode } from "@/shared/lib/sale-subject"
 import type { SaleView } from "@/entities/sale"
 
@@ -33,5 +34,5 @@ export function exportSalesCsv(sales: SaleView[], includeProfit: boolean): void 
     s.soldAt,
     s.return ? "Returned" : "Sold",
   ])
-  downloadCsv(`sales-${new Date().toISOString().slice(0, 10)}`, headers, rows)
+  downloadCsv(`sales-${todayIso()}`, headers, rows)
 }

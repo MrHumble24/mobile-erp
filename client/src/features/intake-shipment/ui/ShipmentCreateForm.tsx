@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { todayIso } from "@/shared/lib/local-date"
 import { useSuppliers, type SupplierView } from "@/entities/supplier"
 import { useCreateShipment } from "@/entities/shipment"
 import { AccountSelect } from "@/entities/ledger"
@@ -76,7 +77,7 @@ export function ShipmentCreateForm({ onSuccess }: { onSuccess: (shipmentId: stri
   const createShipmentMutation = useCreateShipment()
 
   const [supplierId, setSupplierId] = React.useState("")
-  const [shipmentDate, setShipmentDate] = React.useState(() => new Date().toISOString().slice(0, 10))
+  const [shipmentDate, setShipmentDate] = React.useState(todayIso)
   const [expectedCount, setExpectedCount] = React.useState(10)
   const [paymentAccountCode, setPaymentAccountCode] = React.useState("CASH")
   const [notes, setNotes] = React.useState("")

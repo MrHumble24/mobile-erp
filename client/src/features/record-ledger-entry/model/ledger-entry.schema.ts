@@ -5,6 +5,7 @@ import type {
   LedgerEntryType,
   LedgerTransferDto,
 } from "@/entities/ledger"
+import { localDayStart, todayIso } from "@/shared/lib/local-date"
 
 export type Translate = (key: string) => string
 
@@ -12,12 +13,6 @@ export type Translate = (key: string) => string
 export type LedgerEntryMode = LedgerEntryType | "TRANSFER"
 
 const POSITIVE_ONLY: LedgerEntryMode[] = ["DEPOSIT", "WITHDRAWAL", "TRANSFER"]
-
-function todayIso(): string {
-  const now = new Date()
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 10)
-}
 
 export function makeLedgerEntrySchema(mode: LedgerEntryMode, t: Translate) {
   return z
@@ -71,7 +66,7 @@ export function defaultValues(
 /** Omit occurredAt for today so the server stamps the real time; backdated days use local start-of-day. */
 function toOccurredAt(date: string): string | undefined {
   if (!date || date === todayIso()) return undefined
-  return new Date(`${date}T00:00:00`).toISOString()
+  return localDayStart(date)
 }
 
 function trimmed(note: string): string | undefined {

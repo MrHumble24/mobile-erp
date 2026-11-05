@@ -4,6 +4,7 @@ import type {
   ExpenseRecurrenceView,
   UpdateExpenseRecurrenceDto,
 } from "@/entities/expense"
+import { todayIso } from "@/shared/lib/local-date"
 
 export type Translate = (key: string) => string
 
@@ -20,12 +21,6 @@ export function makeRecurrenceSchema(t: Translate) {
 }
 
 export type RecurrenceFormValues = z.infer<ReturnType<typeof makeRecurrenceSchema>>
-
-function todayIso(): string {
-  const now = new Date()
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 10)
-}
 
 export function toRecurrenceFormValues(
   recurrence?: ExpenseRecurrenceView | null
