@@ -1,3 +1,4 @@
+import { TriangleAlert } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDateTime, formatDate } from "@/shared/lib/format"
 import type { ShipmentView } from "@/entities/shipment"
@@ -32,11 +33,10 @@ function CostRows({
   avgLanded: number | null
 }) {
   const { t } = useI18n()
-  const perUnit = shipment.deviceCount > 0 ? Number(shipment.overheadCost || 0) / shipment.deviceCount : null
   return (
     <>
-      <Row label={t("shipments.overheadCost")} value={formatMoney(shipment.overheadCost)} />
-      <Row label={t("shipments.overheadPerUnit")} value={perUnit == null ? "-" : formatMoney(perUnit)} />
+      <Row label={t("shipments.unitExpenseTotal")} value={formatMoney(shipment.unitExpenseTotal ?? 0)} />
+      <Row label={t("shipments.customsFeeTotal")} value={formatMoney(shipment.customsFeeTotal ?? 0)} />
       <Row label={t("shipments.avgLandedPerUnit")} value={avgLanded == null ? "-" : formatMoney(avgLanded)} />
     </>
   )
@@ -63,6 +63,12 @@ export function ShipmentSummary({
       <Row label={t("balance.payFrom")} value={accountLabel(shipment.paymentAccountCode, undefined, t)} />
       {canViewCost && <CostRows shipment={shipment} avgLanded={avgLanded} />}
       <Row label={t("shipments.createdAt")} value={formatDateTime(shipment.createdAt)} />
+      {shipment.devicesWithoutCustomsFee > 0 && (
+        <p className="sm:col-span-2 flex items-center gap-1.5 text-xs font-medium text-amber-600">
+          <TriangleAlert className="size-3.5 shrink-0" />
+          {t("shipments.devicesWithoutCustomsFee", { count: shipment.devicesWithoutCustomsFee })}
+        </p>
+      )}
       <div className="sm:col-span-2">
         <Row label={t("common.notes")} value={shipment.notes || "-"} />
       </div>

@@ -76,6 +76,8 @@ export interface ReceiptView {
   total: string
   warranty: { days: number; endsAt: string } | null
   customer?: { name: string; phone: string | null }
+  /** How the sale was tendered; [] when the sale predates ledger posting. */
+  payments?: SalePaymentLine[]
 }
 
 export interface WarrantyLookupView {

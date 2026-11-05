@@ -18,13 +18,16 @@ Composes entities and features; holds no HTTP of its own.
   with `shipmentId`) + a model-id → name map for the drawer.
 
 ## Drawer
-Summary (supplier, dates, expected vs received, overhead + overhead-per-unit +
-avg landed/unit when cost-gated, notes, created at) then the batch devices with
-pagination. A device row deep-links to `/inventory?imei=<imei>`.
+Summary (supplier, dates, expected vs received, phone-expense total + customs-fee
+total + avg landed/unit when cost-gated, a "phones without a customs fee" warning
+when any, notes, created at) then the batch devices with pagination. A device row
+deep-links to `/inventory?imei=<imei>`. A shipment has no expense of its own
+(ADR 0026).
 
 ## Cost gating
-Overhead and acquisition/landed columns render only for `device.cost.view`.
-Intake needs `device.create`; shipment/supplier writes need `shipment.manage`.
+Phone-expense / customs-fee totals and acquisition/landed columns render only for
+`device.cost.view`. Intake needs `device.create`; shipment/supplier writes need
+`shipment.manage`.
 
 ## Must never
 - Call `fetch`/repositories directly, hold server data in local state, or render

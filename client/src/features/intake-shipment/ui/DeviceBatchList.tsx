@@ -92,12 +92,17 @@ function BatchTable({
 function LandedResults({ results }: { results: RegisteredDeviceView[] }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-1 rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-1.5 rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
       <span className="text-xs font-semibold">{t("shipments.landedCostResults")}</span>
       {results.map((r) => (
-        <div key={r.id} className="flex justify-between text-xs">
+        <div key={r.id} className="flex items-center justify-between text-xs">
           <span className="font-mono">{r.imei}</span>
-          <span className="font-semibold">{formatMoney(r.landedCost)}</span>
+          <span className="flex items-center gap-3">
+            <span className="text-muted-foreground">
+              {t("inventory.customsFee")}: {formatMoney(r.customsFee)}
+            </span>
+            <span className="font-semibold">{formatMoney(r.landedCost)}</span>
+          </span>
         </div>
       ))}
     </div>

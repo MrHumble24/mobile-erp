@@ -10,7 +10,7 @@ import { Dialog, DialogPopup, DialogHeader, DialogTitle } from "@/shared/ui/dial
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Switch } from "@/shared/ui/switch"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
 import { toast } from "@/shared/ui/sonner"
 import {
   deviceModelFormSchema,
@@ -34,6 +34,26 @@ function ModelTextField({ form, name, label }: { form: FormApi; name: "brand" | 
           <FormControl>
             <Input {...field} />
           </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
+function CustomsCodeField({ form }: { form: FormApi }) {
+  const { t } = useI18n()
+  return (
+    <FormField
+      control={form.control}
+      name="customsCode"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{t("inventory.customsCode")}</FormLabel>
+          <FormControl>
+            <Input {...field} value={field.value ?? ""} />
+          </FormControl>
+          <FormDescription>{t("inventory.customsCodeHint")}</FormDescription>
           <FormMessage />
         </FormItem>
       )}
@@ -71,6 +91,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
       brand: model?.brand ?? "",
       name: model?.name ?? "",
       isActive: model?.isActive ?? true,
+      customsCode: model?.customsCode ?? "",
       attributes: model ? toFormAttributes(model.attributes) : defaultFormAttributes(),
     },
   })
@@ -85,9 +106,10 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
 
   const onSubmit = (values: DeviceModelFormValues) => {
     const attributes = toDtoAttributes(values.attributes)
+    const customsCode = values.customsCode.trim() || null
     const opts = { onSuccess: () => { toast.success(t("common.success")); onDone() }, onError: handleError }
-    if (model) updateMutation.mutate({ id: model.id, dto: { ...values, attributes } }, opts)
-    else createMutation.mutate({ brand: values.brand, name: values.name, attributes }, opts)
+    if (model) updateMutation.mutate({ id: model.id, dto: { ...values, customsCode, attributes } }, opts)
+    else createMutation.mutate({ brand: values.brand, name: values.name, customsCode, attributes }, opts)
   }
 
   return (
@@ -95,6 +117,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 my-2">
         <ModelTextField form={form} name="brand" label={t("inventory.brand")} />
         <ModelTextField form={form} name="name" label={t("inventory.model")} />
+        <CustomsCodeField form={form} />
         <ActiveField form={form} />
         <AttributeEditor form={form} savedKeys={savedKeys} />
         <Button type="submit" className="w-full" disabled={isPending}>

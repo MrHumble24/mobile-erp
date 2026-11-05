@@ -12,6 +12,12 @@ export interface LedgerBalances {
   total: number
 }
 
+/** `GET /ledger/accounts`: active accounts for the pickers, no amounts. */
+export interface LedgerAccountOption {
+  accountCode: string
+  label: string
+}
+
 export interface LedgerCodeRef {
   code: string
   label: string
@@ -28,8 +34,9 @@ export interface LedgerTransaction {
   storeId: string
   accountCode: string
   typeCode: string
-  /** Signed decimal string, e.g. "-500000". */
-  amount: string
+  /** Signed decimal string, e.g. "-500000". `null` when a cost row's amount is
+   *  redacted from a caller without `device.cost.view` (ADR 0028). */
+  amount: string | null
   occurredAt: string
   note: string | null
   transferId: string | null

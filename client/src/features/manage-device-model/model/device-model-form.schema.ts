@@ -26,6 +26,7 @@ export const deviceModelFormSchema = z.object({
   brand: z.string().min(1),
   name: z.string().min(1),
   isActive: z.boolean(),
+  customsCode: z.string(),
   attributes: z.array(attributeSchema).superRefine((attrs, ctx) => {
     const seen = new Set<string>()
     attrs.forEach((a, i) => {

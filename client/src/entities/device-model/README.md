@@ -3,7 +3,8 @@
 The device catalog (brand + name + active) and its per-model spec schema.
 
 ## Owns
-- `DeviceModelView`, `CreateDeviceModelDto`, `UpdateDeviceModelDto`,
+- `DeviceModelView`, `CreateDeviceModelDto`, `UpdateDeviceModelDto` (incl. the
+  optional `customsCode` matched to the customs price list — ADR 0027),
   `AttributeDef` (`{ key, label, type: text|number|select, options, required, sortOrder }`).
 - `device-model.repository.ts` — the only HTTP caller for `/device-models`.
 - `device-model.keys.ts` — query-key factory.

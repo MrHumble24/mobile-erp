@@ -27,10 +27,10 @@ function ReturnFields({
   setDeviceToStatusCode,
   reason,
   setReason,
-  salePrice,
-}: ReturnFieldsProps & { salePrice: number }) {
+  maxRefund,
+}: ReturnFieldsProps & { maxRefund: number }) {
   const { t } = useI18n()
-  const exceeds = refundAmount > salePrice
+  const exceeds = refundAmount > maxRefund
   return (
     <>
       <div className="space-y-1">
@@ -38,15 +38,16 @@ function ReturnFields({
         <Input
           type="number"
           min={0}
+          max={maxRefund}
           value={refundAmount}
-          onChange={(e) => setRefundAmount(Number(e.target.value))}
+          onChange={(e) => setRefundAmount(Math.min(Number(e.target.value), maxRefund))}
           className="h-10 text-base font-bold"
           required
         />
         {exceeds && (
           <p className="flex items-center gap-1.5 text-xs text-amber-600">
             <AlertTriangle className="size-3.5" />
-            {t("sales.refundExceedsWarning")}
+            {t("sales.refundTooHigh")}
           </p>
         )}
       </div>
@@ -78,7 +79,19 @@ function ReturnFields({
   )
 }
 
-function RefundNote({ payments }: { payments: { accountCode: string }[] }) {
+interface PaymentLine {
+  accountCode: string
+  amount: string
+}
+
+/** What was paid = sum of tender lines; falls back to the sale price for a sale
+ *  with no ledger rows. The server rejects a refund above this (ADR 0028). */
+function paidTotalOf(payments: PaymentLine[], salePrice: number): number {
+  if (payments.length === 0) return salePrice
+  return payments.reduce((sum, p) => sum + Number(p.amount), 0)
+}
+
+function RefundNote({ payments }: { payments: PaymentLine[] }) {
   const { t } = useI18n()
   if (payments.length === 0) return null
   const accounts = payments
@@ -100,13 +113,14 @@ function ReturnSaleForm({
 }: {
   saleId: string
   salePrice: number
-  payments: { accountCode: string }[]
+  payments: PaymentLine[]
   onCancel: () => void
   onSuccess?: () => void
 }) {
   const { t } = useI18n()
   const returnMutation = useReturnSale()
-  const [refundAmount, setRefundAmount] = React.useState(salePrice)
+  const maxRefund = paidTotalOf(payments, salePrice)
+  const [refundAmount, setRefundAmount] = React.useState(maxRefund)
   const [reason, setReason] = React.useState("")
   const [deviceToStatusCode, setDeviceToStatusCode] = React.useState<"IN_STOCK" | "DEFECTIVE">("IN_STOCK")
 
@@ -142,10 +156,10 @@ function ReturnSaleForm({
         setDeviceToStatusCode={setDeviceToStatusCode}
         reason={reason}
         setReason={setReason}
-        salePrice={salePrice}
+        maxRefund={maxRefund}
       />
       <RefundNote payments={payments} />
-      <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending}>
+      <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending || refundAmount > maxRefund}>
         {returnMutation.isPending ? t("common.loading") : t("sales.returnDevice")}
       </Button>
     </form>
@@ -162,8 +176,9 @@ export function ReturnSaleDialog({
 }: {
   saleId: string
   salePrice: number
-  /** The sale's tender lines; the refund goes back to these accounts. */
-  payments?: { accountCode: string }[]
+  /** The sale's tender lines; the refund goes back to these accounts and is
+   *  capped at their sum (or the sale price when there are none). */
+  payments?: PaymentLine[]
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void

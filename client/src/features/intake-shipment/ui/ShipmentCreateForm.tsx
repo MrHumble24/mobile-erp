@@ -49,42 +49,28 @@ function ShipmentParamFields({
   onDateChange,
   count,
   onCountChange,
-  cost,
-  onCostChange,
-  canViewCost,
 }: {
   date: string
   onDateChange: (val: string) => void
   count: number
   onCountChange: (val: number) => void
-  cost: number
-  onCostChange: (val: number) => void
-  canViewCost: boolean
 }) {
   const { t } = useI18n()
   return (
-    <>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>{t("shipments.shipmentDate")}</Label>
-          <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="h-10" />
-        </div>
-        <div className="space-y-2">
-          <Label>{t("shipments.expectedCount")}</Label>
-          <Input type="number" min={1} value={count} onChange={(e) => onCountChange(Number(e.target.value))} className="h-10" />
-        </div>
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-2">
+        <Label>{t("shipments.shipmentDate")}</Label>
+        <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="h-10" />
       </div>
-      {canViewCost && (
-        <div className="space-y-2">
-          <Label>{t("shipments.overheadCost")}</Label>
-          <Input type="number" min={0} value={cost} onChange={(e) => onCostChange(Number(e.target.value))} className="h-10" />
-        </div>
-      )}
-    </>
+      <div className="space-y-2">
+        <Label>{t("shipments.expectedCount")}</Label>
+        <Input type="number" min={1} value={count} onChange={(e) => onCountChange(Number(e.target.value))} className="h-10" />
+      </div>
+    </div>
   )
 }
 
-export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shipmentId: string) => void; canViewCost: boolean }) {
+export function ShipmentCreateForm({ onSuccess }: { onSuccess: (shipmentId: string) => void }) {
   const { t } = useI18n()
   const { data: suppliersData } = useSuppliers()
   const createShipmentMutation = useCreateShipment()
@@ -92,7 +78,6 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
   const [supplierId, setSupplierId] = React.useState("")
   const [shipmentDate, setShipmentDate] = React.useState(() => new Date().toISOString().slice(0, 10))
   const [expectedCount, setExpectedCount] = React.useState(10)
-  const [overheadCost, setOverheadCost] = React.useState(0)
   const [paymentAccountCode, setPaymentAccountCode] = React.useState("CASH")
   const [notes, setNotes] = React.useState("")
 
@@ -107,7 +92,6 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
         supplierId,
         shipmentDate: new Date(shipmentDate).toISOString(),
         expectedCount,
-        overheadCost: canViewCost ? overheadCost : undefined,
         paymentAccountCode,
         notes: notes || undefined,
       },
@@ -123,9 +107,6 @@ export function ShipmentCreateForm({ onSuccess, canViewCost }: { onSuccess: (shi
         onDateChange={setShipmentDate}
         count={expectedCount}
         onCountChange={setExpectedCount}
-        cost={overheadCost}
-        onCostChange={setOverheadCost}
-        canViewCost={canViewCost}
       />
       <div className="space-y-2">
         <Label>{t("balance.payFrom")}</Label>

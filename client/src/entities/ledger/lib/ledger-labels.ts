@@ -18,6 +18,8 @@ const TYPE_KEYS: Record<string, string> = {
   PURCHASE: "balance.typePurchase",
   OVERHEAD: "balance.typeOverhead",
   EXPENSE: "balance.typeExpense",
+  DEVICE_EXPENSE: "balance.typeDeviceExpense",
+  CUSTOMS: "balance.typeCustoms",
 }
 
 /** Type codes known to the client, for the history type filter. The server owns the

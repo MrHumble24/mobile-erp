@@ -6,6 +6,8 @@ import type {
   DeviceFilters,
   DeviceStatusHistoryView,
   DeviceView,
+  EditCustomsFeeDto,
+  EditExpenseDto,
   PaginatedDevices,
   UpdateDeviceDto,
 } from "../model/device.types"
@@ -48,6 +50,20 @@ export const deviceRepository = {
   changeStatus: async (id: string, dto: ChangeStatusDto): Promise<DeviceView> => {
     return http<DeviceView>(`/devices/${id}/status`, {
       method: "POST",
+      body: dto,
+    })
+  },
+
+  editExpense: async (id: string, dto: EditExpenseDto): Promise<DeviceView> => {
+    return http<DeviceView>(`/devices/${id}/expense`, {
+      method: "PATCH",
+      body: dto,
+    })
+  },
+
+  editCustomsFee: async (id: string, dto: EditCustomsFeeDto): Promise<DeviceView> => {
+    return http<DeviceView>(`/devices/${id}/customs-fee`, {
+      method: "PATCH",
       body: dto,
     })
   },

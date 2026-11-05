@@ -40,6 +40,8 @@ export interface LedgerEntry {
   runningBalance: string
   statusCode: string | null
   notes: string | null
+  /** Account a payment landed in; null for old payments and all consignments. */
+  accountCode?: string | null
 }
 
 export interface CreatePartnerDto {
