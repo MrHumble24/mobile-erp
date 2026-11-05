@@ -28,5 +28,7 @@
   "balance": "Balance",
   "customs": "Customs fees",
   "stock": "Stock",
-  "categories": "Categories"
+  "categories": "Categories",
+  "credits": "Customer credit",
+  "shifts": "Shifts"
 }

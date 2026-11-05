@@ -4,6 +4,7 @@ import uzBalance from "./uz/balance.json"
 import uzCatalog from "./uz/catalog.json"
 import uzCommon from "./uz/common.json"
 import uzConsignments from "./uz/consignments.json"
+import uzCredit from "./uz/credit.json"
 import uzCustoms from "./uz/customs.json"
 import uzCustomers from "./uz/customers.json"
 import uzDashboard from "./uz/dashboard.json"
@@ -17,6 +18,7 @@ import uzQc from "./uz/qc.json"
 import uzReports from "./uz/reports.json"
 import uzSales from "./uz/sales.json"
 import uzSettings from "./uz/settings.json"
+import uzShifts from "./uz/shifts.json"
 import uzShipments from "./uz/shipments.json"
 import uzSync from "./uz/sync.json"
 import uzUsers from "./uz/users.json"
@@ -26,6 +28,7 @@ import enBalance from "./en/balance.json"
 import enCatalog from "./en/catalog.json"
 import enCommon from "./en/common.json"
 import enConsignments from "./en/consignments.json"
+import enCredit from "./en/credit.json"
 import enCustoms from "./en/customs.json"
 import enCustomers from "./en/customers.json"
 import enDashboard from "./en/dashboard.json"
@@ -39,6 +42,7 @@ import enQc from "./en/qc.json"
 import enReports from "./en/reports.json"
 import enSales from "./en/sales.json"
 import enSettings from "./en/settings.json"
+import enShifts from "./en/shifts.json"
 import enShipments from "./en/shipments.json"
 import enSync from "./en/sync.json"
 import enUsers from "./en/users.json"
@@ -52,6 +56,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     catalog: uzCatalog,
     common: uzCommon,
     consignments: uzConsignments,
+    credit: uzCredit,
     customs: uzCustoms,
     customers: uzCustomers,
     dashboard: uzDashboard,
@@ -65,6 +70,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     reports: uzReports,
     sales: uzSales,
     settings: uzSettings,
+    shifts: uzShifts,
     shipments: uzShipments,
     sync: uzSync,
     users: uzUsers,
@@ -75,6 +81,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     catalog: enCatalog,
     common: enCommon,
     consignments: enConsignments,
+    credit: enCredit,
     customs: enCustoms,
     customers: enCustomers,
     dashboard: enDashboard,
@@ -88,6 +95,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     reports: enReports,
     sales: enSales,
     settings: enSettings,
+    shifts: enShifts,
     shipments: enShipments,
     sync: enSync,
     users: enUsers,
