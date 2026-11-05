@@ -20,6 +20,7 @@ import {
   HandCoins,
   Clock,
   Repeat2,
+  Wrench,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -29,6 +30,8 @@ export interface NavItemDef {
   labelKey: string
   permission: string
   icon: React.ComponentType<{ className?: string }>
+  /** Hidden unless this optional store setting is on (e.g. `repairsEnabled`). */
+  requiresSetting?: "repairsEnabled"
 }
 
 export interface NavSection {
@@ -56,6 +59,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: "/purchases", labelKey: "nav.purchases", permission: "purchase.read", icon: Repeat2 },
       { to: "/credits", labelKey: "nav.credits", permission: "sale.read", icon: HandCoins },
       { to: "/shifts", labelKey: "nav.shifts", permission: "sale.read", icon: Clock },
+      { to: "/repairs", labelKey: "nav.repairs", permission: "repair.read", icon: Wrench, requiresSetting: "repairsEnabled" },
       { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },
       { to: "/partners", labelKey: "nav.partners", permission: "partner.read", icon: Users },
       { to: "/expenses", labelKey: "nav.expenses", permission: "expense.read", icon: DollarSign },

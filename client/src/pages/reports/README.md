@@ -7,9 +7,12 @@ The reports & analytics screen. Composes `widgets/report-charts`,
 
 overview (P&L hero tiles + trend + channel), sales, expenses, nasiya, credit
 (customer credit totals + the customers behind them, `entities/credit`, ADR 0035),
-inventory, pricing, closing, and customs (fee-over-time line chart per customs
-code, shown only with `customs.read`, from `entities/customs`). Each tab is one
-file in `ui/`.
+inventory, pricing, closing, customs (fee-over-time line chart per customs
+code, shown only with `customs.read`, from `entities/customs`), and repairs
+(income / parts cost / outside cost / profit, shown only when `repairsEnabled`
+and `repair.read`, from `entities/repair`, ADR 0040). Each tab is one file in
+`ui/`. `model/use-report-tabs.ts` builds the visible tab list from permissions
+and the repairs setting.
 
 ## Shared filter
 

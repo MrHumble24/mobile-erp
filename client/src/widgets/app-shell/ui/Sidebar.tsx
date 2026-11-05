@@ -1,5 +1,6 @@
 import { useLocation } from "react-router"
 import { useAuthStore } from "@/features/auth"
+import { useSettings } from "@/entities/settings"
 import { useI18n } from "@/shared/i18n"
 import { Link } from "@/shared/ui/link"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/ui/tooltip"
@@ -115,8 +116,13 @@ function SidebarSectionGroup({
   const { t } = useI18n()
   const location = useLocation()
   const hasPermission = useAuthStore((s) => s.hasPermission)
+  const { data: settings } = useSettings()
 
-  const visibleItems = section.items.filter((item) => hasPermission(item.permission))
+  const visibleItems = section.items.filter(
+    (item) =>
+      hasPermission(item.permission) &&
+      (!item.requiresSetting || settings?.[item.requiresSetting] === true)
+  )
   if (visibleItems.length === 0) return null
 
   return (

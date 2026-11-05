@@ -17,6 +17,7 @@ import uzPricing from "./uz/pricing.json"
 import uzPurchases from "./uz/purchases.json"
 import uzQc from "./uz/qc.json"
 import uzReports from "./uz/reports.json"
+import uzRepairs from "./uz/repairs.json"
 import uzSales from "./uz/sales.json"
 import uzSettings from "./uz/settings.json"
 import uzShifts from "./uz/shifts.json"
@@ -42,6 +43,7 @@ import enPricing from "./en/pricing.json"
 import enPurchases from "./en/purchases.json"
 import enQc from "./en/qc.json"
 import enReports from "./en/reports.json"
+import enRepairs from "./en/repairs.json"
 import enSales from "./en/sales.json"
 import enSettings from "./en/settings.json"
 import enShifts from "./en/shifts.json"
@@ -71,6 +73,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     purchases: uzPurchases,
     qc: uzQc,
     reports: uzReports,
+    repairs: uzRepairs,
     sales: uzSales,
     settings: uzSettings,
     shifts: uzShifts,
@@ -97,6 +100,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     purchases: enPurchases,
     qc: enQc,
     reports: enReports,
+    repairs: enRepairs,
     sales: enSales,
     settings: enSettings,
     shifts: enShifts,

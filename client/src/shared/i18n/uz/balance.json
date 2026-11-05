@@ -63,6 +63,8 @@
   "typeDeviceExpense": "Phone expense",
   "typeCustoms": "Customs fee",
   "typeShiftDifference": "Shift difference",
+  "typeRepairPayment": "Repair payment",
+  "typeRepairOutside": "Repair, outside master",
   "amountHidden": "Hidden",
   "paySplit": "Split"
 }

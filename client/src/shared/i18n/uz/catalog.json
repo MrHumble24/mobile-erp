@@ -48,6 +48,7 @@
   "moveReturn": "Returned",
   "moveWriteOff": "Written off",
   "moveCount": "Count correction",
+  "moveRepairUse": "Used in a repair",
   "addStock": "Add stock",
   "addStockHint": "Pieces that arrived in this shipment",
   "adjustStock": "Adjust stock",
