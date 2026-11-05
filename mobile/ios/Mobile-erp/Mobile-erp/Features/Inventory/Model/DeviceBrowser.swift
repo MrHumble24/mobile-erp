@@ -5,8 +5,10 @@ import Foundation
 /// is decoded from the stored JSON blob.
 struct DeviceListItem: Identifiable {
     let id: String
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let statusCode: String
     let modelId: String
     let modelLabel: String
@@ -14,11 +16,14 @@ struct DeviceListItem: Identifiable {
     let targetPrice: String?
 
     var storage: String? { specs["storage"] }
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 
     init(_ row: DeviceEntity) {
         id = row.id
         imei = row.imei
         imei2 = row.imei2
+        serialNumber = row.serialNumber
         statusCode = row.statusCode
         modelId = row.modelId
         modelLabel = "\(row.modelBrand) \(row.modelName)".trimmingCharacters(in: .whitespaces)
@@ -32,9 +37,11 @@ struct DeviceListItem: Identifiable {
     }
 
     /// Test seam: build directly without a SwiftData row.
-    init(id: String, imei: String, imei2: String? = nil, statusCode: String, modelId: String,
+    init(id: String, imei: String?, imei2: String? = nil, serialNumber: String? = nil,
+         statusCode: String, modelId: String,
          modelLabel: String, specs: [String: String], targetPrice: String?) {
-        self.id = id; self.imei = imei; self.imei2 = imei2; self.statusCode = statusCode
+        self.id = id; self.imei = imei; self.imei2 = imei2; self.serialNumber = serialNumber
+        self.statusCode = statusCode
         self.modelId = modelId; self.modelLabel = modelLabel
         self.specs = specs; self.targetPrice = targetPrice
     }
@@ -61,8 +68,9 @@ struct DeviceFilter: Equatable {
     func matches(_ d: DeviceListItem) -> Bool {
         let q = search.trimmingCharacters(in: .whitespaces).lowercased()
         if !q.isEmpty,
-           !d.imei.lowercased().contains(q),
+           !(d.imei?.lowercased().contains(q) ?? false),
            !(d.imei2?.lowercased().contains(q) ?? false),
+           !(d.serialNumber?.lowercased().contains(q) ?? false),
            !d.modelLabel.lowercased().contains(q) { return false }
         if let modelId, d.modelId != modelId { return false }
         if let storage, d.storage != storage { return false }
@@ -114,6 +122,12 @@ enum InventorySelfCheck {
                                   specs: [:], targetPrice: nil)
         assert(DeviceFilter(search: "2222").matches(dual))
         assert(!DeviceFilter(search: "2222").matches(a))
+        // Search also matches a serial unit's serial number (ADR 0029).
+        let serial = DeviceListItem(id: "4", imei: nil, serialNumber: "PS5-CFI1215A",
+                                    statusCode: "IN_STOCK", modelId: "m3", modelLabel: "Sony PS5",
+                                    specs: [:], targetPrice: nil)
+        assert(DeviceFilter(search: "cfi1215").matches(serial))
+        assert(serial.unitCode == "PS5-CFI1215A")
         // Exact facet filters.
         assert(DeviceFilter(storage: "128GB").matches(a))
         assert(!DeviceFilter(statusCode: "SOLD").matches(a))

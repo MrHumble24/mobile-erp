@@ -80,6 +80,19 @@ struct PosView: View {
             _ = PosSelfCheck.ran
             _ = PosPaymentsSelfCheck.ran
             if let mode = KitDebugLaunch.consume("posDemo") { model.seedDemo(mode) }
+            // `-posScan <code>` adds a cached unit to the cart (no checkout) so a
+            // capture shows the cart line at the top of the list.
+            if let code = KitDebugLaunch.consume("posScan") {
+                model.scan(code)
+                model.confirmScan()
+            }
+            // `-posSell <code>` runs a real end-to-end checkout of a cached unit
+            // (scan → confirm → POST /sales) — drives the production VM path.
+            if let code = KitDebugLaunch.consume("posSell") {
+                model.scan(code)
+                model.confirmScan()
+                model.checkout()
+            }
             #endif
         }
         .onChange(of: container.router.pending) { _, _ in consumeRoute() }
@@ -94,7 +107,7 @@ struct PosView: View {
             return .summary(
                 title: device.modelLabel,
                 subtitle: viaImei2
-                    ? "IMEI: \(device.imei) · \(i18n.t("inventory.imei2", default: "IMEI 2")): \(device.imei2!)"
+                    ? "IMEI: \(device.imei ?? "") · \(i18n.t("inventory.imei2", default: "IMEI 2")): \(device.imei2!)"
                     : nil,
                 price: device.targetPrice,
                 statusLabel: i18n.t("inventory.statusInStock", default: "In Stock"),

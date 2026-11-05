@@ -43,12 +43,12 @@ struct QcQueueView<Footer: View>: View {
                 AppCard { EmptyStateView(systemImage: "checkmark.seal", title: i18n.t("qc.queueEmpty")) }
             } else {
                 ForEach(pager.items) { d in
-                    Button { grading = ScannedImei(imei: d.imei) } label: {
+                    Button { grading = ScannedImei(imei: d.unitCode) } label: {
                         AppCard {
                             HStack(spacing: Tokens.Space.sm) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(modelNames[d.modelId] ?? d.modelId).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                                    Text(d.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                                    Text(d.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
                                     if let imei2 = d.imei2, !imei2.isEmpty {
                                         Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
                                     }

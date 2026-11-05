@@ -5,7 +5,8 @@ import Foundation
 struct QcInspection: Decodable, Identifiable {
     let id: String
     let passed: Bool
-    let imei: String
+    /// The unit's code: IMEI when present, else serial number (ADR 0029).
+    let unitCode: String
     let modelLabel: String
     let inspectorName: String
     let gradeCode: String?
@@ -18,12 +19,12 @@ struct QcInspection: Decodable, Identifiable {
         gradeCode = try? c.decodeIfPresent(String.self, forKey: .gradeCode)
         inspectedAt = try? c.decodeIfPresent(String.self, forKey: .inspectedAt)
         let device = try? c.decodeIfPresent(DeviceRef.self, forKey: .device)
-        imei = device?.imei ?? ""
+        unitCode = UnitCode.display(imei: device?.imei, serialNumber: device?.serialNumber)
         if let m = device?.model { modelLabel = "\(m.brand) \(m.name)" } else { modelLabel = "" }
         inspectorName = (try? c.decodeIfPresent(InspectorRef.self, forKey: .inspectedBy))?.name ?? ""
     }
 
-    private struct DeviceRef: Decodable { let imei: String; let model: ModelRef? }
+    private struct DeviceRef: Decodable { let imei: String?; let serialNumber: String?; let model: ModelRef? }
     private struct ModelRef: Decodable { let brand: String; let name: String }
     private struct InspectorRef: Decodable { let name: String? }
 

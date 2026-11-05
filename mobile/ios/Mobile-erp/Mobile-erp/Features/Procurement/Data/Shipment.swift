@@ -71,8 +71,11 @@ struct ShipmentWriteDTO: Encodable {
 /// customs fee is stamped server-side (never sent). `unitExpense` needs the
 /// `device.expense` permission when non-zero (ADR 0026).
 struct IntakeDeviceDTO: Encodable {
-    let imei: String
+    /// Exactly one of imei/serialNumber per the model's kind (ADR 0029); the
+    /// synthesized encoder omits the nil one via `encodeIfPresent`.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let modelId: String
     let specs: [String: String]
     let acquisitionCost: Decimal
@@ -88,21 +91,26 @@ struct IntakeDeviceDTO: Encodable {
 /// under-privileged users.
 struct RegisteredDevice: Decodable, Identifiable {
     let id: String
-    let imei: String
+    let imei: String?
+    let serialNumber: String?
     let customsFee: String?
     let unitExpense: String?
     let landedCost: String?
 
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
-        imei = try c.decode(String.self, forKey: .imei)
+        imei = try c.decodeIfPresent(String.self, forKey: .imei)
+        serialNumber = try c.decodeIfPresent(String.self, forKey: .serialNumber)
         customsFee = c.decimalString(.customsFee)
         unitExpense = c.decimalString(.unitExpense)
         landedCost = c.decimalString(.landedCost)
     }
 
-    enum CodingKeys: String, CodingKey { case id, imei, customsFee, unitExpense, landedCost }
+    enum CodingKeys: String, CodingKey { case id, imei, serialNumber, customsFee, unitExpense, landedCost }
 }
 
 private struct AddDevicesBody: Encodable { let devices: [IntakeDeviceDTO] }

@@ -7,8 +7,13 @@ import SwiftData
 @Model
 final class DeviceEntity {
     @Attribute(.unique) var id: String
-    var imei: String
+    /// Null on a serial unit (ADR 0029). Both new fields are optional so an old
+    /// cached row (written before product kinds) still migrates and loads.
+    var imei: String?
     var imei2: String?
+    var serialNumber: String?
+    /// The model's kind: IMEI | SERIAL | QUANTITY (nil on old cached rows).
+    var kindCode: String?
     var statusCode: String
     var version: Int
     var targetPrice: String?   // Decimal string
@@ -21,13 +26,19 @@ final class DeviceEntity {
     var inspectionNotes: String?
     var updatedAt: String
 
-    init(id: String, imei: String, imei2: String?, statusCode: String, version: Int,
+    /// The code to show the user: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+
+    init(id: String, imei: String?, imei2: String?, serialNumber: String?, kindCode: String?,
+         statusCode: String, version: Int,
          targetPrice: String?, specsJSON: String, modelId: String,
          modelBrand: String, modelName: String, latestSaleJSON: String?,
          gradeCode: String?, inspectionNotes: String?, updatedAt: String) {
         self.id = id
         self.imei = imei
         self.imei2 = imei2
+        self.serialNumber = serialNumber
+        self.kindCode = kindCode
         self.statusCode = statusCode
         self.version = version
         self.targetPrice = targetPrice

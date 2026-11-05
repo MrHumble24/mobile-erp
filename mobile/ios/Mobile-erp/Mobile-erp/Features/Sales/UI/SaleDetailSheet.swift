@@ -50,7 +50,7 @@ struct SaleDetailSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
             HStack(alignment: .top, spacing: Tokens.Space.sm) {
-                Text(sale.device.model.label)
+                Text(sale.modelLabel)
                     .font(.ui(.title))
                     .foregroundStyle(Tokens.text)
                 Spacer(minLength: Tokens.Space.sm)
@@ -64,8 +64,10 @@ struct SaleDetailSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(i18n.t("common.close"))
             }
-            CopyableIMEI(label: "IMEI", value: sale.device.imei, accessibilityLabel: i18n.t("inventory.copyImei"))
-            if let imei2 = sale.device.imei2, !imei2.isEmpty {
+            if !sale.unitCode.isEmpty {
+                CopyableIMEI(label: i18n.t("catalog.unitCode"), value: sale.unitCode, accessibilityLabel: i18n.t("inventory.copyImei"))
+            }
+            if let imei2 = sale.device?.imei2, !imei2.isEmpty {
                 CopyableIMEI(label: i18n.t("inventory.imei2"), value: imei2, accessibilityLabel: i18n.t("inventory.copyImei"))
             }
             HStack(spacing: Tokens.Space.sm) {
@@ -134,9 +136,11 @@ struct SaleDetailSheet: View {
 
     private var actions: some View {
         VStack(spacing: Tokens.Space.sm) {
-            pill(i18n.t("sales.openDevice"), .pillGhost) {
-                container.router.open(.inventory(imei: sale.device.imei))
-                dismiss()
+            if !sale.unitCode.isEmpty {
+                pill(i18n.t("sales.openDevice"), .pillGhost) {
+                    container.router.open(.inventory(imei: sale.unitCode))
+                    dismiss()
+                }
             }
             if let consignmentId = sale.consignmentId {
                 pill(i18n.t("sales.viewConsignment"), .pillGhost) {

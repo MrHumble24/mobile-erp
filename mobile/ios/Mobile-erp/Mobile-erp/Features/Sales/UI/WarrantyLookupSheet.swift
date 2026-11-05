@@ -16,7 +16,7 @@ struct WarrantyLookupSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    ScannerField(placeholder: i18n.t("sales.imeiPlaceholder", default: "Scan or enter IMEI")) { code in
+                    ScannerField(placeholder: i18n.t("catalog.scanCode")) { code in
                         model.lookup(code)
                     }
                     .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
@@ -89,14 +89,14 @@ struct WarrantyLookupSheet: View {
         // Details
         Section(i18n.t("sales.deviceDetails", default: "Device & Sale")) {
             HStack {
-                Text("IMEI")
+                Text(i18n.t("catalog.unitCode"))
                 Spacer()
                 HStack(spacing: 6) {
-                    Text(r.imei)
+                    Text(r.unitCode)
                         .font(.mono(13))
                         .foregroundStyle(Tokens.ink)
                     Button {
-                        UIPasteboard.general.string = r.imei
+                        UIPasteboard.general.string = r.unitCode
                         Haptic.tick.play()
                         withAnimation(.snappy(duration: 0.2)) { copied = true }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {

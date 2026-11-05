@@ -11,18 +11,31 @@ import Observation
 final class InventoryStore {
     private let modelsRepo: DeviceModelRepository
     private let alertsRepo: StockAlertRepository
+    private let categoriesRepo: ProductCategoryRepository
 
     var deviceModels: [DeviceModelView] = []
+    var categories: [ProductCategory] = []
     var lowStock: [LowStockView] = []
     var modelsError: String?
 
     init(_ container: AppContainer) {
         modelsRepo = DeviceModelRepository(container)
         alertsRepo = StockAlertRepository(container)
+        categoriesRepo = ProductCategoryRepository(container)
     }
 
     func modelLabel(_ id: String) -> String {
         deviceModels.first { $0.id == id }?.label ?? id
+    }
+
+    /// Category name for a model's `categoryId`, or nil when unset / unknown.
+    func categoryName(_ id: String?) -> String? {
+        guard let id else { return nil }
+        return categories.first { $0.id == id }?.name
+    }
+
+    func loadCategories() async {
+        categories = (try? await categoriesRepo.list()) ?? categories
     }
 
     func loadModels() async {

@@ -19,11 +19,18 @@ struct QcSummary {
 /// is open-ended JSONB; scalar values are stringified for display / editing.
 struct DeviceDetail {
     let id: String
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
+    /// The model's kind: IMEI | SERIAL | QUANTITY (nil when the server omits it).
+    let kindCode: String?
     let modelId: String
     let modelLabel: String
     let statusCode: String
+
+    /// The code to show the user: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     let specs: [String: String]
     let targetPrice: String?
     let landedCost: String?
@@ -37,15 +44,16 @@ struct DeviceDetail {
 
     init?(json: [String: Any]) {
         guard let id = json["id"] as? String,
-              let imei = json["imei"] as? String,
               let modelId = json["modelId"] as? String,
               let statusCode = json["statusCode"] as? String else { return nil }
         self.id = id
-        self.imei = imei
+        self.imei = json["imei"] as? String
         self.imei2 = json["imei2"] as? String
+        self.serialNumber = json["serialNumber"] as? String
         self.modelId = modelId
         self.statusCode = statusCode
         let model = json["model"] as? [String: Any] ?? [:]
+        self.kindCode = model["kindCode"] as? String
         let brand = model["brand"] as? String ?? ""
         let name = model["name"] as? String ?? ""
         self.modelLabel = "\(brand) \(name)".trimmingCharacters(in: .whitespaces)

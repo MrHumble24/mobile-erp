@@ -17,7 +17,7 @@ struct ConsignmentRow: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.partnerShopName.isEmpty ? "—" : item.partnerShopName)
                             .font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                        Text(item.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                        Text(item.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
                         if let imei2 = item.imei2, !imei2.isEmpty {
                             Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
                         }

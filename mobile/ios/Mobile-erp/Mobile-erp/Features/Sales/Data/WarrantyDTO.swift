@@ -4,7 +4,9 @@ import SwiftData
 /// `GET /sales/warranty/:imei`, or an offline reconstruction from the cached
 /// `DeviceEntity` + its latest sale (FOUNDATION: warranty works offline).
 struct WarrantyLookup: Decodable {
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
+    let serialNumber: String?
     let saleId: String
     let salePrice: MoneyValue
     let remainingDays: Int
@@ -15,6 +17,8 @@ struct WarrantyLookup: Decodable {
 
     var active: Bool { warranty?.endsAt != nil && remainingDays > 0 }
     var grade: String? { latestInspection?.grade }
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 
     struct WarrantyWindow: Decodable {
         let days: Int
@@ -38,12 +42,15 @@ struct ReceiptView: Decodable {
     let customer: Customer?
 
     struct Item: Decodable {
-        let imei: String
+        let imei: String?
         let imei2: String?
+        let serialNumber: String?
         let model: String
         let storage: String?
         let color: String?
         let price: MoneyValue
+        /// The code to show: the IMEI when present, else the serial number.
+        var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     }
     struct Window: Decodable {
         let days: Int
@@ -69,6 +76,7 @@ enum WarrantyOffline {
         let endsAt = obj["warrantyEndsAt"] as? String
         return WarrantyLookup(
             imei: d.imei,
+            serialNumber: d.serialNumber,
             saleId: obj["id"] as? String ?? "",
             salePrice: money(obj["salePrice"]),
             remainingDays: remainingDays(endsAt, now: now),

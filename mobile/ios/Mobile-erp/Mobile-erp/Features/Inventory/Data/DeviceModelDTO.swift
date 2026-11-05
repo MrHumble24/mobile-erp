@@ -49,17 +49,30 @@ struct DeviceModelView: Codable, Identifiable {
     let attributes: [AttributeDef]
     /// How customs writes this model (ADR 0027); nil when unset.
     let customsCode: String?
+    /// Product kind: IMEI | SERIAL | QUANTITY (ADR 0029). Defaults IMEI server-side.
+    let kindCode: String
+    /// Optional user-managed category (ADR 0029); nil = no category.
+    let categoryId: String?
+    /// Box EAN barcode (unique); maker's model code (e.g. A2894). nil when unset.
+    let barcode: String?
+    let modelCode: String?
 
     var label: String { "\(brand) \(name)" }
 
     init(id: String, brand: String, name: String,
-         isActive: Bool, attributes: [AttributeDef], customsCode: String? = nil) {
+         isActive: Bool, attributes: [AttributeDef], customsCode: String? = nil,
+         kindCode: String = "IMEI", categoryId: String? = nil,
+         barcode: String? = nil, modelCode: String? = nil) {
         self.id = id
         self.brand = brand
         self.name = name
         self.isActive = isActive
         self.attributes = attributes
         self.customsCode = customsCode
+        self.kindCode = kindCode
+        self.categoryId = categoryId
+        self.barcode = barcode
+        self.modelCode = modelCode
     }
 
     init(from decoder: Decoder) throws {
@@ -70,5 +83,9 @@ struct DeviceModelView: Codable, Identifiable {
         isActive = try c.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
         attributes = try c.decodeIfPresent([AttributeDef].self, forKey: .attributes) ?? []
         customsCode = try c.decodeIfPresent(String.self, forKey: .customsCode)
+        kindCode = try c.decodeIfPresent(String.self, forKey: .kindCode) ?? "IMEI"
+        categoryId = try c.decodeIfPresent(String.self, forKey: .categoryId)
+        barcode = try c.decodeIfPresent(String.self, forKey: .barcode)
+        modelCode = try c.decodeIfPresent(String.self, forKey: .modelCode)
     }
 }

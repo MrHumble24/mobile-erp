@@ -16,13 +16,20 @@ struct MoneyValue: Decodable {
 struct SaleModelRef: Decodable {
     let brand: String
     let name: String
+    /// IMEI | SERIAL | QUANTITY (nil when the server omits it).
+    let kindCode: String?
     var label: String { "\(brand) \(name)".trimmingCharacters(in: .whitespaces) }
 }
 
 struct SaleDevice: Decodable {
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let model: SaleModelRef
+
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
 struct SaleCustomerRef: Decodable {
@@ -55,7 +62,11 @@ struct SalePaymentLine: Decodable, Identifiable {
 /// optional here; never assume a value. Channel is DERIVED from `consignmentId`.
 struct SaleView: Decodable, Identifiable {
     let id: String
-    let device: SaleDevice
+    /// Null for a quantity sale (no unit) — a later task stocks those; model and
+    /// quantity are carried at the top level then (ADR 0029).
+    let device: SaleDevice?
+    let model: SaleModelRef?
+    let quantity: Int?
     let customer: SaleCustomerRef?
     let salePrice: MoneyValue
     let landedCostSnapshot: MoneyValue?
@@ -71,6 +82,14 @@ struct SaleView: Decodable, Identifiable {
 
     var isB2B: Bool { consignmentId != nil }
     var isReturned: Bool { returnedAt != nil }
+
+    /// Brand + name from the unit's model, falling back to the top-level model
+    /// (quantity sale).
+    var modelLabel: String { device?.model.label ?? model?.label ?? "" }
+    /// The unit's code (IMEI or serial), empty for a quantity sale.
+    var unitCode: String { device?.unitCode ?? "" }
+    var modelBrand: String { device?.model.brand ?? model?.brand ?? "" }
+    var modelName: String { device?.model.name ?? model?.name ?? "" }
 }
 
 struct SalesPage: Decodable {

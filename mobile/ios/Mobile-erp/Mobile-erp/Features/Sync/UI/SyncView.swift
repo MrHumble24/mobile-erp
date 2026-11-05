@@ -180,7 +180,7 @@ private struct ConflictRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(row.type).font(.subheadline.weight(.semibold))
-            Text(row.imei).font(.mono(13)).foregroundStyle(Tokens.muted)
+            Text(row.unitCode).font(.mono(13)).foregroundStyle(Tokens.muted)
             HStack {
                 Button(i18n.t("common.keepServer", default: "Keep server")) {
                     onResolve("keep-server")

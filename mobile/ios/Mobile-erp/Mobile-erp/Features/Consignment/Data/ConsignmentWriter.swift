@@ -22,44 +22,50 @@ struct ConsignmentWriter {
 
     enum Outcome { case applied, queued }
 
-    func create(imei: String, partnerId: String, agreedPrice: Double,
+    func create(code: String, partnerId: String, agreedPrice: Double,
                 dueDate: Date, notes: String?) async throws -> Outcome {
         let iso = ISO8601DateFormatter().string(from: dueDate)
-        let version = deviceVersion(imei)
+        let version = deviceVersion(code)
+        // Classify the scanned code so a serial unit rides in `serialNumber`,
+        // in both the online body and the offline outbox (ADR 0029).
+        let classified = UnitCode.classify(code)
+        let imei = classified.imei
+        let serial = classified.serialNumber
         return try await dispatch(
             online: {
                 try await repo.create(CreateConsignmentDto(
-                    imei: imei, partnerId: partnerId, agreedPrice: agreedPrice,
-                    dueDate: iso, notes: notes, clientMutationId: newUUID()))
+                    imei: imei, serialNumber: serial, partnerId: partnerId,
+                    agreedPrice: agreedPrice, dueDate: iso, notes: notes,
+                    clientMutationId: newUUID()))
             },
             queue: { try $0.enqueue(.consignmentCreate, payload: CreateQueue(
-                imei: imei, partnerId: partnerId, agreedPrice: agreedPrice,
+                imei: imei, serialNumber: serial, partnerId: partnerId, agreedPrice: agreedPrice,
                 dueDate: iso, notes: notes), baseVersion: version) },
-            optimistic: { setDeviceStatus(imei, to: "CONSIGNED") })
+            optimistic: { setDeviceStatus(code, to: "CONSIGNED") })
     }
 
-    func settle(consignmentId: String, imei: String,
+    func settle(consignmentId: String, code: String,
                 salePrice: Double?, notes: String?) async throws -> Outcome {
-        let version = deviceVersion(imei)
+        let version = deviceVersion(code)
         return try await dispatch(
             online: { try await repo.settle(consignmentId,
                 SettleConsignmentDto(salePrice: salePrice, notes: notes)) },
             queue: { try $0.enqueue(.consignmentSettle, payload: SettleQueue(
                 consignmentId: consignmentId, salePrice: salePrice, notes: notes),
                 baseVersion: version) },
-            optimistic: { setDeviceStatus(imei, to: "SOLD") })
+            optimistic: { setDeviceStatus(code, to: "SOLD") })
     }
 
-    func returnToStock(consignmentId: String, imei: String,
+    func returnToStock(consignmentId: String, code: String,
                        reason: String?, condition: String?) async throws -> Outcome {
-        let version = deviceVersion(imei)
+        let version = deviceVersion(code)
         return try await dispatch(
             online: { try await repo.returnToStock(consignmentId,
                 ReturnConsignmentDto(reason: reason, condition: condition)) },
             queue: { try $0.enqueue(.consignmentReturn, payload: ReturnQueue(
                 consignmentId: consignmentId, reason: reason, condition: condition),
                 baseVersion: version) },
-            optimistic: { setDeviceStatus(imei, to: condition ?? "IN_STOCK") })
+            optimistic: { setDeviceStatus(code, to: condition ?? "IN_STOCK") })
     }
 
     // MARK: - Dispatch
@@ -87,22 +93,24 @@ struct ConsignmentWriter {
 
     // MARK: - Local cache
 
-    private func deviceVersion(_ imei: String) -> Int? { device(imei)?.version }
+    private func deviceVersion(_ code: String) -> Int? { device(code)?.version }
 
-    private func setDeviceStatus(_ imei: String, to code: String) {
-        device(imei)?.statusCode = code
+    private func setDeviceStatus(_ code: String, to status: String) {
+        device(code)?.statusCode = status
     }
 
-    private func device(_ imei: String) -> DeviceEntity? {
+    private func device(_ code: String) -> DeviceEntity? {
         try? context.fetch(
-            FetchDescriptor<DeviceEntity>(predicate: #Predicate { $0.imei == imei || $0.imei2 == imei })
+            FetchDescriptor<DeviceEntity>(predicate: #Predicate {
+                $0.imei == code || $0.imei2 == code || $0.serialNumber == code })
         ).first
     }
 
     // MARK: - Queue payloads (what `/sync/push` validates per type)
 
     private struct CreateQueue: Encodable {
-        let imei: String
+        let imei: String?
+        let serialNumber: String?
         let partnerId: String
         let agreedPrice: Double
         let dueDate: String

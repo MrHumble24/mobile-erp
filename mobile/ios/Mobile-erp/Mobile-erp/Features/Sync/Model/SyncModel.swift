@@ -6,13 +6,16 @@ import Observation
 /// JSON for display. Only identity + the attempted mutation type are shown.
 struct ConflictRow: Identifiable {
     let id: String
-    let imei: String
+    /// IMEI or serial number of the unit in conflict (ADR 0029), "—" when absent.
+    let unitCode: String
     let type: String
 
     init?(_ json: [String: Any]) {
         guard let id = json["id"] as? String else { return nil }
         self.id = id
-        imei = json["imei"] as? String ?? "—"
+        let code = UnitCode.display(imei: json["imei"] as? String,
+                                    serialNumber: json["serialNumber"] as? String)
+        unitCode = code.isEmpty ? "—" : code
         let attempted = json["attemptedChange"] as? [String: Any]
         type = attempted?["type"] as? String ?? (json["type"] as? String ?? "—")
     }

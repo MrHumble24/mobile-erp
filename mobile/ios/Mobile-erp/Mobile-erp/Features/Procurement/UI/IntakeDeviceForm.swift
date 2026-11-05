@@ -25,17 +25,34 @@ struct IntakeDeviceForm: View {
     @State private var dualSim = false
     @State private var imei1 = ""
     @State private var imei2 = ""
+    @State private var serial = ""
     @State private var error: String?
     @State private var pending: IntakePendingScan?
 
     private var model: DeviceModel? { models.first { $0.id == modelId } }
 
+    /// QUANTITY models are not stocked as units (ADR 0029 — the server rejects
+    /// intake 400), so they never appear in the intake picker.
+    private var sellableModels: [DeviceModel] { models.filter { !$0.isQuantity } }
+
     var body: some View {
         Picker(i18n.t("shipments.selectModel"), selection: $modelId) {
             Text("—").tag(String?.none)
-            ForEach(models) { m in Text(m.label).tag(String?.some(m.id)) }
+            ForEach(sellableModels) { m in Text(m.label).tag(String?.some(m.id)) }
         }
-        .onChange(of: modelId) { specs = [:]; stageIfComplete(showHints: false) }
+        .onChange(of: modelId) {
+            specs = [:]; imei1 = ""; imei2 = ""; serial = ""; error = nil
+            stageIfComplete(showHints: false)
+        }
+        #if DEBUG
+        // Screenshot helper: `-intakeModel <id>` preselects a model so a capture
+        // lands on its (serial or IMEI) identifier field without tapping the picker.
+        .onAppear {
+            if modelId == nil, let arg = KitDebugLaunch.consume("intakeModel", accept: {
+                id in models.contains { $0.id == id }
+            }) { modelId = arg }
+        }
+        #endif
 
         if let model {
             ForEach(model.attributes) { attr in
@@ -55,7 +72,20 @@ struct IntakeDeviceForm: View {
             LabeledField(i18n.t("inventory.unitExpenseNote"), text: $expenseNote)
         }
 
-        imeiBlock
+        // The identifier block follows the model's kind: a SERIAL model asks for a
+        // serial number (no IMEI / second IMEI); an IMEI model keeps the IMEI slots.
+        Group {
+            if model?.isSerial == true { serialBlock } else { imeiBlock }
+        }
+        .sheet(item: $pending) { scan in
+            ScanConfirmSheet(
+                code: scan.code,
+                content: scanContent(scan),
+                confirmLabel: i18n.t("shipments.addDevice", default: "Add Device"),
+                onConfirm: confirm,
+                onDismiss: { pending = nil }   // Cancel keeps the filled slots
+            )
+        }
     }
 
     /// The combined IMEI block: IMEI 1 with the Dual SIM toggle on its label row,
@@ -83,14 +113,17 @@ struct IntakeDeviceForm: View {
             if let error { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }
         }
         .onChange(of: dualSim) { if !dualSim { imei2 = "" }; error = nil }
-        .sheet(item: $pending) { scan in
-            ScanConfirmSheet(
-                code: scan.code,
-                content: scanContent(scan),
-                confirmLabel: i18n.t("shipments.addDevice", default: "Add Device"),
-                onConfirm: confirm,
-                onDismiss: { pending = nil }   // Cancel keeps the filled slots
-            )
+    }
+
+    /// The serial block for a SERIAL model: one scan-or-type field (barcode
+    /// accepted) with the serial-format hint and a shared inline error line.
+    private var serialBlock: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(i18n.t("catalog.serialNumber")).font(.caption).foregroundStyle(Tokens.muted)
+            ScanOrValueField(text: $serial, placeholder: i18n.t("catalog.scanCode"),
+                             autoFocus: true, onScan: fillSerial)
+            Text(i18n.t("catalog.serialNumberHint")).font(.caption).foregroundStyle(Tokens.muted)
+            if let error { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }
         }
     }
 
@@ -113,22 +146,35 @@ struct IntakeDeviceForm: View {
         stageIfComplete(showHints: true)
     }
 
-    /// Open the confirm sheet once every required slot (IMEI 1, plus IMEI 2 when
-    /// dual) and model + cost are set. Missing IMEI slots wait silently; a missing
-    /// model/cost/spec shows a hint only when `showHints` (a fill, not a typed
-    /// field change). A batch duplicate opens the sheet's error variant.
+    /// A scanned serial barcode fills the single serial slot (trimmed/upper-cased).
+    private func fillSerial(_ raw: String) {
+        guard pending == nil else { return }
+        let code = UnitCode.normalizeSerial(raw)
+        guard UnitCode.isValidSerial(code) else { error = i18n.t("catalog.errorSerialInvalid"); return }
+        error = nil
+        serial = code
+        stageIfComplete(showHints: true)
+    }
+
+    /// Open the confirm sheet once the identifier (IMEI slots or serial) plus
+    /// model + cost + required specs are set. Dispatches on the model's kind.
     private func stageIfComplete(showHints: Bool) {
-        guard pending == nil, !imei1.isEmpty else { return }
+        guard pending == nil else { return }
+        guard let model else {
+            if showHints, !(imei1.isEmpty && serial.isEmpty) { error = i18n.t("shipments.selectModel") }
+            return
+        }
+        if model.isSerial { stageSerial(model, showHints: showHints) }
+        else { stageImei(model, showHints: showHints) }
+    }
+
+    private func stageImei(_ model: DeviceModel, showHints: Bool) {
+        guard !imei1.isEmpty else { return }
         if dualSim && imei2.isEmpty { return }
-        guard let model else { if showHints { error = i18n.t("shipments.selectModel") }; return }
         guard let c = cost.asDecimal, c >= 0 else {
             if showHints { error = i18n.t("shipments.acquisitionCost") }; return
         }
-        for attr in model.attributes where attr.required {
-            if (specs[attr.key]?.trimmed ?? "").isEmpty {
-                if showHints { error = i18n.t("shipments.invalidSpecs") }; return
-            }
-        }
+        guard specsComplete(model, showHints: showHints) else { return }
         error = nil
         let second = dualSim ? imei2.trimmedOrNil : nil
         if isDuplicate(imei1) || (second.map(isDuplicate) ?? false) {
@@ -136,7 +182,7 @@ struct IntakeDeviceForm: View {
                                         error: i18n.t("shipments.duplicateImei")); return
         }
         let draft = IntakeDraft(
-            imei: imei1, imei2: second, modelId: model.id,
+            imei: imei1, imei2: second, serialNumber: nil, modelId: model.id,
             specs: specs.filter { !$0.value.trimmed.isEmpty },
             acquisitionCost: c, targetPrice: target.asDecimal,
             unitExpense: canSetExpense ? expense.asDecimal : nil,
@@ -145,10 +191,45 @@ struct IntakeDeviceForm: View {
         pending = IntakePendingScan(code: imei1, draft: draft, error: nil)
     }
 
+    private func stageSerial(_ model: DeviceModel, showHints: Bool) {
+        let s = UnitCode.normalizeSerial(serial)
+        guard !s.isEmpty else { return }
+        guard UnitCode.isValidSerial(s) else {
+            if showHints { error = i18n.t("catalog.errorSerialInvalid") }; return
+        }
+        guard let c = cost.asDecimal, c >= 0 else {
+            if showHints { error = i18n.t("shipments.acquisitionCost") }; return
+        }
+        guard specsComplete(model, showHints: showHints) else { return }
+        error = nil
+        if isDuplicate(s) {
+            pending = IntakePendingScan(code: s, draft: nil,
+                                        error: i18n.t("catalog.errorSerialExists")); return
+        }
+        let draft = IntakeDraft(
+            imei: nil, imei2: nil, serialNumber: s, modelId: model.id,
+            specs: specs.filter { !$0.value.trimmed.isEmpty },
+            acquisitionCost: c, targetPrice: target.asDecimal,
+            unitExpense: canSetExpense ? expense.asDecimal : nil,
+            unitExpenseNote: canSetExpense ? expenseNote.trimmedOrNil : nil
+        )
+        pending = IntakePendingScan(code: s, draft: draft, error: nil)
+    }
+
+    private func specsComplete(_ model: DeviceModel, showHints: Bool) -> Bool {
+        for attr in model.attributes where attr.required {
+            if (specs[attr.key]?.trimmed ?? "").isEmpty {
+                if showHints { error = i18n.t("shipments.invalidSpecs") }
+                return false
+            }
+        }
+        return true
+    }
+
     private func confirm() {
         if let draft = pending?.draft {
             onAdd(draft)
-            imei1 = ""; imei2 = ""   // per-device — next unit starts clean
+            imei1 = ""; imei2 = ""; serial = ""   // per-device — next unit starts clean
             expense = ""; expenseNote = ""   // phone-specific, never carried over
             error = nil
         }

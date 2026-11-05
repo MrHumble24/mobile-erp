@@ -7,8 +7,12 @@ struct Consignment: Identifiable, Decodable, Hashable {
     let partnerId: String
     let partnerShopName: String
     let deviceId: String
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
+    /// IMEI | SERIAL | QUANTITY (nil when the server omits it).
+    let kindCode: String?
     let agreedPrice: String
     let dueDate: String
     let statusCode: String        // OUT | SETTLED | RETURNED
@@ -20,6 +24,8 @@ struct Consignment: Identifiable, Decodable, Hashable {
     let partnerTelegramHandle: String?
 
     var isOut: Bool { statusCode == "OUT" }
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
 struct ConsignmentStats: Decodable {
@@ -110,7 +116,10 @@ struct ConsignmentQuery {
 /// Online `POST /consignments` body (one device). `clientMutationId` makes a
 /// retry idempotent, matching the web create.
 struct CreateConsignmentDto: Encodable {
-    let imei: String
+    /// Exactly one of imei/serialNumber identifies the unit (ADR 0029). Synthesized
+    /// `Encodable` omits the nil one via `encodeIfPresent`.
+    let imei: String?
+    let serialNumber: String?
     let partnerId: String
     let agreedPrice: Double
     let dueDate: String

@@ -65,7 +65,7 @@ struct OverdueCard: View {
                             Text(row.partnerShopName)
                                 .font(.ui(.body))
                                 .foregroundStyle(Tokens.text)
-                            Text(row.imei).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                            Text(row.unitCode).font(.data(.regular)).foregroundStyle(Tokens.muted)
                         }
                         Spacer(minLength: Tokens.Space.sm)
                         MoneyText(value: row.agreedPrice, size: 15)

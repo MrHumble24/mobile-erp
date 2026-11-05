@@ -47,14 +47,19 @@ struct QcStats: Decodable {
 /// Subset of `DeviceDetailView`.
 struct QcDeviceDetail: Decodable {
     let id: String
-    let imei: String
+    let imei: String?
+    let serialNumber: String?
     let statusCode: String
     let modelLabel: String
+
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
-        imei = try c.decode(String.self, forKey: .imei)
+        imei = try c.decodeIfPresent(String.self, forKey: .imei)
+        serialNumber = try c.decodeIfPresent(String.self, forKey: .serialNumber)
         statusCode = try c.decode(String.self, forKey: .statusCode)
         if let model = try? c.decodeIfPresent(ModelRef.self, forKey: .model) {
             modelLabel = "\(model.brand) \(model.name)"
@@ -65,5 +70,5 @@ struct QcDeviceDetail: Decodable {
 
     private struct ModelRef: Decodable { let brand: String; let name: String }
 
-    enum CodingKeys: String, CodingKey { case id, imei, statusCode, model, modelId }
+    enum CodingKeys: String, CodingKey { case id, imei, serialNumber, statusCode, model, modelId }
 }

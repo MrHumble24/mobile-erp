@@ -75,7 +75,7 @@ struct PosReceiptSheet: View {
                         .font(.mono(13, weight: .semibold))
                         .foregroundStyle(Tokens.ink)
                         .frame(maxWidth: .infinity, alignment: .center)
-                    Text(sale.imei)
+                    Text(sale.unitCode)
                         .font(.mono(11))
                         .foregroundStyle(Tokens.muted)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -182,7 +182,7 @@ struct PosReceiptSheet: View {
         [
             i18n.t("pos.storeName"),
             "\(i18n.t("pos.receiptNumber", default: "Receipt #")): \(sale.receiptId.prefix(8).uppercased())",
-            "\(sale.modelLabel) (\(sale.imei))",
+            "\(sale.modelLabel) (\(sale.unitCode))",
             "\(i18n.t("pos.totalDue", default: "TOTAL")): \(MoneyText.format(sale.salePrice))",
             sale.warrantyEndsAt.map { "\(i18n.t("pos.warrantyUntil", default: "Warranty")): \(Self.date($0))" } ?? "",
             i18n.t("pos.thankYou", default: "Thank you!"),

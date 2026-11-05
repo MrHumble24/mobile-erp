@@ -51,11 +51,14 @@ struct FinBreakdownRow: Decodable, Identifiable {
 
 struct ReturnRow: Decodable, Identifiable {
     let id: String
-    let imei: String
+    let imei: String?
+    let serialNumber: String?
     let model: String
     let refundAmount: Double
     let reason: String?
     let returnedAt: String
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
 struct ReturnsPage: Decodable {

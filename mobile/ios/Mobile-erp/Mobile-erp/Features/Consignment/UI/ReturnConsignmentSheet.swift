@@ -19,7 +19,7 @@ struct ReturnConsignmentSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                 SheetTitleRow(title: i18n.t("consignments.return")) { dismiss() }
-                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.imei)
+                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.unitCode)
                 AppFormField(label: i18n.t("consignments.returnCondition")) {
                     SegmentedControl(selection: $condition, segments: [
                         ("IN_STOCK", i18n.t("consignments.conditionInStock")),
@@ -52,7 +52,7 @@ struct ReturnConsignmentSheet: View {
         do {
             Haptic.tick.play()
             _ = try await container.consignmentWriter.returnToStock(
-                consignmentId: consignment.id, imei: consignment.imei,
+                consignmentId: consignment.id, code: consignment.unitCode,
                 reason: t.isEmpty ? nil : t, condition: condition)
             onDone()
             dismiss()

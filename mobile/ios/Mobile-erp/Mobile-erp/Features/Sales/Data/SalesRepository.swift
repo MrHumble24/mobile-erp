@@ -34,15 +34,16 @@ struct SalesRepository {
         }
     }
 
-    func warrantyOnline(_ imei: String) async throws -> WarrantyLookup {
-        try await api.get("/sales/warranty/\(imei)")
+    func warrantyOnline(_ code: String) async throws -> WarrantyLookup {
+        try await api.get("/sales/warranty/\(code)")
     }
 
-    /// Offline warranty from the cached device + its latest sale. Nil when the
-    /// device is not cached or has never been sold.
-    func warrantyOffline(_ imei: String) -> WarrantyLookup? {
+    /// Offline warranty from the cached device + its latest sale, by any unit
+    /// code (IMEI, second IMEI or serial number). Nil when the device is not
+    /// cached or has never been sold.
+    func warrantyOffline(_ code: String) -> WarrantyLookup? {
         let descriptor = FetchDescriptor<DeviceEntity>(
-            predicate: #Predicate { $0.imei == imei || $0.imei2 == imei }
+            predicate: #Predicate { $0.imei == code || $0.imei2 == code || $0.serialNumber == code }
         )
         guard let device = try? context.fetch(descriptor).first else { return nil }
         return WarrantyOffline.fromCache(device)

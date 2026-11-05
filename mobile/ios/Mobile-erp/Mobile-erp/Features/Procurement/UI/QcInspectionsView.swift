@@ -102,8 +102,8 @@ private struct InspectionRow: View {
         AppCard {
             HStack(spacing: Tokens.Space.sm) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.modelLabel.isEmpty ? item.imei : item.modelLabel).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                    Text(item.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                    Text(item.modelLabel.isEmpty ? item.unitCode : item.modelLabel).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
+                    Text(item.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
                     Text(meta).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }
                 Spacer(minLength: Tokens.Space.sm)

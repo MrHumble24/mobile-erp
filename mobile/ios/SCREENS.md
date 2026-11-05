@@ -116,7 +116,8 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Model Pricing Benchmarks** (`ModelPricingTab`) | `Features/Reports/UI/ModelPricingTab.swift` | Store Owner | Setting model benchmark prices, target margins, and minimum allowable selling prices. |
 | **Customer CRM** (`CustomersView`) | `Features/Customers/UI/CustomersView.swift` | Sales / Owner | Customer directory with purchase history filter and detail sheet ([`CustomerDetailSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Customers/UI/CustomerDetailSheet.swift)). |
 | **Customer Filter Sheet** (`CustomerFilterSheet`) | `Features/Customers/UI/CustomerFilterSheet.swift` | Sales / Owner | Bottom sheet housing customer sort order (recent vs alphabetical) and purchase history toggle. |
-| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing phone catalog definitions, a `customsCode` (how customs writes the model, ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). |
+| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing product (device-model) definitions: **kind** (IMEI / SERIAL / QUANTITY — ADR 0029, locked once the product has units, `catalog.kindLocked`), **category** (picker from `/product-categories`, with a category filter and kind+category shown on each row), **barcode** (unique), maker's **model code**, a `customsCode` (ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). The form is `ModelFormSheet`. |
+| **Categories** (`CategoriesSheet`) | `Features/Inventory/UI/CategoriesSheet.swift` | Inventory Lead | Manage product categories (`GET/POST/PATCH /product-categories`) — list, add, edit (name / sortOrder / isActive) in `CategoryEditSheet`. Opened from the `DeviceModelsTab` toolbar (folder, `nav.categories`). Duplicate name → 409 `catalog.errorCategoryExists`. |
 | **Stock Alert Rules** (`StockAlertsTab`) | `Features/Inventory/UI/StockAlertsTab.swift` | Inventory Lead | Configuring minimum inventory reorder thresholds per model ([`AlertRuleForm`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AlertRuleForm.swift)). |
 | **Supplier Directory** (`SuppliersListView`) | `Features/Procurement/UI/SuppliersListView.swift` | Store Owner | Supplier records and fulfillment contact information ([`SupplierFormSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Procurement/UI/SupplierFormSheet.swift)). |
 
@@ -259,10 +260,36 @@ the two known codes `CASH`/`CARD`.
 | **Shipment Form / Detail** (`ShipmentFormSheet`, `ShipmentDetailSheet`) | "Paid from" picker on create (default Cash), read-only afterwards. No overhead field (ADR 0026). |
 | **Store Balance** (`BalanceView`) | History renders every type (`SALE`, `REFUND`, `PARTNER_PAYMENT`, `PURCHASE`, `OVERHEAD`, `EXPENSE`, `DEVICE_EXPENSE`, `CUSTOMS`) and offers them in the type filter. A row's `amount` can be `null` (cost hidden from this user) → shows `balance.amountHidden`. The split control's segment reads `balance.paySplit`. |
 
-DEBUG screenshot args added: `-posDemo cash|split` (seeds a demo checkout line),
+DEBUG screenshot args added: `-posDemo cash|split|serial` (seeds a demo checkout
+line; `serial` seeds a serial unit), `-posScan <code>` (adds a cached unit to the
+cart, no checkout), `-posSell <code>` (runs a real end-to-end checkout of a cached
+unit through the POS view-model — scan → confirm → `POST /sales`),
 `-openExpense new`, `-openShipmentForm new`, `-openPartnerPayment 1`,
-`-openShipmentDetail <id>`, `-openIntake <id>`, `-openDeviceEdit expense|customs`
-(within a device sheet opened by `-openDevice <imei>`), `-openCustomsTab
-current|versions|unmatched`, `-openCustomsNew 1`, `-open customs`, and
-`-openTab customs` on the reports screen.
+`-openShipmentDetail <id>`, `-openIntake <id>`, `-intakeModel <modelId>`
+(preselects a model in the intake form so a serial/IMEI field shows without
+tapping the picker), `-openModel new|<id>` and `-openCategories 1` (on the
+inventory Models tab, reached via `-openTab models`), `-openDeviceEdit
+expense|customs` (within a device sheet opened by `-openDevice <code>`),
+`-openCustomsTab current|versions|unmatched`, `-openCustomsNew 1`, `-open
+customs`, and `-openTab customs` on the reports screen.
+
+## Product kinds & serial units (ADR 0029)
+
+A product (device model) has a **kind**: `IMEI` (phones), `SERIAL` (one row per
+unit, identified by a serial number — consoles/laptops/watches), `QUANTITY`
+(counted by pieces; catalog-only for now, a later task adds its stock/sales). A
+unit carries an `imei` **or** a `serialNumber`, never both — `imei` is now
+nullable in every response. One shared helper, `Shared/UnitCode.swift`, is the
+single source for the display code (`display(imei:serialNumber:)` → `unitCode`
+everywhere) and for classifying a scanned/typed code into `imei` vs
+`serialNumber` for a write body (`classify` — non-IMEI → serial). Every unit DTO
+and the SwiftData `DeviceEntity` cache carry `serialNumber` + `kindCode`; old
+cached rows still load (both optional). Intake branches on the model's kind
+(serial field vs IMEI slots; QUANTITY models are hidden). POS, consignment,
+warranty, sync and search all accept a serial and send it in the right field; the
+offline outbox carries whichever code was scanned. Fields that cover both show
+the label `catalog.unitCode` ("IMEI / serial number"). The `catalog` namespace is
+registered in `I18n/I18n.swift`. Sales decoders tolerate a `QUANTITY` sale
+(`device: null`, model+quantity at the top level) so a mixed list never fails to
+decode.
 

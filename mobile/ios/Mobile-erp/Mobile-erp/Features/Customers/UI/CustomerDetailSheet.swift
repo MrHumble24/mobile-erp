@@ -61,7 +61,9 @@ struct CustomerDetailSheet: View {
                         HStack(alignment: .center, spacing: Tokens.Space.sm) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(sale.modelLabel).font(.ui(.body)).foregroundStyle(Tokens.text)
-                                Text(sale.device.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                                if !sale.unitCode.isEmpty {
+                                    Text(sale.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
+                                }
                                 if let at = sale.soldAt {
                                     Text(KitDate.day(at)).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                                 }

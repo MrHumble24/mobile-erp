@@ -36,16 +36,25 @@ struct CustomerSale: Decodable, Identifiable {
     let id: String
     let salePrice: String
     let soldAt: String?
-    let device: Device
+    /// Null for a quantity sale (a later task) — model is at the top level then.
+    let device: Device?
+    let model: Device.Model?
 
     struct Device: Decodable {
-        let imei: String
+        let imei: String?
+        let serialNumber: String?
         let model: Model
         struct Model: Decodable { let brand: String; let name: String }
+        /// The code to show: the IMEI when present, else the serial number.
+        var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     }
 
+    /// The unit's code (IMEI or serial), empty for a quantity sale.
+    var unitCode: String { device?.unitCode ?? "" }
+
     var modelLabel: String {
-        "\(device.model.brand) \(device.model.name)".trimmingCharacters(in: .whitespaces)
+        let m = device?.model ?? model
+        return "\(m?.brand ?? "") \(m?.name ?? "")".trimmingCharacters(in: .whitespaces)
     }
 }
 

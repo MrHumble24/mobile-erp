@@ -114,13 +114,15 @@ private struct SaleRow: View {
         AppCard {
             HStack(alignment: .top, spacing: Tokens.Space.sm) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(sale.device.model.label)
+                    Text(sale.modelLabel)
                         .font(.ui(.bodyStrong))
                         .foregroundStyle(Tokens.text)
-                    Text(sale.device.imei)
-                        .font(.data(.regular))
-                        .foregroundStyle(Tokens.text)
-                    if let imei2 = sale.device.imei2, !imei2.isEmpty {
+                    if !sale.unitCode.isEmpty {
+                        Text(sale.unitCode)
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.text)
+                    }
+                    if let imei2 = sale.device?.imei2, !imei2.isEmpty {
                         Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
                     }
                     Text("\(sale.customer?.name ?? i18n.t("pos.walkIn")) · \(SaleDate.day(sale.soldAt))")

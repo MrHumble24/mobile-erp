@@ -16,7 +16,7 @@ struct PosCartLineRow: View {
                         Text(line.device.modelLabel)
                             .font(.ui(.bodyStrong))
                             .foregroundStyle(Tokens.text)
-                        Text(line.device.imei)
+                        Text(line.device.code)
                             .font(.data(.regular))
                             .foregroundStyle(Tokens.muted)
                     }
