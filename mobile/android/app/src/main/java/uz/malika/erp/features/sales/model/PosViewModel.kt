@@ -97,13 +97,51 @@ class PosViewModel(
 
     private fun promptUnit(code: String, device: ScannedDevice) {
         val s = _state.value
-        val errorKey = when {
-            s.pendingSold.contains(device.code) -> "pos.alreadyQueued"
-            s.lines.any { it.key == device.code } -> "pos.duplicateDevice"
-            !device.inStock -> "pos.deviceConflict"
-            else -> null
+        _state.value = s.copy(busy = false, prompt = ScanPrompt(code, device, unitErrorKey(s, device)))
+    }
+
+    /** Why this unit cannot be added (null = addable). Shared by scan + catalog tap. */
+    private fun unitErrorKey(s: PosState, device: ScannedDevice): String? = when {
+        s.pendingSold.contains(device.code) -> "pos.alreadyQueued"
+        s.lines.any { it.key == device.code } -> "pos.duplicateDevice"
+        !device.inStock -> "pos.deviceConflict"
+        else -> null
+    }
+
+    /**
+     * Add a unit picked from the Catalog grid straight to the cart (ADR 0031):
+     * resolve it by code for its live version/status, then apply the same guards
+     * as a scan. No confirm prompt — the seller already chose it on the card.
+     */
+    fun addUnitFromCatalog(code: String, online: Boolean) {
+        _state.value = _state.value.copy(busy = true, errorKey = null)
+        viewModelScope.launch {
+            try {
+                when (val outcome = repo.scan(code, online)) {
+                    is ScanOutcome.Unit -> addResolvedUnit(outcome.device)
+                    else -> _state.value = _state.value.copy(busy = false, errorKey = "common.notFound")
+                }
+            } catch (_: Exception) {
+                _state.value = _state.value.copy(busy = false, errorKey = "common.error")
+            }
         }
-        _state.value = s.copy(busy = false, prompt = ScanPrompt(code, device, errorKey))
+    }
+
+    private fun addResolvedUnit(device: ScannedDevice) {
+        val s = _state.value
+        val errorKey = unitErrorKey(s, device)
+        if (errorKey != null) {
+            _state.value = s.copy(busy = false, errorKey = errorKey)
+            return
+        }
+        _state.value = s.copy(
+            busy = false,
+            lines = s.lines + CartLine.Unit(
+                device = device,
+                salePrice = device.targetPrice ?: "",
+                warrantyDays = (s.defaultWarrantyDays ?: "").toString(),
+            ),
+        )
     }
 
     private suspend fun notFound(code: String, online: Boolean) {

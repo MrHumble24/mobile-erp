@@ -45,6 +45,9 @@ data class ProductSyncDto(
     val barcode: String? = null,
     val salePrice: JsonElement? = null,
     val quantity: Int = 0,
+    // For the offline till grid (ADR 0031).
+    val categoryId: String? = null,
+    val imageUrl: String? = null,
 )
 
 /**
@@ -73,6 +76,9 @@ data class ModelDto(
     val brand: String = "",
     val name: String = "",
     val kindCode: String? = null,
+    // For the offline till grid (ADR 0031).
+    val categoryId: String? = null,
+    val imageUrl: String? = null,
 )
 
 @Serializable

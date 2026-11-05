@@ -118,3 +118,29 @@ kit `LoadMoreFooter`). Raw key shows until added.
   `quantity`. `Sale.isQuantity`/`quantity` drive the list, detail, receipt and CSV
   to show the product and `× qty` instead of a unit code; return works unchanged
   (the server restores stock and ignores the device status).
+
+## Till catalog mode (ADR 0031, Change 5)
+- A two-way `SegmentedControl` at the top of the till — **Scan** (today's screen,
+  `ScanModePanel`) and **Catalog** (`CatalogModePanel`). The mode is remembered on
+  the device (`SecureStore` key `pos_mode`). Both modes feed one cart in
+  `PosViewModel`, so switching keeps it.
+- Catalog = a search field (name / model code / storage), category chips
+  (`TabChips`, online only — names are not cached), and a 2-column grid
+  (`CatalogGrid`) of product cards drawn from `GET /catalog` (`TillCatalogRepository`,
+  online) or the offline Room cache (`OfflineCatalog.build`). Each card shows the
+  picture (`shared/ui/ProductImage`, or a neutral placeholder), name, in-stock
+  count and price (per-piece for quantity, a min–max range for units).
+- Tapping a card applies the pure tap rules (`lib/CardTap.resolveCardTap`): a
+  quantity product → `addProduct`; a unit product → fetch its in-stock units
+  (`GET /catalog/:modelId/units` or offline), drop any already in the cart, then
+  add the single one (`addUnitFromCatalog`, which re-resolves it by code for its
+  live version) or open the `UnitPickerSheet`. A unit already carted is never
+  offered again.
+- On a phone the cart stays reachable via a persistent `CartBar` (line count +
+  total, the one orange pressable thing) that opens `CartSheet` — the same
+  `PosCartList` + `PosCheckoutForm` as Scan mode.
+- `TillCatalogApi`/`TillCatalogModels`/`TillCatalogRepository`/`TillCatalogViewModel`
+  own the browse side; the cart stays in `PosViewModel`. Tap rules and the offline
+  grid builder are pure and unit-tested (`CatalogLogicTest`).
+- Offline cache: `devices`/`products` gained `categoryId` + `imageUrl` (Room
+  migration 4→5, fed by `/sync/changes`) so the grid and pictures work offline.

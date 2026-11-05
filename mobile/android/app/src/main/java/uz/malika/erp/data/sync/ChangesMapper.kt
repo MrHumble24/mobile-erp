@@ -30,6 +30,8 @@ object ChangesMapper {
         modelId = d.model?.id ?: "",
         modelBrand = d.model?.brand ?: "",
         modelName = d.model?.name ?: "",
+        categoryId = d.model?.categoryId,
+        imageUrl = d.model?.imageUrl,
         latestSale = d.latestSale?.takeUnless { it is JsonNull }?.toString(),
         gradeCode = d.latestInspection?.gradeCode,
         inspectionNotes = d.latestInspection?.notes,
@@ -43,6 +45,8 @@ object ChangesMapper {
         barcode = p.barcode,
         salePrice = p.salePrice.asScalar(),
         quantity = p.quantity,
+        categoryId = p.categoryId,
+        imageUrl = p.imageUrl,
     )
 
     fun partner(p: PartnerSyncDto) = PartnerEntity(

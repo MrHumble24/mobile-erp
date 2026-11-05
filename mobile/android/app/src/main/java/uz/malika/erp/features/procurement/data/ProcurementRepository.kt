@@ -1,5 +1,6 @@
 package uz.malika.erp.features.procurement.data
 
+import uz.malika.erp.core.AppException
 import uz.malika.erp.core.runApi
 
 /**
@@ -28,6 +29,19 @@ class ProcurementRepository(private val api: ProcurementService) {
 
     // ── Shared device/model reads (owned here until an inventory slice lands) ──
     suspend fun deviceModels(): List<DeviceModelDto> = runApi { api.deviceModels() }
+
+    // ── Code lookup for intake autofill (ADR 0031) ─────────────────────────────
+    /** Resolve a code; null when the lists do not know it (404). Never blocks saving. */
+    suspend fun lookup(code: String): CodeLookupResultDto? = runApi {
+        try {
+            api.codeLookup(code)
+        } catch (e: AppException) {
+            if (e.statusCode == 404) null else throw e
+        }
+    }
+
+    suspend fun learnLink(refBrand: String, refModel: String, modelId: String) =
+        runApi { api.learnLink(LearnLinkBody(refBrand, refModel, modelId)) }
     suspend fun devices(shipmentId: String? = null, inspected: String? = null, page: Int = 1): PaginatedDevicesDto =
         runApi { api.devices(shipmentId = shipmentId, inspected = inspected, page = page) }
     suspend fun deviceByImei(imei: String): QcDeviceDto = runApi { api.deviceByImei(imei) }

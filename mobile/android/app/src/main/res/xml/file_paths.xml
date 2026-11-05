@@ -2,4 +2,6 @@
 <paths>
     <!-- CSV / text exports shared via shareTextFile() -->
     <cache-path name="exports" path="exports/" />
+    <!-- Camera captures for the product picture (ADR 0031) -->
+    <cache-path name="captures" path="captures/" />
 </paths>

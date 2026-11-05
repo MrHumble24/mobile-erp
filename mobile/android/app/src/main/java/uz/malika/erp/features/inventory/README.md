@@ -93,3 +93,18 @@ gated by `device.read`).
   (`MIGRATION_2_3`: `imei` nullable, `serialNumber`/`kindCode` added; the devices
   table is rebuilt, the outbox survives); `DeviceDao.findByImei` matches imei,
   imei2 or serialNumber.
+
+## Product pictures (ADR 0031, Change 5)
+- `ModelFormSheet` shows a `ProductImageSection` on **edit** (the model must
+  already exist — the picture endpoints need an id). It draws the current picture
+  (`shared/ui/ProductImage` against the API base URL) or a placeholder, and lets
+  the operator pick from the gallery (`PickVisualMedia`) or take a photo
+  (`TakePicture` into a `FileProvider` capture file), replace and remove.
+  `lib/ImageScaler` checks the type by the **leading bytes** (JPEG/PNG/WebP) and
+  downscales anything over 2 MB (a camera photo) to a JPEG under the cap before
+  sending; the server's 400/413 map to `catalog.errorPictureType` /
+  `catalog.errorPictureSize`. `CatalogRepository.uploadImage`/`removeImage` are the
+  only multipart calls (`POST`/`DELETE /device-models/:id/image`); both refresh the
+  list so the new picture shows at once. The Models list shows a 48dp thumbnail.
+- `DeviceModelView`/`DeviceModelDto` gained `imageUrl`. `DeviceModelsTab` and
+  `ModelFormSheet` now take `baseUrl` + `onToast` (threaded from `InventoryScreen`).

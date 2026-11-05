@@ -8,15 +8,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.QrCodeScanner
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -32,19 +33,31 @@ import uz.malika.erp.features.inventory.data.DeviceStatusMeta
 import uz.malika.erp.features.sales.data.PosRepository
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.SalesApi
+import uz.malika.erp.features.sales.data.TillCatalogApi
+import uz.malika.erp.features.sales.data.TillCatalogRepository
 import uz.malika.erp.features.sales.model.PosViewModel
+import uz.malika.erp.features.sales.model.TillCatalogViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.rememberHaptics
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
-import uz.malika.erp.shared.ui.EmptyView
-import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.ScanConfirmSheet
-import uz.malika.erp.shared.ui.ScannerField
+import uz.malika.erp.shared.ui.SegmentOption
+import uz.malika.erp.shared.ui.SegmentedControl
 import uz.malika.erp.ui.theme.Tokens
 
-/** POS terminal: scan IMEIs into a multi-device cart, then checkout. Offline-capable. */
+/** Till mode: scan a code, or browse the product catalog. Remembered per device. */
+enum class PosMode { SCAN, CATALOG }
+
+private const val POS_MODE_KEY = "pos_mode"
+
+/**
+ * POS terminal. Two modes feed one cart (ADR 0031): **Scan** (today's screen)
+ * and **Catalog** (a grid of product cards). The chosen mode is remembered on
+ * the device. In Catalog mode a persistent cart bar opens the cart + checkout so
+ * the cart stays reachable without scrolling past the grid. Offline-capable.
+ */
 @Composable
 fun PosScreen(container: AppContainer, api: SalesApi) {
     val t = LocalT.current
@@ -58,16 +71,29 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
             }
         },
     )
+    val catalogVm: TillCatalogViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                val catalogApi = container.retrofit.create(TillCatalogApi::class.java)
+                TillCatalogViewModel(TillCatalogRepository(catalogApi, container.db))
+            }
+        },
+    )
     val state by vm.state.collectAsState()
     val haptics = rememberHaptics()
+    val baseUrl = container.devConfig.currentBaseUrl
+
+    var mode by remember { mutableStateOf(readMode(container)) }
+    var cartOpen by remember { mutableStateOf(false) }
 
     // Cross-feature preload: inventory/QC "Sell in POS" hands us an IMEI to scan.
     LaunchedEffect(Unit) {
-        container.featureNav.consumeArg("pos")?.let { vm.scan(it, online) }
+        container.featureNav.consumeArg("pos")?.let { mode = PosMode.SCAN; vm.scan(it, online) }
     }
-    // Toast the checkout result once the receipt is built.
+    // Toast the checkout result once the receipt is built; close the cart sheet.
     LaunchedEffect(state.completed?.receiptId) {
         state.completed?.let {
+            cartOpen = false
             if (it.pending) {
                 container.toaster.info(t("common.offline", null))
             } else {
@@ -81,30 +107,30 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
         if (state.prompt?.errorKey != null) haptics.error()
     }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        ScannerField(onScan = { code, _ -> vm.scan(code, online) }, placeholder = t("pos.scanPrompt", null))
-        state.errorKey?.let {
-            Spacer(Modifier.height(8.dp))
-            Text(t(it, null), style = MaterialTheme.typography.bodyMedium, color = Tokens.destructive)
-        }
-        Spacer(Modifier.height(16.dp))
-        when {
-            state.busy && state.lines.isEmpty() ->
-                Box(Modifier.fillMaxWidth().height(120.dp)) { Loading() }
-            state.lines.isEmpty() ->
-                EmptyView(t("pos.cartEmpty", null), Modifier.height(220.dp), icon = Icons.Outlined.QrCodeScanner)
-            else -> {
-                PosCartList(
-                    lines = state.lines,
-                    onPrice = vm::setLinePrice,
-                    onWarranty = vm::setLineWarranty,
-                    onQuantity = vm::setLineQuantity,
-                    onRemove = vm::removeLine,
-                    enabled = !state.busy,
-                )
-                Spacer(Modifier.height(16.dp))
-                PosCheckoutForm(container, vm, state, online, api)
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            SegmentedControl(
+                options = listOf(
+                    SegmentOption(PosMode.SCAN, t("catalog.scanMode", null), Icons.Outlined.QrCodeScanner),
+                    SegmentOption(PosMode.CATALOG, t("catalog.catalogMode", null), Icons.Outlined.GridView),
+                ),
+                selected = mode,
+                onSelect = { mode = it; container.secure.put(POS_MODE_KEY, it.name) },
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+            )
+            when (mode) {
+                PosMode.SCAN -> ScanModePanel(container, vm, state, online, api, Modifier.weight(1f))
+                PosMode.CATALOG ->
+                    CatalogModePanel(container, catalogVm, vm, state, online, baseUrl, Modifier.weight(1f))
             }
+        }
+        if (mode == PosMode.CATALOG && state.lines.isNotEmpty()) {
+            CartBar(
+                lineCount = state.lines.size,
+                total = state.total,
+                onOpen = { cartOpen = true },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
+            )
         }
     }
 
@@ -134,6 +160,12 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
         }
     }
 
+    if (cartOpen && state.lines.isNotEmpty()) {
+        AppBottomSheet(onDismiss = { cartOpen = false }) {
+            CartSheet(container, vm, state, online, api)
+        }
+    }
+
     state.completed?.let { done ->
         AppBottomSheet(onDismiss = { vm.dismissReceipt() }) {
             PosReceiptSheet(done) { vm.dismissReceipt() }
@@ -141,27 +173,9 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     }
 }
 
-/** Quantity products matched by a typed name search (ADR 0030) — tap one to add it. */
-@Composable
-private fun ProductPickSheet(
-    matches: List<uz.malika.erp.features.sales.data.CartProduct>,
-    onPick: (uz.malika.erp.features.sales.data.CartProduct) -> Unit,
-) {
-    val t = LocalT.current
-    Column(Modifier.fillMaxWidth().padding(20.dp)) {
-        Text(t("catalog.addToCart", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
-        Spacer(Modifier.height(12.dp))
-        matches.forEach { product ->
-            PillButton(
-                text = "${product.label} · ${t("catalog.pieces", mapOf("count" to product.inStock))}",
-                onClick = { onPick(product) },
-                modifier = Modifier.fillMaxWidth(),
-                variant = ButtonVariant.OUTLINE,
-            )
-            Spacer(Modifier.height(8.dp))
-        }
-    }
-}
+/** The till mode remembered on the device; defaults to Scan. */
+private fun readMode(container: AppContainer): PosMode =
+    runCatching { PosMode.valueOf(container.secure.get(POS_MODE_KEY) ?: "") }.getOrDefault(PosMode.SCAN)
 
 @Composable
 private fun PosReceiptSheet(data: ReceiptData, onNewSale: () -> Unit) {

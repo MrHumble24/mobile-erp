@@ -104,6 +104,11 @@ dependencies {
     implementation(libs.mlkit.barcode.scanning)
     implementation(libs.mlkit.text.recognition)
 
+    // Product pictures: Coil draws imageUrl against the API base URL with
+    // memory + disk cache, so the till grid scrolls and seen pictures show offline.
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.serialization.json)
     androidTestImplementation(platform(libs.androidx.compose.bom))
