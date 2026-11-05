@@ -13,6 +13,7 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { DevicesService } from './devices.service.js';
 import { ChangeStatusDto } from './dto/change-status.dto.js';
 import { ListDevicesDto } from './dto/list-devices.dto.js';
+import { SetDeviceCustomsFeeDto } from './dto/set-device-customs-fee.dto.js';
 import { SetDeviceExpenseDto } from './dto/set-device-expense.dto.js';
 import { UpdateDeviceDto } from './dto/update-device.dto.js';
 
@@ -58,6 +59,16 @@ export class DevicesController {
     @Body() dto: SetDeviceExpenseDto,
   ) {
     return this.devices.setExpense(id, dto, user.id);
+  }
+
+  @Patch(':id/customs-fee')
+  @RequirePermissions('customs.manage')
+  setCustomsFee(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: SetDeviceCustomsFeeDto,
+  ) {
+    return this.devices.setCustomsFee(id, dto, user.id);
   }
 
   @Post(':id/status')

@@ -23,6 +23,9 @@ function build(
   } as unknown as DevicesQueryRepository;
   const expense = {
     setExpense: jest.fn().mockResolvedValue({ id: 'd1', unitExpense: '40.00' }),
+    setCustomsFee: jest
+      .fn()
+      .mockResolvedValue({ id: 'd1', customsFee: '50.00' }),
   } as unknown as DevicesExpenseRepository;
   const models = {
     getAttributes: jest.fn().mockResolvedValue([]),
@@ -111,6 +114,14 @@ describe('DevicesService.setExpense', () => {
       service.setExpense('missing', { unitExpense: 40 }, 'user-1'),
     ).rejects.toThrow('not found');
     expect(expense.setExpense).not.toHaveBeenCalled();
+  });
+
+  it('setCustomsFee delegates after confirming the device exists', async () => {
+    const { service, expense } = build(null, {
+      findById: jest.fn().mockResolvedValue(device),
+    });
+    await service.setCustomsFee('d1', { customsFee: 50 }, 'user-1');
+    expect(expense.setCustomsFee).toHaveBeenCalledWith('d1', 50, 'user-1');
   });
 });
 

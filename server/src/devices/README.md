@@ -26,6 +26,9 @@ transitions and status history. Intake (creation + landed cost) belongs to
   shipment account in one transaction (ADR 0026); zero difference posts nothing.
   A sold phone keeps its sale's `landedCostSnapshot`. `unitExpenseNote: null`
   clears the note. 404 if the device is missing.
+- `PATCH /:id/customs-fee` — `{ customsFee }` (`customs.manage`). Hand fix for a
+  phone's customs fee: recomputes landed cost and posts the `CUSTOMS`
+  difference (ADR 0027); a sold phone keeps its snapshot. 404 if missing.
 - `POST /:id/status` — `{ toStatusCode, reason?, expectedVersion }`
   (`device.status.change`). 409 on version mismatch (offline lock).
 
@@ -49,8 +52,8 @@ the customs module import it so the formula is never duplicated.
 
 ## Must never
 
-- Expose `acquisitionCost`/`landedCost`/`unitExpense` unredacted (money is
-  string; the cost interceptor strips by key).
+- Expose `acquisitionCost`/`landedCost`/`unitExpense`/`customsFee` unredacted
+  (money is string; the cost interceptor strips by key).
 - Allow a transition absent from the transition table.
 - Rewrite a sale's `landedCostSnapshot` when a cost field changes.
 

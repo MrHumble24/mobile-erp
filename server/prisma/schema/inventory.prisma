@@ -8,6 +8,9 @@ model DeviceModel {
   brand     String
   name      String
   isActive  Boolean  @default(true)
+  /// How customs writes this model on its price list (ADR 0027). Several of our
+  /// models may share one code. A phone's customs fee is matched on this.
+  customsCode String?
   /// Per-model spec schema driving device intake/edit forms. Array of:
   /// [{ key: "storage", label: "Storage", type: "select",
   ///    options: ["128GB","256GB"], required: true, sortOrder: 10 },
@@ -67,6 +70,10 @@ model Device {
 
   /// Price paid to supplier for this unit.
   acquisitionCost Decimal  @db.Decimal(14, 2)
+  /// Customs fee, stamped at intake from the current price list via the model's
+  /// customsCode and frozen (ADR 0027). A later list never changes it; a hand
+  /// fix posts the difference. 0 when no list or no match.
+  customsFee      Decimal  @default(0) @db.Decimal(14, 2)
   /// This unit's own expense (repair, cleaning, ...). Editable any time, also
   /// after sale. Replaces the old even overhead spread (ADR 0006 superseded;
   /// ADR 0026). A change posts a DEVICE_EXPENSE difference to the ledger.

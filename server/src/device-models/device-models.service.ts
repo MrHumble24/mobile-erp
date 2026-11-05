@@ -39,6 +39,7 @@ export class DeviceModelsService {
       return await this.repo.create({
         brand: dto.brand,
         name: dto.name,
+        customsCode: dto.customsCode,
         attributes,
       });
     } catch (error) {
@@ -59,6 +60,7 @@ export class DeviceModelsService {
         brand: dto.brand,
         name: dto.name,
         isActive: dto.isActive,
+        customsCode: dto.customsCode,
         attributes,
       });
     } catch (error) {

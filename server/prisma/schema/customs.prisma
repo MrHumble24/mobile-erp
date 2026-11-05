@@ -1,0 +1,39 @@
+// ---------------------------------------------------------------------------
+// Customs price lists (ADR 0027). Customs publishes a fee per model code; the
+// store loads a new version every few months. Each phone is stamped with the
+// fee from the list current at intake (newest effectiveAt) and keeps it; a
+// later list never changes an already-stamped phone. Versions are append-only:
+// never edited or deleted. Excel upload is NOT built yet — this is the data
+// model + JSON API it will sit on top of later.
+// ---------------------------------------------------------------------------
+
+/// One published version of the customs price list.
+model CustomsPriceList {
+  id          String   @id @default(uuid())
+  /// When this list takes effect. The current list is the newest effectiveAt.
+  effectiveAt DateTime @default(now())
+  note        String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  items CustomsPriceListItem[]
+
+  @@index([effectiveAt])
+  @@map("customs_price_lists")
+}
+
+/// One fee row in a list: the customs code and its fee. Unique per list + code.
+model CustomsPriceListItem {
+  id          String           @id @default(uuid())
+  listId      String
+  list        CustomsPriceList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  /// Matches DeviceModel.customsCode (how customs writes the model).
+  customsCode String
+  description String?
+  fee         Decimal          @db.Decimal(14, 2)
+
+  @@unique([listId, customsCode])
+  @@index([customsCode])
+  @@map("customs_price_list_items")
+}

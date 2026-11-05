@@ -7,6 +7,7 @@ export interface DeviceView {
   modelId: string;
   specs: Record<string, unknown>;
   acquisitionCost: string;
+  customsFee: string;
   unitExpense: string;
   unitExpenseNote: string | null;
   landedCost: string;

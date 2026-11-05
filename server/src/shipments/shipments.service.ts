@@ -8,6 +8,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
@@ -24,17 +25,24 @@ import {
   RegisterDevicesDto,
 } from './dto/register-devices.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
+import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
-import { RegisteredDeviceView, ShipmentView } from './types/shipment.types.js';
+import {
+  RegisteredDeviceView,
+  RegisterDeviceInput,
+  ShipmentView,
+} from './types/shipment.types.js';
 
 @Injectable()
 export class ShipmentsService {
   constructor(
     private readonly repo: ShipmentsRepository,
+    private readonly intake: ShipmentsIntakeRepository,
     private readonly suppliers: SuppliersService,
     private readonly models: DeviceModelsService,
     private readonly stores: StoresService,
     private readonly ledger: LedgerService,
+    private readonly customs: CustomsService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -85,7 +93,8 @@ export class ShipmentsService {
     const models = await this.loadModels(dto.devices);
     this.assertSpecs(dto.devices, models);
     this.assertExpensePermission(dto.devices, user);
-    const registered = await this.register(id, dto.devices, user.id);
+    const inputs = await this.stampCustomsFees(dto.devices, models);
+    const registered = await this.register(id, inputs, user.id);
     // Best-effort notification; must never fail an intake.
     void this.announce(
       shipment.supplierId,
@@ -96,14 +105,28 @@ export class ShipmentsService {
     return registered;
   }
 
+  /** Stamp each device with the current list's fee for its model's customsCode. */
+  private async stampCustomsFees(
+    devices: RegisterDeviceDto[],
+    models: DeviceModelView[],
+  ): Promise<RegisterDeviceInput[]> {
+    const codeByModel = new Map(models.map((m) => [m.id, m.customsCode]));
+    const feeByCode = await this.customs.currentFeeMap();
+    return devices.map((d) => {
+      const code = codeByModel.get(d.modelId) ?? null;
+      const customsFee = code ? (feeByCode.get(code) ?? 0) : 0;
+      return { ...d, customsFee };
+    });
+  }
+
   private async register(
     id: string,
-    devices: RegisterDeviceDto[],
+    inputs: RegisterDeviceInput[],
     userId: string,
   ): Promise<RegisteredDeviceView[]> {
     try {
       const storeId = await this.stores.currentStoreId();
-      return await this.repo.addDevices(id, devices, userId, storeId);
+      return await this.intake.addDevices(id, inputs, userId, storeId);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException('A device with this IMEI already exists');

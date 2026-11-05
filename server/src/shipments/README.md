@@ -6,9 +6,10 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
 
 ## Exposes (REST `/shipments`)
 
-- `GET /`, `GET /:id` — includes `deviceCount` and the computed, cost-restricted
-  `unitExpenseTotal` (sum of its devices' `unitExpense`, never stored)
-  (`shipment.read`).
+- `GET /`, `GET /:id` — includes `deviceCount`, the computed cost-restricted
+  `unitExpenseTotal` and `customsFeeTotal` (sums over its devices, never stored)
+  and `devicesWithoutCustomsFee` (count of its devices whose fee is 0, for a
+  warning) (`shipment.read`).
 - `POST /` — create `{ supplierId, shipmentDate, expectedCount,
   paymentAccountCode?, notes? }` (`shipment.manage`). 404 if supplier missing.
   `paymentAccountCode` (default CASH, must be active) is **fixed after creation**
@@ -30,7 +31,10 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
   Returns `RegisteredDeviceView[]` (each carries `imei2`, `unitExpense`,
   `landedCost`). Each unit's `specs` is validated against its model's attribute
   schema; failures → 400 `{ message: 'Invalid specs', problems: [{ imei, key,
-  message }] }`.
+  message }] }`. Each unit's `customsFee` is stamped server-side from the
+  current customs list via its model's `customsCode` (ADR 0027; 0 when no list
+  or no match) and a `CUSTOMS` row posts when it is > 0 — the client never sends
+  it.
 
 ## Must never
 

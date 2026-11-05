@@ -13,6 +13,7 @@ interface ModelRow {
   brand: string;
   name: string;
   isActive: boolean;
+  customsCode: string | null;
   attributes: unknown;
   createdAt: Date;
   updatedAt: Date;
@@ -24,6 +25,7 @@ function toView(row: ModelRow): DeviceModelView {
     brand: row.brand,
     name: row.name,
     isActive: row.isActive,
+    customsCode: row.customsCode,
     attributes: (row.attributes ?? []) as AttributeDef[],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -52,6 +54,7 @@ export class DeviceModelsRepository {
       data: {
         brand: input.brand,
         name: input.name,
+        customsCode: input.customsCode ?? null,
         attributes: input.attributes as unknown as Prisma.InputJsonValue,
       },
     });
@@ -65,6 +68,7 @@ export class DeviceModelsRepository {
         brand: patch.brand,
         name: patch.name,
         isActive: patch.isActive,
+        customsCode: patch.customsCode,
         attributes:
           patch.attributes === undefined
             ? undefined

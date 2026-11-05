@@ -29,6 +29,7 @@ model User {
   statusChanges       DeviceStatusHistory[]
   conflictsResolved   SyncConflict[]
   cashTransactions    CashTransaction[]
+  customsPriceLists   CustomsPriceList[]
 
   @@map("users")
 }

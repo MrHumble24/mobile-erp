@@ -10,6 +10,7 @@ import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
 import { ListDevicesDto } from './dto/list-devices.dto.js';
+import { SetDeviceCustomsFeeDto } from './dto/set-device-customs-fee.dto.js';
 import { SetDeviceExpenseDto } from './dto/set-device-expense.dto.js';
 import { UpdateDeviceDto } from './dto/update-device.dto.js';
 import {
@@ -93,6 +94,19 @@ export class DevicesService {
       dto.unitExpenseNote,
       userId,
     );
+  }
+
+  /**
+   * Hand fix for one phone's customs fee: recomputes landed cost and posts the
+   * CUSTOMS difference (ADR 0027). A sold phone keeps its sale snapshot.
+   */
+  async setCustomsFee(
+    id: string,
+    dto: SetDeviceCustomsFeeDto,
+    userId: string,
+  ): Promise<DeviceView> {
+    await this.require(id);
+    return this.expense.setCustomsFee(id, dto.customsFee, userId);
   }
 
   /**

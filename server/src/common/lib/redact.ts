@@ -10,6 +10,8 @@ export const COST_KEYS = [
   'unitExpense',
   'unitExpenseNote',
   'unitExpenseTotal',
+  'customsFee',
+  'customsFeeTotal',
   'repairCostEstimate',
   'cogs',
   'inStockLandedValue',

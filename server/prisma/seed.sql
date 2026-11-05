@@ -58,7 +58,8 @@ INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
   ('PURCHASE',        'Device purchase',  90),
   ('OVERHEAD',        'Shipment overhead',100),
   ('EXPENSE',         'Expense',          110),
-  ('DEVICE_EXPENSE',  'Device expense',   120)
+  ('DEVICE_EXPENSE',  'Device expense',   120),
+  ('CUSTOMS',         'Customs fee',      130)
 ON CONFLICT (code) DO NOTHING;
 
 -- ADR 0026: per-phone expense supersedes shipment overhead. OVERHEAD stays in
@@ -80,6 +81,8 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('device.update',        'device',      'update',    'Edit device specs / target price'),
   ('device.cost.view',     'device',      'cost.view', 'See acquisition and landed cost'),
   ('device.expense',       'device',      'expense',   'Set or change a phone''s own expense'),
+  ('customs.read',         'customs',     'read',      'View customs price lists and fees'),
+  ('customs.manage',       'customs',     'manage',    'Create price-list versions and fix fees'),
   ('device.status.change', 'device',      'status.change', 'Move device between statuses'),
   ('shipment.read',        'shipment',    'read',      'View shipments'),
   ('shipment.manage',      'shipment',    'manage',    'Create / edit shipments and suppliers'),
