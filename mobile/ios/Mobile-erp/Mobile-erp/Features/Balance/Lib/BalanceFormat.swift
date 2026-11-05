@@ -5,11 +5,7 @@ import SwiftUI
 /// (then the raw code). Pure — covered by `BalanceSelfCheck`.
 enum BalanceFormat {
     static func accountKey(_ code: String) -> String? {
-        switch code {
-        case "CASH": "balance.accountCash"
-        case "CARD": "balance.accountCard"
-        default: nil
-        }
+        PaymentAccounts.labelKey(code)
     }
 
     static func typeKey(_ code: String) -> String? {

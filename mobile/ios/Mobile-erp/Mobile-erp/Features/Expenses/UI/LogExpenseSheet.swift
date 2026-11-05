@@ -16,6 +16,8 @@ struct LogExpenseSheet: View {
     @State private var vendor: String
     @State private var isRecurring: Bool
     @State private var incurredAt: Date
+    @State private var accountCode: String
+    @State private var accounts: [PaymentAccount] = []
     @State private var saving = false
 
     init(model: ExpensesModel, expense: Expense?, onResult: @escaping (String) -> Void) {
@@ -28,6 +30,7 @@ struct LogExpenseSheet: View {
         _vendor = State(initialValue: expense?.vendor ?? "")
         _isRecurring = State(initialValue: expense?.isRecurring ?? false)
         _incurredAt = State(initialValue: expense.flatMap { KitDate.parse($0.incurredAt) } ?? Date())
+        _accountCode = State(initialValue: expense?.accountCode ?? PaymentAccounts.cash)
     }
 
     private var amountValue: Double? {
@@ -56,6 +59,9 @@ struct LogExpenseSheet: View {
                     AppTextField(placeholder: i18n.t("expenses.descriptionPlaceholder"), text: $description)
                 }
                 AppFormField(label: i18n.t("expenses.incurredAt")) { AppDateField(date: $incurredAt) }
+                AppFormField(label: i18n.t("balance.payFrom")) {
+                    AccountPicker(accounts: accounts, selection: $accountCode)
+                }
                 Toggle(isOn: $isRecurring) {
                     Text(i18n.t("expenses.isRecurring")).font(.ui(.body)).foregroundStyle(Tokens.text)
                 }
@@ -73,6 +79,12 @@ struct LogExpenseSheet: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.card)
         .presentationDetents([.large])
+        .task {
+            accounts = await PaymentAccounts.load(
+                api: container.api,
+                canReadBalances: container.session.can("balance.read"),
+                i18n: i18n)
+        }
     }
 
     private func submit() {
@@ -88,11 +100,13 @@ struct LogExpenseSheet: View {
                 if let expense {
                     try await model.update(id: expense.id, UpdateExpenseDto(
                         categoryId: categoryId, amount: amountValue, description: desc,
-                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso))
+                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso,
+                        accountCode: accountCode))
                 } else {
                     try await model.create(CreateExpenseDto(
                         categoryId: categoryId, amount: amountValue, description: desc,
-                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso))
+                        vendor: payeeVendor, isRecurring: isRecurring, incurredAt: iso,
+                        accountCode: accountCode))
                 }
                 onResult(i18n.t("expenses.expenseSaved"))
                 dismiss()

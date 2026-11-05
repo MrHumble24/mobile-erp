@@ -21,6 +21,7 @@ struct SegmentedControl<Value: Hashable>: View {
                         .font(.ui(.body))
                         .foregroundStyle(selected ? Tokens.text : Tokens.muted)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity)
                         .frame(height: Tokens.Space.minTouch - Tokens.Space.sm)
                         .background {

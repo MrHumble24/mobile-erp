@@ -35,6 +35,8 @@ struct Expense: Decodable, Identifiable {
     let recurrenceId: String?
     let incurredAt: String
     let createdBy: ExpenseUserRef?
+    /// Account the money left; optional so older cached expenses still decode.
+    let accountCode: String?
 
     struct Ref: Decodable { let name: String }
 
@@ -82,6 +84,7 @@ struct CreateExpenseDto: Encodable {
     let vendor: String?
     let isRecurring: Bool
     let incurredAt: String?
+    let accountCode: String?
 }
 
 struct UpdateExpenseDto: Encodable {
@@ -91,6 +94,7 @@ struct UpdateExpenseDto: Encodable {
     let vendor: String?
     let isRecurring: Bool
     let incurredAt: String?
+    let accountCode: String?
 }
 
 struct CreateExpenseCategoryDto: Encodable {

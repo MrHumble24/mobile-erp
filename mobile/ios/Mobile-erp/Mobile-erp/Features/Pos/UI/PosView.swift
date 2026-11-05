@@ -10,6 +10,15 @@ struct PosView: View {
     @Environment(I18n.self) private var i18n
     @State private var model = PosViewModel()
 
+    /// Screenshot helper: `-posDemo …` starts the scroll at the checkout bar so
+    /// the payment control is captured. Normal launches anchor at the top.
+    private var demoScrollAnchor: UnitPoint {
+        #if DEBUG
+        if UserDefaults.standard.string(forKey: "posDemo") != nil { return .bottom }
+        #endif
+        return .top
+    }
+
     var body: some View {
         @Bindable var model = model
         ScrollView {
@@ -42,6 +51,7 @@ struct PosView: View {
             .padding(.horizontal, Tokens.Space.gutter)
             .padding(.vertical, Tokens.Space.lg)
         }
+        .defaultScrollAnchor(demoScrollAnchor)
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.ground)
         .navigationTitle(i18n.t("pos.title"))
@@ -68,6 +78,8 @@ struct PosView: View {
             consumeRoute()
             #if DEBUG
             _ = PosSelfCheck.ran
+            _ = PosPaymentsSelfCheck.ran
+            if let mode = KitDebugLaunch.consume("posDemo") { model.seedDemo(mode) }
             #endif
         }
         .onChange(of: container.router.pending) { _, _ in consumeRoute() }

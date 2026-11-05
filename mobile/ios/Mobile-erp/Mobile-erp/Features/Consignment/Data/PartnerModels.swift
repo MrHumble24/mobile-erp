@@ -95,4 +95,6 @@ struct RecordPaymentDto: Encodable {
     let consignmentId: String?
     let paidAt: String?
     let notes: String?
+    /// Account the cash landed in; defaults to CASH on the server when omitted.
+    let accountCode: String?
 }

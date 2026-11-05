@@ -38,6 +38,10 @@ struct PartnerDetailView: View {
         .background(Tokens.card)
         .presentationDetents([.large])
         .task { if model == nil { let m = container.makePartnerDetailModel(); model = m; await m.load(partnerId: partner.id) } }
+        #if DEBUG
+        // Screenshot helper: `-openPartnerPayment 1` opens the payment sheet.
+        .task { if KitDebugLaunch.consume("openPartnerPayment") != nil { showPayment = true } }
+        #endif
         .sheet(isPresented: $showPayment) { RecordPaymentSheet(partner: partner) { reload() } }
         .sheet(isPresented: $showEdit) { PartnerFormSheet(mode: .edit(partner)) { reload() } }
         .sheet(isPresented: $showConsign) { ConsignDeviceSheet(partnerId: partner.id, lockPartner: true) { reload() } }

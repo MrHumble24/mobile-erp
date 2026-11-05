@@ -51,11 +51,13 @@ struct ExpensesListTab: View {
             Button(i18n.t("common.delete"), role: .destructive) { delete(expense) }
         }
         #if DEBUG
-        // Screenshot helper: `-openExpense first` opens the first row's detail.
+        // Screenshot helper: `-openExpense first` opens the first row's detail;
+        // `-openExpense new` opens the log form.
         .onChange(of: model.pager?.items.count ?? 0) { _, count in
-            guard count > 0, detail == nil, KitDebugLaunch.consume("openExpense") == "first" else { return }
+            guard count > 0, detail == nil, KitDebugLaunch.consume("openExpense", accept: { $0 == "first" }) == "first" else { return }
             detail = model.pager?.items.first.map { DetailTarget(id: $0.id) }
         }
+        .task { if KitDebugLaunch.consume("openExpense", accept: { $0 == "new" }) == "new" { editing = nil; showLog = true } }
         #endif
     }
 
@@ -140,7 +142,12 @@ private struct ExpenseRow: View {
             HStack(alignment: .top, spacing: Tokens.Space.sm) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(expense.categoryName).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                    Text(KitDate.day(expense.incurredAt)).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    HStack(spacing: Tokens.Space.sm) {
+                        Text(KitDate.day(expense.incurredAt)).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                        if let code = expense.accountCode {
+                            Text(PaymentAccounts.label(code, i18n)).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                        }
+                    }
                     if let d = expense.description, !d.isEmpty {
                         Text(d).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                     }

@@ -11,6 +11,8 @@ struct RecordPaymentSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var amount = ""
     @State private var notes = ""
+    @State private var accountCode = PaymentAccounts.cash
+    @State private var accounts: [PaymentAccount] = []
     @State private var saving = false
     @State private var errorMessage: String?
 
@@ -35,6 +37,9 @@ struct RecordPaymentSheet: View {
                     }
                     .buttonStyle(.pillGhost)
                 }
+                AppFormField(label: i18n.t("balance.paidWith")) {
+                    AccountPicker(accounts: accounts, selection: $accountCode)
+                }
                 AppFormField(label: i18n.t("common.notes")) {
                     AppTextField(placeholder: i18n.t("common.notes"), text: $notes)
                 }
@@ -51,6 +56,12 @@ struct RecordPaymentSheet: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.card)
         .presentationDetents([.medium, .large])
+        .task {
+            accounts = await PaymentAccounts.load(
+                api: container.api,
+                canReadBalances: container.session.can("balance.read"),
+                i18n: i18n)
+        }
     }
 
     private func save() async {
@@ -62,7 +73,7 @@ struct RecordPaymentSheet: View {
             Haptic.tick.play()
             try await container.partnerRepository.recordPayment(partner.id, RecordPaymentDto(
                 amount: Double(amount) ?? 0, consignmentId: nil, paidAt: nil,
-                notes: t.isEmpty ? nil : t))
+                notes: t.isEmpty ? nil : t, accountCode: accountCode))
             container.sync.syncNow()
             onSaved()
             dismiss()

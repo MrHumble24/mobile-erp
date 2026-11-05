@@ -27,6 +27,14 @@ struct ShipmentDetailSheet: View {
                         "registered": "\(shipment.deviceCount)", "expected": "\(shipment.expectedCount)",
                     ]))
                     .font(.subheadline).foregroundStyle(Tokens.muted)
+                    if let code = shipment.paymentAccountCode {
+                        HStack {
+                            Text(i18n.t("balance.payFrom")).foregroundStyle(Tokens.muted)
+                            Spacer()
+                            Text(PaymentAccounts.label(code, i18n)).foregroundStyle(Tokens.text)
+                        }
+                        .font(.subheadline)
+                    }
                     actions
                 }
                 Section(i18n.t("shipments.deviceList")) {

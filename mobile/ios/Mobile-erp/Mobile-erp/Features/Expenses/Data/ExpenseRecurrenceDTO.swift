@@ -12,6 +12,8 @@ struct ExpenseRecurrence: Decodable, Identifiable {
     let frequency: String
     let nextDueAt: String
     let isActive: Bool
+    /// Account generated expenses post against; optional for older cached rows.
+    let accountCode: String?
 
     struct Ref: Decodable { let name: String }
     var categoryName: String { category?.name ?? "" }
@@ -24,6 +26,7 @@ struct CreateExpenseRecurrenceDto: Encodable {
     let vendor: String?
     let frequency: String
     let nextDueAt: String
+    let accountCode: String?
 }
 
 struct UpdateExpenseRecurrenceDto: Encodable {
@@ -34,6 +37,7 @@ struct UpdateExpenseRecurrenceDto: Encodable {
     let frequency: String?
     let nextDueAt: String?
     let isActive: Bool?
+    let accountCode: String?
 }
 
 struct GenerateDueResult: Decodable { let generated: Int }
