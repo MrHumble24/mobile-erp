@@ -35,6 +35,7 @@ import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.shared.lib.formatDateTime
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.PillButton
@@ -98,6 +99,16 @@ fun SaleDetailSheet(
         sale.soldAt?.let { Fact(t("sales.soldAt", null)) { Text(formatDateTime(it), style = monoStyle()) } }
         sale.warrantyDays?.let { Fact(t("pos.warrantyDays", null)) { Text(it.toString(), style = monoStyle()) } }
         sale.returnedAt?.let { Fact(t("sales.returnedAt", null)) { Text(formatDateTime(it), style = monoStyle()) } }
+
+        if (sale.payments.isNotEmpty()) {
+            Spacer(Modifier.height(Tokens.Space.md))
+            Text(t("balance.paidWith", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+            sale.payments.forEach { p ->
+                Fact(accountLabel(p.accountCode, emptyList(), t)) {
+                    MoneyText(p.amount.toPlainString(), style = valueStyle().copy(fontFamily = MonoFamily))
+                }
+            }
+        }
 
         Spacer(Modifier.height(Tokens.Space.lg))
         PillButton(t("sales.openDevice", null), onOpenDevice, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)

@@ -92,6 +92,9 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
 
     var selected by remember { mutableStateOf<Sale?>(null) }
     var returnSaleId by remember { mutableStateOf<String?>(null) }
+    // The sale being returned, when opened from its detail — carries the payment
+    // accounts so the dialog can say where the refund goes (null from the warranty path).
+    var returnSale by remember { mutableStateOf<Sale?>(null) }
     var warrantySheet by remember { mutableStateOf(false) }
     var showFilters by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
@@ -175,7 +178,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                 listColumn(Modifier.weight(1f))
                 VerticalDivider(color = Tokens.border)
                 Box(Modifier.width(360.dp).padding(16.dp)) {
-                    WarrantyPanel(vm, online) { returnSaleId = it }
+                    WarrantyPanel(vm, online) { returnSale = null; returnSaleId = it }
                 }
             }
         } else {
@@ -204,7 +207,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                 sale = sale,
                 canReturn = LocalCan.current("sale.return"),
                 onReceipt = { vm.loadReceipt(sale.id) },
-                onReturn = { selected = null; returnSaleId = sale.id },
+                onReturn = { selected = null; returnSale = sale; returnSaleId = sale.id },
                 onOpenDevice = { selected = null; container.featureNav.open(Destination.Inventory(sale.imei)) },
                 onOpenConsignment = {
                     sale.consignmentId?.let { selected = null; container.featureNav.open(Destination.Consignments(it)) }
@@ -222,13 +225,19 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     if (warrantySheet) {
         AppBottomSheet(onDismiss = { warrantySheet = false }) {
             Box(Modifier.fillMaxWidth().height(520.dp).padding(16.dp)) {
-                WarrantyPanel(vm, online) { returnSaleId = it }
+                WarrantyPanel(vm, online) { returnSale = null; returnSaleId = it }
             }
         }
     }
 
     returnSaleId?.let { id ->
-        ReturnDialog(vm, id, online, container.toaster) { returnSaleId = null }
+        ReturnDialog(
+            vm,
+            id,
+            online,
+            container.toaster,
+            refundAccounts = returnSale?.takeIf { it.id == id }?.payments?.map { it.accountCode } ?: emptyList(),
+        ) { returnSaleId = null; returnSale = null }
     }
 
     if (showFilters) {

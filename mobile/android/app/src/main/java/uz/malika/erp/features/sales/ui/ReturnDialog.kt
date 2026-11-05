@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
@@ -36,7 +37,14 @@ import uz.malika.erp.ui.theme.Tokens
  * toasts and closes; the error shows inline (it may be retried).
  */
 @Composable
-fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, toaster: Toaster, onClose: () -> Unit) {
+fun ReturnDialog(
+    vm: SalesViewModel,
+    saleId: String,
+    online: Boolean,
+    toaster: Toaster,
+    refundAccounts: List<String> = emptyList(),
+    onClose: () -> Unit,
+) {
     val t = LocalT.current
     val ui by vm.ret.collectAsState()
     var refund by remember { mutableStateOf("") }
@@ -80,6 +88,15 @@ fun ReturnDialog(vm: SalesViewModel, saleId: String, online: Boolean, toaster: T
                     selected = condition,
                     onSelect = { condition = it },
                 )
+                if (refundAccounts.isNotEmpty()) {
+                    Spacer(Modifier.height(12.dp))
+                    val names = refundAccounts.joinToString(", ") { accountLabel(it, emptyList(), t) }
+                    Text(
+                        t("sales.refundGoesBack", mapOf("accounts" to names)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Tokens.muted,
+                    )
+                }
                 ui.error?.let {
                     Spacer(Modifier.height(8.dp))
                     Text(t(it, null), color = Tokens.danger, style = MaterialTheme.typography.bodySmall)

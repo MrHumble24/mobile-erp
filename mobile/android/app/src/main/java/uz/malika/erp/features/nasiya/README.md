@@ -60,3 +60,11 @@ same partner mirror — so there is no cross-slice import to duplicate.
   and CSV export are compact icon actions (CSV in an overflow menu). The filter
   button badge counts non-default filters; reset (`ConsignmentsViewModel.clearFilters`,
   `PartnersViewModel.reset`) clears search + filters.
+- Partner payments carry an optional `accountCode` (default `CASH`); the
+  record-payment sheet uses the shared `AccountPicker` (`shared/payments`).
+  Payment history renders the account **only when the server sends it** —
+  today the partner ledger (`GET /partners/:id/ledger`, `buildLedger`) does not
+  put `accountCode` on payment lines (there is no `GET /partners/:id/payments`),
+  so `LedgerEntryDto.accountCode` is decoded optionally and the row shows it
+  once the server adds it. Server gap: include `accountCode` on ledger payment
+  lines, or expose the payments list.

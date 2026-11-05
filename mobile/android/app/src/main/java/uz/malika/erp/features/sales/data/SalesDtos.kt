@@ -50,7 +50,13 @@ data class SaleDto(
     val consignmentId: String? = null,
     val notes: String? = null,
     @SerialName("return") val returnInfo: SaleReturnDto? = null,
+    /** How the sale was tendered; `[]` when none. Optional so older cached rows decode. */
+    val payments: List<SalePaymentDto> = emptyList(),
 )
+
+/** One tender line of a sale (its SALE ledger rows). `amount` is a decimal string. */
+@Serializable
+data class SalePaymentDto(val accountCode: String = "", val amount: String = "0")
 
 @Serializable
 data class SaleDeviceDto(

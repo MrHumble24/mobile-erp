@@ -68,3 +68,6 @@ Ports the web `pages/expenses`, `pages/reports`, `pages/dashboard` slice group.
 - Missing i18n key (raw key shows until Gemini adds it): `common.loadMore`
   (introduced by the kit's `LoadMoreFooter`). Every finance/reports/expenses/nav
   key this slice uses already exists in the web JSON.
+- Expenses and recurring templates carry an optional `accountCode` (default
+  `CASH`); the forms use the shared `AccountPicker` (`shared/payments`) and the
+  expense row + detail show the account. `balance.payFrom` labels the picker.

@@ -38,6 +38,8 @@ data class ShipmentDto(
     val deviceCount: Int = 0,
     val overheadCost: String? = null,
     val notes: String? = null,
+    /** Account the purchase + overhead left from; fixed at creation. Optional so older rows decode. */
+    val paymentAccountCode: String? = null,
 ) {
     val isComplete: Boolean get() = deviceCount >= expectedCount
     /** `yyyy-MM-dd` slice of the ISO date for display. */
@@ -51,6 +53,7 @@ data class CreateShipmentBody(
     val expectedCount: Int,
     val overheadCost: Double? = null,
     val notes: String? = null,
+    val paymentAccountCode: String? = null,
 )
 
 @Serializable

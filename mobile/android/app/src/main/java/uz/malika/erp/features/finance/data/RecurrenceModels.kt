@@ -18,6 +18,8 @@ data class ExpenseRecurrence(
     val frequency: String = "monthly",
     val nextDueAt: String = "",
     val isActive: Boolean = true,
+    /** Account the money leaves from; optional so older cached rows still decode. */
+    val accountCode: String? = null,
 ) {
     val categoryName: String get() = category?.name ?: ""
 }
@@ -31,6 +33,7 @@ data class CreateRecurrenceBody(
     val vendor: String? = null,
     val frequency: String,
     val nextDueAt: String,
+    val accountCode: String? = null,
 )
 
 /**
@@ -46,6 +49,7 @@ data class UpdateRecurrenceBody(
     val frequency: String? = null,
     val nextDueAt: String? = null,
     val isActive: Boolean? = null,
+    val accountCode: String? = null,
 )
 
 /** Result of `POST /expense-recurrences/generate`. */

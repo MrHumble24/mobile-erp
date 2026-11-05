@@ -1,6 +1,7 @@
 package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.data.local.DeviceEntity
+import uz.malika.erp.shared.payments.AccountAmount
 
 /**
  * A device resolved for checkout — from the offline Room cache or the online
@@ -57,6 +58,8 @@ data class ReceiptData(
     val total: String,
     val warrantyUntil: String?,
     val pending: Boolean = false,
+    /** How it was tendered (cart-level), for the "Paid with" lines; empty shows nothing. */
+    val payments: List<AccountAmount> = emptyList(),
 )
 
 /** Map the server receipt payload into the shared render model. */

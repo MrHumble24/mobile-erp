@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import uz.malika.erp.features.finance.data.Expense
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatDate
+import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -38,6 +39,9 @@ fun ExpenseRow(expense: Expense, onClick: () -> Unit) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(expense.categoryName, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
                 Text(formatDate(expense.incurredAt), style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.muted)
+                expense.accountCode?.let {
+                    Text(accountLabel(it, emptyList(), t), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+                }
                 expense.description?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                 }
@@ -71,6 +75,7 @@ fun ExpenseDetailSheet(
             FactRow(t("expenses.amount", null)) { MoneyText(expense.amount, style = plain) }
             FactRow(t("expenses.incurredAt", null)) { Text(formatDate(expense.incurredAt), style = mono) }
             FactRow(t("expenses.vendor", null)) { Text(expense.vendor?.ifBlank { null } ?: "—", style = plain) }
+            expense.accountCode?.let { FactRow(t("balance.payFrom", null)) { Text(accountLabel(it, emptyList(), t), style = plain) } }
             FactRow(t("expenses.isRecurring", null)) { Text(t(if (expense.isRecurring) "common.yes" else "common.no", null), style = plain) }
             expense.description?.takeIf { it.isNotBlank() }?.let {
                 FactRow(t("expenses.description", null)) { Text(it, style = plain) }

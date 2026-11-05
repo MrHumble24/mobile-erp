@@ -1,5 +1,8 @@
 package uz.malika.erp.features.sales.data
 
+import uz.malika.erp.shared.payments.AccountAmount
+import uz.malika.erp.shared.lib.parseMoney
+
 /** Sale channel is DERIVED from `consignmentId` (never a stored column). */
 enum class SaleChannel { RETAIL, B2B }
 
@@ -18,6 +21,7 @@ data class Sale(
     val warrantyDays: Int?,
     val consignmentId: String?,
     val returnedAt: String?,
+    val payments: List<AccountAmount> = emptyList(),
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
 }
@@ -36,6 +40,7 @@ fun SaleDto.toDomain() = Sale(
     warrantyDays = warranty?.days,
     consignmentId = consignmentId,
     returnedAt = returnInfo?.returnedAt,
+    payments = payments.map { AccountAmount(it.accountCode, parseMoney(it.amount)) },
 )
 
 /** Aggregate stats for the sales list header. Money stays a string; profit is redacted (nullable). */

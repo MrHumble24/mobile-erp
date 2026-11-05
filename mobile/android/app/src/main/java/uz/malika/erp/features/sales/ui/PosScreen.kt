@@ -102,7 +102,7 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
                     enabled = !state.busy,
                 )
                 Spacer(Modifier.height(16.dp))
-                PosCheckoutForm(vm, state, online, api)
+                PosCheckoutForm(container, vm, state, online, api)
             }
         }
     }

@@ -157,6 +157,7 @@ fun ExpenseListSection(vm: ExpensesViewModel, container: AppContainer, modifier:
     }
     if (showLog) {
         LogExpenseSheet(
+            container = container,
             vm = vm,
             categories = state.categories,
             editing = editing,

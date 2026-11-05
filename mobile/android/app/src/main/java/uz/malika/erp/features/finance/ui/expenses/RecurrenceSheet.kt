@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import uz.malika.erp.AppContainer
 import uz.malika.erp.features.finance.data.CreateRecurrenceBody
 import uz.malika.erp.features.finance.data.ExpenseCategory
 import uz.malika.erp.features.finance.data.ExpenseRecurrence
@@ -24,6 +25,9 @@ import uz.malika.erp.features.finance.ui.components.AppSelectField
 import uz.malika.erp.features.finance.ui.components.DateField
 import uz.malika.erp.features.finance.ui.components.SelectOption
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.payments.PaymentSplit
+import uz.malika.erp.shared.payments.ui.AccountPicker
+import uz.malika.erp.shared.payments.ui.rememberAccountOptions
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.PillButton
@@ -40,6 +44,7 @@ private fun parseDay(iso: String): Date =
 /** Online-only recurring-template form — create or edit. */
 @Composable
 fun RecurrenceSheet(
+    container: AppContainer,
     vm: RecurrencesViewModel,
     categories: List<ExpenseCategory>,
     editing: ExpenseRecurrence?,
@@ -52,8 +57,10 @@ fun RecurrenceSheet(
     var vendor by remember { mutableStateOf(editing?.vendor ?: "") }
     var frequency by remember { mutableStateOf(editing?.frequency ?: "monthly") }
     var nextDue by remember { mutableStateOf(editing?.nextDueAt?.let(::parseDay) ?: Date()) }
+    var account by remember { mutableStateOf(editing?.accountCode ?: PaymentSplit.CASH) }
     var amountError by remember { mutableStateOf<String?>(null) }
     var categoryError by remember { mutableStateOf(false) }
+    val accounts by rememberAccountOptions(container)
 
     fun submit() {
         val amt = amount.trim().toDoubleOrNull()
@@ -69,6 +76,7 @@ fun RecurrenceSheet(
                 vendor = vendor.trim().ifBlank { null },
                 frequency = frequency,
                 nextDueAt = isoDate(nextDue),
+                accountCode = account,
             ),
             onSuccess = onDismiss,
         )
@@ -99,6 +107,12 @@ fun RecurrenceSheet(
                 onValueChange = { amount = it; amountError = null },
                 keyboardType = KeyboardType.Decimal,
                 error = amountError,
+            )
+            AccountPicker(
+                label = t("balance.payFrom", null),
+                selected = account,
+                options = accounts,
+                onSelect = { account = it },
             )
             AppFormField(label = t("expenses.vendor", null), value = vendor, onValueChange = { vendor = it })
             AppFormField(label = t("expenses.description", null), value = description, onValueChange = { description = it })

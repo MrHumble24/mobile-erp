@@ -27,6 +27,8 @@ data class LedgerEntryDto(
     val runningBalance: JsonElement? = null,
     val statusCode: String? = null,
     val notes: String? = null,
+    /** Account a payment landed in; present only once the server adds it (see README). */
+    val accountCode: String? = null,
 )
 
 @Serializable
@@ -109,6 +111,7 @@ data class RecordPaymentBody(
     val consignmentId: String? = null,
     val paidAt: String? = null,
     val notes: String? = null,
+    val accountCode: String? = null,
 )
 
 // ── consignment reads ──────────────────────────────────────────────────────
