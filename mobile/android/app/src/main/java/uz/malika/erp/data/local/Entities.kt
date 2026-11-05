@@ -28,6 +28,22 @@ data class DeviceEntity(
     val updatedAt: String,
 )
 
+/**
+ * Cached QUANTITY products from `/sync/changes` (ADR 0030), so an offline till
+ * can look a barcode up and sell it. `quantity` is the stock level at the last
+ * pull (may be negative); `salePrice` is the default per-piece price. No cost
+ * fields — the feed never carries them for a till user.
+ */
+@Entity(tableName = "products")
+data class ProductEntity(
+    @PrimaryKey val modelId: String,
+    val brand: String,
+    val name: String,
+    val barcode: String? = null,
+    val salePrice: String? = null, // Decimal string
+    val quantity: Int,
+)
+
 /** Cached partners from `/sync/changes`. Money columns are Decimal strings. */
 @Entity(tableName = "partners")
 data class PartnerEntity(

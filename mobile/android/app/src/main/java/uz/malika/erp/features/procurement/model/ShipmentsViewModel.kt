@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.IntakeDraft
 import uz.malika.erp.features.procurement.data.ProcurementRepository
+import uz.malika.erp.features.procurement.data.PurchasedLineDto
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.features.procurement.data.SupplierDto
 import uz.malika.erp.features.procurement.lib.millisToDate
@@ -103,6 +104,16 @@ class ShipmentsViewModel(private val repo: ProcurementRepository) : ViewModel() 
     }
 
     fun clearDrafts(shipmentId: String) { _drafts.value = _drafts.value - shipmentId }
+
+    // Quantity purchase lines added to a shipment this session, keyed by shipment
+    // id. The server has no read-back for them, so the detail shows what was added
+    // here (ADR 0030). Held in the VM so reopening the detail keeps them.
+    private val _items = MutableStateFlow<Map<String, List<PurchasedLineDto>>>(emptyMap())
+    val items: StateFlow<Map<String, List<PurchasedLineDto>>> = _items.asStateFlow()
+
+    fun recordItems(shipmentId: String, lines: List<PurchasedLineDto>) {
+        _items.value = _items.value + (shipmentId to (_items.value[shipmentId].orEmpty() + lines))
+    }
 
     fun setShipmentQuery(q: String) { _shipmentQuery.value = q }
     fun setSupplierQuery(q: String) { _supplierQuery.value = q }

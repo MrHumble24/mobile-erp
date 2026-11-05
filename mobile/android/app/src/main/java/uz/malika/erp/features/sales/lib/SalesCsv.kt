@@ -11,14 +11,15 @@ import uz.malika.erp.shared.lib.Csv
  */
 fun salesCsv(sales: List<Sale>, includeProfit: Boolean): String {
     val headers = buildList {
-        add("Model"); add("Code"); add("Channel"); add("Customer"); add("Sale Price")
+        add("Model"); add("Code"); add("Qty"); add("Channel"); add("Customer"); add("Sale Price")
         if (includeProfit) add("Net Profit")
         add("Cashier"); add("Sold At"); add("Status")
     }
     val rows = sales.map { s ->
         buildList {
             add(s.modelLabel)
-            add(s.code)
+            add(s.code) // empty for a quantity sale
+            add(s.quantity?.toString() ?: "") // pieces for a quantity sale (ADR 0030)
             add(if (s.channel == SaleChannel.B2B) "B2B" else "Retail")
             add(s.customerName ?: "")
             add(s.salePrice)

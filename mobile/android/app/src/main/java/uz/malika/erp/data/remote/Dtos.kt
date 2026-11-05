@@ -32,6 +32,19 @@ data class ChangesResponse(
     val nextSince: String? = null,
     val devices: List<DeviceSyncDto> = emptyList(),
     val partners: List<PartnerSyncDto> = emptyList(),
+    /** QUANTITY products with their current stock (ADR 0030); full list each sync. */
+    val products: List<ProductSyncDto> = emptyList(),
+)
+
+/** One quantity product an offline till can sell (ADR 0030). */
+@Serializable
+data class ProductSyncDto(
+    val modelId: String,
+    val brand: String = "",
+    val name: String = "",
+    val barcode: String? = null,
+    val salePrice: JsonElement? = null,
+    val quantity: Int = 0,
 )
 
 /**

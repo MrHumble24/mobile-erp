@@ -15,15 +15,17 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [
         DeviceEntity::class,
+        ProductEntity::class,
         PartnerEntity::class,
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun deviceDao(): DeviceDao
+    abstract fun productDao(): ProductDao
     abstract fun partnerDao(): PartnerDao
     abstract fun outboxDao(): OutboxDao
     abstract fun syncMetaDao(): SyncMetaDao
@@ -67,9 +69,24 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Quantity-product stock cache (ADR 0030): a new `products` table for the
+         * offline till. A plain CREATE — existing tables (devices, outbox, …) are
+         * untouched, so queued offline mutations and the device cache survive.
+         */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `products` (`modelId` TEXT NOT NULL, " +
+                        "`brand` TEXT NOT NULL, `name` TEXT NOT NULL, `barcode` TEXT, " +
+                        "`salePrice` TEXT, `quantity` INTEGER NOT NULL, PRIMARY KEY(`modelId`))",
+                )
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

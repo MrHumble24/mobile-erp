@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
+import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.DeviceRowDto
 import uz.malika.erp.features.procurement.data.ProcurementRepository
+import uz.malika.erp.features.procurement.data.PurchasedLineDto
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.PageState
@@ -48,6 +50,10 @@ fun ShipmentDetailSheet(
     onEdit: () -> Unit,
     onContinueIntake: () -> Unit,
     onDismiss: () -> Unit,
+    quantityModels: List<DeviceModelDto> = emptyList(),
+    addedLines: List<PurchasedLineDto> = emptyList(),
+    online: Boolean = false,
+    onItemsAdded: (List<PurchasedLineDto>) -> Unit = {},
 ) {
     AppBottomSheet(onDismiss = onDismiss) {
         ShipmentDetailContent(
@@ -60,6 +66,10 @@ fun ShipmentDetailSheet(
             onEdit = onEdit,
             onContinueIntake = onContinueIntake,
             modifier = Modifier.padding(16.dp),
+            quantityModels = quantityModels,
+            addedLines = addedLines,
+            online = online,
+            onItemsAdded = onItemsAdded,
         )
     }
 }
@@ -81,6 +91,10 @@ fun ShipmentDetailContent(
     onEdit: () -> Unit,
     onContinueIntake: () -> Unit,
     modifier: Modifier = Modifier,
+    quantityModels: List<DeviceModelDto> = emptyList(),
+    addedLines: List<PurchasedLineDto> = emptyList(),
+    online: Boolean = false,
+    onItemsAdded: (List<PurchasedLineDto>) -> Unit = {},
 ) {
     val t = LocalT.current
     val scope = rememberCoroutineScope()
@@ -125,6 +139,21 @@ fun ShipmentDetailContent(
             if (canManage) {
                 PillButton(t("shipments.editShipment", null), onEdit, Modifier.fillMaxWidth(), ButtonVariant.OUTLINE)
             }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        // Quantity stock lines on this shipment (ADR 0030): buying needs device.create.
+        if (canCreate) {
+            ShipmentStockLines(
+                shipmentId = shipment.id,
+                paymentAccountCode = shipment.paymentAccountCode,
+                quantityModels = quantityModels,
+                modelNames = modelNames,
+                addedLines = addedLines,
+                online = online,
+                repo = repo,
+                onAdded = onItemsAdded,
+            )
             Spacer(Modifier.height(16.dp))
         }
 

@@ -56,7 +56,7 @@ fun PosCheckoutForm(
 
     val total = parseMoney(state.lines.totalPrice())
     val pricesValid = state.lines.isNotEmpty() &&
-        state.lines.all { parseMoney(it.salePrice) > BigDecimal.ZERO }
+        state.lines.all { it.lineTotal > BigDecimal.ZERO }
     val payValid = payment.valid(total, accounts)
 
     Column(Modifier.fillMaxWidth()) {

@@ -1,6 +1,7 @@
 package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.data.local.DeviceEntity
+import uz.malika.erp.data.local.ProductEntity
 import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.payments.AccountAmount
 
@@ -48,8 +49,59 @@ data class ScannedDevice(
     }
 }
 
-/** One printed line item; [code] is the unit's IMEI or serial number. */
-data class ReceiptLineItem(val model: String, val code: String, val price: String, val sub: String?)
+/** What a till scan/lookup resolves to (ADR 0030). Units win over barcodes. */
+sealed interface ScanOutcome {
+    data class Unit(val device: ScannedDevice) : ScanOutcome
+    data class Product(val product: CartProduct) : ScanOutcome
+    data object NotFound : ScanOutcome
+}
+
+/**
+ * A quantity product resolved for the till — from the offline Room cache, a scan
+ * or a name search (ADR 0030). [salePrice] is the default per-piece price.
+ */
+data class CartProduct(
+    val modelId: String,
+    val brand: String,
+    val name: String,
+    val barcode: String?,
+    val salePrice: String?,
+    val inStock: Int,
+) {
+    val label: String get() = "$brand $name".trim()
+
+    companion object {
+        fun fromCache(p: ProductEntity) = CartProduct(
+            modelId = p.modelId,
+            brand = p.brand,
+            name = p.name,
+            barcode = p.barcode,
+            salePrice = p.salePrice,
+            inStock = p.quantity,
+        )
+
+        fun fromDto(p: QuantityProductDto) = CartProduct(
+            modelId = p.modelId,
+            brand = p.brand,
+            name = p.name,
+            barcode = p.barcode,
+            salePrice = p.salePrice,
+            inStock = p.quantity,
+        )
+    }
+}
+
+/**
+ * One printed line item. [code] is the unit's IMEI/serial (unit sale) or empty
+ * (quantity sale); [quantity] is set only for a quantity line (shows `× n`).
+ */
+data class ReceiptLineItem(
+    val model: String,
+    val code: String,
+    val price: String,
+    val sub: String?,
+    val quantity: Int? = null,
+)
 
 /**
  * The single render model for both receipts: the POS post-checkout receipt
@@ -81,6 +133,7 @@ fun ReceiptDto.toReceiptData() = ReceiptData(
             code = UnitCode.display(it.imei.ifBlank { null }, it.serialNumber),
             price = it.price,
             sub = listOfNotNull(it.storage, it.color).joinToString(" · ").ifEmpty { null },
+            quantity = it.quantity,
         )
     },
     total = total,

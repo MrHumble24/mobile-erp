@@ -36,6 +36,10 @@ interface ProcurementService {
     @POST("shipments/{id}/devices")
     suspend fun addDevices(@Path("id") id: String, @Body body: RegisterDevicesBody): List<RegisteredDeviceDto>
 
+    /** Buy quantity products into a shipment (ADR 0030); needs `device.create`. */
+    @POST("shipments/{id}/items")
+    suspend fun addItems(@Path("id") id: String, @Body body: RegisterItemsBody): List<PurchasedLineDto>
+
     @GET("device-models")
     suspend fun deviceModels(): List<DeviceModelDto>
 

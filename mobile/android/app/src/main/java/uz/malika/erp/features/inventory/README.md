@@ -65,7 +65,10 @@ gated by `device.read`).
   for cost-viewers (ADR 0026/0027), and two edit sheets that work on any status
   incl. SOLD: `EditExpenseSheet` (`device.expense`, `PATCH /devices/:id/expense`)
   and `EditCustomsFeeSheet` (`customs.manage`, `PATCH /devices/:id/customs-fee`).
-  `ModelFormSheet` carries a `customsCode` field (`inventory.customsCodeHint`).
+  `ModelFormSheet` carries a `customsCode` field (`inventory.customsCodeHint`)
+  for IMEI/SERIAL kinds; a `QUANTITY` product instead shows a per-piece
+  `catalog.salePrice` field and hides the customs code **and** the attribute
+  schema (ADR 0030). `DeviceModelView.salePrice` carries the default till price.
 - `data/InventoryApi.kt` is a slice-local Retrofit (device/model/stock endpoints
   are not on the foundation `ApiService`); it reuses the container's base-URL +
   auth behaviour. `ui/AppSelect.kt` is a slice-local Caldera select (the kit ships

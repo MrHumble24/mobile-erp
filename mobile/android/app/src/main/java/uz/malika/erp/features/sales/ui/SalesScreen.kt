@@ -270,9 +270,14 @@ private fun SaleRow(sale: Sale, t: uz.malika.erp.i18n.Translate, onClick: () -> 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                Text(sale.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
-                sale.imei2?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
+                if (sale.isQuantity) {
+                    // Quantity sale (ADR 0030): piece count, no unit code.
+                    Text("× ${sale.quantity}", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                } else {
+                    Text(sale.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                    sale.imei2?.takeIf { it.isNotBlank() }?.let {
+                        Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
+                    }
                 }
                 Text(
                     "${sale.customerName ?: t("pos.walkIn", null)} · ${formatDate(sale.soldAt)}",

@@ -14,6 +14,8 @@ data class Sale(
     val imei2: String? = null,
     val serialNumber: String? = null,
     val modelLabel: String,
+    /** Pieces sold (quantity sale, ADR 0030); null for a unit sale. */
+    val quantity: Int? = null,
     val customerName: String?,
     val customerPhone: String?,
     val salePrice: String,
@@ -27,7 +29,10 @@ data class Sale(
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
 
-    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    /** A product sold by the piece (no device, no identifier). */
+    val isQuantity: Boolean get() = quantity != null
+
+    /** The unit's identifier — IMEI or serial number (ADR 0029); empty for a quantity sale. */
     val code: String get() = UnitCode.display(imei, serialNumber)
 }
 
@@ -36,7 +41,9 @@ fun SaleDto.toDomain() = Sale(
     imei = device?.imei,
     imei2 = device?.imei2,
     serialNumber = device?.serialNumber,
-    modelLabel = device?.let { "${it.model.brand} ${it.model.name}".trim() } ?: "",
+    // A quantity sale has no device: its product rides `model`, with `quantity`.
+    modelLabel = (device?.model ?: model)?.let { "${it.brand} ${it.name}".trim() } ?: "",
+    quantity = quantity,
     customerName = customer?.name,
     customerPhone = customer?.phone,
     salePrice = salePrice,

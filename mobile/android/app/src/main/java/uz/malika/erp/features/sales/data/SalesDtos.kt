@@ -39,7 +39,11 @@ data class UserProfileNameDto(val firstName: String = "", val lastName: String? 
 @Serializable
 data class SaleDto(
     val id: String = "",
-    val device: SaleDeviceDto? = null, // nullable: tolerate a sale whose device row is gone
+    val device: SaleDeviceDto? = null, // null for a quantity sale (ADR 0030) or a vanished device row
+    /** Set for a quantity sale: the product sold. */
+    val model: ModelRefDto? = null,
+    /** Pieces sold (quantity sale); null for a unit sale. */
+    val quantity: Int? = null,
     val customer: SaleCustomerDto? = null,
     val salePrice: String = "0",
     val landedCostSnapshot: String? = null,
@@ -126,6 +130,8 @@ data class ReceiptItemDto(
     val model: String = "",
     val storage: String? = null,
     val color: String? = null,
+    /** Pieces, for a quantity sale; null for a unit sale (ADR 0030). */
+    val quantity: Int? = null,
     val price: String = "0",
 )
 
@@ -147,6 +153,32 @@ data class DeviceByImeiDto(
     val statusCode: String = "",
     val model: ModelRefDto = ModelRefDto(),
     val targetPrice: String? = null,
+)
+
+// ── Scan + quantity products (ADR 0030) ───────────────────────────────────────
+
+/** `GET /scan/:code`: a unit (today's behaviour) or a quantity product; 404 → neither. */
+@Serializable
+data class ScanResultDto(
+    val kind: String = "",
+    /** The unit when `kind == "unit"` (DeviceDetailView; lean decode via ignoreUnknownKeys). */
+    val unit: DeviceByImeiDto? = null,
+    /** The product when `kind == "product"`. */
+    val product: QuantityProductDto? = null,
+)
+
+/**
+ * A quantity product from `GET /scan/:code` or `GET /stock?search=` — only what
+ * the till needs. Stock views carry more fields; the extra keys are ignored.
+ */
+@Serializable
+data class QuantityProductDto(
+    val modelId: String = "",
+    val brand: String = "",
+    val name: String = "",
+    val barcode: String? = null,
+    val salePrice: String? = null,
+    val quantity: Int = 0,
 )
 
 @Serializable

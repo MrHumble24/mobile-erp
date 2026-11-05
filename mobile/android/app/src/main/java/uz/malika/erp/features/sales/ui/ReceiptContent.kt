@@ -43,7 +43,9 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
         Rule()
         data.items.forEach { item ->
             Text(item.model, style = mono)
-            Text(item.code, style = mono.copy(fontSize = 11.sp))
+            // Quantity line (ADR 0030): "× n" instead of a unit code.
+            item.quantity?.let { Text("× $it", style = mono.copy(fontSize = 11.sp)) }
+                ?: item.code.takeIf { it.isNotBlank() }?.let { Text(it, style = mono.copy(fontSize = 11.sp)) }
             item.sub?.let { Text(it, style = mono.copy(fontSize = 11.sp)) }
             Text(formatMoney(item.price), style = mono, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.End)
             Spacer(Modifier.height(4.dp))
@@ -80,7 +82,10 @@ private fun Rule() {
 fun buildReceiptText(t: Translate, data: ReceiptData): String = buildList {
     add(t("pos.storeName", null))
     add("${t("pos.receiptNumber", null)}: ${data.receiptId}")
-    data.items.forEach { add("${it.model} (${it.code})  ${formatMoney(it.price)}") }
+    data.items.forEach {
+        val tag = it.quantity?.let { q -> "× $q" } ?: it.code
+        add("${it.model} ($tag)  ${formatMoney(it.price)}")
+    }
     add("${t("pos.totalDue", null)}: ${formatMoney(data.total)}")
     data.warrantyUntil?.let { add("${t("pos.warrantyUntil", null)}: $it") }
     add(t("pos.thankYou", null))
@@ -102,7 +107,7 @@ fun printReceiptData(context: Context, t: Translate, data: ReceiptData) {
             data.customerName?.let { add(PrintRow("${t("sales.customer", null)}:", it)) }
             data.items.forEach {
                 add(PrintRow(it.model))
-                add(PrintRow(it.code, formatMoney(it.price)))
+                add(PrintRow(it.quantity?.let { q -> "× $q" } ?: it.code, formatMoney(it.price)))
             }
             add(PrintRow("${t("pos.totalDue", null)}:", formatMoney(data.total), bold = true))
             data.warrantyUntil?.let { add(PrintRow("${t("pos.warrantyUntil", null)}:", it)) }

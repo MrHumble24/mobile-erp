@@ -36,6 +36,38 @@ class PosRepository(
         }
     }
 
+    /**
+     * Resolve any scanned/typed code to a unit or a quantity product (ADR 0030).
+     * Offline: the device cache (imei/serial) then the product cache (barcode) —
+     * units win. Online: `GET /scan/:code`, which applies the same precedence.
+     */
+    suspend fun scan(code: String, online: Boolean): ScanOutcome {
+        db.deviceDao().findByImei(code)?.let { return ScanOutcome.Unit(ScannedDevice.fromCache(it)) }
+        db.productDao().findByBarcode(code)?.let { return ScanOutcome.Product(CartProduct.fromCache(it)) }
+        if (!online) return ScanOutcome.NotFound
+        return runApi {
+            try {
+                val res = api.scan(code)
+                when {
+                    res.unit != null -> ScanOutcome.Unit(ScannedDevice.fromDto(res.unit))
+                    res.product != null -> ScanOutcome.Product(CartProduct.fromDto(res.product))
+                    else -> ScanOutcome.NotFound
+                }
+            } catch (e: AppException) {
+                if (e.statusCode == 404) ScanOutcome.NotFound else throw e
+            }
+        }
+    }
+
+    /** Find quantity products by name/barcode (the till's typed search). Online hits
+     *  `GET /stock?search=`; offline filters the product cache by name/barcode. */
+    suspend fun searchProducts(query: String, online: Boolean): List<CartProduct> {
+        val q = query.trim()
+        if (q.isEmpty()) return emptyList()
+        if (online) return runApi { api.stockSearch(mapOf("search" to q)).map(CartProduct::fromDto) }
+        return db.productDao().search(q).map(CartProduct::fromCache)
+    }
+
     /** Unit codes with a pending offline `sale.create` — treated as already sold on re-scan. */
     fun watchPendingSoldImeis(): Flow<Set<String>> =
         db.outboxDao().watchAll().map { rows ->
@@ -53,7 +85,7 @@ class PosRepository(
         }.getOrNull()?.takeIf { it.isNotEmpty() }
 
     /** Queue the checkout. Returns the mutation id (= clientMutationId the server dedups on). */
-    suspend fun enqueueSale(payload: kotlinx.serialization.json.JsonObject, baseVersion: Int): String =
+    suspend fun enqueueSale(payload: kotlinx.serialization.json.JsonObject, baseVersion: Int?): String =
         outbox.enqueue(OutboxType.SALE_CREATE, payload, baseVersion)
 
     suspend fun defaultWarrantyDays(): Int = runApi { api.settings().defaultWarrantyDays }

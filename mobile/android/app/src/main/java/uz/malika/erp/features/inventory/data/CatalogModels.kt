@@ -72,6 +72,8 @@ data class DeviceModelView(
     val categoryId: String? = null,
     val barcode: String? = null,
     val modelCode: String? = null,
+    /** Default till price per piece for a QUANTITY product (ADR 0030); null otherwise. */
+    val salePrice: String? = null,
 ) {
     val label: String get() = "$brand $name"
 
@@ -87,6 +89,7 @@ data class DeviceModelView(
             categoryId = d.categoryId,
             barcode = d.barcode,
             modelCode = d.modelCode,
+            salePrice = d.salePrice,
         )
     }
 }
