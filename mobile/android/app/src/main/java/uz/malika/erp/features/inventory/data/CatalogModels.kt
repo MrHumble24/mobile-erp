@@ -52,6 +52,8 @@ data class DeviceModelView(
     val name: String,
     val isActive: Boolean,
     val attributes: List<AttributeDef>,
+    /** How customs writes this model (ADR 0027); null when unset. */
+    val customsCode: String? = null,
 ) {
     val label: String get() = "$brand $name"
 
@@ -62,6 +64,7 @@ data class DeviceModelView(
             name = d.name,
             isActive = d.isActive,
             attributes = d.attributes.map(AttributeDef::fromDto),
+            customsCode = d.customsCode,
         )
     }
 }

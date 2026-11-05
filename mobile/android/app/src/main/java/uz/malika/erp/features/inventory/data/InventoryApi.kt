@@ -26,6 +26,12 @@ interface InventoryApi {
     @PATCH("devices/{id}")
     suspend fun updateDevice(@Path("id") id: String, @Body body: JsonElement)
 
+    @PATCH("devices/{id}/expense")
+    suspend fun setExpense(@Path("id") id: String, @Body body: JsonElement)
+
+    @PATCH("devices/{id}/customs-fee")
+    suspend fun setCustomsFee(@Path("id") id: String, @Body body: JsonElement)
+
     @POST("devices/{id}/status")
     suspend fun changeStatus(@Path("id") id: String, @Body body: ChangeStatusBody)
 
@@ -63,6 +69,10 @@ data class DeviceDetailDto(
     val version: Int,
     val targetPrice: JsonElement? = null,
     val landedCost: JsonElement? = null, // redacted → absent for under-privileged users
+    val acquisitionCost: JsonElement? = null, // redacted with the other cost fields
+    val customsFee: JsonElement? = null,
+    val unitExpense: JsonElement? = null,
+    val unitExpenseNote: String? = null,
     val intakeDate: String? = null,
     val model: ModelRefDto? = null,
     val specs: JsonElement? = null,
@@ -95,6 +105,7 @@ data class DeviceModelDto(
     val name: String,
     val isActive: Boolean = true,
     val attributes: List<AttributeDefDto> = emptyList(),
+    val customsCode: String? = null,
 )
 
 @Serializable
@@ -139,6 +150,7 @@ data class ModelWriteBody(
     val name: String,
     val attributes: List<AttributeDefDto>,
     val isActive: Boolean? = null, // sent on edit only
+    val customsCode: String? = null, // omitted when blank (explicitNulls=false)
 )
 
 @Serializable

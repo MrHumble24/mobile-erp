@@ -55,6 +55,7 @@ fun IntakeSheet(
     val scope = rememberCoroutineScope()
     val haptics = rememberHaptics()
     val canCost = LocalCan.current("device.cost.view")
+    val canExpense = LocalCan.current("device.expense")
     val allDrafts by vm.drafts.collectAsState()
     val drafts = allDrafts[shipment.id].orEmpty()
     val modelNames = remember(models) { models.associate { it.id to it.label } }
@@ -113,7 +114,7 @@ fun IntakeSheet(
                 OfflineBanner(t("sync.offline", null))
             }
             Spacer(Modifier.height(Tokens.Space.section))
-            IntakeDeviceForm(models = models, onAdd = ::add)
+            IntakeDeviceForm(models = models, canExpense = canExpense, onAdd = ::add)
             if (drafts.isNotEmpty()) {
                 Spacer(Modifier.height(Tokens.Space.section))
                 IntakeStagedList(

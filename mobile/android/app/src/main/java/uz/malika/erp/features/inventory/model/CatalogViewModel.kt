@@ -37,8 +37,8 @@ class CatalogViewModel(private val repo: CatalogRepository) : ViewModel() {
     fun attributesOf(modelId: String): List<AttributeDef> =
         _models.value.valueOrNull?.firstOrNull { it.id == modelId }?.attributes ?: emptyList()
 
-    suspend fun create(brand: String, name: String, attributes: List<AttributeDef>) {
-        repo.create(brand, name, attributes)
+    suspend fun create(brand: String, name: String, attributes: List<AttributeDef>, customsCode: String?) {
+        repo.create(brand, name, attributes, customsCode)
         refresh()
     }
 
@@ -48,8 +48,9 @@ class CatalogViewModel(private val repo: CatalogRepository) : ViewModel() {
         name: String,
         isActive: Boolean,
         attributes: List<AttributeDef>,
+        customsCode: String?,
     ) {
-        repo.update(id, brand, name, isActive, attributes)
+        repo.update(id, brand, name, isActive, attributes, customsCode)
         refresh()
     }
 }

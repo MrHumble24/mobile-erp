@@ -47,6 +47,7 @@ fun ModelFormSheet(
 
     var brand by remember { mutableStateOf(model?.brand ?: "") }
     var name by remember { mutableStateOf(model?.name ?: "") }
+    var customsCode by remember { mutableStateOf(model?.customsCode ?: "") }
     var active by remember { mutableStateOf(model?.isActive ?: true) }
     var attributes by remember { mutableStateOf(model?.attributes ?: emptyList()) }
     val savedKeys = remember { model?.attributes?.map { it.key }?.toSet() ?: emptySet() }
@@ -61,10 +62,11 @@ fun ModelFormSheet(
         error = null
         scope.launch {
             try {
+                val code = customsCode.trim().ifBlank { null }
                 if (isEdit) {
-                    catalogVm.update(model!!.id, brand.trim(), name.trim(), active, attributes)
+                    catalogVm.update(model!!.id, brand.trim(), name.trim(), active, attributes, code)
                 } else {
-                    catalogVm.create(brand.trim(), name.trim(), attributes)
+                    catalogVm.create(brand.trim(), name.trim(), attributes, code)
                 }
                 onSaved()
             } catch (e: AppException) {
@@ -84,6 +86,18 @@ fun ModelFormSheet(
         AppFormField(label = t("inventory.brand", null), value = brand, onValueChange = { brand = it })
         Spacer(Modifier.height(Tokens.Space.md))
         AppFormField(label = t("inventory.model", null), value = name, onValueChange = { name = it })
+        Spacer(Modifier.height(Tokens.Space.md))
+        AppFormField(
+            label = t("inventory.customsCode", null),
+            value = customsCode,
+            onValueChange = { customsCode = it },
+        )
+        Spacer(Modifier.height(Tokens.Space.xs))
+        Text(
+            t("inventory.customsCodeHint", null),
+            style = MaterialTheme.typography.bodySmall,
+            color = Tokens.muted,
+        )
         if (isEdit) {
             Spacer(Modifier.height(Tokens.Space.md))
             Row(

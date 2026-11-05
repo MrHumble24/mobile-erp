@@ -2,6 +2,7 @@ package uz.malika.erp.app
 
 import uz.malika.erp.features.admin.AdminFeature
 import uz.malika.erp.features.balance.BalanceFeature
+import uz.malika.erp.features.customs.CustomsFeature
 import uz.malika.erp.features.devconsole.DevConsoleFeature
 import uz.malika.erp.features.finance.FinanceFeature
 import uz.malika.erp.features.inventory.InventoryFeature
@@ -23,6 +24,7 @@ object FeatureRegistry {
     val features: List<FeatureModule> = listOf(
         FinanceFeature,
         BalanceFeature,
+        CustomsFeature,
         SalesFeature,
         InventoryFeature,
         ProcurementFeature,
@@ -39,7 +41,7 @@ object FeatureRegistry {
      */
     private val navOrder: List<String> = listOf(
         "dashboard", "pos", "sales", "inventory", "shipments", "qc",
-        "consignments", "partners", "customers", "expenses", "balance", "reports",
+        "consignments", "partners", "customers", "expenses", "balance", "customs", "reports",
         "users", "settings", "sync",
     )
 

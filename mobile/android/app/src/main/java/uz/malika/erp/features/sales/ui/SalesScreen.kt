@@ -52,6 +52,7 @@ import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.SalesRepository
 import uz.malika.erp.shared.lib.formatDate
+import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.features.sales.lib.salesCsv
 import uz.malika.erp.features.sales.model.SalesViewModel
 import uz.malika.erp.i18n.LocalT
@@ -231,12 +232,17 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
     }
 
     returnSaleId?.let { id ->
+        val sale = returnSale?.takeIf { it.id == id }
         ReturnDialog(
             vm,
             id,
             online,
             container.toaster,
-            refundAccounts = returnSale?.takeIf { it.id == id }?.payments?.map { it.accountCode } ?: emptyList(),
+            refundAccounts = sale?.payments?.map { it.accountCode } ?: emptyList(),
+            maxRefund = sale?.let { s ->
+                s.payments.fold(java.math.BigDecimal.ZERO) { acc, p -> acc + p.amount }
+                    .takeIf { it.signum() > 0 } ?: parseMoney(s.salePrice)
+            } ?: java.math.BigDecimal.ZERO,
         ) { returnSaleId = null; returnSale = null }
     }
 

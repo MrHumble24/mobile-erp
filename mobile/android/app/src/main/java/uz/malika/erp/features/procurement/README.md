@@ -72,7 +72,9 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
   `received / expected` count, the status chip, and a hairline
   `LinearProgressIndicator` of intake completion tinted by that same colour.
   `ShipmentDetailContent` is headed by the batch identity (supplier, date,
-  intake sentence) with overhead/notes rows shown only when present and the
+  intake sentence) with the per-phone expense + customs-fee totals (cost-redacted,
+  shown only when the server sent them), notes, and a `shipments.devicesWithoutCustomsFee`
+  warning when any phone lacks a customs fee; the
   actions stacked full-width (continue-intake, then outline edit); device rows
   use `StatusChip` (`DeviceStatusMeta`) and label per-unit cost `inventory.landedCost`.
   A failed device-page load shows the kit `ErrorView` with retry, not "no devices".
@@ -114,6 +116,9 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
 ## Notes
 - Shipment carries an optional `paymentAccountCode` (default `CASH`, fixed at
   creation). The create form has a "Paid from" `AccountPicker` (`shared/payments`);
-  on edit and in the detail it is read-only, since the server fixes it. The
-  overhead-cost field is still present here but the server now rejects
-  `overheadCost` — a follow-up task removes it from the form.
+  on edit and in the detail it is read-only, since the server fixes it.
+- A shipment no longer has an overhead cost (ADR 0026/0027): the form has no
+  overhead field, and the detail shows the computed `unitExpenseTotal` +
+  `customsFeeTotal` instead. Intake (`IntakeDeviceForm`) takes an optional
+  per-phone expense + note (gated by `device.expense`); the server stamps each
+  phone's customs fee from the current list and the landed-cost results show it.

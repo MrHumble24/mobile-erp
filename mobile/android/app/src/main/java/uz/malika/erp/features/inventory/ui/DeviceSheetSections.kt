@@ -105,9 +105,34 @@ fun DeviceSpecsGrid(device: DeviceDetail) {
         }
         if (device.landedCost != null) {
             Spacer(Modifier.height(Tokens.Space.sm))
+            CostBreakdown(device)
+            Spacer(Modifier.height(Tokens.Space.sm))
             MarginRow(targetPrice = device.targetPrice, landedCost = device.landedCost)
         }
     }
+}
+
+/**
+ * Per-phone cost parts (ADR 0026/0027): phone expense (+ its note), customs fee.
+ * Only reached when landed cost is present, i.e. the caller may see costs; each
+ * row renders only when the server sent that value.
+ */
+@Composable
+private fun CostBreakdown(device: DeviceDetail) {
+    val t = LocalT.current
+    val rows = buildList<@Composable (Boolean) -> Unit> {
+        device.unitExpense?.let { v ->
+            add { last -> Fact(t("inventory.unitExpense", null), last) { MoneyText(v, style = valueStyle()) } }
+        }
+        device.unitExpenseNote?.takeIf { it.isNotBlank() }?.let { n ->
+            add { last -> Fact(t("inventory.unitExpenseNote", null), last) { Text(n, style = valueStyle()) } }
+        }
+        device.customsFee?.let { v ->
+            add { last -> Fact(t("inventory.customsFee", null), last) { MoneyText(v, style = valueStyle()) } }
+        }
+    }
+    if (rows.isEmpty()) return
+    FactBlock { rows.forEachIndexed { i, row -> row(i == rows.lastIndex) } }
 }
 
 @Composable

@@ -52,7 +52,8 @@ data class LedgerTxn(
     val id: String,
     val accountCode: String = "",
     val typeCode: String = "",
-    val amount: String = "0",
+    /** Signed decimal string, or null when this cost row's amount is hidden from the caller. */
+    val amount: String? = null,
     val occurredAt: String? = null,
     val note: String? = null,
     val transferId: String? = null,

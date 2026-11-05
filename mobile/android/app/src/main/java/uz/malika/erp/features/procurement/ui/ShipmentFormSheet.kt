@@ -58,7 +58,6 @@ fun ShipmentFormSheet(
     var supplierId by remember { mutableStateOf(existing?.supplierId) }
     var date by remember { mutableStateOf(existing?.dateLabel ?: millisToDate()) }
     var expected by remember { mutableStateOf(existing?.expectedCount?.toString() ?: "") }
-    var overhead by remember { mutableStateOf(existing?.overheadCost ?: "") }
     var notes by remember { mutableStateOf(existing?.notes ?: "") }
     var account by remember { mutableStateOf(existing?.paymentAccountCode ?: PaymentSplit.CASH) }
     val accounts by rememberAccountOptions(container)
@@ -72,17 +71,16 @@ fun ShipmentFormSheet(
         if (!online) { error = t("common.offline", null); return }
         busy = true; error = null
         val iso = "${date}T00:00:00.000Z"
-        val overheadNum = overhead.trim().toDoubleOrNull()
         scope.launch {
             try {
                 val saved = if (existing == null) {
                     repo.createShipment(
-                        CreateShipmentBody(supplierId!!, iso, count, overheadNum, notes.trim().ifBlank { null }, account),
+                        CreateShipmentBody(supplierId!!, iso, count, notes.trim().ifBlank { null }, account),
                     )
                 } else {
                     repo.updateShipment(
                         existing.id,
-                        UpdateShipmentBody(iso, count, overheadNum, notes.trim().ifBlank { null }),
+                        UpdateShipmentBody(iso, count, notes.trim().ifBlank { null }),
                     )
                 }
                 onSaved(saved); onDismiss()
@@ -117,11 +115,6 @@ fun ShipmentFormSheet(
             AppFormField(
                 t("shipments.expectedCount", null), expected, { expected = it },
                 keyboardType = KeyboardType.Number,
-            )
-            Spacer(Modifier.height(12.dp))
-            AppFormField(
-                t("shipments.overheadCost", null), overhead, { overhead = it },
-                keyboardType = KeyboardType.Decimal,
             )
             Spacer(Modifier.height(12.dp))
             if (editing) {

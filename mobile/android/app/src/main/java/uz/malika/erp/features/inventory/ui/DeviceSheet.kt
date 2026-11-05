@@ -116,7 +116,12 @@ private fun DeviceSheetBody(
     val canChangeStatus = LocalCan.current("device.status.change")
     val canSell = LocalCan.current("sale.create") && device.statusCode == "IN_STOCK"
     val canInspect = LocalCan.current("qc.create") && device.statusCode in INSPECTABLE
+    // Both cost edits work on any status, sold included (ADR 0026/0027).
+    val canExpense = LocalCan.current("device.expense")
+    val canCustomsFee = LocalCan.current("customs.manage")
     var showEdit by remember { mutableStateOf(false) }
+    var showExpense by remember { mutableStateOf(false) }
+    var showCustomsFee by remember { mutableStateOf(false) }
 
     val history by produceState<List<DeviceHistoryEntry>>(emptyList(), device.id) {
         value = runCatching { devicesVm.history(device.id) }.getOrDefault(emptyList())
@@ -138,7 +143,7 @@ private fun DeviceSheetBody(
             label = t(DeviceStatusMeta.labelKey(device.statusCode), null),
             color = DeviceStatusMeta.color(device.statusCode),
         )
-        if (canSell || canInspect || canUpdate) {
+        if (canSell || canInspect || canUpdate || canExpense || canCustomsFee) {
             Spacer(Modifier.height(Tokens.Space.lg))
             // Sell is the one orange; QC is secondary; edit is a ghost link.
             if (canSell) {
@@ -163,6 +168,24 @@ private fun DeviceSheetBody(
                     text = t("inventory.editDevice", null),
                     onClick = { showEdit = true },
                     variant = ButtonVariant.GHOST,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (canExpense) {
+                Spacer(Modifier.height(Tokens.Space.sm))
+                PillButton(
+                    text = t("inventory.editUnitExpense", null),
+                    onClick = { showExpense = true },
+                    variant = ButtonVariant.OUTLINE,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (canCustomsFee) {
+                Spacer(Modifier.height(Tokens.Space.sm))
+                PillButton(
+                    text = t("inventory.editCustomsFee", null),
+                    onClick = { showCustomsFee = true },
+                    variant = ButtonVariant.OUTLINE,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -197,6 +220,28 @@ private fun DeviceSheetBody(
                 catalogVm = catalogVm,
                 online = online,
                 onSaved = { showEdit = false; onChanged() },
+            )
+        }
+    }
+    if (showExpense) {
+        AppBottomSheet(onDismiss = { showExpense = false }) {
+            EditExpenseSheet(
+                device = device,
+                devicesVm = devicesVm,
+                online = online,
+                toaster = toaster,
+                onSaved = { showExpense = false; onChanged() },
+            )
+        }
+    }
+    if (showCustomsFee) {
+        AppBottomSheet(onDismiss = { showCustomsFee = false }) {
+            EditCustomsFeeSheet(
+                device = device,
+                devicesVm = devicesVm,
+                online = online,
+                toaster = toaster,
+                onSaved = { showCustomsFee = false; onChanged() },
             )
         }
     }

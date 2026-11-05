@@ -52,7 +52,13 @@ fun LedgerRow(txn: LedgerTxn, modifier: Modifier = Modifier) {
                 }
             }
             Spacer(Modifier.width(Tokens.Space.gap))
-            MoneyText(txn.amount, style = MaterialTheme.typography.titleSmall.copy(color = signTint(txn.amount)))
+            val amount = txn.amount
+            if (amount == null) {
+                // Cost-row amount redacted for a caller without `device.cost.view`.
+                Text(t("balance.amountHidden", null), style = MaterialTheme.typography.titleSmall, color = Tokens.muted)
+            } else {
+                MoneyText(amount, style = MaterialTheme.typography.titleSmall.copy(color = signTint(amount)))
+            }
         }
     }
 }

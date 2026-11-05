@@ -61,6 +61,11 @@ gated by `device.read`).
 - Hand-write Uzbek — all copy comes from web i18n keys via `t()`.
 
 ## Notes
+- Device detail shows the per-phone expense (+ note), customs fee and landed cost
+  for cost-viewers (ADR 0026/0027), and two edit sheets that work on any status
+  incl. SOLD: `EditExpenseSheet` (`device.expense`, `PATCH /devices/:id/expense`)
+  and `EditCustomsFeeSheet` (`customs.manage`, `PATCH /devices/:id/customs-fee`).
+  `ModelFormSheet` carries a `customsCode` field (`inventory.customsCodeHint`).
 - `data/InventoryApi.kt` is a slice-local Retrofit (device/model/stock endpoints
   are not on the foundation `ApiService`); it reuses the container's base-URL +
   auth behaviour. `ui/AppSelect.kt` is a slice-local Caldera select (the kit ships
