@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import { Prisma } from '../generated/client/client.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
@@ -12,12 +13,13 @@ import { TransferDto } from './dto/transfer.dto.js';
 import { LedgerRepository } from './ledger.repository.js';
 import { signedManualAmount } from './lib/signed-amount.js';
 import { currentAccount, foldSourceNets } from './lib/source-nets.js';
-import type {
-  AccountNet,
-  BalanceSummary,
-  DigestBalances,
-  LedgerPost,
-  LedgerSourceField,
+import {
+  COST_TYPE_CODES,
+  type AccountNet,
+  type BalanceSummary,
+  type DigestBalances,
+  type LedgerPost,
+  type LedgerSourceField,
 } from './types/ledger.types.js';
 
 @Injectable()
@@ -133,8 +135,13 @@ export class LedgerService {
     return out;
   }
 
-  /** History, newest first, paginated and filterable (expenses conventions). */
-  async list(query: LedgerQueryDto) {
+  /**
+   * History, newest first, paginated and filterable (expenses conventions).
+   * A caller without the cost permission gets `amount: null` on cost-type rows
+   * (PURCHASE/OVERHEAD/DEVICE_EXPENSE/CUSTOMS) — their amount is a device cost
+   * the interceptor cannot redact by field name. The row is otherwise intact.
+   */
+  async list(query: LedgerQueryDto, canViewCost = true) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 50;
     const { items, total } = await this.repo.findMany({
@@ -148,7 +155,8 @@ export class LedgerService {
       page,
       pageSize,
     });
-    return { items, total, page, pageSize };
+    const shaped = canViewCost ? items : items.map(hideCostAmount);
+    return { items: shaped, total, page, pageSize };
   }
 
   async createEntry(createdById: string, dto: CreateLedgerEntryDto) {
@@ -163,15 +171,26 @@ export class LedgerService {
         `Account ${dto.accountCode} already has an opening balance`,
       );
     }
-    return this.post({
-      storeId,
-      accountCode: dto.accountCode,
-      typeCode: dto.typeCode,
-      amount,
-      occurredAt: parseDate(dto.occurredAt),
-      note: dto.note,
-      createdById,
-    });
+    try {
+      return await this.post({
+        storeId,
+        accountCode: dto.accountCode,
+        typeCode: dto.typeCode,
+        amount,
+        occurredAt: parseDate(dto.occurredAt),
+        note: dto.note,
+        createdById,
+      });
+    } catch (error) {
+      // A racing second OPENING slips past the check above and trips the partial
+      // unique index — turn that into a 409, not a 500.
+      if (isUniqueViolation(error)) {
+        throw new ConflictException(
+          `Account ${dto.accountCode} already has an opening balance`,
+        );
+      }
+      throw error;
+    }
   }
 
   /**
@@ -219,6 +238,13 @@ export class LedgerService {
 
 function parseDate(value?: string): Date | undefined {
   return value ? new Date(value) : undefined;
+}
+
+/** Null the `amount` of a cost-type row; leave everything else untouched. */
+function hideCostAmount<T extends { typeCode: string; amount: unknown }>(
+  row: T,
+): T | (Omit<T, 'amount'> & { amount: null }) {
+  return COST_TYPE_CODES.has(row.typeCode) ? { ...row, amount: null } : row;
 }
 
 /** Account code → summed amount, from a Prisma groupBy result. */

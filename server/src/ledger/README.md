@@ -22,7 +22,9 @@ payments / purchases / overhead post rows automatically.
   summed in exact `Decimal` (`balance.read`).
 - `GET /ledger/transactions` — history, newest first, paginated, filter by
   `accountCode`/`typeCode`/`from`/`to`; every item carries the five nullable
-  source ids (`balance.read`).
+  source ids (`balance.read`). A caller **without** `device.cost.view` gets
+  `amount: null` on cost-type rows (`PURCHASE`/`OVERHEAD`/`DEVICE_EXPENSE`/
+  `CUSTOMS`, listed in `COST_TYPE_CODES`) — ADR 0028; balances are not redacted.
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
@@ -40,7 +42,8 @@ payments / purchases / overhead post rows automatically.
 ## Must never
 
 - Update or delete a row. A mistake is fixed by a new row: a difference, a
-  reversal, or a CORRECTION — never an edit.
+  reversal, or a CORRECTION — never an edit. Difference posters read the old
+  amount under a `FOR UPDATE` lock inside their transaction (ADR 0028).
 - Store a balance. Always sum. Balances may go below zero; nothing is blocked.
 - Let another module reach past `LedgerService` into the repository.
 

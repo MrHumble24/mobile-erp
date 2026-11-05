@@ -16,6 +16,19 @@ export const LEDGER_SORT_FIELDS = [
 ] as const;
 export type LedgerSortField = (typeof LEDGER_SORT_FIELDS)[number];
 
+/**
+ * Transaction types whose `amount` reveals a device cost (purchase, overhead,
+ * per-phone expense, customs fee). The ledger history nulls these amounts for a
+ * caller without the cost permission, since the generic interceptor cannot see
+ * a field named `amount`. Kept here, next to the type lookup.
+ */
+export const COST_TYPE_CODES: ReadonlySet<string> = new Set([
+  'PURCHASE',
+  'OVERHEAD',
+  'DEVICE_EXPENSE',
+  'CUSTOMS',
+]);
+
 export interface AccountBalance {
   accountCode: string;
   label: string;

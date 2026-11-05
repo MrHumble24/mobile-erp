@@ -80,7 +80,13 @@ export class DevicesExpenseRepository {
     });
   }
 
-  private loadState(tx: Tx, id: string): Promise<CostState> {
+  /**
+   * Locks the device row (FOR UPDATE) before reading its cost state, so two
+   * concurrent expense/customs edits serialize and the posted differences sum
+   * to the real total (ADR 0025) — the same lost-update guard as expenses.
+   */
+  private async loadState(tx: Tx, id: string): Promise<CostState> {
+    await tx.$queryRaw`SELECT id FROM devices WHERE id = ${id} FOR UPDATE`;
     return tx.device.findUniqueOrThrow({
       where: { id },
       select: {

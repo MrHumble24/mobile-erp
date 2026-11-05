@@ -183,6 +183,7 @@ export class SalesService {
     if (!device) throw new NotFoundException(`Sale ${id} device missing`);
 
     const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
+    this.assertRefundWithinSale(dto.refundAmount, sale.salePrice, saleNets);
     await this.checkout.processReturn({
       saleId: id,
       deviceId: sale.deviceId,
@@ -195,6 +196,26 @@ export class SalesService {
       refundPostings: buildRefundPostings(dto.refundAmount, saleNets),
     });
     return this.require(id);
+  }
+
+  /**
+   * A refund may never exceed what the sale took in: the net of its SALE ledger
+   * rows, or `salePrice` for a sale with no ledger rows (pre-ledger).
+   */
+  private assertRefundWithinSale(
+    refundAmount: number,
+    salePrice: Prisma.Decimal,
+    saleNets: { amount: Prisma.Decimal }[],
+  ): void {
+    const cap =
+      saleNets.length > 0
+        ? saleNets.reduce((sum, n) => sum.plus(n.amount), new Prisma.Decimal(0))
+        : salePrice;
+    if (new Prisma.Decimal(refundAmount).greaterThan(cap)) {
+      throw new BadRequestException(
+        `Refund ${refundAmount} exceeds the sale's ${cap.toFixed(2)}`,
+      );
+    }
   }
 
   private async require(id: string): Promise<SaleView> {

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
 } from 'class-validator';
 
@@ -18,6 +19,7 @@ export class TransferDto {
   /** The positive amount moved; the server writes -amount on from, +amount on to. */
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
+  @Max(1_000_000_000)
   amount!: number;
 
   @IsOptional()

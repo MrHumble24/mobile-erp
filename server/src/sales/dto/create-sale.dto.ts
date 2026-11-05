@@ -9,6 +9,7 @@ import {
   IsString,
   IsUUID,
   Matches,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -35,6 +36,7 @@ export class SalePaymentDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
+  @Max(1_000_000_000)
   amount!: number;
 }
 
@@ -45,6 +47,7 @@ export class CreateSaleDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
+  @Max(1_000_000_000)
   salePrice!: number;
 
   @IsOptional()

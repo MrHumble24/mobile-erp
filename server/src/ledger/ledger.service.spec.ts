@@ -20,6 +20,7 @@ function build(
     listAccounts: jest.fn().mockResolvedValue([]),
     accountExists: jest.fn().mockResolvedValue({ code: 'CASH' }),
     openingExists: jest.fn().mockResolvedValue(null),
+    findMany: jest.fn().mockResolvedValue({ items: [], total: 0 }),
     ...overrides,
   } as unknown as LedgerRepository;
   const stores = {
@@ -163,6 +164,53 @@ describe('LedgerService.createEntry', () => {
         amount: 10,
       }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  it('turns a racing second OPENING (P2002) into a 409, not a 500', async () => {
+    const { service } = build({
+      // check passes (no opening yet) but the insert trips the partial index
+      openingExists: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockRejectedValue({ code: 'P2002' }),
+    });
+    await expect(
+      service.createEntry('user-1', {
+        accountCode: 'CASH',
+        typeCode: 'OPENING',
+        amount: 1000,
+      }),
+    ).rejects.toThrow(ConflictException);
+  });
+});
+
+describe('LedgerService.list cost redaction', () => {
+  const rows = [
+    { id: '1', typeCode: 'SALE', amount: '500.00' },
+    { id: '2', typeCode: 'PURCHASE', amount: '-300.00' },
+    { id: '3', typeCode: 'CUSTOMS', amount: '-50.00' },
+  ];
+
+  it('nulls cost-type amounts for a caller without the cost permission', async () => {
+    const { service } = build({
+      findMany: jest.fn().mockResolvedValue({ items: rows, total: 3 }),
+    });
+    const result = await service.list({}, false);
+    expect(result.items.map((i: { amount: unknown }) => i.amount)).toEqual([
+      '500.00',
+      null,
+      null,
+    ]);
+  });
+
+  it('keeps every amount for a caller with the cost permission', async () => {
+    const { service } = build({
+      findMany: jest.fn().mockResolvedValue({ items: rows, total: 3 }),
+    });
+    const result = await service.list({}, true);
+    expect(result.items.map((i: { amount: unknown }) => i.amount)).toEqual([
+      '500.00',
+      '-300.00',
+      '-50.00',
+    ]);
   });
 });
 

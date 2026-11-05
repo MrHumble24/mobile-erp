@@ -30,6 +30,7 @@ function deviceRow(landedCost: number) {
 function build(before: { unitExpense?: number; customsFee?: number } = {}) {
   const sale = { update: jest.fn(), updateMany: jest.fn() };
   const tx = {
+    $queryRaw: jest.fn().mockResolvedValue([{ id: 'd1' }]),
     device: {
       findUniqueOrThrow: jest.fn().mockResolvedValue({
         acquisitionCost: D(300),

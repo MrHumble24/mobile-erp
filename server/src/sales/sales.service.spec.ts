@@ -1,6 +1,11 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
@@ -32,9 +37,19 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
         model: { brand: 'Apple', name: '15' },
       },
     }),
+    findSaleForReturn: jest.fn().mockResolvedValue({
+      id: 'sale-1',
+      deviceId: 'dev-1',
+      storeId: 'store-1',
+      salePrice: new Prisma.Decimal(250),
+    }),
+    findDeviceState: jest.fn().mockResolvedValue({ version: 5 }),
     ...readsOverrides,
   };
-  const checkout = { checkout: jest.fn().mockResolvedValue('sale-1') };
+  const checkout = {
+    checkout: jest.fn().mockResolvedValue('sale-1'),
+    processReturn: jest.fn().mockResolvedValue(undefined),
+  };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
   const ledger = {
     activeAccountCodes: jest.fn().mockResolvedValue(['CASH', 'CARD']),
@@ -123,5 +138,46 @@ describe('SalesService.create', () => {
         warranty: expect.objectContaining({ days: 14 }),
       }),
     );
+  });
+});
+
+describe('SalesService.processReturn refund cap', () => {
+  const ret = (refundAmount: number) =>
+    ({ refundAmount, deviceToStatusCode: 'IN_STOCK' }) as never;
+
+  it('allows a refund equal to the sale net (ledger sale)', async () => {
+    const svc = build();
+    svc.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(250) }]],
+      ]),
+    );
+    await svc.service.processReturn(caller, 'sale-1', ret(250));
+    expect(svc.checkout.processReturn).toHaveBeenCalled();
+  });
+
+  it('rejects one unit above the sale net (ledger sale)', async () => {
+    const svc = build();
+    svc.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(250) }]],
+      ]),
+    );
+    await expect(
+      svc.service.processReturn(caller, 'sale-1', ret(251)),
+    ).rejects.toThrow(BadRequestException);
+    expect(svc.checkout.processReturn).not.toHaveBeenCalled();
+  });
+
+  it('caps a pre-ledger sale at its salePrice: equal passes, above fails', async () => {
+    const ok = build(); // salePayments -> empty Map (pre-ledger), salePrice 250
+    await ok.service.processReturn(caller, 'sale-1', ret(250));
+    expect(ok.checkout.processReturn).toHaveBeenCalled();
+
+    const bad = build();
+    await expect(
+      bad.service.processReturn(caller, 'sale-1', ret(250.01)),
+    ).rejects.toThrow(BadRequestException);
+    expect(bad.checkout.processReturn).not.toHaveBeenCalled();
   });
 });

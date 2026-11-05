@@ -19,8 +19,8 @@ export class LedgerController {
 
   @Get('transactions')
   @RequirePermissions('balance.read')
-  list(@Query() query: LedgerQueryDto) {
-    return this.ledger.list(query);
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: LedgerQueryDto) {
+    return this.ledger.list(query, user.permissions.has('device.cost.view'));
   }
 
   @Post('transactions')

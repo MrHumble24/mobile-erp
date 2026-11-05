@@ -15,11 +15,7 @@ import {
 } from './dto/expense-query.dto.js';
 import { UpdateExpenseDto } from './dto/update-expense.dto.js';
 import { ExpensesRepository } from './expenses.repository.js';
-import {
-  createPostings,
-  deletePostings,
-  updatePostings,
-} from './lib/expense-ledger.js';
+import { createPostings } from './lib/expense-ledger.js';
 import { pickTopCategory, previousPeriod } from './lib/summary.lib.js';
 import { ExpenseCategoryTotal, ExpenseSummary } from './types/expense.types.js';
 
@@ -74,35 +70,26 @@ export class ExpensesService {
   async update(createdById: string, id: string, dto: UpdateExpenseDto) {
     const current = await this.require(id);
     if (dto.accountCode) await this.resolveAccount(dto.accountCode);
-    const { incurredAt, accountCode, ...rest } = dto;
-    const oldAmount = current.amount;
-    const newAmount =
-      dto.amount === undefined ? oldAmount : new Prisma.Decimal(dto.amount);
-    const postings = updatePostings({
-      oldAmount,
-      newAmount,
-      currentAccount: await this.currentAccount(id),
-      newAccountCode: accountCode,
-    });
+    const { incurredAt, accountCode, amount, categoryId, ...rest } = dto;
+    // The old amount and current account are read under a FOR UPDATE lock
+    // inside the repository transaction (ADR 0025) so concurrent edits serialize.
     const row = await this.repo.update(
       id,
-      { ...rest, incurredAt: parseDate(incurredAt) },
-      postings,
-      { storeId: current.storeId, createdById },
+      { ...rest, categoryId, incurredAt: parseDate(incurredAt) },
+      {
+        storeId: current.storeId,
+        createdById,
+        newAmount:
+          amount === undefined ? undefined : new Prisma.Decimal(amount),
+        newAccountCode: accountCode,
+      },
     );
     return (await this.withAccount([row]))[0];
   }
 
   async remove(createdById: string, id: string) {
     const current = await this.require(id);
-    const postings = deletePostings(
-      current.amount,
-      await this.currentAccount(id),
-    );
-    await this.repo.softRemove(id, postings, {
-      storeId: current.storeId,
-      createdById,
-    });
+    await this.repo.softRemove(id, { storeId: current.storeId, createdById });
   }
 
   /** CASH default; reject an unknown or inactive account. */
@@ -112,10 +99,6 @@ export class ExpensesService {
       throw new BadRequestException(`Unknown or inactive account ${account}`);
     }
     return account;
-  }
-
-  private async currentAccount(id: string): Promise<string | null> {
-    return (await this.ledger.expenseAccounts([id])).get(id) ?? null;
   }
 
   /** Decorate rows with the derived account (CASH when there are no rows). */
