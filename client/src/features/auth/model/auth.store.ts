@@ -25,16 +25,21 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      token: null,
-      user: null,
-      setSession: (token, user) => set({ token, user }),
-      clearSession: () => set({ token: null, user: null }),
-      hasPermission: (code) => {
+    (set, get) => {
+      // A new function per session change, so components that select
+      // `s.hasPermission` itself re-render when the permissions change.
+      const makeHasPermission = () => (code: string) => {
         const perms = get().user?.permissions
         return Array.isArray(perms) && perms.includes(code)
-      },
-    }),
+      }
+      return {
+        token: null,
+        user: null,
+        setSession: (token, user) => set({ token, user, hasPermission: makeHasPermission() }),
+        clearSession: () => set({ token: null, user: null }),
+        hasPermission: makeHasPermission(),
+      }
+    },
     {
       name: "mobile-erp-auth-session",
     }

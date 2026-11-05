@@ -53,9 +53,9 @@ function CreditSell({ pos }: { pos: Pos }) {
 }
 
 /**
- * The cart column. In the catalog till it is `pinned`: the lines scroll inside a
- * bounded middle while the level/customer sit on top and the totals + checkout
- * stay in view at the bottom (ADR 0034 cart-column fix). Elsewhere it stacks.
+ * The cart column. In the catalog till it is `pinned`: the lines, then the
+ * level/customer/discount, scroll inside a bounded top while the totals +
+ * checkout stay in view at the bottom, also on a short screen (ADR 0034 cart-column fix). Elsewhere it stacks.
  */
 export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean }) {
   const linePerms = {
@@ -82,13 +82,13 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
 
   return (
     <div id="pos-cart" className="flex min-h-0 flex-col gap-3 lg:h-full">
-      <div className="shrink-0 space-y-3 rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
-        <PriceLevelControl />
-        <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
-        <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
         <CompactCartLines {...linePerms} />
+        <div className="space-y-3 rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
+          <PriceLevelControl />
+          <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
+          <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
+        </div>
       </div>
       <div className="shrink-0 space-y-2">
         <TotalsPanel isPending={pos.isPending} disabled={pos.blocked} onCheckout={pos.handleCheckout} />

@@ -6,6 +6,7 @@ Owns user authentication flows: credentials login, session state persistence, an
 
 - `useAuthStore` — Zustand store for JWT shift token, user profile, and permission checks.
 - `useLogin` — React Query mutation hook for user credentials authentication.
+- `useSessionRefresh` — Re-reads `/auth/me` on app load (mounted in the route guard) so permissions granted after sign-in apply without a re-login.
 - `useLogout` — Hook performing session cleanup, QueryClient cache wipe, draft resets, and redirect.
 - `LoginForm` — Credentials login form with schema validation.
 - `LogoutConfirmDialog` — Accessible modal dialog prompting user confirmation before logging out.

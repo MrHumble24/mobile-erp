@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router"
-import { useAuthStore } from "@/features/auth"
+import { useAuthStore, useSessionRefresh } from "@/features/auth"
 import { useI18n } from "@/shared/i18n"
 
 interface RequirePermissionProps {
@@ -10,13 +10,14 @@ export function RequirePermission({ permission }: RequirePermissionProps) {
   const { t } = useI18n()
   const location = useLocation()
   const token = useAuthStore((s) => s.token)
-  const hasPermission = useAuthStore((s) => s.hasPermission)
+  const allowed = useAuthStore((s) => !permission || s.hasPermission(permission))
+  useSessionRefresh()
 
   if (!token) {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (permission && !hasPermission(permission)) {
+  if (!allowed) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <h2 className="text-xl font-bold tracking-tight text-destructive">403 — Ruxsat etilmagan</h2>
