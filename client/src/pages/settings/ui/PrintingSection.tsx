@@ -1,3 +1,4 @@
+import { useWatch } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
@@ -7,7 +8,9 @@ import { SwitchField } from "./SwitchField"
 
 export function PrintingSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
-  const receiptsEnabled = form.watch("receiptPrintingEnabled")
+  // useWatch, not form.watch: the React Compiler memoises this component, so only a
+  // subscription re-renders it when the switch changes.
+  const receiptsEnabled = useWatch({ control: form.control, name: "receiptPrintingEnabled" })
 
   return (
     <Section title={t("settings.sectionPrinting")} description={t("settings.sectionPrintingDesc")}>

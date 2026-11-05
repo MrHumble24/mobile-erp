@@ -1,3 +1,4 @@
+import { useWatch } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
 import type { SettingsForm } from "../model/settings-form.types"
 import { Field } from "./Field"
@@ -6,7 +7,9 @@ import { SwitchField } from "./SwitchField"
 
 export function BonusSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
-  const enabled = form.watch("bonusEnabled")
+  // useWatch, not form.watch: the React Compiler memoises this component, so only a
+  // subscription re-renders it when the switch changes.
+  const enabled = useWatch({ control: form.control, name: "bonusEnabled" })
 
   return (
     <Section title={t("settings.sectionBonus")} description={t("settings.sectionBonusDesc")}>
