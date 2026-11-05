@@ -128,3 +128,17 @@ xcrun simctl io <UDID> screenshot /tmp/shot.png
 ```
 (iOS maps the `-open <value>` launch argument to the `open` user-default; the
 shell reads it in `AppShell` under `#if DEBUG` only.)
+
+### Signed-in captures (DEBUG only)
+`-devEmail <email> -devPassword <password>` signs in at launch against the
+**Development** environment (simulator → `localhost:3000`) so command-line
+captures reach screens behind the login wall. It reuses the real login path
+(`Session.login`, `AppContainer.devAutoSignIn`), and `-open <screen>` still
+lands on the chosen screen afterwards. The password is never logged (the net
+log masks it too). Compiled out of release builds.
+```sh
+xcrun simctl launch <UDID> abdulboriy.Mobile-erp \
+  -devEmail owner@malika.uz -devPassword "$PWD_VAR" -open balance
+```
+The balance sheets open directly too: `-openBalanceEntry opening|deposit|
+withdraw|correction|transfer` (see `BalanceView`).

@@ -33,6 +33,8 @@ struct BalanceHistoryRow: View {
                 MoneyText(value: tx.amount, size: 15)
                     .fontWeight(.semibold)
                     .foregroundStyle(BalanceFormat.amountTint(tx.amount))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
         }
     }

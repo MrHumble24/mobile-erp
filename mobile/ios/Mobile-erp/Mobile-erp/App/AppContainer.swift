@@ -72,4 +72,19 @@ final class AppContainer {
         #endif
         if connectivity.isOnline { sync.syncNow() }
     }
+
+    #if DEBUG
+    /// Screenshot helper: `-devEmail <email> -devPassword <password>` signs in
+    /// against the Development environment at launch so command-line captures
+    /// reach any screen (then `-open <screen>` lands on it). Reuses the one real
+    /// login path; the password is never logged. No-op without both arguments.
+    func devAutoSignIn() async {
+        let store = UserDefaults.standard
+        guard let email = store.string(forKey: "devEmail"), !email.isEmpty,
+              let password = store.string(forKey: "devPassword"), !password.isEmpty
+        else { return }
+        devConfig.select(.development)
+        await session.login(email: email, password: password)
+    }
+    #endif
 }
