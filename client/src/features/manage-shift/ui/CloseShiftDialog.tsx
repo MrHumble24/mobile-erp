@@ -44,7 +44,7 @@ function DifferenceRow({ expected, counted }: { expected: string; counted: strin
 
 function CloseShiftForm({ onClosed }: { onClosed: (report: ShiftReport) => void }) {
   const { t } = useI18n()
-  const { data: current } = useCurrentShift(true)
+  const { data: current, isFetching } = useCurrentShift(true)
   const close = useCloseShift()
   const [count, setCount] = React.useState("")
   const [note, setNote] = React.useState("")
@@ -55,7 +55,7 @@ function CloseShiftForm({ onClosed }: { onClosed: (report: ShiftReport) => void 
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (invalid || close.isPending) return
+    if (invalid || close.isPending || isFetching) return
     close.mutate(
       { closingCount: amount, note: note.trim() || undefined },
       {
@@ -70,14 +70,14 @@ function CloseShiftForm({ onClosed }: { onClosed: (report: ShiftReport) => void 
 
   return (
     <form className="space-y-4 my-2" onSubmit={submit}>
-      <InfoRow label={t("shifts.expectedCash")} value={formatMoney(expected)} />
+      <InfoRow label={t("shifts.expectedCash")} value={isFetching ? "…" : formatMoney(expected)} />
       <CashCountField label={t("shifts.closingCash")} value={count} onChange={setCount} />
-      {!invalid && <DifferenceRow expected={expected} counted={count} />}
+      {!invalid && !isFetching && <DifferenceRow expected={expected} counted={count} />}
       <div className="space-y-1">
         <Label>{t("shifts.note")}</Label>
         <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
       </div>
-      <Button type="submit" className="w-full h-11 font-bold" disabled={invalid || close.isPending}>
+      <Button type="submit" className="w-full h-11 font-bold" disabled={invalid || close.isPending || isFetching}>
         {close.isPending ? t("common.loading") : t("shifts.closeShift")}
       </Button>
     </form>

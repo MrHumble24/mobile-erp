@@ -4,6 +4,7 @@ import { customerKeys } from "@/entities/customer"
 import { saleKeys } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { stockKeys } from "@/entities/stock"
+import { catalogKeys } from "@/entities/catalog"
 import { ledgerKeys } from "@/entities/ledger"
 
 /**
@@ -21,6 +22,7 @@ export function useCreateCredit() {
       queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: stockKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: catalogKeys.all })
       queryClient.invalidateQueries({ queryKey: ledgerKeys.all })
     },
   })

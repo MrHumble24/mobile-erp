@@ -3,6 +3,7 @@ import { HttpError, isNetworkError } from "@/shared/api/http"
 import { saleRepository, saleKeys } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { stockKeys } from "@/entities/stock"
+import { catalogKeys } from "@/entities/catalog"
 import { customerKeys } from "@/entities/customer"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
@@ -91,6 +92,7 @@ export function useCheckout() {
       queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
       queryClient.invalidateQueries({ queryKey: deviceKeys.lists() })
       queryClient.invalidateQueries({ queryKey: stockKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: catalogKeys.all })
       queryClient.invalidateQueries({ queryKey: customerKeys.lists() })
     },
   })

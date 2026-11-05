@@ -3,12 +3,17 @@ import { shiftRepository } from "../api/shift.repository"
 import { shiftKeys } from "../api/shift.keys"
 import type { ShiftListFilters } from "./shift.types"
 
-/** My open shift with live figures, or null (`sale.create`). Disabled when shifts are off. */
+/**
+ * My open shift with live figures, or null (`sale.create`). Disabled when shifts
+ * are off. Every sale, refund and expense moves the expected cash, so each
+ * screen that mounts this re-reads it instead of trusting the cache.
+ */
 export function useCurrentShift(enabled = true) {
   return useQuery({
     queryKey: shiftKeys.current(),
     queryFn: () => shiftRepository.current(),
     enabled,
+    refetchOnMount: "always",
   })
 }
 
