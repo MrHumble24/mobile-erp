@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PartnersModule } from '../partners/partners.module.js';
 import { StockModule } from '../stock/stock.module.js';
+import { StoresModule } from '../stores/stores.module.js';
 import { ReportsAnalyticsService } from './reports-analytics.service.js';
 import { ReportsBreakdownRepository } from './reports-breakdown.repository.js';
 import { ReportsConsignmentsRepository } from './reports-consignments.repository.js';
@@ -15,7 +16,7 @@ import { ReportsService } from './reports.service.js';
 import { ReportsTrendRepository } from './reports-trend.repository.js';
 
 @Module({
-  imports: [PartnersModule, StockModule],
+  imports: [PartnersModule, StockModule, StoresModule],
   controllers: [ReportsController],
   providers: [
     ReportsService,

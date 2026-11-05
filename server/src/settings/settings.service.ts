@@ -17,9 +17,9 @@ export interface StoreSettingsView extends StoreSettings {
   storePhone: string | null;
 }
 
-/** Schema defaults, returned when the singleton row has not been seeded yet. */
+/** Schema defaults, returned when the settings row has not been created yet. */
 const DEFAULTS: StoreSettings = {
-  id: 1,
+  storeId: '',
   receiptFooter: null,
   telegramChatId: null,
   closingTime: '20:00',
@@ -49,8 +49,7 @@ const DEFAULTS: StoreSettings = {
 };
 
 /**
- * Store-wide configuration singleton. `get()` is this module's public API:
- * later waves (warranty, Telegram digest) inject SettingsService and call it.
+ * Store-wide configuration service (scoped per store, ADR 0045).
  * Store identity (name/address/phone) lives in stores; this service merges it
  * in on read and writes it back through StoresService, so the API is unchanged.
  */
@@ -62,28 +61,34 @@ export class SettingsService {
   ) {}
 
   async get(): Promise<StoreSettingsView> {
-    const row = (await this.repo.get()) ?? DEFAULTS;
-    return this.withIdentity(row);
+    const storeId = await this.stores.currentStoreId();
+    const row = (await this.repo.get(storeId)) ?? { ...DEFAULTS, storeId };
+    return this.withIdentity(storeId, row);
   }
 
   async update(dto: UpdateSettingsDto): Promise<StoreSettingsView> {
+    const storeId = await this.stores.currentStoreId();
     const { storeName, storeAddress, storePhone, ...rest } = dto;
     await this.stores.updateIdentity({
       name: storeName,
       address: storeAddress,
       phone: storePhone,
     });
-    const row = await this.repo.upsert(rest);
-    return this.withIdentity(row);
+    const row = await this.repo.upsert(storeId, rest);
+    return this.withIdentity(storeId, row);
   }
 
-  /** Records that the closing digest went out, so the minute-cron fires once a day. */
-  markDigestSent(on: Date): Promise<StoreSettings> {
-    return this.repo.markDigestSent(on);
+  /** Records that the closing digest went out for a store. */
+  async markDigestSent(on: Date, storeId?: string): Promise<StoreSettings> {
+    const targetStoreId = storeId ?? (await this.stores.currentStoreId());
+    return this.repo.markDigestSent(targetStoreId, on);
   }
 
-  private async withIdentity(row: StoreSettings): Promise<StoreSettingsView> {
-    const identity = await this.stores.getIdentity();
+  private async withIdentity(
+    storeId: string,
+    row: StoreSettings,
+  ): Promise<StoreSettingsView> {
+    const identity = await this.stores.getIdentity(storeId);
     return {
       ...row,
       storeName: identity.name,

@@ -42,7 +42,10 @@ function build() {
   const settings = {
     get: jest.fn().mockResolvedValue({ shiftsEnabled: true }),
   };
-  const stores = { currentStoreId: jest.fn().mockResolvedValue('store1') };
+  const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store1'),
+    currentStoreIds: jest.fn().mockResolvedValue(['store1']),
+  };
   const service = new ShiftsService(
     repo as never,
     read as never,
@@ -68,7 +71,7 @@ describe('ShiftsService.open', () => {
     repo.findOpenByCashier.mockResolvedValue(null); // nothing open for THIS cashier
     repo.open.mockResolvedValue(openShiftRow());
     await service.open(caller('u2'), { openingCount: 500_000 });
-    expect(repo.findOpenByCashier).toHaveBeenCalledWith('u2');
+    expect(repo.findOpenByCashier).toHaveBeenCalledWith('u2', 'store1');
     expect(repo.open).toHaveBeenCalledWith('store1', 'u2', D(500_000));
   });
 });

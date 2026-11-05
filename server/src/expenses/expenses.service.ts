@@ -31,7 +31,9 @@ export class ExpensesService {
   async list(query: ExpenseQueryDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 50;
+    const storeIds = await this.stores.currentStoreIds();
     const { items, total } = await this.repo.findMany({
+      storeIds,
       from: parseDate(query.from),
       to: parseDate(query.to),
       categoryId: query.categoryId,
@@ -111,15 +113,18 @@ export class ExpensesService {
   }
 
   async summary(query: ExpenseSummaryQueryDto): Promise<ExpenseSummary> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = parseDate(query.from);
     const to = parseDate(query.to);
     const prev = previousPeriod(from, to);
     const [agg, prevAgg, grouped, categories, daily] = await Promise.all([
-      this.repo.sumAgg(this.repo.toWhere({ from, to })),
-      this.repo.sumAgg(this.repo.toWhere({ from: prev.from, to: prev.to })),
-      this.repo.sumByCategory(this.repo.toWhere({ from, to })),
+      this.repo.sumAgg(this.repo.toWhere({ storeIds, from, to })),
+      this.repo.sumAgg(
+        this.repo.toWhere({ storeIds, from: prev.from, to: prev.to }),
+      ),
+      this.repo.sumByCategory(this.repo.toWhere({ storeIds, from, to })),
       this.categories.list(),
-      this.repo.dailySeries(from, to),
+      this.repo.dailySeries(from, to, storeIds),
     ]);
     const nameOf = new Map(categories.map((c) => [c.id, c.name]));
     const byCategory: ExpenseCategoryTotal[] = grouped
@@ -140,7 +145,8 @@ export class ExpensesService {
   }
 
   private async require(id: string) {
-    const found = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const found = await this.repo.findById(id, storeIds);
     if (!found) throw new NotFoundException(`Expense ${id} not found`);
     return found;
   }

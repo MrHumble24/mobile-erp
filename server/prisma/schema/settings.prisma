@@ -1,10 +1,11 @@
 // ---------------------------------------------------------------------------
-// Store settings & Telegram (PRD Module 6). Singleton row (id = 1).
+// Store settings & Telegram (PRD Module 6, ADR 0045). One row per store.
 // Bot token lives in env, not here.
 // ---------------------------------------------------------------------------
 
 model StoreSettings {
-  id                  Int      @id @default(1)
+  storeId             String   @id
+  store               Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   /// Free-text footer printed at the bottom of each receipt.
   receiptFooter       String?
   telegramChatId      String?

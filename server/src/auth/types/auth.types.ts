@@ -21,4 +21,5 @@ export interface MeView {
   profile: UserProfileView | null;
   roles: string[];
   permissions: string[];
+  stores: { id: string; name: string }[];
 }

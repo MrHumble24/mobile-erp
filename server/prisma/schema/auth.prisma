@@ -41,6 +41,10 @@ model User {
   repairPartsAdded       RepairPart[]          @relation("RepairPartsAdded")
   repairPaymentsReceived RepairPayment[]       @relation("RepairPaymentsReceived")
   bonusTransactions      BonusTransaction[]
+  stores                 UserStore[]
+  transfersSent          StockTransfer[]       @relation("TransfersSent")
+  transfersReceived      StockTransfer[]       @relation("TransfersReceived")
+  transfersCancelled     StockTransfer[]       @relation("TransfersCancelled")
 
   @@map("users")
 }
@@ -124,4 +128,17 @@ model UserPermission {
 
   @@id([userId, permissionCode])
   @@map("user_permissions")
+}
+
+/// Stores assigned to a user (Change 9, ADR 0045).
+model UserStore {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId    String
+  store      Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now())
+
+  @@id([userId, storeId])
+  @@index([storeId])
+  @@map("user_stores")
 }

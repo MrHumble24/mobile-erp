@@ -92,32 +92,71 @@ export interface DigestBalanceLine {
   closing: string;
 }
 
-export function dailyDigest(p: {
-  date: string;
+export interface DigestStoreBlock {
+  storeName: string;
   unitsSold: number;
   revenue: number;
   netProfit: number;
   expenses: number;
-  outstanding: number;
   balances: {
     accounts: DigestBalanceLine[];
     openingTotal: string;
     closingTotal: string;
   };
+}
+
+function formatStoreBlock(s: DigestStoreBlock): string {
+  const bLines = [
+    ...s.balances.accounts.map(
+      (a) => `  ${a.label}: ${moneyStr(a.opening)} -> ${moneyStr(a.closing)}`,
+    ),
+    `  Total: ${moneyStr(s.balances.openingTotal)} -> ${moneyStr(s.balances.closingTotal)}`,
+  ];
+  return (
+    `🏪 ${s.storeName}:\n` +
+    `  Sotilgan: ${s.unitsSold} ta\n` +
+    `  Tushum: ${money(s.revenue)}\n` +
+    `  Sof foyda: ${money(s.netProfit)}\n` +
+    `  Xarajatlar: ${money(s.expenses)}\n` +
+    `  Balans:\n${bLines.join('\n')}`
+  );
+}
+
+export function dailyDigest(p: {
+  date: string;
+  unitsSold?: number;
+  revenue?: number;
+  netProfit?: number;
+  expenses?: number;
+  outstanding: number;
+  balances?: {
+    accounts: DigestBalanceLine[];
+    openingTotal: string;
+    closingTotal: string;
+  };
+  stores?: DigestStoreBlock[];
 }): string {
-  // English placeholders; Uzbek copy comes from the i18n team later.
+  if (p.stores && p.stores.length > 0) {
+    const storeBlocks = p.stores.map(formatStoreBlock);
+    return (
+      `📊 Kunlik yakuniy hisobot (${p.date}):\n\n` +
+      storeBlocks.join('\n\n') +
+      `\n\n🤝 Nasiyadagi qoldiq: ${money(p.outstanding)}`
+    );
+  }
+
   const balanceLines = [
-    ...p.balances.accounts.map(
+    ...(p.balances?.accounts ?? []).map(
       (a) => `${a.label}: ${moneyStr(a.opening)} -> ${moneyStr(a.closing)}`,
     ),
-    `Total: ${moneyStr(p.balances.openingTotal)} -> ${moneyStr(p.balances.closingTotal)}`,
+    `Total: ${moneyStr(p.balances?.openingTotal ?? '0.00')} -> ${moneyStr(p.balances?.closingTotal ?? '0.00')}`,
   ];
   return (
     `📊 Kunlik yakuniy hisobot (${p.date}):\n` +
-    `Sotilgan tovarlar: ${p.unitsSold} ta\n` +
-    `Tushum: ${money(p.revenue)}\n` +
-    `Sof foyda: ${money(p.netProfit)}\n` +
-    `Xarajatlar: ${money(p.expenses)}\n` +
+    `Sotilgan tovarlar: ${p.unitsSold ?? 0} ta\n` +
+    `Tushum: ${money(p.revenue ?? 0)}\n` +
+    `Sof foyda: ${money(p.netProfit ?? 0)}\n` +
+    `Xarajatlar: ${money(p.expenses ?? 0)}\n` +
     `Nasiyadagi qoldiq: ${money(p.outstanding)}\n` +
     `Balance (start -> now):\n${balanceLines.join('\n')}`
   );

@@ -44,6 +44,9 @@ model StockMovement {
   /// Set on a SALE/RETURN row (the sale it belongs to).
   saleId String?
   sale   Sale?   @relation(fields: [saleId], references: [id])
+  /// Set on a TRANSFER_OUT/TRANSFER_IN row (ADR 0045).
+  transferId String?
+  transfer   StockTransfer? @relation(fields: [transferId], references: [id])
   note        String?
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
@@ -55,6 +58,7 @@ model StockMovement {
   @@index([typeCode])
   @@index([shipmentId])
   @@index([saleId])
+  @@index([transferId])
   @@index([occurredAt])
   @@map("stock_movements")
 }

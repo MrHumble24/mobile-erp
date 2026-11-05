@@ -96,10 +96,15 @@ export class CreditsRepository {
 
   findRawById(
     id: string,
+    storeIds: string[],
     client: PrismaTx | PrismaService = this.prisma,
   ): Promise<CreditRaw | null> {
-    return client.customerCredit.findUnique({
-      where: { id },
+    const where: Prisma.CustomerCreditWhereInput = {
+      id,
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+    };
+    return client.customerCredit.findFirst({
+      where,
       include: creditInclude,
     });
   }
@@ -121,9 +126,13 @@ export class CreditsRepository {
     });
   }
 
-  listRaw(customerId?: string): Promise<CreditRaw[]> {
+  listRaw(storeIds?: string[], customerId?: string): Promise<CreditRaw[]> {
+    const where: Prisma.CustomerCreditWhereInput = {
+      ...(customerId ? { customerId } : {}),
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
     return this.prisma.customerCredit.findMany({
-      where: customerId ? { customerId } : undefined,
+      where,
       orderBy: { createdAt: 'desc' },
       include: creditInclude,
     });

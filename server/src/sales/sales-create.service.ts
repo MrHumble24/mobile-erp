@@ -119,7 +119,7 @@ export class SalesCreateService {
     tradeIns: PreparedTradeIns | null,
     options?: CheckoutOptions,
   ): Promise<SaleView> {
-    const device = await this.reads.findDeviceByImei(code);
+    const device = await this.reads.findDeviceByImei(code, storeId);
     if (!device) throw new NotFoundException(`Device ${code} not found`);
     if (device.statusCode !== 'IN_STOCK') {
       throw new ConflictException(

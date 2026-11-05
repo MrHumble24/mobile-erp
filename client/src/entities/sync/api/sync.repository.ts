@@ -18,6 +18,7 @@ function toMutation(entry: OutboxEntry) {
     payload: entry.payload,
     baseVersion: entry.baseVersion,
     occurredAt: entry.occurredAt,
+    storeId: entry.storeId,
   }
 }
 

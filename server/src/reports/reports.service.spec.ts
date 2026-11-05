@@ -28,13 +28,17 @@ function build() {
     ]),
   };
   const pricingRepo = { rollingAverages: jest.fn().mockResolvedValue([]) };
+  const storesService = {
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
   const service = new ReportsService(
     profitRepo as unknown as ReportsProfitRepository,
     {} as ReportsExpensesRepository,
     pricingRepo as unknown as ReportsModelPricingRepository,
     {} as ReportsDailyClosingRepository,
+    storesService as unknown as any,
   );
-  return { service, profitRepo, pricingRepo };
+  return { service, profitRepo, pricingRepo, storesService };
 }
 
 describe('ReportsService.profit', () => {

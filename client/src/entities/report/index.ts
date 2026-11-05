@@ -32,3 +32,7 @@ export {
   useDailyClosingReport,
   useDailyClosingRange,
 } from "./model/use-reports"
+export {
+  ReportAllStoresProvider,
+  useReportAllStores,
+} from "./model/report-store-context"

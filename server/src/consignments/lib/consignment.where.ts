@@ -9,8 +9,12 @@ import { ConsignmentFilters } from '../types/consignment.types.js';
 export function buildConsignmentWhere(
   f: ConsignmentFilters,
   now: Date = new Date(),
+  storeIds?: string[],
 ): Prisma.ConsignmentWhereInput {
   const where: Prisma.ConsignmentWhereInput = {};
+  if (storeIds && storeIds.length > 0) {
+    where.storeId = storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+  }
   if (f.partnerId) where.partnerId = f.partnerId;
   if (f.overdue) {
     where.statusCode = 'OUT';

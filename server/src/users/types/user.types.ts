@@ -9,6 +9,7 @@ export interface UserView {
   createdAt: Date;
   profile: UserProfileView | null;
   roles: string[];
+  stores: { id: string; name: string }[];
 }
 
 export interface CreateUserInput {
@@ -23,6 +24,7 @@ export interface CreateUserInput {
     locale?: string;
   };
   roleCodes: string[];
+  storeIds?: string[];
 }
 
 export interface PermissionOverride {

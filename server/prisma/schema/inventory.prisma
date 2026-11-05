@@ -79,6 +79,7 @@ model Device {
   cashTransactions  CashTransaction[]
   unitPrices        UnitPrice[]
   customerPurchases CustomerPurchase[]
+  transferLines     StockTransferLine[]
 
   @@index([statusCode])
   @@index([modelId])

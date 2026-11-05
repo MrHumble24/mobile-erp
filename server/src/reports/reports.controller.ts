@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { AllowAllStores } from '../common/decorators/allow-all-stores.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import {
   DailyClosingQueryDto,
@@ -13,6 +14,7 @@ import { ReportsAnalyticsService } from './reports-analytics.service.js';
 import { ReportsService } from './reports.service.js';
 
 @Controller('reports')
+@AllowAllStores()
 @RequirePermissions('report.finance')
 export class ReportsController {
   constructor(

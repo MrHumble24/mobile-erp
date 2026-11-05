@@ -57,6 +57,24 @@ export interface SaleReturnView {
   processedBy: { id: string; name: string };
 }
 
+export interface SaleForReturn {
+  id: string;
+  deviceId: string | null;
+  modelId: string | null;
+  quantity: number | null;
+  storeId: string;
+  creditId: string | null;
+  salePrice: Money;
+  landedCostSnapshot: Money;
+  soldAt: Date;
+}
+
+export interface DeviceState {
+  id: string;
+  statusCode: string;
+  version: number;
+}
+
 /** One tender line of a sale, derived from its SALE ledger rows. */
 export interface SalePayment {
   accountCode: string;
@@ -138,7 +156,8 @@ export interface WarrantyLookupView {
   serialNumber: string | null;
   saleId: string;
   purchasedAt: Date;
-  salePrice: Money;
+  salePrice: Money | null;
+  storeName: string | null;
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
   remainingDays: number;
   latestInspection: { grade: string | null; notes: string | null } | null;

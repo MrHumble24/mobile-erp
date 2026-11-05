@@ -1,6 +1,7 @@
 import { useLocation } from "react-router"
 import { PanelLeftClose, PanelLeftOpen, Search, ShoppingCart } from "lucide-react"
 import { useAuthStore } from "@/features/auth"
+import { StorePicker } from "@/features/switch-store"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
@@ -92,6 +93,7 @@ function HeaderRightActions({
         </Link>
       )}
 
+      <StorePicker />
       <SyncStatusIndicator />
 
       <Button

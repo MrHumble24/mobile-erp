@@ -56,7 +56,7 @@ describe('SalesCreateService.create', () => {
     });
     const { service, checkout } = build({ findDeviceByImei });
     await service.create(caller, { imei: '999888777666555', salePrice: 250 });
-    expect(findDeviceByImei).toHaveBeenCalledWith('999888777666555');
+    expect(findDeviceByImei).toHaveBeenCalledWith('999888777666555', 'store-1');
     expect(checkout.checkout).toHaveBeenCalledWith(
       expect.objectContaining({ deviceId: 'dev-1' }),
       undefined,
@@ -73,11 +73,28 @@ describe('SalesCreateService.create', () => {
     });
     const { service, checkout } = build({ findDeviceByImei });
     await service.create(caller, { serialNumber: ' sn-9 ', salePrice: 250 });
-    expect(findDeviceByImei).toHaveBeenCalledWith('SN-9');
+    expect(findDeviceByImei).toHaveBeenCalledWith('SN-9', 'store-1');
     expect(checkout.checkout).toHaveBeenCalledWith(
       expect.objectContaining({ deviceId: 'dev-9' }),
       undefined,
     );
+  });
+
+  it('rejects sale when device belongs to another store', async () => {
+    const findDeviceByImei = jest
+      .fn()
+      .mockImplementation((code: string, storeId?: string) => {
+        // If store is store-2, device exists, but for store-1 it is null
+        return Promise.resolve(
+          storeId === 'store-1'
+            ? null
+            : { id: 'dev-other', statusCode: 'IN_STOCK' },
+        );
+      });
+    const { service } = build({ findDeviceByImei });
+    await expect(
+      service.create(caller, { imei: '999888777666555', salePrice: 250 }),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('rejects a body with neither imei nor serialNumber', async () => {

@@ -29,6 +29,8 @@ const ExpensesPage = lazy(() => import("@/pages/expenses"))
 const BalancePage = lazy(() => import("@/pages/balance"))
 const CustomsPage = lazy(() => import("@/pages/customs"))
 const ReportsPage = lazy(() => import("@/pages/reports"))
+const StoresPage = lazy(() => import("@/pages/stores"))
+const TransfersPage = lazy(() => import("@/pages/transfers"))
 const UsersPage = lazy(() => import("@/pages/users"))
 const SyncPage = lazy(() => import("@/pages/sync"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
@@ -52,6 +54,9 @@ function ProtectedRoutes() {
         <Route element={<RequirePermission permission="device.read" />}>
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/stock" element={<StockPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="transfer.read" />}>
+          <Route path="/transfers" element={<TransfersPage />} />
         </Route>
         <Route element={<RequirePermission permission="shipment.read" />}>
           <Route path="/shipments" element={<ShipmentsPage />} />
@@ -96,6 +101,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="user.manage" />}>
           <Route path="/users" element={<UsersPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="store.manage" />}>
+          <Route path="/stores" element={<StoresPage />} />
         </Route>
         <Route element={<RequirePermission permission="sync.resolve" />}>
           <Route path="/sync" element={<SyncPage />} />

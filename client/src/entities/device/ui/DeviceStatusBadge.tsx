@@ -29,6 +29,12 @@ export function DeviceStatusBadge({ status, className }: DeviceStatusBadgeProps)
           {t("inventory.statusConsigned")}
         </Badge>
       )
+    case "IN_TRANSIT":
+      return (
+        <Badge variant="amber" size="sm" className={className}>
+          {t("inventory.statusInTransit")}
+        </Badge>
+      )
     case "SOLD":
       return (
         <Badge variant="outline" size="sm" className={className}>

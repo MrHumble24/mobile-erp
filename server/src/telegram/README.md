@@ -16,11 +16,12 @@ Outbound Telegram alerts for the owner (PRD Module 6). No HTTP routes.
   deduped by a per-process fingerprint so the same list is not re-sent.
 - `TelegramCron` — overdue consignments **and overdue customer credit** daily at
   09:00 (credit via `CreditsReadService.overdue`, ADR 0035); closing digest every
-  minute, gated by `shouldSendDigest` against `closingTime` and the
-  `StoreSettings.digestSentOn` once-per-day marker. Digest content from
-  `ReportsService.dailyClosing` + total outstanding (sum of partner balances) +
-  per-account opening/closing balances from `LedgerService.digestBalances`
-  (2c; same UTC-day boundary — this module never queries ledger tables).
+  minute, gated by `shouldSendDigest` against each store's `closingTime` and its
+  `StoreSettings.digestSentOn` once-per-day marker inside `runWithStoreSelection`.
+  Digest content from `ReportsService.dailyClosing` + total outstanding (sum of
+  partner balances) + per-account opening/closing balances from `LedgerService.digestBalances`
+  (2c; same UTC-day boundary — this module never queries ledger tables). Format
+  builds breakdown blocks per store.
 
 ## Pure, unit-tested logic
 

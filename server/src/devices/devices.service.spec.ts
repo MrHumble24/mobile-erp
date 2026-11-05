@@ -1,4 +1,8 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
@@ -30,13 +34,18 @@ function build(
   const models = {
     getAttributes: jest.fn().mockResolvedValue([]),
   } as unknown as DeviceModelsService;
+  const stores = {
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
   const service = new DevicesService(
     query,
     status as unknown as DevicesStatusRepository,
     expense,
     models,
+    {} as any,
+    stores as any,
   );
-  return { service, status, query, expense };
+  return { service, status, query, expense, stores };
 }
 
 describe('isAllowedTransition', () => {
@@ -87,6 +96,14 @@ describe('DevicesService.changeStatus', () => {
     await expect(
       service.changeStatus('d1', 'SOLD', 'u1', undefined, 0),
     ).rejects.toThrow(ConflictException);
+  });
+
+  it('throws 404 when device belongs to another store', async () => {
+    const { service, status } = build(null);
+    await expect(
+      service.changeStatus('d1', 'DEFECTIVE', 'u1', 'QC'),
+    ).rejects.toThrow(NotFoundException);
+    expect(status.applyStatusChange).not.toHaveBeenCalled();
   });
 });
 

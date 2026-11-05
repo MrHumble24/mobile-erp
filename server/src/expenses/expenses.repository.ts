@@ -92,9 +92,13 @@ export class ExpensesRepository {
     return { items, total };
   }
 
-  findById(id: string) {
+  findById(id: string, storeIds: string[]) {
     return this.prisma.expense.findFirst({
-      where: { id, deletedAt: null },
+      where: {
+        id,
+        deletedAt: null,
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+      },
       include: LIST_INCLUDE,
     });
   }
@@ -190,9 +194,19 @@ export class ExpensesRepository {
     });
   }
 
-  async dailySeries(from?: Date, to?: Date): Promise<ExpenseDailyPoint[]> {
+  async dailySeries(
+    from?: Date,
+    to?: Date,
+    storeIds?: string[],
+  ): Promise<ExpenseDailyPoint[]> {
     const lower = from ?? new Date(0);
     const upper = to ?? new Date();
+    const storeClause =
+      storeIds === undefined
+        ? Prisma.empty
+        : storeIds.length === 0
+          ? Prisma.sql`AND 1=0`
+          : Prisma.sql`AND "storeId" IN (${Prisma.join(storeIds)})`;
     const rows = await this.prisma.$queryRaw<
       { date: string; total: number }[]
     >(Prisma.sql`
@@ -201,6 +215,7 @@ export class ExpensesRepository {
       FROM expenses
       WHERE "deletedAt" IS NULL
         AND "incurredAt" >= ${lower} AND "incurredAt" <= ${upper}
+        ${storeClause}
       GROUP BY 1
       ORDER BY 1
     `);
@@ -208,6 +223,7 @@ export class ExpensesRepository {
   }
 
   toWhere(filter: {
+    storeIds?: string[];
     from?: Date;
     to?: Date;
     categoryId?: string;
@@ -217,6 +233,12 @@ export class ExpensesRepository {
     maxAmount?: number;
     isRecurring?: boolean;
   }): Prisma.ExpenseWhereInput {
+    const storeId =
+      filter.storeIds && filter.storeIds.length > 0
+        ? filter.storeIds.length === 1
+          ? filter.storeIds[0]
+          : { in: filter.storeIds }
+        : undefined;
     const amount =
       filter.minAmount !== undefined || filter.maxAmount !== undefined
         ? { gte: filter.minAmount, lte: filter.maxAmount }
@@ -224,6 +246,7 @@ export class ExpensesRepository {
     const search = filter.search?.trim();
     return {
       deletedAt: null,
+      storeId,
       categoryId: filter.categoryId,
       createdById: filter.recordedById,
       isRecurring: filter.isRecurring,

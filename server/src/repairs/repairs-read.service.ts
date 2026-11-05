@@ -46,7 +46,8 @@ export class RepairsReadService {
 
   /** The raw ticket (for the write services' rules); 404 if missing. */
   async require(id: string): Promise<RepairRaw> {
-    const raw = await this.repo.findRawById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const raw = await this.repo.findRawById(id, storeIds);
     if (!raw) throw new NotFoundException(`Repair ${id} not found`);
     return raw;
   }
@@ -60,8 +61,8 @@ export class RepairsReadService {
 
   async list(query: ListRepairsQueryDto): Promise<RepairPage> {
     await this.assertEnabled();
-    const storeId = await this.stores.currentStoreId();
-    const { items, total } = await this.repo.list(storeId, query);
+    const storeIds = await this.stores.currentStoreIds();
+    const { items, total } = await this.repo.list(storeIds, query);
     const now = new Date();
     return {
       // paid / outstanding / warranty do not depend on outside cost, so the
@@ -78,12 +79,12 @@ export class RepairsReadService {
     query: RepairReportQueryDto,
   ): Promise<RepairReport> {
     await this.assertEnabled();
-    const storeId = await this.stores.currentStoreId();
+    const storeIds = await this.stores.currentStoreIds();
     const from = query.from ? new Date(query.from) : undefined;
     const to = query.to ? new Date(query.to) : undefined;
     const [income, parts, outside] = await Promise.all([
-      this.repo.sumPayments(storeId, from, to),
-      this.repo.partsInRange(storeId, from, to),
+      this.repo.sumPayments(storeIds, from, to),
+      this.repo.partsInRange(storeIds, from, to),
       this.ledgerRepair.outsideSum(from, to),
     ]);
     const partsCost = parts.reduce(

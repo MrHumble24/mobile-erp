@@ -42,7 +42,7 @@ export class ShiftsService {
     dto: OpenShiftDto,
   ): Promise<ShiftReportView> {
     const storeId = await this.stores.currentStoreId();
-    if (await this.repo.findOpenByCashier(caller.id)) {
+    if (await this.repo.findOpenByCashier(caller.id, storeId)) {
       throw new ConflictException('You already have an open shift');
     }
     try {
@@ -66,7 +66,8 @@ export class ShiftsService {
     caller: AuthenticatedUser,
     dto: CloseShiftDto,
   ): Promise<ShiftReportView> {
-    const shift = await this.repo.findOpenByCashier(caller.id);
+    const storeId = await this.stores.currentStoreId();
+    const shift = await this.repo.findOpenByCashier(caller.id, storeId);
     if (!shift) throw new NotFoundException('You have no open shift to close');
     return this.finishClose(caller.id, shift, dto.closingCount, dto.note);
   }
@@ -77,7 +78,8 @@ export class ShiftsService {
     id: string,
     dto: ForceCloseShiftDto,
   ): Promise<ShiftReportView> {
-    const shift = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const shift = await this.repo.findById(id, storeIds);
     if (!shift) throw new NotFoundException(`Shift ${id} not found`);
     if (shift.closedAt) throw new ConflictException('Shift is already closed');
     return this.finishClose(caller.id, shift, dto.closingCount, dto.note);
@@ -128,7 +130,7 @@ export class ShiftsService {
         });
       }
     });
-    const closed = await this.repo.findById(shift.id);
+    const closed = await this.repo.findById(shift.id, [storeId]);
     return this.read.buildReport(closed!);
   }
 

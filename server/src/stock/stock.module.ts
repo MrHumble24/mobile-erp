@@ -11,6 +11,6 @@ import { StockService } from './stock.service.js';
   providers: [StockService, StockRepository],
   // Exported so sales (SALE/RETURN movements) and shipments (PURCHASE) post
   // through StockService inside their own transaction — never StockRepository.
-  exports: [StockService],
+  exports: [StockService, StockRepository],
 })
 export class StockModule {}

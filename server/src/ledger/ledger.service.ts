@@ -14,6 +14,7 @@ import { LedgerRepository } from './ledger.repository.js';
 import { hideCostAmount, parseDate, sumMap } from './lib/ledger-shaping.js';
 import { signedManualAmount } from './lib/signed-amount.js';
 import { currentAccount, foldSourceNets } from './lib/source-nets.js';
+import { buildMultiStoreBalances } from './lib/store-balances.js';
 import {
   type AccountNet,
   type BalanceSummary,
@@ -35,11 +36,24 @@ export class LedgerService {
    * decimal arithmetic (never float) and returned as 2-dp strings.
    */
   async getBalances(): Promise<BalanceSummary> {
-    const storeId = await this.stores.currentStoreId();
-    const [accounts, sums] = await Promise.all([
-      this.repo.listAccounts(),
-      this.repo.sumByAccount(storeId),
-    ]);
+    const storeIds = await this.stores.currentStoreIds();
+    const accounts = await this.repo.listAccounts();
+
+    if (storeIds.length > 1) {
+      const allStores = await this.stores.list(false);
+      const storeMap = new Map(allStores.map((s) => [s.id, s.name]));
+      const sumsByStore = new Map<string, Map<string, Prisma.Decimal>>();
+      await Promise.all(
+        storeIds.map(async (id) => {
+          const sums = await this.repo.sumByAccount(id);
+          sumsByStore.set(id, sumMap(sums));
+        }),
+      );
+      return buildMultiStoreBalances(accounts, storeIds, storeMap, sumsByStore);
+    }
+
+    const storeId = storeIds[0] ?? (await this.stores.currentStoreId());
+    const sums = await this.repo.sumByAccount(storeId);
     const byCode = sumMap(sums);
     let total = new Prisma.Decimal(0);
     const rows = accounts.map((a) => {

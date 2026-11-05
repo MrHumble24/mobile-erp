@@ -32,5 +32,7 @@
   "credits": "Customer credit",
   "shifts": "Shifts",
   "purchases": "Customer purchases",
-  "repairs": "Repairs"
+  "repairs": "Repairs",
+  "transfers": "Transfers",
+  "stores": "Stores"
 }

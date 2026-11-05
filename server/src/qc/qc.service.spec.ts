@@ -1,11 +1,13 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { DevicesService } from '../devices/devices.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { CreateInspectionDto } from './dto/create-inspection.dto.js';
+import { ListInspectionsDto } from './dto/list-inspections.dto.js';
 import { QcLookupsRepository } from './qc-lookups.repository.js';
-import { QcRepository } from './qc.repository.js';
+import { buildWhere, QcRepository } from './qc.repository.js';
 import { QcService } from './qc.service.js';
 
-function build(statusCode: string) {
+function build(statusCode: string, storeIds = ['store-1']) {
   const repo = {
     createInspection: jest.fn().mockResolvedValue({ id: 'i1' }),
     list: jest.fn(),
@@ -18,12 +20,16 @@ function build(statusCode: string) {
     get: jest.fn().mockResolvedValue({ id: 'd1', statusCode }),
     changeStatus: jest.fn().mockResolvedValue({ id: 'd1' }),
   };
+  const stores = {
+    currentStoreIds: jest.fn().mockResolvedValue(storeIds),
+  };
   const service = new QcService(
     repo as unknown as QcRepository,
     lookups as unknown as QcLookupsRepository,
     devices as unknown as DevicesService,
+    stores as unknown as StoresService,
   );
-  return { service, repo, devices };
+  return { service, repo, devices, stores };
 }
 
 const CAMERA = [{ defectCode: 'CAMERA' }];
@@ -97,5 +103,37 @@ describe('QcService.createInspection', () => {
       service.createInspection(dto({ passed: true }), 'u1'),
     ).rejects.toThrow(ConflictException);
     expect(repo.createInspection).not.toHaveBeenCalled();
+  });
+});
+
+describe('QcService.list and buildWhere store scoping (R3)', () => {
+  it('passes active storeIds to repo.list', async () => {
+    const { service, repo } = build('IN_STOCK', ['store-active']);
+    repo.list.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    const query: ListInspectionsDto = { page: 1, pageSize: 20 };
+    await service.list(query);
+    expect(repo.list).toHaveBeenCalledWith(
+      expect.objectContaining({ storeIds: ['store-active'] }),
+      1,
+      20,
+    );
+  });
+
+  it('buildWhere filters by device storeId when storeIds is provided', () => {
+    const whereSingle = buildWhere({ storeIds: ['store-1'] });
+    expect(whereSingle.device).toEqual({ storeId: 'store-1' });
+
+    const whereMulti = buildWhere({ storeIds: ['store-1', 'store-2'] });
+    expect(whereMulti.device).toEqual({
+      storeId: { in: ['store-1', 'store-2'] },
+    });
+
+    const whereWithImei = buildWhere({
+      imei: '123456789012345',
+      storeIds: ['store-1'],
+    });
+    expect(whereWithImei.device).toEqual({
+      AND: [expect.any(Object), { storeId: 'store-1' }],
+    });
   });
 });

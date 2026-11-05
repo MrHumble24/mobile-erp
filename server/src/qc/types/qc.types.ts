@@ -60,6 +60,7 @@ export interface UpdateLookupInput {
 }
 
 export interface InspectionFilters {
+  storeIds?: string[];
   deviceId?: string;
   imei?: string;
   passed?: boolean;

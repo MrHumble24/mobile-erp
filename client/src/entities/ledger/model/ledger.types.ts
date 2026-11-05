@@ -7,9 +7,17 @@ export interface LedgerAccountBalance {
   balance: number
 }
 
+export interface StoreBalanceBreakdown {
+  storeId: string
+  storeName: string
+  accounts: LedgerAccountBalance[]
+  total: number
+}
+
 export interface LedgerBalances {
   accounts: LedgerAccountBalance[]
   total: number
+  stores?: StoreBalanceBreakdown[]
 }
 
 /** `GET /ledger/accounts`: active accounts for the pickers, no amounts. */

@@ -32,6 +32,7 @@
   "statusDefective": "Defective",
   "statusConsigned": "Consigned",
   "statusSold": "Sold",
+  "statusInTransit": "In Transit",
   "newStatus": "New status",
   "reason": "Reason",
   "statusManualHint": "To consign or sell, use POS and Nasiya.",

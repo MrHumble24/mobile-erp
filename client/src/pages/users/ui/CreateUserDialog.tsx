@@ -1,6 +1,7 @@
 import * as React from "react"
-import { useI18n } from "@/shared/i18n"
+import { useStores } from "@/entities/store"
 import { useCreateUser, useRoles } from "@/entities/user"
+import { useI18n } from "@/shared/i18n"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -80,6 +81,36 @@ function RoleCheckboxes({
   )
 }
 
+function StoreCheckboxes({
+  selectedStores,
+  onToggle,
+}: {
+  selectedStores: string[]
+  onToggle: (id: string) => void
+}) {
+  const { t } = useI18n()
+  const { data: stores } = useStores()
+
+  if (!stores || stores.length === 0) return null
+
+  return (
+    <div className="space-y-2">
+      <Label>{t("users.stores")}</Label>
+      <div className="grid grid-cols-2 gap-2 p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px] max-h-32 overflow-y-auto">
+        {stores.map((s) => (
+          <label key={s.id} className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+            <Checkbox
+              checked={selectedStores.includes(s.id)}
+              onCheckedChange={() => onToggle(s.id)}
+            />
+            <span>{s.name}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function CreateUserForm({ onCancel, onSuccess }: { onCancel: () => void; onSuccess?: () => void }) {
   const { t } = useI18n()
   const createMutation = useCreateUser()
@@ -88,10 +119,17 @@ function CreateUserForm({ onCancel, onSuccess }: { onCancel: () => void; onSucce
   const [firstName, setFirstName] = React.useState("")
   const [phone, setPhone] = React.useState("")
   const [selectedRoles, setSelectedRoles] = React.useState<string[]>([])
+  const [selectedStores, setSelectedStores] = React.useState<string[]>([])
 
   const handleToggle = (code: string) => {
     setSelectedRoles((prev) =>
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
+    )
+  }
+
+  const handleToggleStore = (id: string) => {
+    setSelectedStores((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     )
   }
 
@@ -105,6 +143,7 @@ function CreateUserForm({ onCancel, onSuccess }: { onCancel: () => void; onSucce
         password,
         profile: { firstName: firstName.trim(), phone: phone.trim() || undefined },
         roleCodes: selectedRoles,
+        storeIds: selectedStores.length > 0 ? selectedStores : undefined,
       },
       {
         onSuccess: () => {
@@ -112,7 +151,8 @@ function CreateUserForm({ onCancel, onSuccess }: { onCancel: () => void; onSucce
           onCancel()
           onSuccess?.()
         },
-        onError: (err: any) => toast.error(err?.message || t("common.error")),
+        onError: (err: { message?: string }) =>
+          toast.error(err?.message || t("common.error")),
       }
     )
   }
@@ -126,6 +166,7 @@ function CreateUserForm({ onCancel, onSuccess }: { onCancel: () => void; onSucce
         phone={phone} setPhone={setPhone}
       />
       <RoleCheckboxes selectedRoles={selectedRoles} onToggle={handleToggle} />
+      <StoreCheckboxes selectedStores={selectedStores} onToggle={handleToggleStore} />
       <Button type="submit" className="w-full" disabled={createMutation.isPending}>
         {createMutation.isPending ? t("common.loading") : t("common.create")}
       </Button>

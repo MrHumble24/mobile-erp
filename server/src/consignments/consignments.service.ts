@@ -124,16 +124,19 @@ export class ConsignmentsService {
     return price;
   }
 
-  list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
+  async list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
+    const storeIds = await this.stores.currentStoreIds();
     return this.reads.list(
       toFilters(query),
       query.page ?? 1,
       query.pageSize ?? 20,
+      storeIds,
     );
   }
 
-  stats(query: ListConsignmentsQuery): Promise<ConsignmentStats> {
-    return this.reads.stats(toFilters(query));
+  async stats(query: ListConsignmentsQuery): Promise<ConsignmentStats> {
+    const storeIds = await this.stores.currentStoreIds();
+    return this.reads.stats(toFilters(query), storeIds);
   }
 
   overdue(): Promise<OverdueConsignment[]> {
@@ -141,16 +144,18 @@ export class ConsignmentsService {
   }
 
   async get(id: string): Promise<ConsignmentView> {
-    const c = await this.reads.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const c = await this.reads.findById(id, storeIds);
     if (!c) throw new NotFoundException(`Consignment ${id} not found`);
     return c;
   }
 
-  settle(
+  async settle(
     caller: AuthenticatedUser,
     id: string,
     dto: SettleConsignmentDto,
   ): Promise<ConsignmentView> {
+    const storeId = await this.stores.currentStoreId();
     return this.writes.settle(id, {
       salePrice:
         dto.salePrice === undefined
@@ -159,19 +164,22 @@ export class ConsignmentsService {
       notes: dto.notes,
       expectedVersion: dto.expectedVersion,
       soldById: caller.id,
+      storeId,
     });
   }
 
-  returnToStock(
+  async returnToStock(
     caller: AuthenticatedUser,
     id: string,
     dto: ReturnConsignmentDto,
   ): Promise<ConsignmentView> {
+    const storeId = await this.stores.currentStoreId();
     return this.writes.returnToStock(id, {
       reason: dto.reason,
       condition: dto.condition,
       expectedVersion: dto.expectedVersion,
       changedById: caller.id,
+      storeId,
     });
   }
 }

@@ -1,5 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { runWithStoreSelection } from '../stores/lib/store-context.js';
+import { StoresService } from '../stores/stores.service.js';
 import { MutationDto, PushDto } from './dto/push.dto.js';
 import { SyncHandlerRegistry } from './handlers/handler-registry.js';
 import type {
@@ -22,6 +24,7 @@ export class SyncService {
   constructor(
     private readonly registry: SyncHandlerRegistry,
     private readonly repo: SyncRepository,
+    private readonly stores: StoresService,
   ) {}
 
   async push(caller: AuthenticatedUser, dto: PushDto): Promise<PushResponse> {
@@ -45,6 +48,24 @@ export class SyncService {
       return reject(mutation.id, `Forbidden: requires ${handler.permission}`);
     }
 
+    const allowed = await this.stores.allowedStoreIds(caller);
+    let targetStoreId: string;
+    if (mutation.storeId) {
+      if (!allowed.includes(mutation.storeId)) {
+        return reject(mutation.id, 'STORE_FORBIDDEN');
+      }
+      targetStoreId = mutation.storeId;
+    } else {
+      if (allowed.length > 1) {
+        return reject(mutation.id, 'STORE_REQUIRED');
+      }
+      if (allowed.length === 1) {
+        targetStoreId = allowed[0];
+      } else {
+        return reject(mutation.id, 'STORE_FORBIDDEN');
+      }
+    }
+
     let dto: object;
     try {
       dto = await validateDto(handler.dtoClass, mutation.payload);
@@ -61,7 +82,7 @@ export class SyncService {
     if (existing) {
       return { id: mutation.id, status: 'duplicate', record: existing };
     }
-    return this.apply(handler, ctx, dto, terminalId, mutation);
+    return this.apply(handler, ctx, dto, terminalId, mutation, targetStoreId);
   }
 
   private async apply(
@@ -70,9 +91,14 @@ export class SyncService {
     dto: object,
     terminalId: string,
     mutation: MutationDto,
+    targetStoreId: string,
   ): Promise<MutationResult> {
     try {
-      const record = await handler.apply(ctx, dto);
+      const runner = () =>
+        runWithStoreSelection({ all: false, storeIds: [targetStoreId] }, () =>
+          handler.apply(ctx, dto),
+        );
+      const record = await runner();
       return { id: mutation.id, status: 'applied', record };
     } catch (error) {
       if (error instanceof ConflictException) {

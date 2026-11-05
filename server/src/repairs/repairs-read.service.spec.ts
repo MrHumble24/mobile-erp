@@ -14,7 +14,10 @@ const caller: AuthenticatedUser = {
 
 function build(repairsEnabled: boolean) {
   const repo = { list: jest.fn().mockResolvedValue({ items: [], total: 0 }) };
-  const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
+  const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store-1'),
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
   const settings = { get: jest.fn().mockResolvedValue({ repairsEnabled }) };
   const ledger = { outsidePaid: jest.fn(), outsideSum: jest.fn() };
   const service = new RepairsReadService(

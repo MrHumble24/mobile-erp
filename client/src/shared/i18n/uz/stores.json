@@ -1,0 +1,19 @@
+{
+  "title": "Do'konlar",
+  "subtitle": "Filiallar va savdo nuqtalarini boshqarish",
+  "newStore": "Yangi do'kon",
+  "editStore": "Do'konni tahrirlash",
+  "storeName": "Do'kon nomi",
+  "namePlaceholder": "masalan, 2-filial",
+  "address": "Manzil",
+  "addressPlaceholder": "masalan, Malika bozori, C-42",
+  "phone": "Telefon",
+  "status": "Holat",
+  "statusActive": "Faol",
+  "statusInactive": "Nofaol",
+  "deactivate": "Nofaol qilish",
+  "confirmDeactivate": "Haqiqatan ham {name} do'konini nofaol qilmoqchimisiz?",
+  "deactivated": "Do'kon nofaol qilindi",
+  "saved": "Do'kon muvaffaqiyatli saqlandi",
+  "noStores": "Do'konlar topilmadi"
+}

@@ -36,5 +36,6 @@
   "from": "From",
   "to": "To",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+  "created": "Created"
 }
