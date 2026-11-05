@@ -82,6 +82,16 @@ function mapLine(lines: CartLine[], lineId: string, patch: Partial<CartLine>): C
   )
 }
 
+/**
+ * An emptied cart forgets how the last customer paid: checkout removes lines
+ * one by one, so without this a split from the previous sale carried over.
+ */
+function withLines(lines: CartLine[]) {
+  return lines.length > 0
+    ? { lines }
+    : { lines, paymentMethod: "cash" as PaymentMethod, splitParts: [] as PaymentPart[] }
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -138,9 +148,9 @@ export const useCartStore = create<CartState>()(
       },
 
       removeLine: (lineId) =>
-        set((state) => ({ lines: state.lines.filter((line) => line.lineId !== lineId) })),
+        set((state) => withLines(state.lines.filter((line) => line.lineId !== lineId))),
 
-      removeLastLine: () => set((state) => ({ lines: state.lines.slice(0, -1) })),
+      removeLastLine: () => set((state) => withLines(state.lines.slice(0, -1))),
 
       setLinePrice: (lineId, salePrice) =>
         set((state) => ({ lines: mapLine(state.lines, lineId, { salePrice }) })),
