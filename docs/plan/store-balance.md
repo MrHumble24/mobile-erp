@@ -639,8 +639,8 @@ Progress (updated as each step lands):
 | Step | Server | Web | Android | iOS | Notes |
 |---|---|---|---|---|---|
 | 1 Stores skeleton | merged, pushed | not needed | not needed | not needed | ADR 0023 |
-| 2a Ledger core + Balance screen | merged (`025f060`) | merged, clicked through in a browser, one bug fixed (`31afa82`) | merged (`d75797c`), builds, tests pass; emulator check running | merged, seen running on a simulator, large-text fix (`c0967ec`) | ADR 0024. iOS gained a debug-only automatic sign-in so screens can be photographed. |
-| 2b Automatic posting, cash/card choice, split payment | merged (`4003240`, 248 tests), live API checked | building | after the emulator check | building | ADR 0025. Split payment was moved here from 2c. Security audit of the ledger running. |
+| 2a Ledger core + Balance screen | merged (`025f060`) | merged, clicked through in a browser, one bug fixed (`31afa82`) | merged, seen running on an emulator, raw-text-keys bug fixed (`6401e48`) | merged, seen running on a simulator, large-text fix (`c0967ec`) | ADR 0024. Both phone apps gained or are gaining a debug-only sign-in for screenshots. |
+| 2b Automatic posting, cash/card choice, split payment | merged (`4003240`, 248 tests), live API checked | merged (`29745a4`); a two-phone split sale done in a browser and confirmed on the server | building | building | ADR 0025. Split works for a cart with several phones: the cart total is split, each phone is paid from cash first, then card. Security audit done; fixes on the server branch. |
 | 2c Telegram: opening and closing balance | building (same branch as step 3) | not needed | not needed | not needed | |
 | 3 Expense per phone, customs fee from a price list, fee history | building | after server | after server | after server | No Excel upload until the client's file arrives. |
 
