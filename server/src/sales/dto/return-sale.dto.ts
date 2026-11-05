@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -11,6 +12,7 @@ import {
 export class ReturnSaleDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(1_000_000_000)
   refundAmount!: number;
 
   @IsOptional()

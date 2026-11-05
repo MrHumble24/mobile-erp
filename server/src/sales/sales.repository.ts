@@ -170,12 +170,15 @@ export class SalesRepository {
     return row !== null;
   }
 
-  findSaleForReturn(
-    id: string,
-  ): Promise<{ id: string; deviceId: string; storeId: string } | null> {
+  findSaleForReturn(id: string): Promise<{
+    id: string;
+    deviceId: string;
+    storeId: string;
+    salePrice: Prisma.Decimal;
+  } | null> {
     return this.prisma.sale.findUnique({
       where: { id },
-      select: { id: true, deviceId: true, storeId: true },
+      select: { id: true, deviceId: true, storeId: true, salePrice: true },
     });
   }
 

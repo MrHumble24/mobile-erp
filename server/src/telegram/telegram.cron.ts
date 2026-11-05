@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConsignmentsService } from '../consignments/consignments.service.js';
+import { LedgerService } from '../ledger/ledger.service.js';
 import { PartnersService } from '../partners/partners.service.js';
 import { ReportsService } from '../reports/reports.service.js';
 import { SettingsService } from '../settings/settings.service.js';
@@ -19,6 +20,7 @@ export class TelegramCron {
     private readonly reports: ReportsService,
     private readonly partners: PartnersService,
     private readonly settings: SettingsService,
+    private readonly ledger: LedgerService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
@@ -50,6 +52,9 @@ export class TelegramCron {
         this.reports.dailyClosing({}),
         this.partners.list(),
       ]);
+      // Same UTC-day boundary the digest already uses (closing.date is its start).
+      const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
+      const balances = await this.ledger.digestBalances(dayStart);
       const outstanding = partners.reduce(
         (sum, p) => sum + Number(p.outstanding),
         0,
@@ -62,6 +67,7 @@ export class TelegramCron {
           netProfit: closing.grossProfit,
           expenses: closing.expenses,
           outstanding,
+          balances,
         }),
       );
       await this.settings.markDigestSent(todayMarker(now));

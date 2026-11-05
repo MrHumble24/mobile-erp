@@ -20,6 +20,12 @@ export class CreateDeviceModelDto {
   @MaxLength(255)
   name!: string;
 
+  /** How customs writes this model (ADR 0027); matched to a price-list fee. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  customsCode?: string;
+
   /** Omit → model is seeded with a default storage+color schema. */
   @IsOptional()
   @IsArray()

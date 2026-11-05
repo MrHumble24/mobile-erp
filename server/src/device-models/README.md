@@ -7,14 +7,19 @@ devices may have). Validation of that schema lives in `lib/attribute-schema.ts`.
 
 ## Exposes (REST `/device-models`)
 
-- `GET /` — list, brand+name ordered, each with `attributes` (`device.read`).
-- `GET /:id` — one model incl. `attributes` (`device.read`).
+- `GET /` — list, brand+name ordered, each with `attributes` + `customsCode`
+  (`device.read`).
+- `GET /:id` — one model incl. `attributes` + `customsCode` (`device.read`).
 - `GET /:id/attributes` — just the `AttributeDef[]` for dynamic forms (`device.read`).
-- `POST /` — create `{ brand, name, attributes? }` (`device.update`). Omit
-  `attributes` → seeded with default `storage`(required) + `color` selects.
-  Duplicate `(brand, name)` → 409.
-- `PATCH /:id` — edit `brand`/`name`/`isActive`/`attributes` (`device.update`).
-  Replacing `attributes` re-injects the reserved `storage` select. Duplicate → 409.
+- `POST /` — create `{ brand, name, customsCode?, attributes? }`
+  (`device.update`). Omit `attributes` → seeded with default `storage`(required)
+  + `color` selects. Duplicate `(brand, name)` → 409.
+- `PATCH /:id` — edit `brand`/`name`/`isActive`/`customsCode`/`attributes`
+  (`device.update`); `customsCode: null` clears it. Replacing `attributes`
+  re-injects the reserved `storage` select. Duplicate → 409.
+
+`customsCode` is how customs writes this model; the customs module stamps a
+phone's fee from it at intake (ADR 0027).
 
 ## Attribute schema (`lib/attribute-schema.ts`)
 

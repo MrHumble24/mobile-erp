@@ -11,6 +11,12 @@ import { LedgerService } from './ledger.service.js';
 export class LedgerController {
   constructor(private readonly ledger: LedgerService) {}
 
+  @Get('accounts')
+  accounts() {
+    // No permission: cashiers pick cash/card at checkout without balance.read.
+    return this.ledger.listAccounts();
+  }
+
   @Get('balances')
   @RequirePermissions('balance.read')
   balances() {
@@ -19,8 +25,8 @@ export class LedgerController {
 
   @Get('transactions')
   @RequirePermissions('balance.read')
-  list(@Query() query: LedgerQueryDto) {
-    return this.ledger.list(query);
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: LedgerQueryDto) {
+    return this.ledger.list(query, user.permissions.has('device.cost.view'));
   }
 
   @Post('transactions')

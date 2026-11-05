@@ -17,8 +17,9 @@ model Supplier {
   @@map("suppliers")
 }
 
-/// One incoming batch. Overhead (shipping/customs) is spread evenly across
-/// its devices to produce Device.landedCost.
+/// One incoming batch. It has no expense of its own: each device carries its
+/// own `unitExpense`, and the shipment's expense is their computed sum
+/// (`unitExpenseTotal`, never stored). ADR 0026 (supersedes ADR 0006).
 model Shipment {
   id            String   @id @default(uuid())
   storeId       String
@@ -27,9 +28,8 @@ model Shipment {
   supplier      Supplier @relation(fields: [supplierId], references: [id])
   shipmentDate  DateTime
   expectedCount Int
-  overheadCost  Decimal  @default(0) @db.Decimal(14, 2)
-  // Account the purchase + overhead money left from. Fixed at creation (CASH
-  // default); every device intake and the overhead post against it.
+  // Account the purchase + per-device expense money leaves from. Fixed at
+  // creation (CASH default); every device intake and expense posts against it.
   paymentAccountCode String      @default("CASH")
   paymentAccount     CashAccount @relation(fields: [paymentAccountCode], references: [code])
   notes         String?

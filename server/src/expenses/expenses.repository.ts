@@ -3,8 +3,11 @@ import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateExpenseDto } from './dto/create-expense.dto.js';
-import { UpdateExpenseDto } from './dto/update-expense.dto.js';
-import { ExpensePosting } from './lib/expense-ledger.js';
+import {
+  deletePostings,
+  ExpensePosting,
+  updatePostings,
+} from './lib/expense-ledger.js';
 import { ExpenseDailyPoint, ExpenseFilter } from './types/expense.types.js';
 
 type Tx = Prisma.TransactionClient;
@@ -15,6 +18,23 @@ interface PostContext {
   createdById: string;
   occurredAt?: Date;
 }
+
+/** Fields an edit changes, plus the new amount/account the posting derives from. */
+interface UpdateContext {
+  storeId: string;
+  createdById: string;
+  newAmount?: Prisma.Decimal;
+  newAccountCode?: string;
+}
+
+/** Scalar edit fields (amount and account are handled via UpdateContext). */
+type ExpenseEditData = {
+  categoryId?: string;
+  description?: string;
+  vendor?: string;
+  isRecurring?: boolean;
+  incurredAt?: Date;
+};
 
 const LIST_INCLUDE = {
   category: { select: { id: true, name: true } },
@@ -98,18 +118,27 @@ export class ExpensesRepository {
     });
   }
 
-  update(
-    id: string,
-    data: Omit<UpdateExpenseDto, 'incurredAt' | 'accountCode'> & {
-      incurredAt?: Date;
-    },
-    postings: ExpensePosting[],
-    ctx: PostContext,
-  ) {
+  /**
+   * Edits an expense and posts the ledger difference. The old amount and the
+   * current account are read **inside** the transaction after a `FOR UPDATE`
+   * lock, so two concurrent edits serialize and the ledger can never drift from
+   * `expenses.amount` (ADR 0025).
+   */
+  update(id: string, data: ExpenseEditData, ctx: UpdateContext) {
     return this.prisma.$transaction(async (tx) => {
+      const oldAmount = await this.lockAmount(tx, id);
+      const currentAccount = await this.currentAccount(id);
+      const newAmount = ctx.newAmount ?? oldAmount;
+      const postings = updatePostings({
+        oldAmount,
+        newAmount,
+        currentAccount,
+        newAccountCode: ctx.newAccountCode,
+      });
       const row = await tx.expense.update({
         where: { id },
-        data,
+        data:
+          ctx.newAmount === undefined ? data : { ...data, amount: newAmount },
         include: LIST_INCLUDE,
       });
       await this.postAll(tx, id, postings, ctx);
@@ -118,14 +147,31 @@ export class ExpensesRepository {
   }
 
   /** Soft delete — keeps the row for report history, hides it from every read. */
-  async softRemove(id: string, postings: ExpensePosting[], ctx: PostContext) {
+  async softRemove(id: string, ctx: PostContext) {
     await this.prisma.$transaction(async (tx) => {
+      const amount = await this.lockAmount(tx, id);
+      const currentAccount = await this.currentAccount(id);
       await tx.expense.update({
         where: { id },
         data: { deletedAt: new Date() },
       });
-      await this.postAll(tx, id, postings, ctx);
+      await this.postAll(tx, id, deletePostings(amount, currentAccount), ctx);
     });
+  }
+
+  /** Locks the expense row (FOR UPDATE) and returns its current amount. */
+  private async lockAmount(tx: Tx, id: string): Promise<Prisma.Decimal> {
+    await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${id} FOR UPDATE`;
+    const row = await tx.expense.findUniqueOrThrow({
+      where: { id },
+      select: { amount: true },
+    });
+    return row.amount;
+  }
+
+  /** The account the expense's money currently sits against (null = pre-ledger). */
+  private async currentAccount(id: string): Promise<string | null> {
+    return (await this.ledger.expenseAccounts([id])).get(id) ?? null;
   }
 
   sumAgg(where: Prisma.ExpenseWhereInput) {

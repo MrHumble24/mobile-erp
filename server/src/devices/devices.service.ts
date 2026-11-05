@@ -6,9 +6,12 @@ import {
 } from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
+import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
 import { ListDevicesDto } from './dto/list-devices.dto.js';
+import { SetDeviceCustomsFeeDto } from './dto/set-device-customs-fee.dto.js';
+import { SetDeviceExpenseDto } from './dto/set-device-expense.dto.js';
 import { UpdateDeviceDto } from './dto/update-device.dto.js';
 import {
   DeviceDetailView,
@@ -24,6 +27,7 @@ export class DevicesService {
   constructor(
     private readonly query: DevicesQueryRepository,
     private readonly status: DevicesStatusRepository,
+    private readonly expense: DevicesExpenseRepository,
     private readonly models: DeviceModelsService,
   ) {}
 
@@ -72,6 +76,37 @@ export class DevicesService {
       }
     }
     return this.status.updateDetails(id, dto);
+  }
+
+  /**
+   * Sets a phone's own expense, recomputes its landed cost and posts the
+   * DEVICE_EXPENSE difference (ADR 0026). A sold phone keeps its sale snapshot.
+   */
+  async setExpense(
+    id: string,
+    dto: SetDeviceExpenseDto,
+    userId: string,
+  ): Promise<DeviceView> {
+    await this.require(id);
+    return this.expense.setExpense(
+      id,
+      dto.unitExpense,
+      dto.unitExpenseNote,
+      userId,
+    );
+  }
+
+  /**
+   * Hand fix for one phone's customs fee: recomputes landed cost and posts the
+   * CUSTOMS difference (ADR 0027). A sold phone keeps its sale snapshot.
+   */
+  async setCustomsFee(
+    id: string,
+    dto: SetDeviceCustomsFeeDto,
+    userId: string,
+  ): Promise<DeviceView> {
+    await this.require(id);
+    return this.expense.setCustomsFee(id, dto.customsFee, userId);
   }
 
   /**

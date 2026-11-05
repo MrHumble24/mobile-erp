@@ -17,7 +17,9 @@ Outbound Telegram alerts for the owner (PRD Module 6). No HTTP routes.
 - `TelegramCron` — overdue consignments daily at 09:00; closing digest every
   minute, gated by `shouldSendDigest` against `closingTime` and the
   `StoreSettings.digestSentOn` once-per-day marker. Digest content from
-  `ReportsService.dailyClosing` + total outstanding (sum of partner balances).
+  `ReportsService.dailyClosing` + total outstanding (sum of partner balances) +
+  per-account opening/closing balances from `LedgerService.digestBalances`
+  (2c; same UTC-day boundary — this module never queries ledger tables).
 
 ## Pure, unit-tested logic
 

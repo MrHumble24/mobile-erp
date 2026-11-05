@@ -18,11 +18,16 @@ payments / purchases / overhead post rows automatically.
 
 ## Exposes
 
+- `GET /ledger/accounts` — active accounts `[{ accountCode, label }]` in
+  `sortOrder`, no amounts. **Any signed-in user** (no permission): the checkout /
+  expense / payment pickers need it without `balance.read`.
 - `GET /ledger/balances` — per-account balance + total, as **decimal strings**
   summed in exact `Decimal` (`balance.read`).
 - `GET /ledger/transactions` — history, newest first, paginated, filter by
   `accountCode`/`typeCode`/`from`/`to`; every item carries the five nullable
-  source ids (`balance.read`).
+  source ids (`balance.read`). A caller **without** `device.cost.view` gets
+  `amount: null` on cost-type rows (`PURCHASE`/`OVERHEAD`/`DEVICE_EXPENSE`/
+  `CUSTOMS`, listed in `COST_TYPE_CODES`) — ADR 0028; balances are not redacted.
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
@@ -33,15 +38,20 @@ payments / purchases / overhead post rows automatically.
 - `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
   activeAccountCodes` — derived reads 2b modules use to shape their responses
   and validate caller-supplied accounts.
+- `LedgerService.digestBalances(dayStart)` — per-account opening (rows before
+  `dayStart`) and closing (now) balances for the Telegram closing digest (2c);
+  the telegram module calls this instead of reading ledger tables.
 
 ## Must never
 
 - Update or delete a row. A mistake is fixed by a new row: a difference, a
-  reversal, or a CORRECTION — never an edit.
+  reversal, or a CORRECTION — never an edit. Difference posters read the old
+  amount under a `FOR UPDATE` lock inside their transaction (ADR 0028).
 - Store a balance. Always sum. Balances may go below zero; nothing is blocked.
 - Let another module reach past `LedgerService` into the repository.
 
 ## Open questions
 
-- The Telegram balance digest is 2c. Acquisition-cost edit and device-delete
-  posters are specified in ADR 0025 but dormant (no such path exists yet).
+- Acquisition-cost edit and device-delete posters are specified in ADR 0025 but
+  dormant (no such path exists yet). The Telegram balance digest (2c) is done:
+  `digestBalances` above.

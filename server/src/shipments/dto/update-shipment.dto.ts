@@ -1,7 +1,6 @@
 import {
   IsDateString,
   IsInt,
-  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -17,12 +16,6 @@ export class UpdateShipmentDto {
   @IsInt()
   @Min(0)
   expectedCount?: number;
-
-  /** Changing overhead recomputes landed cost for every device in the batch. */
-  @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  overheadCost?: number;
 
   @IsOptional()
   @IsString()

@@ -4,7 +4,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { MANUAL_ENTRY_TYPES } from '../types/ledger.types.js';
 import type { ManualEntryType } from '../types/ledger.types.js';
@@ -22,6 +24,8 @@ export class CreateLedgerEntryDto {
    * signed value for OPENING/CORRECTION. Never zero.
    */
   @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(-1_000_000_000)
+  @Max(1_000_000_000)
   amount!: number;
 
   /** Required for CORRECTION (the reason); optional otherwise. */

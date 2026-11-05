@@ -120,6 +120,8 @@ export interface ReceiptView {
   total: Money;
   warranty: { days: number; endsAt: Date } | null;
   customer?: { name: string; phone: string | null };
+  /** How the sale was tendered (its SALE ledger rows); [] when none exist. */
+  payments: SalePayment[];
 }
 
 /** Validated checkout input handed to the repository transaction. */

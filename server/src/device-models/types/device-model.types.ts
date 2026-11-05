@@ -6,6 +6,8 @@ export interface DeviceModelView {
   brand: string;
   name: string;
   isActive: boolean;
+  /** How customs writes this model; used to match a price-list fee (ADR 0027). */
+  customsCode: string | null;
   attributes: AttributeDef[];
   createdAt: Date;
   updatedAt: Date;
@@ -14,6 +16,7 @@ export interface DeviceModelView {
 export interface DeviceModelInput {
   brand: string;
   name: string;
+  customsCode?: string | null;
   attributes: AttributeDef[];
 }
 
@@ -21,5 +24,6 @@ export interface DeviceModelPatch {
   brand?: string;
   name?: string;
   isActive?: boolean;
+  customsCode?: string | null;
   attributes?: AttributeDef[];
 }

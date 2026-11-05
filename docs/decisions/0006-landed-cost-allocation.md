@@ -1,7 +1,14 @@
 # 0006 — Landed-cost allocation and rounding
 
 Date: 2026-11-01
-Status: Accepted
+Status: Superseded by ADR 0026 (2026-11-05)
+
+> Superseded: the even overhead spread below is gone. A shipment no longer has
+> an `overheadCost`; each phone carries its own `unitExpense` (and, per ADR
+> 0027, `customsFee`). Landed cost is now `acquisitionCost + customsFee +
+> unitExpense`, computed per phone in `devices/lib/landed-cost.ts`. The
+> cost-redaction note at the end still holds (costs are stripped without
+> `device.cost.view`).
 
 ## Context
 

@@ -16,6 +16,19 @@ export const LEDGER_SORT_FIELDS = [
 ] as const;
 export type LedgerSortField = (typeof LEDGER_SORT_FIELDS)[number];
 
+/**
+ * Transaction types whose `amount` reveals a device cost (purchase, overhead,
+ * per-phone expense, customs fee). The ledger history nulls these amounts for a
+ * caller without the cost permission, since the generic interceptor cannot see
+ * a field named `amount`. Kept here, next to the type lookup.
+ */
+export const COST_TYPE_CODES: ReadonlySet<string> = new Set([
+  'PURCHASE',
+  'OVERHEAD',
+  'DEVICE_EXPENSE',
+  'CUSTOMS',
+]);
+
 export interface AccountBalance {
   accountCode: string;
   label: string;
@@ -27,6 +40,22 @@ export interface BalanceSummary {
   accounts: AccountBalance[];
   /** Sum of every account, as a 2-dp decimal string. */
   total: string;
+}
+
+/** One account's balance at the day's start and now, for the Telegram digest. */
+export interface DigestAccountBalance {
+  accountCode: string;
+  label: string;
+  /** Sum of rows before the day boundary, 2-dp string. */
+  opening: string;
+  /** Sum of all rows up to now, 2-dp string. */
+  closing: string;
+}
+
+export interface DigestBalances {
+  accounts: DigestAccountBalance[];
+  openingTotal: string;
+  closingTotal: string;
 }
 
 export interface LedgerFilter {
