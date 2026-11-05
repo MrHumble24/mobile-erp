@@ -44,6 +44,12 @@ struct PurchasesView: View {
                 #endif
             }
             .refreshable { model.reload() }
+            #if DEBUG
+            // Screenshot helper: open the first purchase's detail once rows load.
+            .onChange(of: model.items.count) { _, count in
+                if count > 0, KitDebugLaunch.consume("openPurchase") != nil { selected = model.items.first }
+            }
+            #endif
     }
 
     @ViewBuilder private var content: some View {

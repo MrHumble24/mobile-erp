@@ -58,7 +58,27 @@ struct RepairDetailSheet: View {
             RepairHistorySection(repair: r)
             if let error { FormErrorLine(message: error) }
         }
+        #if DEBUG
+        .onAppear { consumeDebug(r) }
+        #endif
     }
+
+    #if DEBUG
+    /// Screenshot helper: open a sub-sheet on a loaded ticket (`-repairSub
+    /// status|part|pay|outside`).
+    private func consumeDebug(_ r: RepairView) {
+        guard let which = KitDebugLaunch.consume("repairSub") else { return }
+        switch which {
+        case "status": if let to = RepairStatus.nextMoves(from: r.statusCode).first {
+            statusTarget = StatusTarget(code: to, requiresNote: to == "CANCELLED")
+        }
+        case "part": showAddPart = true
+        case "pay": money = .payment
+        case "outside": money = .outside
+        default: break
+        }
+    }
+    #endif
 
     private func actions(_ r: RepairView) -> some View {
         VStack(spacing: Tokens.Space.sm) {

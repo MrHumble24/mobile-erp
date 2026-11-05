@@ -60,6 +60,10 @@ struct PosCheckoutBar: View {
         .sheet(isPresented: $showTradeIn) {
             PosTradeInSheet { model.addTradeIn($0) }
         }
+        #if DEBUG
+        // Screenshot helper: open the trade-in sheet when seeded (`-posTradeInSheet`).
+        .onAppear { if model.tradeInAvailable, KitDebugLaunch.consume("posTradeInSheet") != nil { showTradeIn = true } }
+        #endif
     }
 
     private var totalsCard: some View {
