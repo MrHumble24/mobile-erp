@@ -42,6 +42,12 @@ in parts. Owns `customer_credits`, `credit_instalments`, `credit_payments`.
 - Effective limit = customer `creditLimit` else settings `defaultCreditLimit`;
   null = no cap. The cap is on principal — **there is no interest**.
 
+## Cashier shifts (ADR 0036)
+
+`POST /credits` is gated like a sale: when `shiftsEnabled` is on it is rejected
+**409 `NO_OPEN_SHIFT`** without an open shift (`ShiftsService.assertCanSell`).
+Credit is online only, so there is no `fromSync` exemption.
+
 ## Must never
 
 - Add any interest, late-fee or penalty field/code. Store a balance. Write a

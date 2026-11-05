@@ -9,6 +9,7 @@ import { Prisma } from '../generated/client/client.js';
 import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { ShiftsService } from '../shifts/shifts.service.js';
 import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
@@ -44,6 +45,7 @@ export class SalesService {
     private readonly ledger: LedgerService,
     private readonly stock: StockService,
     private readonly salesPricing: SalesPricingService,
+    private readonly shifts: ShiftsService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -61,6 +63,9 @@ export class SalesService {
       const existing = await this.findByClientMutationId(dto.clientMutationId);
       if (existing) return existing; // idempotent replay — no side effects
     }
+    // Shift gate (ADR 0036): when shifts are on, an online sale needs an open
+    // shift; an offline replay is trusted and skips it.
+    await this.shifts.assertCanSell(caller, { fromSync: options?.fromSync });
     const target = resolveSaleTarget(dto);
     const customer = await this.customerPricing(dto.customerId);
     if (target.kind === 'quantity') {

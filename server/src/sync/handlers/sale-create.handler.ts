@@ -23,8 +23,12 @@ export class SaleCreateHandler implements SyncHandler<CreateSaleDto> {
     dto.clientMutationId = ctx.mutationId;
     dto.expectedVersion = ctx.baseVersion;
     // Offline replay: the sale already happened at the counter, so a price or
-    // discount mismatch is not rejected — the till is trusted (ADR 0034).
-    return this.sales.create(ctx.caller, dto, { trustClientPrice: true });
+    // discount mismatch is not rejected (ADR 0034) and the shift gate is skipped
+    // (ADR 0036) — the till is trusted.
+    return this.sales.create(ctx.caller, dto, {
+      trustClientPrice: true,
+      fromSync: true,
+    });
   }
 
   deviceId(dto: CreateSaleDto): Promise<string | null> {

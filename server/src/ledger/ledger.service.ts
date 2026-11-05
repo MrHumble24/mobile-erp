@@ -20,6 +20,7 @@ import {
   type DigestBalances,
   type LedgerPost,
   type LedgerSourceField,
+  type ShiftRowNet,
 } from './types/ledger.types.js';
 
 @Injectable()
@@ -122,6 +123,31 @@ export class LedgerService {
   async expenseAccounts(ids: string[]): Promise<Map<string, string>> {
     const nets = await this.sourceNets('expenseId', ['EXPENSE'], ids);
     return this.toCurrentAccounts(nets);
+  }
+
+  /**
+   * Every cash row the cashier posted in a shift's window (ADR 0036) — the raw
+   * input the shift report groups and sums. The SHIFT_DIFFERENCE correction is
+   * returned too; the pure summary drops it, never treating it as movement.
+   */
+  shiftRows(userId: string, from: Date, to: Date): Promise<ShiftRowNet[]> {
+    return this.stores
+      .currentStoreId()
+      .then((storeId) =>
+        this.repo.rowsForUserWindow(storeId, userId, from, to),
+      );
+  }
+
+  /** Net SHIFT_DIFFERENCE amount per shift, for the shifts list (ADR 0036). */
+  async shiftDifferences(
+    shiftIds: string[],
+  ): Promise<Map<string, Prisma.Decimal>> {
+    const rows = await this.repo.sumDifferenceByShift(shiftIds);
+    const map = new Map<string, Prisma.Decimal>();
+    for (const r of rows) {
+      if (r.shiftId) map.set(r.shiftId, r._sum.amount ?? new Prisma.Decimal(0));
+    }
+    return map;
   }
 
   private async sourceNets(

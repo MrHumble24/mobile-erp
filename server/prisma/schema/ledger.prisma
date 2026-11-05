@@ -69,6 +69,9 @@ model CashTransaction {
   shipment         Shipment?       @relation(fields: [shipmentId], references: [id])
   creditPaymentId  String?
   creditPayment    CreditPayment?  @relation(fields: [creditPaymentId], references: [id])
+  /// The shift a SHIFT_DIFFERENCE correction belongs to (ADR 0036); null otherwise.
+  shiftId          String?
+  shift            Shift?          @relation(fields: [shiftId], references: [id])
   createdById String
   createdBy   User                @relation(fields: [createdById], references: [id])
   createdAt   DateTime            @default(now())
@@ -84,5 +87,6 @@ model CashTransaction {
   @@index([deviceId])
   @@index([shipmentId])
   @@index([creditPaymentId])
+  @@index([shiftId])
   @@map("cash_transactions")
 }

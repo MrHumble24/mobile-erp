@@ -33,6 +33,10 @@ model StoreSettings {
   /// customer with no own limit; null = no cap.
   customerCreditEnabled  Boolean  @default(false)
   defaultCreditLimit     Decimal? @db.Decimal(14, 2)
+  /// Cashier shifts (Change 11, ADR 0036). Off by default. When on, selling
+  /// needs an open shift (offline replays excepted). Card is never counted by
+  /// hand; only cash.
+  shiftsEnabled          Boolean  @default(false)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

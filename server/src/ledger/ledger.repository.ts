@@ -84,6 +84,30 @@ export class LedgerRepository {
     });
   }
 
+  /** Every cash row a user posted in [from, to] for a store — the shift report's
+   * raw input (ADR 0036). SHIFT_DIFFERENCE rows are kept here and filtered out
+   * by the pure summary, which never treats them as movement. */
+  rowsForUserWindow(
+    storeId: string,
+    createdById: string,
+    from: Date,
+    to: Date,
+  ) {
+    return this.prisma.cashTransaction.findMany({
+      where: { storeId, createdById, occurredAt: { gte: from, lte: to } },
+      select: { typeCode: true, accountCode: true, amount: true },
+    });
+  }
+
+  /** Net SHIFT_DIFFERENCE per shift, for the shifts list (ADR 0036). */
+  sumDifferenceByShift(shiftIds: string[]) {
+    return this.prisma.cashTransaction.groupBy({
+      by: ['shiftId'],
+      where: { shiftId: { in: shiftIds }, typeCode: 'SHIFT_DIFFERENCE' },
+      _sum: { amount: true },
+    });
+  }
+
   listAccounts() {
     return this.prisma.cashAccount.findMany({
       where: { isActive: true },

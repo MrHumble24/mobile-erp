@@ -13,7 +13,8 @@ payments / purchases / overhead post rows automatically.
   SALE/REFUND/PARTNER_PAYMENT/PURCHASE/OVERHEAD/EXPENSE + CREDIT_PAYMENT seeded
   in both `seed.sql` and the migration — `migrate deploy` never runs the seed).
   A `CREDIT_PAYMENT` row links to its payment via `creditPaymentId` (ADR 0035);
-  a credit sale itself posts no SALE row.
+  a credit sale itself posts no SALE row. A `SHIFT_DIFFERENCE` row (ADR 0036)
+  links to its shift via `shiftId` and reconciles a closing cash count.
 - The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
   transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
   and deriving a source's current account from its rows (`lib/source-nets.ts`).
@@ -40,6 +41,9 @@ payments / purchases / overhead post rows automatically.
 - `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
   activeAccountCodes` — derived reads 2b modules use to shape their responses
   and validate caller-supplied accounts.
+- `LedgerService.shiftRows(userId, from, to)` / `shiftDifferences(shiftIds)` —
+  the shift report's raw input (a cashier's cash rows in a window) and the net
+  `SHIFT_DIFFERENCE` per shift for the shifts list (ADR 0036).
 - `LedgerService.digestBalances(dayStart)` — per-account opening (rows before
   `dayStart`) and closing (now) balances for the Telegram closing digest (2c);
   the telegram module calls this instead of reading ledger tables.

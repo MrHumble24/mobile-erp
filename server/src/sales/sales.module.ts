@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { LedgerModule } from '../ledger/ledger.module.js';
 import { PricingModule } from '../pricing/pricing.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
+import { ShiftsModule } from '../shifts/shifts.module.js';
 import { StockModule } from '../stock/stock.module.js';
 import { StoresModule } from '../stores/stores.module.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
@@ -19,6 +20,7 @@ import { SalesService } from './sales.service.js';
     StockModule,
     PricingModule,
     SettingsModule,
+    ShiftsModule,
   ],
   controllers: [SalesController],
   providers: [

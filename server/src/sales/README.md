@@ -86,6 +86,13 @@ till. The sale stores `listPriceSnapshot` + `priceLevelCode`; `SaleView` gains
 `listPrice`, `discountAmount` (derived) and `priceLevelCode`. Returns live in
 `SalesReturnsService` (split out).
 
+## Cashier shifts (ADR 0036)
+
+When `shiftsEnabled` is on, `POST /sales` is rejected **409 `NO_OPEN_SHIFT`**
+unless the caller has an open shift (`ShiftsService.assertCanSell`, called
+before target resolution). An offline replay passes `fromSync` and is never
+rejected — the sale already happened at the counter.
+
 ## Customer credit (ADR 0035)
 
 `SaleView` carries `creditId` (null for a normal paid sale). `SalesCreditService`

@@ -36,6 +36,7 @@ const DEFAULTS: StoreSettings = {
   maxDiscountPercent: new Prisma.Decimal(0),
   customerCreditEnabled: false,
   defaultCreditLimit: null,
+  shiftsEnabled: false,
   digestSentOn: null,
   updatedAt: new Date(0),
 };
