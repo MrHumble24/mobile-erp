@@ -9,8 +9,10 @@ split into section cards, with a single Save and a dirty indicator.
   `UpdateSettingsDto`) plus `toFormValues` / `toUpdateDto` mappers.
 - Sections: Store Identity, Sales (currency fixed to USD), Discounts, Customer
   credit (the switch + default limit, ADR 0035), Shifts, Repairs (the
-  `repairsEnabled` switch, ADR 0040), Nasiya defaults, Telegram & closing
-  digest. Shows `updatedAt` as the last-updated stamp.
+  `repairsEnabled` switch, ADR 0040), Bonus points (switch + earn/redeem
+  percents), Printing (receipts, 58/80 mm paper width, price tags — ADR 0043),
+  Nasiya defaults, Telegram & closing digest. Shows `updatedAt` as the
+  last-updated stamp.
 
 ## Behaviour
 

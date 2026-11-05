@@ -1,124 +1,12 @@
-import type { UseFormReturn } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card"
 import { Input } from "@/shared/ui/input"
-import { Switch } from "@/shared/ui/switch"
-import { Textarea } from "@/shared/ui/textarea"
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form"
-import type { SettingsValues } from "../model/settings-schema"
+import { FormDescription, FormItem, FormLabel } from "@/shared/ui/form"
+import type { SettingsForm } from "../model/settings-form.types"
+import { Field } from "./Field"
+import { Section } from "./Section"
+import { SwitchField } from "./SwitchField"
 
-type Form = UseFormReturn<SettingsValues>
-
-/** Keys of SettingsValues whose value is a string (the text/number fields). */
-type StringFieldName = {
-  [K in keyof SettingsValues]: SettingsValues[K] extends string ? K : never
-}[keyof SettingsValues]
-
-type FieldType = "text" | "number" | "time" | "textarea"
-
-function Field({
-  form,
-  name,
-  label,
-  type = "text",
-  disabled,
-  placeholder,
-}: {
-  form: Form
-  name: StringFieldName
-  label: string
-  type?: FieldType
-  disabled: boolean
-  placeholder?: string
-}) {
-  return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-xs font-semibold">{label}</FormLabel>
-          <FormControl>
-            {type === "textarea" ? (
-              <Textarea {...field} disabled={disabled} placeholder={placeholder} />
-            ) : (
-              <Input
-                {...field}
-                type={type === "number" ? "number" : type === "time" ? "time" : "text"}
-                disabled={disabled}
-                placeholder={placeholder}
-              />
-            )}
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-}
-
-/** A boolean switch bound to a form field. */
-function SwitchField({
-  form,
-  name,
-  label,
-  disabled,
-}: {
-  form: Form
-  name:
-    | "discountsEnabled"
-    | "discountPercentAllowed"
-    | "discountAmountAllowed"
-    | "customerCreditEnabled"
-    | "shiftsEnabled"
-    | "repairsEnabled"
-  label: string
-  disabled: boolean
-}) {
-  return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem className="flex items-center justify-between gap-3 space-y-0">
-          <FormLabel className="text-xs font-semibold">{label}</FormLabel>
-          <FormControl>
-            <Switch checked={field.value} onCheckedChange={field.onChange} disabled={disabled} />
-          </FormControl>
-        </FormItem>
-      )}
-    />
-  )
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description: string
-  children: React.ReactNode
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
-  )
-}
-
-export function StoreIdentitySection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function StoreIdentitySection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("settings.sectionIdentity")} description={t("settings.sectionIdentityDesc")}>
@@ -132,7 +20,7 @@ export function StoreIdentitySection({ form, disabled }: { form: Form; disabled:
   )
 }
 
-export function SalesSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function SalesSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("settings.sectionSales")} description={t("settings.sectionSalesDesc")}>
@@ -150,7 +38,7 @@ export function SalesSection({ form, disabled }: { form: Form; disabled: boolean
   )
 }
 
-export function NasiyaSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function NasiyaSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("settings.sectionNasiya")} description={t("settings.sectionNasiyaDesc")}>
@@ -162,7 +50,7 @@ export function NasiyaSection({ form, disabled }: { form: Form; disabled: boolea
   )
 }
 
-export function DiscountsSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function DiscountsSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("pricing.settingsTitle")} description={t("pricing.standingDiscountHint")}>
@@ -181,7 +69,7 @@ export function DiscountsSection({ form, disabled }: { form: Form; disabled: boo
   )
 }
 
-export function CustomerCreditSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function CustomerCreditSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("credit.settingsTitle")} description={t("credit.pageDescription")}>
@@ -199,7 +87,7 @@ export function CustomerCreditSection({ form, disabled }: { form: Form; disabled
   )
 }
 
-export function ShiftsSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function ShiftsSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("shifts.settingsTitle")} description={t("shifts.settingsHint")}>
@@ -208,7 +96,7 @@ export function ShiftsSection({ form, disabled }: { form: Form; disabled: boolea
   )
 }
 
-export function RepairsSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function RepairsSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("repairs.settingsTitle")} description={t("repairs.settingsHint")}>
@@ -217,7 +105,7 @@ export function RepairsSection({ form, disabled }: { form: Form; disabled: boole
   )
 }
 
-export function TelegramSection({ form, disabled }: { form: Form; disabled: boolean }) {
+export function TelegramSection({ form, disabled }: { form: SettingsForm; disabled: boolean }) {
   const { t } = useI18n()
   return (
     <Section title={t("settings.sectionTelegram")} description={t("settings.sectionTelegramDesc")}>
