@@ -13,6 +13,7 @@ import {
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { CustomerPurchaseList } from "./CustomerPurchaseList"
+import { CustomerCreditsList } from "./CustomerCreditsList"
 
 function levelLabel(code: string, t: (k: string) => string): string {
   if (code === "WHOLESALE") return t("pricing.levelWholesale")
@@ -81,6 +82,24 @@ function DetailBody({
           {customer.notes}
         </div>
       )}
+
+      <div className="grid grid-cols-3 gap-2.5">
+        <Stat label={t("credit.outstanding")} value={formatMoney(customer.creditOutstanding)} />
+        <Stat label={t("credit.overdueAmount")} value={formatMoney(customer.creditOverdue)} />
+        <Stat
+          label={t("credit.effectiveLimit")}
+          value={
+            customer.effectiveCreditLimit === null
+              ? t("credit.noLimit")
+              : formatMoney(customer.effectiveCreditLimit)
+          }
+        />
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold tracking-tight">{t("credit.title")}</h3>
+        <CustomerCreditsList customerId={customer.id} />
+      </div>
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold tracking-tight">{t("customers.purchaseHistory")}</h3>

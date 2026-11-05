@@ -10,7 +10,8 @@ One feature: create or edit a customer (PRD Module 3).
 ## Owns
 
 - `model/customer-form.schema.ts` — zod schema factory (i18n messages). Phone must be
-  `+998` + 9 digits when present; name is required.
+  `+998` + 9 digits when present; name is required. `creditLimit` is optional
+  (empty = use the shop's default limit, ADR 0035).
 
 ## Must never
 

@@ -60,6 +60,8 @@ export interface SaleView {
   soldBy: { id: string; name: string }
   warranty: SaleWarrantyRef | null
   consignmentId: string | null
+  /** The credit this sale belongs to, or null for an ordinary paid sale (ADR 0035). */
+  creditId?: string | null
   notes: string | null
   return: SaleReturnRef | null
   /** How the sale was tendered; [] when the sale predates ledger posting. */

@@ -28,29 +28,36 @@ function ReturnFields({
   reason,
   setReason,
   maxRefund,
-}: ReturnFieldsProps & { maxRefund: number }) {
+  onCredit,
+}: ReturnFieldsProps & { maxRefund: number; onCredit: boolean }) {
   const { t } = useI18n()
   const exceeds = refundAmount > maxRefund
   return (
     <>
-      <div className="space-y-1">
-        <Label>{t("sales.refundAmount")}</Label>
-        <Input
-          type="number"
-          min={0}
-          max={maxRefund}
-          value={refundAmount}
-          onChange={(e) => setRefundAmount(Math.min(Number(e.target.value), maxRefund))}
-          className="h-10 text-base font-bold"
-          required
-        />
-        {exceeds && (
-          <p className="flex items-center gap-1.5 text-xs text-amber-600">
-            <AlertTriangle className="size-3.5" />
-            {t("sales.refundTooHigh")}
-          </p>
-        )}
-      </div>
+      {onCredit ? (
+        <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+          {t("credit.returnNote")}
+        </p>
+      ) : (
+        <div className="space-y-1">
+          <Label>{t("sales.refundAmount")}</Label>
+          <Input
+            type="number"
+            min={0}
+            max={maxRefund}
+            value={refundAmount}
+            onChange={(e) => setRefundAmount(Math.min(Number(e.target.value), maxRefund))}
+            className="h-10 text-base font-bold"
+            required
+          />
+          {exceeds && (
+            <p className="flex items-center gap-1.5 text-xs text-amber-600">
+              <AlertTriangle className="size-3.5" />
+              {t("sales.refundTooHigh")}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-1">
         <Label>{t("sales.returnCondition")}</Label>
@@ -108,18 +115,21 @@ function ReturnSaleForm({
   saleId,
   salePrice,
   payments,
+  onCredit,
   onCancel,
   onSuccess,
 }: {
   saleId: string
   salePrice: number
   payments: PaymentLine[]
+  onCredit: boolean
   onCancel: () => void
   onSuccess?: () => void
 }) {
   const { t } = useI18n()
   const returnMutation = useReturnSale()
-  const maxRefund = paidTotalOf(payments, salePrice)
+  // A credit sale refunds nothing — the return lowers the debt (ADR 0035).
+  const maxRefund = onCredit ? 0 : paidTotalOf(payments, salePrice)
   const [refundAmount, setRefundAmount] = React.useState(maxRefund)
   const [reason, setReason] = React.useState("")
   const [deviceToStatusCode, setDeviceToStatusCode] = React.useState<"IN_STOCK" | "DEFECTIVE">("IN_STOCK")
@@ -157,8 +167,9 @@ function ReturnSaleForm({
         reason={reason}
         setReason={setReason}
         maxRefund={maxRefund}
+        onCredit={onCredit}
       />
-      <RefundNote payments={payments} />
+      {!onCredit && <RefundNote payments={payments} />}
       <Button type="submit" variant="destructive" className="w-full" disabled={returnMutation.isPending || refundAmount > maxRefund}>
         {returnMutation.isPending ? t("common.loading") : t("sales.returnDevice")}
       </Button>
@@ -170,6 +181,7 @@ export function ReturnSaleDialog({
   saleId,
   salePrice,
   payments = [],
+  onCredit = false,
   open,
   onOpenChange,
   onSuccess,
@@ -179,6 +191,8 @@ export function ReturnSaleDialog({
   /** The sale's tender lines; the refund goes back to these accounts and is
    *  capped at their sum (or the sale price when there are none). */
   payments?: PaymentLine[]
+  /** A sale sold on credit: no cash is handed back; the return lowers the debt. */
+  onCredit?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
@@ -198,6 +212,7 @@ export function ReturnSaleDialog({
             saleId={saleId}
             salePrice={salePrice}
             payments={payments}
+            onCredit={onCredit}
             onCancel={() => onOpenChange(false)}
             onSuccess={onSuccess}
           />

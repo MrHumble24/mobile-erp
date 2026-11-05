@@ -17,6 +17,7 @@ import {
   Wallet,
   FileSpreadsheet,
   Package,
+  HandCoins,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -50,6 +51,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/sales", labelKey: "nav.sales", permission: "sale.read", icon: Receipt },
       { to: "/customers", labelKey: "nav.customers", permission: "customer.read", icon: UserRound },
+      { to: "/credits", labelKey: "nav.credits", permission: "sale.read", icon: HandCoins },
       { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },
       { to: "/partners", labelKey: "nav.partners", permission: "partner.read", icon: Users },
       { to: "/expenses", labelKey: "nav.expenses", permission: "expense.read", icon: DollarSign },

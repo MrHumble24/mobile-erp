@@ -5,7 +5,8 @@ The reports & analytics screen. Composes `widgets/report-charts`,
 
 ## Tabs (URL `?tab=`)
 
-overview (P&L hero tiles + trend + channel), sales, expenses, nasiya,
+overview (P&L hero tiles + trend + channel), sales, expenses, nasiya, credit
+(customer credit totals + the customers behind them, `entities/credit`, ADR 0035),
 inventory, pricing, closing, and customs (fee-over-time line chart per customs
 code, shown only with `customs.read`, from `entities/customs`). Each tab is one
 file in `ui/`.

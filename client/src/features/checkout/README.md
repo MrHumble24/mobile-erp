@@ -21,15 +21,20 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
 - UI: `CartLines`, `CartLine`, `QuantityCartLine`, `LinePriceSection`, `DiscountControl`,
   `CartDiscountControl`, `PriceLevelControl`, `PriceGuidance`, `CustomerPanel`,
   `CustomerSearch`, `NewCustomerForm`, `TotalsPanel`, `PaymentPanel`, `CheckoutReceiptModal`.
-- `lib/to-sale-dto.ts`, `lib/line-blockers.ts`, `lib/payment.ts` — pure mappers/rules.
-  `payment.ts`'s `buildCartPayments`/`allocateSplit`/`isPaymentBlocked` work on the final
-  amounts-to-pay; tested in `lib/payment.spec.ts`.
+- `lib/to-sale-dto.ts`, `lib/to-credit-line.ts`, `lib/line-blockers.ts`, `lib/payment.ts`
+  — pure mappers/rules. `payment.ts`'s `buildCartPayments`/`allocateSplit`/`isPaymentBlocked`
+  work on the final amounts-to-pay; tested in `lib/payment.spec.ts`. `to-credit-line.ts`
+  maps a cart line to the `CreditLineDto` the credit flow sends (same price as a sale).
+- `ui/CompactCartLines.tsx` + `ui/CartLineRow.tsx` — a dense, scrollable cart list; each
+  row's full editor lives in a popover (ADR 0034 cart-column fix), used by the pinned
+  catalog-mode column.
 
 ## Exposes (index.ts)
 `useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `toLinePrices`,
-`lineFinalPrice`, `lineListCents`, `lineHasList`, `cartTotals`, `CartLines`,
-`PriceLevelControl`, `CartDiscountControl`, `CustomerPanel`, `TotalsPanel`,
-`CheckoutReceiptModal`, and cart/checkout types.
+`lineFinalPrice`, `lineListCents`, `lineHasList`, `cartTotals`, `toCreditLine`,
+`toCreditLines`, `CartLines`, `CompactCartLines`, `PriceLevelControl`,
+`CartDiscountControl`, `CustomerPanel`, `TotalsPanel`, `CheckoutReceiptModal`, and
+cart/checkout types.
 
 ## Pricing (ADR 0034)
 Each line shows its list price for the cart's level. When a list price exists the price

@@ -22,6 +22,15 @@ export function buildCustomerFormSchema(t: (key: string) => string) {
       },
       { message: t("pricing.standingDiscount") }
     ),
+    // Empty = use the shop's default limit; otherwise a non-negative amount.
+    creditLimit: z.string().refine(
+      (v) => {
+        if (v.trim() === "") return true
+        const n = Number(v)
+        return !Number.isNaN(n) && n >= 0 && n <= 100_000_000_000
+      },
+      { message: t("credit.creditLimitHint") }
+    ),
   })
 }
 

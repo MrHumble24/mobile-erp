@@ -1,8 +1,8 @@
 # pos-terminal
 
-The cashier's POS workspace. Composes the `checkout`, `consign-device` and
-`catalog-sell` features (which never import each other) with the device, sale,
-catalog, customer, settings and auth slices.
+The cashier's POS workspace. Composes the `checkout`, `consign-device`,
+`catalog-sell` and `pay-on-credit` features (which never import each other) with
+the device, sale, catalog, customer, credit, settings and auth slices.
 
 ## Owns
 - `model/use-pos-terminal.ts` — orchestrator: mode (Sale | Nasiya), input mode
@@ -25,12 +25,19 @@ catalog, customer, settings and auth slices.
   one cart and switching keeps it.
 
 ## Layout (ADR 0034)
-In Catalog + Sale mode the grid sits on the left and the cart column
-(`CartColumn`: lines, level + customer, a whole-cart discount, totals + checkout)
-on the right, sticky so the seller never scrolls to pay; the grid shows 5–6 cards
-per row on a wide screen. On a narrow window it is one column with a fixed
-`CartBar` that shows the amount to pay and jumps to the cart. The cart's price
-level is passed into `CatalogBrowser` so the cards show the current level's price.
+In Catalog + Sale mode the grid sits on the left (its own scroll) and the cart
+column (`ui/CartColumn.tsx`, pinned) on the right: level + customer + discount on
+top, the lines scroll in a bounded middle (`CompactCartLines`), and the totals +
+payment + checkout stay in view at the bottom, so the seller pays without
+scrolling the page. On a narrow window it is one column with a fixed `CartBar`
+that shows the amount to pay and jumps to the cart. The cart's price level is
+passed into `CatalogBrowser` so the cards show the current level's price.
+
+## Customer credit (ADR 0035)
+When the setting is on and the user has `sale.credit`, the cart footer shows an
+"On credit" button that opens `features/pay-on-credit`'s `CreditDialog` over the
+live cart (lines priced by `toCreditLines`, the cart's customer, the due total).
+Disabled offline.
 
 ## Keyboard shortcuts
 `F2` focus scanner · `F9` checkout · `Esc` clear scanner · `Ctrl/⌘+Backspace` remove

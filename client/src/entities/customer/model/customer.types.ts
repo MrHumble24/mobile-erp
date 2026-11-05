@@ -8,6 +8,8 @@ export interface CustomerView {
   priceLevelCode: string
   /** The discount ceiling offered to this customer, a 2-dp percent string. */
   standingDiscountPercent: string
+  /** This customer's own credit ceiling (2-dp string); null = use the default. ADR 0035. */
+  creditLimit: string | null
 }
 
 /** A customer with purchase aggregates derived server-side from their sales. */
@@ -17,6 +19,11 @@ export interface CustomerListItem extends CustomerView {
   lastPurchaseAt: string | null
   activeWarranties: number
   returnsCount: number
+  /** Credit position (ADR 0035): all derived, never stored. */
+  creditOutstanding: string
+  creditOverdue: string
+  /** The limit actually enforced: own limit, else the settings default; null = no cap. */
+  effectiveCreditLimit: string | null
 }
 
 export interface CustomerPage {
@@ -47,6 +54,8 @@ export interface CreateCustomerDto {
   notes?: string
   priceLevelCode?: string
   standingDiscountPercent?: number
+  /** Own credit ceiling; null/omitted = use the shop's default. ADR 0035. */
+  creditLimit?: number | null
 }
 
 export interface UpdateCustomerDto {
@@ -55,6 +64,7 @@ export interface UpdateCustomerDto {
   notes?: string
   priceLevelCode?: string
   standingDiscountPercent?: number
+  creditLimit?: number | null
 }
 
 export interface CustomerSaleView {

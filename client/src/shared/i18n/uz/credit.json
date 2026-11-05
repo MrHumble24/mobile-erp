@@ -53,5 +53,11 @@
   "settingsDefaultLimit": "Default credit limit per customer",
   "reportTitle": "Customer credit",
   "totalOutstanding": "Total left to pay",
-  "totalOverdue": "Total overdue"
+  "totalOverdue": "Total overdue",
+  "detailTitle": "Credit detail",
+  "payments": "Payments",
+  "sellButton": "Sell on credit",
+  "created": "Sold on credit",
+  "viewCredit": "View credit",
+  "currentDebt": "Current debt"
 }

@@ -1,11 +1,4 @@
-import {
-  CartLines,
-  CustomerPanel,
-  PriceLevelControl,
-  CartDiscountControl,
-  TotalsPanel,
-  CheckoutReceiptModal,
-} from "@/features/checkout"
+import { CheckoutReceiptModal } from "@/features/checkout"
 import { CatalogBrowser } from "@/features/catalog-sell"
 import { ModeSwitch } from "./ModeSwitch"
 import { InputModeSwitch } from "./InputModeSwitch"
@@ -15,29 +8,8 @@ import { ProductSearch } from "./ProductSearch"
 import { SessionPanel } from "./SessionPanel"
 import { NasiyaPanel } from "./NasiyaPanel"
 import { CartBar } from "./CartBar"
+import { CartColumn } from "./CartColumn"
 import { usePosTerminal } from "../model/use-pos-terminal"
-
-type Pos = ReturnType<typeof usePosTerminal>
-
-/** The cart column: lines, level + customer, a whole-cart discount, totals + checkout. */
-function CartColumn({ pos }: { pos: Pos }) {
-  return (
-    <div id="pos-cart" className="space-y-4">
-      <CartLines
-        canViewCost={pos.canViewCost}
-        minMarginPercent={pos.minMargin}
-        canOverridePrice={pos.canOverridePrice}
-        canDiscountUnlimited={pos.canDiscountUnlimited}
-      />
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3">
-        <PriceLevelControl />
-        <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
-      </div>
-      <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
-      <TotalsPanel isPending={pos.isPending} disabled={pos.blocked} onCheckout={pos.handleCheckout} />
-    </div>
-  )
-}
 
 export function PosTerminal() {
   const pos = usePosTerminal()
@@ -54,16 +26,19 @@ export function PosTerminal() {
       </div>
 
       {catalogSale ? (
-        // Grid on the left, a cart column on the right that stays in view (ADR 0034 fix).
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-start">
-          <CatalogBrowser
-            level={pos.priceLevelCode}
-            excludeUnitIds={pos.excludeUnitIds}
-            onPickUnit={pos.onPickUnit}
-            onPickQuantity={pos.onPickQuantity}
-          />
-          <aside className="lg:sticky lg:top-4">
-            <CartColumn pos={pos} />
+        // Grid on the left (own scroll), a pinned cart column on the right whose
+        // lines scroll while totals + checkout stay in view (ADR 0034 fix).
+        <div className="grid grid-cols-1 gap-5 lg:h-[calc(100vh-190px)] lg:grid-cols-[1fr_380px]">
+          <div className="min-h-0 lg:overflow-y-auto lg:pr-1">
+            <CatalogBrowser
+              level={pos.priceLevelCode}
+              excludeUnitIds={pos.excludeUnitIds}
+              onPickUnit={pos.onPickUnit}
+              onPickQuantity={pos.onPickQuantity}
+            />
+          </div>
+          <aside className="min-h-0 lg:h-full">
+            <CartColumn pos={pos} pinned />
           </aside>
           <CartBar pos={pos} />
         </div>

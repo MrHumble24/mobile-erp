@@ -34,6 +34,16 @@ export const settingsSchema = z.object({
   // Comma-separated quick values; parsed + capped to five on submit.
   discountPresetsPercent: z.string(),
   discountPresetsAmount: z.string(),
+  customerCreditEnabled: z.boolean(),
+  // Empty = no cap (null); otherwise a non-negative amount.
+  defaultCreditLimit: z.string().refine(
+    (v) => {
+      if (v.trim() === "") return true
+      const n = Number(v)
+      return !Number.isNaN(n) && n >= 0 && n <= 100_000_000_000
+    },
+    { message: "range" }
+  ),
 })
 
 export type SettingsValues = z.infer<typeof settingsSchema>
@@ -66,6 +76,8 @@ export function toFormValues(s: StoreSettings): SettingsValues {
     maxDiscountPercent: String(Number(s.maxDiscountPercent)),
     discountPresetsPercent: (s.discountPresetsPercent ?? []).join(", "),
     discountPresetsAmount: (s.discountPresetsAmount ?? []).join(", "),
+    customerCreditEnabled: s.customerCreditEnabled,
+    defaultCreditLimit: s.defaultCreditLimit == null ? "" : String(Number(s.defaultCreditLimit)),
   }
 }
 
@@ -88,5 +100,7 @@ export function toUpdateDto(v: SettingsValues): UpdateSettingsDto {
     maxDiscountPercent: Number(v.maxDiscountPercent),
     discountPresetsPercent: parsePresets(v.discountPresetsPercent),
     discountPresetsAmount: parsePresets(v.discountPresetsAmount),
+    customerCreditEnabled: v.customerCreditEnabled,
+    defaultCreditLimit: v.defaultCreditLimit.trim() === "" ? null : Number(v.defaultCreditLimit),
   }
 }

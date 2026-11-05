@@ -2,6 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { toast } from "@/shared/ui/sonner"
 import { unitCode } from "@/shared/lib/unit-code"
+import { useOnlineStatus } from "@/shared/lib/offline"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
@@ -38,10 +39,14 @@ export function usePosTerminal() {
   const canViewCost = useAuthStore((s) => s.hasPermission("device.cost.view"))
   const canOverridePrice = useAuthStore((s) => s.hasPermission("sale.price.override"))
   const canDiscountUnlimited = useAuthStore((s) => s.hasPermission("sale.discount.unlimited"))
+  const canSellCredit = useAuthStore((s) => s.hasPermission("sale.credit"))
   const me = useAuthStore((s) => s.user?.id)
+  const online = useOnlineStatus()
+  const creditEnabled = Boolean(settings?.customerCreditEnabled) && canSellCredit
 
   const [mode, setMode] = React.useState<PosMode>("sale")
   const [customerOpen, setCustomerOpen] = React.useState(false)
+  const [creditOpen, setCreditOpen] = React.useState(false)
   const inputMode = usePosPrefsStore((s) => s.inputMode)
   const setInputMode = usePosPrefsStore((s) => s.setInputMode)
 
@@ -83,10 +88,11 @@ export function usePosTerminal() {
   const onPickQuantity = (entry: CatalogEntry) => onProduct(catalogEntryToProduct(entry))
 
   const scanner = usePosScanner(onInStock, onProduct)
-  const checkout = usePosCheckout(blocked, () => {
+  const resetCart = React.useCallback(() => {
     clearCart()
     scanner.clear()
-  })
+  }, [clearCart, scanner])
+  const checkout = usePosCheckout(blocked, resetCart)
 
   usePosShortcuts({
     onFocusScanner: focusScanner,
@@ -119,6 +125,11 @@ export function usePosTerminal() {
     blocked,
     customerOpen,
     setCustomerOpen,
+    creditEnabled,
+    online,
+    creditOpen,
+    setCreditOpen,
+    resetCart,
     consign,
     ...checkout,
   }

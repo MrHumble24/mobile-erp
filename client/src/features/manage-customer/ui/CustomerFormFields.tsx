@@ -100,6 +100,26 @@ export function CustomerFormFields({
       </div>
       <FormField
         control={form.control}
+        name="creditLimit"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("credit.creditLimit")}</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min={0}
+                placeholder={t("credit.noLimit")}
+                {...field}
+                value={field.value ?? ""}
+              />
+            </FormControl>
+            <p className="text-xs text-muted-foreground">{t("credit.creditLimitHint")}</p>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
         name="notes"
         render={({ field }) => (
           <FormItem>
