@@ -58,6 +58,7 @@ export class TelegramCron {
       const activeStores = await this.stores.list(false);
       const storeBlocks: messages.DigestStoreBlock[] = [];
       let digestDate = '';
+      const dueStoreIds: string[] = [];
 
       for (const store of activeStores) {
         await runWithStoreSelection(
@@ -78,7 +79,7 @@ export class TelegramCron {
               expenses: closing.expenses,
               balances,
             });
-            await this.settings.markDigestSent(todayMarker(now));
+            dueStoreIds.push(store.id);
           },
         );
       }
@@ -98,6 +99,13 @@ export class TelegramCron {
           stores: storeBlocks,
         }),
       );
+
+      // Mark only after the message went out: a failed send is retried next minute.
+      for (const storeId of dueStoreIds) {
+        await runWithStoreSelection({ all: false, storeIds: [storeId] }, () =>
+          this.settings.markDigestSent(todayMarker(now)),
+        );
+      }
     });
   }
 
