@@ -156,8 +156,9 @@ struct ShipmentsListView: View {
     /// detail sheet; `-openIntake <id>` opens its intake sheet.
     private func openFromLaunchArgs() {
         guard case let .loaded(feed) = store?.state else { return }
-        if let id = KitDebugLaunch.consume("openShipmentDetail"),
-           let s = feed.shipments.first(where: { $0.id == id }) { detail = s }
+        if let id = KitDebugLaunch.consume("openShipmentDetail") {
+            detail = id == "first" ? feed.shipments.first : feed.shipments.first(where: { $0.id == id })
+        }
         if let id = KitDebugLaunch.consume("openIntake"),
            let s = feed.shipments.first(where: { $0.id == id }) { intakeShipment = s }
     }

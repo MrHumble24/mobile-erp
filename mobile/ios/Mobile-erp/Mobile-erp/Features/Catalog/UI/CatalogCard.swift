@@ -7,6 +7,8 @@ import SwiftUI
 /// the reserved action orange.
 struct CatalogCard: View {
     let entry: CatalogEntry
+    /// The current price level (ADR 0034) — the card shows that level's price.
+    var level: String = PriceLevels.retail
     let onTap: () -> Void
 
     @Environment(I18n.self) private var i18n
@@ -42,8 +44,11 @@ struct CatalogCard: View {
         .buttonStyle(.plain)
     }
 
-    /// Range for a unit product (ADR 0031), price per piece for a quantity one.
+    /// The current level's price (ADR 0034) when the product sets one; otherwise
+    /// the retail fallback — a range for a unit product, the per-piece price for
+    /// a quantity one.
     private var priceLabel: String {
+        if let levelPrice = entry.prices.price(level) { return MoneyText.format(levelPrice) }
         if entry.isQuantity { return MoneyText.format(entry.salePrice ?? "0") }
         guard let min = entry.minTargetPrice else { return "—" }
         guard let max = entry.maxTargetPrice, max != min else { return MoneyText.format(min) }

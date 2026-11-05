@@ -6,6 +6,8 @@ import SwiftUI
 struct CatalogUnitPickerSheet: View {
     let entry: CatalogEntry
     let units: [CatalogUnit]
+    /// The current price level (ADR 0034) — each unit shows that level's price.
+    var level: String = PriceLevels.retail
     let onPick: (CatalogUnit) -> Void
 
     @Environment(I18n.self) private var i18n
@@ -49,7 +51,7 @@ struct CatalogUnitPickerSheet: View {
                         if let grade = unit.gradeCode {
                             StatusBadge("\(i18n.t("catalog.grade")) \(grade)", color: Tokens.info)
                         }
-                        MoneyText(value: unit.targetPrice ?? "0", size: 15)
+                        MoneyText(value: unit.prices.price(level) ?? unit.targetPrice ?? "0", size: 15)
                     }
                 }
             }

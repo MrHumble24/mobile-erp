@@ -64,6 +64,7 @@ struct FinOverviewTab: View {
                       emphasis: moneyTint(.profit, r.grossProfit), onTap: { onBreakdown(.model(from: from, to: to, measure: .grossProfit)) }),
             MetricRow(label: i18n.t("dashboard.expenses"), value: reportMoney(r.expenses), emphasis: moneyTint(.expense, r.expenses)),
             MetricRow(label: i18n.t("dashboard.returnsRefunded"), value: reportMoney(r.returnsRefunded), onTap: { onBreakdown(.returns(from: from, to: to)) }),
+            MetricRow(label: i18n.t("pricing.discountsGiven"), value: reportMoney(r.discountsGiven), emphasis: moneyTint(.expense, r.discountsGiven)),
             MetricRow(label: i18n.t("dashboard.unitsSold"), value: "\(r.unitsSold)", onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }),
         ]
     }

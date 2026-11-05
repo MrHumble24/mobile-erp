@@ -18,12 +18,16 @@ struct Shipment: Decodable, Identifiable {
     /// Account the purchase + per-phone expenses left from, fixed at creation.
     /// Optional so older cached shipments still decode.
     let paymentAccountCode: String?
+    /// Quantity purchase lines (ADR 0030/0034) — present on `GET /shipments/:id`,
+    /// empty on the list endpoint. `stockLinesTotal` is their sum (cost-redacted).
+    let stockLines: [ShipmentStockLine]
+    let stockLinesTotal: String?
 
     var isComplete: Bool { deviceCount >= expectedCount }
     /// Date portion only, for list rows.
     var dateLabel: String { String(shipmentDate.prefix(10)) }
 
-    init(id: String, supplierId: String, shipmentDate: String, expectedCount: Int, deviceCount: Int = 0, unitExpenseTotal: String? = nil, customsFeeTotal: String? = nil, devicesWithoutCustomsFee: Int = 0, notes: String? = nil, paymentAccountCode: String? = nil) {
+    init(id: String, supplierId: String, shipmentDate: String, expectedCount: Int, deviceCount: Int = 0, unitExpenseTotal: String? = nil, customsFeeTotal: String? = nil, devicesWithoutCustomsFee: Int = 0, notes: String? = nil, paymentAccountCode: String? = nil, stockLines: [ShipmentStockLine] = [], stockLinesTotal: String? = nil) {
         self.id = id
         self.supplierId = supplierId
         self.shipmentDate = shipmentDate
@@ -34,6 +38,8 @@ struct Shipment: Decodable, Identifiable {
         self.devicesWithoutCustomsFee = devicesWithoutCustomsFee
         self.notes = notes
         self.paymentAccountCode = paymentAccountCode
+        self.stockLines = stockLines
+        self.stockLinesTotal = stockLinesTotal
     }
 
     init(from decoder: Decoder) throws {
@@ -48,11 +54,45 @@ struct Shipment: Decodable, Identifiable {
         devicesWithoutCustomsFee = (try? c.decodeIfPresent(Int.self, forKey: .devicesWithoutCustomsFee)) ?? 0
         notes = try? c.decodeIfPresent(String.self, forKey: .notes)
         paymentAccountCode = try? c.decodeIfPresent(String.self, forKey: .paymentAccountCode)
+        stockLines = (try? c.decodeIfPresent([ShipmentStockLine].self, forKey: .stockLines)) ?? []
+        stockLinesTotal = c.decimalString(.stockLinesTotal)
     }
 
     enum CodingKeys: String, CodingKey {
         case id, supplierId, shipmentDate, expectedCount, deviceCount
         case unitExpenseTotal, customsFeeTotal, devicesWithoutCustomsFee, notes, paymentAccountCode
+        case stockLines, stockLinesTotal
+    }
+}
+
+/// One quantity purchase line on a shipment (`GET /shipments/:id`, ADR 0030/0034).
+/// `unitCost`/`lineTotal` are null without the cost permission.
+struct ShipmentStockLine: Decodable, Identifiable {
+    let id: String
+    let modelId: String
+    let brand: String
+    let name: String
+    let quantity: Int
+    let unitCost: String?
+    let lineTotal: String?
+    let occurredAt: String?
+
+    var label: String { "\(brand) \(name)".trimmingCharacters(in: .whitespaces) }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        modelId = (try? c.decode(String.self, forKey: .modelId)) ?? ""
+        brand = (try? c.decodeIfPresent(String.self, forKey: .brand)) ?? ""
+        name = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? ""
+        quantity = (try? c.decode(Int.self, forKey: .quantity)) ?? 0
+        unitCost = c.decimalString(.unitCost)
+        lineTotal = c.decimalString(.lineTotal)
+        occurredAt = try? c.decodeIfPresent(String.self, forKey: .occurredAt)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, modelId, brand, name, quantity, unitCost, lineTotal, occurredAt
     }
 }
 
@@ -149,6 +189,11 @@ struct ShipmentsRepository {
 
     func list() async throws -> [Shipment] {
         try await api.get("/shipments")
+    }
+
+    /// One shipment with its quantity stock lines (ADR 0030/0034).
+    func detail(_ id: String) async throws -> Shipment {
+        try await api.get("/shipments/\(id)")
     }
 
     func create(_ body: ShipmentWriteDTO) async throws -> Shipment {

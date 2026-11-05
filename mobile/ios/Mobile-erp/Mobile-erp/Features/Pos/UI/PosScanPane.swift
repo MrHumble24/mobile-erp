@@ -11,7 +11,7 @@ struct PosScanPane: View {
     /// so the payment control is captured. Normal launches anchor at the top.
     private var demoScrollAnchor: UnitPoint {
         #if DEBUG
-        let keys = ["posDemo", "posSplit", "posSellMix"]
+        let keys = ["posDemo", "posSplit", "posSellMix", "posPriceDemo"]
         if keys.contains(where: { UserDefaults.standard.string(forKey: $0) != nil }) { return .bottom }
         #endif
         return .top

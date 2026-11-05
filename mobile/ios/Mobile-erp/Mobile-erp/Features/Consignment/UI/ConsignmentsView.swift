@@ -16,6 +16,7 @@ struct ConsignmentsView: View {
     @State private var returnItem: Consignment?
     @State private var showCreate = false
     @State private var showFilters = false
+    @State private var consignInitialCode: String?
 
     private var hasActiveFilters: Bool { (model?.preset ?? .all) != .all }
 
@@ -28,11 +29,12 @@ struct ConsignmentsView: View {
                 consumeRoute()
                 #if DEBUG
                 consignmentSelfCheck()
+                if let code = KitDebugLaunch.consume("openConsignForm") { consignInitialCode = code; showCreate = true }
                 #endif
             }
             .onChange(of: container.router.pending) { consumeRoute() }
             .sheet(isPresented: $showCreate) {
-                ConsignDeviceSheet(partnerId: nil, lockPartner: false) { Task { await model?.load() } }
+                ConsignDeviceSheet(partnerId: nil, lockPartner: false, initialCode: consignInitialCode) { Task { await model?.load() } }
             }
             .sheet(item: $settleItem) { item in
                 SettleConsignmentSheet(consignment: item) { Task { await model?.load() } }

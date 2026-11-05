@@ -17,7 +17,7 @@ final class I18n {
     /// Namespaces — the web client's namespaces (see its `index.ts`).
     static let namespaces = [
         "auth", "balance", "catalog", "common", "consignments", "customers", "customs", "dashboard",
-        "expenses", "inventory", "nav", "partners", "pos", "qc",
+        "expenses", "inventory", "nav", "partners", "pos", "pricing", "qc",
         "reports", "sales", "settings", "shipments", "users",
     ]
     static let defaultLocale = "uz"

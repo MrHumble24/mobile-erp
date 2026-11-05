@@ -18,7 +18,8 @@ enum CatalogSelfCheck {
     private static func entry(_ kind: String) -> CatalogEntry {
         CatalogEntry(modelId: "m1", brand: "Apple", name: "iPhone 15", kindCode: kind,
                      categoryId: "c1", categoryName: nil, imageUrl: nil, inStock: 2,
-                     minTargetPrice: "1000000", maxTargetPrice: "1200000", salePrice: nil)
+                     minTargetPrice: "1000000", maxTargetPrice: "1200000", salePrice: nil,
+                     prices: PriceLevelPrices())
     }
 
     private static func checkTapRules() {
@@ -50,14 +51,14 @@ enum CatalogSelfCheck {
             CatalogCachedDevice(id: id, imei: id, serialNumber: nil, statusCode: status,
                                 kindCode: "IMEI", targetPrice: price, storage: "256 GB", color: "Black",
                                 gradeCode: "A", modelId: "mA", brand: "Apple", name: "iPhone 15",
-                                categoryId: "c1", imageUrl: "/uploads/a.png")
+                                categoryId: "c1", imageUrl: "/uploads/a.png", prices: PriceLevelPrices())
         }
         let devices = [device("d1", "IN_STOCK", "1000000"),
                        device("d2", "IN_STOCK", "1200000"),
                        device("d3", "SOLD", "900000")]   // sold → dropped
         let products = [CatalogCachedProduct(modelId: "mB", brand: "Generic", name: "Cable",
                                              salePrice: "90000", quantity: 5,
-                                             categoryId: "c2", imageUrl: nil)]
+                                             categoryId: "c2", imageUrl: nil, prices: PriceLevelPrices())]
 
         let all = CatalogOffline.entries(devices: devices, products: products, categoryId: nil, search: nil)
         assert(all.count == 2)   // one unit card + one quantity card

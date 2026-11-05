@@ -67,10 +67,25 @@ struct DeviceSpecsGrid: View {
                     Text(KitDate.day(device.intakeDate)).font(.data(.regular))
                 }
             }
+            if hasOtherLevelPrices {
+                FactBlock {
+                    FactRow(label: i18n.t(PriceLevels.labelKey(PriceLevels.wholesale))) {
+                        Text(MoneyText.format(device.prices.price(PriceLevels.wholesale))).font(.data(.regular))
+                    }
+                    FactRow(label: i18n.t(PriceLevels.labelKey(PriceLevels.partner)), last: true) {
+                        Text(MoneyText.format(device.prices.price(PriceLevels.partner))).font(.data(.regular))
+                    }
+                }
+            }
             if canViewCost, let landed = device.landedCost {
                 CostBlock(device: device, landedCost: landed)
             }
         }
+    }
+
+    /// A wholesale or partner price is set — worth showing next to the retail one.
+    private var hasOtherLevelPrices: Bool {
+        device.prices.price(PriceLevels.wholesale) != nil || device.prices.price(PriceLevels.partner) != nil
     }
 }
 

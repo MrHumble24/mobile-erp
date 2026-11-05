@@ -54,7 +54,8 @@ struct CatalogRepository {
                 kindCode: d.kindCode, targetPrice: d.targetPrice,
                 storage: specs["storage"], color: specs["color"], gradeCode: d.gradeCode,
                 modelId: d.modelId, brand: d.modelBrand, name: d.modelName,
-                categoryId: d.modelCategoryId, imageUrl: d.modelImageUrl)
+                categoryId: d.modelCategoryId, imageUrl: d.modelImageUrl,
+                prices: PriceLevelPrices.from(jsonString: d.pricesJSON))
         }
     }
 
@@ -63,7 +64,8 @@ struct CatalogRepository {
         return rows.map {
             CatalogCachedProduct(modelId: $0.modelId, brand: $0.brand, name: $0.name,
                                  salePrice: $0.salePrice, quantity: $0.quantity,
-                                 categoryId: $0.categoryId, imageUrl: $0.imageUrl)
+                                 categoryId: $0.categoryId, imageUrl: $0.imageUrl,
+                                 prices: PriceLevelPrices.from(jsonString: $0.pricesJSON))
         }
     }
 

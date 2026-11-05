@@ -59,7 +59,8 @@ struct PosProductSearchSheet: View {
 
     private func add(_ level: StockLevel) {
         onAdd(PosCartProduct(modelId: level.modelId, name: level.label, barcode: level.barcode,
-                             salePrice: level.salePrice, quantityInStock: level.quantity))
+                             salePrice: level.salePrice, quantityInStock: level.quantity,
+                             prices: level.prices))
         dismiss()
     }
 

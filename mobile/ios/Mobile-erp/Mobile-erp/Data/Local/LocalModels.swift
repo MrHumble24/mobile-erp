@@ -30,6 +30,10 @@ final class DeviceEntity {
     /// without them (migrates by adding the columns).
     var modelImageUrl: String?
     var modelCategoryId: String?
+    /// Resolved list prices per level (ADR 0034), as a JSON object string, carried
+    /// on the feed so an offline till prices every level. Optional — an older
+    /// cached row loads without it (migrates by adding the column).
+    var pricesJSON: String?
 
     /// The code to show the user: the IMEI when present, else the serial number.
     var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
@@ -39,7 +43,8 @@ final class DeviceEntity {
          targetPrice: String?, specsJSON: String, modelId: String,
          modelBrand: String, modelName: String, latestSaleJSON: String?,
          gradeCode: String?, inspectionNotes: String?, updatedAt: String,
-         modelImageUrl: String? = nil, modelCategoryId: String? = nil) {
+         modelImageUrl: String? = nil, modelCategoryId: String? = nil,
+         pricesJSON: String? = nil) {
         self.id = id
         self.imei = imei
         self.imei2 = imei2
@@ -58,6 +63,7 @@ final class DeviceEntity {
         self.updatedAt = updatedAt
         self.modelImageUrl = modelImageUrl
         self.modelCategoryId = modelCategoryId
+        self.pricesJSON = pricesJSON
     }
 }
 
@@ -96,10 +102,14 @@ final class ProductEntity {
     /// so an existing cached row migrates without them.
     var imageUrl: String?
     var categoryId: String?
+    /// Resolved list prices per level (ADR 0034) as a JSON object string. Optional
+    /// so an existing cached row migrates without it.
+    var pricesJSON: String?
 
     init(modelId: String, brand: String, name: String,
          barcode: String?, salePrice: String?, quantity: Int,
-         imageUrl: String? = nil, categoryId: String? = nil) {
+         imageUrl: String? = nil, categoryId: String? = nil,
+         pricesJSON: String? = nil) {
         self.modelId = modelId
         self.brand = brand
         self.name = name
@@ -108,6 +118,7 @@ final class ProductEntity {
         self.quantity = quantity
         self.imageUrl = imageUrl
         self.categoryId = categoryId
+        self.pricesJSON = pricesJSON
     }
 }
 

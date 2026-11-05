@@ -16,9 +16,10 @@ struct ShipmentDetailSheet: View {
     @State private var editShipment: Shipment?
     @State private var intake: Shipment?
     @State private var showItems = false
-    /// Quantity lines added this session (ADR 0030). The server has no read of a
-    /// shipment's quantity lines, so these show only the just-added ones.
-    @State private var quantityLines: [ShipmentItemDTO] = []
+    /// The shipment's quantity stock lines, read from `GET /shipments/:id`
+    /// (ADR 0030/0034) and refreshed after adding stock.
+    @State private var stockLinesData: [ShipmentStockLine] = []
+    @State private var stockLinesTotal: String?
 
     private var canManage: Bool { container.session.can("shipment.manage") }
     private var canIntake: Bool { container.session.can("device.create") }
@@ -54,7 +55,7 @@ struct ShipmentDetailSheet: View {
                     }
                     actions
                 }
-                if !quantityLines.isEmpty {
+                if !stockLinesData.isEmpty {
                     Section(i18n.t("catalog.stock")) { stockLines }
                 }
                 Section(i18n.t("shipments.deviceList")) {
@@ -77,6 +78,7 @@ struct ShipmentDetailSheet: View {
             .task {
                 if pager == nil { pager = makePager() }
                 await loadModels()
+                await loadStockLines()
                 await pager?.first()
                 #if DEBUG
                 if KitDebugLaunch.consume("openShipmentItems") != nil { showItems = true }
@@ -89,8 +91,8 @@ struct ShipmentDetailSheet: View {
                 IntakeSheet(shipment: s)
             }
             .appSheet(isPresented: $showItems) {
-                ShipmentItemsSheet(shipment: shipment) { _, lines in
-                    quantityLines.append(contentsOf: lines)
+                ShipmentItemsSheet(shipment: shipment) { _, _ in
+                    Task { await loadStockLines() }
                 }
             }
         }
@@ -98,17 +100,35 @@ struct ShipmentDetailSheet: View {
 
     @ViewBuilder
     private var stockLines: some View {
-        ForEach(quantityLines) { line in
+        ForEach(stockLinesData) { line in
             HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(line.label).font(.ui(.body)).foregroundStyle(Tokens.text)
-                    Text("\(line.quantity) × \(MoneyText.format(NSDecimalNumber(decimal: line.unitCost).stringValue))")
-                        .font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    if let unitCost = line.unitCost {
+                        Text("\(line.quantity) × \(MoneyText.format(unitCost))")
+                            .font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    } else {
+                        Text("\(line.quantity)").font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    }
                 }
                 Spacer()
-                MoneyText(value: NSDecimalNumber(decimal: line.lineTotal).stringValue, size: 13)
+                if let lineTotal = line.lineTotal { MoneyText(value: lineTotal, size: 13) }
             }
         }
+        if let total = stockLinesTotal {
+            HStack {
+                Text(i18n.t("catalog.lineTotal")).foregroundStyle(Tokens.muted)
+                Spacer()
+                MoneyText(value: total, size: 13)
+            }
+            .font(.caption)
+        }
+    }
+
+    private func loadStockLines() async {
+        guard let detail = try? await ShipmentsRepository(api: container.api).detail(shipment.id) else { return }
+        stockLinesData = detail.stockLines
+        stockLinesTotal = detail.stockLinesTotal
     }
 
     private func totalRow(_ label: String, _ value: String) -> some View {

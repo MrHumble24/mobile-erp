@@ -22,7 +22,8 @@ struct PosRepository {
         return ScannedDevice(
             id: d.id, imei: d.imei, imei2: d.imei2, serialNumber: d.serialNumber,
             version: d.version, statusCode: d.statusCode, modelLabel: label,
-            targetPrice: d.targetPrice
+            targetPrice: d.targetPrice,
+            prices: PriceLevelPrices.from(jsonString: d.pricesJSON)
         )
     }
 
@@ -35,7 +36,8 @@ struct PosRepository {
         guard let p = try? context.fetch(descriptor).first else { return nil }
         let name = "\(p.brand) \(p.name)".trimmingCharacters(in: .whitespaces)
         return PosCartProduct(modelId: p.modelId, name: name, barcode: p.barcode,
-                              salePrice: p.salePrice, quantityInStock: p.quantity)
+                              salePrice: p.salePrice, quantityInStock: p.quantity,
+                              prices: PriceLevelPrices.from(jsonString: p.pricesJSON))
     }
 
     /// Resolve a code online via `GET /scan/:code` (ADR 0030). Returns the
@@ -46,7 +48,8 @@ struct PosRepository {
         guard result.kind == "product", let p = result.product else { return nil }
         let name = "\(p.brand) \(p.name)".trimmingCharacters(in: .whitespaces)
         return PosCartProduct(modelId: p.modelId, name: name, barcode: p.barcode,
-                              salePrice: p.salePrice, quantityInStock: p.quantity)
+                              salePrice: p.salePrice, quantityInStock: p.quantity,
+                              prices: p.prices ?? PriceLevelPrices())
     }
 
     /// Unit codes (IMEI or serial) with a pending offline `sale.create` in the

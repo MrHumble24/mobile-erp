@@ -24,6 +24,7 @@ struct ModelFormSheet: View {
     @State private var attributes: [AttributeDef]
     @State private var saving = false
     @State private var error: String?
+    @State private var showPrices = false
 
     private let savedKeys: Set<String>
     private let originalKind: String
@@ -55,6 +56,9 @@ struct ModelFormSheet: View {
                 // once the model exists (create → save → reopen to add a picture).
                 if let model {
                     ModelPictureField(model: model, store: store)
+                    if container.session.can("price.manage") {
+                        pricesButton(model)
+                    }
                 }
                 AppFormField(label: i18n.t("inventory.brand")) {
                     AppTextField(placeholder: i18n.t("inventory.brand"), text: $brand, autocapitalization: .words)
@@ -114,6 +118,21 @@ struct ModelFormSheet: View {
         .background(Tokens.card)
         .presentationDetents([.large])
         .task { await store.loadCategories() }
+    }
+
+    /// Opens the storage × level price editor (ADR 0034). Only when the product
+    /// exists and the user may manage prices.
+    private func pricesButton(_ model: DeviceModelView) -> some View {
+        AppFormField(label: i18n.t("pricing.productPrices")) {
+            Button { showPrices = true } label: {
+                Label(i18n.t("pricing.productPrices"), systemImage: "tag")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.pillSecondary)
+            .sheet(isPresented: $showPrices) {
+                PricingProductSheet(model: model) { Task { await store.loadModels() } }
+            }
+        }
     }
 
     private var titleRow: some View {

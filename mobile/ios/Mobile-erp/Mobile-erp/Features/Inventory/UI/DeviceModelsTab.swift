@@ -10,6 +10,7 @@ struct DeviceModelsTab: View {
     @State private var categoryFilter: String?
     @State private var editing: ModelTarget?
     @State private var showCategories = false
+    @State private var pricesModel: DeviceModelView?
 
     private var shown: [DeviceModelView] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
@@ -61,6 +62,9 @@ struct DeviceModelsTab: View {
         .appSheet(item: $editing) { target in
             ModelFormSheet(model: target.model, store: store)
         }
+        .appSheet(item: $pricesModel) { m in
+            PricingProductSheet(model: m) { Task { await store.loadModels() } }
+        }
         .appSheet(isPresented: $showCategories) {
             CategoriesSheet(store: store)
         }
@@ -74,6 +78,13 @@ struct DeviceModelsTab: View {
             }) else { return }
             if arg == "new" { editing = ModelTarget(model: nil) }
             else if let m = store.deviceModels.first(where: { $0.id == arg }) { editing = ModelTarget(model: m) }
+        }
+        // `-openModelPrices <id>` opens the storage × level price editor directly.
+        .onChange(of: store.deviceModels.count, initial: true) { _, _ in
+            guard pricesModel == nil, let arg = KitDebugLaunch.consume("openModelPrices", accept: { value in
+                store.deviceModels.contains { $0.id == value }
+            }) else { return }
+            pricesModel = store.deviceModels.first { $0.id == arg }
         }
         // `-openCategories 1` opens the categories sheet.
         .onAppear {

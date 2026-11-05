@@ -79,6 +79,63 @@ extension PosViewModel {
         checkout()
     }
 
+    /// Seed a priced cart for the pricing screenshots (ADR 0034), bypassing the
+    /// cache. `mode`: "retail" | "wholesale" | "over" | "cart3". Sets a discount
+    /// config (5% cashier max, both modes, presets) so the discount surface shows.
+    func debugPriceDemo(_ mode: String) {
+        self.mode = .scan
+        debugLockConfig = true
+        cart.config = PosDiscountConfig(
+            enabled: true, percentAllowed: true, amountAllowed: true,
+            presetsPercent: [3, 5], presetsAmount: [20_000, 50_000],
+            cashierMax: 5, canOverridePrice: false, canDiscountUnlimited: false)
+        func dev(_ id: String, _ imei: String, _ label: String, _ r: String, _ w: String, _ p: String) -> ScannedDevice {
+            ScannedDevice(id: id, imei: imei, imei2: nil, serialNumber: nil, version: 1,
+                          statusCode: "IN_STOCK", modelLabel: label, targetPrice: r,
+                          prices: PriceLevelPrices(["RETAIL": r, "WHOLESALE": w, "PARTNER": p]))
+        }
+        cart.add(dev("p1", "356938035643809", "iPhone 16 Pro Max", "9500000", "9200000", "9000000"), warrantyDays: 365)
+        cart.add(dev("p2", "356938035643810", "iPhone 15", "7500000", "7300000", "7100000"), warrantyDays: 365)
+        cart.add(dev("p3", "356938035643811", "iPhone SE", "3500000", "3400000", "3300000"), warrantyDays: 365)
+        cart.setLevel(mode == "retail" ? PriceLevels.retail : PriceLevels.wholesale)
+        ensureDemoAccounts()
+        switch mode {
+        case "retail", "wholesale", "lines":
+            cart.setDiscount(cart.lines[0].id, mode: .percent, value: "3")
+            cart.setDiscount(cart.lines[1].id, mode: .amount, value: "50000")
+        case "over":
+            cart.setDiscount(cart.lines[0].id, mode: .percent, value: "9")   // over the 5% cap
+        case "cart3":
+            _ = cart.applyCartDiscount(mode: .percent, value: 5)
+        default:
+            break
+        }
+        // Open the cart sheet (scrolls from the top) to show the line rows.
+        if mode == "lines" || mode == "over" || mode == "cart3" { showCart = true }
+    }
+
+    /// Real end-to-end discounted sale (`-posSellDiscount "<code>,<level>,<pct>"`):
+    /// waits for the unit to sync into the cache, scans it, sets the level and a
+    /// percent discount, then checks out through the real POST path (ADR 0034).
+    func debugSellDiscount(_ arg: String, container: AppContainer) {
+        let parts = arg.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        guard let code = parts.first, !code.isEmpty else { return }
+        let level = parts.count > 1 ? parts[1] : PriceLevels.wholesale
+        let pct = parts.count > 2 ? parts[2] : "3"
+        let repo = PosRepository(context: container.modelContext, api: container.api)
+        Task {
+            for _ in 0..<30 where repo.lookup(code) == nil {
+                try? await Task.sleep(for: .milliseconds(500))
+            }
+            scan(code)
+            confirmScan()
+            guard let line = cart.lines.first else { return }
+            cart.setLevel(level)
+            cart.setDiscount(line.id, mode: .percent, value: pct)
+            checkout()
+        }
+    }
+
     private func ensureDemoAccounts() {
         if payment.accounts.isEmpty {
             payment.setAccounts([PaymentAccount(code: "CASH", label: "Cash"),

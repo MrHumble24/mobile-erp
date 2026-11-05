@@ -40,6 +40,16 @@ struct ReceiptView: Decodable {
     let total: MoneyValue
     let warranty: Window?
     let customer: Customer?
+    /// Pricing (ADR 0034) — present only when the server adds them to the receipt
+    /// endpoint; shown when a discount was given or the level is not retail.
+    let listPrice: MoneyValue?
+    let discountAmount: MoneyValue?
+    let priceLevelCode: String?
+
+    var showsPricing: Bool {
+        (Decimal(string: discountAmount?.string ?? "0") ?? 0) > 0
+            || (priceLevelCode != nil && priceLevelCode != PriceLevels.retail)
+    }
 
     struct Item: Decodable {
         let imei: String?

@@ -6,6 +6,9 @@ import SwiftUI
 struct ConsignDeviceSheet: View {
     let partnerId: String?
     let lockPartner: Bool
+    /// DEBUG only: prefill the first row's code (used to capture the partner-price
+    /// prefill); nil in normal use.
+    var initialCode: String? = nil
     var onSuccess: () -> Void
 
     @Environment(AppContainer.self) private var container
@@ -28,7 +31,8 @@ struct ConsignDeviceSheet: View {
         .presentationDetents([.large])
         .task {
             if model == nil {
-                let m = container.makeConsignFormModel(partnerId: partnerId, lockPartner: lockPartner)
+                let m = container.makeConsignFormModel(partnerId: partnerId, lockPartner: lockPartner,
+                                                       initialCode: initialCode)
                 model = m
                 await m.loadPartners()
             }
@@ -49,7 +53,8 @@ struct ConsignDeviceSheet: View {
         Text(i18n.t("consignments.devices")).font(.ui(.heading)).foregroundStyle(Tokens.text)
         ForEach($model.rows) { $row in
             DeviceRowEditor(row: $row, index: model.rows.firstIndex(where: { $0.id == row.id }) ?? 0,
-                            canRemove: model.rows.count > 1) { model.removeRow(row.id) }
+                            canRemove: model.rows.count > 1,
+                            onCodeChange: { model.fillPartnerPrice(row.id) }) { model.removeRow(row.id) }
         }
         Button { model.addRow() } label: {
             Label(i18n.t("consignments.addDevice"), systemImage: "plus").frame(maxWidth: .infinity)
@@ -98,6 +103,7 @@ private struct DeviceRowEditor: View {
     @Binding var row: ConsignFormModel.DeviceRow
     let index: Int
     let canRemove: Bool
+    var onCodeChange: () -> Void
     var onRemove: () -> Void
     @Environment(I18n.self) private var i18n
 
@@ -111,10 +117,14 @@ private struct DeviceRowEditor: View {
                 }
             }
             ScanOrValueField(text: $row.imei, placeholder: i18n.t("catalog.scanCode"))
+                .onChange(of: row.imei) { _, _ in onCodeChange() }
             AppFormField(label: i18n.t("consignments.agreedPrice")) {
                 AppTextField(placeholder: i18n.t("consignments.agreedPrice"), text: $row.agreedPrice,
                              keyboard: .decimalPad, font: .data(.regular))
                     .sanitizeDecimal($row.agreedPrice)
+                if row.partnerPriceUsed {
+                    Text(i18n.t("pricing.partnerPriceUsed")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                }
             }
         }
         .padding(Tokens.Space.lg)

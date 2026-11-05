@@ -23,6 +23,8 @@ struct StockLevel: Decodable, Identifiable {
     let quantity: Int
     let averageCost: String?
     let value: String?
+    /// Resolved per-piece prices per level (ADR 0034); empty when none.
+    let prices: PriceLevelPrices
 
     var id: String { modelId }
     var label: String { "\(brand) \(name)".trimmingCharacters(in: .whitespaces) }
@@ -30,7 +32,7 @@ struct StockLevel: Decodable, Identifiable {
     var isOutOfStock: Bool { quantity == 0 }
 
     enum CodingKeys: String, CodingKey {
-        case modelId, brand, name, barcode, modelCode, categoryId, salePrice, quantity, averageCost, value
+        case modelId, brand, name, barcode, modelCode, categoryId, salePrice, quantity, averageCost, value, prices
     }
 
     init(from decoder: Decoder) throws {
@@ -45,6 +47,7 @@ struct StockLevel: Decodable, Identifiable {
         quantity = try c.decode(Int.self, forKey: .quantity)
         averageCost = StockMoney.decode(c, .averageCost)
         value = StockMoney.decode(c, .value)
+        prices = try c.decodeIfPresent(PriceLevelPrices.self, forKey: .prices) ?? PriceLevelPrices()
     }
 }
 
