@@ -1,6 +1,12 @@
 import * as React from "react"
 import { useNavigate } from "react-router"
+import { useQueryClient } from "@tanstack/react-query"
 import { useI18n } from "@/shared/i18n"
+import { useAuthStore } from "@/features/auth"
+import { setHttpStoreOverride } from "@/shared/api/http"
+import { reportKeys } from "@/entities/report"
+import { Switch } from "@/shared/ui/switch"
+import { Label } from "@/shared/ui/label"
 import {
   ReportBreakdownSheet,
   type BreakdownRequest,
@@ -25,6 +31,22 @@ import { RepairsReportTab } from "./RepairsReportTab"
 export function ReportsPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const canSeeAll = useAuthStore((s) => s.hasPermission("store.all"))
+  const [allStores, setAllStores] = React.useState(false)
+
+  const handleAllStoresChange = (checked: boolean) => {
+    setAllStores(checked)
+    setHttpStoreOverride(checked ? "all" : null)
+    queryClient.resetQueries({ queryKey: reportKeys.all })
+  }
+
+  React.useEffect(() => {
+    return () => {
+      setHttpStoreOverride(null)
+    }
+  }, [])
+
   const { tabs, canViewCost, canReadCustoms, repairsOn } = useReportTabs()
   const [tab, setTab] = useUrlTab<ReportTab>("overview", { validTabs: tabs })
   const range = useReportRange()
@@ -33,7 +55,24 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("reports.title")} description={t("reports.subtitle")} />
+      <PageHeader
+        title={t("reports.title")}
+        description={t("reports.subtitle")}
+        actions={
+          canSeeAll ? (
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs">
+              <Switch
+                id="all-stores-reports"
+                checked={allStores}
+                onCheckedChange={handleAllStoresChange}
+              />
+              <Label htmlFor="all-stores-reports" className="cursor-pointer text-xs font-medium">
+                {t("reports.allStores")}
+              </Label>
+            </div>
+          ) : undefined
+        }
+      />
       {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && tab !== "credit" && (
         <ReportFilterRow range={range} />
       )}

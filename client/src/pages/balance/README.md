@@ -16,6 +16,8 @@ and card money: per-account balances, the total, and the full history of changes
   The type filter and labels cover the `DEVICE_EXPENSE` / `CUSTOMS` types (ADR
   0026/0027); a redacted cost row (`amount: null`) shows `balance.amountHidden`,
   never NaN or 0 (ADR 0028).
+- Multi-store: with `store.all`, an All stores switch loads company totals and
+  per-store breakdown, hiding mutation actions and single-store history.
 
 ## Must never
 - Check role names: it reads `balance.read` / `balance.manage` from the auth store.

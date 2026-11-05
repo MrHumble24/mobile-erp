@@ -1,6 +1,7 @@
 {
   "title": "Moliyaviy hisobotlar",
   "subtitle": "Foyda va zararlar, xarajatlar tahlili, nasiya, ombor, modellar marjasi va kunlik hisobot",
+  "allStores": "Barcha do'konlar",
   "tabProfit": "Foyda va zarar (P&L)",
   "tabExpenses": "Xarajatlar tahlili",
   "tabModelPricing": "Modellar rentabelligi",

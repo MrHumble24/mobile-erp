@@ -21,6 +21,7 @@ import {
   Clock,
   Repeat2,
   Wrench,
+  Store,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -48,6 +49,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: "/inventory", labelKey: "nav.inventory", permission: "device.read", icon: Smartphone },
       { to: "/stock", labelKey: "nav.stock", permission: "device.read", icon: Package },
       { to: "/shipments", labelKey: "nav.shipments", permission: "shipment.read", icon: Truck },
+      { to: "/transfers", labelKey: "nav.transfers", permission: "transfer.read", icon: ArrowLeftRight },
       { to: "/qc", labelKey: "nav.qc", permission: "qc.read", icon: CheckCircle2 },
     ],
   },
@@ -72,6 +74,7 @@ export const NAV_SECTIONS: NavSection[] = [
     groupKey: "nav.groupAdmin",
     items: [
       { to: "/users", labelKey: "nav.users", permission: "user.manage", icon: ShieldCheck },
+      { to: "/stores", labelKey: "nav.stores", permission: "store.manage", icon: Store },
       { to: "/sync", labelKey: "nav.sync", permission: "sync.resolve", icon: RefreshCw },
       { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
     ],

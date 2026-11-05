@@ -1,6 +1,7 @@
 export type {
   Money,
   LedgerAccountBalance,
+  StoreBalanceBreakdown,
   LedgerAccountOption,
   LedgerBalances,
   LedgerCodeRef,

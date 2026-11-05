@@ -13,6 +13,12 @@ import type {
 interface BalancesDto {
   accounts: { accountCode: string; label: string; balance: Money }[]
   total: Money
+  stores?: {
+    storeId: string
+    storeName: string
+    accounts: { accountCode: string; label: string; balance: Money }[]
+    total: Money
+  }[]
 }
 
 const toNumber = (value: Money): number =>
@@ -23,8 +29,12 @@ export const ledgerRepository = {
     return http<LedgerAccountOption[]>("/ledger/accounts")
   },
 
-  balances: async (): Promise<LedgerBalances> => {
-    const dto = await http<BalancesDto>("/ledger/balances")
+  balances: async (allStores?: boolean): Promise<LedgerBalances> => {
+    const headers: Record<string, string> = {}
+    if (allStores) {
+      headers["X-Store-Id"] = "all"
+    }
+    const dto = await http<BalancesDto>("/ledger/balances", { headers })
     return {
       accounts: dto.accounts.map((a) => ({
         accountCode: a.accountCode,
@@ -32,6 +42,16 @@ export const ledgerRepository = {
         balance: toNumber(a.balance),
       })),
       total: toNumber(dto.total),
+      stores: dto.stores?.map((s) => ({
+        storeId: s.storeId,
+        storeName: s.storeName,
+        accounts: s.accounts.map((a) => ({
+          accountCode: a.accountCode,
+          label: a.label,
+          balance: toNumber(a.balance),
+        })),
+        total: toNumber(s.total),
+      })),
     }
   },
 

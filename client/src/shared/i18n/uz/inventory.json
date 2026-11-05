@@ -32,6 +32,7 @@
   "statusDefective": "Nuqsonli",
   "statusConsigned": "Nasiyada",
   "statusSold": "Sotildi",
+  "statusInTransit": "Yo'lda",
   "newStatus": "Yangi holat",
   "reason": "Sabab",
   "statusManualHint": "Nasiyaga berish yoki sotish uchun Kassa va Nasiya bo'limlaridan foydalaning.",

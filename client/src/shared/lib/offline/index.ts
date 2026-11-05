@@ -5,6 +5,7 @@ export {
   idbPut,
   idbPutMany,
   idbDelete,
+  idbClear,
   type StoreName,
 } from "./db"
 export { getTerminalId } from "./terminal-id"

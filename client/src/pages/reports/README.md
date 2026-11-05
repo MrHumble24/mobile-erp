@@ -26,6 +26,7 @@ tabs ignore the range (current stock / rolling window).
 The page owns `breakdown` state; tiles and chart bars call `onBreakdown(req)`,
 which opens `ReportBreakdownSheet`. `canViewCost` (device.cost.view) and
 `navigate` are read here and passed down — entities/features never touch the URL.
+With `store.all`, an All stores switch sends `X-Store-Id: all` across report reads.
 
 ## Must never
 

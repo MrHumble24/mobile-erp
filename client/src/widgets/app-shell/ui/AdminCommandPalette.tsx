@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  Store,
   Languages,
   PlusCircle,
   LogOut,
@@ -47,6 +48,7 @@ const COMMAND_NAV_ITEMS: NavCommand[] = [
   { to: "/pos", labelKey: "nav.pos", permission: "sale.create", icon: ShoppingCart },
   { to: "/inventory", labelKey: "nav.inventory", permission: "device.read", icon: Smartphone },
   { to: "/shipments", labelKey: "nav.shipments", permission: "shipment.read", icon: Truck },
+  { to: "/transfers", labelKey: "nav.transfers", permission: "transfer.read", icon: ArrowLeftRight },
   { to: "/qc", labelKey: "nav.qc", permission: "qc.read", icon: CheckCircle2 },
   { to: "/sales", labelKey: "nav.sales", permission: "sale.read", icon: Receipt },
   { to: "/consignments", labelKey: "nav.consignments", permission: "consignment.read", icon: ArrowLeftRight },
@@ -55,6 +57,7 @@ const COMMAND_NAV_ITEMS: NavCommand[] = [
   { to: "/reports", labelKey: "nav.reports", permission: "report.finance", icon: BarChart3 },
   { to: "/users", labelKey: "nav.users", permission: "user.manage", icon: ShieldCheck },
   { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
+  { to: "/stores", labelKey: "nav.stores", permission: "store.manage", icon: Store },
 ]
 
 function CommandNavGroup({

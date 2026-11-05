@@ -1,6 +1,11 @@
 {
   "title": "Store Balance",
   "pageDescription": "Cash and card money in the store, and every change to it",
+  "allStores": "All stores",
+  "storeBreakdown": "Store Breakdown",
+  "store": "Store",
+  "cash": "Cash",
+  "bank": "Bank / Card",
   "total": "Total",
   "belowZero": "Below zero",
   "history": "History",

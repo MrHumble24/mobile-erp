@@ -20,6 +20,7 @@ export interface OutboxEntry {
   status: OutboxStatus
   error?: string
   attempts: number
+  storeId?: string
 }
 
 /** Mirrors the server's MutationResult (sync.types.ts). */

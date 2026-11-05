@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { useStoreSelectionStore } from "@/features/switch-store"
 import { deleteEntry, putEntry, readOutbox } from "../lib/outbox-db"
 import type { MutationType, OutboxEntry } from "./sync.types"
 
@@ -8,6 +9,7 @@ export interface EnqueueInput {
   payload: Record<string, unknown>
   baseVersion?: number
   occurredAt?: string
+  storeId?: string
 }
 
 interface OutboxState {
@@ -49,6 +51,10 @@ export const useOutboxStore = create<OutboxState>((set, get) => ({
       occurredAt: input.occurredAt ?? new Date().toISOString(),
       status: "pending",
       attempts: 0,
+      storeId:
+        input.storeId ??
+        useStoreSelectionStore.getState().currentStoreId ??
+        undefined,
     }
     await putEntry(entry)
     await get().reload()

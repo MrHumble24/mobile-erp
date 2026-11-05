@@ -1,6 +1,7 @@
 {
   "title": "Financial Reports",
   "subtitle": "Profit & loss, expense analysis, nasiya, inventory, model margins and daily closing",
+  "allStores": "All stores",
   "tabProfit": "Profit & Loss (P&L)",
   "tabExpenses": "Expense Analysis",
   "tabModelPricing": "Model Pricing & Margins",

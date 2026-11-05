@@ -23,6 +23,7 @@
   "passwordReset": "Password reset successfully",
   "isActive": "Active",
   "roles": "Assigned Roles",
+  "stores": "Stores",
   "saveProfile": "Save Profile",
   "profileSaved": "Profile saved successfully",
   "saveRoles": "Save Roles",

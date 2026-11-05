@@ -40,6 +40,16 @@ interface RequestOptions {
 }
 
 let tokenGetter: () => string | null = () => null
+let storeIdGetter: () => string | null = () => null
+let storeOverride: string | null = null
+
+export function setHttpStoreOverride(storeId: string | null) {
+  storeOverride = storeId
+}
+
+export function getHttpStoreOverride(): string | null {
+  return storeOverride
+}
 let unauthorizedHandler: () => void = () => {
   if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.href = "/login"
@@ -48,9 +58,11 @@ let unauthorizedHandler: () => void = () => {
 
 export function configureHttp(options: {
   getToken?: () => string | null
+  getStoreId?: () => string | null
   onUnauthorized?: () => void
 }) {
   if (options.getToken) tokenGetter = options.getToken
+  if (options.getStoreId) storeIdGetter = options.getStoreId
   if (options.onUnauthorized) unauthorizedHandler = options.onUnauthorized
 }
 
@@ -120,6 +132,11 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     headers.Authorization = `Bearer ${token}`
   }
 
+  const storeId = storeOverride ?? storeIdGetter()
+  if (storeId && !headers["X-Store-Id"]) {
+    headers["X-Store-Id"] = storeId
+  }
+
   let response: Response
   try {
     response = await fetch(url, {
@@ -151,6 +168,10 @@ export async function uploadFile<T>(
   const headers: Record<string, string> = {}
   const token = tokenGetter()
   if (token) headers.Authorization = `Bearer ${token}`
+  const storeId = storeOverride ?? storeIdGetter()
+  if (storeId && !headers["X-Store-Id"]) {
+    headers["X-Store-Id"] = storeId
+  }
 
   let response: Response
   try {
