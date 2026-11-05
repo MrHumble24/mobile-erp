@@ -123,6 +123,8 @@ data class DeviceModelDto(
     val categoryId: String? = null,
     val barcode: String? = null,
     val modelCode: String? = null,
+    /** Default till price per piece for a QUANTITY product (ADR 0030); 2-dp string. */
+    val salePrice: String? = null,
 )
 
 @Serializable

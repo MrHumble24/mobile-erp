@@ -44,6 +44,8 @@ data class ModelForm(
     val customsCode: String?,
     val attributes: List<AttributeDef>,
     val isActive: Boolean = true,
+    /** QUANTITY only: default till price per piece (ADR 0030); a decimal string. */
+    val salePrice: String? = null,
 ) {
     fun toJson(isEdit: Boolean): JsonObject = buildJsonObject {
         put("brand", brand)
@@ -54,6 +56,14 @@ data class ModelForm(
         optional("barcode", barcode, isEdit)
         optional("modelCode", modelCode, isEdit)
         optional("customsCode", customsCode, isEdit)
+        // salePrice is a per-piece default for QUANTITY products only (a number).
+        if (kind == ProductKind.QUANTITY) {
+            val price = salePrice?.trim()?.ifBlank { null }
+            when {
+                price != null -> put("salePrice", JsonPrimitive(uz.malika.erp.shared.lib.parseMoney(price)))
+                isEdit -> put("salePrice", JsonNull)
+            }
+        }
         put(
             "attributes",
             buildJsonArray {

@@ -98,6 +98,7 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
                     lines = state.lines,
                     onPrice = vm::setLinePrice,
                     onWarranty = vm::setLineWarranty,
+                    onQuantity = vm::setLineQuantity,
                     onRemove = vm::removeLine,
                     enabled = !state.busy,
                 )
@@ -127,9 +128,37 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
         )
     }
 
+    state.productMatches?.let { matches ->
+        AppBottomSheet(onDismiss = { vm.dismissProductMatches() }) {
+            ProductPickSheet(matches, onPick = { vm.addProduct(it) })
+        }
+    }
+
     state.completed?.let { done ->
         AppBottomSheet(onDismiss = { vm.dismissReceipt() }) {
             PosReceiptSheet(done) { vm.dismissReceipt() }
+        }
+    }
+}
+
+/** Quantity products matched by a typed name search (ADR 0030) — tap one to add it. */
+@Composable
+private fun ProductPickSheet(
+    matches: List<uz.malika.erp.features.sales.data.CartProduct>,
+    onPick: (uz.malika.erp.features.sales.data.CartProduct) -> Unit,
+) {
+    val t = LocalT.current
+    Column(Modifier.fillMaxWidth().padding(20.dp)) {
+        Text(t("catalog.addToCart", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+        Spacer(Modifier.height(12.dp))
+        matches.forEach { product ->
+            PillButton(
+                text = "${product.label} · ${t("catalog.pieces", mapOf("count" to product.inStock))}",
+                onClick = { onPick(product) },
+                modifier = Modifier.fillMaxWidth(),
+                variant = ButtonVariant.OUTLINE,
+            )
+            Spacer(Modifier.height(8.dp))
         }
     }
 }

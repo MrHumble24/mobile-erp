@@ -59,6 +59,7 @@ fun ModelFormSheet(
     var barcode by remember { mutableStateOf(model?.barcode ?: "") }
     var modelCode by remember { mutableStateOf(model?.modelCode ?: "") }
     var customsCode by remember { mutableStateOf(model?.customsCode ?: "") }
+    var salePrice by remember { mutableStateOf(model?.salePrice ?: "") }
     var active by remember { mutableStateOf(model?.isActive ?: true) }
     var attributes by remember { mutableStateOf(model?.attributes ?: emptyList()) }
     val savedKeys = remember { model?.attributes?.map { it.key }?.toSet() ?: emptySet() }
@@ -81,8 +82,9 @@ fun ModelFormSheet(
                     barcode = barcode.trim().ifBlank { null },
                     modelCode = modelCode.trim().ifBlank { null },
                     customsCode = customsCode.trim().ifBlank { null },
-                    attributes = attributes,
+                    attributes = if (kind == ProductKind.QUANTITY) emptyList() else attributes,
                     isActive = active,
+                    salePrice = salePrice,
                 )
                 if (isEdit) catalogVm.update(model!!.id, form) else catalogVm.create(form)
                 onSaved()
@@ -118,8 +120,20 @@ fun ModelFormSheet(
         LabeledField(t("catalog.barcode", null), barcode, { barcode = it }, t("catalog.barcodeHint", null))
         Spacer(Modifier.height(Tokens.Space.md))
         LabeledField(t("catalog.modelCode", null), modelCode, { modelCode = it }, t("catalog.modelCodeHint", null))
-        Spacer(Modifier.height(Tokens.Space.md))
-        LabeledField(t("inventory.customsCode", null), customsCode, { customsCode = it }, t("inventory.customsCodeHint", null))
+        // A quantity product carries a per-piece sale price instead of a customs
+        // code and the unit attribute schema (ADR 0030).
+        if (kind == ProductKind.QUANTITY) {
+            Spacer(Modifier.height(Tokens.Space.md))
+            AppFormField(
+                label = t("catalog.salePrice", null),
+                value = salePrice,
+                onValueChange = { salePrice = it },
+                keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal,
+            )
+        } else {
+            Spacer(Modifier.height(Tokens.Space.md))
+            LabeledField(t("inventory.customsCode", null), customsCode, { customsCode = it }, t("inventory.customsCodeHint", null))
+        }
         if (isEdit) {
             Spacer(Modifier.height(Tokens.Space.md))
             Row(
@@ -131,8 +145,10 @@ fun ModelFormSheet(
                 AppSwitch(checked = active, onCheckedChange = { active = it })
             }
         }
-        Spacer(Modifier.height(Tokens.Space.lg))
-        AttributesEditor(attributes = attributes, savedKeys = savedKeys, onChanged = { attributes = it })
+        if (kind != ProductKind.QUANTITY) {
+            Spacer(Modifier.height(Tokens.Space.lg))
+            AttributesEditor(attributes = attributes, savedKeys = savedKeys, onChanged = { attributes = it })
+        }
         error?.let {
             Spacer(Modifier.height(Tokens.Space.md))
             Text(it, style = MaterialTheme.typography.bodySmall, color = Tokens.danger)

@@ -17,6 +17,14 @@ interface SalesApi {
     @GET("devices/by-imei/{imei}")
     suspend fun deviceByImei(@Path("imei") imei: String): DeviceByImeiDto
 
+    /** Resolve any scanned/typed code to a unit or a quantity product (ADR 0030). */
+    @GET("scan/{code}")
+    suspend fun scan(@Path("code") code: String): ScanResultDto
+
+    /** Find quantity products by name/barcode/model code for the till (ADR 0030). */
+    @GET("stock")
+    suspend fun stockSearch(@QueryMap query: Map<String, String>): List<QuantityProductDto>
+
     @GET("sales")
     suspend fun sales(@QueryMap query: Map<String, String>): SalesPageDto
 

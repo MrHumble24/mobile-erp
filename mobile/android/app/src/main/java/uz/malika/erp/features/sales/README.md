@@ -101,3 +101,20 @@ kit `LoadMoreFooter`). Raw key shows until added.
   receipt, sales list and detail (`catalog.unitCode` label when serial) show the
   unit's `code` via the shared `UnitCode` helper. `SaleDto.device` is nullable so a
   sale whose device row is gone degrades (blank code) instead of failing the list.
+
+## Quantity products (ADR 0030)
+- The POS cart mixes phones, serial units and quantity products. `CartLine` is a
+  sealed type (`Unit` / `Quantity`); `totalPrice` sums each line's `lineTotal`.
+  The scan field resolves any code via `GET /scan/:code` (offline: the device
+  cache, then the product cache) — a unit opens the confirm sheet as before, a
+  barcode adds a quantity line (re-scan raises the qty), and a typed name falls
+  back to `GET /stock?search=` with a pick sheet. A quantity line has a stepper, a
+  per-piece price (defaulting to `salePrice`) and a line total; it warns, never
+  blocks, when the qty exceeds stock (`catalog.belowZero`). Checkout fans one
+  `sale.create` per line (`SaleCreate.ops`): a quantity op sends `modelId` +
+  `quantity` + the line total, no warranty, no version. Split is allocated line by
+  line in cart order via `PaymentSplit.allocate`.
+- Decoding: `SaleDto.device` is null for a quantity sale, which carries `model` +
+  `quantity`. `Sale.isQuantity`/`quantity` drive the list, detail, receipt and CSV
+  to show the product and `× qty` instead of a unit code; return works unchanged
+  (the server restores stock and ignores the device status).

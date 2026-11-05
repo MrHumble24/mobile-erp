@@ -66,8 +66,17 @@ fun SaleDetailSheet(
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(sale.modelLabel, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
         Spacer(Modifier.height(Tokens.Space.sm))
-        ImeiLine(if (sale.imei != null) "IMEI" else t("catalog.unitCode", null), sale.code)
-        sale.imei2?.takeIf { it.isNotBlank() }?.let { ImeiLine(t("inventory.imei2", null), it) }
+        if (sale.isQuantity) {
+            // Quantity sale (ADR 0030): no device identifier — show the piece count.
+            Text(
+                "× ${sale.quantity}",
+                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+                color = Tokens.text,
+            )
+        } else {
+            ImeiLine(if (sale.imei != null) "IMEI" else t("catalog.unitCode", null), sale.code)
+            sale.imei2?.takeIf { it.isNotBlank() }?.let { ImeiLine(t("inventory.imei2", null), it) }
+        }
         Spacer(Modifier.height(Tokens.Space.sm))
         Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {
             StatusChip(
@@ -111,7 +120,10 @@ fun SaleDetailSheet(
         }
 
         Spacer(Modifier.height(Tokens.Space.lg))
-        PillButton(t("sales.openDevice", null), onOpenDevice, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
+        // A quantity sale has no device to open.
+        if (!sale.isQuantity) {
+            PillButton(t("sales.openDevice", null), onOpenDevice, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
+        }
         if (sale.consignmentId != null) {
             Spacer(Modifier.height(Tokens.Space.sm))
             PillButton(t("sales.viewConsignment", null), onOpenConsignment, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)

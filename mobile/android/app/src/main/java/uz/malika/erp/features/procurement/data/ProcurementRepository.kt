@@ -22,6 +22,10 @@ class ProcurementRepository(private val api: ProcurementService) {
     suspend fun addDevices(id: String, drafts: List<IntakeDraft>) =
         runApi { api.addDevices(id, RegisterDevicesBody(drafts.map { it.toBody() })) }
 
+    /** Buy quantity products into a shipment (ADR 0030). */
+    suspend fun addItems(id: String, items: List<PurchaseItemBody>): List<PurchasedLineDto> =
+        runApi { api.addItems(id, RegisterItemsBody(items)) }
+
     // ── Shared device/model reads (owned here until an inventory slice lands) ──
     suspend fun deviceModels(): List<DeviceModelDto> = runApi { api.deviceModels() }
     suspend fun devices(shipmentId: String? = null, inspected: String? = null, page: Int = 1): PaginatedDevicesDto =

@@ -131,3 +131,11 @@ two nav items; Suppliers is a tab inside Shipments (no nav of its own).
   `IntakeDraft` carries `imei` **or** `serialNumber`; the staged list and results
   show `draft.code`. Shipment device rows / `DeviceRowDto` / QC devices show the
   unit's `code`; the QC-device table header is `catalog.unitCode`.
+
+## Quantity stock on a shipment (ADR 0030)
+- The shipment detail (`ShipmentStockLines`, `device.create`) adds quantity stock:
+  pick a `QUANTITY` model, enter pieces + cost per piece, see the line total and
+  the shipment's "paid from" account, then `POST /shipments/:id/items`. The server
+  has no read-back for these lines, so the detail lists the ones added this session
+  (held in `ShipmentsViewModel.items`). A shipment may hold units, quantity lines,
+  or both. Wired on the phone sheet path; the tablet side pane omits it.

@@ -5,8 +5,10 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import uz.malika.erp.data.local.DeviceEntity
 import uz.malika.erp.data.local.PartnerEntity
+import uz.malika.erp.data.local.ProductEntity
 import uz.malika.erp.data.remote.DeviceSyncDto
 import uz.malika.erp.data.remote.PartnerSyncDto
+import uz.malika.erp.data.remote.ProductSyncDto
 
 /**
  * Maps `/sync/changes` DTOs into Room entities. Kept separate so the pull
@@ -32,6 +34,15 @@ object ChangesMapper {
         gradeCode = d.latestInspection?.gradeCode,
         inspectionNotes = d.latestInspection?.notes,
         updatedAt = d.updatedAt,
+    )
+
+    fun product(p: ProductSyncDto) = ProductEntity(
+        modelId = p.modelId,
+        brand = p.brand,
+        name = p.name,
+        barcode = p.barcode,
+        salePrice = p.salePrice.asScalar(),
+        quantity = p.quantity,
     )
 
     fun partner(p: PartnerSyncDto) = PartnerEntity(

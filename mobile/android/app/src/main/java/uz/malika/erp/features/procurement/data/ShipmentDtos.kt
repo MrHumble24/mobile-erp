@@ -70,6 +70,17 @@ data class UpdateShipmentBody(
 @Serializable
 data class RegisterDevicesBody(val devices: List<RegisterDeviceBody>)
 
+/** One quantity purchase line: N pieces of a QUANTITY product at a unit cost (ADR 0030). */
+@Serializable
+data class PurchaseItemBody(val modelId: String, val quantity: Int, val unitCost: Double)
+
+@Serializable
+data class RegisterItemsBody(val items: List<PurchaseItemBody>)
+
+/** Confirmation of one purchased quantity line (money left the shipment's account). */
+@Serializable
+data class PurchasedLineDto(val modelId: String = "", val quantity: Int = 0, val unitCost: String = "0")
+
 @Serializable
 data class RegisterDeviceBody(
     val imei: String? = null, // IMEI models; null for a serial unit (one of imei/serialNumber)

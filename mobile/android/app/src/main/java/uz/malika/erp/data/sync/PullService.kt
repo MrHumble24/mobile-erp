@@ -22,10 +22,19 @@ class PullService(
         // Guard against a server that never advances the cursor.
         repeat(1000) {
             val page = api.changes(since)
-            AppLog.i("sync", "pull page: ${page.devices.size} devices, ${page.partners.size} partners")
+            AppLog.i(
+                "sync",
+                "pull page: ${page.devices.size} devices, ${page.partners.size} partners, ${page.products.size} products",
+            )
             db.withTransaction {
                 if (page.devices.isNotEmpty()) {
                     db.deviceDao().upsertAll(page.devices.map(ChangesMapper::device))
+                }
+                // Quantity products are the full list each sync (ADR 0030): upsert.
+                // ponytail: upsert, not clear-replace — a deleted product lingers in
+                // the offline cache until the next full resync. Rare; fix if it bites.
+                if (page.products.isNotEmpty()) {
+                    db.productDao().upsertAll(page.products.map(ChangesMapper::product))
                 }
                 if (page.partners.isNotEmpty()) {
                     db.partnerDao().upsertAll(page.partners.map(ChangesMapper::partner))

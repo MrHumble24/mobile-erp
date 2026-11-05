@@ -25,6 +25,30 @@ interface DeviceDao {
     suspend fun clear()
 }
 
+/** Reactive access to cached [ProductEntity] (quantity products for the offline till). */
+@Dao
+interface ProductDao {
+    @Query("SELECT * FROM products ORDER BY name ASC")
+    fun watchAll(): Flow<List<ProductEntity>>
+
+    /** Resolve a scanned barcode offline (ADR 0030). */
+    @Query("SELECT * FROM products WHERE barcode = :barcode LIMIT 1")
+    suspend fun findByBarcode(barcode: String): ProductEntity?
+
+    /** Offline name/barcode search for the till (contains, case-insensitive). */
+    @Query(
+        "SELECT * FROM products WHERE name LIKE '%' || :q || '%' COLLATE NOCASE " +
+            "OR barcode LIKE '%' || :q || '%' ORDER BY name ASC LIMIT 20",
+    )
+    suspend fun search(q: String): List<ProductEntity>
+
+    @Upsert
+    suspend fun upsertAll(rows: List<ProductEntity>)
+
+    @Query("DELETE FROM products")
+    suspend fun clear()
+}
+
 /** Reactive access to cached [PartnerEntity]. */
 @Dao
 interface PartnerDao {
