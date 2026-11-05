@@ -121,6 +121,9 @@ data class ReceiptLineItem(
     val quantity: Int? = null,
 )
 
+/** One trade-in on a receipt / sale (ADR 0039): its value lowers what was paid. */
+data class ReceiptTradeIn(val model: String, val code: String, val value: String)
+
 /**
  * The single render model for both receipts: the POS post-checkout receipt
  * (built locally so it works offline) and the sales-list receipt (from the
@@ -141,6 +144,10 @@ data class ReceiptData(
     val priceLevelCode: String? = null,
     val listTotal: String? = null,
     val discountTotal: String? = null,
+    /** Trade-ins taken in part payment (ADR 0039); their values lower [amountPaid]. */
+    val tradeIns: List<ReceiptTradeIn> = emptyList(),
+    /** What the customer actually tendered (total − Σ trade-in values); null when none. */
+    val amountPaid: String? = null,
 )
 
 /** Map the server receipt payload into the shared render model. */
@@ -160,4 +167,14 @@ fun ReceiptDto.toReceiptData() = ReceiptData(
     },
     total = total,
     warrantyUntil = warranty?.endsAt,
+    tradeIns = tradeIns.map {
+        ReceiptTradeIn("${it.model.brand} ${it.model.name}".trim(), UnitCode.display(it.imei, it.serialNumber), it.value)
+    },
+    amountPaid = tradeIns
+        .takeIf { it.isNotEmpty() }
+        ?.let { tis ->
+            val paid = uz.malika.erp.shared.lib.parseMoney(total)
+                .subtract(tis.fold(java.math.BigDecimal.ZERO) { a, ti -> a + uz.malika.erp.shared.lib.parseMoney(ti.value) })
+            paid.toPlainString()
+        },
 )

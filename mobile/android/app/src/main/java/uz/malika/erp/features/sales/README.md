@@ -73,13 +73,29 @@ three permission-gated routes.
   create/edit form are bottom sheets built on shared `FactRow` / hairline rows
   (`CustomerFormSheet` replaced the M3 dialog); labels use `customers.*` keys.
 
+## Trade-in at the till (ADR 0039)
+- A cart's "Trade-in" action (`features/purchases` `UsedUnitFields` + a value)
+  adds a phone taken in part payment; `TradeInDraft` holds it. `lib/TradeInPlan.kt`
+  (pure, unit-tested) allocates each trade-in to a line that can carry it and
+  derives the amount to pay (cart total − Σ values). Shown only with
+  `purchase.create`; a customer is required; never offered with "On credit".
+- A cart with trade-ins is **online only**, posted one direct `POST /sales` per
+  line (`PosRepository.createSaleDirect`) — never queued, because the server
+  refuses trade-ins on the sync replay. `model/PosTradeIn.kt` +
+  `model/TradeInCheckout.kt` run the sequential post; committed lines + their
+  trade-ins are dropped so a retry never re-sends a trade-in. The receipt + sale
+  detail list the trade-ins and the amount actually paid; a return of such a sale
+  shows the trade-in note and caps the cash refund (full `salePrice` needs
+  `purchase.create`, else the money tendered).
+
 ## Public API
-`SalesFeature` (a `FeatureModule`). Nothing else is imported by other slices.
+`SalesFeature` (a `FeatureModule`). The checkout form composes the `credit` and
+`purchases` slices' UI (like `sales`↔`credit`); nothing else imports sales.
 
 ## Must never
-- Import another feature slice, or edit foundation/shell/registry.
-- Queue anything but `sale.create` to the outbox. Returns and customer writes
-  are online-only and block with a needs-connection message when offline.
+- Edit foundation/shell/registry.
+- Queue anything but `sale.create` to the outbox. Returns, credit and trade-in
+  sales are online-only and block with a needs-connection message when offline.
 - Model or cache cost fields — they are redacted server-side.
 
 ## Note for the integrator

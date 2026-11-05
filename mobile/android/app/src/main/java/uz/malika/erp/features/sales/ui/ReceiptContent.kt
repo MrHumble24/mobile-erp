@@ -61,6 +61,12 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
             if (discount != null && discount.signum() > 0) KvRow(t("pricing.discountsGiven", null), "-" + formatMoney(data.discountTotal))
         }
         KvRow(t("pos.totalDue", null), formatMoney(data.total), bold = true)
+        if (data.tradeIns.isNotEmpty()) {
+            data.tradeIns.forEach { ti ->
+                KvRow("${t("purchases.tradeInLabel", null)}: ${ti.model}", "-" + formatMoney(ti.value))
+            }
+            data.amountPaid?.let { KvRow(t("purchases.amountPaid", null), formatMoney(it), bold = true) }
+        }
         if (data.payments.isNotEmpty()) {
             KvRow(t("balance.paidWith", null), "")
             data.payments.forEach { p ->

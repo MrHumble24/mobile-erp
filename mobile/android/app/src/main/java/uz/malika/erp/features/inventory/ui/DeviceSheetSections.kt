@@ -103,6 +103,11 @@ fun DeviceSpecsGrid(device: DeviceDetail) {
                 Text(formatDate(device.intakeDate), style = valueStyle().copy(fontFamily = MonoFamily))
             }
         }
+        // A unit bought from a customer has no shipment (ADR 0039).
+        if (device.shipmentId == null) {
+            Spacer(Modifier.height(Tokens.Space.sm))
+            Text(t("purchases.boughtFromCustomer", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+        }
         if (device.landedCost != null) {
             Spacer(Modifier.height(Tokens.Space.sm))
             CostBreakdown(device)

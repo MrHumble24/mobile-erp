@@ -47,6 +47,7 @@ fun ReturnDialog(
     refundAccounts: List<String> = emptyList(),
     maxRefund: BigDecimal = BigDecimal.ZERO,
     onCredit: Boolean = false,
+    hasTradeIn: Boolean = false,
     onClose: () -> Unit,
 ) {
     val t = LocalT.current
@@ -72,6 +73,10 @@ fun ReturnDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 if (onCredit) {
                     Text(t("credit.returnNote", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
+                    Spacer(Modifier.height(12.dp))
+                }
+                if (hasTradeIn) {
+                    Text(t("purchases.returnTradeInNote", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                     Spacer(Modifier.height(12.dp))
                 }
                 AppFormField(

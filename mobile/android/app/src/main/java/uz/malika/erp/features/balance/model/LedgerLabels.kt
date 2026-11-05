@@ -15,6 +15,7 @@ fun ledgerTypeKey(code: String): String? = when (code) {
     "REFUND" -> "balance.typeRefund"
     "PARTNER_PAYMENT" -> "balance.typePartnerPayment"
     "PURCHASE" -> "balance.typePurchase"
+    "CUSTOMER_PURCHASE" -> "balance.typeCustomerPurchase"
     "OVERHEAD" -> "balance.typeOverhead"
     "DEVICE_EXPENSE" -> "balance.typeDeviceExpense"
     "CUSTOMS" -> "balance.typeCustoms"

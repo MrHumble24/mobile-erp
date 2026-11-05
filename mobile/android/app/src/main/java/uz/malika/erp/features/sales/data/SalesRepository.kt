@@ -56,6 +56,9 @@ class SalesRepository(
         api.salesStats(filters.toQuery()).toDomain()
     }
 
+    /** One full sale (`GET /sales/:id`) — the only path that carries `tradeIns` (ADR 0039). */
+    suspend fun sale(id: String): Sale = runApi { api.sale(id).toDomain() }
+
     /** Cashier options for the filter; returns empty when the caller lacks `user.read` (403). */
     suspend fun cashiers(): List<UserOption> = runApi {
         api.users(mapOf("pageSize" to "200")).items.map { it.toOption() }
