@@ -7,6 +7,7 @@ import SwiftUI
 struct BalanceView: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model = BalanceModel()
     @State private var showFilters = false
     @State private var entryKind: BalanceEntryKind?
@@ -76,20 +77,35 @@ struct BalanceView: View {
 
     private func accountCard(label: String, value: String, total: Bool) -> some View {
         let negative = (Decimal(string: value) ?? 0) < 0
+        let labelBlock = VStack(alignment: .leading, spacing: Tokens.Space.xs) {
+            Text(label)
+                .font(total ? .ui(.heading) : .ui(.bodyStrong))
+                .foregroundStyle(total ? Tokens.text : Tokens.muted)
+            if negative {
+                StatusBadge(i18n.t("balance.belowZero"), color: Tokens.danger)
+            }
+        }
+        // Never wrap a money figure mid-number; shrink to fit the line instead.
+        let amount = MoneyText(value: value, size: 24)
+            .fontWeight(.medium)
+            .foregroundStyle(BalanceFormat.balanceTint(value))
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
         return AppCard {
-            HStack(alignment: .center, spacing: Tokens.Space.sm) {
-                VStack(alignment: .leading, spacing: Tokens.Space.xs) {
-                    Text(label)
-                        .font(total ? .ui(.heading) : .ui(.bodyStrong))
-                        .foregroundStyle(total ? Tokens.text : Tokens.muted)
-                    if negative {
-                        StatusBadge(i18n.t("balance.belowZero"), color: Tokens.danger)
-                    }
+            // Side-by-side normally; the amount is the hero, so at accessibility
+            // text sizes it stacks under the label to keep its full width.
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                    labelBlock
+                    amount
                 }
-                Spacer(minLength: Tokens.Space.sm)
-                MoneyText(value: value, size: 24)
-                    .fontWeight(.medium)
-                    .foregroundStyle(BalanceFormat.balanceTint(value))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(alignment: .center, spacing: Tokens.Space.sm) {
+                    labelBlock
+                    Spacer(minLength: Tokens.Space.sm)
+                    amount
+                }
             }
         }
     }
