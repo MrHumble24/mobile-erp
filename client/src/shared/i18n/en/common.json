@@ -31,5 +31,6 @@
   "optional": "Optional",
   "required": "Required",
   "notFound": "Not found",
-  "select": "Select"
+  "select": "Select",
+  "print": "Print"
 }

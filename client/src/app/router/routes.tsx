@@ -17,6 +17,7 @@ const CreditsPage = lazy(() => import("@/pages/credits"))
 const CreditContractPage = lazy(() =>
   import("@/pages/credits").then((m) => ({ default: m.CreditContractPage }))
 )
+const ShiftsPage = lazy(() => import("@/pages/shifts"))
 const ConsignmentsPage = lazy(() => import("@/pages/consignments"))
 const PartnersPage = lazy(() => import("@/pages/partners"))
 const ExpensesPage = lazy(() => import("@/pages/expenses"))
@@ -58,6 +59,7 @@ function ProtectedRoutes() {
           <Route path="/sales/:id/receipt" element={<SaleReceiptPage />} />
           <Route path="/credits" element={<CreditsPage />} />
           <Route path="/credits/:id/contract" element={<CreditContractPage />} />
+          <Route path="/shifts" element={<ShiftsPage />} />
         </Route>
         <Route element={<RequirePermission permission="customer.read" />}>
           <Route path="/customers" element={<CustomersPage />} />

@@ -23,6 +23,8 @@ export class CheckoutLineError extends Error {
   /** The failing line's label: a unit code or a product name. */
   imei: string
   statusCode?: number
+  /** The server's error code (e.g. `NO_OPEN_SHIFT`), when the body carried one. */
+  code?: string
   saleIds: string[]
 
   constructor(imei: string, saleIds: string[], cause: unknown) {
@@ -31,6 +33,7 @@ export class CheckoutLineError extends Error {
     this.name = "CheckoutLineError"
     this.imei = imei
     this.statusCode = http?.statusCode
+    this.code = (http?.data as { code?: string } | undefined)?.code
     this.saleIds = saleIds
   }
 }

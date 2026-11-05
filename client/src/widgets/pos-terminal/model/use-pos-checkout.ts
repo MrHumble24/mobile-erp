@@ -2,6 +2,7 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { toast } from "@/shared/ui/sonner"
 import { useCheckout, CheckoutLineError } from "@/features/checkout"
+import { useShiftGate } from "@/entities/shift"
 import { focusScanner } from "./use-pos-scanner"
 
 /** Map a server 400 about pricing to a friendly `pricing.*` key (ADR 0034). */
@@ -31,6 +32,7 @@ function failureMessage(
 export function usePosCheckout(blocked: boolean, onReset: () => void) {
   const { t } = useI18n()
   const checkout = useCheckout()
+  const shiftGate = useShiftGate()
   const [saleIds, setSaleIds] = React.useState<string[]>([])
   const [receiptOpen, setReceiptOpen] = React.useState(false)
 
@@ -50,7 +52,9 @@ export function usePosCheckout(blocked: boolean, onReset: () => void) {
         }
       },
       onError: (err) => {
-        toast.error(failureMessage(err, t))
+        // Shift closed elsewhere: flip the till to the "open a shift" prompt and
+        // keep the cart; skip the generic line-failed toast.
+        if (!shiftGate(err)) toast.error(failureMessage(err, t))
         if (err.saleIds.length > 0) openReceipt(err.saleIds)
       },
     })

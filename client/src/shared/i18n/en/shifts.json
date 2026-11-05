@@ -31,5 +31,10 @@
   "note": "Note",
   "settingsTitle": "Shifts",
   "settingsEnabled": "Use shifts",
-  "settingsHint": "Cashiers count the cash at the start and the end of the day"
+  "settingsHint": "Cashiers count the cash at the start and the end of the day",
+  "openSince": "Shift open since {time}",
+  "noOpenShift": "No open shift",
+  "movements": "Movements",
+  "byAccount": "By account",
+  "noMovements": "No movements yet"
 }

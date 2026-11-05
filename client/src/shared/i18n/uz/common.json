@@ -31,5 +31,6 @@
   "optional": "Ixtiyoriy",
   "required": "Majburiy",
   "notFound": "Ma'lumot topilmadi",
-  "select": "Tanlang"
+  "select": "Tanlang",
+  "print": "Print"
 }
