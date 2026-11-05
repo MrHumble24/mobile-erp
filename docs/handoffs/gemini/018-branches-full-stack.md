@@ -68,3 +68,9 @@ Fill the Result section of `docs/handoffs/gemini/018-branches-full-stack.md` and
 - Not done / skipped / failed:
 
 ## Check by Claude
+- 2026-11-05 21:50: Gemini's migration went onto the shared `mobile_erp` database and dropped
+  `store_settings.id`, so the `main` server broke. The handoff was at fault: it said "additive
+  only" and also "drop the old id column". `main` now uses its own copy, `mobile_erp_main`
+  (`server/.env`), with the branches change undone. Gemini keeps `mobile_erp`.
+- After the merge: run `pnpm prisma migrate deploy` and the seed on `mobile_erp_main`, or point
+  `server/.env` back to `mobile_erp` and drop the copy.
