@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { toNumber } from '../common/lib/to-number.js';
 import { ExpenseCategoriesService } from '../expense-categories/expense-categories.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { CreateExpenseDto } from './dto/create-expense.dto.js';
 import {
   ExpenseQueryDto,
@@ -16,6 +17,7 @@ export class ExpensesService {
   constructor(
     private readonly repo: ExpensesRepository,
     private readonly categories: ExpenseCategoriesService,
+    private readonly stores: StoresService,
   ) {}
 
   async list(query: ExpenseQueryDto) {
@@ -42,10 +44,11 @@ export class ExpensesService {
     return this.require(id);
   }
 
-  create(createdById: string, dto: CreateExpenseDto) {
+  async create(createdById: string, dto: CreateExpenseDto) {
     const { incurredAt, ...rest } = dto;
     return this.repo.create({
       ...rest,
+      storeId: await this.stores.currentStoreId(),
       createdById,
       incurredAt: parseDate(incurredAt),
     });

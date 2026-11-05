@@ -131,6 +131,7 @@ export class PartnersRepository {
   async createPayment(input: CreatePaymentInput): Promise<PaymentView> {
     const row = await this.prisma.partnerPayment.create({
       data: {
+        storeId: input.storeId,
         partnerId: input.partnerId,
         consignmentId: input.consignmentId,
         amount: input.amount,

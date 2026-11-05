@@ -65,6 +65,7 @@ export interface CreatePartnerInput {
 }
 
 export interface CreatePaymentInput {
+  storeId: string;
   partnerId: string;
   consignmentId?: string;
   amount: Prisma.Decimal;

@@ -1,0 +1,26 @@
+// ---------------------------------------------------------------------------
+// Stores (ADR 0023). One store today; born multi-store so the cash/card ledger
+// built on top carries a store from day one. Every stock and money row points
+// here. Store identity lives here (not in store_settings): one home.
+// ---------------------------------------------------------------------------
+
+model Store {
+  id String @id @default(uuid())
+  /// Store identity, shown on receipts and the app shell.
+  name    String
+  address String?
+  phone   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  devices         Device[]
+  shipments       Shipment[]
+  sales           Sale[]
+  expenses        Expense[]
+  recurrences     ExpenseRecurrence[]
+  consignments    Consignment[]
+  partnerPayments PartnerPayment[]
+
+  @@map("stores")
+}

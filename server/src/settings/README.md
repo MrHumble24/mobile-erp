@@ -4,7 +4,9 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 
 ## Owns
 
-- Store identity: storeName, storeAddress, storePhone, receiptFooter (all nullable).
+- receiptFooter (nullable). Store identity (storeName, storeAddress, storePhone)
+  lives in the `stores` table (ADR 0023); this module reads and writes it through
+  `StoresService` so the `/settings` request/response shape is unchanged.
 - telegramChatId, closingTime ("HH:mm"), defaultWarrantyDays, minMarginPercent
   (0–100), lowStockThreshold. The bot token lives in env, not here.
 - Nasiya defaults: defaultNasiyaDueDays (30), overdueReminderDays (3). Config only —

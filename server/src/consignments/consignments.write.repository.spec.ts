@@ -30,6 +30,7 @@ function build(tx: ReturnType<typeof makeTx>) {
 }
 
 const transfer = {
+  storeId: 'store-1',
   imei: '123456789012345',
   partnerId: 'p1',
   agreedPrice: D(500),
@@ -126,6 +127,7 @@ describe('ConsignmentsWriteRepository.settle', () => {
     const tx = makeTx();
     tx.consignment.findUnique.mockResolvedValue({
       statusCode: 'SETTLED',
+      storeId: 'store-1',
       agreedPrice: D(500),
       device: { id: 'd1', statusCode: 'SOLD', version: 1, landedCost: D(100) },
     });
@@ -139,6 +141,7 @@ describe('ConsignmentsWriteRepository.settle', () => {
     const tx = makeTx();
     tx.consignment.findUnique.mockResolvedValue({
       statusCode: 'OUT',
+      storeId: 'store-9',
       agreedPrice: D(500),
       device: {
         id: 'd1',
@@ -169,6 +172,8 @@ describe('ConsignmentsWriteRepository.settle', () => {
         salePrice: D(500),
         landedCostSnapshot: D(120),
         consignmentId: 'c1',
+        // The settle sale inherits the consignment's store, not the caller's.
+        storeId: 'store-9',
       }),
     });
   });

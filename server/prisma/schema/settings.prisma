@@ -5,10 +5,6 @@
 
 model StoreSettings {
   id                  Int      @id @default(1)
-  /// Store identity, shown on receipts and the app shell.
-  storeName           String?
-  storeAddress        String?
-  storePhone          String?
   /// Free-text footer printed at the bottom of each receipt.
   receiptFooter       String?
   telegramChatId      String?

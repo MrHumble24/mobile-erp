@@ -116,6 +116,7 @@ export interface ReceiptView {
 
 /** Validated checkout input handed to the repository transaction. */
 export interface CheckoutInput {
+  storeId: string;
   deviceId: string;
   expectedVersion: number;
   salePrice: number;

@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
 import { SalesService } from './sales.service.js';
@@ -33,13 +34,15 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     ...readsOverrides,
   };
   const checkout = { checkout: jest.fn().mockResolvedValue('sale-1') };
+  const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
   const events = { emit: jest.fn() };
   const service = new SalesService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
+    stores as unknown as StoresService,
     events as unknown as EventEmitter2,
   );
-  return { service, reads, checkout, events };
+  return { service, reads, checkout, stores, events };
 }
 
 describe('SalesService.create', () => {

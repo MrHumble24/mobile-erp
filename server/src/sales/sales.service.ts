@@ -7,6 +7,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { StoresService } from '../stores/stores.service.js';
 import {
   SaleCreatedEvent,
   TelegramEvents,
@@ -28,6 +29,7 @@ export class SalesService {
   constructor(
     private readonly reads: SalesRepository,
     private readonly checkout: SalesCheckoutRepository,
+    private readonly stores: StoresService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -77,6 +79,7 @@ export class SalesService {
   ): Promise<SaleView> {
     try {
       const saleId = await this.checkout.checkout({
+        storeId: await this.stores.currentStoreId(),
         deviceId: device.id,
         expectedVersion: dto.expectedVersion ?? device.version,
         salePrice: dto.salePrice,

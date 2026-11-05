@@ -45,6 +45,7 @@ export class ExpensesRepository {
 
   create(
     data: Omit<CreateExpenseDto, 'incurredAt'> & {
+      storeId: string;
       createdById: string;
       incurredAt?: Date;
     },

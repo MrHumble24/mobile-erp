@@ -64,6 +64,7 @@ export class ShipmentsRepository {
     shipmentId: string,
     inputs: RegisterDeviceInput[],
     userId: string,
+    storeId: string,
   ): Promise<RegisteredDeviceView[]> {
     return this.prisma.$transaction(async (tx) => {
       await this.assertImeisFree(tx, inputs);
@@ -72,6 +73,7 @@ export class ShipmentsRepository {
           data: {
             imei: input.imei,
             imei2: input.imei2 ?? null,
+            storeId,
             shipmentId,
             modelId: input.modelId,
             specs: input.specs as Prisma.InputJsonValue,

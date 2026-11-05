@@ -19,6 +19,8 @@ model ExpenseCategory {
 
 model Expense {
   id           String             @id @default(uuid())
+  storeId      String
+  store        Store              @relation(fields: [storeId], references: [id])
   categoryId   String
   category     ExpenseCategory    @relation(fields: [categoryId], references: [id])
   amount       Decimal            @db.Decimal(14, 2)
@@ -40,6 +42,7 @@ model Expense {
   @@index([incurredAt])
   @@index([categoryId])
   @@index([deletedAt])
+  @@index([storeId])
   @@map("expenses")
 }
 
@@ -47,6 +50,8 @@ model Expense {
 // for every active template whose nextDueAt has passed, then advances nextDueAt.
 model ExpenseRecurrence {
   id          String          @id @default(uuid())
+  storeId     String
+  store       Store           @relation(fields: [storeId], references: [id])
   categoryId  String
   category    ExpenseCategory @relation(fields: [categoryId], references: [id])
   amount      Decimal         @db.Decimal(14, 2)
@@ -64,5 +69,6 @@ model ExpenseRecurrence {
 
   @@index([nextDueAt])
   @@index([categoryId])
+  @@index([storeId])
   @@map("expense_recurrences")
 }

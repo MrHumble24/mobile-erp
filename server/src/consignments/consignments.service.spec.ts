@@ -1,6 +1,7 @@
 import { ConflictException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PartnersService } from '../partners/partners.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { ConsignmentsRepository } from './consignments.repository.js';
 import { ConsignmentsService } from './consignments.service.js';
@@ -26,14 +27,16 @@ function build() {
     assertWithinCreditLimit: jest.fn().mockResolvedValue(undefined),
     get: jest.fn().mockResolvedValue({ shopName: 'Shop A' }),
   };
+  const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
   const events = { emit: jest.fn() };
   const service = new ConsignmentsService(
     reads as unknown as ConsignmentsRepository,
     writes as unknown as ConsignmentsWriteRepository,
     partners as unknown as PartnersService,
+    stores as unknown as StoresService,
     events as unknown as EventEmitter2,
   );
-  return { service, reads, writes, partners, events };
+  return { service, reads, writes, partners, stores, events };
 }
 
 const dto = {

@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { PartnersService } from '../partners/partners.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import {
   ConsignmentCreatedEvent,
   TelegramEvents,
@@ -37,6 +38,7 @@ export class ConsignmentsService {
     private readonly reads: ConsignmentsRepository,
     private readonly writes: ConsignmentsWriteRepository,
     private readonly partners: PartnersService,
+    private readonly stores: StoresService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -60,6 +62,7 @@ export class ConsignmentsService {
     // transfer could briefly overshoot the limit. Acceptable at bazaar scale.
     await this.partners.assertWithinCreditLimit(dto.partnerId, agreedPrice);
     const view = await this.writes.createTransfer({
+      storeId: await this.stores.currentStoreId(),
       imei: dto.imei,
       partnerId: dto.partnerId,
       agreedPrice,
