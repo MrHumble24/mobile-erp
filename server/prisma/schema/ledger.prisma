@@ -23,7 +23,8 @@ model CashAccount {
 
 /// Why money moved. Lookup: OPENING, DEPOSIT, WITHDRAWAL, CORRECTION, TRANSFER
 /// seeded in 2a. 2b adds SALE, REFUND, PARTNER_PAYMENT, PURCHASE, OVERHEAD,
-/// EXPENSE.
+/// EXPENSE. ADR 0026 adds DEVICE_EXPENSE (per-phone expense) and retires
+/// OVERHEAD (isActive = false; kept only to label old history rows).
 model CashTransactionType {
   code      String  @id
   label     String

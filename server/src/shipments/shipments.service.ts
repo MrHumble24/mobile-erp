@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isUniqueViolation } from '../common/lib/prisma-errors.js';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
@@ -59,40 +61,31 @@ export class ShipmentsService {
       supplierId: dto.supplierId,
       shipmentDate: new Date(dto.shipmentDate),
       expectedCount: dto.expectedCount,
-      overheadCost: dto.overheadCost,
       paymentAccountCode,
       notes: dto.notes,
       createdById: userId,
     });
   }
 
-  async update(
-    id: string,
-    dto: UpdateShipmentDto,
-    userId: string,
-  ): Promise<ShipmentView> {
+  async update(id: string, dto: UpdateShipmentDto): Promise<ShipmentView> {
     await this.require(id);
-    return this.repo.update(
-      id,
-      {
-        shipmentDate: dto.shipmentDate ? new Date(dto.shipmentDate) : undefined,
-        expectedCount: dto.expectedCount,
-        overheadCost: dto.overheadCost,
-        notes: dto.notes,
-      },
-      userId,
-    );
+    return this.repo.update(id, {
+      shipmentDate: dto.shipmentDate ? new Date(dto.shipmentDate) : undefined,
+      expectedCount: dto.expectedCount,
+      notes: dto.notes,
+    });
   }
 
   async addDevices(
     id: string,
     dto: RegisterDevicesDto,
-    userId: string,
+    user: AuthenticatedUser,
   ): Promise<RegisteredDeviceView[]> {
     const shipment = await this.require(id);
     const models = await this.loadModels(dto.devices);
     this.assertSpecs(dto.devices, models);
-    const registered = await this.register(id, dto.devices, userId);
+    this.assertExpensePermission(dto.devices, user);
+    const registered = await this.register(id, dto.devices, user.id);
     // Best-effort notification; must never fail an intake.
     void this.announce(
       shipment.supplierId,
@@ -157,6 +150,19 @@ export class ShipmentsService {
     );
     if (problems.length > 0) {
       throw new BadRequestException({ message: 'Invalid specs', problems });
+    }
+  }
+
+  /** A non-zero unitExpense at intake needs the `device.expense` permission. */
+  private assertExpensePermission(
+    devices: RegisterDeviceDto[],
+    user: AuthenticatedUser,
+  ): void {
+    const wantsExpense = devices.some((d) => (d.unitExpense ?? 0) !== 0);
+    if (wantsExpense && !user.permissions.has('device.expense')) {
+      throw new ForbiddenException(
+        'device.expense permission required to set a unit expense',
+      );
     }
   }
 

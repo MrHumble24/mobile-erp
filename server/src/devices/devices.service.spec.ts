@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
+import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
 import { DevicesService } from './devices.service.js';
@@ -20,15 +21,19 @@ function build(
     imeiInUse: jest.fn().mockResolvedValue(false),
     ...queryOverrides,
   } as unknown as DevicesQueryRepository;
+  const expense = {
+    setExpense: jest.fn().mockResolvedValue({ id: 'd1', unitExpense: '40.00' }),
+  } as unknown as DevicesExpenseRepository;
   const models = {
     getAttributes: jest.fn().mockResolvedValue([]),
   } as unknown as DeviceModelsService;
   const service = new DevicesService(
     query,
     status as unknown as DevicesStatusRepository,
+    expense,
     models,
   );
-  return { service, status, query };
+  return { service, status, query, expense };
 }
 
 describe('isAllowedTransition', () => {
@@ -79,6 +84,33 @@ describe('DevicesService.changeStatus', () => {
     await expect(
       service.changeStatus('d1', 'SOLD', 'u1', undefined, 0),
     ).rejects.toThrow(ConflictException);
+  });
+});
+
+describe('DevicesService.setExpense', () => {
+  const device = { id: 'd1', imei: '111111111111111', modelId: 'm1' };
+
+  it('delegates to the expense repo after confirming the device exists', async () => {
+    const { service, expense } = build(null, {
+      findById: jest.fn().mockResolvedValue(device),
+    });
+    await service.setExpense('d1', { unitExpense: 40 }, 'user-1');
+    expect(expense.setExpense).toHaveBeenCalledWith(
+      'd1',
+      40,
+      undefined,
+      'user-1',
+    );
+  });
+
+  it('404s when the device does not exist, without posting', async () => {
+    const { service, expense } = build(null, {
+      findById: jest.fn().mockResolvedValue(null),
+    });
+    await expect(
+      service.setExpense('missing', { unitExpense: 40 }, 'user-1'),
+    ).rejects.toThrow('not found');
+    expect(expense.setExpense).not.toHaveBeenCalled();
   });
 });
 

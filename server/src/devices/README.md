@@ -20,6 +20,12 @@ transitions and status history. Intake (creation + landed cost) belongs to
   When `specs` is present it is validated against the model's attribute schema
   (`DeviceModelsService.getAttributes` + `validateSpecs`); failures → 400
   `{ message: 'Invalid specs', problems: [{ key, message }] }`.
+- `PATCH /:id/expense` — `{ unitExpense, unitExpenseNote? }` (`device.expense`,
+  ADMIN only). Recomputes landed cost (`acquisitionCost + customsFee +
+  unitExpense`) and posts the `DEVICE_EXPENSE` **difference** from the device's
+  shipment account in one transaction (ADR 0026); zero difference posts nothing.
+  A sold phone keeps its sale's `landedCostSnapshot`. `unitExpenseNote: null`
+  clears the note. 404 if the device is missing.
 - `POST /:id/status` — `{ toStatusCode, reason?, expectedVersion }`
   (`device.status.change`). 409 on version mismatch (offline lock).
 
@@ -37,11 +43,16 @@ QC inspection yet; consumed by `QcStatsService`.
 (every DTO) and `anyImeiWhere(value)` — the `imei = x OR imei2 = x` filter every
 by-IMEI lookup across modules (sales, consignment, QC, sync) uses.
 
+`lib/landed-cost.ts::computeLandedCost(acquisitionCost, customsFee, unitExpense)`
+is the single home of the landed-cost rule (ADR 0026); `shipments` (intake) and
+the customs module import it so the formula is never duplicated.
+
 ## Must never
 
-- Expose `acquisitionCost`/`landedCost` unredacted (money is string; the cost
-  interceptor strips by key).
+- Expose `acquisitionCost`/`landedCost`/`unitExpense` unredacted (money is
+  string; the cost interceptor strips by key).
 - Allow a transition absent from the transition table.
+- Rewrite a sale's `landedCostSnapshot` when a cost field changes.
 
 `GET /devices` also accepts `statusCodes=A,B` (ignored when `statusCode` is set) so the QC queue can
 restrict itself to IN_STOCK + DEFECTIVE in one request.

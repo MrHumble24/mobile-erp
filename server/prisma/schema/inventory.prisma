@@ -67,7 +67,13 @@ model Device {
 
   /// Price paid to supplier for this unit.
   acquisitionCost Decimal  @db.Decimal(14, 2)
-  /// acquisitionCost + this unit's share of Shipment.overheadCost.
+  /// This unit's own expense (repair, cleaning, ...). Editable any time, also
+  /// after sale. Replaces the old even overhead spread (ADR 0006 superseded;
+  /// ADR 0026). A change posts a DEVICE_EXPENSE difference to the ledger.
+  unitExpense     Decimal  @default(0) @db.Decimal(14, 2)
+  /// Free-text note for `unitExpense`. Cost-restricted like the amount.
+  unitExpenseNote String?
+  /// Derived and stored = acquisitionCost + customsFee + unitExpense (ADR 0026).
   landedCost      Decimal  @db.Decimal(14, 2)
   targetPrice     Decimal? @db.Decimal(14, 2)
 

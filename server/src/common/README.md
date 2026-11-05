@@ -18,8 +18,9 @@ Cross-cutting HTTP plumbing. No business logic, no domain words.
 - **Filter** (`filters/http-exception.filter.ts`) — normalizes every error to
   `{ statusCode, message, error }`. Wired in `main.ts`.
 - **Interceptor** (`interceptors/cost-redaction.interceptor.ts`) — strips
-  `acquisitionCost`/`landedCost`/`landedCostSnapshot`/`overheadCost`/
-  `repairCostEstimate` unless the user holds `device.cost.view`, and
+  `acquisitionCost`/`landedCost`/`landedCostSnapshot`/`unitExpense`/
+  `unitExpenseNote`/`unitExpenseTotal`/`repairCostEstimate` (and the report cost
+  aliases) unless the user holds `device.cost.view`, and
   `netProfit` unless they hold `sale.profit.view`.
   Default-deny when no user. Recurses only into plain objects/arrays
   (`lib/redact.ts`), leaving Date/Decimal leaves intact.

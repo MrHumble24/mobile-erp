@@ -4,8 +4,11 @@ import {
   IsArray,
   IsNumber,
   IsOptional,
+  IsString,
   IsUUID,
   Matches,
+  Max,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -30,12 +33,29 @@ export class RegisterDeviceDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(1_000_000_000)
   acquisitionCost!: number;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(1_000_000_000)
   targetPrice?: number;
+
+  /**
+   * Per-phone expense at intake. A non-zero value requires `device.expense`;
+   * the service rejects it with 403 otherwise. Defaults to 0.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  unitExpense?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  unitExpenseNote?: string;
 }
 
 export class RegisterDevicesDto {

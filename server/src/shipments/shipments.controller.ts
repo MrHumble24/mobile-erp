@@ -34,12 +34,8 @@ export class ShipmentsController {
 
   @Patch(':id')
   @RequirePermissions('shipment.manage')
-  update(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id') id: string,
-    @Body() dto: UpdateShipmentDto,
-  ) {
-    return this.shipments.update(id, dto, user.id);
+  update(@Param('id') id: string, @Body() dto: UpdateShipmentDto) {
+    return this.shipments.update(id, dto);
   }
 
   @Post(':id/devices')
@@ -49,6 +45,6 @@ export class ShipmentsController {
     @Param('id') id: string,
     @Body() dto: RegisterDevicesDto,
   ) {
-    return this.shipments.addDevices(id, dto, user.id);
+    return this.shipments.addDevices(id, dto, user);
   }
 }

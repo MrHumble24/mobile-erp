@@ -57,8 +57,13 @@ INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
   ('PARTNER_PAYMENT', 'Partner payment',  80),
   ('PURCHASE',        'Device purchase',  90),
   ('OVERHEAD',        'Shipment overhead',100),
-  ('EXPENSE',         'Expense',          110)
+  ('EXPENSE',         'Expense',          110),
+  ('DEVICE_EXPENSE',  'Device expense',   120)
 ON CONFLICT (code) DO NOTHING;
+
+-- ADR 0026: per-phone expense supersedes shipment overhead. OVERHEAD stays in
+-- the lookup (old history rows reference it) but is retired from the pickers.
+UPDATE cash_transaction_types SET "isActive" = false WHERE code = 'OVERHEAD';
 
 INSERT INTO store_settings (id, "updatedAt") VALUES (1, now()) ON CONFLICT (id) DO NOTHING;
 
@@ -74,6 +79,7 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('device.create',        'device',      'create',    'Register devices (IMEI intake)'),
   ('device.update',        'device',      'update',    'Edit device specs / target price'),
   ('device.cost.view',     'device',      'cost.view', 'See acquisition and landed cost'),
+  ('device.expense',       'device',      'expense',   'Set or change a phone''s own expense'),
   ('device.status.change', 'device',      'status.change', 'Move device between statuses'),
   ('shipment.read',        'shipment',    'read',      'View shipments'),
   ('shipment.manage',      'shipment',    'manage',    'Create / edit shipments and suppliers'),

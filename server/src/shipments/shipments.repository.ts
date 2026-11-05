@@ -3,10 +3,10 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
+import { computeLandedCost } from '../devices/lib/landed-cost.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { computeLandedCost } from './lib/landed-cost.js';
 import {
   RegisteredDeviceView,
   RegisterDeviceInput,
@@ -32,7 +32,8 @@ export class ShipmentsRepository {
       orderBy: { shipmentDate: 'desc' },
       ...withCount,
     });
-    return rows.map(toShipmentView);
+    const totals = await this.unitExpenseTotals(rows.map((r) => r.id));
+    return rows.map((r) => toShipmentView(r, totals.get(r.id) ?? '0.00'));
   }
 
   async findById(id: string): Promise<ShipmentView | null> {
@@ -40,76 +41,28 @@ export class ShipmentsRepository {
       where: { id },
       ...withCount,
     });
-    return row ? toShipmentView(row) : null;
+    if (!row) return null;
+    const totals = await this.unitExpenseTotals([id]);
+    return toShipmentView(row, totals.get(id) ?? '0.00');
   }
 
-  /** Creates the shipment and, when overhead > 0, posts an OVERHEAD row. */
   async create(input: ShipmentInput): Promise<ShipmentView> {
-    return this.prisma.$transaction(async (tx) => {
-      const row = await tx.shipment.create({
-        data: { ...input },
-        ...withCount,
-      });
-      const overhead = new Prisma.Decimal(input.overheadCost ?? 0);
-      if (overhead.gt(0)) {
-        await this.ledger.post(
-          {
-            storeId: input.storeId,
-            accountCode: input.paymentAccountCode,
-            typeCode: 'OVERHEAD',
-            amount: overhead.negated(),
-            shipmentId: row.id,
-            createdById: input.createdById,
-          },
-          tx,
-        );
-      }
-      return toShipmentView(row);
+    const row = await this.prisma.shipment.create({
+      data: { ...input },
+      ...withCount,
     });
+    return toShipmentView(row, '0.00');
   }
 
-  /**
-   * Updates fields and, when overhead changes, recomputes landed costs and
-   * posts the OVERHEAD difference against the shipment's fixed payment account.
-   */
-  async update(
-    id: string,
-    patch: ShipmentPatch,
-    userId: string,
-  ): Promise<ShipmentView> {
-    return this.prisma.$transaction(async (tx) => {
-      const before = await tx.shipment.findUniqueOrThrow({
-        where: { id },
-        select: {
-          overheadCost: true,
-          storeId: true,
-          paymentAccountCode: true,
-        },
-      });
-      await tx.shipment.update({ where: { id }, data: patch });
-      if (patch.overheadCost !== undefined) {
-        await this.recompute(tx, id);
-        const delta = before.overheadCost.minus(patch.overheadCost); // -(new-old)
-        if (!delta.isZero()) {
-          await this.ledger.post(
-            {
-              storeId: before.storeId,
-              accountCode: before.paymentAccountCode,
-              typeCode: 'OVERHEAD',
-              amount: delta,
-              shipmentId: id,
-              createdById: userId,
-            },
-            tx,
-          );
-        }
-      }
-      const row = await tx.shipment.findUniqueOrThrow({
-        where: { id },
-        ...withCount,
-      });
-      return toShipmentView(row);
+  /** Edits plain fields only; the shipment has no money of its own (ADR 0026). */
+  async update(id: string, patch: ShipmentPatch): Promise<ShipmentView> {
+    await this.prisma.shipment.update({ where: { id }, data: patch });
+    const row = await this.prisma.shipment.findUniqueOrThrow({
+      where: { id },
+      ...withCount,
     });
+    const totals = await this.unitExpenseTotals([id]);
+    return toShipmentView(row, totals.get(id) ?? '0.00');
   }
 
   async addDevices(
@@ -124,43 +77,125 @@ export class ShipmentsRepository {
         where: { id: shipmentId },
         select: { storeId: true, paymentAccountCode: true },
       });
+      const results: RegisteredDeviceView[] = [];
       for (const input of inputs) {
-        const device = await tx.device.create({
-          data: {
-            imei: input.imei,
-            imei2: input.imei2 ?? null,
-            storeId,
-            shipmentId,
-            modelId: input.modelId,
-            specs: input.specs as Prisma.InputJsonValue,
-            acquisitionCost: input.acquisitionCost,
-            landedCost: input.acquisitionCost,
-            targetPrice: input.targetPrice ?? null,
-            statusCode: 'IN_STOCK',
-            statusHistory: {
-              create: { toStatusCode: 'IN_STOCK', changedById: userId },
-            },
-          },
-          select: { id: true },
-        });
-        const cost = new Prisma.Decimal(input.acquisitionCost);
-        if (cost.gt(0)) {
-          await this.ledger.post(
-            {
-              storeId: shipment.storeId,
-              accountCode: shipment.paymentAccountCode,
-              typeCode: 'PURCHASE',
-              amount: cost.negated(),
-              deviceId: device.id,
-              shipmentId,
-              createdById: userId,
-            },
+        results.push(
+          await this.registerOne(
             tx,
-          );
-        }
+            shipmentId,
+            storeId,
+            shipment,
+            input,
+            userId,
+          ),
+        );
       }
-      return this.recompute(tx, shipmentId);
+      return results;
     });
+  }
+
+  private async registerOne(
+    tx: Prisma.TransactionClient,
+    shipmentId: string,
+    storeId: string,
+    shipment: { storeId: string; paymentAccountCode: string },
+    input: RegisterDeviceInput,
+    userId: string,
+  ): Promise<RegisteredDeviceView> {
+    const acquisitionCost = input.acquisitionCost;
+    const unitExpense = input.unitExpense ?? 0;
+    // customsFee is stamped by commit 3; it is 0 here.
+    const landedCost = computeLandedCost(acquisitionCost, 0, unitExpense);
+    const device = await tx.device.create({
+      data: {
+        imei: input.imei,
+        imei2: input.imei2 ?? null,
+        storeId,
+        shipmentId,
+        modelId: input.modelId,
+        specs: input.specs as Prisma.InputJsonValue,
+        acquisitionCost,
+        unitExpense,
+        unitExpenseNote: input.unitExpenseNote ?? null,
+        landedCost,
+        targetPrice: input.targetPrice ?? null,
+        statusCode: 'IN_STOCK',
+        statusHistory: {
+          create: { toStatusCode: 'IN_STOCK', changedById: userId },
+        },
+      },
+      select: { id: true, statusCode: true },
+    });
+    await this.postIntake(
+      tx,
+      shipment,
+      device.id,
+      shipmentId,
+      acquisitionCost,
+      unitExpense,
+      userId,
+    );
+    return toRegisteredView(device, input, unitExpense, landedCost);
+  }
+
+  /** PURCHASE for the supplier price and DEVICE_EXPENSE for a non-zero expense. */
+  private async postIntake(
+    tx: Prisma.TransactionClient,
+    shipment: { storeId: string; paymentAccountCode: string },
+    deviceId: string,
+    shipmentId: string,
+    acquisitionCost: number,
+    unitExpense: number,
+    userId: string,
+  ): Promise<void> {
+    const acq = new Prisma.Decimal(acquisitionCost);
+    if (acq.gt(0)) {
+      await this.ledger.post(
+        {
+          storeId: shipment.storeId,
+          accountCode: shipment.paymentAccountCode,
+          typeCode: 'PURCHASE',
+          amount: acq.negated(),
+          deviceId,
+          shipmentId,
+          createdById: userId,
+        },
+        tx,
+      );
+    }
+    const exp = new Prisma.Decimal(unitExpense);
+    if (exp.gt(0)) {
+      await this.ledger.post(
+        {
+          storeId: shipment.storeId,
+          accountCode: shipment.paymentAccountCode,
+          typeCode: 'DEVICE_EXPENSE',
+          amount: exp.negated(),
+          deviceId,
+          shipmentId,
+          createdById: userId,
+        },
+        tx,
+      );
+    }
+  }
+
+  /** Sum of each shipment's devices' unitExpense, as 2-dp strings. */
+  private async unitExpenseTotals(
+    shipmentIds: string[],
+  ): Promise<Map<string, string>> {
+    if (shipmentIds.length === 0) return new Map();
+    const rows = await this.prisma.device.groupBy({
+      by: ['shipmentId'],
+      where: { shipmentId: { in: shipmentIds } },
+      _sum: { unitExpense: true },
+    });
+    return new Map(
+      rows.map((r) => [
+        r.shipmentId,
+        (r._sum.unitExpense ?? new Prisma.Decimal(0)).toFixed(2),
+      ]),
+    );
   }
 
   /**
@@ -193,50 +228,6 @@ export class ShipmentsRepository {
       throw new ConflictException('A device with this IMEI already exists');
     }
   }
-
-  private async recompute(
-    tx: Prisma.TransactionClient,
-    shipmentId: string,
-  ): Promise<RegisteredDeviceView[]> {
-    const shipment = await tx.shipment.findUniqueOrThrow({
-      where: { id: shipmentId },
-      select: { overheadCost: true },
-    });
-    const devices = await tx.device.findMany({
-      where: { shipmentId },
-      orderBy: { intakeDate: 'asc' },
-      select: {
-        id: true,
-        imei: true,
-        imei2: true,
-        modelId: true,
-        acquisitionCost: true,
-        targetPrice: true,
-        statusCode: true,
-      },
-    });
-    const overhead = shipment.overheadCost.toNumber();
-    const results: RegisteredDeviceView[] = [];
-    for (const d of devices) {
-      const landedCost = computeLandedCost(
-        d.acquisitionCost.toNumber(),
-        overhead,
-        devices.length,
-      );
-      await tx.device.update({ where: { id: d.id }, data: { landedCost } });
-      results.push({
-        id: d.id,
-        imei: d.imei,
-        imei2: d.imei2,
-        modelId: d.modelId,
-        acquisitionCost: d.acquisitionCost.toString(),
-        landedCost,
-        targetPrice: d.targetPrice ? d.targetPrice.toString() : null,
-        statusCode: d.statusCode,
-      });
-    }
-    return results;
-  }
 }
 
 interface ShipmentRow {
@@ -244,7 +235,6 @@ interface ShipmentRow {
   supplierId: string;
   shipmentDate: Date;
   expectedCount: number;
-  overheadCost: { toString(): string };
   paymentAccountCode: string;
   notes: string | null;
   createdById: string;
@@ -253,18 +243,43 @@ interface ShipmentRow {
   _count: { devices: number };
 }
 
-function toShipmentView(row: ShipmentRow): ShipmentView {
+function toRegisteredView(
+  device: { id: string; statusCode: string },
+  input: RegisterDeviceInput,
+  unitExpense: number,
+  landedCost: string,
+): RegisteredDeviceView {
+  return {
+    id: device.id,
+    imei: input.imei,
+    imei2: input.imei2 ?? null,
+    modelId: input.modelId,
+    acquisitionCost: new Prisma.Decimal(input.acquisitionCost).toFixed(2),
+    unitExpense: new Prisma.Decimal(unitExpense).toFixed(2),
+    landedCost,
+    targetPrice:
+      input.targetPrice != null
+        ? new Prisma.Decimal(input.targetPrice).toFixed(2)
+        : null,
+    statusCode: device.statusCode,
+  };
+}
+
+function toShipmentView(
+  row: ShipmentRow,
+  unitExpenseTotal: string,
+): ShipmentView {
   return {
     id: row.id,
     supplierId: row.supplierId,
     shipmentDate: row.shipmentDate,
     expectedCount: row.expectedCount,
-    overheadCost: row.overheadCost.toString(),
     paymentAccountCode: row.paymentAccountCode,
     notes: row.notes,
     createdById: row.createdById,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     deviceCount: row._count.devices,
+    unitExpenseTotal,
   };
 }

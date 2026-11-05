@@ -13,6 +13,7 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { DevicesService } from './devices.service.js';
 import { ChangeStatusDto } from './dto/change-status.dto.js';
 import { ListDevicesDto } from './dto/list-devices.dto.js';
+import { SetDeviceExpenseDto } from './dto/set-device-expense.dto.js';
 import { UpdateDeviceDto } from './dto/update-device.dto.js';
 
 @Controller('devices')
@@ -47,6 +48,16 @@ export class DevicesController {
   @RequirePermissions('device.update')
   update(@Param('id') id: string, @Body() dto: UpdateDeviceDto) {
     return this.devices.updateDetails(id, dto);
+  }
+
+  @Patch(':id/expense')
+  @RequirePermissions('device.expense')
+  setExpense(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: SetDeviceExpenseDto,
+  ) {
+    return this.devices.setExpense(id, dto, user.id);
   }
 
   @Post(':id/status')
