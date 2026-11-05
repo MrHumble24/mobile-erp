@@ -65,13 +65,34 @@ function ChequeMeta({ receipt }: { receipt: ReceiptView }) {
   )
 }
 
+function ItemIdentity({ item }: { item: ReceiptItem }) {
+  const { t } = useI18n()
+  if (item.quantity != null && !item.imei && !item.serialNumber) {
+    return (
+      <div className="text-[9px] text-black/90 tracking-wider">
+        {t("catalog.pieces", { count: item.quantity })}
+      </div>
+    )
+  }
+  return (
+    <>
+      <div className="text-[9px] text-black/90 font-mono tracking-wider">
+        {item.imei ? "IMEI" : t("catalog.serialNumber")}: {unitCode(item)}
+      </div>
+      {item.imei2 && (
+        <div className="text-[9px] text-black/90 font-mono tracking-wider">IMEI 2: {item.imei2}</div>
+      )}
+    </>
+  )
+}
+
 function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) {
   const { t } = useI18n()
   return (
     <>
       <div className="py-2.5 border-b-2 border-dashed border-black/30 space-y-2">
-        {items.map((item) => (
-          <div key={unitCode(item)} className="space-y-0.5">
+        {items.map((item, i) => (
+          <div key={unitCode(item) || `${item.model}-${i}`} className="space-y-0.5">
             <div className="flex justify-between font-bold text-[11px]">
               <span className="line-clamp-1">{item.model}</span>
               <span className="shrink-0 font-mono">{formatMoney(item.price)}</span>
@@ -79,14 +100,7 @@ function ChequeItems({ items, total }: { items: ReceiptItem[]; total: string }) 
             <div className="text-[9px] text-black/75 flex justify-between">
               <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
             </div>
-            <div className="text-[9px] text-black/90 font-mono tracking-wider">
-              {item.imei ? "IMEI" : t("catalog.serialNumber")}: {unitCode(item)}
-            </div>
-            {item.imei2 && (
-              <div className="text-[9px] text-black/90 font-mono tracking-wider">
-                IMEI 2: {item.imei2}
-              </div>
-            )}
+            <ItemIdentity item={item} />
             {item.warranty && (
               <div className="text-[9px] text-black/75">
                 {t("pos.officialWarranty")}: {item.warranty.days} {t("pos.daysShort")} ·{" "}

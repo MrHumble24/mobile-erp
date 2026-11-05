@@ -13,6 +13,9 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
 
   const itemsStr = receipt.items
     .map((item) => {
+      if (item.quantity != null && !item.imei && !item.serialNumber) {
+        return `📦 ${item.model}\n   ${item.quantity} × — = ${formatMoney(item.price)}`
+      }
       const codeLabel = item.imei ? "IMEI" : t("catalog.serialNumber")
       return `📱 ${item.model} ${[item.storage, item.color].filter(Boolean).join(" · ")}\n   ${codeLabel}: ${unitCode(item)}${item.imei2 ? `\n   IMEI 2: ${item.imei2}` : ""}\n   Narxi: ${formatMoney(item.price)}`
     })

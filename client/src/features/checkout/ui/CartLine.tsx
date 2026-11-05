@@ -5,15 +5,15 @@ import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { DeviceCard } from "./DeviceCard"
 import { PriceGuidance } from "./PriceGuidance"
-import { useCartStore, type CartLine as CartLineModel } from "../model/cart.store"
+import { useCartStore, type UnitCartLine } from "../model/cart.store"
 
 export interface CartLineProps {
-  line: CartLineModel
+  line: UnitCartLine
   canViewCost: boolean
   minMarginPercent: number
 }
 
-function LineControls({ line }: { line: CartLineModel }) {
+function LineControls({ line }: { line: UnitCartLine }) {
   const { t } = useI18n()
   const setLinePrice = useCartStore((s) => s.setLinePrice)
   const setLineWarranty = useCartStore((s) => s.setLineWarranty)

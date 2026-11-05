@@ -1,7 +1,7 @@
 import { Receipt } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import { Button } from "@/shared/ui/button"
 import { MetricCard } from "@/shared/ui/metric-card"
 import { useSales, type SaleView } from "@/entities/sale"
@@ -20,13 +20,13 @@ function startOfTodayIso(): string {
 function SaleRow({ sale, onOpenReceipt }: { sale: SaleView; onOpenReceipt: (id: string) => void }) {
   const { t } = useI18n()
   const time = new Date(sale.soldAt).toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit" })
+  const code = saleUnitCode(sale)
+  const detail = code ?? t("catalog.pieces", { count: sale.quantity ?? 0 })
   return (
     <div className="flex items-center justify-between gap-2 py-2 border-b border-[#f0f0f0] last:border-0">
       <div className="min-w-0">
-        <p className="text-sm font-medium truncate">
-          {sale.device.model.brand} {sale.device.model.name}
-        </p>
-        <p className="text-xs text-muted-foreground font-mono">{time} · {unitCode(sale.device)}</p>
+        <p className="text-sm font-medium truncate">{saleModelName(sale)}</p>
+        <p className="text-xs text-muted-foreground font-mono">{time} · {detail}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <span className="text-sm font-semibold">{formatMoney(sale.salePrice)}</span>

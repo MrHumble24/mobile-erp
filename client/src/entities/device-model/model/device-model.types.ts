@@ -27,6 +27,8 @@ export interface DeviceModelView {
   modelCode: string | null
   /** How customs writes this model; matched to the price list for the fee (ADR 0027). */
   customsCode: string | null
+  /** Default till price per piece for a QUANTITY product (2-dp string); null when unset (ADR 0030). */
+  salePrice: string | null
   attributes: AttributeDef[]
   createdAt: string
   updatedAt: string
@@ -42,6 +44,8 @@ export interface CreateDeviceModelDto {
   barcode?: string | null
   modelCode?: string | null
   customsCode?: string | null
+  /** Default till price per piece for a QUANTITY product; null clears it (ADR 0030). */
+  salePrice?: number | null
   attributes?: AttributeDef[]
 }
 
@@ -54,5 +58,6 @@ export interface UpdateDeviceModelDto {
   barcode?: string | null
   modelCode?: string | null
   customsCode?: string | null
+  salePrice?: number | null
   attributes?: AttributeDef[]
 }

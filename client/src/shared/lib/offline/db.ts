@@ -7,12 +7,14 @@ import { openDB, type IDBPDatabase } from "idb"
  */
 export const OFFLINE_DB = "mobile-erp-offline"
 // v2: devices store re-keyed from `imei` to `id` so serial units (no imei) fit.
-export const OFFLINE_DB_VERSION = 2
+// v3: products store added for offline quantity-product sales (ADR 0030).
+export const OFFLINE_DB_VERSION = 3
 
 export const STORES = {
   outbox: "outbox",
   devices: "devices",
   partners: "partners",
+  products: "products",
   meta: "meta",
 } as const
 
@@ -34,6 +36,9 @@ function db(): Promise<IDBPDatabase> {
         database.createObjectStore(STORES.devices, { keyPath: "id" })
         if (!database.objectStoreNames.contains(STORES.partners)) {
           database.createObjectStore(STORES.partners, { keyPath: "id" })
+        }
+        if (!database.objectStoreNames.contains(STORES.products)) {
+          database.createObjectStore(STORES.products, { keyPath: "modelId" })
         }
         if (!database.objectStoreNames.contains(STORES.meta)) {
           database.createObjectStore(STORES.meta)

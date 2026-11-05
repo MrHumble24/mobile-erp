@@ -5,7 +5,8 @@ import { unitCode } from "@/shared/lib/unit-code"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
-import { useCartStore, isLineBlocked, isPaymentBlocked } from "@/features/checkout"
+import type { StockScanProduct } from "@/entities/stock"
+import { useCartStore, isLineBlocked, isPaymentBlocked, toLinePrices } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
@@ -37,6 +38,7 @@ export function usePosTerminal() {
   const paymentMethod = useCartStore((s) => s.paymentMethod)
   const splitParts = useCartStore((s) => s.splitParts)
   const addLine = useCartStore((s) => s.addLine)
+  const addProduct = useCartStore((s) => s.addProduct)
   const removeLastLine = useCartStore((s) => s.removeLastLine)
   const clearCart = useCartStore((s) => s.clear)
   const consign = useConsignTarget()
@@ -46,14 +48,20 @@ export function usePosTerminal() {
   const blocked =
     lines.length === 0 ||
     lines.some((line) => isLineBlocked(line, canViewCost)) ||
-    isPaymentBlocked(lines, paymentMethod, splitParts)
+    isPaymentBlocked(toLinePrices(lines), paymentMethod, splitParts)
 
   const onInStock = (device: DeviceDetailView) => {
     if (mode === "nasiya") return consign.openFor(device)
     if (!addLine(device, { warrantyDays: defaultWarranty })) toast.error(t("pos.duplicateDevice"))
   }
 
-  const scanner = usePosScanner(onInStock)
+  const onProduct = (product: StockScanProduct) => {
+    // Accessories are a retail sale only; in nasiya mode ignore a product scan.
+    if (mode === "nasiya") return
+    addProduct(product)
+  }
+
+  const scanner = usePosScanner(onInStock, onProduct)
   const checkout = usePosCheckout(blocked, () => {
     clearCart()
     scanner.clear()

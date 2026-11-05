@@ -1,5 +1,6 @@
 export type {
   SaleView,
+  SaleModelRef,
   SalePaymentLine,
   SaleReturnRef,
   SaleStats,

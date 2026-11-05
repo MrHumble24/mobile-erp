@@ -7,6 +7,7 @@ import {
 import { ModeSwitch } from "./ModeSwitch"
 import { ShortcutsHelp } from "./ShortcutsHelp"
 import { PosScanner } from "./PosScanner"
+import { ProductSearch } from "./ProductSearch"
 import { SessionPanel } from "./SessionPanel"
 import { NasiyaPanel } from "./NasiyaPanel"
 import { usePosTerminal } from "../model/use-pos-terminal"
@@ -36,6 +37,7 @@ export function PosTerminal() {
       </div>
 
       <PosScanner scanner={pos.scanner} />
+      {pos.mode === "sale" && <ProductSearch />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2">

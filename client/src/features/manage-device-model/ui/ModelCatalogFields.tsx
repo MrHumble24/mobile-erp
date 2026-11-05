@@ -116,6 +116,26 @@ export function BarcodeField({ form }: { form: FormApi }) {
   )
 }
 
+export function SalePriceField({ form }: { form: FormApi }) {
+  const { t } = useI18n()
+  return (
+    <FormField
+      control={form.control}
+      name="salePrice"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>{t("catalog.salePrice")}</FormLabel>
+          <FormControl>
+            <Input type="number" min={0} {...field} value={field.value ?? ""} />
+          </FormControl>
+          <FormDescription>{t("catalog.unitPrice")}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
+
 export function ModelCodeField({ form }: { form: FormApi }) {
   const { t } = useI18n()
   return (

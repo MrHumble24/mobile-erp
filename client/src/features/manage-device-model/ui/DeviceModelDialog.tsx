@@ -20,7 +20,13 @@ import {
   type DeviceModelFormValues,
 } from "../model/device-model-form.schema"
 import { AttributeEditor } from "./AttributeEditor"
-import { KindField, CategoryField, BarcodeField, ModelCodeField } from "./ModelCatalogFields"
+import {
+  KindField,
+  CategoryField,
+  BarcodeField,
+  ModelCodeField,
+  SalePriceField,
+} from "./ModelCatalogFields"
 
 type FormApi = UseFormReturn<DeviceModelFormValues>
 
@@ -97,9 +103,11 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
       barcode: model?.barcode ?? "",
       modelCode: model?.modelCode ?? "",
       customsCode: model?.customsCode ?? "",
+      salePrice: model?.salePrice ?? "",
       attributes: model ? toFormAttributes(model.attributes) : defaultFormAttributes(),
     },
   })
+  const isQuantity = form.watch("kindCode") === "QUANTITY"
 
   const handleError = (err: { statusCode?: number; message?: string }, values: DeviceModelFormValues) => {
     if (err?.statusCode === 409) {
@@ -122,12 +130,16 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
 
   const onSubmit = (values: DeviceModelFormValues) => {
     const attributes = toDtoAttributes(values.attributes)
+    const quantity = values.kindCode === "QUANTITY"
+    const parsedPrice = values.salePrice.trim() ? Number(values.salePrice) : null
     const catalog = {
       kindCode: values.kindCode,
       categoryId: values.categoryId.trim() || null,
       barcode: values.barcode.trim() || null,
       modelCode: values.modelCode.trim() || null,
-      customsCode: values.customsCode.trim() || null,
+      // Customs fees apply to imported units, not accessories counted by quantity.
+      customsCode: quantity ? null : values.customsCode.trim() || null,
+      salePrice: quantity ? parsedPrice : null,
     }
     const opts = {
       onSuccess: () => { toast.success(t("common.success")); onDone() },
@@ -151,9 +163,13 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
           <BarcodeField form={form} />
           <ModelCodeField form={form} />
         </div>
-        <CustomsCodeField form={form} />
+        {isQuantity ? (
+          <SalePriceField form={form} />
+        ) : (
+          <CustomsCodeField form={form} />
+        )}
         <ActiveField form={form} />
-        <AttributeEditor form={form} savedKeys={savedKeys} />
+        {!isQuantity && <AttributeEditor form={form} savedKeys={savedKeys} />}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? t("common.loading") : t("common.save")}
         </Button>

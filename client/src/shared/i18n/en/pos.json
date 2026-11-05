@@ -77,5 +77,8 @@
   "scClearScanner": "Clear scanner",
   "scRemoveLast": "Remove last device",
   "scToggleCustomer": "Customer search",
-  "scToggleMode": "Switch Sale / Nasiya"
+  "scToggleMode": "Switch Sale / Nasiya",
+  "findProduct": "Find a product by name",
+  "decreaseQuantity": "Decrease quantity",
+  "increaseQuantity": "Increase quantity"
 }

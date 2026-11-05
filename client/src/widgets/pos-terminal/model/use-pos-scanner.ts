@@ -1,6 +1,9 @@
 import * as React from "react"
-import { useDeviceByImei, matchesUnitCode, type DeviceDetailView } from "@/entities/device"
+import type { DeviceDetailView } from "@/entities/device"
+import type { StockScanProduct } from "@/entities/stock"
+import { useScan } from "@/features/scan-code"
 
+/** The inline info card cases: a unit that is not sellable, or an unknown code. */
 export interface ScanResult {
   kind: "status" | "notFound"
   imei: string
@@ -18,45 +21,49 @@ export function focusScanner() {
 }
 
 interface Lookup {
-  imei: string
-  /** Bumped on every scan so re-scanning the same IMEI re-runs the dispatch (and its duplicate toast). */
+  code: string
+  /** Bumped on every scan so re-scanning the same code re-runs the dispatch. */
   nonce: number
 }
 
 /**
- * Drives the barcode scanner through the device-by-IMEI query. An IN_STOCK hit is
- * dispatched to `onInStock`; any other status (or a 404) is surfaced as `scanResult`
- * for an inline info card. All React state changes happen in event handlers, never
- * in an effect — the effect only forwards resolved data to the external handler.
+ * Drives the barcode field through GET /scan/:code (ADR 0030). An IN_STOCK unit
+ * is dispatched to `onInStock`; a quantity product to `onProduct`; any other
+ * unit status (or an unknown code) is surfaced as `scanResult` for an info card.
+ * All React state changes happen in event handlers; the effect only forwards
+ * resolved data to the external handlers.
  */
-export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
+export function usePosScanner(
+  onInStock: (device: DeviceDetailView) => void,
+  onProduct: (product: StockScanProduct) => void
+) {
   const [imei, setImei] = React.useState("")
   const [lookup, setLookup] = React.useState<Lookup | null>(null)
-  const { data, isFetching, isError } = useDeviceByImei(lookup?.imei ?? null)
+  const { data, isFetching } = useScan(lookup?.code ?? null, lookup?.nonce)
   const handledRef = React.useRef<Lookup | null>(null)
   const onInStockRef = React.useRef(onInStock)
+  const onProductRef = React.useRef(onProduct)
 
   React.useEffect(() => {
     onInStockRef.current = onInStock
+    onProductRef.current = onProduct
   })
 
   React.useEffect(() => {
-    if (!lookup || isFetching || handledRef.current === lookup) return
-    if (isError) {
-      handledRef.current = lookup
-      return
+    if (!lookup || isFetching || handledRef.current === lookup || !data) return
+    handledRef.current = lookup
+    if (data.kind === "unit" && data.unit.statusCode === "IN_STOCK") {
+      onInStockRef.current(data.unit)
+    } else if (data.kind === "product") {
+      onProductRef.current(data.product)
     }
-    if (data && matchesUnitCode(data, lookup.imei)) {
-      handledRef.current = lookup
-      if (data.statusCode === "IN_STOCK") onInStockRef.current(data)
-    }
-  }, [lookup, data, isFetching, isError])
+  }, [lookup, data, isFetching])
 
   const submit = (code: string) => {
     const trimmed = code.trim()
     if (trimmed.length < MIN_CODE_LENGTH) return false
     setImei("")
-    setLookup({ imei: trimmed, nonce: Date.now() })
+    setLookup({ code: trimmed, nonce: Date.now() })
     return true
   }
 
@@ -67,13 +74,13 @@ export function usePosScanner(onInStock: (device: DeviceDetailView) => void) {
   }
 
   const scanResult: ScanResult | null = React.useMemo(() => {
-    if (!lookup || isFetching) return null
-    if (isError) return { kind: "notFound", imei: lookup.imei }
-    if (data && matchesUnitCode(data, lookup.imei) && data.statusCode !== "IN_STOCK") {
-      return { kind: "status", imei: lookup.imei, device: data }
+    if (!lookup || isFetching || !data) return null
+    if (data.kind === "notFound") return { kind: "notFound", imei: lookup.code }
+    if (data.kind === "unit" && data.unit.statusCode !== "IN_STOCK") {
+      return { kind: "status", imei: lookup.code, device: data.unit }
     }
     return null
-  }, [lookup, data, isFetching, isError])
+  }, [lookup, data, isFetching])
 
   return { imei, setImei, submit, clear, scanResult, isFetching }
 }

@@ -2,7 +2,7 @@ import * as React from "react"
 import { Receipt, Smartphone } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
-import { unitCode } from "@/shared/lib/unit-code"
+import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import { useCustomerSales, type CustomerSaleView } from "@/entities/customer"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { Button, buttonVariants } from "@/shared/ui/button"
@@ -18,31 +18,32 @@ function PurchaseItem({
   onOpenDevice: (imei: string) => void
 }) {
   const { t } = useI18n()
+  const code = saleUnitCode(sale)
   return (
     <div className="p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] space-y-2 text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between items-start gap-2">
-        <div className="font-semibold">
-          {sale.device.model?.brand} {sale.device.model?.name}
-        </div>
+        <div className="font-semibold">{saleModelName(sale)}</div>
         <div className="font-mono font-bold">{formatMoney(sale.salePrice)}</div>
       </div>
       <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
-        <span>{unitCode(sale.device)}</span>
+        <span>{code ?? t("catalog.pieces", { count: sale.quantity ?? 0 })}</span>
         <span>{formatDate(sale.soldAt)}</span>
       </div>
       <div className="flex items-center justify-between gap-2">
         <CustomerWarrantyBadge sale={sale} />
         <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-8"
-            aria-label={t("customers.openDevice")}
-            title={t("customers.openDevice")}
-            onClick={() => onOpenDevice(unitCode(sale.device))}
-          >
-            <Smartphone className="size-4" />
-          </Button>
+          {code && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8"
+              aria-label={t("customers.openDevice")}
+              title={t("customers.openDevice")}
+              onClick={() => onOpenDevice(code)}
+            >
+              <Smartphone className="size-4" />
+            </Button>
+          )}
           <Link
             to={`/sales/${sale.id}/receipt`}
             aria-label={t("customers.openReceipt")}

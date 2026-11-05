@@ -77,5 +77,8 @@
   "scRemoveLast": "Oxirgi qurilmani o'chirish",
   "scToggleCustomer": "Mijoz qidirish",
   "scToggleMode": "Sotuv / Nasiya rejimini almashtirish",
-  "alreadyQueued": "Allaqachon navbatda"
+  "alreadyQueued": "Allaqachon navbatda",
+  "findProduct": "Find a product by name",
+  "decreaseQuantity": "Decrease quantity",
+  "increaseQuantity": "Increase quantity"
 }

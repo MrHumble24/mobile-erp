@@ -3,6 +3,7 @@ import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
+import { cartTotal, toLinePrices } from "../lib/payment"
 import { PaymentPanel } from "./PaymentPanel"
 
 export interface TotalsPanelProps {
@@ -23,8 +24,8 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProps) {
   const { t } = useI18n()
   const lines = useCartStore((s) => s.lines)
-  const total = lines.reduce((sum, line) => sum + (line.salePrice || 0), 0)
-  const withWarranty = lines.filter((line) => line.warrantyDays > 0).length
+  const total = cartTotal(toLinePrices(lines))
+  const withWarranty = lines.filter((line) => line.kind === "unit" && line.warrantyDays > 0).length
 
   return (
     <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
