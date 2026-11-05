@@ -13,15 +13,17 @@ Offline mutation queue, conflict resolution, and the offline-cache feed (PRD §5
   | `conflict` (ConflictException → a `sync_conflicts` row) | `rejected` (403 /
   invalid / other error — **never persisted**). Response `{ results: [...] }`.
 - `GET /conflicts` (`sync.resolve`) — pending (`resolvedAt` null) with device
-  `imei`/`imei2`, terminal, attemptedChange. By-IMEI device resolution (push
-  deviceId lookup) matches either column.
+  `imei`/`imei2`/`serialNumber`, terminal, attemptedChange. Push device
+  resolution (`deviceIdByCode`) matches imei, imei2 or serialNumber via
+  `resolveUnitCode` on the mutation body (ADR 0029).
 - `POST /conflicts/:id/resolve` (`sync.resolve`) — `{ resolution:'keep-server' |
   'apply-terminal', note? }`. keep-server records the decision; apply-terminal
   re-dispatches the stored mutation at the device's current version and, if it
   still clashes, returns 409 and leaves it pending. No force path (ADR 0011).
 - `GET /changes?since=` (`device.read`) — `{ serverTime, nextSince, devices[],
   partners[] }`. Devices changed since `since` (cap 2000, `nextSince` to page);
-  each device change carries `imei2`; **no cost fields are selected at all**. Partners (with `creditLimit`/`outstanding`)
+  each device change carries `imei`/`imei2`/`serialNumber` and `model.kindCode`;
+  **no cost fields are selected at all**. Partners (with `creditLimit`/`outstanding`)
   are returned only when the caller holds `partner.read`; otherwise `partners: []`.
 
 ## Structure

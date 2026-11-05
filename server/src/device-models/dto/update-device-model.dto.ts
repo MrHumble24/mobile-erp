@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   ValidateIf,
   ValidateNested,
@@ -24,6 +25,32 @@ export class UpdateDeviceModelDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  /** Stock kind; rejected if the model already has units (ADR 0029). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  kindCode?: string;
+
+  /** `null` clears the category. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsUUID()
+  categoryId?: string | null;
+
+  /** `null` clears the barcode; otherwise must stay unique. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  @MaxLength(64)
+  barcode?: string | null;
+
+  /** `null` clears the maker's code. */
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsString()
+  @MaxLength(64)
+  modelCode?: string | null;
 
   /** `null` clears the customs code. */
   @IsOptional()

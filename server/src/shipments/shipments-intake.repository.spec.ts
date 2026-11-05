@@ -30,7 +30,7 @@ function build() {
     $transaction: jest.fn((cb: (t: typeof tx) => unknown) => cb(tx)),
   } as unknown as PrismaService;
   const ledger = { post: jest.fn() } as unknown as LedgerService;
-  return { repo: new ShipmentsIntakeRepository(prisma, ledger), ledger };
+  return { repo: new ShipmentsIntakeRepository(prisma, ledger), ledger, tx };
 }
 
 const device = (
@@ -40,9 +40,21 @@ const device = (
 ): RegisterDeviceInput => ({
   imei,
   modelId: 'model-1',
+  kindCode: 'IMEI',
   specs: {},
   acquisitionCost: cost,
   ...extra,
+});
+
+const serialDevice = (
+  serialNumber: string,
+  cost = 300,
+): RegisterDeviceInput => ({
+  modelId: 'model-1',
+  kindCode: 'SERIAL',
+  serialNumber,
+  specs: {},
+  acquisitionCost: cost,
 });
 
 describe('ShipmentsIntakeRepository.addDevices', () => {
@@ -94,5 +106,38 @@ describe('ShipmentsIntakeRepository.addDevices', () => {
       'ship-store',
     );
     expect(ledger.post).toHaveBeenCalledTimes(1);
+  });
+
+  it('stores a serial unit with null imei and the serial number', async () => {
+    const { repo } = build();
+    const [view] = await repo.addDevices(
+      'ship-1',
+      [serialDevice('SN-1')],
+      'qc-1',
+      'ship-store',
+    );
+    expect(view.imei).toBeNull();
+    expect(view.serialNumber).toBe('SN-1');
+    expect(view.kindCode).toBe('SERIAL');
+  });
+
+  it('rejects a duplicate serial number within the batch', async () => {
+    const { repo } = build();
+    await expect(
+      repo.addDevices(
+        'ship-1',
+        [serialDevice('SN-1'), serialDevice('SN-1')],
+        'qc-1',
+        'ship-store',
+      ),
+    ).rejects.toThrow('Duplicate serial number within the batch');
+  });
+
+  it('rejects a serial already held by an existing unit', async () => {
+    const { repo, tx } = build();
+    tx.device.findFirst.mockResolvedValue({ serialNumber: 'SN-9' });
+    await expect(
+      repo.addDevices('ship-1', [serialDevice('SN-9')], 'q', 's'),
+    ).rejects.toThrow('already exists');
   });
 });

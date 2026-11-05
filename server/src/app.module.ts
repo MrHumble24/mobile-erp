@@ -20,6 +20,7 @@ import { SalesModule } from './sales/sales.module.js';
 import { CustomersModule } from './customers/customers.module.js';
 import { SuppliersModule } from './suppliers/suppliers.module.js';
 import { DeviceModelsModule } from './device-models/device-models.module.js';
+import { ProductCategoriesModule } from './product-categories/product-categories.module.js';
 import { ShipmentsModule } from './shipments/shipments.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { QcModule } from './qc/qc.module.js';
@@ -53,6 +54,7 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     CustomersModule,
     SuppliersModule,
     DeviceModelsModule,
+    ProductCategoriesModule,
     ShipmentsModule,
     DevicesModule,
     QcModule,

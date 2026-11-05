@@ -32,7 +32,7 @@ export class TelegramCron {
         messages.overdueConsignments(
           rows.map((c) => ({
             partner: c.partnerShopName,
-            imei: c.imei,
+            imei: c.imei ?? c.serialNumber ?? '',
             agreedPrice: Number(c.agreedPrice),
             dueDate: c.dueDate,
           })),

@@ -10,7 +10,10 @@ import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
 import { ShipmentsService } from './shipments.service.js';
 
-function build(customsFees: Map<string, number> = new Map()) {
+function build(
+  customsFees: Map<string, number> = new Map(),
+  kindCode = 'IMEI',
+) {
   const repo = {
     findById: jest
       .fn()
@@ -27,6 +30,7 @@ function build(customsFees: Map<string, number> = new Map()) {
       id: 'm1',
       brand: 'A',
       name: 'X',
+      kindCode,
       customsCode: 'C1',
       attributes: [],
     }),
@@ -93,6 +97,71 @@ describe('ShipmentsService.addDevices unit-expense permission', () => {
     const { service, intakeRepo } = build();
     await service.addDevices('ship-1', intake(), user(['device.create']));
     expect(intakeRepo.addDevices).toHaveBeenCalled();
+  });
+});
+
+describe('ShipmentsService.addDevices kind rules (ADR 0029)', () => {
+  const serialUnit = (over: Record<string, unknown> = {}) => ({
+    devices: [{ modelId: 'm1', specs: {}, acquisitionCost: 300, ...over }],
+  });
+
+  it('rejects an IMEI unit with no imei', async () => {
+    const { service } = build();
+    await expect(
+      service.addDevices('ship-1', serialUnit(), user(['device.create'])),
+    ).rejects.toThrow('An IMEI product requires an imei');
+  });
+
+  it('rejects an IMEI unit that carries a serialNumber', async () => {
+    const { service } = build();
+    await expect(
+      service.addDevices(
+        'ship-1',
+        serialUnit({ imei: '111111111111111', serialNumber: 'SN-1' }),
+        user(['device.create']),
+      ),
+    ).rejects.toThrow('must not carry a serialNumber');
+  });
+
+  it('rejects a serial unit with an imei', async () => {
+    const { service } = build(new Map(), 'SERIAL');
+    await expect(
+      service.addDevices(
+        'ship-1',
+        serialUnit({ imei: '111111111111111', serialNumber: 'SN-1' }),
+        user(['device.create']),
+      ),
+    ).rejects.toThrow('must not carry an IMEI');
+  });
+
+  it('rejects a serial unit with no serialNumber', async () => {
+    const { service } = build(new Map(), 'SERIAL');
+    await expect(
+      service.addDevices('ship-1', serialUnit(), user(['device.create'])),
+    ).rejects.toThrow('requires a serialNumber');
+  });
+
+  it('accepts a serial unit and normalises its serial', async () => {
+    const { service, intakeRepo } = build(new Map(), 'SERIAL');
+    await service.addDevices(
+      'ship-1',
+      serialUnit({ serialNumber: ' sn-1 ' }),
+      user(['device.create']),
+    );
+    const [, inputs] = (intakeRepo.addDevices as jest.Mock).mock.calls[0];
+    expect(inputs[0].serialNumber).toBe('SN-1');
+    expect(inputs[0].kindCode).toBe('SERIAL');
+  });
+
+  it('rejects a QUANTITY model at intake', async () => {
+    const { service } = build(new Map(), 'QUANTITY');
+    await expect(
+      service.addDevices(
+        'ship-1',
+        serialUnit({ imei: '111111111111111' }),
+        user(['device.create']),
+      ),
+    ).rejects.toThrow('Quantity products are not stocked as units');
   });
 });
 

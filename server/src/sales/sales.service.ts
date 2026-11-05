@@ -7,6 +7,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { resolveUnitCode } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
@@ -51,13 +52,14 @@ export class SalesService {
       const existing = await this.findByClientMutationId(dto.clientMutationId);
       if (existing) return existing; // idempotent replay — no side effects
     }
-    const device = await this.reads.findDeviceByImei(dto.imei);
+    const code = resolveUnitCode(dto);
+    const device = await this.reads.findDeviceByImei(code);
     if (!device) {
-      throw new NotFoundException(`Device with IMEI ${dto.imei} not found`);
+      throw new NotFoundException(`Device ${code} not found`);
     }
     if (device.statusCode !== 'IN_STOCK') {
       throw new ConflictException(
-        `Device ${dto.imei} is ${device.statusCode}, not available for sale`,
+        `Device ${code} is ${device.statusCode}, not available for sale`,
       );
     }
     if (dto.customerId && !(await this.reads.customerExists(dto.customerId))) {
@@ -132,7 +134,7 @@ export class SalesService {
       TelegramEvents.saleCreated,
       new SaleCreatedEvent(
         view.id,
-        view.device.imei,
+        view.device.imei ?? view.device.serialNumber ?? '',
         `${view.device.model.brand} ${view.device.model.name}`,
         salePrice,
         device.targetPrice === null ? null : Number(device.targetPrice),

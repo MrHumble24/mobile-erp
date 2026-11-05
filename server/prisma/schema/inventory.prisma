@@ -1,36 +1,7 @@
 // ---------------------------------------------------------------------------
-// Catalog + IMEI-driven inventory (PRD Module 2)
+// IMEI/serial-driven inventory (PRD Module 2). The product catalog
+// (DeviceModel + product kinds/categories) lives in catalog.prisma.
 // ---------------------------------------------------------------------------
-
-/// Catalog entry: what is being sold (brand + model), independent of any unit.
-model DeviceModel {
-  id        String   @id @default(uuid())
-  brand     String
-  name      String
-  isActive  Boolean  @default(true)
-  /// How customs writes this model on its price list (ADR 0027). Several of our
-  /// models may share one code. A phone's customs fee is matched on this.
-  customsCode String?
-  /// Per-model spec schema driving device intake/edit forms. Array of:
-  /// [{ key: "storage", label: "Storage", type: "select",
-  ///    options: ["128GB","256GB"], required: true, sortOrder: 10 },
-  ///  { key: "color", label: "Color", type: "select",
-  ///    options: ["Black","Natural Titanium"], required: false, sortOrder: 20 },
-  ///  { key: "batteryCycles", label: "Battery cycles", type: "number",
-  ///    required: false, sortOrder: 30 }]
-  /// type ∈ text|number|select. The reserved `storage` key is always a select
-  /// (reports + stock alerts group on specs->>'storage'). Empty array = legacy
-  /// model: device specs accept anything. See device-models/lib/attribute-schema.
-  attributes Json    @default("[]") @db.JsonB
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  devices    Device[]
-  alertRules StockAlertRule[]
-
-  @@unique([brand, name])
-  @@map("device_models")
-}
 
 /// Lifecycle states (IN_STOCK, DEFECTIVE, CONSIGNED, SOLD seeded; extendable).
 model DeviceStatus {
@@ -53,12 +24,17 @@ model DeviceStatus {
 /// Filter with `specs->>'storage'`; the GIN index covers containment queries.
 model Device {
   id         String      @id @default(uuid())
-  /// 15-digit IMEI. Unique index also enforces duplicate-scan prevention.
-  imei       String      @unique @db.VarChar(15)
-  /// Optional second IMEI for dual-SIM units. Unique on its own column; the
-  /// service also rejects collisions across `imei`/`imei2` and imei2 == imei
-  /// (a `imei2 <> imei` CHECK in the migration backstops the latter).
+  /// 15-digit IMEI for an IMEI-kind unit; null for a serial-kind unit. Exactly
+  /// one of `imei`/`serialNumber` is set (a CHECK in the migration backstops the
+  /// service rule). Unique index also prevents duplicate scans.
+  imei       String?     @unique @db.VarChar(15)
+  /// Optional second IMEI for dual-SIM units. Only an IMEI-kind unit may carry
+  /// it. Unique on its own column; the service also rejects collisions across
+  /// `imei`/`imei2` and imei2 == imei (CHECKs in the migration backstop both).
   imei2      String?     @unique @db.VarChar(15)
+  /// Identifier for a serial-kind unit (console/laptop/watch); null for an
+  /// IMEI-kind unit. Trimmed, upper-cased, 3-64 chars, no spaces (service rule).
+  serialNumber String?   @unique @db.VarChar(64)
   /// Where this unit currently lives. Will be mutable once stock transfers exist.
   storeId    String
   store      Store       @relation(fields: [storeId], references: [id])

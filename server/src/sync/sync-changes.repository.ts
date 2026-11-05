@@ -24,12 +24,15 @@ export class SyncChangesRepository {
         id: true,
         imei: true,
         imei2: true,
+        serialNumber: true,
         statusCode: true,
         version: true,
         targetPrice: true,
         specs: true,
         updatedAt: true,
-        model: { select: { id: true, brand: true, name: true } },
+        model: {
+          select: { id: true, brand: true, name: true, kindCode: true },
+        },
         sales: {
           orderBy: { soldAt: 'desc' },
           take: 1,
@@ -53,14 +56,15 @@ export class SyncChangesRepository {
 
 type DeviceRow = {
   id: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
   statusCode: string;
   version: number;
   targetPrice: Prisma.Decimal | null;
   specs: Prisma.JsonValue;
   updatedAt: Date;
-  model: { id: string; brand: string; name: string };
+  model: { id: string; brand: string; name: string; kindCode: string };
   sales: {
     id: string;
     soldAt: Date;
@@ -77,6 +81,7 @@ function toDeviceChange(row: DeviceRow): DeviceChange {
     id: row.id,
     imei: row.imei,
     imei2: row.imei2,
+    serialNumber: row.serialNumber,
     statusCode: row.statusCode,
     version: row.version,
     targetPrice: row.targetPrice === null ? null : row.targetPrice.toFixed(2),

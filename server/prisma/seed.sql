@@ -15,6 +15,13 @@ INSERT INTO consignment_statuses (code, label, "sortOrder", "isTerminal") VALUES
   ('RETURNED', 'Returned',         30, true)
 ON CONFLICT (code) DO NOTHING;
 
+-- Product kinds (ADR 0029). Also inserted by the migration for `migrate deploy`.
+INSERT INTO product_kinds (code, label, "sortOrder") VALUES
+  ('IMEI',     'Phone (IMEI)',                  10),
+  ('SERIAL',   'Serial (console/laptop/watch)', 20),
+  ('QUANTITY', 'Accessory (quantity)',          30)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO cosmetic_grades (code, label, "sortOrder") VALUES
   ('A', 'Like new', 10), ('B', 'Minor wear', 20), ('C', 'Visible wear', 30), ('D', 'Heavy wear', 40)
 ON CONFLICT (code) DO NOTHING;

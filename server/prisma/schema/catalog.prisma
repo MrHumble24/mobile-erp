@@ -1,0 +1,76 @@
+// ---------------------------------------------------------------------------
+// Product catalog (PRD Module 2, Change 8). A DeviceModel is a product; its
+// `kindCode` says how its units are stocked:
+//   IMEI     — one unit per phone, identified by IMEI (today).
+//   SERIAL   — one unit per console/laptop/watch, identified by a serial number.
+//   QUANTITY — counted by quantity (cases/cables); catalog row only in this task.
+// Tables keep their historical names: device_models is the catalog, devices the
+// unit table. See ADR 0029.
+// ---------------------------------------------------------------------------
+
+/// How a product's stock is counted. Lookup, not an enum (database.md).
+model ProductKind {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  models DeviceModel[]
+
+  @@map("product_kinds")
+}
+
+/// User-managed product grouping (phones, consoles, accessories ...). Admins
+/// add rows at runtime; guarded by the model permissions (no own code).
+model ProductCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  models DeviceModel[]
+
+  @@map("product_categories")
+}
+
+/// Catalog entry: what is being sold (brand + name), independent of any unit.
+model DeviceModel {
+  id       String  @id @default(uuid())
+  brand    String
+  name     String
+  isActive Boolean @default(true)
+  /// Which kind of stock this product uses. Cannot change once it has units.
+  kindCode String      @default("IMEI")
+  kind     ProductKind @relation(fields: [kindCode], references: [code])
+  /// Optional grouping for the catalog UI.
+  categoryId String?
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  /// EAN printed on the box; used later to scan quantity items. Unique when set.
+  barcode String?
+  /// Maker's code (Apple `A2894`/`MQ9X3`, Samsung `SM-S918B`). Indexed, not unique.
+  modelCode String?
+  /// How customs writes this model on its price list (ADR 0027). Several of our
+  /// models may share one code. A phone's customs fee is matched on this.
+  customsCode String?
+  /// Per-model spec schema driving device intake/edit forms. Array of:
+  /// [{ key: "storage", label: "Storage", type: "select",
+  ///    options: ["128GB","256GB"], required: true, sortOrder: 10 }, ...]
+  /// type ∈ text|number|select. The reserved `storage` key is always a select
+  /// (reports + stock alerts group on specs->>'storage'). Empty array = legacy
+  /// model: device specs accept anything. See device-models/lib/attribute-schema.
+  attributes Json     @default("[]") @db.JsonB
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  devices    Device[]
+  alertRules StockAlertRule[]
+
+  @@unique([brand, name])
+  @@unique([barcode])
+  @@index([kindCode])
+  @@index([categoryId])
+  @@index([modelCode])
+  @@map("device_models")
+}

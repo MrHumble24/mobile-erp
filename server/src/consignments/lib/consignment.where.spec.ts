@@ -27,6 +27,7 @@ describe('buildConsignmentWhere', () => {
     expect(where.OR).toEqual([
       { device: { imei: { contains: '123', mode: 'insensitive' } } },
       { device: { imei2: { contains: '123', mode: 'insensitive' } } },
+      { device: { serialNumber: { contains: '123', mode: 'insensitive' } } },
       { partner: { shopName: { contains: '123', mode: 'insensitive' } } },
     ]);
   });

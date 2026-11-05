@@ -7,7 +7,12 @@ export interface ConsignmentRow {
   partnerId: string;
   partner: { shopName: string };
   deviceId: string;
-  device: { imei: string; imei2: string | null };
+  device: {
+    imei: string | null;
+    imei2: string | null;
+    serialNumber: string | null;
+    model: { kindCode: string };
+  };
   agreedPrice: Prisma.Decimal;
   dueDate: Date;
   statusCode: string;
@@ -19,9 +24,16 @@ export interface ConsignmentRow {
   createdAt: Date;
 }
 
-/** Include every relation a ConsignmentView needs (imei, partner, resulting sale). */
+/** Include every relation a ConsignmentView needs (identifier, partner, sale). */
 export const withImei = {
-  device: { select: { imei: true, imei2: true } },
+  device: {
+    select: {
+      imei: true,
+      imei2: true,
+      serialNumber: true,
+      model: { select: { kindCode: true } },
+    },
+  },
   partner: { select: { shopName: true } },
   sale: { select: { id: true } },
 } as const;
@@ -34,6 +46,8 @@ export function toConsignmentView(row: ConsignmentRow): ConsignmentView {
     deviceId: row.deviceId,
     imei: row.device.imei,
     imei2: row.device.imei2,
+    serialNumber: row.device.serialNumber,
+    kindCode: row.device.model.kindCode,
     agreedPrice: row.agreedPrice,
     dueDate: row.dueDate,
     statusCode: row.statusCode,

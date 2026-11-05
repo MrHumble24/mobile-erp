@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { anyImeiWhere } from '../devices/lib/imei.js';
+import { unitCodeWhere } from '../devices/lib/unit-code.js';
 import type { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { ConflictView, StoredMutation } from './types/sync.types.js';
@@ -13,7 +13,7 @@ const conflictWithImei = {
   resolvedAt: true,
   resolution: true,
   createdAt: true,
-  device: { select: { imei: true, imei2: true } },
+  device: { select: { imei: true, imei2: true, serialNumber: true } },
 } as const;
 
 /** Device lookups and sync_conflicts persistence for the push/resolve flow. */
@@ -21,9 +21,9 @@ const conflictWithImei = {
 export class SyncRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async deviceIdByImei(imei: string): Promise<string | null> {
+  async deviceIdByCode(code: string): Promise<string | null> {
     const row = await this.prisma.device.findFirst({
-      where: anyImeiWhere(imei),
+      where: unitCodeWhere(code),
       select: { id: true },
     });
     return row?.id ?? null;
@@ -121,13 +121,18 @@ function toConflictView(row: {
   resolvedAt: Date | null;
   resolution: string | null;
   createdAt: Date;
-  device: { imei: string; imei2: string | null };
+  device: {
+    imei: string | null;
+    imei2: string | null;
+    serialNumber: string | null;
+  };
 }): ConflictView {
   return {
     id: row.id,
     deviceId: row.deviceId,
     imei: row.device.imei,
     imei2: row.device.imei2,
+    serialNumber: row.device.serialNumber,
     terminalId: row.terminalId,
     attemptedChange: row.attemptedChange as unknown as StoredMutation,
     baseVersion: row.baseVersion,

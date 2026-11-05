@@ -126,6 +126,32 @@ describe('SalesService.create', () => {
     );
   });
 
+  it('sells a serial unit by its (normalised) serial number', async () => {
+    const findDeviceByImei = jest.fn().mockResolvedValue({
+      id: 'dev-9',
+      statusCode: 'IN_STOCK',
+      version: 0,
+      landedCost: 100,
+      targetPrice: 300,
+    });
+    const { service, checkout } = build({ findDeviceByImei });
+    await service.create(caller, {
+      serialNumber: ' sn-9 ',
+      salePrice: 250,
+    });
+    expect(findDeviceByImei).toHaveBeenCalledWith('SN-9');
+    expect(checkout.checkout).toHaveBeenCalledWith(
+      expect.objectContaining({ deviceId: 'dev-9' }),
+    );
+  });
+
+  it('rejects a body with neither imei nor serialNumber', async () => {
+    const { service } = build();
+    await expect(service.create(caller, { salePrice: 250 })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
   it('snapshots landed cost and the current cashier on checkout', async () => {
     const { service, checkout } = build();
     await service.create(caller, dto);

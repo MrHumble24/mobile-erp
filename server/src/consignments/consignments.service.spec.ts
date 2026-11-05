@@ -75,7 +75,20 @@ describe('ConsignmentsService.create', () => {
     await service.create(caller, dto);
     expect(partners.assertWithinCreditLimit).toHaveBeenCalled();
     expect(writes.createTransfer).toHaveBeenCalledWith(
-      expect.objectContaining({ imei: dto.imei, createdById: 'u1' }),
+      expect.objectContaining({ code: dto.imei, createdById: 'u1' }),
+    );
+  });
+
+  it('transfers a serial unit by its normalised serial number', async () => {
+    const { service, writes } = build();
+    await service.create(caller, {
+      serialNumber: ' sn-1 ',
+      partnerId: dto.partnerId,
+      agreedPrice: 500,
+      dueDate: dto.dueDate,
+    });
+    expect(writes.createTransfer).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'SN-1' }),
     );
   });
 });

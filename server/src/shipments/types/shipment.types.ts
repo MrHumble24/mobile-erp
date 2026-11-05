@@ -43,9 +43,13 @@ export interface ShipmentPatch {
 }
 
 export interface RegisterDeviceInput {
-  imei: string;
+  /** One of `imei`/`serialNumber` is set, per the model's kind (ADR 0029). */
+  imei?: string;
   imei2?: string;
+  serialNumber?: string;
   modelId: string;
+  /** Resolved from the model; drives per-kind intake validation. */
+  kindCode: string;
   specs: Record<string, unknown>;
   acquisitionCost: number;
   targetPrice?: number;
@@ -59,9 +63,11 @@ export interface RegisterDeviceInput {
 /** Confirmation of a registered unit with its computed landed cost. */
 export interface RegisteredDeviceView {
   id: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
   modelId: string;
+  kindCode: string;
   acquisitionCost: string;
   customsFee: string;
   unitExpense: string;

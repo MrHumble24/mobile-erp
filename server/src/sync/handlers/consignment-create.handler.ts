@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConsignmentsService } from '../../consignments/consignments.service.js';
 import { CreateConsignmentDto } from '../../consignments/dto/create-consignment.dto.js';
+import { resolveUnitCode } from '../../devices/lib/unit-code.js';
 import { SyncRepository } from '../sync.repository.js';
 import type { MutationContext, SyncHandler } from './sync-handler.interface.js';
 
@@ -25,6 +26,6 @@ export class ConsignmentCreateHandler implements SyncHandler<CreateConsignmentDt
   }
 
   deviceId(dto: CreateConsignmentDto): Promise<string | null> {
-    return this.repo.deviceIdByImei(dto.imei);
+    return this.repo.deviceIdByCode(resolveUnitCode(dto));
   }
 }

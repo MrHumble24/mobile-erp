@@ -10,11 +10,20 @@ import {
   Min,
 } from 'class-validator';
 import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
+import { SERIAL_MESSAGE, SERIAL_REGEX } from '../../devices/lib/unit-code.js';
 
 export class CreateConsignmentDto {
-  /** 15-digit IMEI (matches either IMEI column). Device must be IN_STOCK. */
+  /** Unit identifier. Send exactly one of `imei` / `serialNumber`. IN_STOCK only. */
+  @IsOptional()
+  @IsString()
   @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
-  imei!: string;
+  imei?: string;
+
+  /** Serial-unit identifier. Send exactly one of `imei` / `serialNumber`. */
+  @IsOptional()
+  @IsString()
+  @Matches(SERIAL_REGEX, { message: SERIAL_MESSAGE })
+  serialNumber?: string;
 
   @IsUUID()
   partnerId!: string;

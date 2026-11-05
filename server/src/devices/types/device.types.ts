@@ -1,8 +1,9 @@
 /** One physical unit, money as decimal strings (redaction strips by key). */
 export interface DeviceView {
   id: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
   shipmentId: string;
   modelId: string;
   specs: Record<string, unknown>;
@@ -23,6 +24,7 @@ export interface DeviceModelRef {
   id: string;
   brand: string;
   name: string;
+  kindCode: string;
 }
 
 /** Minimal QC view for the POS lookup. */

@@ -13,6 +13,10 @@ interface ModelRow {
   brand: string;
   name: string;
   isActive: boolean;
+  kindCode: string;
+  categoryId: string | null;
+  barcode: string | null;
+  modelCode: string | null;
   customsCode: string | null;
   attributes: unknown;
   createdAt: Date;
@@ -25,6 +29,10 @@ function toView(row: ModelRow): DeviceModelView {
     brand: row.brand,
     name: row.name,
     isActive: row.isActive,
+    kindCode: row.kindCode,
+    categoryId: row.categoryId,
+    barcode: row.barcode,
+    modelCode: row.modelCode,
     customsCode: row.customsCode,
     attributes: (row.attributes ?? []) as AttributeDef[],
     createdAt: row.createdAt,
@@ -49,11 +57,29 @@ export class DeviceModelsRepository {
     return row ? toView(row) : null;
   }
 
+  /** True when the given stock kind exists and is active (IMEI/SERIAL/QUANTITY). */
+  async kindIsActive(code: string): Promise<boolean> {
+    const row = await this.prisma.productKind.findUnique({
+      where: { code },
+      select: { isActive: true },
+    });
+    return row?.isActive ?? false;
+  }
+
+  /** How many units a model has — guards changing its kind once stocked. */
+  countUnits(modelId: string): Promise<number> {
+    return this.prisma.device.count({ where: { modelId } });
+  }
+
   async create(input: DeviceModelInput): Promise<DeviceModelView> {
     const row = await this.prisma.deviceModel.create({
       data: {
         brand: input.brand,
         name: input.name,
+        kindCode: input.kindCode,
+        categoryId: input.categoryId ?? null,
+        barcode: input.barcode ?? null,
+        modelCode: input.modelCode ?? null,
         customsCode: input.customsCode ?? null,
         attributes: input.attributes as unknown as Prisma.InputJsonValue,
       },
@@ -68,6 +94,10 @@ export class DeviceModelsRepository {
         brand: patch.brand,
         name: patch.name,
         isActive: patch.isActive,
+        kindCode: patch.kindCode,
+        categoryId: patch.categoryId,
+        barcode: patch.barcode,
+        modelCode: patch.modelCode,
         customsCode: patch.customsCode,
         attributes:
           patch.attributes === undefined

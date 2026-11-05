@@ -3,8 +3,9 @@ import { DeviceView } from '../types/device.types.js';
 /** Structural shape of a scalar device row — avoids importing generated types. */
 export interface DeviceScalarRow {
   id: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
   shipmentId: string;
   modelId: string;
   specs: unknown;
@@ -27,6 +28,7 @@ export function toDeviceView(row: DeviceScalarRow): DeviceView {
     id: row.id,
     imei: row.imei,
     imei2: row.imei2,
+    serialNumber: row.serialNumber,
     shipmentId: row.shipmentId,
     modelId: row.modelId,
     specs: (row.specs ?? {}) as Record<string, unknown>,
