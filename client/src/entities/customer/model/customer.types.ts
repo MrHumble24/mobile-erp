@@ -10,6 +10,8 @@ export interface CustomerView {
   standingDiscountPercent: string
   /** This customer's own credit ceiling (2-dp string); null = use the default. ADR 0035. */
   creditLimit: string | null
+  /** Loyalty points (2-dp string) on `/customers/lookup`; null while bonus is off. */
+  bonusBalance: string | null
 }
 
 /** A customer with purchase aggregates derived server-side from their sales. */

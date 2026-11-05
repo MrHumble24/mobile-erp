@@ -17,6 +17,7 @@ import { CustomerPurchaseList } from "./CustomerPurchaseList"
 import { CustomerCreditsList } from "./CustomerCreditsList"
 import { CustomerBoughtList } from "./CustomerBoughtList"
 import { CustomerRepairsList } from "./CustomerRepairsList"
+import { CustomerBonusPanel } from "./CustomerBonusPanel"
 
 function levelLabel(code: string, t: (k: string) => string): string {
   if (code === "WHOLESALE") return t("pricing.levelWholesale")
@@ -36,9 +37,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 function DetailBody({
   customerId,
   onEdit,
+  canAdjustBonus,
 }: {
   customerId: string
   onEdit: (customer: CustomerView) => void
+  canAdjustBonus: boolean
 }) {
   const { t } = useI18n()
   const canManage = useAuthStore((s) => s.hasPermission("customer.manage"))
@@ -86,6 +89,8 @@ function DetailBody({
           {customer.notes}
         </div>
       )}
+
+      <CustomerBonusPanel customerId={customerId} canAdjust={canAdjustBonus} />
 
       <CustomerRelations customer={customer} canReadPurchases={canReadPurchases} />
     </div>
@@ -150,11 +155,13 @@ export function CustomerDetailSheet({
   open,
   onOpenChange,
   onEdit,
+  canAdjustBonus,
 }: {
   customerId: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onEdit: (customer: CustomerView) => void
+  canAdjustBonus: boolean
 }) {
   const { t } = useI18n()
   return (
@@ -164,7 +171,13 @@ export function CustomerDetailSheet({
           <SheetTitle>{t("customers.detailTitle")}</SheetTitle>
           <SheetDescription>{t("customers.detailHint")}</SheetDescription>
         </SheetHeader>
-        {customerId && <DetailBody customerId={customerId} onEdit={onEdit} />}
+        {customerId && (
+          <DetailBody
+            customerId={customerId}
+            onEdit={onEdit}
+            canAdjustBonus={canAdjustBonus}
+          />
+        )}
       </SheetPopup>
     </Sheet>
   )

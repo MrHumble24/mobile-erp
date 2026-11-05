@@ -23,6 +23,7 @@ interface FormState {
 export function CustomersPage() {
   const { t } = useI18n()
   const canManage = useAuthStore((s) => s.hasPermission("customer.manage"))
+  const canAdjustBonus = useAuthStore((s) => s.hasPermission("bonus.adjust"))
   const filters = useCustomerFilters()
   const { data, isLoading } = useCustomerList(filters.queryFilters)
 
@@ -104,6 +105,7 @@ export function CustomersPage() {
         open={Boolean(detailId)}
         onOpenChange={(open) => !open && setDetailId(null)}
         onEdit={(customer) => setForm({ open: true, customer })}
+        canAdjustBonus={canAdjustBonus}
       />
     </div>
   )
