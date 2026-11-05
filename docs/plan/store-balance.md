@@ -633,6 +633,14 @@ Decisions taken while the user slept:
 - Customs fee: the Excel upload is **not** built until the client's
   file arrives (the plan already says so). The fee list can be typed
   in by hand meanwhile.
+- Tax receipts (Change 15): no switch is added. The plan says nothing
+  is designed until a shop asks; a switch that does nothing would only
+  confuse.
+- Bonus points: one point is one unit of money. The shop sets how much
+  of a payment comes back as points and how much of a sale may be paid
+  with points. Points are spent online only.
+- A trade-in on a sale: when that sale is returned, the traded-in
+  phone stays with the shop and its value is paid back in cash.
 
 Progress (updated as each step lands):
 
@@ -651,7 +659,8 @@ Progress (updated as each step lands):
 | 7 Customer credit without interest | merged (`437f412`, 423 tests), walk-through matched its arithmetic; no interest, late-fee or penalty field anywhere. One bug found in the browser and fixed (`822c6de`): the down payment was counted as paying the first part of the plan | merged (`4dacafc`); in a browser: a cable sold on credit (10,000 down, two parts of 10,000), a payment taken, the contract page and the report tab seen. Two fixes (`d9e66b7`): the cart line stays visible on a short screen, and new permissions load without signing out | building | building | ADR 0035. Change 6. A setting, off by default, with its own permission and a credit limit. Online only. Returning goods bought on credit lowers the debt; no cash is handed back by the return itself. |
 | 8 Shifts | merged (`53c42d1`, 445 tests), walk-through matched its arithmetic (expected 11,500,000, counted 11,480,000, difference −20,000 posted) | merged (`a514688`); in a browser: shift opened with 500,000, two cash sales of 30,000, expected 560,000, counted 550,000, difference −10,000 on the report and in the list. Two fixes (`38d23bf`): the close dialog showed the expected cash from before the last sales; the till catalog did not refresh stock after a sale | building | building | ADR 0036. Change 11. A setting, off by default. One shift per cashier; the closing difference is posted to the balance. While the setting is on, a sale without an open shift is refused; offline sales sent later are let through. |
 | 9 Buying phones from customers, trade-in | merged (`20b9233`, 465 tests), walk-through matched its arithmetic. One fix (`2078adf`): when a sale with a trade-in is returned, the trade-in part is paid back in cash, not from the card account | merged (`e604e59`); in a browser: the Purchases page and the Buy a phone dialog seen; a trade-in added to the till cart lowered the amount to pay (6,500,000 − 1,000,000 = 5,500,000). The sale itself was checked by the builder against the server; a click-through sale is still to do | after server | after server | ADR 0039. Change 14. No passport data anywhere: name and phone only. A phone we sold before cannot be bought back yet (its IMEI is already in the system); to add later. Online only. |
-| 10 Repairs | building | after server | after server | after server | Change 13. A setting, off by default. |
+| 10 Repairs | merged (`86293fc`, 495 tests), walk-through matched its arithmetic (ticket 500,000, parts 60,000, profit 440,000; outside master 150,000 paid out) | building | after server | after server | ADR 0040. Change 13. A setting, off by default. Own or outside master, parts from stock, deposit and final payment, warranty typed on each ticket. No passcode or ID document is stored. |
+| 11 Bonus points, printing switches, buying back a phone we sold | building | after server | after server | after server | Bonus points and printing are switches, off by default. Buying back closes the gap noted in step 9. |
 
 Security check of the balance ledger (2026-11-05, read-only): no
 critical problems. Two serious ones, both being fixed on the server
