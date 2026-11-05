@@ -23,6 +23,7 @@ enum FeatureRegistry {
         PartnersModule.feature,
         CustomersModule.feature,
         ExpensesModule.feature,
+        BalanceModule.feature,
         ReportsModule.feature,
         UsersModule.feature,
         SettingsModule.feature,
