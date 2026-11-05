@@ -33,7 +33,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
   return (
     <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
       <div className="space-y-2 text-sm">
-        <SummaryRow label={t("pos.lineCount")} value={String(lines.length)} />
+        <SummaryRow label={t("pos.lineCount", { count: lines.length })} value="" />
         <SummaryRow label={t("pricing.listPrice")} value={formatMoney(totals.listTotal)} />
         {totals.discountTotal > 0 && (
           <SummaryRow

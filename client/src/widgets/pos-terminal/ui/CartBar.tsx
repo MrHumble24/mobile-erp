@@ -33,7 +33,7 @@ export function CartBar({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
           <ShoppingCart className="size-5 shrink-0 text-primary" />
           <span className="truncate">
             <span className="text-xs text-muted-foreground">
-              {t("pos.lineCount")}: {lines.length}
+              {t("pos.lineCount", { count: lines.length })}
             </span>
             <span className="block text-base font-bold">{formatMoney(totals.dueTotal)}</span>
           </span>

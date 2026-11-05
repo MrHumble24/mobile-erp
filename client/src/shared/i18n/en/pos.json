@@ -42,7 +42,7 @@
   "quickRound": "round $10",
   "removeLine": "Remove device",
   "lineDetails": "Line details",
-  "lineCount": "Devices",
+  "lineCount": "{count} items",
   "subtotal": "Subtotal",
   "warrantySummary": "Warranty",
   "warrantyCount": "{count} with warranty",
