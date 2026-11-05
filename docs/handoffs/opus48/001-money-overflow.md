@@ -1,6 +1,6 @@
 # 001 — Website: money amounts overflow their boxes
 
-Status: open · Owner: Claude Opus 4.8 (`opus48` agent) · Asked by the user on 2026-11-06
+Status: merged · Owner: Claude Opus 4.8 (`opus48` agent) · Asked by the user on 2026-11-06
 
 ## Why
 Prices in this shop are in the millions and tens of millions. On almost every page of the website
@@ -102,3 +102,14 @@ You must look at the pages in a browser; a build that passes proves nothing here
   (metric cards reach the 0.4 shrink floor before it would trigger for in-spec amounts).
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Tests, lint and build pass. With every amount made 1000 times
+  bigger (11 digits plus cents): dashboard, reports and balance seen at 768; nine routes measured
+  at 390 through a same-origin frame (`/`, reports, balance, sales, expenses, customers,
+  inventory, credits, shipments): no sideways scroll, nothing spilling; reports seen at 390.
+- Removed by Claude after the builder's commit: the `Money` component and `formatMoneyShort`.
+  Nothing used them (`MetricCard` shrinks on its own and never reaches the floor), so they were
+  dead code; the handoff had asked for them, which was the handoff's mistake. ADR 0048 and the
+  docs say so.
+- The browser window would not go below 768 wide here, so the builder's "seen at 390" was
+  re-measured in a 390px frame rather than taken on trust.
+- Not checked by Claude: the till at narrow widths with stress values; every dialog.

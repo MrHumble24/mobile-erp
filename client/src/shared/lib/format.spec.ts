@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { formatMoney, formatMoneyShort } from "./format.ts"
+import { formatMoney } from "./format.ts"
 
 test("formatMoney: exact figure, cents only when present, nullish → -", () => {
   assert.equal(formatMoney(1250), "$1,250")
@@ -11,11 +11,4 @@ test("formatMoney: exact figure, cents only when present, nullish → -", () => 
   assert.equal(formatMoney(null), "-")
   assert.equal(formatMoney(""), "-")
   assert.equal(formatMoney("nope"), "-")
-})
-
-test("formatMoneyShort: compact last-resort form, nullish → -", () => {
-  assert.equal(formatMoneyShort(19050000), "$19.05M")
-  assert.equal(formatMoneyShort(9999999999.99), "$10B")
-  assert.equal(formatMoneyShort(null), "-")
-  assert.equal(formatMoneyShort("bad"), "-")
 })

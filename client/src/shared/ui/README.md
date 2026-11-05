@@ -3,8 +3,8 @@
 Caldera design system primitives for the mobile retail ERP client.
 
 ## What it owns
-- Generic, business-agnostic UI primitives: Button, Input, BarcodeInput, Select, Combobox, Textarea, Checkbox, Switch, Dialog, Sheet, DropdownMenu, Table, Badge, Card, MetricCard, Money, Tabs, Form, Sonner (Toast), Skeleton, Separator, Tooltip, Command, Popover, ScrollArea, AssetImage, FilePicker.
-- `Money`: the one place money layout rules live. `{ value, headline?, className }`. Default renders the exact `formatMoney` figure on one non-wrapping tabular line (tables, receipts, forms, lists). `headline` shrinks to fit (via `shared/lib/hooks/use-fit-text`) and, only past the legible floor, falls back to `formatMoneyShort` with the exact amount in a tooltip. `TableCell` and `MetricCard` already apply these rules at the root. See ADR 0048.
+- Generic, business-agnostic UI primitives: Button, Input, BarcodeInput, Select, Combobox, Textarea, Checkbox, Switch, Dialog, Sheet, DropdownMenu, Table, Badge, Card, MetricCard, Tabs, Form, Sonner (Toast), Skeleton, Separator, Tooltip, Command, Popover, ScrollArea, AssetImage, FilePicker.
+- Money layout: `TableCell` (one non-wrapping tabular line) and `MetricCard` (the value shrinks to fit, via `shared/lib/hooks/use-fit-text`) apply the rules at the root. See ADR 0048.
 - `AssetImage`: the single wrapped `<img>`. Props `{ path, alt, className, iconClassName }`; resolves a server-relative `/uploads/...` path against the API base (`shared/api/http`'s `apiAssetUrl`) and shows a neutral icon placeholder when `path` is null.
 - `FilePicker`: the single wrapped file `<input>`. Props `{ accept, disabled, onPick, children }`; a single trigger child (e.g. a Button) opens the native picker and `onPick(file)` fires with the chosen file.
 - `Combobox`: single-value searchable select (Popover + cmdk). Props `{ value, onChange, options, placeholder, searchPlaceholder, emptyText, disabled, className, allowCreate?, onCreate? }`. Trigger mirrors `SelectTrigger`; closes on select, clears the query on Escape/close.
