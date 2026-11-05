@@ -37,9 +37,11 @@ export function assertRefundWithinSale(
 
 /**
  * How a refund is spread across accounts: in proportion to the sale's SALE
- * rows, remainder on the largest part. A sale with no SALE rows (pre-ledger or
- * a consignment settle) refunds from CASH. Returns positive magnitudes; the
- * repository posts them as negative REFUND rows.
+ * rows, remainder on the largest part. No account pays back more than it took
+ * in: what is above the money paid (a trade-in's value, ADR 0039) is handed
+ * back in cash. A sale with no SALE rows (pre-ledger or a consignment settle)
+ * refunds from CASH. Returns positive magnitudes; the repository posts them as
+ * negative REFUND rows.
  */
 export function buildRefundPostings(
   refundAmount: number,
@@ -47,7 +49,18 @@ export function buildRefundPostings(
 ): SalePayment[] {
   const total = new Prisma.Decimal(refundAmount);
   if (total.isZero()) return [];
-  const split = proportionalSplit(total, saleNets);
-  if (split.length > 0) return split;
-  return [{ accountCode: 'CASH', amount: total }];
+  const paid = saleNets.reduce(
+    (sum, n) => sum.plus(n.amount),
+    new Prisma.Decimal(0),
+  );
+  const fromAccounts = total.greaterThan(paid) ? paid : total;
+  const split = proportionalSplit(fromAccounts, saleNets);
+  if (split.length === 0) return [{ accountCode: 'CASH', amount: total }];
+
+  const extra = total.minus(fromAccounts);
+  if (extra.isZero()) return split;
+  const cash = split.find((p) => p.accountCode === 'CASH');
+  if (cash) cash.amount = cash.amount.plus(extra);
+  else split.push({ accountCode: 'CASH', amount: extra });
+  return split;
 }

@@ -44,7 +44,8 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   (409 if already returned). The refund is capped at the sale's net `SALE` total
   (or `salePrice` for a pre-ledger sale) — 400 above it (ADR 0028). `REFUND` rows
   (money out) post in proportion to the sale's `SALE` rows (remainder on the
-  largest part); a sale with no ledger rows refunds from CASH. ADR 0025. A
+  largest part), never more per account than it took in; a trade-in's value
+  and a sale with no ledger rows refund from CASH. ADR 0025. A
   **quantity** sale return restores the whole line: a `RETURN` stock movement at
   the sale's own unit cost (`landedCostSnapshot ÷ quantity`); no device moves.
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields). Carries

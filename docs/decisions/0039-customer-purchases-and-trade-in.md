@@ -38,7 +38,8 @@ slept, so the recommended option is taken and recorded here.
   move by exactly the tender. A trade-in total above the sale price is refused
   (400 `TRADE_IN_EXCEEDS_SALE`). A customer is required.
 - **Returns:** the traded-in phone stays ours (its purchase is never undone);
-  the refund cap becomes net SALE rows + Σ trade-in values (ADR 0028 extended).
+  the refund cap becomes net SALE rows + Σ trade-in values (ADR 0028 extended);
+  the trade-in part of a refund is paid back in cash.
 - Online only: trade-ins are refused on the sync replay path and on credit
   (credit lines carry no `tradeIns` field; `forbidNonWhitelisted` rejects it).
 - Permissions `purchase.create` + `purchase.read` (ADMIN only, seeded in the
