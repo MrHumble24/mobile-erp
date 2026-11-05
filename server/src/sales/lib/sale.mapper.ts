@@ -79,5 +79,6 @@ export function toReceiptView(row: SaleRow): ReceiptView {
     customer: row.customer
       ? { name: row.customer.name, phone: row.customer.phone }
       : undefined,
+    payments: [], // filled by the service from the sale's SALE ledger rows
   };
 }

@@ -94,6 +94,15 @@ export class LedgerService {
     return accounts.map((a) => a.code);
   }
 
+  /**
+   * Active accounts (code + label, in sortOrder, no amounts) for the checkout /
+   * expense / payment pickers — readable by any signed-in user, no permission.
+   */
+  async listAccounts(): Promise<{ accountCode: string; label: string }[]> {
+    const accounts = await this.repo.listAccounts();
+    return accounts.map((a) => ({ accountCode: a.code, label: a.label }));
+  }
+
   /** Per-account SALE nets for each sale (positive = money taken in). */
   salePayments(saleIds: string[]): Promise<Map<string, AccountNet[]>> {
     return this.sourceNets('saleId', ['SALE'], saleIds);

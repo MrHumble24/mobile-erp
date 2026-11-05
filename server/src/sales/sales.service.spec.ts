@@ -141,6 +141,31 @@ describe('SalesService.create', () => {
   });
 });
 
+describe('SalesService.receipt', () => {
+  it('attaches the sale payments from its SALE ledger rows', async () => {
+    const svc = build({
+      receipt: jest.fn().mockResolvedValue({ saleId: 'sale-1', payments: [] }),
+    });
+    svc.ledger.salePayments.mockResolvedValue(
+      new Map([
+        ['sale-1', [{ accountCode: 'CARD', amount: new Prisma.Decimal(500) }]],
+      ]),
+    );
+    const receipt = await svc.service.receipt('sale-1');
+    expect(receipt.payments).toEqual([
+      { accountCode: 'CARD', amount: new Prisma.Decimal(500) },
+    ]);
+  });
+
+  it('returns [] payments when the sale has no ledger rows', async () => {
+    const svc = build({
+      receipt: jest.fn().mockResolvedValue({ saleId: 'sale-1', payments: [] }),
+    });
+    const receipt = await svc.service.receipt('sale-1');
+    expect(receipt.payments).toEqual([]);
+  });
+});
+
 describe('SalesService.processReturn refund cap', () => {
   const ret = (refundAmount: number) =>
     ({ refundAmount, deviceToStatusCode: 'IN_STOCK' }) as never;

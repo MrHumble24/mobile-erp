@@ -62,6 +62,22 @@ describe('LedgerService.getBalances', () => {
   });
 });
 
+describe('LedgerService.listAccounts', () => {
+  it('returns active accounts as {accountCode,label}, no amounts', async () => {
+    const { service } = build({
+      listAccounts: jest.fn().mockResolvedValue([
+        { code: 'CASH', label: 'Cash' },
+        { code: 'CARD', label: 'Card' },
+      ]),
+    });
+    const result = await service.listAccounts();
+    expect(result).toEqual([
+      { accountCode: 'CASH', label: 'Cash' },
+      { accountCode: 'CARD', label: 'Card' },
+    ]);
+  });
+});
+
 describe('LedgerService.digestBalances', () => {
   it('returns opening (before the day start) and closing (now) per account', async () => {
     const dayStart = new Date('2026-11-05T00:00:00.000Z');

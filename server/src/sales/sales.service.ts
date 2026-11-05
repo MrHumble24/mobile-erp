@@ -169,7 +169,8 @@ export class SalesService {
   async receipt(id: string): Promise<ReceiptView> {
     const receipt = await this.reads.receipt(id);
     if (!receipt) throw new NotFoundException(`Sale ${id} not found`);
-    return receipt;
+    const payments = (await this.ledger.salePayments([id])).get(id) ?? [];
+    return { ...receipt, payments };
   }
 
   async processReturn(

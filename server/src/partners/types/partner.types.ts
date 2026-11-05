@@ -55,6 +55,8 @@ export interface LedgerEntry {
   runningBalance: Prisma.Decimal;
   statusCode: string | null;
   notes: string | null;
+  /** Payment entries only: the account the payment landed in; null if pre-ledger. */
+  accountCode?: string | null;
 }
 
 export interface CreatePartnerInput {

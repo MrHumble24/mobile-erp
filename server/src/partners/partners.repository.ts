@@ -197,7 +197,15 @@ export class PartnersRepository {
         select: { id: true, amount: true, paidAt: true, notes: true },
       }),
     ]);
-    return buildLedger(consignments, payments);
+    const entries = buildLedger(consignments, payments);
+    const accounts = await this.ledgerService.partnerPaymentAccounts(
+      payments.map((p) => p.id),
+    );
+    return entries.map((e) =>
+      e.kind === 'payment'
+        ? { ...e, accountCode: accounts.get(e.refId) ?? null }
+        : e,
+    );
   }
 }
 

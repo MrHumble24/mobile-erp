@@ -33,10 +33,13 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   remainingDays, latestInspection{grade,notes}|null, alreadyReturned }`.
 - `POST /sales/:id/return` (`sale.return`) `{ refundAmount, reason?,
   deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView`
-  (409 if already returned). `REFUND` rows (money out) post in proportion to the
-  sale's `SALE` rows (remainder on the largest part); a sale with no ledger rows
-  refunds from CASH. ADR 0025.
-- `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields at all).
+  (409 if already returned). The refund is capped at the sale's net `SALE` total
+  (or `salePrice` for a pre-ledger sale) — 400 above it (ADR 0028). `REFUND` rows
+  (money out) post in proportion to the sale's `SALE` rows (remainder on the
+  largest part); a sale with no ledger rows refunds from CASH. ADR 0025.
+- `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields). Carries
+  `payments: [{ accountCode, amount }]` (the SALE rows; `[]` when none) so a
+  printed receipt can show the cash and card parts.
 
 `SaleView` = `{ id, device{imei,imei2,model{brand,name},specs}, customer, salePrice,
 landedCostSnapshot, netProfit, soldAt, soldBy{id,name}, warranty, consignmentId, notes,

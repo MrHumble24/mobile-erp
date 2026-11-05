@@ -18,6 +18,9 @@ payments / purchases / overhead post rows automatically.
 
 ## Exposes
 
+- `GET /ledger/accounts` — active accounts `[{ accountCode, label }]` in
+  `sortOrder`, no amounts. **Any signed-in user** (no permission): the checkout /
+  expense / payment pickers need it without `balance.read`.
 - `GET /ledger/balances` — per-account balance + total, as **decimal strings**
   summed in exact `Decimal` (`balance.read`).
 - `GET /ledger/transactions` — history, newest first, paginated, filter by
