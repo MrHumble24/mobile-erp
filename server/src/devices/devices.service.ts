@@ -68,6 +68,11 @@ export class DevicesService {
       }
     }
     if (dto.imei2) {
+      if (!device.imei) {
+        throw new BadRequestException(
+          'A serial unit cannot carry a second IMEI',
+        );
+      }
       if (dto.imei2 === device.imei) {
         throw new BadRequestException('imei2 must differ from imei');
       }

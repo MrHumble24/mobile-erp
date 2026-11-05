@@ -28,7 +28,11 @@ export class ReportsReturnsRepository {
           reason: true,
           returnedAt: true,
           sale: {
-            select: { device: { select: { imei: true, model: true } } },
+            select: {
+              device: {
+                select: { imei: true, serialNumber: true, model: true },
+              },
+            },
           },
           processedBy: { select: { profile: true } },
         },
@@ -44,7 +48,13 @@ type RawReturn = {
   refundAmount: Prisma.Decimal;
   reason: string | null;
   returnedAt: Date;
-  sale: { device: { imei: string; model: { brand: string; name: string } } };
+  sale: {
+    device: {
+      imei: string | null;
+      serialNumber: string | null;
+      model: { brand: string; name: string };
+    };
+  };
   processedBy: {
     profile: { firstName: string; lastName: string | null } | null;
   };
@@ -55,7 +65,7 @@ function toReturnRow(r: RawReturn): ReturnRow {
   return {
     id: r.saleId,
     saleId: r.saleId,
-    imei: r.sale.device.imei,
+    imei: r.sale.device.imei ?? r.sale.device.serialNumber ?? '',
     model: `${r.sale.device.model.brand} ${r.sale.device.model.name}`,
     refundAmount: Number(r.refundAmount),
     reason: r.reason,

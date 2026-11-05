@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { resolveUnitCode } from '../devices/lib/unit-code.js';
 import { PartnersService } from '../partners/partners.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
@@ -57,13 +58,14 @@ export class ConsignmentsService {
       );
       if (existing) return existing;
     }
+    const code = resolveUnitCode(dto);
     const agreedPrice = new Prisma.Decimal(dto.agreedPrice);
     // ponytail: credit check reads balance outside the write txn; a concurrent
     // transfer could briefly overshoot the limit. Acceptable at bazaar scale.
     await this.partners.assertWithinCreditLimit(dto.partnerId, agreedPrice);
     const view = await this.writes.createTransfer({
       storeId: await this.stores.currentStoreId(),
-      imei: dto.imei,
+      code,
       partnerId: dto.partnerId,
       agreedPrice,
       dueDate: new Date(dto.dueDate),
@@ -77,7 +79,7 @@ export class ConsignmentsService {
       TelegramEvents.consignmentCreated,
       new ConsignmentCreatedEvent(
         partner.shopName,
-        view.imei,
+        view.imei ?? view.serialNumber ?? '',
         Number(view.agreedPrice),
         view.dueDate,
       ),

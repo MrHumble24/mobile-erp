@@ -12,6 +12,7 @@ import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
+import { normalizeSerial } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
@@ -91,6 +92,7 @@ export class ShipmentsService {
   ): Promise<RegisteredDeviceView[]> {
     const shipment = await this.require(id);
     const models = await this.loadModels(dto.devices);
+    this.assertKindRules(dto.devices, models);
     this.assertSpecs(dto.devices, models);
     this.assertExpensePermission(dto.devices, user);
     const inputs = await this.stampCustomsFees(dto.devices, models);
@@ -110,13 +112,63 @@ export class ShipmentsService {
     devices: RegisterDeviceDto[],
     models: DeviceModelView[],
   ): Promise<RegisterDeviceInput[]> {
-    const codeByModel = new Map(models.map((m) => [m.id, m.customsCode]));
+    const byModel = new Map(models.map((m) => [m.id, m]));
     const feeByCode = await this.customs.currentFeeMap();
     return devices.map((d) => {
-      const code = codeByModel.get(d.modelId) ?? null;
+      const model = byModel.get(d.modelId)!;
+      const code = model.customsCode;
       const customsFee = code ? (feeByCode.get(code) ?? 0) : 0;
-      return { ...d, customsFee };
+      return {
+        ...d,
+        kindCode: model.kindCode,
+        serialNumber: d.serialNumber
+          ? normalizeSerial(d.serialNumber)
+          : undefined,
+        customsFee,
+      };
     });
+  }
+
+  /**
+   * Per-kind intake rules (kind comes from the model, ADR 0029):
+   * QUANTITY is not stocked as a unit; an IMEI unit needs an `imei` and no
+   * `serialNumber`; a SERIAL unit needs a `serialNumber` and no `imei`/`imei2`.
+   */
+  private assertKindRules(
+    devices: RegisterDeviceDto[],
+    models: DeviceModelView[],
+  ): void {
+    const kindById = new Map(models.map((m) => [m.id, m.kindCode]));
+    for (const d of devices) {
+      const kind = kindById.get(d.modelId);
+      if (kind === 'QUANTITY') {
+        throw new BadRequestException(
+          'Quantity products are not stocked as units; use quantity stock',
+        );
+      }
+      if (kind === 'SERIAL') {
+        if (!d.serialNumber) {
+          throw new BadRequestException(
+            'A serial product requires a serialNumber',
+          );
+        }
+        if (d.imei || d.imei2) {
+          throw new BadRequestException(
+            'A serial product must not carry an IMEI',
+          );
+        }
+      } else {
+        // IMEI kind (default).
+        if (!d.imei) {
+          throw new BadRequestException('An IMEI product requires an imei');
+        }
+        if (d.serialNumber) {
+          throw new BadRequestException(
+            'An IMEI product must not carry a serialNumber',
+          );
+        }
+      }
+    }
   }
 
   private async register(
@@ -167,7 +219,7 @@ export class ShipmentsService {
     const attrsById = new Map(models.map((m) => [m.id, m.attributes]));
     const problems = devices.flatMap((d) =>
       validateSpecs(attrsById.get(d.modelId) ?? [], d.specs).map((p) => ({
-        imei: d.imei,
+        imei: d.imei ?? d.serialNumber ?? null,
         ...p,
       })),
     );

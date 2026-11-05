@@ -9,9 +9,10 @@ export const inspectionListInclude = {
         id: true,
         imei: true,
         imei2: true,
+        serialNumber: true,
         modelId: true,
         statusCode: true,
-        model: { select: { brand: true, name: true } },
+        model: { select: { brand: true, name: true, kindCode: true } },
       },
     },
     inspectedBy: {
@@ -39,11 +40,12 @@ interface InspectionRow {
 export interface InspectionListRow extends InspectionRow {
   device: {
     id: string;
-    imei: string;
+    imei: string | null;
     imei2: string | null;
+    serialNumber: string | null;
     modelId: string;
     statusCode: string;
-    model: { brand: string; name: string };
+    model: { brand: string; name: string; kindCode: string };
   };
   inspectedBy: {
     id: string;
@@ -77,6 +79,7 @@ export function toInspectionListItem(
       id: row.device.id,
       imei: row.device.imei,
       imei2: row.device.imei2,
+      serialNumber: row.device.serialNumber,
       modelId: row.device.modelId,
       model: row.device.model,
       statusCode: row.device.statusCode,

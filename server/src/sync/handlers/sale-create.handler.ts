@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { resolveUnitCode } from '../../devices/lib/unit-code.js';
 import { CreateSaleDto } from '../../sales/dto/create-sale.dto.js';
 import { SalesService } from '../../sales/sales.service.js';
 import { SyncRepository } from '../sync.repository.js';
@@ -25,6 +26,6 @@ export class SaleCreateHandler implements SyncHandler<CreateSaleDto> {
   }
 
   deviceId(dto: CreateSaleDto): Promise<string | null> {
-    return this.repo.deviceIdByImei(dto.imei);
+    return this.repo.deviceIdByCode(resolveUnitCode(dto));
   }
 }

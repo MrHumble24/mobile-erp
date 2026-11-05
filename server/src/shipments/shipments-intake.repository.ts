@@ -35,7 +35,7 @@ export class ShipmentsIntakeRepository {
     storeId: string,
   ): Promise<RegisteredDeviceView[]> {
     return this.prisma.$transaction(async (tx) => {
-      await this.assertImeisFree(tx, inputs);
+      await this.assertIdentifiersFree(tx, inputs);
       const shipment = await tx.shipment.findUniqueOrThrow({
         where: { id: shipmentId },
         select: { storeId: true, paymentAccountCode: true },
@@ -93,6 +93,32 @@ export class ShipmentsIntakeRepository {
   }
 
   /**
+   * Rejects a serial that collides within the batch or against an existing
+   * unit. Serials are already normalised (upper-cased) by the service.
+   */
+  private async assertSerialsFree(
+    tx: Tx,
+    inputs: RegisterDeviceInput[],
+  ): Promise<void> {
+    const serials = inputs
+      .map((d) => d.serialNumber)
+      .filter((s): s is string => !!s);
+    if (serials.length === 0) return;
+    if (new Set(serials).size !== serials.length) {
+      throw new ConflictException('Duplicate serial number within the batch');
+    }
+    const clash = await tx.device.findFirst({
+      where: { serialNumber: { in: serials } },
+      select: { serialNumber: true },
+    });
+    if (clash) {
+      throw new ConflictException(
+        'A unit with this serial number already exists',
+      );
+    }
+  }
+
+  /**
    * One ledger row per cost that left the store at intake, all from the
    * shipment's account: PURCHASE (supplier price), CUSTOMS (stamped fee) and
    * DEVICE_EXPENSE (per-phone expense). Each posts only when > 0.
@@ -137,7 +163,7 @@ export class ShipmentsIntakeRepository {
    * own imei/imei2, or against either IMEI column of an existing device. The
    * single-column unique indexes cannot see cross-column clashes on their own.
    */
-  private async assertImeisFree(
+  private async assertIdentifiersFree(
     tx: Tx,
     inputs: RegisterDeviceInput[],
   ): Promise<void> {
@@ -148,19 +174,22 @@ export class ShipmentsIntakeRepository {
           `imei2 must differ from imei (${d.imei})`,
         );
       }
-      values.push(d.imei);
+      if (d.imei) values.push(d.imei);
       if (d.imei2) values.push(d.imei2);
     }
-    if (new Set(values).size !== values.length) {
-      throw new ConflictException('Duplicate IMEI within the batch');
+    if (values.length > 0) {
+      if (new Set(values).size !== values.length) {
+        throw new ConflictException('Duplicate IMEI within the batch');
+      }
+      const clash = await tx.device.findFirst({
+        where: { OR: [{ imei: { in: values } }, { imei2: { in: values } }] },
+        select: { imei: true },
+      });
+      if (clash) {
+        throw new ConflictException('A device with this IMEI already exists');
+      }
     }
-    const clash = await tx.device.findFirst({
-      where: { OR: [{ imei: { in: values } }, { imei2: { in: values } }] },
-      select: { imei: true },
-    });
-    if (clash) {
-      throw new ConflictException('A device with this IMEI already exists');
-    }
+    await this.assertSerialsFree(tx, inputs);
   }
 }
 
@@ -172,8 +201,9 @@ function deviceData(
   userId: string,
 ): Prisma.DeviceUncheckedCreateInput {
   return {
-    imei: input.imei,
+    imei: input.imei ?? null,
     imei2: input.imei2 ?? null,
+    serialNumber: input.serialNumber ?? null,
     storeId,
     shipmentId,
     modelId: input.modelId,
@@ -200,9 +230,11 @@ function toRegisteredView(
 ): RegisteredDeviceView {
   return {
     id: device.id,
-    imei: input.imei,
+    imei: input.imei ?? null,
     imei2: input.imei2 ?? null,
+    serialNumber: input.serialNumber ?? null,
     modelId: input.modelId,
+    kindCode: input.kindCode,
     acquisitionCost: new Prisma.Decimal(input.acquisitionCost).toFixed(2),
     customsFee: new Prisma.Decimal(customsFee).toFixed(2),
     unitExpense: new Prisma.Decimal(unitExpense).toFixed(2),

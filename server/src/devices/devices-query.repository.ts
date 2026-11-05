@@ -3,6 +3,7 @@ import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toDeviceView } from './lib/device-view.mapper.js';
 import { anyImeiWhere } from './lib/imei.js';
+import { unitCodeWhere } from './lib/unit-code.js';
 import {
   DeviceDetailView,
   DeviceFilters,
@@ -68,11 +69,13 @@ export class DevicesQueryRepository {
     return row ? toDeviceView(row) : null;
   }
 
-  async findDetailByImei(imei: string): Promise<DeviceDetailView | null> {
+  async findDetailByImei(code: string): Promise<DeviceDetailView | null> {
     const row = await this.prisma.device.findFirst({
-      where: anyImeiWhere(imei),
+      where: unitCodeWhere(code),
       include: {
-        model: { select: { id: true, brand: true, name: true } },
+        model: {
+          select: { id: true, brand: true, name: true, kindCode: true },
+        },
         status: { select: { code: true, label: true } },
         inspections: {
           orderBy: { inspectedAt: 'desc' },
@@ -139,8 +142,12 @@ function buildWhere(filters: DeviceFilters): Prisma.DeviceWhereInput {
     where.OR = [
       { imei: { contains: filters.search, mode: 'insensitive' } },
       { imei2: { contains: filters.search, mode: 'insensitive' } },
+      { serialNumber: { contains: filters.search, mode: 'insensitive' } },
       { model: { brand: { contains: filters.search, mode: 'insensitive' } } },
       { model: { name: { contains: filters.search, mode: 'insensitive' } } },
+      {
+        model: { modelCode: { contains: filters.search, mode: 'insensitive' } },
+      },
     ];
   }
   return where;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { anyImeiWhere } from '../devices/lib/imei.js';
+import { unitCodeWhere } from '../devices/lib/unit-code.js';
 import { buildSaleWhere } from './lib/sale-where.js';
 import { toReceiptView, toSaleView } from './lib/sale.mapper.js';
 import { remainingWarrantyDays } from './lib/warranty.js';
@@ -25,8 +25,9 @@ const saleSelect = {
     select: {
       imei: true,
       imei2: true,
+      serialNumber: true,
       specs: true,
-      model: { select: { brand: true, name: true } },
+      model: { select: { brand: true, name: true, kindCode: true } },
     },
   },
   customer: { select: { id: true, name: true, phone: true } },
@@ -143,7 +144,7 @@ export class SalesRepository {
     };
   }
 
-  findDeviceByImei(imei: string): Promise<{
+  findDeviceByImei(code: string): Promise<{
     id: string;
     statusCode: string;
     version: number;
@@ -151,7 +152,7 @@ export class SalesRepository {
     targetPrice: Prisma.Decimal | null;
   } | null> {
     return this.prisma.device.findFirst({
-      where: anyImeiWhere(imei),
+      where: unitCodeWhere(code),
       select: {
         id: true,
         statusCode: true,
@@ -200,15 +201,16 @@ export class SalesRepository {
     return row?.defaultWarrantyDays ?? 14;
   }
 
-  async warrantyLookup(imei: string): Promise<WarrantyLookupView | null> {
+  async warrantyLookup(code: string): Promise<WarrantyLookupView | null> {
     const sale = await this.prisma.sale.findFirst({
-      where: { device: anyImeiWhere(imei) },
+      where: { device: unitCodeWhere(code) },
       orderBy: { soldAt: 'desc' },
       select: {
         id: true,
         salePrice: true,
         soldAt: true,
         deviceId: true,
+        device: { select: { imei: true, serialNumber: true } },
         warranty: { select: { days: true, startsAt: true, endsAt: true } },
         return: { select: { saleId: true } },
       },
@@ -220,7 +222,8 @@ export class SalesRepository {
       select: { gradeCode: true, notes: true },
     });
     return {
-      imei,
+      imei: sale.device.imei,
+      serialNumber: sale.device.serialNumber,
       saleId: sale.id,
       purchasedAt: sale.soldAt,
       salePrice: sale.salePrice,

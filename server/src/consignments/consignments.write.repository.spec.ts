@@ -31,7 +31,7 @@ function build(tx: ReturnType<typeof makeTx>) {
 
 const transfer = {
   storeId: 'store-1',
-  imei: '123456789012345',
+  code: '123456789012345',
   partnerId: 'p1',
   agreedPrice: D(500),
   dueDate: new Date('2026-12-01'),
@@ -66,7 +66,12 @@ describe('ConsignmentsWriteRepository.createTransfer', () => {
       id: 'c1',
       partnerId: 'p1',
       deviceId: 'd1',
-      device: { imei: transfer.imei },
+      device: {
+        imei: transfer.code,
+        imei2: null,
+        serialNumber: null,
+        model: { kindCode: 'IMEI' },
+      },
       partner: { shopName: 'Shop A' },
       sale: null,
       agreedPrice: D(500),
@@ -154,7 +159,12 @@ describe('ConsignmentsWriteRepository.settle', () => {
       id: 'c1',
       partnerId: 'p1',
       deviceId: 'd1',
-      device: { imei: transfer.imei },
+      device: {
+        imei: transfer.code,
+        imei2: null,
+        serialNumber: null,
+        model: { kindCode: 'IMEI' },
+      },
       partner: { shopName: 'Shop A' },
       sale: null,
       agreedPrice: D(500),

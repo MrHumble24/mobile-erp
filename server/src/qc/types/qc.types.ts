@@ -19,10 +19,11 @@ export interface QcInspectionView {
 
 export interface InspectionDeviceRef {
   id: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
   modelId: string;
-  model: { brand: string; name: string };
+  model: { brand: string; name: string; kindCode: string };
   statusCode: string;
 }
 

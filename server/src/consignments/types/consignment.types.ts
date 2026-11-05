@@ -5,8 +5,10 @@ export interface ConsignmentView {
   partnerId: string;
   partnerShopName: string;
   deviceId: string;
-  imei: string;
+  imei: string | null;
   imei2: string | null;
+  serialNumber: string | null;
+  kindCode: string;
   agreedPrice: Prisma.Decimal;
   dueDate: Date;
   statusCode: string;
@@ -55,7 +57,8 @@ export interface ConsignmentFilters {
 
 export interface CreateTransferInput {
   storeId: string;
-  imei: string;
+  /** Resolved unit code (imei or normalised serial). */
+  code: string;
   partnerId: string;
   agreedPrice: Prisma.Decimal;
   dueDate: Date;

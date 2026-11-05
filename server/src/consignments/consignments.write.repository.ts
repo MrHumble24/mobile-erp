@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { anyImeiWhere } from '../devices/lib/imei.js';
+import { unitCodeWhere } from '../devices/lib/unit-code.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toConsignmentView, withImei } from './lib/consignment.mapper.js';
@@ -34,10 +34,10 @@ export class ConsignmentsWriteRepository {
 
   async createTransfer(input: CreateTransferInput): Promise<ConsignmentView> {
     return this.prisma.$transaction(async (tx) => {
-      const device = await this.loadDeviceByImei(tx, input.imei);
+      const device = await this.loadDeviceByCode(tx, input.code);
       if (device.statusCode !== 'IN_STOCK') {
         throw new ConflictException(
-          `Device ${input.imei} is ${device.statusCode}, not IN_STOCK`,
+          `Device ${input.code} is ${device.statusCode}, not IN_STOCK`,
         );
       }
       await this.moveDevice(tx, device, 'CONSIGNED', input.expectedVersion, {
@@ -100,12 +100,12 @@ export class ConsignmentsWriteRepository {
     });
   }
 
-  private async loadDeviceByImei(tx: Tx, imei: string): Promise<DeviceLock> {
+  private async loadDeviceByCode(tx: Tx, code: string): Promise<DeviceLock> {
     const device = await tx.device.findFirst({
-      where: anyImeiWhere(imei),
+      where: unitCodeWhere(code),
       select: { id: true, statusCode: true, version: true, landedCost: true },
     });
-    if (!device) throw new NotFoundException(`Device ${imei} not found`);
+    if (!device) throw new NotFoundException(`Device ${code} not found`);
     return device;
   }
 

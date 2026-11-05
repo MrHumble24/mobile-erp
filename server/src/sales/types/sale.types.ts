@@ -11,10 +11,11 @@ export interface SaleRow {
   consignmentId: string | null;
   notes: string | null;
   device: {
-    imei: string;
+    imei: string | null;
     imei2: string | null;
+    serialNumber: string | null;
     specs: Prisma.JsonValue;
-    model: { brand: string; name: string };
+    model: { brand: string; name: string; kindCode: string };
   };
   customer: { id: string; name: string; phone: string | null } | null;
   soldBy: {
@@ -49,9 +50,10 @@ export interface SalePayment {
 export interface SaleView {
   id: string;
   device: {
-    imei: string;
+    imei: string | null;
     imei2: string | null;
-    model: { brand: string; name: string };
+    serialNumber: string | null;
+    model: { brand: string; name: string; kindCode: string };
     specs: Prisma.JsonValue;
   };
   customer: { id: string; name: string; phone: string | null } | null;
@@ -92,9 +94,10 @@ export interface SaleStatsView {
   netProfit: Money;
 }
 
-/** Warranty lookup for a returning customer, keyed by IMEI. */
+/** Warranty lookup for a returning customer, keyed by IMEI or serial. */
 export interface WarrantyLookupView {
-  imei: string;
+  imei: string | null;
+  serialNumber: string | null;
   saleId: string;
   purchasedAt: Date;
   salePrice: Money;
@@ -110,8 +113,9 @@ export interface ReceiptView {
   soldAt: Date;
   cashier: string;
   items: {
-    imei: string;
+    imei: string | null;
     imei2: string | null;
+    serialNumber: string | null;
     model: string;
     storage: string | null;
     color: string | null;

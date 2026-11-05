@@ -16,6 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
+import { SERIAL_MESSAGE, SERIAL_REGEX } from '../../devices/lib/unit-code.js';
 
 class InlineCustomerDto {
   @IsString()
@@ -41,9 +42,17 @@ export class SalePaymentDto {
 }
 
 export class CreateSaleDto {
+  /** Unit identifier. Send exactly one of `imei` / `serialNumber`. */
+  @IsOptional()
   @IsString()
   @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
-  imei!: string;
+  imei?: string;
+
+  /** Serial-unit identifier. Send exactly one of `imei` / `serialNumber`. */
+  @IsOptional()
+  @IsString()
+  @Matches(SERIAL_REGEX, { message: SERIAL_MESSAGE })
+  serialNumber?: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()

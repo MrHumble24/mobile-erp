@@ -23,6 +23,7 @@ export function buildConsignmentWhere(
     where.OR = [
       { device: { imei: { contains: term, mode: 'insensitive' } } },
       { device: { imei2: { contains: term, mode: 'insensitive' } } },
+      { device: { serialNumber: { contains: term, mode: 'insensitive' } } },
       { partner: { shopName: { contains: term, mode: 'insensitive' } } },
     ];
   }

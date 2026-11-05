@@ -14,16 +14,27 @@ import {
 } from 'class-validator';
 import { IsSpecsObject } from '../../devices/dto/specs.validator.js';
 import { IMEI_MESSAGE, IMEI_REGEX } from '../../devices/lib/imei.js';
+import { SERIAL_MESSAGE, SERIAL_REGEX } from '../../devices/lib/unit-code.js';
 
 export class RegisterDeviceDto {
-  /** Exactly 15 numeric digits. */
+  /**
+   * 15 numeric digits. Required for an IMEI-kind model, forbidden for a
+   * SERIAL-kind one — the service enforces the per-kind rule (kind comes from
+   * the model, not this body).
+   */
+  @IsOptional()
   @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
-  imei!: string;
+  imei?: string;
 
   /** Optional second IMEI (dual-SIM). Same format; must differ from `imei`. */
   @IsOptional()
   @Matches(IMEI_REGEX, { message: IMEI_MESSAGE })
   imei2?: string;
+
+  /** Serial number for a SERIAL-kind model. 3-64 chars, no spaces; upper-cased. */
+  @IsOptional()
+  @Matches(SERIAL_REGEX, { message: SERIAL_MESSAGE })
+  serialNumber?: string;
 
   @IsUUID()
   modelId!: string;

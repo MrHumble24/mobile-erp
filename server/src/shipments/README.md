@@ -18,9 +18,14 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
 - `PATCH /:id` — edit `shipmentDate`/`expectedCount`/`notes` only (not
   `paymentAccountCode`); posts no ledger row (`shipment.manage`).
 - `POST /:id/devices` — register one or many units
-  `{ devices: [{ imei(15 digits), imei2?(15 digits), modelId, specs,
-  acquisitionCost, targetPrice?, unitExpense?, unitExpenseNote? }] }`
-  (`device.create`). Each unit starts `IN_STOCK` with a history row
+  `{ devices: [{ imei?(15 digits), imei2?(15 digits), serialNumber?(3-64, no
+  spaces), modelId, specs, acquisitionCost, targetPrice?, unitExpense?,
+  unitExpenseNote? }] }` (`device.create`). The identifier follows the model's
+  **kind** (ADR 0029): an `IMEI` model needs `imei` and no `serialNumber`; a
+  `SERIAL` model needs a `serialNumber` (stored upper-cased) and no `imei`/
+  `imei2`; a `QUANTITY` model is rejected 400 (not stocked as a unit). Serial
+  collisions (within the batch or against an existing unit) → 409.
+  Each unit starts `IN_STOCK` with a history row
   (`fromStatusCode: null`); its landed cost is `acquisitionCost + customsFee +
   unitExpense` (ADR 0026). One `PURCHASE` row posts per device, and a
   `DEVICE_EXPENSE` row when `unitExpense > 0`, both from the shipment's account
@@ -28,8 +33,8 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
   `device.expense` → 403 otherwise. `imei2` is the optional dual-SIM second
   IMEI: it must differ from the unit's `imei` (400) and no value may collide —
   within the batch or against either IMEI column of an existing device — → 409.
-  Returns `RegisteredDeviceView[]` (each carries `imei2`, `unitExpense`,
-  `landedCost`). Each unit's `specs` is validated against its model's attribute
+  Returns `RegisteredDeviceView[]` (each carries `imei`/`imei2`/`serialNumber`,
+  `kindCode`, `unitExpense`, `landedCost`). Each unit's `specs` is validated against its model's attribute
   schema; failures → 400 `{ message: 'Invalid specs', problems: [{ imei, key,
   message }] }`. Each unit's `customsFee` is stamped server-side from the
   current customs list via its model's `customsCode` (ADR 0027; 0 when no list

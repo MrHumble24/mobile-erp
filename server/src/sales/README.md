@@ -5,11 +5,12 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
 
 ## HTTP
 
-- `POST /sales` (`sale.create`) `{ imei, salePrice, payments?[{accountCode,amount}],
-  customerId?, customer?{name,phone}, warrantyDays?, notes?, clientMutationId?,
-  expectedVersion? }` → `SaleView`.
-  `imei` is resolved against either IMEI column (dual-SIM), the device must
-  exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
+- `POST /sales` (`sale.create`) `{ imei?, serialNumber?, salePrice,
+  payments?[{accountCode,amount}], customerId?, customer?{name,phone},
+  warrantyDays?, notes?, clientMutationId?, expectedVersion? }` → `SaleView`.
+  Send **exactly one** of `imei`/`serialNumber` (400 otherwise); it is resolved
+  against imei, imei2 or serialNumber (ADR 0029, `unitCodeWhere`). The device
+  must exist (404) and be IN_STOCK (409 otherwise — DEFECTIVE is not
   sellable, see ADR 0007). Idempotent on `clientMutationId` (returns the prior
   sale, posts the ledger rows once). `payments` omitted = one CASH line for the
   whole price; present = amounts positive, accounts distinct and active, summing
@@ -28,9 +29,11 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   `CostRedactionInterceptor`). Lives here, not in `reports`, so a cashier can see their
   own day summary without `report.finance`. Declared before `:id`.
 - `GET /sales/:id` (`sale.read`) → `SaleView`.
-- `GET /sales/warranty/:imei` (`sale.read`, matches either IMEI column) → `WarrantyLookupView`
-  `{ imei, saleId, purchasedAt, salePrice, warranty{days,startsAt,endsAt}|null,
-  remainingDays, latestInspection{grade,notes}|null, alreadyReturned }`.
+- `GET /sales/warranty/:imei` (`sale.read`; the `:imei` path segment is any unit
+  code — matches imei, imei2 or serialNumber) → `WarrantyLookupView`
+  `{ imei, serialNumber, saleId, purchasedAt, salePrice,
+  warranty{days,startsAt,endsAt}|null, remainingDays,
+  latestInspection{grade,notes}|null, alreadyReturned }`.
 - `POST /sales/:id/return` (`sale.return`) `{ refundAmount, reason?,
   deviceToStatusCode:'IN_STOCK'|'DEFECTIVE', expectedVersion? }` → `SaleView`
   (409 if already returned). The refund is capped at the sale's net `SALE` total
@@ -41,7 +44,7 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   `payments: [{ accountCode, amount }]` (the SALE rows; `[]` when none) so a
   printed receipt can show the cash and card parts.
 
-`SaleView` = `{ id, device{imei,imei2,model{brand,name},specs}, customer, salePrice,
+`SaleView` = `{ id, device{imei,imei2,serialNumber,model{brand,name,kindCode},specs}, customer, salePrice,
 landedCostSnapshot, netProfit, soldAt, soldBy{id,name}, warranty, consignmentId, notes,
 payments[{accountCode,amount}] (derived from the SALE rows, [] when none),
 return{returnedAt,refundAmount,reason,processedBy{id,name}}|null }`.

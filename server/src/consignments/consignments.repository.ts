@@ -88,7 +88,14 @@ export class ConsignmentsRepository {
       where: { statusCode: 'OUT', dueDate: { lt: new Date() } },
       orderBy: { dueDate: 'asc' },
       include: {
-        device: { select: { imei: true, imei2: true } },
+        device: {
+          select: {
+            imei: true,
+            imei2: true,
+            serialNumber: true,
+            model: { select: { kindCode: true } },
+          },
+        },
         sale: { select: { id: true } },
         partner: {
           select: { shopName: true, phone: true, telegramHandle: true },
