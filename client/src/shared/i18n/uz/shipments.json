@@ -51,5 +51,8 @@
   "invalidSpecs": "Ba'zi qurilma xususiyatlari noto'g'ri to'ldirilgan. Belgilangan qatorlarni to'g'rilang.",
   "supplierName": "Yetkazib beruvchi nomi",
   "supplierCountry": "Davlat",
-  "supplierContact": "Aloqa / Telefon"
+  "supplierContact": "Aloqa / Telefon",
+  "unitExpenseTotal": "Phone expenses",
+  "customsFeeTotal": "Customs fees",
+  "devicesWithoutCustomsFee": "{count} phones have no customs fee"
 }

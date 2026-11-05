@@ -3,6 +3,7 @@ import uzAuth from "./uz/auth.json"
 import uzBalance from "./uz/balance.json"
 import uzCommon from "./uz/common.json"
 import uzConsignments from "./uz/consignments.json"
+import uzCustoms from "./uz/customs.json"
 import uzCustomers from "./uz/customers.json"
 import uzDashboard from "./uz/dashboard.json"
 import uzExpenses from "./uz/expenses.json"
@@ -22,6 +23,7 @@ import enAuth from "./en/auth.json"
 import enBalance from "./en/balance.json"
 import enCommon from "./en/common.json"
 import enConsignments from "./en/consignments.json"
+import enCustoms from "./en/customs.json"
 import enCustomers from "./en/customers.json"
 import enDashboard from "./en/dashboard.json"
 import enExpenses from "./en/expenses.json"
@@ -45,6 +47,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     balance: uzBalance,
     common: uzCommon,
     consignments: uzConsignments,
+    customs: uzCustoms,
     customers: uzCustomers,
     dashboard: uzDashboard,
     expenses: uzExpenses,
@@ -65,6 +68,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     balance: enBalance,
     common: enCommon,
     consignments: enConsignments,
+    customs: enCustoms,
     customers: enCustomers,
     dashboard: enDashboard,
     expenses: enExpenses,

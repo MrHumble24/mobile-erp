@@ -84,5 +84,15 @@
   "margin": "Margin",
   "filterActiveCount": "{count} active filters",
   "allFilters": "All",
-  "scanOrSearch": "Scan IMEI or search model..."
+  "scanOrSearch": "Scan IMEI or search model...",
+  "unitExpense": "Phone expense",
+  "unitExpenseNote": "Expense note",
+  "editUnitExpense": "Edit phone expense",
+  "unitExpenseHint": "Repair, box or delivery for this phone. It counts in the phone's cost.",
+  "unitExpenseSaved": "Phone expense saved",
+  "customsFee": "Customs fee",
+  "editCustomsFee": "Edit customs fee",
+  "customsFeeSaved": "Customs fee saved",
+  "customsCode": "Customs code",
+  "customsCodeHint": "How customs writes this model"
 }
