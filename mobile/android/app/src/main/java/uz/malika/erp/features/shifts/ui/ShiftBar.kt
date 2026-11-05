@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.shifts.model.ShiftBarState
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatTime
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
@@ -28,7 +29,7 @@ fun ShiftBar(state: ShiftBarState, onOpen: () -> Unit, onClose: () -> Unit, modi
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             if (current != null) {
                 Text(
-                    "${t("shifts.myShift", null)} · ${t("shifts.openedAt", null)} ${hhmm(current.openedAt)}",
+                    "${t("shifts.myShift", null)} · ${t("shifts.openedAt", null)} ${formatTime(current.openedAt)}",
                     style = MaterialTheme.typography.bodyMedium, color = Tokens.text,
                 )
                 PillButton(t("shifts.closeShift", null), onClose, variant = ButtonVariant.OUTLINE)
@@ -39,6 +40,3 @@ fun ShiftBar(state: ShiftBarState, onOpen: () -> Unit, onClose: () -> Unit, modi
         }
     }
 }
-
-/** HH:mm from an ISO timestamp (UTC); empty-safe. */
-private fun hhmm(iso: String): String = if (iso.length >= 16) iso.substring(11, 16) else iso
