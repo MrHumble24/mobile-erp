@@ -13,6 +13,10 @@ code, active, spec schema — ADR 0029).
   category"), barcode and model-code inputs, and a `SalePriceField`. For a
   QUANTITY product the dialog shows the price per piece (`salePrice`) and hides
   the customs code and attribute editor (ADR 0030); otherwise it hides the price.
+- `ModelPictureField` — shows the current picture (or placeholder) and
+  upload / replace / remove, with a client-side type + size check before sending
+  and clear messages mapped from the server's 400 / 413 (ADR 0031). Shown only
+  when editing (a new model has no id to upload to yet).
 - `AttributeEditor` / `AttributeRow` / `OptionsChipsEditor` — the per-model spec
   schema editor: add/reorder/remove attributes (label, auto-slugged key, type,
   required, select options as chips). The reserved `storage` attribute is shown
@@ -25,8 +29,10 @@ code, active, spec schema — ADR 0029).
 
 ## Uses
 - `entities/device-model`: `useDeviceModels`, `useCreateDeviceModel`,
-  `useUpdateDeviceModel`, `PRODUCT_KINDS`, `productKindLabelKey`.
+  `useUpdateDeviceModel`, `useUploadDeviceModelImage`,
+  `useRemoveDeviceModelImage`, `PRODUCT_KINDS`, `productKindLabelKey`.
 - `entities/product-category`: `useProductCategories` (filter + category select).
+- `shared/ui`: `AssetImage` (picture + list thumbnail), `FilePicker` (upload).
 
 ## Must never
 - Call HTTP directly or import another feature. Category CRUD lives in the

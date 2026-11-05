@@ -10,6 +10,7 @@ import { useProductCategories } from "@/entities/product-category"
 import { Button } from "@/shared/ui/button"
 import { Badge } from "@/shared/ui/badge"
 import { Input } from "@/shared/ui/input"
+import { AssetImage } from "@/shared/ui/asset-image"
 import {
   Select,
   SelectContent,
@@ -39,6 +40,7 @@ function ModelsTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-14">{t("catalog.picture")}</TableHead>
             <TableHead>{t("inventory.brand")}</TableHead>
             <TableHead>{t("inventory.model")}</TableHead>
             <TableHead>{t("catalog.productKind")}</TableHead>
@@ -50,6 +52,14 @@ function ModelsTable({
         <TableBody>
           {models.map((m) => (
             <TableRow key={m.id} className="hover:bg-[#f8f9fa] transition-colors">
+              <TableCell>
+                <AssetImage
+                  path={m.imageUrl}
+                  alt={m.name}
+                  className="size-10 rounded-[8px] border border-[#e8e8e8]"
+                  iconClassName="size-4"
+                />
+              </TableCell>
               <TableCell className="font-semibold text-[#090c1d]">{m.brand}</TableCell>
               <TableCell className="font-medium text-[#202020]">{m.name}</TableCell>
               <TableCell>

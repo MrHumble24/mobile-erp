@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node --test src/shared/lib/unit-code.spec.ts src/entities/sync/lib/drain.spec.ts src/features/checkout/lib/payment.spec.ts src/features/create-price-list/model/create-price-list.spec.ts",
+    "test": "node --test src/shared/lib/unit-code.spec.ts src/entities/sync/lib/drain.spec.ts src/features/checkout/lib/payment.spec.ts src/features/create-price-list/model/create-price-list.spec.ts src/entities/catalog/lib/build-catalog.spec.ts",
     "preview": "vite preview",
     "graphify": "graphify update ."
   },

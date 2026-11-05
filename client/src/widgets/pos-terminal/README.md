@@ -1,20 +1,28 @@
 # pos-terminal
 
-The cashier's POS workspace. Composes the `checkout` and `consign-device` features
-(which never import each other) with the device, sale, customer, settings and auth slices.
+The cashier's POS workspace. Composes the `checkout`, `consign-device` and
+`catalog-sell` features (which never import each other) with the device, sale,
+catalog, customer, settings and auth slices.
 
 ## Owns
-- `model/use-pos-terminal.ts` — orchestrator: mode (Sale | Nasiya), settings, cost
-  permission, cart wiring, checkout + receipt state, Nasiya consign target.
+- `model/use-pos-terminal.ts` — orchestrator: mode (Sale | Nasiya), input mode
+  (Scan | Catalog), settings, cost permission, cart wiring, checkout + receipt
+  state, Nasiya consign target, and the catalog pick → cart mapping.
+- `model/pos-prefs.store.ts` — the per-browser input-mode preference (persisted).
+- `lib/catalog-cart.ts` — maps a picked catalog unit/quantity entry into the
+  cart's device / scan-product shape (ADR 0031). The only place catalog and
+  device/stock types meet (a widget sees both; sibling entities cannot).
 - `model/use-pos-scanner.ts` — resolves any code through `features/scan-code`
   (`GET /scan/:code`, ADR 0030). An IN_STOCK unit is dispatched (add line, or open
   consign in Nasiya); a quantity product is added to the cart (scan again to raise the
   quantity); other unit statuses / unknown codes become a `ScanResult` card.
   `focusScanner()` + `SCANNER_INPUT_ID` for F2.
 - `model/use-pos-shortcuts.ts` — global keys.
-- UI: `PosTerminal`, `ModeSwitch`, `PosScanner`, `ProductSearch` (type-to-find a
-  quantity product by name), `ScanResultCard`, `SessionPanel`, `NasiyaPanel`,
-  `ShortcutsHelp`.
+- UI: `PosTerminal`, `ModeSwitch`, `InputModeSwitch` (Scan ⇄ Catalog),
+  `PosScanner`, `ProductSearch` (type-to-find a quantity product by name),
+  `ScanResultCard`, `SessionPanel`, `NasiyaPanel`, `ShortcutsHelp`. Catalog mode
+  renders `features/catalog-sell`'s `CatalogBrowser`; both modes feed one cart
+  and switching keeps it.
 
 ## Keyboard shortcuts
 `F2` focus scanner · `F9` checkout · `Esc` clear scanner · `Ctrl/⌘+Backspace` remove
@@ -27,7 +35,9 @@ last line · `F4` customer search · `F8` switch Sale/Nasiya.
 ## Offline
 `features/scan-code` falls back to the synced device cache, then the product
 cache, when offline — so both a unit and a quantity product can be found and
-sold. `use-pos-checkout` shows a "queued" toast when checkout enqueues lines.
+sold. Catalog mode draws its grid from the same caches (`entities/catalog`), so
+the seller can still tap to sell; pictures not in the cache show the placeholder.
+`use-pos-checkout` shows a "queued" toast when checkout enqueues lines.
 
 ## Open questions
 - SOLD scan links to `/sales` (list), not the exact sale — device lookup has no sale id.

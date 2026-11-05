@@ -24,6 +24,13 @@ Create a shipment, then scan devices into it in a running batch.
 - `use-scan-intake.ts` — the scan-and-stage flow, kind-aware: a serial scan checks
   `isSerial`, an IMEI scan checks 15-digit length; `stage()` opens the confirm
   dialog once the identifier + model + cost are set (full validation in `addItem`).
+- `IntakeLookupPanel` + `use-intake-lookup.ts` — code lookup (ADR 0031): an
+  optional "code on the box" input (kept separate so the IMEI field stays an
+  IMEI) plus a full IMEI feed `entities/lookup`. A named product auto-selects and
+  fills only the empty storage/colour; an unnamed reference offers a one-time
+  pick with "remember" (`POST /lookup/links`, only with `device.update`); an
+  unknown code shows a quiet hint. The lookup never gates saving. The Apple-code
+  credit (`catalog.dataCredit`) sits under the panel.
 - `DeviceBatchList` — batch table (unit code column), running "n registered /
   expected m", per-device customs fee + landed cost after submit (cost-gated).
   Server 400 `problems` (keyed by code) annotate the offending rows.
@@ -38,7 +45,8 @@ Create a shipment, then scan devices into it in a running batch.
 - `entities/shipment`: `useCreateShipment`, `useAddShipmentDevices`, `useShipment`.
 - `entities/supplier`: `useCreateSupplier`, `SupplierFormFields`, schema + mappers.
 - `entities/device-model`: `useDeviceModels`, `useDeviceModelAttributes`,
-  `DynamicSpecFields`. `shared/ui`: `Combobox`.
+  `DynamicSpecFields`. `entities/lookup`: `useLookup`, `useTeachLink`.
+  `shared/ui`: `Combobox`, `Checkbox`.
 
 ## Must never
 - Call HTTP directly or import another feature.

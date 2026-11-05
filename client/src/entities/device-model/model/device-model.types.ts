@@ -29,6 +29,8 @@ export interface DeviceModelView {
   customsCode: string | null
   /** Default till price per piece for a QUANTITY product (2-dp string); null when unset (ADR 0030). */
   salePrice: string | null
+  /** Server path of the product picture (`/uploads/...`), or null (ADR 0031). */
+  imageUrl: string | null
   attributes: AttributeDef[]
   createdAt: string
   updatedAt: string

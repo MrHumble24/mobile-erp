@@ -20,6 +20,7 @@ import {
   type DeviceModelFormValues,
 } from "../model/device-model-form.schema"
 import { AttributeEditor } from "./AttributeEditor"
+import { ModelPictureField } from "./ModelPictureField"
 import {
   KindField,
   CategoryField,
@@ -169,6 +170,7 @@ function ModelForm({ model, onDone }: { model: DeviceModelView | null; onDone: (
           <CustomsCodeField form={form} />
         )}
         <ActiveField form={form} />
+        {model && <ModelPictureField model={model} />}
         {!isQuantity && <AttributeEditor form={form} savedKeys={savedKeys} />}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? t("common.loading") : t("common.save")}

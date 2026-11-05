@@ -65,7 +65,15 @@ export interface DeviceChange {
   version: number
   targetPrice: string | null
   specs: unknown
-  model: { id: string; brand: string; name: string; kindCode?: string }
+  model: {
+    id: string
+    brand: string
+    name: string
+    kindCode?: string
+    /** Carried for the offline till catalog (ADR 0031). */
+    categoryId?: string | null
+    imageUrl?: string | null
+  }
   latestSale: { id: string; soldAt: string; salePrice: string; warrantyEndsAt: string | null } | null
   latestInspection: { gradeCode: string | null; notes: string | null } | null
   updatedAt: string
@@ -91,6 +99,9 @@ export interface ProductChange {
   barcode: string | null
   salePrice: string | null
   quantity: number
+  /** Carried for the offline till catalog (ADR 0031). */
+  categoryId?: string | null
+  imageUrl?: string | null
 }
 
 export interface ChangesResponse {

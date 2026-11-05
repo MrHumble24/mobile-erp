@@ -1,0 +1,39 @@
+import { useI18n } from "@/shared/i18n"
+import { cn } from "@/shared/lib/utils"
+import { formatMoney } from "@/shared/lib/format"
+import { Button } from "@/shared/ui/button"
+import { AssetImage } from "@/shared/ui/asset-image"
+import type { CatalogEntry } from "@/entities/catalog"
+
+function priceLabel(entry: CatalogEntry): string {
+  if (entry.kindCode === "QUANTITY") return formatMoney(entry.salePrice)
+  const { minTargetPrice: min, maxTargetPrice: max } = entry
+  if (min == null) return "-"
+  if (max == null || min === max) return formatMoney(min)
+  return `${formatMoney(min)} – ${formatMoney(max)}`
+}
+
+/** One tappable product card: picture, name, stock count and price. */
+export function CatalogCard({ entry, onTap }: { entry: CatalogEntry; onTap: () => void }) {
+  const { t } = useI18n()
+  const low = entry.inStock <= 0
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      onClick={onTap}
+      className="h-auto w-full flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[16px] border border-[#e8e8e8] bg-white p-0 text-left shadow-[var(--shadow-xs)] hover:bg-[#f8f9fa]"
+    >
+      <AssetImage path={entry.imageUrl} alt={entry.name} className="aspect-square w-full" />
+      <span className="flex flex-1 flex-col gap-1 p-3">
+        <span className="line-clamp-2 text-sm font-semibold text-[#090c1d]">
+          {entry.brand} {entry.name}
+        </span>
+        <span className={cn("text-xs", low ? "text-red-600" : "text-[#646464]")}>
+          {t("catalog.inStockCount", { count: entry.inStock })}
+        </span>
+        <span className="mt-auto pt-1 text-sm font-bold text-primary">{priceLabel(entry)}</span>
+      </span>
+    </Button>
+  )
+}

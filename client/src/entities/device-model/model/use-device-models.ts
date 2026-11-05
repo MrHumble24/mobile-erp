@@ -37,3 +37,24 @@ export function useUpdateDeviceModel() {
     },
   })
 }
+
+export function useUploadDeviceModelImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      deviceModelRepository.uploadImage(id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
+    },
+  })
+}
+
+export function useRemoveDeviceModelImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deviceModelRepository.removeImage(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
+    },
+  })
+}
