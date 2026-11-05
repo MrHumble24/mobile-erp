@@ -25,7 +25,7 @@
 | **`Table`** | `table.tsx` | Roomy table container with dotted borders, generous cell padding (py-6 px-8), header, footer, and caption. |
 | **`Badge`** | `badge.tsx` | 800px full pill status badges. Variants: `sulfur` (#f5f28e for categories/tags), `ember` (#fc5000), `limestone` (#f7f6f2), `dark` (#070607), `plasma` (#524ae9), `outline`. |
 | **`Card`** | `card.tsx` | 40px radius cards with variants: `limestone` (default content block), `ember` (stat callouts), `plasma` (halftone hero card), `dark` (high-contrast section), `pumice`. |
-| **`MetricCard`** | `metric-card.tsx` | High-impact stat feature card with giant Bebas Neue metric numbers and DM Sans 500 labels. |
+| **`MetricCard`** | `metric-card.tsx` | High-impact stat feature card with giant Bebas Neue metric numbers and DM Sans 500 labels. Its value shrinks to fit one line (down to a 0.4 floor) so a 13-digit amount never overflows or clips the card — no caller change needed. |
 | **`Tabs`** | `tabs.tsx` | Segmented pill container (`TabsList`) with pill triggers (`TabsTrigger`) and smooth active Ember state. |
 | **`Form`** | `form.tsx` | Full React Hook Form + Zod integration (`FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormMessage`). |
 | **`Toaster` / `toast`** | `sonner.tsx` | Sonner toast alerts with Caldera styling for offline sync alerts, low-stock warnings, and sale confirmations. |
