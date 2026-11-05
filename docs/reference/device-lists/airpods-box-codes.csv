@@ -1,26 +1,26 @@
 model,a_numbers,identifier,color,storage,box_code,unit_type
-AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",White,,MRXJ2,retail
-AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",White,,MV7N2,retail
-AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",White,,MR8U2,retail
-AirPods (3rd generation),A2564 A2565 A2566,"Device1,8211 AirPods1,3 Audio2,1",White,,MME73,retail
-AirPods (3rd generation),A2564 A2565 A2566,"Device1,8211 AirPods1,3 Audio2,1",White,,MPNY3,retail
-AirPods 4,A3053 A3050 A3058,"Device1,8217 AirPods1,4 AirPods3,2",White,,MXP63,retail
-AirPods 4 (ANC),A3056 A3055 A3059,"Device1,8219 AirPods1,5 AirPods3,3",White,,MXP93,retail
-AirPods 4 (ANC),A3056 A3055 A3059,"Device1,8219 AirPods1,5 AirPods3,3",White,,MDF24,retail
-AirPods 5,A3532 A3531 A3530,"AirPods3,7",White,,MKFW4,retail
-AirPods 5 with Wireless Charging Case,A3440 A3439 A3529,"AirPods3,8",White,,MKFT4,retail
-AirPods 5 with Wireless Charging Case,A3440 A3439 A3529,"AirPods3,8",White,,MLDF4,retail
-AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",White,,MWP22,retail
-AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",White,,MLWK3,retail
-AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",White,,MJ533,retail
-AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",White,,MN6UP,retail
-AirPods Pro (2nd generation),A2699 A2698 A2700,"Device1,8212 AirPodsPro1,2",White,,MQD83,retail
-AirPods Pro (2nd generation),A2699 A2698 A2700,"Device1,8212 AirPodsPro1,2",White,,MQLT3,retail
-AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",White,,MTJV3,retail
-AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",White,,MUYG3,retail
-AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",White,,MW4F3,retail
-AirPods Pro 3,A3064 A3063 A3122,"AirPodsPro1,3",White,,MFHP4,retail
-AirPods Pro 3,A3064 A3063 A3122,"AirPodsPro1,3",White,,MHR44,retail
+AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",,,MRXJ2,retail
+AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",,,MV7N2,retail
+AirPods (2nd generation),A2031 A2032 A1938,"AirPods1,2 AirPods2,1",,,MR8U2,retail
+AirPods (3rd generation),A2564 A2565 A2566,"Device1,8211 AirPods1,3 Audio2,1",,,MME73,retail
+AirPods (3rd generation),A2564 A2565 A2566,"Device1,8211 AirPods1,3 Audio2,1",,,MPNY3,retail
+AirPods 4,A3053 A3050 A3058,"Device1,8217 AirPods1,4 AirPods3,2",,,MXP63,retail
+AirPods 4 (ANC),A3056 A3055 A3059,"Device1,8219 AirPods1,5 AirPods3,3",,,MXP93,retail
+AirPods 4 (ANC),A3056 A3055 A3059,"Device1,8219 AirPods1,5 AirPods3,3",,,MDF24,retail
+AirPods 5,A3532 A3531 A3530,"AirPods3,7",,,MKFW4,retail
+AirPods 5 with Wireless Charging Case,A3440 A3439 A3529,"AirPods3,8",,,MKFT4,retail
+AirPods 5 with Wireless Charging Case,A3440 A3439 A3529,"AirPods3,8",,,MLDF4,retail
+AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",,,MWP22,retail
+AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",,,MLWK3,retail
+AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",,,MJ533,retail
+AirPods Pro,A2083 A2084 A2190,"AirPods2,2 AirPodsPro1,1 iProd8,1",,,MN6UP,retail
+AirPods Pro (2nd generation),A2699 A2698 A2700,"Device1,8212 AirPodsPro1,2",,,MQD83,retail
+AirPods Pro (2nd generation),A2699 A2698 A2700,"Device1,8212 AirPodsPro1,2",,,MQLT3,retail
+AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",,,MTJV3,retail
+AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",,,MUYG3,retail
+AirPods Pro (2nd generation),A3047 A3048 A2968,"Device1,8228 AirPodsPro2,1",,,MW4F3,retail
+AirPods Pro 3,A3064 A3063 A3122,"AirPodsPro1,3",,,MFHP4,retail
+AirPods Pro 3,A3064 A3063 A3122,"AirPodsPro1,3",,,MHR44,retail
 AirPods Max,A2096,"Device1,8202 AirPodsMax1,1 iProd8,6",Space Grey,,MGYH3,retail
 AirPods Max,A2096,"Device1,8202 AirPodsMax1,1 iProd8,6",Pink,,MGYM3,retail
 AirPods Max,A2096,"Device1,8202 AirPodsMax1,1 iProd8,6",Silver,,MGYJ3,retail
