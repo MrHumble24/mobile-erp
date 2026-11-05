@@ -1,4 +1,5 @@
 import { downloadCsv } from "@/shared/lib/csv"
+import { todayIso } from "@/shared/lib/local-date"
 import type { ExpenseUserRef, ExpenseView } from "@/entities/expense"
 
 export function recordedByName(user: ExpenseUserRef | null): string {
@@ -30,5 +31,5 @@ export function exportExpensesCsv(expenses: ExpenseView[]): void {
     e.isRecurring ? "Yes" : "No",
     recordedByName(e.createdBy),
   ])
-  downloadCsv(`expenses-${new Date().toISOString().slice(0, 10)}`, headers, rows)
+  downloadCsv(`expenses-${todayIso()}`, headers, rows)
 }

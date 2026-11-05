@@ -1,6 +1,6 @@
 # 002 — Website: "today" is the wrong day after midnight
 
-Status: open · Owner: OpenCode (model: Big Pickle, a trial task) · Depends on: nothing
+Status: done · Owner: OpenCode (model: Big Pickle, a trial task) · Depends on: nothing
 
 ## Why
 The shop is in Tashkent (UTC+5). The website works out "today" with `toISOString()`, which gives
@@ -51,11 +51,35 @@ Fill the Result section of `docs/handoffs/opencode/002-local-date.md`, set Statu
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commit:
+- Model used: Big Pickle (`opencode/big-pickle`), trial task
+- Commit: `2b59cf3` — `fix(client): use the local calendar day for date ranges and today defaults` (code; this handoff doc is a follow-up commit on the same branch)
 - Files changed:
-- Other places found and fixed:
+  - `client/src/shared/lib/local-date.ts` (new)
+  - `client/src/shared/lib/local-date.spec.ts` (new)
+  - `client/src/shared/lib/date-range.ts`
+  - `client/src/pages/balance/model/use-balance-filters.ts`
+  - `client/src/pages/shifts/model/use-shifts-filters.ts`
+  - `client/src/features/log-expense/model/expense-form.schema.ts`
+  - `client/src/features/record-ledger-entry/model/ledger-entry.schema.ts`
+  - `client/src/pages/expenses/model/recurrence-form.schema.ts`
+  - `client/src/features/intake-shipment/ui/ShipmentCreateForm.tsx`
+  - `client/src/features/create-price-list/model/create-price-list.schema.ts`
+  - `client/src/pages/reports/ui/ClosingTab.tsx`
+  - `client/src/pages/customers/lib/customers-csv.ts`
+  - `client/src/pages/sales/lib/sales-csv.ts`
+  - `client/src/pages/expenses/lib/expenses-csv.ts`
+  - `client/package.json` (test script)
+- Other places found and fixed: `ledger-entry.schema.ts` had its own local start-of-day conversion for backdated entries; it now uses `localDayStart`. A repo-wide search for `new Date().toISOString().slice(0, 10)` leaves only `entities/credit/lib/credit-plan.ts`, which is intentionally UTC and untouched. Other `toISOString()` uses are full timestamps, not calendar days.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
-- Not done / skipped / failed:
+  ```
+  ℹ tests 68
+  ℹ pass 68
+  ℹ fail 0
+  $ oxlint
+  ... 88 warnings, 0 errors (exit 0)
+  ✓ built in 5.73s
+  ```
+  Full command run: `cd client && pnpm install && pnpm test && pnpm lint && pnpm build` (exit 0).
+- Not done / skipped / failed: nothing failed. `graphify update .` ran in `client/` and at the repo root; the root run skipped `graph.html` because the graph exceeds the 5000-node HTML limit (graph.json and GRAPH_REPORT.md updated). No ADR, as requested.
 
 ## Check by Claude
