@@ -24,6 +24,9 @@ nonisolated struct ProductRow {
     let barcode: String?
     let salePrice: String?
     let quantity: Int
+    /// Picture path + category (ADR 0031) for the offline catalog grid.
+    let imageUrl: String?
+    let categoryId: String?
 
     init(_ p: [String: Any]) {
         modelId = p["modelId"] as? String ?? ""
@@ -34,6 +37,8 @@ nonisolated struct ProductRow {
         else if let n = p["salePrice"] as? NSNumber { salePrice = n.stringValue }
         else { salePrice = nil }
         quantity = (p["quantity"] as? NSNumber)?.intValue ?? 0
+        imageUrl = p["imageUrl"] as? String
+        categoryId = p["categoryId"] as? String
     }
 }
 
@@ -49,6 +54,8 @@ nonisolated struct DeviceRow {
     let modelId, modelBrand, modelName: String
     let latestSaleJSON: String?
     let gradeCode, inspectionNotes: String?
+    /// The model's picture path + category (ADR 0031), on the feed's model row.
+    let modelImageUrl, modelCategoryId: String?
 
     init(_ d: [String: Any]) {
         id = d["id"] as? String ?? ""
@@ -64,6 +71,8 @@ nonisolated struct DeviceRow {
         modelBrand = model["brand"] as? String ?? ""
         modelName = model["name"] as? String ?? ""
         kindCode = model["kindCode"] as? String
+        modelImageUrl = model["imageUrl"] as? String
+        modelCategoryId = model["categoryId"] as? String
         latestSaleJSON = d["latestSale"].flatMap { $0 is NSNull ? nil : Self.encode($0) }
         let inspection = d["latestInspection"] as? [String: Any]
         gradeCode = inspection?["gradeCode"] as? String

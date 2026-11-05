@@ -8,7 +8,10 @@ struct ScannedDevice: Identifiable {
     let imei: String?
     let imei2: String?
     let serialNumber: String?
-    let version: Int
+    /// The cached optimistic-lock version. Nil for a unit tapped in the catalog
+    /// (ADR 0031): the sale then omits `expectedVersion` and the server uses the
+    /// device's current version.
+    let version: Int?
     let statusCode: String
     let modelLabel: String
     let targetPrice: String?
@@ -106,8 +109,9 @@ struct PosCartLine: Identifiable {
     let clientMutationId: String
 
     var isProduct: Bool { product != nil }
-    /// Code to dedupe by / show: the unit code, else the product's barcode/id.
-    var code: String { device?.code ?? product?.barcode ?? product?.modelId ?? "" }
+    /// Code to show: the unit code, else the product's barcode. A catalog quantity
+    /// product has no barcode, so its row shows only the name (never a raw id).
+    var code: String { device?.code ?? product?.barcode ?? "" }
     var modelLabel: String { device?.modelLabel ?? product?.name ?? "" }
     /// What the server charges: per-piece × quantity for a product, else the price.
     var lineTotal: Decimal {

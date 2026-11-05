@@ -20,6 +20,16 @@ final class PosViewModel {
     var completed: [CompletedSale]?
     var defaultWarrantyDays: Int?
     var showProductSearch = false
+    /// The till's cart sheet (phone catalog mode: the grid fills the screen and a
+    /// bar opens the cart + checkout).
+    var showCart = false
+    /// Scan (today's screen) vs Catalog (the product grid). Remembered per device.
+    var mode: PosMode = PosMode.loadRemembered() {
+        didSet { if mode != oldValue { PosMode.remember(mode) } }
+    }
+
+    /// The catalog grid, built lazily so it only loads when the mode is used.
+    let catalog = CatalogBrowser()
 
     // Customer typeahead.
     var customerHits: [PosCustomerHit] = []
@@ -97,6 +107,28 @@ final class PosViewModel {
     /// Add a quantity product found by name search (`GET /stock?search=`).
     func addProduct(_ product: PosCartProduct) { cart.addProduct(product) }
 
+    /// Add a unit tapped in the catalog grid (ADR 0031). A catalog unit carries no
+    /// cached version, so `expectedVersion` is omitted and the server uses the
+    /// device's current version. Dedupe by code is handled by the cart.
+    func addCatalogUnit(_ unit: CatalogUnit, entry: CatalogEntry) {
+        let isImei = entry.kindCode == "IMEI"
+        let device = ScannedDevice(
+            id: unit.id, imei: isImei ? unit.code : nil, imei2: nil,
+            serialNumber: isImei ? nil : unit.code, version: nil,
+            statusCode: "IN_STOCK", modelLabel: entry.label, targetPrice: unit.targetPrice)
+        cart.add(device, warrantyDays: defaultWarrantyDays)
+    }
+
+    /// Add a quantity product tapped in the catalog grid (a re-tap raises it).
+    func addCatalogQuantity(_ entry: CatalogEntry) {
+        cart.addProduct(PosCartProduct(modelId: entry.modelId, name: entry.label,
+                                       barcode: nil, salePrice: entry.salePrice,
+                                       quantityInStock: entry.inStock))
+    }
+
+    /// Unit codes already in the cart — the catalog won't offer them again.
+    var cartUnitCodes: Set<String> { Set(cart.lines.compactMap { $0.device?.code }) }
+
     /// Typeahead search for an existing customer to attach.
     func searchCustomers(_ query: String) {
         guard container != nil else { return }
@@ -150,6 +182,7 @@ final class PosViewModel {
             busy = false
             if !results.isEmpty {
                 container.toasts.success(i18n("pos.saleSuccess", count: results.count))
+                showCart = false   // close the catalog cart sheet before the receipt
                 completed = results
                 payment.method = .cash
                 payment.splitAmounts = [:]

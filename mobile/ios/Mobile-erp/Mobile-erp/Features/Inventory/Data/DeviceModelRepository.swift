@@ -19,6 +19,19 @@ struct DeviceModelRepository {
         try await api.get("/device-models/\(id)/attributes")
     }
 
+    /// Upload a product picture (ADR 0031) — a downscaled JPEG, ≤ 2 MB. Returns
+    /// the updated model view (with its new `imageUrl`). The server decides the
+    /// type from the bytes and rejects a non-image (400) or an oversize one (413).
+    func uploadImage(id: String, jpeg: Data) async throws -> DeviceModelView {
+        try await api.postMultipart("/device-models/\(id)/image", fileField: "file",
+                                    fileName: "photo.jpg", mimeType: "image/jpeg", fileData: jpeg)
+    }
+
+    /// Remove a product's picture and delete the file server-side (ADR 0031).
+    func removeImage(id: String) async throws {
+        try await api.delete("/device-models/\(id)/image")
+    }
+
     func create(brand: String, name: String, kindCode: String, categoryId: String?,
                 barcode: String?, modelCode: String?, customsCode: String?,
                 salePrice: Decimal?, attributes: [AttributeDef]) async throws {

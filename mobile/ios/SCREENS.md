@@ -61,7 +61,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 
 | Screen / Sheet | File Path | Primary Role | Description & Workflow |
 | :--- | :--- | :--- | :--- |
-| **POS Terminal** (`PosView`) | `Features/Pos/UI/PosView.swift` | Cashier / Sales | Fast IMEI scan via hardware scanner or camera ([`ScannerField`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Shared/UI/ScannerField.swift)), live device spec/price verification, and checkout trigger. Supports offline queuing. |
+| **POS Terminal** (`PosView`) | `Features/Pos/UI/PosView.swift` | Cashier / Sales | Fast IMEI scan via hardware scanner or camera ([`ScannerField`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Shared/UI/ScannerField.swift)), live device spec/price verification, and checkout trigger. A **Scan / Catalog** mode switch adds a shop-like product grid (ADR 0031 — see below). Supports offline queuing. |
 | **POS Checkout Form** (`PosCheckoutForm`) | `Features/Pos/UI/PosCheckoutForm.swift` | Cashier | Sub-view inside POS: Customer selection or creation, sale price entry, payment method, warranty selection, and order finalization. |
 | **POS Receipt Sheet** (`PosReceiptSheet`) | `Features/Pos/UI/PosReceiptSheet.swift` | Cashier | Modal sheet presented after completed sale for thermal printing or customer sharing. |
 | **Consignments Desk** (`ConsignmentsView`) | `Features/Consignment/UI/ConsignmentsView.swift` | Cashier / Manager | Central active consignment list across Malika Bazaar partner shops with status filters. |
@@ -116,7 +116,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Model Pricing Benchmarks** (`ModelPricingTab`) | `Features/Reports/UI/ModelPricingTab.swift` | Store Owner | Setting model benchmark prices, target margins, and minimum allowable selling prices. |
 | **Customer CRM** (`CustomersView`) | `Features/Customers/UI/CustomersView.swift` | Sales / Owner | Customer directory with purchase history filter and detail sheet ([`CustomerDetailSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Customers/UI/CustomerDetailSheet.swift)). |
 | **Customer Filter Sheet** (`CustomerFilterSheet`) | `Features/Customers/UI/CustomerFilterSheet.swift` | Sales / Owner | Bottom sheet housing customer sort order (recent vs alphabetical) and purchase history toggle. |
-| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing product (device-model) definitions: **kind** (IMEI / SERIAL / QUANTITY — ADR 0029, locked once the product has units, `catalog.kindLocked`), **category** (picker from `/product-categories`, with a category filter and kind+category shown on each row), **barcode** (unique), maker's **model code**, a `customsCode` (ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). The form is `ModelFormSheet`. |
+| **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing product (device-model) definitions: **kind** (IMEI / SERIAL / QUANTITY — ADR 0029, locked once the product has units, `catalog.kindLocked`), **category** (picker from `/product-categories`, with a category filter and kind+category shown on each row), **barcode** (unique), maker's **model code**, a `customsCode` (ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). The form is `ModelFormSheet` and (once the model exists) a **product picture** field (ADR 0031 — see below). |
 | **Categories** (`CategoriesSheet`) | `Features/Inventory/UI/CategoriesSheet.swift` | Inventory Lead | Manage product categories (`GET/POST/PATCH /product-categories`) — list, add, edit (name / sortOrder / isActive) in `CategoryEditSheet`. Opened from the `DeviceModelsTab` toolbar (folder, `nav.categories`). Duplicate name → 409 `catalog.errorCategoryExists`. |
 | **Stock Alert Rules** (`StockAlertsTab`) | `Features/Inventory/UI/StockAlertsTab.swift` | Inventory Lead | Configuring minimum inventory reorder thresholds per model ([`AlertRuleForm`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AlertRuleForm.swift)). |
 | **Stock (quantity products)** (`StockView`) | `Features/Stock/UI/StockView.swift` | Inventory / Owner | Quantity-product stock (ADR 0030): on-hand quantity (below-zero flagged), price, cost/value (cost-gated), movements sheet, and write-off / count-correction (`stock.adjust`). Nav entry `nav.stock`, perm `device.read`. |
@@ -345,4 +345,57 @@ product's movements); `-openStockAdjust writeOff|count` (open an adjust sheet);
 the cart half CASH / half CARD), `-posSellMix "<unitCode>,<barcode>"` (seed,
 split and run a real checkout); `-openSaleReceipt 1` / `-openSaleReturn 1` (open
 the receipt / return sheet on a sale detail).
+
+## Till catalog, product pictures & code lookup (ADR 0031)
+
+Change 5 adds a shop-like catalog mode to the till, a picture per product, and
+intake that fills the model/colour/storage from a typed or scanned code. The web
+is the single source of behaviour; the i18n `catalog` namespace carries the copy.
+No new slice README is added (the pbxproj exception set is not edited); the
+`Catalog` slice and these additions are documented here.
+
+- **Product picture** (`Shared/UI/ProductImageView.swift`) — one shared view that
+  draws a picture from a model's `imageUrl` (a `/uploads/...` path served without
+  a token) against the current API base, with an `NSCache` + `URLCache`-backed
+  loader (`ProductImageLoader`) so the grid scrolls smoothly and pictures already
+  seen show offline. The model form (`ModelPictureField`, shown once the model
+  exists) picks from the photo library (`PhotosPicker`) or the camera
+  (`CameraPhotoPicker`, real device only), downscales to a JPEG ≤ 2 MB
+  (`ProductImageEncode`) and maps the server's 400/413 to `catalog.errorPicture*`.
+  Thumbnails show in the models list. The multipart upload lives in `APIClient`
+  (`postMultipart`), not the feature.
+- **Catalog mode** (`Features/Catalog/`, shown inside `PosView`) — a two-way
+  `SegmentedControl` at the top of the till switches **Scan** (today's screen) and
+  **Catalog**, remembered per device (`PosMode`). Catalog mode is a search field,
+  category chips and a grid of product cards (picture, name, in-stock count,
+  price — a range for unit products, per-piece for quantity). A card tap
+  (`CatalogPick`, pure): a quantity product goes straight to the cart (a re-tap
+  raises it); a unit product with exactly one free unit is added; otherwise the
+  unit picker sheet opens. A unit already in the cart is never offered again. Both
+  modes feed the **same** cart (`PosCartColumn`); on a phone a persistent cart bar
+  (`PosCartBar`) opens the cart + checkout, on an iPad the grid and cart sit side
+  by side. Offline, the grid builds from the device + product caches
+  (`CatalogOffline`, carried on the sync feed via `imageUrl`/`categoryId` now on
+  `DeviceEntity`/`ProductEntity`).
+- **Intake code lookup** (`Features/Procurement`, `IntakeLookupSection`) — a
+  separate optional "code on the box" field next to the IMEI slots, scannable with
+  the camera. A box code (≥ 5 chars) or a full IMEI asks `GET /lookup`: a named
+  product is auto-selected and its empty storage/colour filled (`IntakeLookupFill`
+  — only empty fields, never overwriting); an unnamed-but-known reference is shown
+  for a one-time pick with "remember for next time" (`POST /lookup/links`, admins
+  only); an unknown code shows a quiet hint. The lookup is debounced and
+  online-only and never blocks or slows saving. `catalog.dataCredit` credits the
+  free list where the lookup is used.
+
+DEBUG self-checks: `CatalogSelfCheck` (tap rules — quantity, one unit, several
+units, a unit already in the cart — and the offline grid build),
+`IntakeLookupFillSelfCheck` (fill only empty fields), `ProductImageEncodeSelfCheck`
+(a large image downscales under 2 MB). Run on first POS / catalog / form appear.
+
+DEBUG args added: `-posCatalog 1` (open catalog mode); `-posCatalogPick <modelId>`
+(open the unit picker for a product); `-posCatalogAdd "<unitModelId>,<qtyModelId>"`
+(seed the cart from the catalog, bar visible); `-posCatalogCart "<u>,<q>"` (seed +
+open the cart); `-posSellCatalog "<u>,<q>"` (seed from the catalog and run a real
+checkout); `-intakeBox <code>` (prefill the intake box-code field so a capture
+shows the found / pick / not-found result).
 

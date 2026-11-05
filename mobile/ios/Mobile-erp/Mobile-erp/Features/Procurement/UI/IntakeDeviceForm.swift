@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// Sticky model + specs + cost with two IMEI slots. A scan (camera, HID wedge or
-/// typed) FILLS the next empty slot — IMEI 1, then IMEI 2 when Dual SIM is on —
-/// and only validates "15 digits". Once every required slot plus model + cost is
-/// set, the confirm sheet opens automatically; Confirm emits an `IntakeDraft` and
-/// clears the IMEI slots (model/specs/cost persist for the next unit).
+/// Sticky model + specs + cost with two IMEI slots. A scan fills the next empty
+/// slot; once model + cost + every required slot is set the confirm sheet opens.
+/// A box code or IMEI can also fill the model/colour/storage (lookup, ADR 0031).
 struct IntakeDeviceForm: View {
     @Environment(I18n.self) private var i18n
     let models: [DeviceModel]
@@ -28,8 +26,20 @@ struct IntakeDeviceForm: View {
     @State private var serial = ""
     @State private var error: String?
     @State private var pending: IntakePendingScan?
+    /// True while the lookup is setting `modelId`, so the `modelId` change does not
+    /// wipe the IMEI/specs the lookup (or the person) just filled (ADR 0031).
+    @State private var applyingLookup = false
 
     private var model: DeviceModel? { models.first { $0.id == modelId } }
+
+    /// Focus the identifier field on appear — except in a `-intakeBox` screenshot
+    /// run, where the keyboard would hide the lookup result.
+    private var autoFocusIdentifier: Bool {
+        #if DEBUG
+        if UserDefaults.standard.string(forKey: "intakeBox") != nil { return false }
+        #endif
+        return true
+    }
 
     /// QUANTITY models are not stocked as units (ADR 0029 — the server rejects
     /// intake 400), so they never appear in the intake picker.
@@ -41,6 +51,13 @@ struct IntakeDeviceForm: View {
             ForEach(sellableModels) { m in Text(m.label).tag(String?.some(m.id)) }
         }
         .onChange(of: modelId) {
+            // A lookup-driven model change keeps what was already filled; only a
+            // manual pick starts the unit over.
+            if applyingLookup {
+                applyingLookup = false
+                stageIfComplete(showHints: false)
+                return
+            }
             specs = [:]; imei1 = ""; imei2 = ""; serial = ""; error = nil
             stageIfComplete(showHints: false)
         }
@@ -54,9 +71,13 @@ struct IntakeDeviceForm: View {
         }
         #endif
 
+        // Fill the model + specs from a scanned/typed box code or IMEI (ADR 0031).
+        IntakeLookupSection(modelId: $modelId, specs: $specs, models: sellableModels,
+                            imei: imei1, applyProduct: applyLookup)
+
         if let model {
             ForEach(model.attributes) { attr in
-                SpecField(attr: attr, value: Binding(
+                IntakeSpecField(attr: attr, value: Binding(
                     get: { specs[attr.key] ?? "" },
                     set: { specs[attr.key] = $0 }
                 ))
@@ -101,7 +122,7 @@ struct IntakeDeviceForm: View {
                     .fixedSize()
             }
             ScanOrValueField(text: $imei1, placeholder: i18n.t("shipments.scanImei"),
-                             autoFocus: true, onScan: fill)
+                             autoFocus: autoFocusIdentifier, onScan: fill)
 
             if dualSim {
                 Text(i18n.t("inventory.imei2", default: "IMEI 2"))
@@ -121,7 +142,7 @@ struct IntakeDeviceForm: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(i18n.t("catalog.serialNumber")).font(.caption).foregroundStyle(Tokens.muted)
             ScanOrValueField(text: $serial, placeholder: i18n.t("catalog.scanCode"),
-                             autoFocus: true, onScan: fillSerial)
+                             autoFocus: autoFocusIdentifier, onScan: fillSerial)
             Text(i18n.t("catalog.serialNumberHint")).font(.caption).foregroundStyle(Tokens.muted)
             if let error { Text(error).font(.footnote).foregroundStyle(Tokens.danger) }
         }
@@ -226,6 +247,20 @@ struct IntakeDeviceForm: View {
         return true
     }
 
+    /// Apply a looked-up product (ADR 0031): select it (auto only when no model is
+    /// chosen yet; a manual pick always wins), then fill storage/colour — only the
+    /// fields still empty, never overwriting what the person typed.
+    private func applyLookup(_ product: LookupProduct, force: Bool) {
+        if modelId != product.modelId, force || modelId == nil {
+            applyingLookup = true
+            modelId = product.modelId
+        }
+        guard modelId == product.modelId else { return }
+        specs = IntakeLookupFill.apply(current: specs,
+                                       storage: product.storageOption, color: product.colorOption)
+        stageIfComplete(showHints: false)
+    }
+
     private func confirm() {
         if let draft = pending?.draft {
             onAdd(draft)
@@ -258,25 +293,6 @@ private struct IntakePendingScan: Identifiable {
     let code: String
     let draft: IntakeDraft?
     let error: String?
-}
-
-/// One spec input, chosen by attribute type (select → Picker, else text).
-private struct SpecField: View {
-    let attr: ProcAttributeDef
-    @Binding var value: String
-
-    private var label: String { attr.required ? "\(attr.label) *" : attr.label }
-
-    var body: some View {
-        if attr.type == "select", !attr.options.isEmpty {
-            Picker(label, selection: $value) {
-                Text("—").tag("")
-                ForEach(attr.options, id: \.self) { Text($0).tag($0) }
-            }
-        } else {
-            LabeledField(label, text: $value, keyboard: attr.type == "number" ? .numberPad : .default)
-        }
-    }
 }
 
 private extension String {

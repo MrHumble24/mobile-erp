@@ -69,6 +69,28 @@ final class APIClient {
         _ = try await performData(path, method: "DELETE", query: [:], bodyData: nil)
     }
 
+    /// Upload one file as `multipart/form-data` (the device-model picture, ADR
+    /// 0031). The server decides the type from the leading bytes, so the declared
+    /// `mimeType`/`fileName` are only hints. Same auth header, envelope and 401
+    /// path as every other write.
+    func postMultipart<T: Decodable>(
+        _ path: String, fileField: String, fileName: String,
+        mimeType: String, fileData: Data
+    ) async throws -> T {
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+        body.appendString("--\(boundary)\r\n")
+        body.appendString("Content-Disposition: form-data; name=\"\(fileField)\"; filename=\"\(fileName)\"\r\n")
+        body.appendString("Content-Type: \(mimeType)\r\n\r\n")
+        body.append(fileData)
+        body.appendString("\r\n--\(boundary)--\r\n")
+        let data = try await performData(
+            path, method: "POST", query: [:], bodyData: body,
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+        return try decode(data)
+    }
+
     /// Open-ended JSON bodies (admin writes send an explicit JSON `null` via
     /// `NSNull` to clear a field), mirroring `postJSON`.
     func patchJSON<T: Decodable>(_ path: String, _ body: [String: Any]) async throws -> T {
@@ -110,7 +132,8 @@ final class APIClient {
         _ path: String,
         method: String,
         query: [String: String],
-        bodyData: Data?
+        bodyData: Data?,
+        contentType: String = "application/json"
     ) async throws -> Data {
         var comps = URLComponents(
             url: baseURL().appendingPathComponent(path),
@@ -122,7 +145,7 @@ final class APIClient {
         var req = URLRequest(url: url)
         req.timeoutInterval = 15
         req.httpMethod = method
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue(contentType, forHTTPHeaderField: "Content-Type")
         if let token = token(), !token.isEmpty {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
@@ -190,3 +213,10 @@ final class APIClient {
 
 /// Decodes/ignores a response body when the caller has nothing to read.
 struct Empty: Codable {}
+
+private extension Data {
+    /// Append a UTF-8 string — multipart boundaries and headers are plain ASCII.
+    mutating func appendString(_ string: String) {
+        append(Data(string.utf8))
+    }
+}
