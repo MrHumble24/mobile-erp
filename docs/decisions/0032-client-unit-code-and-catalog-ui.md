@@ -1,4 +1,4 @@
-# 0030 — Client unit-code helper and catalog UI
+# 0032 — Client unit-code helper and catalog UI
 
 Date: 2026-11-05
 Status: Accepted
