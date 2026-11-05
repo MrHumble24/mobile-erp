@@ -7,9 +7,14 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
 ## Exposes (REST `/shipments`)
 
 - `GET /`, `GET /:id` — includes `deviceCount`, the computed cost-restricted
-  `unitExpenseTotal` and `customsFeeTotal` (sums over its devices, never stored)
-  and `devicesWithoutCustomsFee` (count of its devices whose fee is 0, for a
-  warning) (`shipment.read`).
+  `unitExpenseTotal`, `customsFeeTotal` and `stockLinesTotal` (sums, never
+  stored) and `devicesWithoutCustomsFee` (count of its devices whose fee is 0,
+  for a warning) (`shipment.read`). `GET /:id` also carries `stockLines:
+  [{ id, modelId, brand, name, quantity, unitCost, lineTotal, occurredAt }]`
+  built from the shipment's `PURCHASE` stock movements (newest last) via
+  `StockService` — the shipments module never reads stock tables. `unitCost`/
+  `lineTotal` are null without `device.cost.view`; `stockLinesTotal` is a cost
+  key stripped the same way (ADR 0034).
 - `POST /` — create `{ supplierId, shipmentDate, expectedCount,
   paymentAccountCode?, notes? }` (`shipment.manage`). 404 if supplier missing.
   `paymentAccountCode` (default CASH, must be active) is **fixed after creation**

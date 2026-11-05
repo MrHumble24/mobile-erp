@@ -29,12 +29,18 @@ import {
 } from './dto/register-devices.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
 import { RegisterItemsDto } from './dto/register-items.dto.js';
+import {
+  str,
+  sumLineTotals,
+  toStockLineViews,
+} from './lib/shipment-stock-lines.js';
 import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
 import { ShipmentsQuantityRepository } from './shipments-quantity.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
 import {
   RegisteredDeviceView,
   RegisterDeviceInput,
+  ShipmentDetailView,
   ShipmentView,
 } from './types/shipment.types.js';
 
@@ -53,12 +59,29 @@ export class ShipmentsService {
     private readonly events: EventEmitter2,
   ) {}
 
-  list(): Promise<ShipmentView[]> {
-    return this.repo.findAll();
+  async list(): Promise<ShipmentView[]> {
+    const views = await this.repo.findAll();
+    const totals = await this.stock.purchaseTotalsByShipment(
+      views.map((v) => v.id),
+    );
+    return views.map((v) => ({ ...v, stockLinesTotal: str(totals.get(v.id)) }));
   }
 
-  get(id: string): Promise<ShipmentView> {
-    return this.require(id);
+  /** Shipment detail + its quantity PURCHASE lines via StockService (ADR 0030). */
+  async get(
+    caller: AuthenticatedUser,
+    id: string,
+  ): Promise<ShipmentDetailView> {
+    const view = await this.require(id);
+    const lines = await this.stock.shipmentPurchaseLines(id);
+    return {
+      ...view,
+      stockLinesTotal: sumLineTotals(lines),
+      stockLines: toStockLineViews(
+        lines,
+        caller.permissions.has('device.cost.view'),
+      ),
+    };
   }
 
   async create(dto: CreateShipmentDto, userId: string): Promise<ShipmentView> {
@@ -268,6 +291,7 @@ export class ShipmentsService {
   private async require(id: string): Promise<ShipmentView> {
     const shipment = await this.repo.findById(id);
     if (!shipment) throw new NotFoundException(`Shipment ${id} not found`);
-    return shipment;
+    const totals = await this.stock.purchaseTotalsByShipment([id]);
+    return { ...shipment, stockLinesTotal: str(totals.get(id)) };
   }
 }

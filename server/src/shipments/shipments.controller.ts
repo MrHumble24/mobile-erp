@@ -20,8 +20,8 @@ export class ShipmentsController {
 
   @Get(':id')
   @RequirePermissions('shipment.read')
-  get(@Param('id') id: string) {
-    return this.shipments.get(id);
+  get(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.shipments.get(user, id);
   }
 
   @Post()
