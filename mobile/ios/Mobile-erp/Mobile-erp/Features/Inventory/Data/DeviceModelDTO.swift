@@ -56,13 +56,16 @@ struct DeviceModelView: Codable, Identifiable {
     /// Box EAN barcode (unique); maker's model code (e.g. A2894). nil when unset.
     let barcode: String?
     let modelCode: String?
+    /// Default till price per piece for a QUANTITY product (ADR 0030); 2-dp
+    /// string, nil when unset. Only meaningful for QUANTITY models.
+    let salePrice: String?
 
     var label: String { "\(brand) \(name)" }
 
     init(id: String, brand: String, name: String,
          isActive: Bool, attributes: [AttributeDef], customsCode: String? = nil,
          kindCode: String = "IMEI", categoryId: String? = nil,
-         barcode: String? = nil, modelCode: String? = nil) {
+         barcode: String? = nil, modelCode: String? = nil, salePrice: String? = nil) {
         self.id = id
         self.brand = brand
         self.name = name
@@ -73,6 +76,7 @@ struct DeviceModelView: Codable, Identifiable {
         self.categoryId = categoryId
         self.barcode = barcode
         self.modelCode = modelCode
+        self.salePrice = salePrice
     }
 
     init(from decoder: Decoder) throws {
@@ -87,5 +91,13 @@ struct DeviceModelView: Codable, Identifiable {
         categoryId = try c.decodeIfPresent(String.self, forKey: .categoryId)
         barcode = try c.decodeIfPresent(String.self, forKey: .barcode)
         modelCode = try c.decodeIfPresent(String.self, forKey: .modelCode)
+        // Money arrives as a 2-dp string, but tolerate a numeric encoding too.
+        if let s = try? c.decodeIfPresent(String.self, forKey: .salePrice) {
+            salePrice = s
+        } else if let d = try? c.decodeIfPresent(Double.self, forKey: .salePrice) {
+            salePrice = NSDecimalNumber(value: d).stringValue
+        } else {
+            salePrice = nil
+        }
     }
 }

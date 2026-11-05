@@ -12,6 +12,9 @@ struct ReturnSheet: View {
     /// with a 400 (ADR 0028); the field caps at it so that rarely fires. Nil =
     /// unknown (warranty-flow entry), so only the server guards.
     var maxRefund: Decimal? = nil
+    /// A quantity sale (ADR 0030) has no device, so the restock-condition picker
+    /// is hidden; the pieces are restored to stock regardless.
+    var isQuantity = false
     let onDone: () -> Void
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -62,13 +65,15 @@ struct ReturnSheet: View {
                     .padding(.vertical, 2)
                 }
 
-                Section(i18n.t("sales.returnCondition", default: "Restock Condition")) {
-                    Picker(i18n.t("sales.returnCondition", default: "Condition"), selection: $condition) {
-                        Text(i18n.t("sales.returnToStock", default: "In Stock (Resellable)")).tag("IN_STOCK")
-                        Text(i18n.t("sales.returnToDefective", default: "Defective (Needs Repair)")).tag("DEFECTIVE")
+                if !isQuantity {
+                    Section(i18n.t("sales.returnCondition", default: "Restock Condition")) {
+                        Picker(i18n.t("sales.returnCondition", default: "Condition"), selection: $condition) {
+                            Text(i18n.t("sales.returnToStock", default: "In Stock (Resellable)")).tag("IN_STOCK")
+                            Text(i18n.t("sales.returnToDefective", default: "Defective (Needs Repair)")).tag("DEFECTIVE")
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.vertical, 2)
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.vertical, 2)
                 }
 
                 Section(i18n.t("sales.returnReason", default: "Return Reason")) {

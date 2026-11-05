@@ -16,9 +16,10 @@ struct PullService {
                 "/sync/changes", query: since.map { ["since": $0] } ?? [:]
             )
             let page = ChangesPage(json: json)
-            AppLog.info("sync", "pull page: \(page.devices.count) devices, \(page.partners.count) partners")
+            AppLog.info("sync", "pull page: \(page.devices.count) devices, \(page.partners.count) partners, \(page.products.count) products")
             for d in page.devices { upsertDevice(d) }
             for p in page.partners { upsertPartner(p) }
+            for p in page.products { upsertProduct(p) }
             if let next = page.nextSince { setCursor(next) }
             try? context.save()
             guard let next = page.nextSince else { break }
@@ -61,6 +62,21 @@ struct PullService {
             context.insert(PartnerEntity(
                 id: r.id, shopName: r.shopName, phone: r.phone,
                 creditLimit: r.creditLimit, outstanding: r.outstanding))
+        }
+    }
+
+    private func upsertProduct(_ r: ProductRow) {
+        let id = r.modelId
+        let existing = try? context.fetch(
+            FetchDescriptor<ProductEntity>(predicate: #Predicate { $0.modelId == id })
+        ).first
+        if let e = existing {
+            e.brand = r.brand; e.name = r.name; e.barcode = r.barcode
+            e.salePrice = r.salePrice; e.quantity = r.quantity
+        } else {
+            context.insert(ProductEntity(
+                modelId: r.modelId, brand: r.brand, name: r.name,
+                barcode: r.barcode, salePrice: r.salePrice, quantity: r.quantity))
         }
     }
 

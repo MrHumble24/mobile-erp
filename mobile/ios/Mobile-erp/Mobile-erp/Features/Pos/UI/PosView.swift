@@ -14,7 +14,8 @@ struct PosView: View {
     /// the payment control is captured. Normal launches anchor at the top.
     private var demoScrollAnchor: UnitPoint {
         #if DEBUG
-        if UserDefaults.standard.string(forKey: "posDemo") != nil { return .bottom }
+        let keys = ["posDemo", "posSplit", "posSellMix"]
+        if keys.contains(where: { UserDefaults.standard.string(forKey: $0) != nil }) { return .bottom }
         #endif
         return .top
     }
@@ -34,7 +35,7 @@ struct PosView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
                 } else {
-                    Text(i18n.t("pos.lineCount"))
+                    Text(i18n.t("pos.lineCount", ["count": String(model.cart.count)]))
                         .font(.ui(.caption))
                         .foregroundStyle(Tokens.muted)
                     VStack(spacing: Tokens.Space.lg) {
@@ -55,6 +56,16 @@ struct PosView: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.ground)
         .navigationTitle(i18n.t("pos.title"))
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { model.showProductSearch = true } label: {
+                    Label(i18n.t("catalog.addToCart"), systemImage: "plus")
+                }
+            }
+        }
+        .appSheet(isPresented: $model.showProductSearch) {
+            PosProductSearchSheet { model.addProduct($0) }
+        }
         // Capture spring (list insertions) + the haptic vocabulary: a completed
         // sale is success, a rejected/duplicate scan is error. The scan itself
         // ticks in ScannerField.
@@ -93,6 +104,11 @@ struct PosView: View {
                 model.confirmScan()
                 model.checkout()
             }
+            // `-posMix "<unitCode>,<barcode>"` seeds a mixed cart (phone + 3 pieces);
+            // add `-posSplit 1` to split it. `-posSellMix "…"` runs a real checkout.
+            if let arg = KitDebugLaunch.consume("posMix") { model.debugSeedMix(arg) }
+            if KitDebugLaunch.consume("posSplit") != nil { model.debugSplitHalf() }
+            if let arg = KitDebugLaunch.consume("posSellMix") { model.debugSellMix(arg) }
             #endif
         }
         .onChange(of: container.router.pending) { _, _ in consumeRoute() }

@@ -37,7 +37,8 @@ struct PosCheckoutResultSheet: View {
                 Spacer()
                 MoneyText(value: sale.salePrice)
             }
-            Text(sale.unitCode).font(.mono(12)).foregroundStyle(Tokens.muted)
+            Text(sale.unitCode.isEmpty ? sale.quantityLabel : sale.unitCode)
+                .font(.mono(12)).foregroundStyle(Tokens.muted)
             if let imei2 = sale.imei2, !imei2.isEmpty {
                 Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
                     .font(.mono(11)).foregroundStyle(.tertiary)

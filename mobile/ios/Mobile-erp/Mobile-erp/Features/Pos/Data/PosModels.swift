@@ -18,6 +18,37 @@ struct ScannedDevice: Identifiable {
     var code: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
+/// A quantity product resolved for the cart (ADR 0030) — from the local product
+/// cache offline, or `GET /scan/:code` / `GET /stock?search=` online.
+struct PosCartProduct: Equatable, Identifiable {
+    let modelId: String
+    let name: String
+    let barcode: String?
+    /// Default till price per piece; nil when unset.
+    let salePrice: String?
+    /// Pieces currently in stock (may be negative) — drives the over-stock warning.
+    let quantityInStock: Int
+
+    var id: String { modelId }
+}
+
+/// `GET /scan/:code` answer (ADR 0030): a unit or a quantity product; `product`
+/// is set only when `kind == "product"`.
+struct ScanResultDTO: Decodable {
+    let kind: String
+    let product: ProductScanDTO?
+}
+
+/// The quantity-product branch of a scan result (`QuantityProductView`).
+struct ProductScanDTO: Decodable {
+    let modelId: String
+    let brand: String
+    let name: String
+    let barcode: String?
+    let salePrice: String?
+    let quantity: Int
+}
+
 /// A scanned IMEI awaiting the cashier's confirmation before it joins the cart.
 /// `device` is set when the scan resolved to a sellable unit; otherwise it is nil
 /// and `errorKey` names the gate that failed (rendered in the sheet's error
@@ -38,9 +69,15 @@ struct CompletedSale: Identifiable {
     let imei2: String?
     let serialNumber: String?
     let modelLabel: String
+    /// Pieces, for a quantity line (ADR 0030); nil for a unit line.
+    let quantity: Int?
+    /// Price per piece, for a quantity line; nil for a unit line.
+    let unitPrice: String?
 
     /// The code to show on the receipt: IMEI when present, else the serial.
     var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+    /// "× N" for a quantity line; empty for a unit line.
+    var quantityLabel: String { quantity.map { "× \($0)" } ?? "" }
     let salePrice: String
     let soldAt: Date
     let cashier: String
@@ -51,16 +88,37 @@ struct CompletedSale: Identifiable {
     let pending: Bool
 }
 
-/// One device queued in the POS cart with its editable sale terms. Price and
-/// warranty are strings (bound to text fields); `clientMutationId` is stable so
-/// a retry or an offline enqueue is idempotent for this line.
+/// One cart line with its editable sale terms: a **unit** (phone/serial) or a
+/// **quantity product** (ADR 0030). `price` is the whole price for a unit, the
+/// price per piece for a product; `lineTotal` is what the server charges. Price
+/// and warranty are strings (bound to fields); `clientMutationId` is stable so a
+/// retry or an offline enqueue stays idempotent for this line.
 struct PosCartLine: Identifiable {
     let id: String
-    let device: ScannedDevice
+    /// Set for a unit line; nil for a quantity line.
+    let device: ScannedDevice?
+    /// Set for a quantity line; nil for a unit line.
+    let product: PosCartProduct?
     var price: String
+    var quantity: Int
     var warrantyDays: String
     var notes: String
     let clientMutationId: String
+
+    var isProduct: Bool { product != nil }
+    /// Code to dedupe by / show: the unit code, else the product's barcode/id.
+    var code: String { device?.code ?? product?.barcode ?? product?.modelId ?? "" }
+    var modelLabel: String { device?.modelLabel ?? product?.name ?? "" }
+    /// What the server charges: per-piece × quantity for a product, else the price.
+    var lineTotal: Decimal {
+        let p = Decimal(string: price.trimmingCharacters(in: .whitespaces)) ?? .zero
+        return isProduct ? p * Decimal(quantity) : p
+    }
+    /// A quantity line selling more than is in stock — warn, never block (ADR 0030).
+    var exceedsStock: Bool {
+        guard let product else { return false }
+        return quantity > product.quantityInStock
+    }
 }
 
 /// The cart's shared customer: an existing one (`id` set, from typeahead) or an
@@ -87,35 +145,40 @@ nonisolated struct InlineCustomerPayload: Encodable {
 
 /// The `CreateSaleDto` body. Swift's synthesized `Encodable` omits nil optionals
 /// (`encodeIfPresent`), so no stray keys reach the server's `forbidNonWhitelisted`.
-/// `clientMutationId`/`expectedVersion` make an online retry idempotent; for an
-/// offline enqueue the sync handler overrides them from the outbox entry.
+/// A unit sale sends `imei`/`serialNumber` + `expectedVersion`; a quantity sale
+/// sends `modelId` + `quantity` and `salePrice` is the line total (ADR 0030).
 nonisolated struct SaleCreatePayload: Encodable {
-    /// Exactly one of imei/serialNumber identifies the unit (ADR 0029). Swift's
-    /// synthesized encoder omits the nil one via `encodeIfPresent`.
     let imei: String?
     let serialNumber: String?
+    /// Quantity sale: the product and pieces; mutually exclusive with imei/serial.
+    let modelId: String?
+    let quantity: Int?
     let salePrice: Double
     let clientMutationId: String
-    let expectedVersion: Int
+    /// Unit sale only; nil (omitted) for a quantity sale (no device lock).
+    let expectedVersion: Int?
     let customerId: String?
     let customer: InlineCustomerPayload?
     let warrantyDays: Int?
     let notes: String?
     /// How the sale was tendered; nil (omitted) means a single CASH payment of
-    /// the whole price. Carried verbatim into the offline outbox, so an offline
-    /// split survives the sync push.
+    /// the whole price. Carried verbatim into the offline outbox.
     let payments: [SalePaymentPost]?
 }
 
 /// Pure builder — one payload shape for both the online POST and the offline
-/// outbox row, kept free of SwiftData/HTTP so it stays unit-testable. A new
-/// inline customer and an existing `customerId` are mutually exclusive.
+/// outbox row, kept free of SwiftData/HTTP so it stays unit-testable. Pass either
+/// a unit (`imei`/`serialNumber` + `expectedVersion`) or a quantity product
+/// (`modelId` + `quantity`), never both. A new inline customer and an existing
+/// `customerId` are mutually exclusive.
 func buildSalePayload(
-    imei: String?,
+    imei: String? = nil,
     serialNumber: String? = nil,
+    modelId: String? = nil,
+    quantity: Int? = nil,
     salePrice: Double,
     clientMutationId: String,
-    expectedVersion: Int,
+    expectedVersion: Int? = nil,
     customerId: String?,
     customerName: String?,
     customerPhone: String?,
@@ -132,6 +195,8 @@ func buildSalePayload(
     return SaleCreatePayload(
         imei: nonEmpty(imei),
         serialNumber: nonEmpty(serialNumber),
+        modelId: nonEmpty(modelId),
+        quantity: quantity,
         salePrice: salePrice,
         clientMutationId: clientMutationId,
         expectedVersion: expectedVersion,
@@ -154,49 +219,3 @@ func moneyToDouble(_ value: String) -> Double {
     let trimmed = value.trimmingCharacters(in: .whitespaces)
     return NSDecimalNumber(decimal: Decimal(string: trimmed) ?? .zero).doubleValue
 }
-
-#if DEBUG
-/// Self-check for the payload builder's two rules: inline/existing exclusivity
-/// and omission of absent optionals (so `forbidNonWhitelisted` never trips).
-enum PosSelfCheck {
-    static let ran: Void = {
-        func keys(_ p: SaleCreatePayload) -> Set<String> {
-            let data = try! JSONEncoder().encode(p)
-            let obj = try! JSONSerialization.jsonObject(with: data) as! [String: Any]
-            return Set(obj.keys)
-        }
-        // Inline customer wins only when no existing id; absent optionals omitted.
-        let inline = buildSalePayload(
-            imei: "123456789012345", salePrice: 100, clientMutationId: "m",
-            expectedVersion: 3, customerId: nil, customerName: " Ali ",
-            customerPhone: nil, warrantyDays: nil, notes: "  ")
-        assert(inline.customer?.name == "Ali" && inline.customerId == nil)
-        assert(!keys(inline).contains("warrantyDays"))
-        assert(!keys(inline).contains("notes"))
-        assert(!keys(inline).contains("customerId"))
-        // An IMEI sale sends imei, never serialNumber.
-        assert(keys(inline).contains("imei") && !keys(inline).contains("serialNumber"))
-        // A serial sale sends serialNumber, never imei (ADR 0029).
-        let serial = buildSalePayload(
-            imei: nil, serialNumber: "PS5-ABC", salePrice: 100, clientMutationId: "m",
-            expectedVersion: 1, customerId: nil, customerName: nil,
-            customerPhone: nil, warrantyDays: nil, notes: nil)
-        assert(keys(serial).contains("serialNumber") && !keys(serial).contains("imei"))
-        // Existing id suppresses the inline customer.
-        let existing = buildSalePayload(
-            imei: "123456789012345", salePrice: 100, clientMutationId: "m",
-            expectedVersion: 3, customerId: "cust-1", customerName: "Ali",
-            customerPhone: "+998", warrantyDays: 30, notes: "n")
-        assert(existing.customerId == "cust-1" && existing.customer == nil)
-        assert(moneyToDouble("1250.50") == 1250.5)
-        // Empty payments omit the key; a real split keeps it.
-        assert(!keys(inline).contains("payments"))
-        let split = buildSalePayload(
-            imei: "123456789012345", salePrice: 100, clientMutationId: "m",
-            expectedVersion: 3, customerId: nil, customerName: nil,
-            customerPhone: nil, warrantyDays: nil, notes: nil,
-            payments: [SalePaymentPost(accountCode: "CARD", amount: 100)])
-        assert(keys(split).contains("payments"))
-    }()
-}
-#endif

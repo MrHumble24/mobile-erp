@@ -122,6 +122,11 @@ private struct SaleRow: View {
                             .font(.data(.regular))
                             .foregroundStyle(Tokens.text)
                     }
+                    if sale.isQuantitySale {
+                        Text(sale.quantityLabel)
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.text)
+                    }
                     if let imei2 = sale.device?.imei2, !imei2.isEmpty {
                         Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
                     }

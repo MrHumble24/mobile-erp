@@ -119,6 +119,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing product (device-model) definitions: **kind** (IMEI / SERIAL / QUANTITY — ADR 0029, locked once the product has units, `catalog.kindLocked`), **category** (picker from `/product-categories`, with a category filter and kind+category shown on each row), **barcode** (unique), maker's **model code**, a `customsCode` (ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). The form is `ModelFormSheet`. |
 | **Categories** (`CategoriesSheet`) | `Features/Inventory/UI/CategoriesSheet.swift` | Inventory Lead | Manage product categories (`GET/POST/PATCH /product-categories`) — list, add, edit (name / sortOrder / isActive) in `CategoryEditSheet`. Opened from the `DeviceModelsTab` toolbar (folder, `nav.categories`). Duplicate name → 409 `catalog.errorCategoryExists`. |
 | **Stock Alert Rules** (`StockAlertsTab`) | `Features/Inventory/UI/StockAlertsTab.swift` | Inventory Lead | Configuring minimum inventory reorder thresholds per model ([`AlertRuleForm`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AlertRuleForm.swift)). |
+| **Stock (quantity products)** (`StockView`) | `Features/Stock/UI/StockView.swift` | Inventory / Owner | Quantity-product stock (ADR 0030): on-hand quantity (below-zero flagged), price, cost/value (cost-gated), movements sheet, and write-off / count-correction (`stock.adjust`). Nav entry `nav.stock`, perm `device.read`. |
 | **Supplier Directory** (`SuppliersListView`) | `Features/Procurement/UI/SuppliersListView.swift` | Store Owner | Supplier records and fulfillment contact information ([`SupplierFormSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Procurement/UI/SupplierFormSheet.swift)). |
 
 ---
@@ -292,4 +293,56 @@ the label `catalog.unitCode` ("IMEI / serial number"). The `catalog` namespace i
 registered in `I18n/I18n.swift`. Sales decoders tolerate a `QUANTITY` sale
 (`device: null`, model+quantity at the top level) so a mixed list never fails to
 decode.
+
+## Quantity-product stock, sales & the till (ADR 0030)
+
+A `QUANTITY` product (cases, cables, chargers) has no units — its stock is a
+signed movement log whose sum is the on-hand quantity (may be **below zero**;
+flagged, never blocked). No slice README is added (the pbxproj exception set is
+not edited); the slice is documented here.
+
+- **Stock** (`StockModule`, `Features/Stock/`) — a new nav entry next to
+  Inventory, label `nav.stock`, perm `device.read`. `StockView` lists each
+  counted product (quantity, price, and — with `device.cost.view` — average cost
+  and stock value) with a category filter and a name/barcode/model-code search; a
+  product below zero shows in danger with `catalog.belowZero`, a product at zero
+  an out-of-stock badge. A row opens `StockMovementsSheet` (paged movements,
+  newest first; `unitCostSnapshot` cost-gated) which, with `stock.adjust`, offers
+  `StockAdjustSheet` — **write off** (quantity + required reason) and **count
+  correction** (counted quantity; the difference against the current level is
+  shown before saving). Online-only.
+- **Product form** (`ModelFormSheet`) — for a `QUANTITY` kind the form shows the
+  price per piece (`salePrice`) and hides the attribute schema and customs code.
+- **Shipment stock lines** (`ShipmentItemsSheet`, from the detail's "Add stock")
+  — pick a QUANTITY product, pieces and cost per piece, stage one or more lines
+  (each with its line total), save (`POST /shipments/:id/items`); the "paid from"
+  account is shown read-only. The detail shows the lines added this session (the
+  server has no read of a shipment's quantity lines — a known gap).
+- **Till** (`PosView`) — the scan field takes any code: a unit (IMEI/serial)
+  resolves from the cache and behaves as before; a product barcode resolves from
+  the cache (offline) or `GET /scan/:code` (online) and is added straight to the
+  cart (a re-scan raises the quantity). A toolbar "+" opens
+  `PosProductSearchSheet` (find by name via `GET /stock?search=`). A quantity cart
+  line (`PosCartLineRow`) has a quantity stepper, a price per piece (default
+  `salePrice`, editable) and its line total, and warns when the quantity exceeds
+  stock without blocking. A cart mixes phones, serial units and quantity lines;
+  the cart's Cash/Card/Split choice is allocated across the line totals by
+  `allocateSalePayments`, one `POST /sales` (or outbox entry) per line.
+- **Offline** — `products[]` from `/sync/changes` is cached in `ProductEntity`
+  (added to `LocalSchema`; an existing store migrates by adding the table). A
+  quantity line sells offline: the barcode is looked up in the cache and the sale
+  is queued in the outbox with `modelId`+`quantity` and no device lock.
+- **Receipt / list / detail / return** — a quantity sale/line shows the product
+  and `× quantity` (plus price-per-piece and line total on receipts) across the
+  POS receipt, the sales list/detail, the server receipt, the CSV export and the
+  returns report row. `ReturnSheet` hides the restock-condition for a quantity
+  sale (the pieces are restored regardless).
+
+DEBUG args added: `-open stock`; `-openStockMovements first` (open the first
+product's movements); `-openStockAdjust writeOff|count` (open an adjust sheet);
+`-openShipmentItems 1` (open the add-stock sheet on a shipment detail);
+`-posMix "<unitCode>,<barcode>"` (seed a phone + 3 pieces), `-posSplit 1` (split
+the cart half CASH / half CARD), `-posSellMix "<unitCode>,<barcode>"` (seed,
+split and run a real checkout); `-openSaleReceipt 1` / `-openSaleReturn 1` (open
+the receipt / return sheet on a sale detail).
 

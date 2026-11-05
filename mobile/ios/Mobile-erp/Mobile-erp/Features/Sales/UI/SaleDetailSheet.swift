@@ -39,12 +39,20 @@ struct SaleDetailSheet: View {
         .background(Tokens.card)
         .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id, payments: sale.payments ?? []) }
         .sheet(isPresented: $showReturn) {
-            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund) {
+            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund, isQuantity: sale.isQuantitySale) {
                 container.toasts.success(i18n.t("sales.returnSuccess"))
                 onChanged()
                 dismiss()
             }
         }
+        #if DEBUG
+        // `-openSaleReturn 1` / `-openSaleReceipt 1` open the return / receipt
+        // sheet for screenshots.
+        .task {
+            if KitDebugLaunch.consume("openSaleReceipt") != nil { showReceipt = true }
+            if canReturn, KitDebugLaunch.consume("openSaleReturn") != nil { showReturn = true }
+        }
+        #endif
     }
 
     private var header: some View {
@@ -66,6 +74,11 @@ struct SaleDetailSheet: View {
             }
             if !sale.unitCode.isEmpty {
                 CopyableIMEI(label: i18n.t("catalog.unitCode"), value: sale.unitCode, accessibilityLabel: i18n.t("inventory.copyImei"))
+            }
+            if sale.isQuantitySale {
+                Text(sale.quantityLabel)
+                    .font(.data(.large))
+                    .foregroundStyle(Tokens.text)
             }
             if let imei2 = sale.device?.imei2, !imei2.isEmpty {
                 CopyableIMEI(label: i18n.t("inventory.imei2"), value: imei2, accessibilityLabel: i18n.t("inventory.copyImei"))

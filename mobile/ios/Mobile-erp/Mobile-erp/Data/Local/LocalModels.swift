@@ -72,6 +72,30 @@ final class PartnerEntity {
     }
 }
 
+/// Cached quantity product from `/sync/changes` `products[]` (ADR 0030), so an
+/// offline till can find a barcode and sell pieces. `quantity` may be negative.
+/// `salePrice` is a Decimal string (nil when unset). A new @Model type — an
+/// existing store migrates by adding it (no data loss).
+@Model
+final class ProductEntity {
+    @Attribute(.unique) var modelId: String
+    var brand: String
+    var name: String
+    var barcode: String?
+    var salePrice: String?
+    var quantity: Int
+
+    init(modelId: String, brand: String, name: String,
+         barcode: String?, salePrice: String?, quantity: Int) {
+        self.modelId = modelId
+        self.brand = brand
+        self.name = name
+        self.barcode = barcode
+        self.salePrice = salePrice
+        self.quantity = quantity
+    }
+}
+
 /// Queued offline mutation awaiting `/sync/push`. Only the four server-
 /// registered types are ever written here (see `OutboxType`).
 /// `status`: pending | conflict | rejected.
@@ -118,5 +142,5 @@ final class SyncMeta {
 /// The whole local schema, in one place for the `ModelContainer`.
 enum LocalSchema {
     static let models: [any PersistentModel.Type] =
-        [DeviceEntity.self, PartnerEntity.self, OutboxEntry.self, SyncMeta.self]
+        [DeviceEntity.self, PartnerEntity.self, ProductEntity.self, OutboxEntry.self, SyncMeta.self]
 }

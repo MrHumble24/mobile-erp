@@ -82,6 +82,8 @@ struct SaleView: Decodable, Identifiable {
 
     var isB2B: Bool { consignmentId != nil }
     var isReturned: Bool { returnedAt != nil }
+    /// A quantity sale (ADR 0030): no unit, carries `model` + `quantity`.
+    var isQuantitySale: Bool { quantity != nil }
 
     /// Brand + name from the unit's model, falling back to the top-level model
     /// (quantity sale).
@@ -90,6 +92,8 @@ struct SaleView: Decodable, Identifiable {
     var unitCode: String { device?.unitCode ?? "" }
     var modelBrand: String { device?.model.brand ?? model?.brand ?? "" }
     var modelName: String { device?.model.name ?? model?.name ?? "" }
+    /// The line "× N" for a quantity sale; empty for a unit sale.
+    var quantityLabel: String { quantity.map { "× \($0)" } ?? "" }
 }
 
 struct SalesPage: Decodable {

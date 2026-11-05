@@ -15,6 +15,10 @@ struct ShipmentDetailSheet: View {
     @State private var modelNames: [String: String] = [:]
     @State private var editShipment: Shipment?
     @State private var intake: Shipment?
+    @State private var showItems = false
+    /// Quantity lines added this session (ADR 0030). The server has no read of a
+    /// shipment's quantity lines, so these show only the just-added ones.
+    @State private var quantityLines: [ShipmentItemDTO] = []
 
     private var canManage: Bool { container.session.can("shipment.manage") }
     private var canIntake: Bool { container.session.can("device.create") }
@@ -50,6 +54,9 @@ struct ShipmentDetailSheet: View {
                     }
                     actions
                 }
+                if !quantityLines.isEmpty {
+                    Section(i18n.t("catalog.stock")) { stockLines }
+                }
                 Section(i18n.t("shipments.deviceList")) {
                     devices
                 }
@@ -71,12 +78,35 @@ struct ShipmentDetailSheet: View {
                 if pager == nil { pager = makePager() }
                 await loadModels()
                 await pager?.first()
+                #if DEBUG
+                if KitDebugLaunch.consume("openShipmentItems") != nil { showItems = true }
+                #endif
             }
             .sheet(item: $editShipment, onDismiss: reload) { s in
                 ShipmentFormSheet(existing: s)
             }
             .sheet(item: $intake, onDismiss: reload) { s in
                 IntakeSheet(shipment: s)
+            }
+            .appSheet(isPresented: $showItems) {
+                ShipmentItemsSheet(shipment: shipment) { _, lines in
+                    quantityLines.append(contentsOf: lines)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var stockLines: some View {
+        ForEach(quantityLines) { line in
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(line.label).font(.ui(.body)).foregroundStyle(Tokens.text)
+                    Text("\(line.quantity) × \(MoneyText.format(NSDecimalNumber(decimal: line.unitCost).stringValue))")
+                        .font(.data(.regular)).foregroundStyle(Tokens.muted)
+                }
+                Spacer()
+                MoneyText(value: NSDecimalNumber(decimal: line.lineTotal).stringValue, size: 13)
             }
         }
     }
@@ -100,6 +130,9 @@ struct ShipmentDetailSheet: View {
         if canIntake {
             Button { intake = shipment } label: {
                 Label(i18n.t("shipments.continueIntake"), systemImage: "plus")
+            }
+            Button { showItems = true } label: {
+                Label(i18n.t("catalog.addStock"), systemImage: "shippingbox")
             }
         }
     }
