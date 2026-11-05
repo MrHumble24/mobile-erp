@@ -85,8 +85,8 @@ class PosViewModel(
                 val s = _state.value
                 val errorKey = when {
                     device == null -> "common.notFound"
-                    s.pendingSold.contains(device.imei) -> "pos.alreadyQueued"
-                    s.lines.any { it.device.imei == device.imei } -> "pos.duplicateDevice"
+                    s.pendingSold.contains(device.code) -> "pos.alreadyQueued"
+                    s.lines.any { it.device.code == device.code } -> "pos.duplicateDevice"
                     !device.inStock -> "pos.deviceConflict"
                     else -> null
                 }
@@ -113,15 +113,15 @@ class PosViewModel(
 
     fun dismissScan() { _state.value = _state.value.copy(prompt = null) }
 
-    fun setLinePrice(imei: String, price: String) = mapLine(imei) { it.copy(salePrice = price) }
-    fun setLineWarranty(imei: String, days: String) = mapLine(imei) { it.copy(warrantyDays = days) }
-    fun removeLine(imei: String) {
-        _state.value = _state.value.copy(lines = _state.value.lines.filterNot { it.device.imei == imei })
+    fun setLinePrice(code: String, price: String) = mapLine(code) { it.copy(salePrice = price) }
+    fun setLineWarranty(code: String, days: String) = mapLine(code) { it.copy(warrantyDays = days) }
+    fun removeLine(code: String) {
+        _state.value = _state.value.copy(lines = _state.value.lines.filterNot { it.device.code == code })
     }
 
-    private fun mapLine(imei: String, f: (CartLine) -> CartLine) {
+    private fun mapLine(code: String, f: (CartLine) -> CartLine) {
         _state.value = _state.value.copy(
-            lines = _state.value.lines.map { if (it.device.imei == imei) f(it) else it },
+            lines = _state.value.lines.map { if (it.device.code == code) f(it) else it },
         )
     }
 
@@ -163,7 +163,7 @@ class PosViewModel(
                         cashier = cashierName,
                         customerName = customerName?.takeIf { it.isNotBlank() },
                         items = lines.map {
-                            ReceiptLineItem(it.device.modelLabel, it.device.imei, it.salePrice, null)
+                            ReceiptLineItem(it.device.modelLabel, it.device.code, it.salePrice, null)
                         },
                         total = lines.totalPrice(),
                         warrantyUntil = null,

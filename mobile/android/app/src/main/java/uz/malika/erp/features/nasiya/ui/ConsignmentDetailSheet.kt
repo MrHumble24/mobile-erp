@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.ui
 
+import uz.malika.erp.features.nasiya.data.code
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,7 +53,7 @@ fun ConsignmentDetailSheet(
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
             Text(item.partnerShopName.ifBlank { t("consignments.detailTitle", null) }, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
             Spacer(Modifier.height(Tokens.Space.sm))
-            Text(item.imei, style = mono)
+            Text(item.code, style = mono)
             item.imei2?.takeIf { it.isNotBlank() }?.let { Text(it, style = mono.copy(color = Tokens.muted)) }
             Spacer(Modifier.height(Tokens.Space.sm))
             StatusChip(consignmentStatusLabel(item.statusCode, t), color = consignmentStatusColor(item.statusCode))

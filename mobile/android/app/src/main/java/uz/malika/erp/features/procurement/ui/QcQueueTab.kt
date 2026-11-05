@@ -47,11 +47,11 @@ fun QcQueueTab(
             item { AppCard(Modifier.fillMaxWidth()) { EmptyView(t("qc.queueEmpty", null), compact = true) } }
         } else {
             items(queue.items, key = { it.id }) { d ->
-                AppCard(Modifier.fillMaxWidth(), onClick = { onGrade(d.imei) }) {
+                AppCard(Modifier.fillMaxWidth(), onClick = { onGrade(d.code) }) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(modelNames[d.modelId] ?: d.modelId, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                            Text(d.imei, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                            Text(d.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                         }
                         Spacer(Modifier.width(Tokens.Space.gap))
                         StatusChip(t(DeviceStatusMeta.labelKey(d.statusCode), null), color = DeviceStatusMeta.color(d.statusCode))

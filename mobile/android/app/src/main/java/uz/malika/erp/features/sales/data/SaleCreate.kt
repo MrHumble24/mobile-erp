@@ -24,7 +24,8 @@ data class SaleOp(val payload: JsonObject, val baseVersion: Int)
  */
 object SaleCreate {
     fun payload(
-        imei: String,
+        imei: String?,
+        serialNumber: String? = null,
         salePrice: BigDecimal,
         customerId: String? = null,
         customerName: String? = null,
@@ -33,7 +34,9 @@ object SaleCreate {
         notes: String? = null,
         payments: List<AccountAmount> = emptyList(),
     ): JsonObject = buildJsonObject {
-        put("imei", imei)
+        // Exactly one identifier (ADR 0029): the server resolves it against imei,
+        // imei2 or serialNumber. A phone sends `imei`, a serial unit `serialNumber`.
+        if (imei != null) put("imei", imei) else serialNumber?.let { put("serialNumber", it) }
         put("salePrice", JsonPrimitive(salePrice))
         // Tender lines for this sale; omitted means the server posts one CASH line.
         if (payments.isNotEmpty()) {
@@ -81,6 +84,7 @@ object SaleCreate {
         SaleOp(
             payload = payload(
                 imei = line.device.imei,
+                serialNumber = line.device.serialNumber,
                 salePrice = parseMoney(line.salePrice),
                 customerId = customerId,
                 customerName = customerName,

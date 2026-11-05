@@ -28,7 +28,7 @@ internal fun ShipmentDevicesTable(rows: List<DeviceRowDto>, modelNames: Map<Stri
         Column {
             rows.forEach { d ->
                 Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
-                    ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
+                    ImeiText(d.code, style = MaterialTheme.typography.bodyMedium)
                     d.imei2?.takeIf { it.isNotBlank() }?.let {
                         ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
                     }
@@ -67,7 +67,7 @@ internal fun ShipmentDevicesTable(rows: List<DeviceRowDto>, modelNames: Map<Stri
     }
     Column {
         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("IMEI", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1.4f))
+            Text(t("catalog.unitCode", null), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1.4f))
             Text(t("common.status", null), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
             if (showCost) {
                 Text(t("inventory.landedCost", null), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
@@ -77,7 +77,7 @@ internal fun ShipmentDevicesTable(rows: List<DeviceRowDto>, modelNames: Map<Stri
         rows.forEach { d ->
             Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1.4f)) {
-                    ImeiText(d.imei, style = MaterialTheme.typography.bodyMedium)
+                    ImeiText(d.code, style = MaterialTheme.typography.bodyMedium)
                     d.imei2?.takeIf { it.isNotBlank() }?.let {
                         ImeiText(it, style = MaterialTheme.typography.bodySmall.copy(color = Tokens.mutedForeground))
                     }

@@ -38,11 +38,23 @@ interface InventoryApi {
     @GET("device-models")
     suspend fun deviceModels(): List<DeviceModelDto>
 
+    // Model writes send a hand-built JsonObject so blanked optional fields
+    // (categoryId/barcode/modelCode/customsCode) go up as explicit null to clear
+    // them — the Json config omits typed nulls (explicitNulls=false) (ADR 0029).
     @POST("device-models")
-    suspend fun createModel(@Body body: ModelWriteBody)
+    suspend fun createModel(@Body body: JsonElement)
 
     @PATCH("device-models/{id}")
-    suspend fun updateModel(@Path("id") id: String, @Body body: ModelWriteBody)
+    suspend fun updateModel(@Path("id") id: String, @Body body: JsonElement)
+
+    @GET("product-categories")
+    suspend fun categories(): List<ProductCategoryDto>
+
+    @POST("product-categories")
+    suspend fun createCategory(@Body body: CategoryBody): ProductCategoryDto
+
+    @PATCH("product-categories/{id}")
+    suspend fun updateCategory(@Path("id") id: String, @Body body: CategoryBody): ProductCategoryDto
 
     @GET("stock-alert-rules")
     suspend fun rules(): List<StockAlertRuleDto>
@@ -62,8 +74,9 @@ interface InventoryApi {
 @Serializable
 data class DeviceDetailDto(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val modelId: String,
     val statusCode: String,
     val version: Int,
@@ -106,6 +119,26 @@ data class DeviceModelDto(
     val isActive: Boolean = true,
     val attributes: List<AttributeDefDto> = emptyList(),
     val customsCode: String? = null,
+    val kindCode: String = "IMEI",
+    val categoryId: String? = null,
+    val barcode: String? = null,
+    val modelCode: String? = null,
+)
+
+@Serializable
+data class ProductCategoryDto(
+    val id: String,
+    val name: String,
+    val sortOrder: Int = 0,
+    val isActive: Boolean = true,
+)
+
+/** Create / update a product category. Nulls dropped by the Json config. */
+@Serializable
+data class CategoryBody(
+    val name: String? = null,
+    val sortOrder: Int? = null,
+    val isActive: Boolean? = null,
 )
 
 @Serializable
@@ -142,15 +175,6 @@ data class ChangeStatusBody(
     val toStatusCode: String,
     val expectedVersion: Int,
     val reason: String? = null, // omitted when null (explicitNulls=false)
-)
-
-@Serializable
-data class ModelWriteBody(
-    val brand: String,
-    val name: String,
-    val attributes: List<AttributeDefDto>,
-    val isActive: Boolean? = null, // sent on edit only
-    val customsCode: String? = null, // omitted when blank (explicitNulls=false)
 )
 
 @Serializable

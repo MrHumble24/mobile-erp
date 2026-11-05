@@ -61,3 +61,6 @@ all three nav items and routes.
   the card gap; the offline notice sits on top, save is the one orange pill at
   the bottom. The sales card gains the fixed-currency `FactRow` (USD) for parity
   with iOS.
+
+## Serial units (ADR 0029)
+- The sync conflict list shows the unit's `code` (imei or serialNumber).

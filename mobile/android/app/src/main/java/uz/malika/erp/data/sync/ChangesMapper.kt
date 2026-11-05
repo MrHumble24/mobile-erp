@@ -19,6 +19,8 @@ object ChangesMapper {
         id = d.id,
         imei = d.imei,
         imei2 = d.imei2,
+        serialNumber = d.serialNumber,
+        kindCode = d.model?.kindCode,
         statusCode = d.statusCode,
         version = d.version,
         targetPrice = d.targetPrice.asScalar(),

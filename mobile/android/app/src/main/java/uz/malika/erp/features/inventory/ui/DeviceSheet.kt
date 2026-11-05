@@ -134,7 +134,7 @@ private fun DeviceSheetBody(
             color = Tokens.text,
         )
         Spacer(Modifier.height(Tokens.Space.sm))
-        ImeiCopyRow("IMEI", device.imei, clipboard, toaster, t)
+        ImeiCopyRow(if (device.imei != null) "IMEI" else t("catalog.unitCode", null), device.code, clipboard, toaster, t)
         device.imei2?.takeIf { it.isNotBlank() }?.let {
             ImeiCopyRow(t("inventory.imei2", null), it, clipboard, toaster, t)
         }
@@ -149,7 +149,7 @@ private fun DeviceSheetBody(
             if (canSell) {
                 PillButton(
                     text = t("inventory.sellInPos", null),
-                    onClick = { featureNav.open(Destination.Pos(device.imei)); onClose() },
+                    onClick = { featureNav.open(Destination.Pos(device.code)); onClose() },
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(Tokens.Space.sm))
@@ -157,7 +157,7 @@ private fun DeviceSheetBody(
             if (canInspect) {
                 PillButton(
                     text = t("qc.runInspection", null),
-                    onClick = { featureNav.open(Destination.Qc(device.imei)); onClose() },
+                    onClick = { featureNav.open(Destination.Qc(device.code)); onClose() },
                     variant = ButtonVariant.SECONDARY,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -191,7 +191,7 @@ private fun DeviceSheetBody(
             }
         }
         Spacer(Modifier.height(Tokens.Space.lg))
-        DeviceBarcode(imei = device.imei)
+        DeviceBarcode(imei = device.code)
         Spacer(Modifier.height(Tokens.Space.lg))
         DeviceSpecsGrid(device = device)
         Spacer(Modifier.height(Tokens.Space.gutter))

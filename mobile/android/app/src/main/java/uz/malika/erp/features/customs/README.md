@@ -25,3 +25,7 @@ per-phone fee (that edit lives in `inventory` on the device). One route
 - Edit or delete a version (append-only), or recompute a stamped phone's fee.
 - Open a second OkHttp client — uses `container.retrofit.create(...)`.
 - Model cost fields as required: they are redaction-nullable.
+
+## Fixes
+- The screen shows its title once (app bar only; the duplicate page header was
+  removed). The third tab uses the short key `customs.unmatchedShort` ("No fee").

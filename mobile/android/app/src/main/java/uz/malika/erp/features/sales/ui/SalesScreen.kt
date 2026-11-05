@@ -209,7 +209,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                 canReturn = LocalCan.current("sale.return"),
                 onReceipt = { vm.loadReceipt(sale.id) },
                 onReturn = { selected = null; returnSale = sale; returnSaleId = sale.id },
-                onOpenDevice = { selected = null; container.featureNav.open(Destination.Inventory(sale.imei)) },
+                onOpenDevice = { selected = null; container.featureNav.open(Destination.Inventory(sale.code)) },
                 onOpenConsignment = {
                     sale.consignmentId?.let { selected = null; container.featureNav.open(Destination.Consignments(it)) }
                 },
@@ -270,7 +270,7 @@ private fun SaleRow(sale: Sale, t: uz.malika.erp.i18n.Translate, onClick: () -> 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
                 Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                Text(sale.imei, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+                Text(sale.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
                 sale.imei2?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
                 }

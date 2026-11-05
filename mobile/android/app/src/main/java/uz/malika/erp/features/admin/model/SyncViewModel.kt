@@ -15,7 +15,7 @@ import uz.malika.erp.AppContainer
 import uz.malika.erp.data.local.OutboxEntity
 
 /** One conflict row distilled from the server's raw `/sync/conflicts` payload. */
-data class ConflictRow(val id: String, val imei: String, val type: String)
+data class ConflictRow(val id: String, val code: String, val type: String)
 
 /**
  * Sync status: the live offline outbox (from the local DB), a manual trigger,
@@ -52,7 +52,7 @@ class SyncViewModel(private val container: AppContainer) : ViewModel() {
             val obj = el.jsonObject
             ConflictRow(
                 id = obj["id"]?.jsonPrimitive?.content ?: "",
-                imei = obj["imei"]?.jsonPrimitive?.content ?: "—",
+                code = (obj["imei"] ?: obj["serialNumber"])?.jsonPrimitive?.content ?: "—",
                 type = obj["attemptedChange"]?.jsonObject?.get("type")?.jsonPrimitive?.content
                     ?: obj["type"]?.jsonPrimitive?.content ?: "—",
             )

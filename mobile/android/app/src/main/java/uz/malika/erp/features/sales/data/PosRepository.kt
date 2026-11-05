@@ -36,19 +36,21 @@ class PosRepository(
         }
     }
 
-    /** IMEIs with a pending offline `sale.create` — treated as already sold on re-scan. */
+    /** Unit codes with a pending offline `sale.create` — treated as already sold on re-scan. */
     fun watchPendingSoldImeis(): Flow<Set<String>> =
         db.outboxDao().watchAll().map { rows ->
             rows.asSequence()
                 .filter { it.type == OutboxType.SALE_CREATE && it.status == "pending" }
-                .mapNotNull { imeiOf(it.payload) }
+                .mapNotNull { codeOf(it.payload) }
                 .toSet()
         }
 
-    private fun imeiOf(payloadJson: String): String? =
-        runCatching { json.parseToJsonElement(payloadJson).jsonObject["imei"]?.jsonPrimitive?.content }
-            .getOrNull()
-            ?.takeIf { it.isNotEmpty() }
+    /** Whichever identifier the queued sale carries — imei or serialNumber (ADR 0029). */
+    private fun codeOf(payloadJson: String): String? =
+        runCatching {
+            val obj = json.parseToJsonElement(payloadJson).jsonObject
+            (obj["imei"] ?: obj["serialNumber"])?.jsonPrimitive?.content
+        }.getOrNull()?.takeIf { it.isNotEmpty() }
 
     /** Queue the checkout. Returns the mutation id (= clientMutationId the server dedups on). */
     suspend fun enqueueSale(payload: kotlinx.serialization.json.JsonObject, baseVersion: Int): String =

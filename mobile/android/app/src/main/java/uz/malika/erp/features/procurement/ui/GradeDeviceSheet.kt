@@ -129,7 +129,7 @@ private fun GradeForm(
                 .padding(Tokens.Space.lg),
         ) {
             Text(inputs.device.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-            ImeiText(inputs.device.imei, style = MaterialTheme.typography.bodyMedium)
+            ImeiText(inputs.device.code, style = MaterialTheme.typography.bodyMedium)
         }
         Spacer(Modifier.height(Tokens.Space.lg))
         SegmentedControl(

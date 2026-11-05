@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.ui
 
+import uz.malika.erp.features.nasiya.data.code
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -196,7 +198,7 @@ fun ConsignmentsScreen(container: AppContainer) {
             onDismiss = { detailFor = null },
             onSettle = { detailFor = null; settleFor = c },
             onReturn = { detailFor = null; returnFor = c },
-            onViewDevice = { detailFor = null; container.featureNav.open(Destination.Inventory(c.imei)) },
+            onViewDevice = { detailFor = null; container.featureNav.open(Destination.Inventory(c.code)) },
             onViewSale = c.saleId?.let { sid -> { detailFor = null; container.featureNav.open(Destination.Sales(sid)) } },
         )
     }

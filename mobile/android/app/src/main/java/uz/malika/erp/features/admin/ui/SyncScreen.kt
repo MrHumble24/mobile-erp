@@ -123,7 +123,7 @@ private fun ConflictCard(vm: SyncViewModel, row: ConflictRow) {
     val scope = rememberCoroutineScope()
     AppCard {
         Text(row.type, style = MaterialTheme.typography.titleSmall)
-        Text(row.imei, style = MaterialTheme.typography.bodySmall)
+        Text(row.code, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PillButton(

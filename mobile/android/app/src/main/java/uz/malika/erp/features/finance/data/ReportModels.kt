@@ -76,9 +76,12 @@ data class LowStockItem(
 @Serializable
 data class OverdueConsignment(
     val id: String,
-    val imei: String = "",
+    val imei: String? = null,
+    val serialNumber: String? = null,
     @Serializable(with = FlexMoneySerializer::class) val agreedPrice: String = "0",
     val dueDate: String = "",
     val partnerShopName: String = "",
     val partnerPhone: String? = null,
-)
+) {
+    val code: String get() = imei ?: serialNumber ?: ""
+}

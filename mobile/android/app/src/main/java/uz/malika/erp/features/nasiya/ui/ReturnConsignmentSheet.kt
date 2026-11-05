@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.ui
 
+import uz.malika.erp.features.nasiya.data.code
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,7 +52,7 @@ fun ReturnConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
             verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
             Text(t("consignments.return", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
-            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.imei)
+            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.code)
             Text(t("consignments.returnCondition", null), style = MaterialTheme.typography.labelLarge, color = Tokens.muted)
             SegmentedControl(
                 options = listOf(
@@ -64,7 +66,7 @@ fun ReturnConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
             ActionError(state.error, state.offline)
             PillButton(
                 text = if (state.submitting) t("common.loading", null) else t("consignments.return", null),
-                onClick = { vm.returnToStock(item.id, item.imei, reason.trim().ifBlank { null }, condition) },
+                onClick = { vm.returnToStock(item.id, item.code, reason.trim().ifBlank { null }, condition) },
                 enabled = !state.submitting,
                 variant = ButtonVariant.DESTRUCTIVE,
                 modifier = Modifier.fillMaxWidth(),

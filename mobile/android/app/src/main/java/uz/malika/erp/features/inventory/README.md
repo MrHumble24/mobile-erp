@@ -72,3 +72,21 @@ gated by `device.read`).
   none). Both are candidates for the integrator to promote.
 - `t("common.offline")`, `inventory.selectDevice` and kit-wide `common.loadMore`
   are not yet in the web i18n JSON (Gemini handoff); the raw key shows until added.
+
+## Product kinds & serial units (ADR 0029)
+- A product carries a **kind**: `IMEI` (phones), `SERIAL` (one row per unit, by
+  serial number) or `QUANTITY` (counted; catalog-only for now). `ModelFormSheet`
+  edits kind (three options + hints, `ProductKindPicker`), category (picker from
+  `/product-categories`, `catalog.noCategory`), barcode, maker's model code and
+  customs code. Model writes are hand-built JSON (`ModelForm.toJson`) so blanking
+  an optional field sends an explicit `null` to clear it on edit; a 409 maps to
+  the field that collided (`conflictKey`: name / barcode / kind). The Models list
+  shows kind + category and has a category filter; **Categories** opens
+  `ProductCategoriesSheet` (list / add / edit → `/product-categories`).
+- A unit is identified by its IMEI **or** serial number. Device rows, the detail
+  sheet (`catalog.unitCode` label when the unit is serial), filters and search all
+  use the shared `UnitCode` helper via each type's `code`. `EditDeviceSheet` hides
+  the dual-SIM / IMEI 2 block for a serial unit. The device cache is Room **v3**
+  (`MIGRATION_2_3`: `imei` nullable, `serialNumber`/`kindCode` added; the devices
+  table is rebuilt, the outbox survives); `DeviceDao.findByImei` matches imei,
+  imei2 or serialNumber.

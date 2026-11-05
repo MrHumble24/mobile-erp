@@ -57,17 +57,27 @@ data class QcLatestInspection(val passed: Boolean = false)
 @Serializable
 data class QcDeviceDto(
     val id: String,
-    val imei: String,
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val statusCode: String,
     val modelId: String = "",
     val model: QcModelRef? = null,
     val latestInspection: QcLatestInspection? = null,
 ) {
     val modelLabel: String get() = model?.label?.takeIf { it.isNotBlank() } ?: modelId
+
+    /** The unit's identifier — IMEI or serial number (ADR 0029). */
+    val code: String get() = imei ?: serialNumber ?: ""
 }
 
 @Serializable
-data class InspectionDeviceDto(val imei: String = "", val model: QcModelRef? = null)
+data class InspectionDeviceDto(
+    val imei: String? = null,
+    val serialNumber: String? = null,
+    val model: QcModelRef? = null,
+) {
+    val code: String get() = imei ?: serialNumber ?: ""
+}
 
 @Serializable
 data class InspectorDto(val name: String = "")
@@ -86,7 +96,7 @@ data class QcInspectionDto(
     val inspectedBy: InspectorDto = InspectorDto(),
     val defects: List<InspectionDefectDto> = emptyList(),
 ) {
-    val imei: String get() = device.imei
+    val code: String get() = device.code
     val modelLabel: String get() = device.model?.label ?: ""
     val inspectorName: String get() = inspectedBy.name
 }

@@ -11,8 +11,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "devices")
 data class DeviceEntity(
     @PrimaryKey val id: String,
-    val imei: String,
+    val imei: String? = null, // null for a serial unit (ADR 0029)
     val imei2: String? = null, // optional second IMEI (dual-SIM); matched by findByImei
+    val serialNumber: String? = null, // null for an IMEI unit; exactly one of imei/serialNumber is set
+    val kindCode: String? = null, // the model's product kind (IMEI | SERIAL | QUANTITY)
     val statusCode: String,
     val version: Int,
     val targetPrice: String?, // Decimal string

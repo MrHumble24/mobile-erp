@@ -9,6 +9,7 @@ import uz.malika.erp.data.local.AppDatabase
 import uz.malika.erp.data.sync.Connectivity
 import uz.malika.erp.data.sync.OutboxApi
 import uz.malika.erp.data.sync.OutboxType
+import uz.malika.erp.shared.lib.UnitCode
 
 /**
  * The offline-capable consignment lifecycle (ADR 0008). The three
@@ -28,27 +29,38 @@ class ConsignmentWriter(
     private val db: AppDatabase,
     private val connectivity: Connectivity,
 ) {
-    private suspend fun deviceVersion(imei: String): Int? =
-        db.deviceDao().findByImei(imei)?.version
+    private suspend fun deviceVersion(code: String): Int? =
+        db.deviceDao().findByImei(code)?.version
 
     suspend fun create(
-        imei: String,
+        code: String,
         partnerId: String,
         agreedPrice: Double,
         dueDateIso: String,
         notes: String?,
     ): Boolean {
-        val version = deviceVersion(imei)
+        val version = deviceVersion(code)
+        // Exactly one identifier (ADR 0029): a 15-digit IMEI goes as imei, else serialNumber.
+        val id = UnitCode.identify(code)
         return dispatch(
             rest = {
                 api.createConsignment(
-                    CreateConsignmentBody(imei, partnerId, agreedPrice, dueDateIso, notes, newUuidV4()),
+                    CreateConsignmentBody(
+                        imei = id.imei,
+                        serialNumber = id.serialNumber,
+                        partnerId = partnerId,
+                        agreedPrice = agreedPrice,
+                        dueDate = dueDateIso,
+                        notes = notes,
+                        clientMutationId = newUuidV4(),
+                    ),
                 )
             },
             type = OutboxType.CONSIGNMENT_CREATE,
             baseVersion = version,
         ) {
-            put("imei", imei)
+            id.imei?.let { put("imei", it) }
+            id.serialNumber?.let { put("serialNumber", it) }
             put("partnerId", partnerId)
             put("agreedPrice", agreedPrice)
             put("dueDate", dueDateIso)
@@ -58,13 +70,13 @@ class ConsignmentWriter(
 
     suspend fun settle(
         consignmentId: String,
-        imei: String,
+        code: String,
         salePrice: Double?,
         notes: String?,
     ): Boolean = dispatch(
         rest = { api.settle(consignmentId, SettleBody(salePrice, notes)) },
         type = OutboxType.CONSIGNMENT_SETTLE,
-        baseVersion = deviceVersion(imei),
+        baseVersion = deviceVersion(code),
     ) {
         put("consignmentId", consignmentId)
         salePrice?.let { put("salePrice", it) }
@@ -73,13 +85,13 @@ class ConsignmentWriter(
 
     suspend fun returnToStock(
         consignmentId: String,
-        imei: String,
+        code: String,
         reason: String?,
         condition: String?,
     ): Boolean = dispatch(
         rest = { api.returnToStock(consignmentId, ReturnBody(reason, condition)) },
         type = OutboxType.CONSIGNMENT_RETURN,
-        baseVersion = deviceVersion(imei),
+        baseVersion = deviceVersion(code),
     ) {
         put("consignmentId", consignmentId)
         reason?.let { put("reason", it) }

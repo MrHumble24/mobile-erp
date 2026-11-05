@@ -57,7 +57,7 @@ fun CustomerStatsDto.toDomain() = CustomerStats(
 /** One row of a customer's purchase history (`GET /customers/:id/sales`). */
 data class CustomerSale(
     val id: String,
-    val imei: String,
+    val code: String,
     val modelLabel: String,
     val salePrice: String,
     val soldAt: String?,
@@ -65,8 +65,8 @@ data class CustomerSale(
 
 fun SaleDto.toCustomerSale() = CustomerSale(
     id = id,
-    imei = device.imei,
-    modelLabel = "${device.model.brand} ${device.model.name}".trim(),
+    code = uz.malika.erp.shared.lib.UnitCode.display(device?.imei, device?.serialNumber),
+    modelLabel = device?.let { "${it.model.brand} ${it.model.name}".trim() } ?: "",
     salePrice = salePrice,
     soldAt = soldAt,
 )

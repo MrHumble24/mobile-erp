@@ -73,6 +73,7 @@ class SalesRepository(
         val remaining = endsMillis?.let { remainingWarrantyDays(it, System.currentTimeMillis()) } ?: 0
         return Warranty(
             imei = device.imei,
+            serialNumber = device.serialNumber,
             saleId = sale.id,
             salePrice = sale.salePrice,
             remainingDays = remaining,

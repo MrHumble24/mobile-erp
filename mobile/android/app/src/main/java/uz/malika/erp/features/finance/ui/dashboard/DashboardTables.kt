@@ -87,7 +87,7 @@ private fun OverdueRow(r: OverdueConsignment) {
         Modifier.fillMaxWidth().heightIn(min = Tokens.minTouch),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TitleWithCaption(r.partnerShopName, r.imei, Modifier.weight(1f), mono = true)
+        TitleWithCaption(r.partnerShopName, r.code, Modifier.weight(1f), mono = true)
         Spacer(Modifier.width(Tokens.Space.gap))
         MoneyText(r.agreedPrice, style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.text))
         Spacer(Modifier.width(Tokens.Space.gap))

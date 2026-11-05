@@ -39,7 +39,7 @@ data class UserProfileNameDto(val firstName: String = "", val lastName: String? 
 @Serializable
 data class SaleDto(
     val id: String = "",
-    val device: SaleDeviceDto = SaleDeviceDto(),
+    val device: SaleDeviceDto? = null, // nullable: tolerate a sale whose device row is gone
     val customer: SaleCustomerDto? = null,
     val salePrice: String = "0",
     val landedCostSnapshot: String? = null,
@@ -60,14 +60,15 @@ data class SalePaymentDto(val accountCode: String = "", val amount: String = "0"
 
 @Serializable
 data class SaleDeviceDto(
-    val imei: String = "",
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val model: ModelRefDto = ModelRefDto(),
     val specs: JsonElement? = null,
 )
 
 @Serializable
-data class ModelRefDto(val brand: String = "", val name: String = "")
+data class ModelRefDto(val brand: String = "", val name: String = "", val kindCode: String? = null)
 
 @Serializable
 data class SaleCustomerDto(val id: String = "", val name: String = "", val phone: String? = null)
@@ -90,7 +91,8 @@ data class SaleReturnDto(
 
 @Serializable
 data class WarrantyDto(
-    val imei: String = "",
+    val imei: String? = null,
+    val serialNumber: String? = null,
     val saleId: String = "",
     val purchasedAt: String? = null,
     val salePrice: String = "0",
@@ -120,6 +122,7 @@ data class ReceiptDto(
 data class ReceiptItemDto(
     val imei: String = "",
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val model: String = "",
     val storage: String? = null,
     val color: String? = null,
@@ -137,8 +140,9 @@ data class ReceiptCustomerDto(val name: String = "", val phone: String? = null)
 @Serializable
 data class DeviceByImeiDto(
     val id: String = "",
-    val imei: String = "",
+    val imei: String? = null,
     val imei2: String? = null,
+    val serialNumber: String? = null,
     val version: Int = 0,
     val statusCode: String = "",
     val model: ModelRefDto = ModelRefDto(),

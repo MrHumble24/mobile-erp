@@ -30,7 +30,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.nasiya.model.ConsignEntry
 import uz.malika.erp.features.nasiya.model.ConsignWriteViewModel
-import uz.malika.erp.features.nasiya.model.isValidImei
+import uz.malika.erp.features.nasiya.model.isValidUnitCode
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
@@ -70,7 +70,7 @@ fun ConsignDeviceSheet(
     var notes by remember { mutableStateOf("") }
     val rows = remember { mutableStateListOf(RowInput()) }
 
-    val validRows = rows.filter { isValidImei(it.imei.trim()) && (it.price.trim().toDoubleOrNull() ?: 0.0) > 0.0 }
+    val validRows = rows.filter { isValidUnitCode(it.imei.trim()) && (it.price.trim().toDoubleOrNull() ?: 0.0) > 0.0 }
     val dueOk = dueDate.trim().length == 10
     val canSubmit = partnerId.isNotEmpty() && dueOk && validRows.isNotEmpty() && !state.submitting
 
@@ -113,11 +113,10 @@ fun ConsignDeviceSheet(
                         }
                     }
                     AppFormField(
-                        label = "IMEI",
+                        label = t("catalog.unitCode", null),
                         value = row.imei,
                         onValueChange = { row.imei = it },
-                        keyboardType = KeyboardType.Number,
-                        error = if (row.imei.isNotBlank() && !isValidImei(row.imei.trim())) t("common.required", null) else null,
+                        error = if (row.imei.isNotBlank() && !isValidUnitCode(row.imei.trim())) t("common.required", null) else null,
                     )
                     AppFormField(t("consignments.agreedPrice", null), row.price, { row.price = it }, keyboardType = KeyboardType.Number)
                 }

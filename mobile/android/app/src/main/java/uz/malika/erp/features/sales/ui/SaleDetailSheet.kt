@@ -66,7 +66,7 @@ fun SaleDetailSheet(
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(sale.modelLabel, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
         Spacer(Modifier.height(Tokens.Space.sm))
-        ImeiLine("IMEI", sale.imei)
+        ImeiLine(if (sale.imei != null) "IMEI" else t("catalog.unitCode", null), sale.code)
         sale.imei2?.takeIf { it.isNotBlank() }?.let { ImeiLine(t("inventory.imei2", null), it) }
         Spacer(Modifier.height(Tokens.Space.sm))
         Row(horizontalArrangement = Arrangement.spacedBy(Tokens.Space.sm)) {

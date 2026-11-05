@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.ui
 
+import uz.malika.erp.features.nasiya.data.code
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +53,7 @@ fun SettleConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
             verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         ) {
             Text(t("consignments.settle", null), style = MaterialTheme.typography.titleLarge, color = Tokens.text)
-            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.imei) {
+            SubjectBlock(item.partnerShopName.ifBlank { "—" }, item.code) {
                 MoneyText(item.agreedPrice.money(), style = MaterialTheme.typography.bodyMedium.copy(color = Tokens.muted))
             }
             AppFormField(t("consignments.settlePrice", null), salePrice, { salePrice = it }, keyboardType = KeyboardType.Number)
@@ -62,7 +64,7 @@ fun SettleConsignmentSheet(container: AppContainer, item: ConsignmentViewDto, on
                 text = if (state.submitting) t("common.loading", null) else t("consignments.settle", null),
                 onClick = {
                     if (priceValue <= 0.0) return@PillButton
-                    vm.settle(item.id, item.imei, priceValue, notes.trim().ifBlank { null })
+                    vm.settle(item.id, item.code, priceValue, notes.trim().ifBlank { null })
                 },
                 enabled = !state.submitting && priceValue > 0.0,
                 modifier = Modifier.fillMaxWidth(),

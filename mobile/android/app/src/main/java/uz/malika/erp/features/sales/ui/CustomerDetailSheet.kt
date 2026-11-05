@@ -82,7 +82,7 @@ private fun SaleHistoryRow(sale: CustomerSale) {
     Row(Modifier.fillMaxWidth().padding(vertical = Tokens.Space.sm), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(sale.modelLabel, style = MaterialTheme.typography.bodyMedium, color = Tokens.text)
-            Text(sale.imei, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.text)
+            Text(sale.code, style = MaterialTheme.typography.bodySmall.copy(fontFamily = MonoFamily), color = Tokens.text)
             sale.soldAt?.let { Text(formatDate(it), style = MaterialTheme.typography.bodySmall, color = Tokens.muted) }
         }
         MoneyText(sale.salePrice, style = MaterialTheme.typography.titleSmall.copy(color = Tokens.text))

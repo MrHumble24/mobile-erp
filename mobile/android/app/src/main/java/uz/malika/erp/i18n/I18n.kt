@@ -13,8 +13,8 @@ import org.json.JSONObject
  * missing key falls back locale → uz → en → the raw key. Default locale is `uz`.
  */
 private val NAMESPACES = listOf(
-    "auth", "balance", "common", "consignments", "customers", "customs", "dashboard", "expenses",
-    "inventory", "nav", "partners", "pos", "qc",
+    "auth", "balance", "catalog", "common", "consignments", "customers", "customs", "dashboard",
+    "expenses", "inventory", "nav", "partners", "pos", "qc",
     "reports", "sales", "settings", "shipments", "users",
 )
 private val LOCALES = listOf("uz", "en")

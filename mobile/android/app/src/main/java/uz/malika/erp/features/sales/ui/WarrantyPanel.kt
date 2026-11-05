@@ -46,7 +46,7 @@ fun WarrantyPanel(vm: SalesViewModel, online: Boolean, onReturn: (saleId: String
                 else -> {
                     val w = ui.result!!
                     AppCard(Modifier.fillMaxWidth()) {
-                        Text(w.imei, style = MaterialTheme.typography.titleMedium)
+                        Text(w.code, style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
                         StatusChip(
                             if (w.active) t("sales.warrantyValid", null) else t("sales.warrantyExpired", null),

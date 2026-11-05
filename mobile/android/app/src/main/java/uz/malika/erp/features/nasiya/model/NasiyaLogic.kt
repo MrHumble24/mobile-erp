@@ -1,5 +1,7 @@
 package uz.malika.erp.features.nasiya.model
 
+import uz.malika.erp.features.nasiya.data.code
+
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,6 +39,10 @@ fun daysOverdue(dueDateIso: String, statusCode: String, now: Long = System.curre
 /** The device-IMEI rule shared with the server: exactly 15 digits. */
 fun isValidImei(imei: String): Boolean = imei.matches(Regex("^\\d{15}$"))
 
+/** A valid unit identifier: a 15-digit IMEI or a 3-64 char serial number (ADR 0029). */
+fun isValidUnitCode(code: String): Boolean =
+    isValidImei(code) || uz.malika.erp.shared.lib.UnitCode.isValidSerial(code)
+
 /**
  * Credit-bar fill as a 0..1 fraction, or null for "no limit" (limit <= 0).
  * `outstanding`/`creditLimit` are Decimal strings.
@@ -65,7 +71,7 @@ fun consignmentCsvRows(
 ): List<List<String>> = items.map { c ->
     listOf(
         c.partnerShopName,
-        c.imei,
+        c.code,
         c.agreedPrice.money(),
         displayDate(c.dueDate),
         c.statusCode,
