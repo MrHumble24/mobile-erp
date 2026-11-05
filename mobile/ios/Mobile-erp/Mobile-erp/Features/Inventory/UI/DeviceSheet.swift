@@ -20,6 +20,8 @@ struct DeviceSheet: View {
     @State private var error: AppError?
     @State private var loading = true
     @State private var editing = false
+    @State private var editingExpense = false
+    @State private var editingCustoms = false
 
     private var repo: DeviceRepository { DeviceRepository(container) }
 
@@ -35,9 +37,13 @@ struct DeviceSheet: View {
                         canViewCost: container.session.can("device.cost.view"),
                         canEdit: container.session.can("device.update"),
                         canChangeStatus: container.session.can("device.status.change"),
+                        canEditExpense: container.session.can("device.expense"),
+                        canEditCustoms: container.session.can("customs.manage"),
                         showsClose: showsClose,
                         store: store,
                         onEdit: { editing = true },
+                        onEditExpense: { editingExpense = true },
+                        onEditCustoms: { editingCustoms = true },
                         onChanged: { await load() }
                     )
                 } else {
@@ -52,10 +58,30 @@ struct DeviceSheet: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(showsClose ? Tokens.card : Tokens.ground)
-        .task { await load() }
+        .task {
+            await load()
+            #if DEBUG
+            // Screenshot helper: `-openDeviceEdit expense|customs` opens that sheet.
+            switch KitDebugLaunch.consume("openDeviceEdit") {
+            case "expense": editingExpense = true
+            case "customs": editingCustoms = true
+            default: break
+            }
+            #endif
+        }
         .sheet(isPresented: $editing) {
             if let detail {
                 EditDeviceSheet(device: detail, store: store, onSaved: { Task { await load() } })
+            }
+        }
+        .sheet(isPresented: $editingExpense) {
+            if let detail {
+                EditUnitExpenseSheet(device: detail, onSaved: { Task { await load() } })
+            }
+        }
+        .sheet(isPresented: $editingCustoms) {
+            if let detail {
+                EditCustomsFeeSheet(device: detail, onSaved: { Task { await load() } })
             }
         }
     }
@@ -82,9 +108,13 @@ private struct DeviceSheetBody: View {
     let canViewCost: Bool
     let canEdit: Bool
     let canChangeStatus: Bool
+    let canEditExpense: Bool
+    let canEditCustoms: Bool
     let showsClose: Bool
     let store: InventoryStore
     let onEdit: () -> Void
+    let onEditExpense: () -> Void
+    let onEditCustoms: () -> Void
     let onChanged: () async -> Void
 
     @Environment(AppContainer.self) private var container
@@ -100,7 +130,7 @@ private struct DeviceSheetBody: View {
 
     var body: some View {
         header
-        if canSell || canInspect || canEdit { actions }
+        if canSell || canInspect || canEdit || canEditExpense || canEditCustoms { actions }
         DeviceBarcode(imei: device.imei)
         DeviceSpecsGrid(device: device, canViewCost: canViewCost)
         section(i18n.t("inventory.qcInspection")) { QcSummarySection(qc: device.latestInspection) }
@@ -154,6 +184,8 @@ private struct DeviceSheetBody: View {
                 }
             }
             if canEdit { pill(i18n.t("inventory.editDevice"), .pillGhost, action: onEdit) }
+            if canEditExpense { pill(i18n.t("inventory.editUnitExpense"), .pillGhost, action: onEditExpense) }
+            if canEditCustoms { pill(i18n.t("inventory.editCustomsFee"), .pillGhost, action: onEditCustoms) }
         }
     }
 

@@ -53,6 +53,9 @@ struct LedgerEntry: Decodable, Identifiable {
     let runningBalance: String
     let statusCode: String?
     let notes: String?
+    /// The ledger account a payment left to; nil for consignment charges and for
+    /// payments recorded before the server carried it.
+    let accountCode: String?
 
     var id: String { "\(refId)-\(at)" }
     var isConsignment: Bool { kind == "consignment" }

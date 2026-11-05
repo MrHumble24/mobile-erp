@@ -29,6 +29,22 @@ struct DeviceRepository {
         try await api.patchJSONVoid("/devices/\(id)", body)
     }
 
+    /// Set a phone's own expense (`device.expense`). Posts the DEVICE_EXPENSE
+    /// difference server-side (ADR 0026). `note == nil`/empty clears the note.
+    /// Decimal→NSDecimalNumber keeps the JSON an exact number, never a Double.
+    func setExpense(id: String, unitExpense: Decimal, note: String?) async throws {
+        var body: [String: Any] = ["unitExpense": NSDecimalNumber(decimal: unitExpense)]
+        body["unitExpenseNote"] = (note?.isEmpty == false) ? note! : NSNull()
+        try await api.patchJSONVoid("/devices/\(id)/expense", body)
+    }
+
+    /// Hand-fix a phone's customs fee (`customs.manage`). Posts the CUSTOMS
+    /// difference server-side (ADR 0027).
+    func setCustomsFee(id: String, customsFee: Decimal) async throws {
+        try await api.patchJSONVoid("/devices/\(id)/customs-fee",
+                                    ["customsFee": NSDecimalNumber(decimal: customsFee)])
+    }
+
     /// Throws `AppError` with `statusCode == 409` on a version mismatch.
     func changeStatus(id: String, toStatusCode: String,
                       expectedVersion: Int, reason: String?) async throws {

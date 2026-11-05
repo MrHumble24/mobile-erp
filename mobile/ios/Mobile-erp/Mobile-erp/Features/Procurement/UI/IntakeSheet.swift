@@ -16,6 +16,7 @@ struct IntakeSheet: View {
     @State private var error: String?
 
     private var canViewCost: Bool { container.session.can("device.cost.view") }
+    private var canSetExpense: Bool { container.session.can("device.expense") }
 
     var body: some View {
         NavigationStack {
@@ -33,7 +34,8 @@ struct IntakeSheet: View {
                                 IntakeDeviceForm(models: list, onAdd: add,
                                                  isDuplicate: { code in
                                                      drafts.contains { $0.imei == code || $0.imei2 == code }
-                                                 })
+                                                 },
+                                                 canSetExpense: canSetExpense)
                             }
                         } else {
                             LoadingView()
@@ -42,10 +44,19 @@ struct IntakeSheet: View {
                     if canViewCost, !results.isEmpty {
                         Section(i18n.t("shipments.landedCostResults")) {
                             ForEach(results) { r in
-                                HStack {
-                                    Text(r.imei).font(.mono(13))
-                                    Spacer()
-                                    MoneyText(value: r.landedCost ?? "0", size: 13)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack {
+                                        Text(r.imei).font(.mono(13))
+                                        Spacer()
+                                        MoneyText(value: r.landedCost ?? "0", size: 13)
+                                    }
+                                    if let fee = r.customsFee {
+                                        HStack {
+                                            Text(i18n.t("inventory.customsFee")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                                            Spacer()
+                                            MoneyText(value: fee, size: 12).foregroundStyle(Tokens.muted)
+                                        }
+                                    }
                                 }
                             }
                         }

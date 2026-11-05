@@ -10,8 +10,8 @@ struct PaymentAccount: Identifiable, Equatable {
 
 /// One source of truth for naming and listing payment accounts across every
 /// money screen (POS, expenses, partner payments, shipments). Options come from
-/// `GET /ledger/balances` when the user has `balance.read`; cashiers don't, so
-/// they fall back to the two known codes `CASH` and `CARD`.
+/// `GET /ledger/accounts` — available to any signed-in user, no `balance.read`
+/// needed — falling back to the two known codes `CASH`/`CARD` on any failure.
 enum PaymentAccounts {
     static let cash = "CASH"
     static let card = "CARD"
@@ -32,13 +32,12 @@ enum PaymentAccounts {
         return server ?? code
     }
 
-    /// Account options for a picker. The balances call is best-effort: on any
-    /// failure (or no permission) the two known codes are returned so the picker
-    /// is never empty.
+    /// Account options for a picker. Best-effort: on any failure the two known
+    /// codes are returned so the picker is never empty.
     @MainActor
-    static func load(api: APIClient, canReadBalances: Bool, i18n: I18n) async -> [PaymentAccount] {
-        if canReadBalances, let summary: BalancesAccounts = try? await api.get("/ledger/balances") {
-            let options = summary.accounts.map {
+    static func load(api: APIClient, i18n: I18n) async -> [PaymentAccount] {
+        if let rows: [AccountOption] = try? await api.get("/ledger/accounts") {
+            let options = rows.map {
                 PaymentAccount(code: $0.accountCode, label: label($0.accountCode, server: $0.label, i18n))
             }
             if !options.isEmpty { return options }
@@ -47,9 +46,5 @@ enum PaymentAccounts {
     }
 }
 
-/// Minimal decode of `/ledger/balances` for the picker — only the codes/labels,
-/// not the running totals the balance screen needs.
-private struct BalancesAccounts: Decodable {
-    struct Account: Decodable { let accountCode: String; let label: String? }
-    let accounts: [Account]
-}
+/// Minimal decode of `/ledger/accounts` for the picker — the codes/labels only.
+private struct AccountOption: Decodable { let accountCode: String; let label: String? }

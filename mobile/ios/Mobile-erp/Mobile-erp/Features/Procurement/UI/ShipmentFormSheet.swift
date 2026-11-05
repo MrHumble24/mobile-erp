@@ -14,7 +14,6 @@ struct ShipmentFormSheet: View {
     @State private var supplierId: String?
     @State private var date = Date()
     @State private var expected = ""
-    @State private var overhead = ""
     @State private var notes = ""
     @State private var accountCode = PaymentAccounts.cash
     @State private var accounts: [PaymentAccount] = []
@@ -37,7 +36,6 @@ struct ShipmentFormSheet: View {
                     }
                     DatePicker(i18n.t("shipments.shipmentDate"), selection: $date, displayedComponents: .date)
                     LabeledField(i18n.t("shipments.expectedCount"), text: $expected, keyboard: .numberPad)
-                    LabeledField(i18n.t("shipments.overheadCost"), text: $overhead, keyboard: .decimalPad)
                     LabeledField(i18n.t("common.notes"), text: $notes)
                     if !editing {
                         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
@@ -69,7 +67,6 @@ struct ShipmentFormSheet: View {
         guard let s = existing else { return }
         supplierId = s.supplierId
         expected = "\(s.expectedCount)"
-        overhead = s.overheadCost ?? ""
         notes = s.notes ?? ""
         if let parsed = ISO8601DateFormatter().date(from: s.shipmentDate) { date = parsed }
     }
@@ -77,10 +74,7 @@ struct ShipmentFormSheet: View {
     private func loadSuppliers() async {
         guard !editing, suppliers.isEmpty else { return }
         suppliers = (try? await SuppliersRepository(api: container.api).list()) ?? []
-        accounts = await PaymentAccounts.load(
-            api: container.api,
-            canReadBalances: container.session.can("balance.read"),
-            i18n: i18n)
+        accounts = await PaymentAccounts.load(api: container.api, i18n: i18n)
     }
 
     private func submit() async {
@@ -96,7 +90,6 @@ struct ShipmentFormSheet: View {
             supplierId: editing ? nil : supplierId,
             shipmentDate: ISO8601DateFormatter().string(from: date),
             expectedCount: count,
-            overheadCost: overhead.asDecimal,
             notes: notes.trimmedOrNil,
             paymentAccountCode: editing ? nil : accountCode
         )

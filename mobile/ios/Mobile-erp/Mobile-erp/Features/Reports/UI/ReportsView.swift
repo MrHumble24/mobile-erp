@@ -18,9 +18,14 @@ struct ReportsView: View {
     private var canViewCost: Bool { container.session.can("device.cost.view") }
     private var onBreakdown: (FinBreakdownRequest) -> Void { { breakdown = $0 } }
 
+    /// The customs tab appears only for users who may read customs data.
+    private var tabs: [FinReportTab] {
+        FinReportTab.allCases.filter { $0 != .customs || container.session.can("customs.read") }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            TabChips(selection: $tab, items: FinReportTab.allCases.map { TabChipItem(value: $0, label: i18n.t($0.labelKey)) })
+            TabChips(selection: $tab, items: tabs.map { TabChipItem(value: $0, label: i18n.t($0.labelKey)) })
                 .padding(.vertical, Tokens.Space.md)
             if tab.usesRange { periodBar }
             content
@@ -71,20 +76,24 @@ struct ReportsView: View {
             ModelPricingTab()
         case .closing:
             DailyClosingTab()
+        case .customs:
+            CustomsFeesTab()
         }
     }
 }
 
-/// The six report sections, in display order.
+/// The report sections, in display order.
 enum FinReportTab: String, CaseIterable, Identifiable {
-    case overview, expenses, nasiya, inventory, pricing, closing
+    case overview, expenses, nasiya, inventory, pricing, closing, customs
     var id: String { rawValue }
-    var labelKey: String { "reports.tab_\(rawValue)" }
+    /// Customs reuses the dedicated `reports.customsTab` key; the rest follow the
+    /// `reports.tab_<name>` convention.
+    var labelKey: String { self == .customs ? "reports.customsTab" : "reports.tab_\(rawValue)" }
     /// The shared period applies to overview/expenses/nasiya only.
     var usesRange: Bool {
         switch self {
         case .overview, .expenses, .nasiya: true
-        case .inventory, .pricing, .closing: false
+        case .inventory, .pricing, .closing, .customs: false
         }
     }
 }

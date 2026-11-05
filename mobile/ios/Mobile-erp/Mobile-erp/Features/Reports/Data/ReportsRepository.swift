@@ -46,6 +46,19 @@ struct ReportsRepository {
         try await api.get("/reports/daily-closing", query: ["date": iso(date)])
     }
 
+    /// Pickable customs codes (from the current list); empty when no list or no
+    /// `customs.read`. Best-effort so the tab shows an empty state, not an error.
+    func customsCodes() async -> [ReportCustomsCode] {
+        guard let list: ReportCurrentList? = try? await api.get("/customs/price-lists/current"),
+              let items = list?.items else { return [] }
+        return items
+    }
+
+    /// A code's fee over time (`customs.read`), oldest first.
+    func customsFeeHistory(_ customsCode: String) async throws -> [ReportFeePoint] {
+        try await api.get("/customs/price-lists/fees/\(customsCode)/history")
+    }
+
     /// Model id → label; empty map when the user may not read device models.
     func deviceModelLabels() async -> [String: String] {
         guard let rows: [DeviceModelRef] = try? await api.get("/device-models") else { return [:] }

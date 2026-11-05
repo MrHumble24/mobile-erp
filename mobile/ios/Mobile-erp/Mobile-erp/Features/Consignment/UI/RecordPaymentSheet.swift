@@ -57,10 +57,7 @@ struct RecordPaymentSheet: View {
         .background(Tokens.card)
         .presentationDetents([.medium, .large])
         .task {
-            accounts = await PaymentAccounts.load(
-                api: container.api,
-                canReadBalances: container.session.can("balance.read"),
-                i18n: i18n)
+            accounts = await PaymentAccounts.load(api: container.api, i18n: i18n)
         }
     }
 

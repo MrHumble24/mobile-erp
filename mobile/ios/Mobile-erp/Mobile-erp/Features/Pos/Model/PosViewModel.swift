@@ -33,10 +33,7 @@ final class PosViewModel {
         self.container = container
         Task { defaultWarrantyDays = await repo.defaultWarrantyDays() }
         Task {
-            payment.setAccounts(await PaymentAccounts.load(
-                api: container.api,
-                canReadBalances: container.session.can("balance.read"),
-                i18n: container.i18n))
+            payment.setAccounts(await PaymentAccounts.load(api: container.api, i18n: container.i18n))
         }
     }
 

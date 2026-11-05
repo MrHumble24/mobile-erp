@@ -8,6 +8,10 @@ struct ReturnSheet: View {
     /// The sale's tender lines — the refund returns to these same account(s).
     /// Informational only; empty hides the line.
     var payments: [SalePaymentLine] = []
+    /// The most that may be refunded (what was paid). The server rejects more
+    /// with a 400 (ADR 0028); the field caps at it so that rarely fires. Nil =
+    /// unknown (warranty-flow entry), so only the server guards.
+    var maxRefund: Decimal? = nil
     let onDone: () -> Void
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -24,8 +28,14 @@ struct ReturnSheet: View {
         payments.map { PaymentAccounts.label($0.accountCode, i18n) }.joined(separator: ", ")
     }
 
+    /// The typed refund exceeds what was paid — the server would reject it 400.
+    private var overLimit: Bool {
+        guard let maxRefund, let entered = Decimal(string: refund.trimmingCharacters(in: .whitespaces)) else { return false }
+        return entered > maxRefund
+    }
+
     private var refundValid: Bool {
-        SalesInput.money(refund) >= 0 && !refund.trimmingCharacters(in: .whitespaces).isEmpty
+        SalesInput.money(refund) >= 0 && !refund.trimmingCharacters(in: .whitespaces).isEmpty && !overLimit
     }
 
     var body: some View {
@@ -67,9 +77,10 @@ struct ReturnSheet: View {
                         .lineLimit(2...4)
                 }
 
-                if let error {
+                if overLimit || error != nil {
                     Section {
-                        Label(error, systemImage: "exclamationmark.triangle")
+                        Label(overLimit ? i18n.t("sales.refundTooHigh") : (error ?? ""),
+                              systemImage: "exclamationmark.triangle")
                             .font(.footnote)
                             .foregroundStyle(Tokens.danger)
                     }
@@ -129,7 +140,11 @@ struct ReturnSheet: View {
                 dismiss()
             } catch let e as AppError {
                 busy = false
-                error = e.statusCode == 409 ? i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.") : e.message
+                switch e.statusCode {
+                case 409: error = i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.")
+                case 400: error = i18n.t("sales.refundTooHigh")
+                default: error = e.message
+                }
             } catch {
                 busy = false
                 self.error = error.localizedDescription
