@@ -152,12 +152,13 @@ private struct DeviceTableRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(device.imei).font(.mono(13))
+                Text(device.unitCode).font(.mono(13))
                 Text(modelName).font(.caption).foregroundStyle(Tokens.muted)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                StatusBadge(deviceStatus: device.statusCode, label: device.statusCode)
+                StatusBadge(deviceStatus: device.statusCode,
+                            label: i18n.t(DeviceStatusMeta.labelKey(device.statusCode)))
                 if showCost, let cost = device.landedCost {
                     MoneyText(value: cost, size: 12)
                 }

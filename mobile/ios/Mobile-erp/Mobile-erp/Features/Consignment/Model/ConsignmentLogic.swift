@@ -48,7 +48,7 @@ enum ConsignmentLogic {
             t("common.status"), t("consignments.daysOverdue"),
         ]
         let rows = items.map { c in
-            [c.partnerShopName, c.imei, c.agreedPrice, String(c.dueDate.prefix(10)),
+            [c.partnerShopName, c.unitCode, c.agreedPrice, String(c.dueDate.prefix(10)),
              c.statusCode, String(daysOverdue(dueDate: c.dueDate, statusCode: c.statusCode))]
         }
         return KitCSV.build(headers: headers, rows: rows)

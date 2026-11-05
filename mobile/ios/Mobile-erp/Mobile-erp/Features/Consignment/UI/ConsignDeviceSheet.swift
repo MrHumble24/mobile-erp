@@ -110,7 +110,7 @@ private struct DeviceRowEditor: View {
                     Button(i18n.t("consignments.removeDevice"), action: onRemove).buttonStyle(.pillGhost)
                 }
             }
-            ScanOrValueField(text: $row.imei, placeholder: "IMEI")
+            ScanOrValueField(text: $row.imei, placeholder: i18n.t("catalog.scanCode"))
             AppFormField(label: i18n.t("consignments.agreedPrice")) {
                 AppTextField(placeholder: i18n.t("consignments.agreedPrice"), text: $row.agreedPrice,
                              keyboard: .decimalPad, font: .data(.regular))

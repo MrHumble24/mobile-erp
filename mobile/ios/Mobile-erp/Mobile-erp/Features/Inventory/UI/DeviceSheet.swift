@@ -131,7 +131,7 @@ private struct DeviceSheetBody: View {
     var body: some View {
         header
         if canSell || canInspect || canEdit || canEditExpense || canEditCustoms { actions }
-        DeviceBarcode(imei: device.imei)
+        DeviceBarcode(imei: device.unitCode)
         DeviceSpecsGrid(device: device, canViewCost: canViewCost)
         section(i18n.t("inventory.qcInspection")) { QcSummarySection(qc: device.latestInspection) }
         section(i18n.t("inventory.history")) { DeviceHistoryList(history: history) }
@@ -159,7 +159,7 @@ private struct DeviceSheetBody: View {
                     .accessibilityLabel(i18n.t("common.close"))
                 }
             }
-            CopyableIMEI(label: "IMEI", value: device.imei, accessibilityLabel: i18n.t("inventory.copyImei"))
+            CopyableIMEI(label: i18n.t("catalog.unitCode"), value: device.unitCode, accessibilityLabel: i18n.t("inventory.copyImei"))
             if let imei2 = device.imei2, !imei2.isEmpty {
                 CopyableIMEI(label: i18n.t("inventory.imei2"), value: imei2, accessibilityLabel: i18n.t("inventory.copyImei"))
             }
@@ -173,13 +173,13 @@ private struct DeviceSheetBody: View {
         VStack(spacing: Tokens.Space.sm) {
             if canSell {
                 pill(i18n.t("inventory.sellInPos"), .pillPrimary) {
-                    container.router.open(.pos(imei: device.imei))
+                    container.router.open(.pos(imei: device.unitCode))
                     dismiss()
                 }
             }
             if canInspect {
                 pill(i18n.t("qc.runInspection"), .pillSecondary) {
-                    container.router.open(.qc(imei: device.imei))
+                    container.router.open(.qc(imei: device.unitCode))
                     dismiss()
                 }
             }

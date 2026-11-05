@@ -95,7 +95,7 @@ private struct GradeForm: View {
             // The unit under inspection: a surface-2 block, never a card nested in the sheet.
             VStack(alignment: .leading, spacing: 2) {
                 Text(data.device.modelLabel).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                Text(data.device.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+                Text(data.device.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Tokens.Space.lg)

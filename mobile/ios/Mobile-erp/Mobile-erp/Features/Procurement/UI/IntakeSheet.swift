@@ -33,7 +33,9 @@ struct IntakeSheet: View {
                             LoadableView(state: models.state, retry: { Task { await models.reload() } }) { list in
                                 IntakeDeviceForm(models: list, onAdd: add,
                                                  isDuplicate: { code in
-                                                     drafts.contains { $0.imei == code || $0.imei2 == code }
+                                                     drafts.contains {
+                                                         $0.imei == code || $0.imei2 == code || $0.serialNumber == code
+                                                     }
                                                  },
                                                  canSetExpense: canSetExpense)
                             }
@@ -46,7 +48,7 @@ struct IntakeSheet: View {
                             ForEach(results) { r in
                                 VStack(alignment: .leading, spacing: 2) {
                                     HStack {
-                                        Text(r.imei).font(.mono(13))
+                                        Text(r.unitCode).font(.mono(13))
                                         Spacer()
                                         MoneyText(value: r.landedCost ?? "0", size: 13)
                                     }
@@ -125,10 +127,13 @@ struct IntakeSheet: View {
     }
 
     private func add(_ draft: IntakeDraft) {
-        // A new unit collides when either of its IMEIs matches either IMEI of a staged one.
-        let codes = [draft.imei, draft.imei2].compactMap { $0 }
+        // A new unit collides when any of its codes (IMEI, IMEI 2 or serial) matches
+        // any code of a staged one.
+        let codes = [draft.imei, draft.imei2, draft.serialNumber].compactMap { $0 }
         let collides = drafts.contains { d in
-            codes.contains(d.imei) || (d.imei2.map(codes.contains) ?? false)
+            (d.imei.map(codes.contains) ?? false)
+                || (d.imei2.map(codes.contains) ?? false)
+                || (d.serialNumber.map(codes.contains) ?? false)
         }
         guard !collides else {
             error = i18n.t("shipments.duplicateImei")
@@ -178,7 +183,7 @@ private struct DraftCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: Tokens.Space.xs) {
                     Text(label).font(.ui(.bodyStrong)).foregroundStyle(Tokens.text)
-                    Text(draft.imei).font(.data(.regular)).foregroundStyle(Tokens.muted)
+                    Text(draft.code).font(.data(.regular)).foregroundStyle(Tokens.muted)
                     if !draft.specsSummary.isEmpty {
                         Text(draft.specsSummary).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                     }

@@ -6,23 +6,29 @@ import Foundation
 /// under-privileged users, which hides the cost column.
 struct ProcDevice: Decodable, Identifiable {
     let id: String
-    let imei: String
+    /// Null on a serial unit (ADR 0029) — use `unitCode` for display.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let modelId: String
     let statusCode: String
     let landedCost: String?
 
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
-        imei = try c.decode(String.self, forKey: .imei)
+        imei = try c.decodeIfPresent(String.self, forKey: .imei)
         imei2 = try c.decodeIfPresent(String.self, forKey: .imei2)
+        serialNumber = try c.decodeIfPresent(String.self, forKey: .serialNumber)
         modelId = try c.decode(String.self, forKey: .modelId)
         statusCode = try c.decode(String.self, forKey: .statusCode)
         landedCost = c.decimalString(.landedCost)
     }
 
-    enum CodingKeys: String, CodingKey { case id, imei, imei2, modelId, statusCode, landedCost }
+    enum CodingKeys: String, CodingKey { case id, imei, imei2, serialNumber, modelId, statusCode, landedCost }
 }
 
 /// One page of a device query.

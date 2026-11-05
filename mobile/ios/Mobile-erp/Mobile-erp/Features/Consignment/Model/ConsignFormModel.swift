@@ -72,7 +72,7 @@ final class ConsignFormModel {
         var queued = false
         for row in rows where isValid(row) {
             let outcome = try await writer.create(
-                imei: row.imei.trimmingCharacters(in: .whitespaces),
+                code: row.imei.trimmingCharacters(in: .whitespaces),
                 partnerId: partnerId,
                 agreedPrice: Double(row.agreedPrice) ?? 0,
                 dueDate: dueDate,

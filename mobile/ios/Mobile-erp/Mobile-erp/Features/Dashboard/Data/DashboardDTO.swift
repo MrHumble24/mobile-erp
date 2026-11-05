@@ -46,12 +46,15 @@ struct LowStockItem: Decodable, Identifiable {
 
 struct OverdueConsignment: Decodable, Identifiable {
     let id: String
-    let imei: String
+    let imei: String?
+    let serialNumber: String?
     let agreedPrice: String
     let dueDate: String
     let partnerShopName: String
 
     var dueDisplay: String { DashDate.display(dueDate) }
+    /// The code to show: the IMEI when present, else the serial number.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
 struct DashDeviceModelRef: Decodable {

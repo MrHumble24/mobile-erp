@@ -35,7 +35,7 @@ struct ConsignmentDetailView: View {
     @ViewBuilder private func detail(_ c: Consignment) -> some View {
         let overdue = ConsignmentLogic.daysOverdue(dueDate: c.dueDate, statusCode: c.statusCode)
         VStack(alignment: .leading, spacing: Tokens.Space.sm) {
-            Text(c.imei).font(.data(.regular)).foregroundStyle(Tokens.text)
+            Text(c.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
             if let imei2 = c.imei2, !imei2.isEmpty {
                 Text(imei2).font(.data(.regular)).foregroundStyle(Tokens.muted)
             }
@@ -70,7 +70,7 @@ struct ConsignmentDetailView: View {
         }
 
         VStack(spacing: Tokens.Space.sm) {
-            Button { open(.inventory(imei: c.imei)) } label: {
+            Button { open(.inventory(imei: c.unitCode)) } label: {
                 Text(i18n.t("consignments.openDevice")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.pillGhost)

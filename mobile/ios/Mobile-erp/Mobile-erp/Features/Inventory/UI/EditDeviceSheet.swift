@@ -35,13 +35,17 @@ struct EditDeviceSheet: View {
                             .keyboardType(.decimalPad)
                             .sanitizeDecimal($targetPrice)
                     }
-                    Section {
-                        Toggle(i18n.t("inventory.dualSim", default: "Dual SIM"), isOn: $dualSim)
-                            .toggleStyle(AppSwitchStyle())
-                            .onChange(of: dualSim) { if !dualSim { imei2 = "" } }
-                        if dualSim {
-                            ScanOrValueField(text: $imei2,
-                                             placeholder: i18n.t("inventory.imei2", default: "IMEI 2"))
+                    // A serial unit has no IMEI, so no second IMEI either (ADR 0029;
+                    // the server rejects imei2 on a serial unit).
+                    if device.kindCode != "SERIAL" {
+                        Section {
+                            Toggle(i18n.t("inventory.dualSim", default: "Dual SIM"), isOn: $dualSim)
+                                .toggleStyle(AppSwitchStyle())
+                                .onChange(of: dualSim) { if !dualSim { imei2 = "" } }
+                            if dualSim {
+                                ScanOrValueField(text: $imei2,
+                                                 placeholder: i18n.t("inventory.imei2", default: "IMEI 2"))
+                            }
                         }
                     }
                     if let error {

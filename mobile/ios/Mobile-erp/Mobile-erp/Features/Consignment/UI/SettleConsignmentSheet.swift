@@ -19,7 +19,7 @@ struct SettleConsignmentSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Tokens.Space.lg) {
                 SheetTitleRow(title: i18n.t("consignments.settle")) { dismiss() }
-                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.imei) {
+                SubjectBlock(title: consignment.partnerShopName.isEmpty ? "—" : consignment.partnerShopName, line: consignment.unitCode) {
                     MoneyText(value: consignment.agreedPrice, size: 15).foregroundStyle(Tokens.muted)
                 }
                 AppFormField(label: i18n.t("consignments.settlePrice")) {
@@ -56,7 +56,7 @@ struct SettleConsignmentSheet: View {
         do {
             Haptic.tick.play()
             _ = try await container.consignmentWriter.settle(
-                consignmentId: consignment.id, imei: consignment.imei,
+                consignmentId: consignment.id, code: consignment.unitCode,
                 salePrice: Double(salePrice), notes: t.isEmpty ? nil : t)
             onDone()
             dismiss()

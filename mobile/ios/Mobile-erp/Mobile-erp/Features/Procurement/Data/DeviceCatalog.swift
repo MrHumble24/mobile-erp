@@ -31,8 +31,14 @@ struct DeviceModel: Decodable, Identifiable {
     let brand: String
     let name: String
     let attributes: [ProcAttributeDef]
+    /// Product kind: IMEI | SERIAL | QUANTITY (ADR 0029). Drives the intake form:
+    /// IMEI models ask for an IMEI, SERIAL models for a serial number, QUANTITY
+    /// models are not stocked as units (hidden from intake).
+    let kindCode: String
 
     var label: String { "\(brand) \(name)" }
+    var isQuantity: Bool { kindCode == "QUANTITY" }
+    var isSerial: Bool { kindCode == "SERIAL" }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -40,9 +46,10 @@ struct DeviceModel: Decodable, Identifiable {
         brand = try c.decode(String.self, forKey: .brand)
         name = try c.decode(String.self, forKey: .name)
         attributes = (try? c.decodeIfPresent([ProcAttributeDef].self, forKey: .attributes)) ?? []
+        kindCode = try c.decodeIfPresent(String.self, forKey: .kindCode) ?? "IMEI"
     }
 
-    enum CodingKeys: String, CodingKey { case id, brand, name, attributes }
+    enum CodingKeys: String, CodingKey { case id, brand, name, attributes, kindCode }
 }
 
 /// Read-only access to `/device-models` (perm `device.read`).

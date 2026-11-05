@@ -48,7 +48,7 @@ struct DevicesTab: View {
                     AppCard { EmptyStateView(systemImage: "iphone.slash", title: i18n.t("inventory.empty")) }
                 } else {
                     ForEach(shown) { device in
-                        Button { selected = ImeiTarget(imei: device.imei) } label: {
+                        Button { selected = ImeiTarget(imei: device.unitCode) } label: {
                             AppCard { DeviceListRow(device: device) }
                         }
                         .buttonStyle(.plain)
@@ -98,7 +98,7 @@ struct DevicesTab: View {
                             .listRowBackground(Color.clear)
                     } else {
                         ForEach(shown) { device in
-                            DeviceListRow(device: device).tag(device.imei)
+                            DeviceListRow(device: device).tag(device.unitCode)
                         }
                     }
                 }
@@ -170,10 +170,10 @@ private struct DeviceListRow: View {
     var body: some View {
         HStack(spacing: Tokens.Space.sm) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(device.modelLabel.isEmpty ? device.imei : device.modelLabel)
+                Text(device.modelLabel.isEmpty ? device.unitCode : device.modelLabel)
                     .font(.ui(.bodyStrong))
                     .foregroundStyle(Tokens.text)
-                Text(device.storage.map { "\(device.imei) · \($0)" } ?? device.imei)
+                Text(device.storage.map { "\(device.unitCode) · \($0)" } ?? device.unitCode)
                     .font(.data(.regular))
                     .foregroundStyle(Tokens.text)
                 if let imei2 = device.imei2, !imei2.isEmpty {

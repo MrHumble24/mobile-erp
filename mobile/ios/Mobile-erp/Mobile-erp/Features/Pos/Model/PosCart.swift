@@ -18,11 +18,11 @@ final class PosCart {
         lines.reduce(Decimal.zero) { $0 + (Decimal(string: $1.price) ?? .zero) }
     }
 
-    /// Add a scanned device. Returns false when its IMEI is already in the cart
+    /// Add a scanned device. Returns false when its code is already in the cart
     /// (the caller shows "already in cart"). Prefills price from the target.
     @discardableResult
     func add(_ device: ScannedDevice, warrantyDays: Int?) -> Bool {
-        guard !lines.contains(where: { $0.device.imei == device.imei }) else { return false }
+        guard !lines.contains(where: { $0.device.code == device.code }) else { return false }
         lines.append(PosCartLine(
             id: newUUID(),
             device: device,

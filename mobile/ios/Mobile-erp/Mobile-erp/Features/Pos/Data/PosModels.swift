@@ -4,14 +4,18 @@ import Foundation
 /// IMEI lookup). Normalized to the fields POS needs.
 struct ScannedDevice: Identifiable {
     let id: String
-    let imei: String
+    /// Null on a serial unit (ADR 0029); exactly one of imei/serialNumber is set.
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let version: Int
     let statusCode: String
     let modelLabel: String
     let targetPrice: String?
 
     var inStock: Bool { statusCode == "IN_STOCK" }
+    /// The code to show / dedupe by: the IMEI when present, else the serial.
+    var code: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
 }
 
 /// A scanned IMEI awaiting the cashier's confirmation before it joins the cart.
@@ -30,9 +34,13 @@ struct PendingScan: Identifiable {
 struct CompletedSale: Identifiable {
     var id: String { receiptId }
     let receiptId: String
-    let imei: String
+    let imei: String?
     let imei2: String?
+    let serialNumber: String?
     let modelLabel: String
+
+    /// The code to show on the receipt: IMEI when present, else the serial.
+    var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     let salePrice: String
     let soldAt: Date
     let cashier: String
@@ -82,7 +90,10 @@ nonisolated struct InlineCustomerPayload: Encodable {
 /// `clientMutationId`/`expectedVersion` make an online retry idempotent; for an
 /// offline enqueue the sync handler overrides them from the outbox entry.
 nonisolated struct SaleCreatePayload: Encodable {
-    let imei: String
+    /// Exactly one of imei/serialNumber identifies the unit (ADR 0029). Swift's
+    /// synthesized encoder omits the nil one via `encodeIfPresent`.
+    let imei: String?
+    let serialNumber: String?
     let salePrice: Double
     let clientMutationId: String
     let expectedVersion: Int
@@ -100,7 +111,8 @@ nonisolated struct SaleCreatePayload: Encodable {
 /// outbox row, kept free of SwiftData/HTTP so it stays unit-testable. A new
 /// inline customer and an existing `customerId` are mutually exclusive.
 func buildSalePayload(
-    imei: String,
+    imei: String?,
+    serialNumber: String? = nil,
     salePrice: Double,
     clientMutationId: String,
     expectedVersion: Int,
@@ -118,7 +130,8 @@ func buildSalePayload(
             ? InlineCustomerPayload(name: name, phone: nonEmpty(customerPhone))
             : nil
     return SaleCreatePayload(
-        imei: imei,
+        imei: nonEmpty(imei),
+        serialNumber: nonEmpty(serialNumber),
         salePrice: salePrice,
         clientMutationId: clientMutationId,
         expectedVersion: expectedVersion,
@@ -161,6 +174,14 @@ enum PosSelfCheck {
         assert(!keys(inline).contains("warrantyDays"))
         assert(!keys(inline).contains("notes"))
         assert(!keys(inline).contains("customerId"))
+        // An IMEI sale sends imei, never serialNumber.
+        assert(keys(inline).contains("imei") && !keys(inline).contains("serialNumber"))
+        // A serial sale sends serialNumber, never imei (ADR 0029).
+        let serial = buildSalePayload(
+            imei: nil, serialNumber: "PS5-ABC", salePrice: 100, clientMutationId: "m",
+            expectedVersion: 1, customerId: nil, customerName: nil,
+            customerPhone: nil, warrantyDays: nil, notes: nil)
+        assert(keys(serial).contains("serialNumber") && !keys(serial).contains("imei"))
         // Existing id suppresses the inline customer.
         let existing = buildSalePayload(
             imei: "123456789012345", salePrice: 100, clientMutationId: "m",

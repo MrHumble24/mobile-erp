@@ -12,7 +12,7 @@ enum SalesCsv {
 
     static func rows(_ sales: [SaleView], includeProfit: Bool) -> [[String]] {
         sales.map { s in
-            [s.device.model.brand, s.device.model.name, s.device.imei,
+            [s.modelBrand, s.modelName, s.unitCode,
              s.isB2B ? "B2B" : "Retail",
              s.customer?.name ?? "", s.customer?.phone ?? "",
              s.salePrice.string]

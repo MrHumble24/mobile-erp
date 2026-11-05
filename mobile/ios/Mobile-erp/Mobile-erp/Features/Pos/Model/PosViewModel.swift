@@ -44,20 +44,20 @@ final class PosViewModel {
     /// variant.
     func scan(_ raw: String) {
         guard container != nil else { return }
-        let imei = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let found = repo.lookup(imei) else {
-            pendingScan = PendingScan(code: imei, device: nil, errorKey: "common.notFound"); return
+        let code = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let found = repo.lookup(code) else {
+            pendingScan = PendingScan(code: code, device: nil, errorKey: "common.notFound"); return
         }
-        if repo.pendingSoldImeis().contains(found.imei) {
-            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.alreadyQueued"); return
+        if repo.pendingSoldCodes().contains(found.code) {
+            pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.alreadyQueued"); return
         }
         guard found.inStock else {
-            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.deviceConflict"); return
+            pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.deviceConflict"); return
         }
-        if cart.lines.contains(where: { $0.device.imei == found.imei }) {
-            pendingScan = PendingScan(code: found.imei, device: nil, errorKey: "pos.duplicateDevice"); return
+        if cart.lines.contains(where: { $0.device.code == found.code }) {
+            pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.duplicateDevice"); return
         }
-        pendingScan = PendingScan(code: imei, device: found, errorKey: nil)
+        pendingScan = PendingScan(code: code, device: found, errorKey: nil)
     }
 
     /// Commit the staged scan into the cart. No-op (just dismiss) for an error
@@ -85,9 +85,15 @@ final class PosViewModel {
     /// cache so captures don't depend on synced stock. `mode` is "cash" or
     /// "split" (`-posDemo cash|split`).
     func seedDemo(_ mode: String) {
-        cart.add(ScannedDevice(id: "demo", imei: "356938035643809", imei2: nil,
+        // `-posDemo serial` seeds a serial unit (no IMEI) for serial-POS captures.
+        let serialDemo = mode == "serial"
+        cart.add(ScannedDevice(id: "demo",
+                               imei: serialDemo ? nil : "356938035643809",
+                               imei2: nil,
+                               serialNumber: serialDemo ? "PS5-CFI1215A" : nil,
                                version: 1, statusCode: "IN_STOCK",
-                               modelLabel: "iPhone 13", targetPrice: "1200000"),
+                               modelLabel: serialDemo ? "Sony PlayStation 5" : "iPhone 13",
+                               targetPrice: serialDemo ? "6500000" : "1200000"),
                  warrantyDays: defaultWarrantyDays)
         if payment.accounts.isEmpty {
             payment.setAccounts([PaymentAccount(code: PaymentAccounts.cash, label: "Cash"),
@@ -127,6 +133,7 @@ final class PosViewModel {
             for (index, line) in lines.enumerated() {
                 let payload = buildSalePayload(
                     imei: line.device.imei,
+                    serialNumber: line.device.serialNumber,
                     salePrice: moneyToDouble(line.price),
                     clientMutationId: line.clientMutationId,
                     expectedVersion: line.device.version,
@@ -180,6 +187,7 @@ final class PosViewModel {
             receiptId: receiptId,
             imei: line.device.imei,
             imei2: line.device.imei2,
+            serialNumber: line.device.serialNumber,
             modelLabel: line.device.modelLabel,
             salePrice: line.price,
             soldAt: now,

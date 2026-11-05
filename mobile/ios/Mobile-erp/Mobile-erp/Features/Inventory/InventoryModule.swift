@@ -36,6 +36,7 @@ struct InventoryView: View {
             #endif
             if store == nil { store = InventoryStore(container) }
             await store?.loadModels()
+            await store?.loadCategories()
             await store?.loadLowStock()
         }
     }
