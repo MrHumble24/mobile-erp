@@ -32,5 +32,6 @@
   "wentUp": "Up",
   "wentDown": "Down",
   "unchanged": "Same",
-  "newItem": "New"
+  "newItem": "New",
+  "unmatchedShort": "No fee"
 }
