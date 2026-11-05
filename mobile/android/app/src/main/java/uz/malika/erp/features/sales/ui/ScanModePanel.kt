@@ -43,6 +43,8 @@ fun ScanModePanel(
     state: PosState,
     online: Boolean,
     api: SalesApi,
+    shiftBlocked: Boolean = false,
+    onOpenShift: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val t = LocalT.current
@@ -75,7 +77,7 @@ fun ScanModePanel(
                     enabled = !state.busy,
                 )
                 Spacer(Modifier.height(16.dp))
-                PosCheckoutForm(container, vm, state, online, api)
+                PosCheckoutForm(container, vm, state, online, api, shiftBlocked, onOpenShift)
             }
         }
     }

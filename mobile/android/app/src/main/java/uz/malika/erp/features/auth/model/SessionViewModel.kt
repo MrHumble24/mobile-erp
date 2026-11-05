@@ -60,6 +60,21 @@ class SessionViewModel(
         }
     }
 
+    /**
+     * Re-read the signed-in user from the server so newly granted/revoked
+     * permissions apply without signing out. Called on app start and whenever the
+     * app returns to the foreground while online. A failure (offline, transient) is
+     * ignored — the cached session stays; a 401 clears it via [AuthEvents] as usual.
+     */
+    fun refreshPermissions() {
+        if (_state.value.user == null) return
+        viewModelScope.launch {
+            runCatching { repo.me() }.getOrNull()?.let { fresh ->
+                if (_state.value.user != null) _state.value = _state.value.copy(user = fresh)
+            }
+        }
+    }
+
     fun logout() {
         AppLog.i("auth", "logout")
         repo.logout()

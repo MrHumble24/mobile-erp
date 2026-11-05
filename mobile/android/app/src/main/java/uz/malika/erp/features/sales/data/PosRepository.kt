@@ -91,12 +91,12 @@ class PosRepository(
     suspend fun defaultWarrantyDays(): Int = runApi { api.settings().defaultWarrantyDays }
 
     /**
-     * Discount settings for the till (ADR 0034). Online: fetch `GET /settings`
-     * and cache the payload in `sync_meta` so an offline till still knows whether
-     * discounts are on and the cashier limit; offline: read that cache. Default
-     * (nothing cached, call fails): discounts off.
+     * Till settings (ADR 0034/0035/0036). Online: fetch `GET /settings` and cache
+     * the payload in `sync_meta` so an offline till still knows the discount rules,
+     * whether credit is on, and whether shifts are on; offline: read that cache.
+     * Default (nothing cached, call fails): discounts off, credit off, shifts off.
      */
-    suspend fun discountSettings(online: Boolean): uz.malika.erp.features.sales.lib.DiscountSettings {
+    suspend fun tillSettings(online: Boolean): TillSettings {
         if (online) {
             val dto = runCatching { api.settings() }.getOrNull()
             if (dto != null) {
@@ -105,18 +105,25 @@ class PosRepository(
                         uz.malika.erp.data.local.SyncMetaEntity(DISCOUNT_SETTINGS_KEY, json.encodeToString(SettingsDto.serializer(), dto)),
                     )
                 }
-                return dto.toDiscountSettings()
+                return dto.toTillSettings()
             }
         }
         val cached = runCatching { db.syncMetaDao().get(DISCOUNT_SETTINGS_KEY) }.getOrNull()
-        return cached?.let { runCatching { json.decodeFromString(SettingsDto.serializer(), it).toDiscountSettings() }.getOrNull() }
-            ?: uz.malika.erp.features.sales.lib.DiscountSettings()
+        return cached?.let { runCatching { json.decodeFromString(SettingsDto.serializer(), it).toTillSettings() }.getOrNull() }
+            ?: TillSettings()
     }
 
     private companion object {
         const val DISCOUNT_SETTINGS_KEY = "pos_discount_settings"
     }
 }
+
+/** The till settings bundle: discount rules + the credit and shift switches. */
+private fun SettingsDto.toTillSettings() = TillSettings(
+    discount = toDiscountSettings(),
+    creditEnabled = customerCreditEnabled,
+    shiftsEnabled = shiftsEnabled,
+)
 
 /** Map the settings payload into the till's discount rules (ADR 0034). */
 private fun SettingsDto.toDiscountSettings() = uz.malika.erp.features.sales.lib.DiscountSettings(

@@ -38,6 +38,13 @@ import uz.malika.erp.features.sales.data.TillCatalogApi
 import uz.malika.erp.features.sales.data.TillCatalogRepository
 import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.features.sales.model.TillCatalogViewModel
+import uz.malika.erp.features.shifts.data.ShiftApi
+import uz.malika.erp.features.shifts.data.ShiftRepository
+import uz.malika.erp.features.shifts.model.ShiftViewModel
+import uz.malika.erp.features.shifts.ui.CloseShiftSheet
+import uz.malika.erp.features.shifts.ui.OpenShiftSheet
+import uz.malika.erp.features.shifts.ui.ShiftBar
+import uz.malika.erp.features.shifts.ui.ShiftReportSheet
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.rememberHaptics
 import uz.malika.erp.shared.ui.AppBottomSheet
@@ -91,8 +98,25 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
     val haptics = rememberHaptics()
     val baseUrl = container.devConfig.currentBaseUrl
 
+    val shiftVm: ShiftViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { ShiftViewModel(ShiftRepository(container.retrofit.create(ShiftApi::class.java), container.secure)) }
+        },
+    )
+    val shiftState by shiftVm.state.collectAsState()
+
     var mode by remember { mutableStateOf(readMode(container)) }
     var cartOpen by remember { mutableStateOf(false) }
+    var openShiftSheet by remember { mutableStateOf(false) }
+    var closeShiftSheet by remember { mutableStateOf(false) }
+
+    // Shifts gate (ADR 0036): the server lets offline replays through, so the app
+    // must block selling when online + shifts on + no open shift. Offline follows
+    // the last-known state.
+    LaunchedEffect(online, state.shiftsEnabled) { if (state.shiftsEnabled) shiftVm.load(online) }
+    val shiftBlocked = state.shiftsEnabled &&
+        (if (online) shiftState.current == null else shiftState.lastKnownOpen != true)
+    val requestOpenShift: () -> Unit = { openShiftSheet = true }
 
     // Cross-feature preload: inventory/QC "Sell in POS" hands us an IMEI to scan.
     LaunchedEffect(Unit) {
@@ -128,8 +152,16 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
                 onSelect = { mode = it; container.secure.put(POS_MODE_KEY, it.name) },
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
             )
+            if (state.shiftsEnabled) {
+                ShiftBar(
+                    state = shiftState,
+                    onOpen = { openShiftSheet = true },
+                    onClose = { shiftVm.load(online); closeShiftSheet = true },
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                )
+            }
             when (mode) {
-                PosMode.SCAN -> ScanModePanel(container, vm, state, online, api, Modifier.weight(1f))
+                PosMode.SCAN -> ScanModePanel(container, vm, state, online, api, shiftBlocked, requestOpenShift, Modifier.weight(1f))
                 PosMode.CATALOG ->
                     CatalogModePanel(container, catalogVm, vm, state, online, baseUrl, Modifier.weight(1f))
             }
@@ -172,7 +204,28 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
 
     if (cartOpen && state.lines.isNotEmpty()) {
         AppBottomSheet(onDismiss = { cartOpen = false }) {
-            CartSheet(container, vm, state, online, api)
+            CartSheet(container, vm, state, online, api, shiftBlocked, requestOpenShift)
+        }
+    }
+
+    if (openShiftSheet) {
+        OpenShiftSheet(
+            state = shiftState,
+            onOpen = { count -> shiftVm.openShift(count) { openShiftSheet = false } },
+            onDismiss = { openShiftSheet = false; shiftVm.clearError() },
+        )
+    }
+    if (closeShiftSheet) {
+        CloseShiftSheet(
+            state = shiftState,
+            current = shiftState.current,
+            onClose = { count, note -> shiftVm.closeShift(count, note) { closeShiftSheet = false } },
+            onDismiss = { closeShiftSheet = false; shiftVm.clearError() },
+        )
+    }
+    shiftState.closedReport?.let { report ->
+        AppBottomSheet(onDismiss = { shiftVm.dismissClosedReport() }) {
+            ShiftReportSheet(report)
         }
     }
 

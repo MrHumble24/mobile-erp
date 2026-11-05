@@ -13,11 +13,14 @@ data class Customer(
     /** Pricing (ADR 0034): the customer's price level + standing discount percent. */
     val priceLevelCode: String = "RETAIL",
     val standingDiscountPercent: String = "0",
+    /** The customer's own credit ceiling (2-dp string); null = use the shop default (ADR 0035). */
+    val creditLimit: String? = null,
 )
 
 fun CustomerDto.toDomain() = Customer(
     id = id, name = name, phone = phone, notes = notes,
     priceLevelCode = priceLevelCode, standingDiscountPercent = standingDiscountPercent,
+    creditLimit = creditLimit,
 )
 
 /** A customer plus purchase aggregates derived server-side (not stored). */
@@ -32,10 +35,16 @@ data class CustomerListItem(
     val returnsCount: Int,
     val priceLevelCode: String = "RETAIL",
     val standingDiscountPercent: String = "0",
+    /** Credit position (ADR 0035), all derived server-side. */
+    val creditLimit: String? = null,
+    val creditOutstanding: String = "0",
+    val creditOverdue: String = "0",
+    val effectiveCreditLimit: String? = null,
 ) {
     fun toCustomer() = Customer(
         id = id, name = name, phone = phone, notes = notes,
         priceLevelCode = priceLevelCode, standingDiscountPercent = standingDiscountPercent,
+        creditLimit = creditLimit,
     )
 }
 
@@ -50,6 +59,10 @@ fun CustomerListItemDto.toDomain() = CustomerListItem(
     returnsCount = returnsCount,
     priceLevelCode = priceLevelCode,
     standingDiscountPercent = standingDiscountPercent,
+    creditLimit = creditLimit,
+    creditOutstanding = creditOutstanding,
+    creditOverdue = creditOverdue,
+    effectiveCreditLimit = effectiveCreditLimit,
 )
 
 /** Aggregate tiles for the customer directory (`GET /customers/stats`). */

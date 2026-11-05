@@ -40,6 +40,7 @@ private enum class ReportSection(val labelKey: String, val ranged: Boolean) {
     PRICING("reports.tab_pricing", false),
     CLOSING("reports.tab_closing", false),
     CUSTOMS("reports.customsTab", false),
+    CREDIT("credit.reportTitle", false),
 }
 
 /**
@@ -100,6 +101,7 @@ fun ReportsScreen(container: AppContainer) {
                 ReportSection.PRICING -> ModelPricingTab(vm)
                 ReportSection.CLOSING -> DailyClosingTab(vm)
                 ReportSection.CUSTOMS -> CustomsFeesTab(container)
+                ReportSection.CREDIT -> CreditReportTab(container)
             }
         }
     }

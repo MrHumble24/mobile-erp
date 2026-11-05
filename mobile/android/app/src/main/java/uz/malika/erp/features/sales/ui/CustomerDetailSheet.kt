@@ -17,6 +17,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import uz.malika.erp.AppContainer
+import uz.malika.erp.features.credit.data.CreditApi
+import uz.malika.erp.features.credit.data.CreditListItem
+import uz.malika.erp.features.credit.data.CreditRepository
+import uz.malika.erp.features.credit.data.CreditStatus
+import uz.malika.erp.features.credit.ui.CreditDetailSheet
+import uz.malika.erp.features.credit.ui.CreditListRow
 import uz.malika.erp.features.sales.data.CustomerListItem
 import uz.malika.erp.features.sales.data.CustomerSale
 import uz.malika.erp.features.sales.lib.PriceLevel
@@ -24,6 +36,8 @@ import uz.malika.erp.features.sales.model.CustomersViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.FactRow
 import uz.malika.erp.shared.ui.Loading
@@ -38,11 +52,22 @@ import uz.malika.erp.ui.theme.Tokens
  * and edit as a secondary pill for `customer.manage`.
  */
 @Composable
-fun CustomerDetailSheet(customer: CustomerListItem, vm: CustomersViewModel, canManage: Boolean, onEdit: () -> Unit) {
+fun CustomerDetailSheet(
+    container: AppContainer,
+    customer: CustomerListItem,
+    vm: CustomersViewModel,
+    canManage: Boolean,
+    onEdit: () -> Unit,
+) {
     val t = LocalT.current
     val sales by vm.sales.collectAsState()
     LaunchedEffect(customer.id) { vm.loadSales(customer.id) }
     val mono = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily, color = Tokens.text)
+    val creditRepo = remember { CreditRepository(container.retrofit.create(CreditApi::class.java)) }
+    val credits by produceState(emptyList<CreditListItem>(), customer.id) {
+        value = runCatching { creditRepo.list(customer.id, CreditStatus.ALL) }.getOrDefault(emptyList())
+    }
+    var openCreditId by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter)) {
         Text(customer.name, style = MaterialTheme.typography.titleLarge, color = Tokens.text)
@@ -58,7 +83,21 @@ fun CustomerDetailSheet(customer: CustomerListItem, vm: CustomersViewModel, canM
         FactRow(t("customers.statPurchases", null)) { Text(customer.purchaseCount.toString(), style = mono) }
         FactRow(t("customers.statTotalSpent", null)) { Text(formatMoney(customer.totalSpent.toString()), style = mono) }
         FactRow(t("customers.statActiveWarranties", null)) { Text(customer.activeWarranties.toString(), style = mono) }
-        FactRow(t("customers.statReturns", null), last = true) { Text(customer.returnsCount.toString(), style = mono) }
+        FactRow(t("customers.statReturns", null)) { Text(customer.returnsCount.toString(), style = mono) }
+        FactRow(t("credit.currentDebt", null)) { MoneyText(customer.creditOutstanding, style = mono) }
+        FactRow(t("credit.overdue", null), last = true) {
+            MoneyText(customer.creditOverdue, style = mono.copy(color = if (parseMoney(customer.creditOverdue).signum() > 0) Tokens.danger else Tokens.text))
+        }
+
+        if (credits.isNotEmpty()) {
+            Spacer(Modifier.height(Tokens.Space.lg))
+            Text(t("credit.title", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+            Spacer(Modifier.height(Tokens.Space.sm))
+            credits.forEach { c ->
+                CreditListRow(c) { openCreditId = c.id }
+                Spacer(Modifier.height(Tokens.Space.sm))
+            }
+        }
 
         Spacer(Modifier.height(Tokens.Space.lg))
         Text(t("customers.purchaseHistory", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
@@ -77,6 +116,12 @@ fun CustomerDetailSheet(customer: CustomerListItem, vm: CustomersViewModel, canM
             PillButton(t("customers.edit", null), onEdit, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())
         }
         Spacer(Modifier.height(Tokens.Space.sm))
+    }
+
+    openCreditId?.let { id ->
+        AppBottomSheet(onDismiss = { openCreditId = null }) {
+            CreditDetailSheet(container, id, onChanged = {})
+        }
     }
 }
 

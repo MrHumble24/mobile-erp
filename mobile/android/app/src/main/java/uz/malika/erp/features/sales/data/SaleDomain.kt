@@ -24,6 +24,8 @@ data class Sale(
     val soldByName: String,
     val warrantyDays: Int?,
     val consignmentId: String?,
+    /** Set when this sale belongs to a credit agreement (ADR 0035). */
+    val creditId: String? = null,
     val returnedAt: String?,
     val payments: List<AccountAmount> = emptyList(),
     // Pricing (ADR 0034). Null for pre-feature sales / a line that had no list price.
@@ -40,6 +42,9 @@ data class Sale(
 
     /** A product sold by the piece (no device, no identifier). */
     val isQuantity: Boolean get() = quantity != null
+
+    /** This sale was taken on credit (ADR 0035): a return lowers the debt, no cash back. */
+    val onCredit: Boolean get() = creditId != null
 
     /** The unit's identifier — IMEI or serial number (ADR 0029); empty for a quantity sale. */
     val code: String get() = UnitCode.display(imei, serialNumber)
@@ -61,6 +66,7 @@ fun SaleDto.toDomain() = Sale(
     soldByName = soldBy.name,
     warrantyDays = warranty?.days,
     consignmentId = consignmentId,
+    creditId = creditId,
     returnedAt = returnInfo?.returnedAt,
     payments = payments.map { AccountAmount(it.accountCode, parseMoney(it.amount)) },
     listPrice = listPrice,

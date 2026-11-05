@@ -13,57 +13,15 @@ import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.SaleCreate
 import uz.malika.erp.features.sales.data.ScanOutcome
 import uz.malika.erp.features.sales.data.ScannedDevice
-import uz.malika.erp.features.sales.lib.CartPricing
 import uz.malika.erp.features.sales.lib.Discount
 import uz.malika.erp.features.sales.lib.DiscountMode
-import uz.malika.erp.features.sales.lib.DiscountSettings
 import uz.malika.erp.features.sales.lib.PriceLevel
-import uz.malika.erp.features.sales.lib.PricedCart
 import uz.malika.erp.shared.payments.AccountAmount
 import uz.malika.erp.shared.payments.PaymentSplit
 import java.math.BigDecimal
 
 /**
- * A resolved unit scan awaiting the cashier's confirmation. [device] is the
- * looked-up device (null when it did not resolve); [errorKey] is the i18n key of
- * the reason it cannot be added (null when addable). Confirm adds it to the cart.
- */
-data class ScanPrompt(
-    val code: String,
-    val device: ScannedDevice? = null,
-    val errorKey: String? = null,
-) {
-    val addable: Boolean get() = device != null && errorKey == null
-}
-
-data class PosState(
-    val lines: List<CartLine> = emptyList(),
-    val errorKey: String? = null,
-    val busy: Boolean = false,
-    val completed: ReceiptData? = null,
-    val defaultWarrantyDays: Int? = null,
-    val pendingSold: Set<String> = emptySet(),
-    val prompt: ScanPrompt? = null,
-    /** Quantity products matched by a typed name search, to pick from (ADR 0030). */
-    val productMatches: List<CartProduct>? = null,
-    // Pricing (ADR 0034).
-    val level: String = PriceLevel.DEFAULT,
-    val settings: DiscountSettings = DiscountSettings(),
-    val standingPercent: BigDecimal = BigDecimal.ZERO,
-    val canOverride: Boolean = false,
-    val canUnlimited: Boolean = false,
-    val cartDiscount: Discount? = null,
-    val overriding: Set<String> = emptySet(),
-    val standingPrefill: Boolean = false,
-) {
-    /** The whole cart priced at the current level — the single brain the UI reads. */
-    val priced: PricedCart
-        get() = CartPricing.price(lines, level, cartDiscount, overriding, settings, standingPercent, canOverride, canUnlimited)
-    val total: String get() = priced.totals.payable.toPlainString()
-}
-
-/**
- * POS terminal state (ADR 0030/0031/0034): a mixed cart, a price level that
+ * POS terminal logic (ADR 0030/0031/0034): a mixed cart, a price level that
  * follows the customer, per-line and whole-cart discounts bounded by the owner's
  * limit, and the completed sale. Checkout fans the cart into one `sale.create`
  * per line (each carrying its level, discount and the till's list price), enqueued
@@ -90,10 +48,11 @@ class PosViewModel(
         }
     }
 
-    /** Load the discount settings (online fetch + cache, else last-known). Driven by PosScreen. */
+    /** Load the till settings (online fetch + cache, else last-known). Driven by PosScreen. */
     fun loadDiscountSettings(online: Boolean) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(settings = repo.discountSettings(online))
+            val ts = repo.tillSettings(online)
+            _state.value = _state.value.copy(settings = ts.discount, creditEnabled = ts.creditEnabled, shiftsEnabled = ts.shiftsEnabled)
         }
     }
 
@@ -258,6 +217,16 @@ class PosViewModel(
     fun clearError() { _state.value = _state.value.copy(errorKey = null) }
     fun dismissReceipt() { _state.value = _state.value.copy(completed = null) }
 
+    /** Empty the cart, keeping settings/flags — used after an "On credit" sale (ADR 0035). */
+    fun resetCart() {
+        val s = _state.value
+        _state.value = PosState(
+            pendingSold = s.pendingSold, defaultWarrantyDays = s.defaultWarrantyDays,
+            settings = s.settings, canOverride = s.canOverride, canUnlimited = s.canUnlimited,
+            creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled,
+        )
+    }
+
     /**
      * [parts] is the cart-level tender summing to the amount to pay; it is fanned
      * across the lines' final prices so each sale's payments add up to its line.
@@ -287,6 +256,8 @@ class PosViewModel(
                     settings = s.settings,
                     canOverride = s.canOverride,
                     canUnlimited = s.canUnlimited,
+                    creditEnabled = s.creditEnabled,
+                    shiftsEnabled = s.shiftsEnabled,
                     completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts),
                 )
             } catch (_: Exception) {

@@ -116,6 +116,10 @@ data class StoreSettingsDto(
     val discountPresetsPercent: List<Double> = emptyList(),
     val discountPresetsAmount: List<Double> = emptyList(),
     val maxDiscountPercent: JsonElement? = null,
+    // Customer credit (ADR 0035) and shifts (ADR 0036).
+    val customerCreditEnabled: Boolean = false,
+    val defaultCreditLimit: JsonElement? = null,
+    val shiftsEnabled: Boolean = false,
 ) {
     /** Decimal arrives as a JSON number or string; keep it as a plain string. */
     val minMarginPercentStr: String
@@ -123,6 +127,10 @@ data class StoreSettingsDto(
 
     val maxDiscountPercentStr: String
         get() = maxDiscountPercent?.jsonPrimitive?.content ?: "0"
+
+    /** The default credit limit as a plain string; "" when null (no cap). */
+    val defaultCreditLimitStr: String
+        get() = defaultCreditLimit?.takeIf { it.toString() != "null" }?.jsonPrimitive?.content ?: ""
 }
 
 // ── Write bodies ──────────────────────────────────────────────────────────────

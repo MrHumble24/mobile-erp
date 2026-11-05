@@ -28,6 +28,11 @@ data class SettingsForm(
     val discountPresetsPercent: String = "",
     val discountPresetsAmount: String = "",
     val maxDiscountPercent: String = "0",
+    // Customer credit (ADR 0035). `defaultCreditLimit` blank = no cap.
+    val customerCreditEnabled: Boolean = false,
+    val defaultCreditLimit: String = "",
+    // Cashier shifts (ADR 0036).
+    val shiftsEnabled: Boolean = false,
 )
 
 /** Parse a comma-separated preset list into at most five non-negative numbers. */
@@ -62,6 +67,9 @@ class SettingsRepository(private val api: AdminApi) {
             put("discountPresetsPercent", buildJsonArray { csvPresets(form.discountPresetsPercent).forEach { add(JsonPrimitive(it)) } })
             put("discountPresetsAmount", buildJsonArray { csvPresets(form.discountPresetsAmount).forEach { add(JsonPrimitive(it)) } })
             put("maxDiscountPercent", JsonPrimitive(form.maxDiscountPercent.trim().toDoubleOrNull() ?: 0.0))
+            put("customerCreditEnabled", JsonPrimitive(form.customerCreditEnabled))
+            put("defaultCreditLimit", form.defaultCreditLimit.trim().toDoubleOrNull()?.let { JsonPrimitive(it) } ?: JsonNull)
+            put("shiftsEnabled", JsonPrimitive(form.shiftsEnabled))
         }
         api.updateSettings(body)
     }

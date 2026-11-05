@@ -2,9 +2,20 @@ package uz.malika.erp.features.sales.data
 
 import uz.malika.erp.data.local.DeviceEntity
 import uz.malika.erp.data.local.ProductEntity
+import uz.malika.erp.features.sales.lib.DiscountSettings
 import uz.malika.erp.features.sales.lib.PriceCache
 import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.payments.AccountAmount
+
+/**
+ * The till's settings bundle (one `GET /settings` read): the discount rules plus
+ * the customer-credit (ADR 0035) and shifts (ADR 0036) switches the till gates on.
+ */
+data class TillSettings(
+    val discount: DiscountSettings = DiscountSettings(),
+    val creditEnabled: Boolean = false,
+    val shiftsEnabled: Boolean = false,
+)
 
 /**
  * A device resolved for checkout — from the offline Room cache or the online

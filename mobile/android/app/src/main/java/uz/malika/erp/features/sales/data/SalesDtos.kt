@@ -52,6 +52,8 @@ data class SaleDto(
     val soldBy: SalePersonDto = SalePersonDto(),
     val warranty: WarrantyWindowDto? = null,
     val consignmentId: String? = null,
+    /** The credit agreement this sale belongs to (ADR 0035); null for a paid sale. */
+    val creditId: String? = null,
     val notes: String? = null,
     @SerialName("return") val returnInfo: SaleReturnDto? = null,
     /** How the sale was tendered; `[]` when none. Optional so older cached rows decode. */
@@ -202,6 +204,11 @@ data class SettingsDto(
     val discountPresetsPercent: List<Double> = emptyList(),
     val discountPresetsAmount: List<Double> = emptyList(),
     val maxDiscountPercent: String? = null,
+    // Customer credit (ADR 0035) and shifts (ADR 0036) — the till reads these to
+    // show "On credit" and to gate selling while shifts are on.
+    val customerCreditEnabled: Boolean = false,
+    val defaultCreditLimit: String? = null,
+    val shiftsEnabled: Boolean = false,
 )
 
 /** The `latestSale` blob cached on a device row by `/sync/changes` (offline warranty). */
@@ -213,76 +220,12 @@ data class CachedSaleDto(
     val warrantyEndsAt: String? = null,
 )
 
-// ── Customers ─────────────────────────────────────────────────────────────────
-
-@Serializable
-data class CustomerDto(
-    val id: String = "",
-    val name: String = "",
-    val phone: String? = null,
-    val notes: String? = null,
-    val createdAt: String? = null,
-    /** Pricing (ADR 0034): the customer's price level and standing discount. */
-    val priceLevelCode: String = "RETAIL",
-    val standingDiscountPercent: String = "0",
-)
-
-/** `/customers/stats` aggregate tiles. */
-@Serializable
-data class CustomerStatsDto(
-    val total: Int = 0,
-    val newThisMonth: Int = 0,
-    val withPurchases: Int = 0,
-    val repeatBuyers: Int = 0,
-)
-
-@Serializable
-data class CustomerPageDto(
-    val items: List<CustomerListItemDto> = emptyList(),
-    val total: Int = 0,
-    val page: Int = 1,
-    val pageSize: Int = 20,
-)
-
-@Serializable
-data class CustomerListItemDto(
-    val id: String = "",
-    val name: String = "",
-    val phone: String? = null,
-    val notes: String? = null,
-    val createdAt: String? = null,
-    val purchaseCount: Int = 0,
-    val totalSpent: Double = 0.0,
-    val lastPurchaseAt: String? = null,
-    val activeWarranties: Int = 0,
-    val returnsCount: Int = 0,
-    val priceLevelCode: String = "RETAIL",
-    val standingDiscountPercent: String = "0",
-)
-
 // ── Request bodies (online writes) ─────────────────────────────────────────────
+// Customer DTOs and their write bodies live in CustomerDtos.kt (file-size split).
 
 @Serializable
 data class ReturnBody(
     val refundAmount: Double,
     val deviceToStatusCode: String,
     val reason: String? = null,
-)
-
-@Serializable
-data class CreateCustomerBody(
-    val name: String,
-    val phone: String? = null,
-    val notes: String? = null,
-    val priceLevelCode: String? = null,
-    val standingDiscountPercent: Double? = null,
-)
-
-@Serializable
-data class UpdateCustomerBody(
-    val name: String? = null,
-    val phone: String? = null,
-    val notes: String? = null,
-    val priceLevelCode: String? = null,
-    val standingDiscountPercent: Double? = null,
 )

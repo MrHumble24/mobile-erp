@@ -243,6 +243,7 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
                 s.payments.fold(java.math.BigDecimal.ZERO) { acc, p -> acc + p.amount }
                     .takeIf { it.signum() > 0 } ?: parseMoney(s.salePrice)
             } ?: java.math.BigDecimal.ZERO,
+            onCredit = sale?.onCredit == true,
         ) { returnSaleId = null; returnSale = null }
     }
 

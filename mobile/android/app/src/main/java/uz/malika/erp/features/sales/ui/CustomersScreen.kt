@@ -138,11 +138,12 @@ fun CustomersScreen(container: AppContainer, api: SalesApi) {
     selected?.let { c ->
         AppBottomSheet(onDismiss = { selected = null }) {
             CustomerDetailSheet(
+                container = container,
                 customer = c,
                 vm = vm,
                 canManage = canManage,
                 onEdit = {
-                    formFor = FormTarget(c.id, c.name, c.phone, c.notes, c.priceLevelCode, c.standingDiscountPercent)
+                    formFor = FormTarget(c.id, c.name, c.phone, c.notes, c.priceLevelCode, c.standingDiscountPercent, c.creditLimit ?: "")
                     selected = null
                 },
             )

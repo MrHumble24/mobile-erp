@@ -4,11 +4,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import uz.malika.erp.app.AppNavHost
 import uz.malika.erp.core.LaunchExtras
@@ -34,6 +38,19 @@ fun MalikaApp(container: AppContainer, launch: LaunchExtras? = null) {
             // override is already applied in MainActivity); `open` navigates below.
             LaunchedEffect(Unit) {
                 if (launch?.canSignIn == true) session.login(launch.email!!, launch.password!!)
+            }
+            // Re-read permissions from the server on app start and on every return to
+            // the foreground while online, so a newly granted permission applies
+            // without signing out (ADR 0035/0036 need `sale.credit` / `shift.manage`).
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_START && container.connectivity.online.value) {
+                        session.refreshPermissions()
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
             Box(Modifier.fillMaxSize()) {
                 AppNavHost(container, session, openRoute = launch?.open)
