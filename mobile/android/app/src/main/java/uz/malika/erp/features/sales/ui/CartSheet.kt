@@ -27,6 +27,8 @@ fun CartSheet(
     state: PosState,
     online: Boolean,
     api: SalesApi,
+    shiftBlocked: Boolean = false,
+    onOpenShift: () -> Unit = {},
 ) {
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Tokens.Space.gutter),
@@ -47,7 +49,7 @@ fun CartSheet(
             enabled = !state.busy,
         )
         Spacer(Modifier.height(Tokens.Space.lg))
-        PosCheckoutForm(container, vm, state, online, api)
+        PosCheckoutForm(container, vm, state, online, api, shiftBlocked, onOpenShift)
         Spacer(Modifier.height(Tokens.Space.lg))
     }
 }
