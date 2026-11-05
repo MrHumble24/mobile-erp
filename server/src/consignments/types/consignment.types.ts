@@ -66,7 +66,6 @@ export interface CreateTransferInput {
 }
 
 export interface SettleInput {
-  storeId: string;
   salePrice?: Prisma.Decimal;
   notes?: string;
   expectedVersion?: number;

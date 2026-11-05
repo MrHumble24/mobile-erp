@@ -70,7 +70,9 @@ export class ConsignmentsWriteRepository {
       });
       await tx.sale.create({
         data: {
-          storeId: input.storeId,
+          // The sale belongs to the store that handed the device out, not to
+          // the settling user's current store. Inherit the consignment's store.
+          storeId: c.storeId,
           deviceId: c.device.id,
           consignmentId: id,
           soldById: input.soldById,
@@ -110,11 +112,16 @@ export class ConsignmentsWriteRepository {
   private async loadOut(
     tx: Tx,
     id: string,
-  ): Promise<{ agreedPrice: Prisma.Decimal; device: DeviceLock }> {
+  ): Promise<{
+    storeId: string;
+    agreedPrice: Prisma.Decimal;
+    device: DeviceLock;
+  }> {
     const c = await tx.consignment.findUnique({
       where: { id },
       select: {
         statusCode: true,
+        storeId: true,
         agreedPrice: true,
         device: {
           select: {
@@ -132,7 +139,7 @@ export class ConsignmentsWriteRepository {
         `Consignment ${id} is ${c.statusCode}, not OUT`,
       );
     }
-    return { agreedPrice: c.agreedPrice, device: c.device };
+    return { storeId: c.storeId, agreedPrice: c.agreedPrice, device: c.device };
   }
 
   /** Optimistic status change + history row. 409 on version mismatch. */

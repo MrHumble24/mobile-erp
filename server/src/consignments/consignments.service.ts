@@ -107,13 +107,12 @@ export class ConsignmentsService {
     return c;
   }
 
-  async settle(
+  settle(
     caller: AuthenticatedUser,
     id: string,
     dto: SettleConsignmentDto,
   ): Promise<ConsignmentView> {
     return this.writes.settle(id, {
-      storeId: await this.stores.currentStoreId(),
       salePrice:
         dto.salePrice === undefined
           ? undefined
