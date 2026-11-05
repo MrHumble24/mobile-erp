@@ -2,12 +2,13 @@ import { z } from "zod"
 import type { StoreSettings, UpdateSettingsDto } from "@/entities/settings"
 
 /** A numeric text field validated against a server-mirrored range. */
-function numField(max: number, integer = true) {
+function numField(max: number, integer = true, maxDecimals?: number) {
   return z.string().refine(
     (v) => {
       const n = Number(v)
       if (v.trim() === "" || Number.isNaN(n)) return false
       if (integer && !Number.isInteger(n)) return false
+      if (maxDecimals !== undefined && (v.split(".")[1]?.length ?? 0) > maxDecimals) return false
       return n >= 0 && n <= max
     },
     { message: "range" }
@@ -46,6 +47,13 @@ export const settingsSchema = z.object({
   ),
   shiftsEnabled: z.boolean(),
   repairsEnabled: z.boolean(),
+  bonusEnabled: z.boolean(),
+  bonusEarnPercent: numField(100, false, 2),
+  bonusMaxRedeemPercent: numField(100, false, 2),
+  receiptPrintingEnabled: z.boolean(),
+  // Select values are strings; converted to a number on submit.
+  receiptPaperWidthMm: z.enum(["58", "80"]),
+  priceTagsEnabled: z.boolean(),
 })
 
 export type SettingsValues = z.infer<typeof settingsSchema>
@@ -82,6 +90,12 @@ export function toFormValues(s: StoreSettings): SettingsValues {
     defaultCreditLimit: s.defaultCreditLimit == null ? "" : String(Number(s.defaultCreditLimit)),
     shiftsEnabled: s.shiftsEnabled,
     repairsEnabled: s.repairsEnabled,
+    bonusEnabled: s.bonusEnabled,
+    bonusEarnPercent: String(Number(s.bonusEarnPercent)),
+    bonusMaxRedeemPercent: String(Number(s.bonusMaxRedeemPercent)),
+    receiptPrintingEnabled: s.receiptPrintingEnabled,
+    receiptPaperWidthMm: s.receiptPaperWidthMm === 58 ? "58" : "80",
+    priceTagsEnabled: s.priceTagsEnabled,
   }
 }
 
@@ -108,5 +122,11 @@ export function toUpdateDto(v: SettingsValues): UpdateSettingsDto {
     defaultCreditLimit: v.defaultCreditLimit.trim() === "" ? null : Number(v.defaultCreditLimit),
     shiftsEnabled: v.shiftsEnabled,
     repairsEnabled: v.repairsEnabled,
+    bonusEnabled: v.bonusEnabled,
+    bonusEarnPercent: Number(v.bonusEarnPercent),
+    bonusMaxRedeemPercent: Number(v.bonusMaxRedeemPercent),
+    receiptPrintingEnabled: v.receiptPrintingEnabled,
+    receiptPaperWidthMm: Number(v.receiptPaperWidthMm),
+    priceTagsEnabled: v.priceTagsEnabled,
   }
 }

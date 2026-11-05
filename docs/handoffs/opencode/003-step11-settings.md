@@ -1,6 +1,6 @@
 # 003 — Step 11, part 1 of 6: settings switches for bonus points and printing
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: done · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Handoff `gemini/020-step11-website.md` is too big for one go, so it is given in parts, one after
@@ -42,10 +42,23 @@ Fill the Result section of `docs/handoffs/opencode/003-step11-settings.md`, set 
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (`opencode/big-pickle`)
+- Commits: `3f29abf` feat(settings): add bonus points and printing sections. This handoff doc is committed separately.
 - Files changed:
+  - `client/src/entities/settings/model/settings.types.ts` — the six fields on `StoreSettings` and optional on `UpdateSettingsDto`.
+  - `client/src/pages/settings/model/settings-schema.ts` — schema, form defaults and request mapping; `numField` gained an optional 2-decimal check used by the bonus percents.
+  - `client/src/pages/settings/model/settings-form.types.ts` — shared form/string-field/boolean-field types.
+  - `client/src/pages/settings/ui/Field.tsx`, `SwitchField.tsx`, `Section.tsx` — helpers moved out of `SettingsSections.tsx` (now 118 lines, was 230).
+  - `client/src/pages/settings/ui/BonusSection.tsx`, `PrintingSection.tsx` — new sections, rendered immediately after Repairs.
+  - `client/src/pages/settings/ui/SettingsPage.tsx` — mounts both new sections.
+  - `client/src/shared/i18n/en/settings.json`, `uz/settings.json` — 12 new keys; uz carries the same English text for later translation.
+  - `client/src/pages/settings/README.md` — sections list updated.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
-- Not done / skipped / failed:
+  - `pnpm install`: lockfile up to date, 642 packages, done.
+  - `pnpm test`: `ℹ tests 68` · `ℹ pass 68` · `ℹ fail 0`.
+  - `pnpm lint`: `$ oxlint` — 0 errors, pre-existing warnings only; the new files produce none.
+  - `pnpm build`: `✓ built in 5.80s`; PWA `precache 138 entries`; `files generated`.
+  - `graphify update .`: ran in `client/` (789 files, 3234 nodes) and at the repo root (2388 files, 13020 nodes). The root run skipped `graph.html` because the graph exceeds the 5000-node visualization limit; `graph.json` and `GRAPH_REPORT.md` were updated.
+- Not done / skipped / failed: Uzbek strings intentionally left in English per the handoff. No check failed; nothing else skipped.
 
 ## Check by Claude

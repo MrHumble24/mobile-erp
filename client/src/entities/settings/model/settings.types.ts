@@ -27,6 +27,14 @@ export interface StoreSettings {
   shiftsEnabled: boolean
   /** Repairs (ADR 0040). */
   repairsEnabled: boolean
+  /** Bonus points (ADR 0043). Percents are 2-dp strings. */
+  bonusEnabled: boolean
+  bonusEarnPercent: string
+  bonusMaxRedeemPercent: string
+  /** Printing (ADR 0043). */
+  receiptPrintingEnabled: boolean
+  receiptPaperWidthMm: number
+  priceTagsEnabled: boolean
   updatedAt: string
 }
 
@@ -56,4 +64,12 @@ export interface UpdateSettingsDto {
   shiftsEnabled?: boolean
   /** Repairs (ADR 0040). Omitted = left unchanged server-side. */
   repairsEnabled?: boolean
+  /** Bonus points (ADR 0043). Omitted = left unchanged server-side. */
+  bonusEnabled?: boolean
+  bonusEarnPercent?: number
+  bonusMaxRedeemPercent?: number
+  /** Printing (ADR 0043). Omitted = left unchanged server-side. */
+  receiptPrintingEnabled?: boolean
+  receiptPaperWidthMm?: number
+  priceTagsEnabled?: boolean
 }
