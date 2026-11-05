@@ -48,8 +48,8 @@ export interface CreditStanding {
 /**
  * The one source of truth for credit arithmetic (ADR 0035). Nothing here is
  * stored: the agreed total is the sum of the not-returned sales, paid is the
- * sum of payments, outstanding is their difference, and payments are allocated
- * to instalments in due-date order. There is deliberately no interest, no late
+ * sum of payments, outstanding is their difference, and the part of the plan
+ * that is no longer owed is allocated to instalments in due-date order. There is deliberately no interest, no late
  * fee and no penalty in this computation.
  */
 export function computeCreditStanding(input: CreditMathInput): CreditStanding {
@@ -61,7 +61,12 @@ export function computeCreditStanding(input: CreditMathInput): CreditStanding {
     : ZERO;
 
   const dayStart = startOfUtcDay(input.now);
-  let remaining = paid.greaterThan(ZERO) ? paid : ZERO;
+  // The plan covers only what was left after the down payment, so what still
+  // has to be paid on the plan is exactly the outstanding. Allocating all of
+  // `paid` would let the down payment hide the first instalment.
+  const owed = outstanding.greaterThan(ZERO) ? outstanding : ZERO;
+  const covered = sum(input.instalments.map((i) => i.amount)).minus(owed);
+  let remaining = covered.greaterThan(ZERO) ? covered : ZERO;
   let overdueAmount = ZERO;
   const instalments = [...input.instalments]
     .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())

@@ -22,8 +22,8 @@ permission, with an owner-set credit limit per customer.
   `Sale` gains an optional `creditId`.
 - **Nothing derivable is stored.** Agreed total = Σ sale prices of the credit's
   not-returned sales; paid = Σ payments; outstanding = agreed − paid; settled =
-  outstanding ≤ 0 (no status column). Payments allocate to instalments in
-  due-date order; overdue = past due and not fully covered. One pure function
+  outstanding ≤ 0 (no status column). Payments after the down
+  payment allocate to instalments in due-date order; overdue = past due and not fully covered. One pure function
   (`lib/credit-math.ts`), modelled on the partner balance (ADR 0008).
 - **One atomic request.** `POST /credits` runs every line through the **same**
   checkout path a normal sale takes (reused via `SalesCreditService` inside the

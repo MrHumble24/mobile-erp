@@ -37,8 +37,8 @@ in parts. Owns `customer_credits`, `credit_instalments`, `credit_payments`.
 
 - agreed total = Σ sale prices of not-returned sales; paid = Σ payments;
   outstanding = agreed − paid; settled = outstanding ≤ 0 (no status column).
-- Payments allocate to instalments in due-date order; an instalment is overdue
-  when past due and not fully covered.
+- Payments after the down payment allocate to instalments in due-date order
+  (plan total − outstanding); overdue = past due and not fully covered.
 - Effective limit = customer `creditLimit` else settings `defaultCreditLimit`;
   null = no cap. The cap is on principal — **there is no interest**.
 

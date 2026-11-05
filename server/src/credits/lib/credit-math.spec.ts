@@ -30,6 +30,23 @@ describe('computeCreditStanding', () => {
     expect(s.instalments[2].paid.toFixed(2)).toBe('0.00');
   });
 
+  it('does not count the down payment against the plan', () => {
+    // 400 sold, 100 paid down at the till, 300 planned in three parts.
+    const s = computeCreditStanding({
+      salePrices: [D(400)],
+      paymentAmounts: [D(100)],
+      instalments: plan(),
+      now: NOW,
+    });
+    expect(s.outstanding.toFixed(2)).toBe('300.00');
+    expect(s.instalments.map((i) => i.paid.toFixed(2))).toEqual([
+      '0.00',
+      '0.00',
+      '0.00',
+    ]);
+    expect(s.overdueAmount.toFixed(2)).toBe('300.00');
+  });
+
   it('flags a past-due, not-fully-covered instalment as overdue', () => {
     const s = computeCreditStanding({
       salePrices: [D(300)],
