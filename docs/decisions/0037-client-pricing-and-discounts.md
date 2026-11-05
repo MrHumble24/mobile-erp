@@ -1,4 +1,4 @@
-# 0035 — Web client: price levels and discounts
+# 0037 — Web client: price levels and discounts
 
 Date: 2026-11-05
 Status: Accepted
