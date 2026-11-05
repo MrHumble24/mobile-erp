@@ -13,6 +13,8 @@ filters, summary tiles, a table, pagination, the detail sheet, and the
   purchase-history list, warranty badge. The row + detail show the credit
   position (left to pay, overdue, limit in use) and the detail lists the
   customer's credits (`CustomerCreditsList`), all from `entities/credit` (ADR 0035).
+  When `repairsEnabled` and the caller has `repair.read`, the detail also lists
+  the customer's repair tickets (`CustomerRepairsList`, `entities/repair`, ADR 0040).
 
 ## Data
 

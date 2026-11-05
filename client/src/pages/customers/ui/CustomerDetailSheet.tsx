@@ -2,6 +2,7 @@ import { Pencil } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
+import { useSettings } from "@/entities/settings"
 import { useCustomer, type CustomerView, type CustomerListItem } from "@/entities/customer"
 import {
   Sheet,
@@ -15,6 +16,7 @@ import { Skeleton } from "@/shared/ui/skeleton"
 import { CustomerPurchaseList } from "./CustomerPurchaseList"
 import { CustomerCreditsList } from "./CustomerCreditsList"
 import { CustomerBoughtList } from "./CustomerBoughtList"
+import { CustomerRepairsList } from "./CustomerRepairsList"
 
 function levelLabel(code: string, t: (k: string) => string): string {
   if (code === "WHOLESALE") return t("pricing.levelWholesale")
@@ -98,6 +100,9 @@ function CustomerRelations({
   canReadPurchases: boolean
 }) {
   const { t } = useI18n()
+  const canReadRepairs = useAuthStore((s) => s.hasPermission("repair.read"))
+  const { data: settings } = useSettings()
+  const showRepairs = Boolean(settings?.repairsEnabled) && canReadRepairs
   return (
     <>
       <div className="grid grid-cols-3 gap-2.5">
@@ -127,6 +132,13 @@ function CustomerRelations({
         <div className="space-y-3">
           <h3 className="text-sm font-semibold tracking-tight">{t("purchases.boughtFromTitle")}</h3>
           <CustomerBoughtList customerId={customer.id} />
+        </div>
+      )}
+
+      {showRepairs && (
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold tracking-tight">{t("repairs.title")}</h3>
+          <CustomerRepairsList customerId={customer.id} />
         </div>
       )}
     </>

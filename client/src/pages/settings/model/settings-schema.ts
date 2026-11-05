@@ -45,6 +45,7 @@ export const settingsSchema = z.object({
     { message: "range" }
   ),
   shiftsEnabled: z.boolean(),
+  repairsEnabled: z.boolean(),
 })
 
 export type SettingsValues = z.infer<typeof settingsSchema>
@@ -80,6 +81,7 @@ export function toFormValues(s: StoreSettings): SettingsValues {
     customerCreditEnabled: s.customerCreditEnabled,
     defaultCreditLimit: s.defaultCreditLimit == null ? "" : String(Number(s.defaultCreditLimit)),
     shiftsEnabled: s.shiftsEnabled,
+    repairsEnabled: s.repairsEnabled,
   }
 }
 
@@ -105,5 +107,6 @@ export function toUpdateDto(v: SettingsValues): UpdateSettingsDto {
     customerCreditEnabled: v.customerCreditEnabled,
     defaultCreditLimit: v.defaultCreditLimit.trim() === "" ? null : Number(v.defaultCreditLimit),
     shiftsEnabled: v.shiftsEnabled,
+    repairsEnabled: v.repairsEnabled,
   }
 }

@@ -22,6 +22,8 @@ const TYPE_KEYS: Record<string, string> = {
   DEVICE_EXPENSE: "balance.typeDeviceExpense",
   CUSTOMS: "balance.typeCustoms",
   SHIFT_DIFFERENCE: "balance.typeShiftDifference",
+  REPAIR_PAYMENT: "balance.typeRepairPayment",
+  REPAIR_OUTSIDE: "balance.typeRepairOutside",
 }
 
 /** Type codes known to the client, for the history type filter. The server owns the

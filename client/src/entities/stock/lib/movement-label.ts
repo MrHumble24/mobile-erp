@@ -5,6 +5,7 @@ const KEYS: Record<string, string> = {
   RETURN: "catalog.moveReturn",
   WRITE_OFF: "catalog.moveWriteOff",
   COUNT_CORRECTION: "catalog.moveCount",
+  REPAIR_USE: "catalog.moveRepairUse",
 }
 
 export function movementLabelKey(typeCode: string): string {

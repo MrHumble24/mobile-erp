@@ -25,6 +25,8 @@ export interface StoreSettings {
   defaultCreditLimit: string | null
   /** Cashier shifts (ADR 0036). */
   shiftsEnabled: boolean
+  /** Repairs (ADR 0040). */
+  repairsEnabled: boolean
   updatedAt: string
 }
 
@@ -52,4 +54,6 @@ export interface UpdateSettingsDto {
   defaultCreditLimit?: number | null
   /** Cashier shifts (ADR 0036). Omitted = left unchanged server-side. */
   shiftsEnabled?: boolean
+  /** Repairs (ADR 0040). Omitted = left unchanged server-side. */
+  repairsEnabled?: boolean
 }
