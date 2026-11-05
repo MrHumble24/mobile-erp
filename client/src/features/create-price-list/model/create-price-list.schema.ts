@@ -1,5 +1,6 @@
 import { z } from "zod"
 import type { CreatePriceListDto, CurrentPriceList } from "@/entities/customs"
+import { todayIso } from "../../../shared/lib/local-date.ts"
 
 const rowSchema = z.object({
   customsCode: z.string().min(1),
@@ -25,7 +26,7 @@ const EMPTY_ROW: PriceListRow = { customsCode: "", description: "", fee: "" }
 /** Prefill the form from the current list so the owner edits only what changed. */
 export function initialValues(current: CurrentPriceList | null): CreatePriceListValues {
   return {
-    effectiveAt: new Date().toISOString().slice(0, 10),
+    effectiveAt: todayIso(),
     note: "",
     items: current
       ? current.items.map((i) => ({

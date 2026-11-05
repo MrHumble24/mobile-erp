@@ -1,15 +1,8 @@
 import { useSearchParams } from "react-router"
+import { localDayEnd, localDayStart } from "@/shared/lib/local-date"
 import type { ShiftListFilters } from "@/entities/shift"
 
 const DEFAULT_PAGE_SIZE = 20
-
-/** Local-day bounds as UTC instants (same convention as the balance history). */
-function localDayStart(date: string): string | undefined {
-  return date ? new Date(`${date}T00:00:00`).toISOString() : undefined
-}
-function localDayEnd(date: string): string | undefined {
-  return date ? new Date(`${date}T23:59:59.999`).toISOString() : undefined
-}
 
 export interface ShiftsFiltersState {
   cashierId?: string

@@ -563,6 +563,10 @@ Three prices (Change 12) go with step 4 or 5, where products and the
 POS card are built. The device lookup lists
 (`docs/reference/device-lists/`) are loaded in step 5.
 
+Decided by Claude, 2026-11-06 (user: "I don't know"): a phone sold by one
+branch and bought back by another branch goes into the stock of the branch
+that bought it. The phone is physically there, and that branch paid for it.
+
 Branches update, 2026-11-05 evening: given to Gemini as one task for the
 server and the website (`docs/handoffs/gemini/018-branches-full-stack.md`).
 Phone apps follow after Claude checks it.

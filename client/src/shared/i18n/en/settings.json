@@ -26,5 +26,17 @@
   "minMarginPercent": "Minimum Margin (%)",
   "lowStockThreshold": "Default Low Stock Threshold",
   "settingsSaved": "Settings saved successfully",
-  "saving": "Saving..."
+  "saving": "Saving...",
+  "sectionBonus": "Bonus Points",
+  "sectionBonusDesc": "Loyalty points earned on paid sales and redeemed at checkout",
+  "bonusEnabled": "Enable Bonus Points",
+  "bonusEarnPercent": "Earn Rate (%)",
+  "bonusMaxRedeemPercent": "Max Redeem Rate (%)",
+  "sectionPrinting": "Printing",
+  "sectionPrintingDesc": "Receipt and price tag printing preferences",
+  "receiptPrintingEnabled": "Print Receipts",
+  "receiptPaperWidth": "Receipt Paper Width",
+  "paperWidth58": "58 mm",
+  "paperWidth80": "80 mm",
+  "priceTagsEnabled": "Print Price Tags"
 }

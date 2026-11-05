@@ -15,11 +15,16 @@ filters, summary tiles, a table, pagination, the detail sheet, and the
   customer's credits (`CustomerCreditsList`), all from `entities/credit` (ADR 0035).
   When `repairsEnabled` and the caller has `repair.read`, the detail also lists
   the customer's repair tickets (`CustomerRepairsList`, `entities/repair`, ADR 0040).
+  When the bonus answer says `enabled`, the detail shows the points balance and
+  history (`CustomerBonusPanel`, `entities/bonus`); `bonus.adjust` holders also get
+  the `features/adjust-bonus` correction dialog.
 
 ## Data
 
 - `entities/customer` hooks only (`useCustomerList`, `useCustomerStats`,
   `useCustomer`, `useCustomerSales`). Writes go through `features/manage-customer`.
+- Points come from `entities/bonus` (`useCustomerBonus`); corrections go through
+  `features/adjust-bonus` only when the caller has `bonus.adjust`.
 - Purchase history reuses `entities/sale`'s `warrantyRemainingDays` and the
   `widgets/device-drawer` to open a device by IMEI; receipt links point at
   `/sales/:id/receipt`.

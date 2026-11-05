@@ -30,6 +30,8 @@ import {
   RepairsSection,
   TelegramSection,
 } from "./SettingsSections"
+import { BonusSection } from "./BonusSection"
+import { PrintingSection } from "./PrintingSection"
 
 function SettingsForm({
   settings,
@@ -72,6 +74,8 @@ function SettingsForm({
         <CustomerCreditSection form={form} disabled={disabled} />
         <ShiftsSection form={form} disabled={disabled} />
         <RepairsSection form={form} disabled={disabled} />
+        <BonusSection form={form} disabled={disabled} />
+        <PrintingSection form={form} disabled={disabled} />
         <NasiyaSection form={form} disabled={disabled} />
         <TelegramSection form={form} disabled={disabled} />
         {canManage && (

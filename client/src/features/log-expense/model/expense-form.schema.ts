@@ -4,14 +4,9 @@ import type {
   ExpenseView,
   UpdateExpenseDto,
 } from "@/entities/expense"
+import { todayIso } from "@/shared/lib/local-date"
 
 export type Translate = (key: string) => string
-
-function todayIso(): string {
-  const now = new Date()
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 10)
-}
 
 /** Schema built with the active locale so validation messages are translated. */
 export function makeExpenseFormSchema(t: Translate) {

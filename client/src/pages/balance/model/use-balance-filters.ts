@@ -1,17 +1,10 @@
 import { useSearchParams } from "react-router"
 import { presetDates, type RangePreset } from "@/shared/lib/date-range"
+import { localDayEnd, localDayStart } from "@/shared/lib/local-date"
 import type { LedgerFilters } from "@/entities/ledger"
 
 const DEFAULT_PRESET: RangePreset = "30d"
 const DEFAULT_PAGE_SIZE = 50
-
-/** Local-day bounds as UTC instants: start/end of the chosen day in the user's timezone. */
-function localDayStart(date: string): string | undefined {
-  return date ? new Date(`${date}T00:00:00`).toISOString() : undefined
-}
-function localDayEnd(date: string): string | undefined {
-  return date ? new Date(`${date}T23:59:59.999`).toISOString() : undefined
-}
 
 export interface BalanceFiltersState {
   preset: RangePreset
