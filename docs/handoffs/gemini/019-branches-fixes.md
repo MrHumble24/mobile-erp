@@ -46,7 +46,7 @@ Fill the Result section below and set Status to done. Report only what you ran; 
 
 ## Result (Gemini fills)
 - Commits:
-  - `fix(branches): fix write scoping security vulnerabilities S1-S8 and client bugs W1-W4`
+  - `18ba23b`: `fix(branches): fix write scoping security vulnerabilities S1-S8 and client bugs W1-W4`
 - S1 to S8, one line each (fixed how, test name):
   - S1: Validated `storeId` as UUID in `push.dto.ts`, rejected stores outside caller membership with `STORE_FORBIDDEN` and missing storeId with `STORE_REQUIRED`, wrapped execution in store selection context (`sync.service.spec.ts`: "rejects replay targeting store outside caller membership with STORE_FORBIDDEN").
   - S2: Scoped `findDeviceByImei(code, storeId?)` in `sales.repository.ts` to active store; passed active store in create and credit services (`sales-create.service.spec.ts`: "rejects sale when device belongs to another store with 404").
