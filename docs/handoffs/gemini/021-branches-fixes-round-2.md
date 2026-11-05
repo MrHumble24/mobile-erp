@@ -54,3 +54,16 @@ Fill the Result section of `docs/handoffs/gemini/021-branches-fixes-round-2.md`,
   (`docs/plan/store-balance.md`). No change needed.
 - After this is merged into `main`: run `pnpm prisma migrate deploy` and the seed on
   `mobile_erp_main` (the database `main` uses), or point `server/.env` back to `mobile_erp`.
+- 2026-11-06: checked and merged. Build, 567 server tests and lint pass; website lint, build and
+  74 tests pass after merging `main`.
+- Live, two stores: the expense summary of Main store is 1,250 and of Branch 2 is 0, matching the
+  database; the warranty of a Branch 2 sale asked from Main store returns `salePrice: null` and
+  `storeName: "Branch 2"`, and from Branch 2 returns 850. R3 could not be shown live (the test
+  data has no inspections); the filter was read in `qc.repository.ts`.
+- R5: no optional store parameter is left in the listed repositories. `qc.repository.ts`
+  `buildWhere` still treats `storeIds` as optional; its one caller passes it.
+- Fixed by Claude on the branch (`8209b9a`): the digest was marked as sent for each store before
+  the Telegram send, so a failed send lost the day's digest. It is now marked after the send.
+- Known gap after the merge: the Android and iOS apps do not send `X-Store-Id`. A user who
+  belongs to two stores (the seeded owner) gets `STORE_REQUIRED` on the phones until the apps get
+  a store picker. A user of one store is not affected.
