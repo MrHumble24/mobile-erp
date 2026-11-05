@@ -34,7 +34,7 @@ export function BalanceActions({ accounts }: { accounts: LedgerAccountBalance[] 
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {ACTIONS.map((a) => (
-            <DropdownMenuItem key={a.mode} onSelect={() => setMode(a.mode)}>
+            <DropdownMenuItem key={a.mode} onClick={() => setMode(a.mode)}>
               {t(a.labelKey)}
             </DropdownMenuItem>
           ))}
