@@ -18,6 +18,8 @@ class ProcurementRepository(private val api: ProcurementService) {
 
     // ── Shipments + intake ────────────────────────────────────────────────────
     suspend fun shipments(): List<ShipmentDto> = runApi { api.shipments() }
+    /** One shipment with its quantity purchase lines (ADR 0034). */
+    suspend fun shipment(id: String): ShipmentDto = runApi { api.shipment(id) }
     suspend fun createShipment(body: CreateShipmentBody) = runApi { api.createShipment(body) }
     suspend fun updateShipment(id: String, body: UpdateShipmentBody) = runApi { api.updateShipment(id, body) }
     suspend fun addDevices(id: String, drafts: List<IntakeDraft>) =

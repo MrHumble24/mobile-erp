@@ -48,6 +48,8 @@ data class ProductSyncDto(
     // For the offline till grid (ADR 0031).
     val categoryId: String? = null,
     val imageUrl: String? = null,
+    /** Resolved list prices per level (ADR 0034), so an offline till can switch level. */
+    val prices: Map<String, String?>? = null,
 )
 
 /**
@@ -68,6 +70,8 @@ data class DeviceSyncDto(
     val latestInspection: InspectionDto? = null,
     val latestSale: JsonElement? = null,
     val updatedAt: String,
+    /** Resolved list prices per level (ADR 0034), resolved for this unit's storage. */
+    val prices: Map<String, String?>? = null,
 )
 
 @Serializable

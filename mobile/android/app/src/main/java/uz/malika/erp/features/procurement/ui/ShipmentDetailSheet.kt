@@ -23,7 +23,6 @@ import uz.malika.erp.core.AppException
 import uz.malika.erp.features.procurement.data.DeviceModelDto
 import uz.malika.erp.features.procurement.data.DeviceRowDto
 import uz.malika.erp.features.procurement.data.ProcurementRepository
-import uz.malika.erp.features.procurement.data.PurchasedLineDto
 import uz.malika.erp.features.procurement.data.ShipmentDto
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.PageState
@@ -51,9 +50,7 @@ fun ShipmentDetailSheet(
     onContinueIntake: () -> Unit,
     onDismiss: () -> Unit,
     quantityModels: List<DeviceModelDto> = emptyList(),
-    addedLines: List<PurchasedLineDto> = emptyList(),
     online: Boolean = false,
-    onItemsAdded: (List<PurchasedLineDto>) -> Unit = {},
 ) {
     AppBottomSheet(onDismiss = onDismiss) {
         ShipmentDetailContent(
@@ -67,9 +64,7 @@ fun ShipmentDetailSheet(
             onContinueIntake = onContinueIntake,
             modifier = Modifier.padding(16.dp),
             quantityModels = quantityModels,
-            addedLines = addedLines,
             online = online,
-            onItemsAdded = onItemsAdded,
         )
     }
 }
@@ -92,15 +87,17 @@ fun ShipmentDetailContent(
     onContinueIntake: () -> Unit,
     modifier: Modifier = Modifier,
     quantityModels: List<DeviceModelDto> = emptyList(),
-    addedLines: List<PurchasedLineDto> = emptyList(),
     online: Boolean = false,
-    onItemsAdded: (List<PurchasedLineDto>) -> Unit = {},
 ) {
     val t = LocalT.current
     val scope = rememberCoroutineScope()
     var devices by remember(shipment.id) { mutableStateOf(PageState<DeviceRowDto>()) }
     var loaded by remember(shipment.id) { mutableStateOf(false) }
     var error by remember(shipment.id) { mutableStateOf<String?>(null) }
+    // The full detail (with persisted stock lines, ADR 0034); falls back to the list row until loaded.
+    var detail by remember(shipment.id) { mutableStateOf(shipment) }
+    suspend fun loadDetail() { runCatching { repo.shipment(shipment.id) }.getOrNull()?.let { detail = it } }
+    LaunchedEffect(shipment.id) { loadDetail() }
 
     suspend fun load(page: Int) {
         devices = devices.copy(loading = true)
@@ -142,17 +139,17 @@ fun ShipmentDetailContent(
             Spacer(Modifier.height(16.dp))
         }
 
-        // Quantity stock lines on this shipment (ADR 0030): buying needs device.create.
+        // Quantity stock lines on this shipment (ADR 0030/0034), read back from the detail.
         if (canCreate) {
             ShipmentStockLines(
                 shipmentId = shipment.id,
                 paymentAccountCode = shipment.paymentAccountCode,
                 quantityModels = quantityModels,
-                modelNames = modelNames,
-                addedLines = addedLines,
+                stockLines = detail.stockLines,
+                stockLinesTotal = detail.stockLinesTotal,
                 online = online,
                 repo = repo,
-                onAdded = onItemsAdded,
+                onChanged = { scope.launch { loadDetail() } },
             )
             Spacer(Modifier.height(16.dp))
         }

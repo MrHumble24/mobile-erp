@@ -5,6 +5,15 @@ The Inventory slice group, ported from the web `pages/inventory` +
 (`47971dd`). One `FeatureModule` → `InventoryFeature`, one nav item (`inventory`,
 gated by `device.read`).
 
+## Price-manage (ADR 0034, `price.manage`)
+`data/PricingApi` + `data/PricingRepository` own `/pricing/products/:id` and
+`/pricing/units/:id` (PUT bodies are hand-built JsonElements so a cleared cell
+goes up as explicit `null`). `ui/ProductPricesSheet` is the storage × level grid
+(an "any storage" row; a QUANTITY product has only that row); `ui/UnitPricesSheet`
+sets a unit's own three prices (empty = use the product price) and shows the
+resolved list price. Both open from a "Product prices" / "This unit's own prices"
+action gated by `price.manage` (Models tab rows; the device sheet). Online-only.
+
 ## Owns
 - **Devices**: offline-first list (Room mirror). The main screen stays uncluttered:
   a row of status chips (`InventoryMetricsBar`: label + mono count; a tap toggles

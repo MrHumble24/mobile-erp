@@ -26,8 +26,17 @@ data class Sale(
     val consignmentId: String?,
     val returnedAt: String?,
     val payments: List<AccountAmount> = emptyList(),
+    // Pricing (ADR 0034). Null for pre-feature sales / a line that had no list price.
+    val listPrice: String? = null,
+    val discountAmount: String? = null,
+    val priceLevelCode: String? = null,
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
+
+    /** Show the pricing breakdown only when there was a discount or a non-retail level. */
+    val showPricing: Boolean
+        get() = (discountAmount?.let { parseMoney(it).signum() > 0 } == true) ||
+            (priceLevelCode != null && priceLevelCode != "RETAIL")
 
     /** A product sold by the piece (no device, no identifier). */
     val isQuantity: Boolean get() = quantity != null
@@ -54,6 +63,9 @@ fun SaleDto.toDomain() = Sale(
     consignmentId = consignmentId,
     returnedAt = returnInfo?.returnedAt,
     payments = payments.map { AccountAmount(it.accountCode, parseMoney(it.amount)) },
+    listPrice = listPrice,
+    discountAmount = discountAmount,
+    priceLevelCode = priceLevelCode,
 )
 
 /** Aggregate stats for the sales list header. Money stays a string; profit is redacted (nullable). */

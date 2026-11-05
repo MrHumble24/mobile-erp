@@ -24,6 +24,7 @@ data class DeviceEntity(
     val modelName: String,
     val categoryId: String? = null, // the model's product category (ADR 0031), for the offline till grid
     val imageUrl: String? = null, // the model's picture path, drawn against the API base URL (ADR 0031)
+    val pricesJson: String? = null, // resolved {RETAIL,WHOLESALE,PARTNER} list prices (ADR 0034), JSON
     val latestSale: String?, // JSON
     val gradeCode: String?,
     val inspectionNotes: String?,
@@ -46,6 +47,18 @@ data class ProductEntity(
     val quantity: Int,
     val categoryId: String? = null, // product category (ADR 0031), for the offline till grid
     val imageUrl: String? = null, // the product's picture path, drawn against the API base URL (ADR 0031)
+    val pricesJson: String? = null, // resolved {RETAIL,WHOLESALE,PARTNER} list prices (ADR 0034), JSON
+)
+
+/**
+ * Cached product categories, fetched from `GET /product-categories` when online
+ * so the offline till grid can show category chips (ADR 0031/0034). Just the id
+ * and name the chips need — nothing else is cached.
+ */
+@Entity(tableName = "categories")
+data class CategoryEntity(
+    @PrimaryKey val id: String,
+    val name: String,
 )
 
 /** Cached partners from `/sync/changes`. Money columns are Decimal strings. */

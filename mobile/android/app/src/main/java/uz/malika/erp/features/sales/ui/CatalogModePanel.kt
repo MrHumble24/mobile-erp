@@ -112,6 +112,7 @@ fun CatalogModePanel(
                 else -> CatalogGrid(
                     cards = state.cards,
                     baseUrl = baseUrl,
+                    level = posState.level,
                     onTap = ::tapCard,
                     contentPadding = PaddingValues(
                         start = Tokens.Space.screenH,
@@ -125,7 +126,7 @@ fun CatalogModePanel(
 
     picker?.let { (title, units) ->
         AppBottomSheet(onDismiss = { picker = null }) {
-            UnitPickerSheet(title, units) { unit ->
+            UnitPickerSheet(title, units, posState.level) { unit ->
                 posVm.addUnitFromCatalog(unit.code, online)
                 picker = null
             }

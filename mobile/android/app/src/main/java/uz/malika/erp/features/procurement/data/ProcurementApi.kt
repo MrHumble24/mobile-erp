@@ -27,6 +27,10 @@ interface ProcurementService {
     @GET("shipments")
     suspend fun shipments(): List<ShipmentDto>
 
+    /** `GET /shipments/:id` — a shipment plus its quantity purchase lines (ADR 0034). */
+    @GET("shipments/{id}")
+    suspend fun shipment(@Path("id") id: String): ShipmentDto
+
     @POST("shipments")
     suspend fun createShipment(@Body body: CreateShipmentBody): ShipmentDto
 

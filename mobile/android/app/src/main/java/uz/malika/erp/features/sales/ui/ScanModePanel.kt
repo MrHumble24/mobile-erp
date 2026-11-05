@@ -60,11 +60,18 @@ fun ScanModePanel(
                 EmptyView(t("pos.cartEmpty", null), Modifier.height(220.dp), icon = Icons.Outlined.QrCodeScanner)
             else -> {
                 PosCartList(
-                    lines = state.lines,
-                    onPrice = vm::setLinePrice,
-                    onWarranty = vm::setLineWarranty,
-                    onQuantity = vm::setLineQuantity,
-                    onRemove = vm::removeLine,
+                    priced = state.priced,
+                    settings = state.settings,
+                    cartDiscountActive = state.cartDiscount != null,
+                    canOverride = state.canOverride,
+                    actions = CartActions(
+                        onPrice = vm::setLinePrice,
+                        onWarranty = vm::setLineWarranty,
+                        onQuantity = vm::setLineQuantity,
+                        onRemove = vm::removeLine,
+                        onLineDiscount = vm::setLineDiscount,
+                        onToggleOverride = vm::toggleOverride,
+                    ),
                     enabled = !state.busy,
                 )
                 Spacer(Modifier.height(16.dp))

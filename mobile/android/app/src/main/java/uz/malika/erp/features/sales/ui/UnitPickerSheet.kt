@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import uz.malika.erp.features.sales.data.CatalogUnitItem
+import uz.malika.erp.features.sales.lib.Pricing
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.lib.formatMoney
@@ -29,6 +30,7 @@ import uz.malika.erp.ui.theme.Tokens
 fun UnitPickerSheet(
     title: String,
     units: List<CatalogUnitItem>,
+    level: String,
     onPick: (CatalogUnitItem) -> Unit,
 ) {
     val t = LocalT.current
@@ -38,14 +40,14 @@ fun UnitPickerSheet(
         Text(title, style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
         Spacer(Modifier.height(Tokens.Space.lg))
         units.forEach { unit ->
-            UnitRow(unit, t) { onPick(unit) }
+            UnitRow(unit, level, t) { onPick(unit) }
             Spacer(Modifier.height(Tokens.Space.rowV))
         }
     }
 }
 
 @Composable
-private fun UnitRow(unit: CatalogUnitItem, t: Translate, onClick: () -> Unit) {
+private fun UnitRow(unit: CatalogUnitItem, level: String, t: Translate, onClick: () -> Unit) {
     AppCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -63,7 +65,8 @@ private fun UnitRow(unit: CatalogUnitItem, t: Translate, onClick: () -> Unit) {
                     Text(sub, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
                 }
             }
-            unit.targetPrice?.takeIf { it.isNotBlank() }?.let {
+            val price = Pricing.levelPrice(unit.prices, level)?.toPlainString() ?: unit.targetPrice
+            price?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     formatMoney(it),
                     style = MaterialTheme.typography.titleSmall.copy(fontFamily = MonoFamily),

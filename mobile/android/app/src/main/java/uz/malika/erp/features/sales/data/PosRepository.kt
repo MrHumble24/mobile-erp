@@ -89,4 +89,41 @@ class PosRepository(
         outbox.enqueue(OutboxType.SALE_CREATE, payload, baseVersion)
 
     suspend fun defaultWarrantyDays(): Int = runApi { api.settings().defaultWarrantyDays }
+
+    /**
+     * Discount settings for the till (ADR 0034). Online: fetch `GET /settings`
+     * and cache the payload in `sync_meta` so an offline till still knows whether
+     * discounts are on and the cashier limit; offline: read that cache. Default
+     * (nothing cached, call fails): discounts off.
+     */
+    suspend fun discountSettings(online: Boolean): uz.malika.erp.features.sales.lib.DiscountSettings {
+        if (online) {
+            val dto = runCatching { api.settings() }.getOrNull()
+            if (dto != null) {
+                runCatching {
+                    db.syncMetaDao().set(
+                        uz.malika.erp.data.local.SyncMetaEntity(DISCOUNT_SETTINGS_KEY, json.encodeToString(SettingsDto.serializer(), dto)),
+                    )
+                }
+                return dto.toDiscountSettings()
+            }
+        }
+        val cached = runCatching { db.syncMetaDao().get(DISCOUNT_SETTINGS_KEY) }.getOrNull()
+        return cached?.let { runCatching { json.decodeFromString(SettingsDto.serializer(), it).toDiscountSettings() }.getOrNull() }
+            ?: uz.malika.erp.features.sales.lib.DiscountSettings()
+    }
+
+    private companion object {
+        const val DISCOUNT_SETTINGS_KEY = "pos_discount_settings"
+    }
 }
+
+/** Map the settings payload into the till's discount rules (ADR 0034). */
+private fun SettingsDto.toDiscountSettings() = uz.malika.erp.features.sales.lib.DiscountSettings(
+    enabled = discountsEnabled,
+    percentAllowed = discountPercentAllowed,
+    amountAllowed = discountAmountAllowed,
+    maxPercent = uz.malika.erp.shared.lib.parseMoney(maxDiscountPercent),
+    presetsPercent = discountPresetsPercent.map { java.math.BigDecimal.valueOf(it) },
+    presetsAmount = discountPresetsAmount.map { java.math.BigDecimal.valueOf(it) },
+)

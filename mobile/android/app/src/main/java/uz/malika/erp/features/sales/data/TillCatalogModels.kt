@@ -22,6 +22,8 @@ data class CatalogEntryDto(
     val minTargetPrice: String? = null,
     val maxTargetPrice: String? = null,
     val salePrice: String? = null,
+    /** Product-level list prices at "any storage" per level (ADR 0034). */
+    val prices: Map<String, String?>? = null,
 )
 
 @Serializable
@@ -31,6 +33,8 @@ data class CatalogUnitDto(
     val specs: JsonElement? = null,
     val gradeCode: String? = null,
     val targetPrice: String? = null,
+    /** List prices resolved for this unit's own storage (ADR 0034). */
+    val prices: Map<String, String?>? = null,
 )
 
 @Serializable
@@ -55,6 +59,7 @@ data class CatalogCard(
     val minTargetPrice: String?,
     val maxTargetPrice: String?,
     val salePrice: String?,
+    val prices: Map<String, String?>? = null,
 ) {
     val label: String get() = "$brand $name".trim()
     val isQuantity: Boolean get() = kindCode == "QUANTITY"
@@ -62,7 +67,7 @@ data class CatalogCard(
     /** The CartProduct a QUANTITY card tap adds to the cart. */
     fun toCartProduct() = CartProduct(
         modelId = modelId, brand = brand, name = name,
-        barcode = null, salePrice = salePrice, inStock = inStock,
+        barcode = null, salePrice = salePrice, inStock = inStock, prices = prices,
     )
 
     companion object {
@@ -70,7 +75,7 @@ data class CatalogCard(
             modelId = d.modelId, brand = d.brand, name = d.name, kindCode = d.kindCode,
             categoryId = d.categoryId, categoryName = d.categoryName, imageUrl = d.imageUrl,
             inStock = d.inStock, minTargetPrice = d.minTargetPrice,
-            maxTargetPrice = d.maxTargetPrice, salePrice = d.salePrice,
+            maxTargetPrice = d.maxTargetPrice, salePrice = d.salePrice, prices = d.prices,
         )
     }
 }
@@ -82,6 +87,7 @@ data class CatalogUnitItem(
     val specs: Map<String, String>,
     val gradeCode: String?,
     val targetPrice: String?,
+    val prices: Map<String, String?>? = null,
 ) {
     val storage: String? get() = specs["storage"]?.takeIf { it.isNotBlank() }
     val color: String? get() = specs["color"]?.takeIf { it.isNotBlank() }
@@ -93,6 +99,7 @@ data class CatalogUnitItem(
             specs = specsToMap(d.specs),
             gradeCode = d.gradeCode,
             targetPrice = d.targetPrice,
+            prices = d.prices,
         )
     }
 }

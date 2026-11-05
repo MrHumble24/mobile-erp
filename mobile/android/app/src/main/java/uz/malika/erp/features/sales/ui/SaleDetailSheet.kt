@@ -33,7 +33,9 @@ import androidx.core.net.toUri
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.shared.lib.formatDateTime
+import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -87,6 +89,17 @@ fun SaleDetailSheet(
         }
         Spacer(Modifier.height(Tokens.Space.lg))
 
+        if (sale.showPricing) {
+            sale.priceLevelCode?.let { lvl ->
+                Fact(t("pricing.priceLevel", null)) { Text(t(PriceLevel.labelKey(lvl), null), style = valueStyle()) }
+            }
+            sale.listPrice?.let { lp ->
+                Fact(t("pricing.listPrice", null)) { MoneyText(lp, style = monoStyle()) }
+            }
+            sale.discountAmount?.takeIf { parseMoney(it).signum() > 0 }?.let { d ->
+                Fact(t("pricing.discount", null)) { MoneyText(d, style = monoStyle().copy(color = Tokens.success)) }
+            }
+        }
         Fact(t("sales.salePrice", null)) { MoneyText(sale.salePrice, style = valueStyle()) }
         sale.netProfit?.let { net ->
             Fact(t("sales.netProfit", null)) { MoneyText(net, style = valueStyle().copy(color = signTint(net))) }

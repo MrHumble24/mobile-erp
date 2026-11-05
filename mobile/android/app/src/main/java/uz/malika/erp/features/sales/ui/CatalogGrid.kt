@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import uz.malika.erp.features.sales.data.CatalogCard
+import uz.malika.erp.features.sales.lib.Pricing
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.ui.AppCard
@@ -32,6 +33,7 @@ import uz.malika.erp.ui.theme.Tokens
 fun CatalogGrid(
     cards: List<CatalogCard>,
     baseUrl: String,
+    level: String,
     onTap: (CatalogCard) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(Tokens.Space.screenH),
@@ -43,12 +45,12 @@ fun CatalogGrid(
         verticalArrangement = Arrangement.spacedBy(Tokens.Space.md),
         contentPadding = contentPadding,
     ) {
-        items(cards, key = { it.modelId }) { card -> CatalogCardItem(card, baseUrl, onTap) }
+        items(cards, key = { it.modelId }) { card -> CatalogCardItem(card, baseUrl, level, onTap) }
     }
 }
 
 @Composable
-private fun CatalogCardItem(card: CatalogCard, baseUrl: String, onTap: (CatalogCard) -> Unit) {
+private fun CatalogCardItem(card: CatalogCard, baseUrl: String, level: String, onTap: (CatalogCard) -> Unit) {
     val t = LocalT.current
     AppCard(
         onClick = { onTap(card) },
@@ -76,15 +78,16 @@ private fun CatalogCardItem(card: CatalogCard, baseUrl: String, onTap: (CatalogC
         )
         Spacer(Modifier.height(Tokens.Space.xs))
         Text(
-            priceLabel(card),
+            priceLabel(card, level),
             style = MaterialTheme.typography.titleSmall.copy(fontFamily = MonoFamily),
             color = Tokens.text,
         )
     }
 }
 
-/** The card's price line: a per-piece price (quantity) or a min–max range (units). */
-private fun priceLabel(card: CatalogCard): String {
+/** The card's price line at the current level (ADR 0034), falling back to the per-piece/range price. */
+private fun priceLabel(card: CatalogCard, level: String): String {
+    Pricing.levelPrice(card.prices, level)?.let { return formatMoney(it.toPlainString()) }
     if (card.isQuantity) return card.salePrice?.let { formatMoney(it) } ?: "—"
     val min = card.minTargetPrice
     val max = card.maxTargetPrice

@@ -34,6 +34,7 @@ import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.DeviceDetail
 import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
 import uz.malika.erp.features.inventory.data.DeviceStatusMeta
+import uz.malika.erp.features.inventory.data.PricingRepository
 import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.features.inventory.model.DevicesViewModel
@@ -65,6 +66,7 @@ fun DeviceSheet(
     canUpdate: Boolean,
     featureNav: FeatureNav,
     toaster: Toaster,
+    pricingRepo: PricingRepository,
     onClose: () -> Unit,
 ) {
     val t = LocalT.current
@@ -90,6 +92,7 @@ fun DeviceSheet(
                 canUpdate = canUpdate,
                 featureNav = featureNav,
                 toaster = toaster,
+                pricingRepo = pricingRepo,
                 onClose = onClose,
                 onChanged = { reload++ },
             )
@@ -108,6 +111,7 @@ private fun DeviceSheetBody(
     canUpdate: Boolean,
     featureNav: FeatureNav,
     toaster: Toaster,
+    pricingRepo: PricingRepository,
     onClose: () -> Unit,
     onChanged: () -> Unit,
 ) {
@@ -119,9 +123,11 @@ private fun DeviceSheetBody(
     // Both cost edits work on any status, sold included (ADR 0026/0027).
     val canExpense = LocalCan.current("device.expense")
     val canCustomsFee = LocalCan.current("customs.manage")
+    val canManagePrices = LocalCan.current("price.manage")
     var showEdit by remember { mutableStateOf(false) }
     var showExpense by remember { mutableStateOf(false) }
     var showCustomsFee by remember { mutableStateOf(false) }
+    var showPrices by remember { mutableStateOf(false) }
 
     val history by produceState<List<DeviceHistoryEntry>>(emptyList(), device.id) {
         value = runCatching { devicesVm.history(device.id) }.getOrDefault(emptyList())
@@ -143,7 +149,7 @@ private fun DeviceSheetBody(
             label = t(DeviceStatusMeta.labelKey(device.statusCode), null),
             color = DeviceStatusMeta.color(device.statusCode),
         )
-        if (canSell || canInspect || canUpdate || canExpense || canCustomsFee) {
+        if (canSell || canInspect || canUpdate || canExpense || canCustomsFee || canManagePrices) {
             Spacer(Modifier.height(Tokens.Space.lg))
             // Sell is the one orange; QC is secondary; edit is a ghost link.
             if (canSell) {
@@ -189,6 +195,15 @@ private fun DeviceSheetBody(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            if (canManagePrices) {
+                Spacer(Modifier.height(Tokens.Space.sm))
+                PillButton(
+                    text = t("pricing.unitPrices", null),
+                    onClick = { showPrices = true },
+                    variant = ButtonVariant.OUTLINE,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
         Spacer(Modifier.height(Tokens.Space.lg))
         DeviceBarcode(imei = device.code)
@@ -212,39 +227,20 @@ private fun DeviceSheetBody(
         Spacer(Modifier.height(Tokens.Space.sm))
     }
 
-    if (showEdit) {
-        AppBottomSheet(onDismiss = { showEdit = false }) {
-            EditDeviceSheet(
-                device = device,
-                devicesVm = devicesVm,
-                catalogVm = catalogVm,
-                online = online,
-                onSaved = { showEdit = false; onChanged() },
-            )
-        }
-    }
-    if (showExpense) {
-        AppBottomSheet(onDismiss = { showExpense = false }) {
-            EditExpenseSheet(
-                device = device,
-                devicesVm = devicesVm,
-                online = online,
-                toaster = toaster,
-                onSaved = { showExpense = false; onChanged() },
-            )
-        }
-    }
-    if (showCustomsFee) {
-        AppBottomSheet(onDismiss = { showCustomsFee = false }) {
-            EditCustomsFeeSheet(
-                device = device,
-                devicesVm = devicesVm,
-                online = online,
-                toaster = toaster,
-                onSaved = { showCustomsFee = false; onChanged() },
-            )
-        }
-    }
+    DeviceSheetDialogs(
+        device = device,
+        devicesVm = devicesVm,
+        catalogVm = catalogVm,
+        online = online,
+        toaster = toaster,
+        pricingRepo = pricingRepo,
+        showEdit = showEdit,
+        showExpense = showExpense,
+        showCustomsFee = showCustomsFee,
+        showPrices = showPrices,
+        onDismiss = { showEdit = false; showExpense = false; showCustomsFee = false; showPrices = false },
+        onChanged = onChanged,
+    )
 }
 
 /** Section heading inside the sheet (Heading step, same as the dashboard cards). */

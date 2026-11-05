@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +28,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.launch
 import uz.malika.erp.AppContainer
 import uz.malika.erp.features.nasiya.model.ConsignEntry
 import uz.malika.erp.features.nasiya.model.ConsignWriteViewModel
 import uz.malika.erp.features.nasiya.model.isValidUnitCode
+import uz.malika.erp.features.sales.lib.PriceCache
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
@@ -43,6 +47,8 @@ import uz.malika.erp.ui.theme.Tokens
 private class RowInput(imei: String = "") {
     var imei by mutableStateOf(imei)
     var price by mutableStateOf("")
+    /** True when [price] was prefilled from the unit's PARTNER list price (ADR 0034). */
+    var partnerPrefilled by mutableStateOf(false)
 }
 
 /**
@@ -65,10 +71,24 @@ fun ConsignDeviceSheet(
     LaunchedEffect(state.done) { if (state.done) onDismiss() }
 
     val partners by container.db.partnerDao().watchAll().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
     var partnerId by remember { mutableStateOf(lockedPartnerId ?: "") }
     var dueDate by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
     val rows = remember { mutableStateListOf(RowInput()) }
+
+    // Prefill the agreed price with the unit's PARTNER list price (ADR 0034) on scan.
+    fun addScanned(code: String) {
+        val row = RowInput(code)
+        rows.add(row)
+        scope.launch {
+            val dev = runCatching { container.db.deviceDao().findByImei(code) }.getOrNull()
+            PriceCache.parse(dev?.pricesJson)?.get(PriceLevel.PARTNER)?.takeIf { it.isNotBlank() }?.let {
+                row.price = it
+                row.partnerPrefilled = true
+            }
+        }
+    }
 
     val validRows = rows.filter { isValidUnitCode(it.imei.trim()) && (it.price.trim().toDoubleOrNull() ?: 0.0) > 0.0 }
     val dueOk = dueDate.trim().length == 10
@@ -93,7 +113,7 @@ fun ConsignDeviceSheet(
 
             Text(t("consignments.devices", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
             ScannerField(
-                onScan = { code, _ -> rows.add(RowInput(code.trim())) },
+                onScan = { code, _ -> addScanned(code.trim()) },
                 placeholder = t("consignments.searchPlaceholder", null),
                 autofocus = false,
             )
@@ -118,7 +138,10 @@ fun ConsignDeviceSheet(
                         onValueChange = { row.imei = it },
                         error = if (row.imei.isNotBlank() && !isValidUnitCode(row.imei.trim())) t("common.required", null) else null,
                     )
-                    AppFormField(t("consignments.agreedPrice", null), row.price, { row.price = it }, keyboardType = KeyboardType.Number)
+                    AppFormField(t("consignments.agreedPrice", null), row.price, { row.price = it; row.partnerPrefilled = false }, keyboardType = KeyboardType.Number)
+                    if (row.partnerPrefilled) {
+                        Text(t("pricing.partnerPriceUsed", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+                    }
                 }
             }
             PillButton(t("consignments.addDevice", null), onClick = { rows.add(RowInput()) }, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())

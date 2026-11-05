@@ -18,10 +18,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.malika.erp.features.sales.data.ReceiptData
+import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.lib.PrintRow
 import uz.malika.erp.features.sales.lib.printReceipt
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppCard
 import uz.malika.erp.ui.theme.MonoFamily
@@ -51,6 +53,13 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
             Spacer(Modifier.height(4.dp))
         }
         Rule()
+        val discount = data.discountTotal?.let { parseMoney(it) }
+        val nonRetail = data.priceLevelCode != null && data.priceLevelCode != "RETAIL"
+        if (nonRetail || (discount != null && discount.signum() > 0)) {
+            data.priceLevelCode?.let { KvRow(t("pricing.priceLevel", null), t(PriceLevel.labelKey(it), null)) }
+            data.listTotal?.let { KvRow(t("pricing.listPrice", null), formatMoney(it)) }
+            if (discount != null && discount.signum() > 0) KvRow(t("pricing.discountsGiven", null), "-" + formatMoney(data.discountTotal))
+        }
         KvRow(t("pos.totalDue", null), formatMoney(data.total), bold = true)
         if (data.payments.isNotEmpty()) {
             KvRow(t("balance.paidWith", null), "")

@@ -4,6 +4,11 @@ The "Partners & Consignment" slice group ported from the web client. One slice
 because the consign-device flow is shared by both screens and both read the
 same partner mirror — so there is no cross-slice import to duplicate.
 
+Consigning a unit prefills the agreed price with the unit's **PARTNER** list
+price from the device cache (ADR 0034, `ConsignDeviceSheet.addScanned` →
+`PriceCache`), shown with `pricing.partnerPriceUsed`; the person can still change
+it. Server-side an omitted agreed price already defaults to the PARTNER price.
+
 ## Owns
 - **Partners** (`partner.read`): directory with search + `active`/`overdue`
   facets — online from `/partners` (the mirror can't serve those facets), falling

@@ -48,13 +48,24 @@ class SettingsFormState(s: StoreSettingsDto) {
     var lowStockThreshold by mutableStateOf(s.lowStockThreshold.toString())
     var defaultNasiyaDueDays by mutableStateOf(s.defaultNasiyaDueDays.toString())
     var overdueReminderDays by mutableStateOf(s.overdueReminderDays.toString())
+    var discountsEnabled by mutableStateOf(s.discountsEnabled)
+    var discountPercentAllowed by mutableStateOf(s.discountPercentAllowed)
+    var discountAmountAllowed by mutableStateOf(s.discountAmountAllowed)
+    var discountPresetsPercent by mutableStateOf(s.discountPresetsPercent.joinToString(", ") { trimNum(it) })
+    var discountPresetsAmount by mutableStateOf(s.discountPresetsAmount.joinToString(", ") { trimNum(it) })
+    var maxDiscountPercent by mutableStateOf(s.maxDiscountPercentStr)
 
     fun toForm() = SettingsForm(
         storeName, storeAddress, storePhone, receiptFooter, telegramChatId,
         closingTime, defaultWarrantyDays, minMarginPercent, lowStockThreshold,
         defaultNasiyaDueDays, overdueReminderDays,
+        discountsEnabled, discountPercentAllowed, discountAmountAllowed,
+        discountPresetsPercent, discountPresetsAmount, maxDiscountPercent,
     )
 }
+
+/** `5.0` → `5`, `7.5` → `7.5` for a tidy preset field. */
+private fun trimNum(v: Double): String = if (v % 1.0 == 0.0) v.toInt().toString() else v.toString()
 
 /** Store-settings screen: one form → `PUT /settings`. Online-only write. */
 @Composable
@@ -88,6 +99,7 @@ private fun SettingsForm(vm: SettingsViewModel, settings: StoreSettingsDto, onli
             if (!online) Text(t("common.offline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
             StoreIdentitySection(form)
             SalesSection(form, errors)
+            DiscountsSection(form)
             NasiyaSection(form, errors)
             TelegramSection(form, errors)
             if (message != null) {

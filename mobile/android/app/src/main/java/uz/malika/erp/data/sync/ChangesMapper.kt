@@ -9,6 +9,7 @@ import uz.malika.erp.data.local.ProductEntity
 import uz.malika.erp.data.remote.DeviceSyncDto
 import uz.malika.erp.data.remote.PartnerSyncDto
 import uz.malika.erp.data.remote.ProductSyncDto
+import uz.malika.erp.features.sales.lib.PriceCache
 
 /**
  * Maps `/sync/changes` DTOs into Room entities. Kept separate so the pull
@@ -32,6 +33,7 @@ object ChangesMapper {
         modelName = d.model?.name ?: "",
         categoryId = d.model?.categoryId,
         imageUrl = d.model?.imageUrl,
+        pricesJson = PriceCache.encode(d.prices),
         latestSale = d.latestSale?.takeUnless { it is JsonNull }?.toString(),
         gradeCode = d.latestInspection?.gradeCode,
         inspectionNotes = d.latestInspection?.notes,
@@ -47,6 +49,7 @@ object ChangesMapper {
         quantity = p.quantity,
         categoryId = p.categoryId,
         imageUrl = p.imageUrl,
+        pricesJson = PriceCache.encode(p.prices),
     )
 
     fun partner(p: PartnerSyncDto) = PartnerEntity(

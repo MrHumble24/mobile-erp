@@ -49,6 +49,22 @@ interface ProductDao {
     suspend fun clear()
 }
 
+/** Reactive access to cached [CategoryEntity] (product-category chips for the offline till). */
+@Dao
+interface CategoryDao {
+    @Query("SELECT * FROM categories ORDER BY name ASC")
+    fun watchAll(): Flow<List<CategoryEntity>>
+
+    @Query("SELECT * FROM categories")
+    suspend fun all(): List<CategoryEntity>
+
+    @Upsert
+    suspend fun upsertAll(rows: List<CategoryEntity>)
+
+    @Query("DELETE FROM categories")
+    suspend fun clear()
+}
+
 /** Reactive access to cached [PartnerEntity]. */
 @Dao
 interface PartnerDao {

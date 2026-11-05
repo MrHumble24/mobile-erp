@@ -86,6 +86,8 @@ data class DeviceDetail(
     val intakeDate: String,
     val version: Int,
     val latestInspection: QcSummary?,
+    /** Resolved list prices per level for this unit (ADR 0034). */
+    val prices: Map<String, String?>? = null,
 ) {
     /** The unit's identifier — IMEI or serial number (ADR 0029). */
     val code: String get() = UnitCode.display(imei, serialNumber)
@@ -109,6 +111,7 @@ data class DeviceDetail(
             intakeDate = d.intakeDate ?: "",
             version = d.version,
             latestInspection = d.latestInspection?.let(QcSummary::fromDto),
+            prices = d.prices,
         )
     }
 }

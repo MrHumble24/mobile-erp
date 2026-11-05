@@ -10,15 +10,18 @@ import uz.malika.erp.features.sales.data.CartLine
 import uz.malika.erp.features.sales.data.CartProduct
 import uz.malika.erp.features.sales.data.PosRepository
 import uz.malika.erp.features.sales.data.ReceiptData
-import uz.malika.erp.features.sales.data.ReceiptLineItem
 import uz.malika.erp.features.sales.data.SaleCreate
 import uz.malika.erp.features.sales.data.ScanOutcome
 import uz.malika.erp.features.sales.data.ScannedDevice
-import uz.malika.erp.features.sales.data.totalPrice
-import uz.malika.erp.shared.lib.formatDateTime
-import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.features.sales.lib.CartPricing
+import uz.malika.erp.features.sales.lib.Discount
+import uz.malika.erp.features.sales.lib.DiscountMode
+import uz.malika.erp.features.sales.lib.DiscountSettings
+import uz.malika.erp.features.sales.lib.PriceLevel
+import uz.malika.erp.features.sales.lib.PricedCart
 import uz.malika.erp.shared.payments.AccountAmount
 import uz.malika.erp.shared.payments.PaymentSplit
+import java.math.BigDecimal
 
 /**
  * A resolved unit scan awaiting the cashier's confirmation. [device] is the
@@ -43,29 +46,42 @@ data class PosState(
     val prompt: ScanPrompt? = null,
     /** Quantity products matched by a typed name search, to pick from (ADR 0030). */
     val productMatches: List<CartProduct>? = null,
+    // Pricing (ADR 0034).
+    val level: String = PriceLevel.DEFAULT,
+    val settings: DiscountSettings = DiscountSettings(),
+    val standingPercent: BigDecimal = BigDecimal.ZERO,
+    val canOverride: Boolean = false,
+    val canUnlimited: Boolean = false,
+    val cartDiscount: Discount? = null,
+    val overriding: Set<String> = emptySet(),
+    val standingPrefill: Boolean = false,
 ) {
-    val total: String get() = lines.totalPrice()
+    /** The whole cart priced at the current level — the single brain the UI reads. */
+    val priced: PricedCart
+        get() = CartPricing.price(lines, level, cartDiscount, overriding, settings, standingPercent, canOverride, canUnlimited)
+    val total: String get() = priced.totals.payable.toPlainString()
 }
 
 /**
- * POS terminal state: a mixed cart (phones, serial units, quantity products), a
- * scan/lookup error (an i18n key), the busy flag, and the completed sale driving
- * the receipt. Checkout fans the cart into one `sale.create` per line, each
- * enqueued to the outbox, so it works identically online and offline.
+ * POS terminal state (ADR 0030/0031/0034): a mixed cart, a price level that
+ * follows the customer, per-line and whole-cart discounts bounded by the owner's
+ * limit, and the completed sale. Checkout fans the cart into one `sale.create`
+ * per line (each carrying its level, discount and the till's list price), enqueued
+ * to the outbox so it works identically online and offline.
  */
 class PosViewModel(
     private val repo: PosRepository,
     private val cashierName: String,
+    canOverride: Boolean = false,
+    canUnlimited: Boolean = false,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(PosState())
+    private val _state = MutableStateFlow(PosState(canOverride = canOverride, canUnlimited = canUnlimited))
     val state: StateFlow<PosState> = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            repo.watchPendingSoldImeis().collect { imeis ->
-                _state.value = _state.value.copy(pendingSold = imeis)
-            }
+            repo.watchPendingSoldImeis().collect { imeis -> _state.value = _state.value.copy(pendingSold = imeis) }
         }
         viewModelScope.launch {
             runCatching { repo.defaultWarrantyDays() }.getOrNull()?.let {
@@ -74,11 +90,13 @@ class PosViewModel(
         }
     }
 
-    /**
-     * Resolve a scanned/typed code (ADR 0030). A unit opens the confirm prompt as
-     * before. A product barcode is added straight away (re-scan raises the qty).
-     * A code that resolves to nothing, when online, falls back to a name search.
-     */
+    /** Load the discount settings (online fetch + cache, else last-known). Driven by PosScreen. */
+    fun loadDiscountSettings(online: Boolean) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(settings = repo.discountSettings(online))
+        }
+    }
+
     fun scan(raw: String, online: Boolean) {
         _state.value = _state.value.copy(busy = true, errorKey = null, completed = null, prompt = null, productMatches = null)
         viewModelScope.launch {
@@ -100,7 +118,6 @@ class PosViewModel(
         _state.value = s.copy(busy = false, prompt = ScanPrompt(code, device, unitErrorKey(s, device)))
     }
 
-    /** Why this unit cannot be added (null = addable). Shared by scan + catalog tap. */
     private fun unitErrorKey(s: PosState, device: ScannedDevice): String? = when {
         s.pendingSold.contains(device.code) -> "pos.alreadyQueued"
         s.lines.any { it.key == device.code } -> "pos.duplicateDevice"
@@ -108,11 +125,6 @@ class PosViewModel(
         else -> null
     }
 
-    /**
-     * Add a unit picked from the Catalog grid straight to the cart (ADR 0031):
-     * resolve it by code for its live version/status, then apply the same guards
-     * as a scan. No confirm prompt — the seller already chose it on the card.
-     */
     fun addUnitFromCatalog(code: String, online: Boolean) {
         _state.value = _state.value.copy(busy = true, errorKey = null)
         viewModelScope.launch {
@@ -134,26 +146,20 @@ class PosViewModel(
             _state.value = s.copy(busy = false, errorKey = errorKey)
             return
         }
-        _state.value = s.copy(
-            busy = false,
-            lines = s.lines + CartLine.Unit(
-                device = device,
-                salePrice = device.targetPrice ?: "",
-                warrantyDays = (s.defaultWarrantyDays ?: "").toString(),
-            ),
-        )
+        _state.value = s.copy(busy = false, lines = s.lines + newUnitLine(device, s))
     }
 
-    private suspend fun notFound(code: String, online: Boolean) {
-        val matches = if (online) repo.searchProducts(code, online) else emptyList()
-        _state.value = _state.value.copy(
-            busy = false,
-            productMatches = matches.takeIf { it.isNotEmpty() },
-            errorKey = if (matches.isEmpty()) "common.notFound" else null,
-        )
+    private fun notFound(code: String, online: Boolean) {
+        viewModelScope.launch {
+            val matches = if (online) repo.searchProducts(code, online) else emptyList()
+            _state.value = _state.value.copy(
+                busy = false,
+                productMatches = matches.takeIf { it.isNotEmpty() },
+                errorKey = if (matches.isEmpty()) "common.notFound" else null,
+            )
+        }
     }
 
-    /** Add a product line (qty 1), or raise the quantity if it is already in the cart. */
     fun addProduct(product: CartProduct) {
         val s = _state.value
         val key = "model:${product.modelId}"
@@ -167,19 +173,17 @@ class PosViewModel(
 
     fun dismissProductMatches() { _state.value = _state.value.copy(productMatches = null) }
 
-    /** Add the prompted device to the cart (only when addable) and close the prompt. */
     fun confirmScan() {
         val s = _state.value
         val device = s.prompt?.takeIf { it.addable }?.device ?: return dismissScan()
-        _state.value = s.copy(
-            prompt = null,
-            lines = s.lines + CartLine.Unit(
-                device = device,
-                salePrice = device.targetPrice ?: "",
-                warrantyDays = (s.defaultWarrantyDays ?: "").toString(),
-            ),
-        )
+        _state.value = s.copy(prompt = null, lines = s.lines + newUnitLine(device, s))
     }
+
+    private fun newUnitLine(device: ScannedDevice, s: PosState) = CartLine.Unit(
+        device = device,
+        salePrice = device.targetPrice ?: "",
+        warrantyDays = (s.defaultWarrantyDays ?: "").toString(),
+    )
 
     fun dismissScan() { _state.value = _state.value.copy(prompt = null) }
 
@@ -194,9 +198,53 @@ class PosViewModel(
         if (it is CartLine.Unit) it.copy(warrantyDays = days) else it
     }
 
-    /** Quantity stepper: at least one piece (removal is a separate action). */
     fun setLineQuantity(key: String, quantity: Int) = mapLine(key) {
         if (it is CartLine.Quantity) it.copy(quantity = quantity.coerceAtLeast(1)) else it
+    }
+
+    /** Set or clear a per-line discount; clears any whole-cart discount (one or the other). */
+    fun setLineDiscount(key: String, discount: Discount?) {
+        val lines = _state.value.lines.map {
+            if (it.key != key) it else when (it) {
+                is CartLine.Unit -> it.copy(discount = discount)
+                is CartLine.Quantity -> it.copy(discount = discount)
+            }
+        }
+        _state.value = _state.value.copy(lines = lines, cartDiscount = null, standingPrefill = false)
+    }
+
+    /** Set or clear the whole-cart discount; it spreads over the list-priced lines. */
+    fun setCartDiscount(discount: Discount?) {
+        _state.value = _state.value.copy(cartDiscount = discount, standingPrefill = false)
+    }
+
+    /** Switch the price level by hand; re-prices every line. */
+    fun setLevel(level: String) { _state.value = _state.value.copy(level = level) }
+
+    /**
+     * The chosen customer drives the level and prefills their standing discount
+     * (percent) — removable. No customer / none chosen falls back to walk-in and
+     * clears a standing prefill.
+     */
+    fun applyCustomer(priceLevelCode: String?, standingPercent: BigDecimal) {
+        val s = _state.value
+        val level = priceLevelCode?.takeIf { it.isNotBlank() } ?: PriceLevel.DEFAULT
+        val next = if (standingPercent.signum() > 0) {
+            s.copy(level = level, standingPercent = standingPercent, cartDiscount = Discount(DiscountMode.PERCENT, standingPercent), standingPrefill = true)
+        } else if (s.standingPrefill) {
+            s.copy(level = level, standingPercent = BigDecimal.ZERO, cartDiscount = null, standingPrefill = false)
+        } else {
+            s.copy(level = level, standingPercent = BigDecimal.ZERO)
+        }
+        _state.value = next
+    }
+
+    /** Toggle "type a price" for a line (only effective for `sale.price.override`). */
+    fun toggleOverride(key: String) {
+        val s = _state.value
+        if (!s.canOverride) return
+        val next = if (key in s.overriding) s.overriding - key else s.overriding + key
+        _state.value = s.copy(overriding = next)
     }
 
     fun removeLine(key: String) {
@@ -204,19 +252,15 @@ class PosViewModel(
     }
 
     private fun mapLine(key: String, f: (CartLine) -> CartLine) {
-        _state.value = _state.value.copy(
-            lines = _state.value.lines.map { if (it.key == key) f(it) else it },
-        )
+        _state.value = _state.value.copy(lines = _state.value.lines.map { if (it.key == key) f(it) else it })
     }
 
     fun clearError() { _state.value = _state.value.copy(errorKey = null) }
     fun dismissReceipt() { _state.value = _state.value.copy(completed = null) }
 
     /**
-     * [parts] is the cart-level tender (one amount per account, summing to the
-     * cart total). It is fanned across the cart lines in order by
-     * [PaymentSplit.allocate] so each sale's payments add up to its own line
-     * total. Empty parts → the server posts one CASH line per sale.
+     * [parts] is the cart-level tender summing to the amount to pay; it is fanned
+     * across the lines' final prices so each sale's payments add up to its line.
      */
     fun checkout(
         online: Boolean,
@@ -226,42 +270,28 @@ class PosViewModel(
         notes: String? = null,
         parts: List<AccountAmount> = emptyList(),
     ) {
-        val lines = _state.value.lines
-        if (lines.isEmpty()) return
-        _state.value = _state.value.copy(busy = true, errorKey = null)
+        val s = _state.value
+        val priced = s.priced
+        if (priced.lines.isEmpty()) return
+        priced.rejection?.let { _state.value = s.copy(errorKey = it.key); return }
+        _state.value = s.copy(busy = true, errorKey = null)
         viewModelScope.launch {
             try {
-                val allocation = if (parts.isEmpty()) {
-                    emptyList()
-                } else {
-                    PaymentSplit.allocate(lines.map { it.lineTotal }, parts)
-                }
-                val ops = SaleCreate.ops(lines, customerId, customerName, customerPhone, notes, allocation)
+                val finals = priced.lines.map { it.finalPrice }
+                val allocation = if (parts.isEmpty()) emptyList() else PaymentSplit.allocate(finals, parts)
+                val ops = SaleCreate.ops(priced.lines, s.level, customerId, customerName, customerPhone, notes, allocation)
                 val ids = ops.map { repo.enqueueSale(it.payload, it.baseVersion) }
                 _state.value = PosState(
-                    pendingSold = _state.value.pendingSold,
-                    defaultWarrantyDays = _state.value.defaultWarrantyDays,
-                    completed = ReceiptData(
-                        receiptId = ids.first(),
-                        soldAt = formatDateTime(System.currentTimeMillis()),
-                        cashier = cashierName,
-                        customerName = customerName?.takeIf { it.isNotBlank() },
-                        items = lines.map(::receiptItem),
-                        total = lines.totalPrice(),
-                        warrantyUntil = null,
-                        pending = !online,
-                        payments = parts.map { AccountAmount(it.accountCode, it.amount) },
-                    ),
+                    pendingSold = s.pendingSold,
+                    defaultWarrantyDays = s.defaultWarrantyDays,
+                    settings = s.settings,
+                    canOverride = s.canOverride,
+                    canUnlimited = s.canUnlimited,
+                    completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts),
                 )
             } catch (_: Exception) {
                 _state.value = _state.value.copy(busy = false, errorKey = "common.error")
             }
         }
-    }
-
-    private fun receiptItem(line: CartLine): ReceiptLineItem = when (line) {
-        is CartLine.Unit -> ReceiptLineItem(line.device.modelLabel, line.device.code, line.salePrice, null)
-        is CartLine.Quantity ->
-            ReceiptLineItem(line.product.label, "", line.lineTotal.toPlainString(), null, quantity = line.quantity)
     }
 }

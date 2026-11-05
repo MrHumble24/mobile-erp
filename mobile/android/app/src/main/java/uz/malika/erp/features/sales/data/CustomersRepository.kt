@@ -41,23 +41,40 @@ class CustomersRepository(private val api: SalesApi) {
         api.customerSales(customerId).map { it.toCustomerSale() }
     }
 
-    suspend fun create(name: String, phone: String?, notes: String?): Customer = runApi {
+    suspend fun create(
+        name: String,
+        phone: String?,
+        notes: String?,
+        priceLevelCode: String,
+        standingDiscountPercent: Double,
+    ): Customer = runApi {
         api.createCustomer(
             CreateCustomerBody(
                 name = name.trim(),
                 phone = phone?.takeIf { it.isNotBlank() }?.trim(),
                 notes = notes?.takeIf { it.isNotBlank() }?.trim(),
+                priceLevelCode = priceLevelCode,
+                standingDiscountPercent = standingDiscountPercent,
             ),
         ).toDomain()
     }
 
-    suspend fun update(id: String, name: String, phone: String?, notes: String?): Customer = runApi {
+    suspend fun update(
+        id: String,
+        name: String,
+        phone: String?,
+        notes: String?,
+        priceLevelCode: String,
+        standingDiscountPercent: Double,
+    ): Customer = runApi {
         api.updateCustomer(
             id,
             UpdateCustomerBody(
                 name = name.trim(),
                 phone = phone?.takeIf { it.isNotBlank() }?.trim(),
                 notes = notes?.takeIf { it.isNotBlank() }?.trim(),
+                priceLevelCode = priceLevelCode,
+                standingDiscountPercent = standingDiscountPercent,
             ),
         ).toDomain()
     }

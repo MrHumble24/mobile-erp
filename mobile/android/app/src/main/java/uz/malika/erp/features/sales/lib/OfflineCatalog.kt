@@ -25,6 +25,7 @@ object OfflineCatalog {
     fun build(
         devices: List<DeviceEntity>,
         products: List<ProductEntity>,
+        categoryNames: Map<String, String>,
         categoryId: String?,
         search: String,
     ): List<CatalogCard> {
@@ -41,7 +42,7 @@ object OfflineCatalog {
                 name = first.modelName,
                 kindCode = first.kindCode ?: "IMEI",
                 categoryId = first.categoryId,
-                categoryName = null,
+                categoryName = first.categoryId?.let { categoryNames[it] },
                 imageUrl = first.imageUrl,
                 inStock = ds.size,
                 minTargetPrice = prices.minOrNull()?.toPlainString(),
@@ -52,9 +53,10 @@ object OfflineCatalog {
         val quantityCards = products.map { p ->
             CatalogCard(
                 modelId = p.modelId, brand = p.brand, name = p.name, kindCode = "QUANTITY",
-                categoryId = p.categoryId, categoryName = null, imageUrl = p.imageUrl,
+                categoryId = p.categoryId, categoryName = p.categoryId?.let { categoryNames[it] }, imageUrl = p.imageUrl,
                 inStock = p.quantity, minTargetPrice = null, maxTargetPrice = null,
                 salePrice = p.salePrice,
+                prices = PriceCache.parse(p.pricesJson),
             )
         }
 
@@ -85,6 +87,7 @@ object OfflineCatalog {
                     specs = parseSpecs(d.specs),
                     gradeCode = d.gradeCode,
                     targetPrice = d.targetPrice,
+                    prices = PriceCache.parse(d.pricesJson),
                 )
             }
 

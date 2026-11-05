@@ -85,12 +85,24 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
     }
 
     /** Create (id == null) or update a customer. Online-only; blocks offline. */
-    fun submit(id: String?, name: String, phone: String?, notes: String?, online: Boolean) {
+    fun submit(
+        id: String?,
+        name: String,
+        phone: String?,
+        notes: String?,
+        priceLevelCode: String,
+        standingDiscountPercent: Double,
+        online: Boolean,
+    ) {
         if (!online) { _form.value = CustomerFormUi(error = "common.offline"); return }
         _form.value = CustomerFormUi(busy = true)
         viewModelScope.launch {
             try {
-                if (id == null) repo.create(name, phone, notes) else repo.update(id, name, phone, notes)
+                if (id == null) {
+                    repo.create(name, phone, notes, priceLevelCode, standingDiscountPercent)
+                } else {
+                    repo.update(id, name, phone, notes, priceLevelCode, standingDiscountPercent)
+                }
                 _form.value = CustomerFormUi(done = true)
                 refresh()
             } catch (e: Exception) {

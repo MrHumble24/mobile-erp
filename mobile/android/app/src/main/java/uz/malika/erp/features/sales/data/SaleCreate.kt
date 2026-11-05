@@ -6,7 +6,8 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.features.sales.lib.Discount
+import uz.malika.erp.features.sales.lib.PricedLine
 import uz.malika.erp.shared.payments.AccountAmount
 import java.math.BigDecimal
 
@@ -37,6 +38,9 @@ object SaleCreate {
         warrantyDays: Int? = null,
         notes: String? = null,
         payments: List<AccountAmount> = emptyList(),
+        priceLevelCode: String? = null,
+        discount: Discount? = null,
+        listPrice: BigDecimal? = null,
     ): JsonObject = buildJsonObject {
         // Exactly one identifier (ADR 0029): the server resolves it against imei,
         // imei2 or serialNumber. A phone sends `imei`, a serial unit `serialNumber`.
@@ -44,6 +48,7 @@ object SaleCreate {
         put("salePrice", JsonPrimitive(salePrice))
         appendShared(customerId, customerName, customerPhone, notes, payments)
         warrantyDays?.let { put("warrantyDays", it) }
+        appendPricing(priceLevelCode, discount, listPrice)
     }
 
     /**
@@ -60,11 +65,34 @@ object SaleCreate {
         customerPhone: String? = null,
         notes: String? = null,
         payments: List<AccountAmount> = emptyList(),
+        priceLevelCode: String? = null,
+        discount: Discount? = null,
+        listPrice: BigDecimal? = null,
     ): JsonObject = buildJsonObject {
         put("modelId", modelId)
         put("quantity", quantity)
         put("salePrice", JsonPrimitive(salePrice))
         appendShared(customerId, customerName, customerPhone, notes, payments)
+        appendPricing(priceLevelCode, discount, listPrice)
+    }
+
+    /** The pricing fields (ADR 0034): the level, a discount, and the till's list price. */
+    private fun kotlinx.serialization.json.JsonObjectBuilder.appendPricing(
+        priceLevelCode: String?,
+        discount: Discount?,
+        listPrice: BigDecimal?,
+    ) {
+        priceLevelCode?.let { put("priceLevelCode", it) }
+        discount?.takeIf { it.value.signum() > 0 }?.let { d ->
+            put(
+                "discount",
+                buildJsonObject {
+                    put("mode", d.mode.name)
+                    put("value", JsonPrimitive(d.value))
+                },
+            )
+        }
+        listPrice?.let { put("listPrice", JsonPrimitive(it)) }
     }
 
     /** Customer (id XOR inline), notes and tender lines — shared by both sale forms. */
@@ -112,26 +140,30 @@ object SaleCreate {
      * Pure — unit-tested.
      */
     fun ops(
-        lines: List<CartLine>,
+        priced: List<PricedLine>,
+        level: String,
         customerId: String? = null,
         customerName: String? = null,
         customerPhone: String? = null,
         notes: String? = null,
         payments: List<List<AccountAmount>> = emptyList(),
-    ): List<SaleOp> = lines.mapIndexed { i, line ->
+    ): List<SaleOp> = priced.mapIndexed { i, p ->
         val parts = payments.getOrElse(i) { emptyList() }
-        when (line) {
+        when (val line = p.line) {
             is CartLine.Unit -> SaleOp(
                 payload = payload(
                     imei = line.device.imei,
                     serialNumber = line.device.serialNumber,
-                    salePrice = parseMoney(line.salePrice),
+                    salePrice = p.finalPrice,
                     customerId = customerId,
                     customerName = customerName,
                     customerPhone = customerPhone,
                     warrantyDays = line.warrantyDays.trim().toIntOrNull(),
                     notes = notes,
                     payments = parts,
+                    priceLevelCode = level,
+                    discount = p.effectiveDiscount,
+                    listPrice = p.listTotal,
                 ),
                 baseVersion = line.device.version,
             )
@@ -139,12 +171,15 @@ object SaleCreate {
                 payload = quantityPayload(
                     modelId = line.product.modelId,
                     quantity = line.quantity,
-                    salePrice = line.lineTotal,
+                    salePrice = p.finalPrice,
                     customerId = customerId,
                     customerName = customerName,
                     customerPhone = customerPhone,
                     notes = notes,
                     payments = parts,
+                    priceLevelCode = level,
+                    discount = p.effectiveDiscount,
+                    listPrice = p.listTotal,
                 ),
                 baseVersion = null,
             )

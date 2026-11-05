@@ -24,6 +24,8 @@ data class ProfitReport(
     @Serializable(with = FlexMoneySerializer::class) val netOperatingIncome: String = "0",
     val byChannel: ChannelSplit = ChannelSplit(),
     @Serializable(with = FlexMoneySerializer::class) val returnsRefunded: String = "0",
+    /** Σ listPriceSnapshot − salePrice over snapshotted sales (ADR 0034). */
+    @Serializable(with = FlexMoneySerializer::class) val discountsGiven: String = "0",
 )
 
 @Serializable

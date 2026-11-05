@@ -24,8 +24,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import uz.malika.erp.app.LocalCan
 import uz.malika.erp.features.inventory.data.DeviceModelView
+import uz.malika.erp.features.inventory.data.PricingRepository
 import uz.malika.erp.features.inventory.data.ProductCategoryDto
+import uz.malika.erp.features.inventory.data.ProductKind
 import uz.malika.erp.features.inventory.model.Async
 import uz.malika.erp.features.inventory.model.CatalogViewModel
 import uz.malika.erp.i18n.LocalT
@@ -49,14 +52,17 @@ fun DeviceModelsTab(
     catalogVm: CatalogViewModel,
     online: Boolean,
     baseUrl: String,
+    pricingRepo: PricingRepository,
     onToast: (String) -> Unit,
 ) {
     val t = LocalT.current
+    val canManagePrices = LocalCan.current("price.manage")
     val state by catalogVm.models.collectAsState()
     val categories by catalogVm.categories.collectAsState()
     var query by remember { mutableStateOf("") }
     var categoryFilter by remember { mutableStateOf<String?>(null) }
     var editing by remember { mutableStateOf<DeviceModelView?>(null) }
+    var pricing by remember { mutableStateOf<DeviceModelView?>(null) }
     var creating by remember { mutableStateOf(false) }
     var managingCategories by remember { mutableStateOf(false) }
 
@@ -99,7 +105,16 @@ fun DeviceModelsTab(
                         EmptyView(message = t("inventory.empty", null))
                     } else {
                         LazyColumn(verticalArrangement = Arrangement.spacedBy(Tokens.Space.lg), contentPadding = listBottomPadding()) {
-                            items(list, key = { it.id }) { m -> ModelRow(m, categories, baseUrl) { editing = m } }
+                            items(list, key = { it.id }) { m ->
+                                ModelRow(
+                                    model = m,
+                                    categories = categories,
+                                    baseUrl = baseUrl,
+                                    canManagePrices = canManagePrices,
+                                    onPrices = { pricing = m },
+                                    onClick = { editing = m },
+                                )
+                            }
                         }
                     }
                 }
@@ -120,31 +135,61 @@ fun DeviceModelsTab(
     if (managingCategories) {
         ProductCategoriesSheet(catalogVm = catalogVm, categories = categories, onDismiss = { managingCategories = false })
     }
+    pricing?.let { model ->
+        AppBottomSheet(onDismiss = { pricing = null }) {
+            ProductPricesSheet(
+                modelId = model.id,
+                isQuantity = model.kind == ProductKind.QUANTITY,
+                storageOptions = model.attributes.firstOrNull { it.key == "storage" }?.options ?: emptyList(),
+                repo = pricingRepo,
+                online = online,
+                onToast = onToast,
+                onDismiss = { pricing = null },
+            )
+        }
+    }
 }
 
 @Composable
-private fun ModelRow(model: DeviceModelView, categories: List<ProductCategoryDto>, baseUrl: String, onClick: () -> Unit) {
+private fun ModelRow(
+    model: DeviceModelView,
+    categories: List<ProductCategoryDto>,
+    baseUrl: String,
+    canManagePrices: Boolean,
+    onPrices: () -> Unit,
+    onClick: () -> Unit,
+) {
     val t = LocalT.current
     val categoryName = categories.firstOrNull { it.id == model.categoryId }?.name
     AppCard(onClick = onClick) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ProductImage(
-                imageUrl = model.imageUrl,
-                baseUrl = baseUrl,
-                contentDescription = model.label,
-                modifier = Modifier.size(48.dp),
-            )
-            Spacer(Modifier.width(Tokens.Space.gap))
-            Column(Modifier.weight(1f)) {
-                Text(model.label, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                val sub = listOfNotNull(t(model.kind.labelKey, null), categoryName).joinToString(" · ")
-                Text(sub, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ProductImage(
+                    imageUrl = model.imageUrl,
+                    baseUrl = baseUrl,
+                    contentDescription = model.label,
+                    modifier = Modifier.size(48.dp),
+                )
+                Spacer(Modifier.width(Tokens.Space.gap))
+                Column(Modifier.weight(1f)) {
+                    Text(model.label, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
+                    val sub = listOfNotNull(t(model.kind.labelKey, null), categoryName).joinToString(" · ")
+                    Text(sub, style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
+                }
+                Spacer(Modifier.width(Tokens.Space.gap))
+                StatusChip(
+                    label = if (model.isActive) t("inventory.modelActive", null) else t("common.no", null),
+                    color = if (model.isActive) Tokens.success else Tokens.sold,
+                )
             }
-            Spacer(Modifier.width(Tokens.Space.gap))
-            StatusChip(
-                label = if (model.isActive) t("inventory.modelActive", null) else t("common.no", null),
-                color = if (model.isActive) Tokens.success else Tokens.sold,
-            )
+            if (canManagePrices) {
+                Spacer(Modifier.height(Tokens.Space.sm))
+                PillButton(
+                    text = t("pricing.productPrices", null),
+                    onClick = onPrices,
+                    variant = ButtonVariant.SECONDARY,
+                )
+            }
         }
     }
 }

@@ -31,6 +31,9 @@ data class CustomerSelection(
     val customerId: String? = null,
     val newName: String? = null,
     val newPhone: String? = null,
+    /** The picked customer's price level + standing discount (ADR 0034); null when none. */
+    val priceLevelCode: String? = null,
+    val standingDiscountPercent: String? = null,
 )
 
 /**
@@ -57,7 +60,11 @@ fun CustomerPicker(
     LaunchedEffect(picked, addNew, name, phone) {
         onChange(
             when {
-                picked != null -> CustomerSelection(customerId = picked!!.id)
+                picked != null -> CustomerSelection(
+                    customerId = picked!!.id,
+                    priceLevelCode = picked!!.priceLevelCode,
+                    standingDiscountPercent = picked!!.standingDiscountPercent,
+                )
                 addNew -> CustomerSelection(newName = name, newPhone = phone)
                 else -> CustomerSelection()
             },
