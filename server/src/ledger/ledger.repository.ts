@@ -99,6 +99,19 @@ export class LedgerRepository {
     });
   }
 
+  /** Signed sum of one type's rows for a store in [from, to] (ADR 0040 report). */
+  async sumType(storeId: string, typeCode: string, from?: Date, to?: Date) {
+    const { _sum } = await this.prisma.cashTransaction.aggregate({
+      where: {
+        storeId,
+        typeCode,
+        occurredAt: from || to ? { gte: from, lte: to } : undefined,
+      },
+      _sum: { amount: true },
+    });
+    return _sum.amount ?? new Prisma.Decimal(0);
+  }
+
   /** Net SHIFT_DIFFERENCE per shift, for the shifts list (ADR 0036). */
   sumDifferenceByShift(shiftIds: string[]) {
     return this.prisma.cashTransaction.groupBy({

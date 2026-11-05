@@ -24,6 +24,8 @@ model Customer {
   credits   CustomerCredit[]
   /// Phones this customer sold to the shop (ADR 0039).
   purchases CustomerPurchase[]
+  /// Repair tickets opened for this customer (ADR 0040).
+  repairs   Repair[]
 
   @@index([priceLevelCode])
   @@map("customers")

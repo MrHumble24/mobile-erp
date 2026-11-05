@@ -1,0 +1,145 @@
+// ---------------------------------------------------------------------------
+// Repairs (Change 13, ADR 0040). Optional, off by default
+// (StoreSettings.repairsEnabled). A repair ticket is taken in for a customer's
+// phone, fixed by the shop's own master or sent to an outside master, and given
+// back. Money in (customer payments) and money out (outside master) both flow
+// through the cash ledger — the ticket stores no balance.
+//
+// Derive, don't duplicate: paid / outstanding / parts cost / outside paid /
+// profit are summed from payments, parts and the ledger (repairs/lib/
+// repair-math.ts), never stored. "Which master" is read from whichever master
+// field is set — there is no isOutside flag. The warranty clock starts at the
+// given-back status-history row — there is no givenBackAt column.
+//
+// NO passcode / pattern, NO passport or ID-document column, ever (ADR 0040).
+// ---------------------------------------------------------------------------
+
+/// Repair ticket lifecycle. Lookup (not an enum): RECEIVED, IN_REPAIR, READY,
+/// GIVEN_BACK (terminal), CANCELLED (terminal). Seeded in the migration + seed.sql.
+model RepairStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  isActive   Boolean @default(true)
+  isTerminal Boolean @default(false)
+
+  repairs     Repair[]
+  historyFrom RepairStatusHistory[] @relation("RepairHistoryFrom")
+  historyTo   RepairStatusHistory[] @relation("RepairHistoryTo")
+
+  @@map("repair_statuses")
+}
+
+/// One repair ticket. `ticketNumber` is short and sequential per store (printed
+/// for the customer), unique within the store.
+model Repair {
+  id           String  @id @default(uuid())
+  ticketNumber Int
+  storeId      String
+  store        Store   @relation(fields: [storeId], references: [id])
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id])
+  /// Free-text phone name; optional link to a catalogue model.
+  deviceName   String
+  modelId      String?
+  model        DeviceModel? @relation(fields: [modelId], references: [id])
+  imei         String?
+  serialNumber String?
+  problem      String
+  /// Agreed repair price charged to the customer.
+  agreedPrice  Decimal @db.Decimal(14, 2)
+  /// Warranty length typed on the ticket (no settings default); 0 = none.
+  warrantyDays Int     @default(0)
+  notes        String?
+  /// Own master (a user) XOR outside master (name + optional phone). "Which" is
+  /// derived from whichever is set — no isOutside flag.
+  masterUserId       String?
+  master             User?    @relation("RepairMaster", fields: [masterUserId], references: [id])
+  outsideMasterName  String?
+  outsideMasterPhone String?
+  /// Agreed amount the shop pays an outside master. What is actually paid is the
+  /// sum of REPAIR_OUTSIDE ledger rows (money out) linked by repairId — derived.
+  outsideCost        Decimal? @db.Decimal(14, 2)
+  statusCode   String       @default("RECEIVED")
+  status       RepairStatus @relation(fields: [statusCode], references: [code])
+  receivedById String
+  receivedBy   User         @relation("RepairReceived", fields: [receivedById], references: [id])
+  receivedAt   DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  parts            RepairPart[]
+  payments         RepairPayment[]
+  statusHistory    RepairStatusHistory[]
+  cashTransactions CashTransaction[]
+
+  @@unique([storeId, ticketNumber])
+  @@index([storeId])
+  @@index([customerId])
+  @@index([statusCode])
+  @@index([imei])
+  @@index([receivedAt])
+  @@map("repairs")
+}
+
+/// Append-only audit of a ticket's status transitions (who, when, note).
+model RepairStatusHistory {
+  id             String        @id @default(uuid())
+  repairId       String
+  repair         Repair        @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  fromStatusCode String?
+  fromStatus     RepairStatus? @relation("RepairHistoryFrom", fields: [fromStatusCode], references: [code])
+  toStatusCode   String
+  toStatus       RepairStatus  @relation("RepairHistoryTo", fields: [toStatusCode], references: [code])
+  changedById    String
+  changedBy      User          @relation("RepairStatusChanges", fields: [changedById], references: [id])
+  note           String?
+  changedAt      DateTime      @default(now())
+
+  @@index([repairId, changedAt])
+  @@map("repair_status_history")
+}
+
+/// A quantity product taken out of stock for a repair. Adding one writes a
+/// REPAIR_USE stock movement (pieces out) stamping the moving-average cost;
+/// removing it (before given-back) deletes this row and writes the reversal.
+model RepairPart {
+  id               String      @id @default(uuid())
+  repairId         String
+  repair           Repair      @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  modelId          String
+  model            DeviceModel @relation(fields: [modelId], references: [id])
+  quantity         Int
+  /// Cost per piece frozen at the moment the part was taken (Decimal(14,2)).
+  unitCostSnapshot Decimal     @db.Decimal(14, 2)
+  addedById        String
+  addedBy          User        @relation("RepairPartsAdded", fields: [addedById], references: [id])
+  createdAt        DateTime    @default(now())
+
+  @@index([repairId])
+  @@index([modelId])
+  @@map("repair_parts")
+}
+
+/// A customer payment on the ticket, taken at the till by cash or card. `amount`
+/// is signed like the cash ledger: positive = money in (deposit or hand-over),
+/// negative = a refund out (capped at net paid). Each posts exactly one
+/// REPAIR_PAYMENT cash_transactions row, linked back via repairPaymentId.
+model RepairPayment {
+  id           String      @id @default(uuid())
+  repairId     String
+  repair       Repair      @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  accountCode  String
+  account      CashAccount @relation(fields: [accountCode], references: [code])
+  amount       Decimal     @db.Decimal(14, 2)
+  receivedById String
+  receivedBy   User        @relation("RepairPaymentsReceived", fields: [receivedById], references: [id])
+  occurredAt   DateTime    @default(now())
+  createdAt    DateTime    @default(now())
+
+  cashTransactions CashTransaction[]
+
+  @@index([repairId])
+  @@index([occurredAt])
+  @@map("repair_payments")
+}

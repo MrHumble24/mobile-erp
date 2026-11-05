@@ -28,7 +28,17 @@ INSERT INTO stock_movement_types (code, label, "sortOrder") VALUES
   ('SALE',             'Sale',             20),
   ('RETURN',           'Return',           30),
   ('WRITE_OFF',        'Write-off',        40),
-  ('COUNT_CORRECTION', 'Count correction', 50)
+  ('COUNT_CORRECTION', 'Count correction', 50),
+  ('REPAIR_USE',       'Repair use',       60)
+ON CONFLICT (code) DO NOTHING;
+
+-- Repair statuses (Change 13, ADR 0040). Also inserted by the migration.
+INSERT INTO repair_statuses (code, label, "sortOrder", "isTerminal") VALUES
+  ('RECEIVED',   'Received',   10, false),
+  ('IN_REPAIR',  'In repair',  20, false),
+  ('READY',      'Ready',      30, false),
+  ('GIVEN_BACK', 'Given back', 40, true),
+  ('CANCELLED',  'Cancelled',  50, true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Price levels (Change 12, ADR 0034). Also inserted by the migration.
@@ -85,7 +95,9 @@ INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
   ('CUSTOMS',         'Customs fee',      130),
   ('CREDIT_PAYMENT',  'Credit payment',   140),
   ('SHIFT_DIFFERENCE','Shift difference', 150),
-  ('CUSTOMER_PURCHASE','Customer purchase',160)
+  ('CUSTOMER_PURCHASE','Customer purchase',160),
+  ('REPAIR_PAYMENT',  'Repair payment',   170),
+  ('REPAIR_OUTSIDE',  'Repair outside master', 180)
 ON CONFLICT (code) DO NOTHING;
 
 -- ADR 0026: per-phone expense supersedes shipment overhead. OVERHEAD stays in
@@ -123,6 +135,9 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('sale.credit',          'sale',        'credit',    'Sell on customer credit (nasiya)'),
   ('purchase.create',      'purchase',    'create',    'Buy used phones from customers'),
   ('purchase.read',        'purchase',    'read',      'View customer purchases'),
+  ('repair.read',          'repair',      'read',      'View repair tickets'),
+  ('repair.manage',        'repair',      'manage',    'Create / edit repair tickets, status and parts'),
+  ('repair.payment',       'repair',      'payment',   'Take repair payments and pay outside masters'),
   ('shift.manage',         'shift',       'manage',    'List and force-close any cashier''s shift'),
   ('price.manage',         'price',       'manage',    'Set product and unit prices for every level'),
   ('customer.read',        'customer',    'read',      'View customers'),

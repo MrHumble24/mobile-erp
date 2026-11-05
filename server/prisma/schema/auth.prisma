@@ -35,6 +35,11 @@ model User {
   creditPayments      CreditPayment[]
   shifts              Shift[]
   customerPurchases   CustomerPurchase[]
+  repairsReceived        Repair[]              @relation("RepairReceived")
+  repairsMastered        Repair[]              @relation("RepairMaster")
+  repairStatusChanges    RepairStatusHistory[] @relation("RepairStatusChanges")
+  repairPartsAdded       RepairPart[]          @relation("RepairPartsAdded")
+  repairPaymentsReceived RepairPayment[]       @relation("RepairPaymentsReceived")
 
   @@map("users")
 }

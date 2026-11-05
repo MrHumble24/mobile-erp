@@ -129,4 +129,10 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   shiftsEnabled?: boolean;
+
+  // Repairs (Change 13, ADR 0040). Optional so a PUT that omits it leaves the
+  // stored value untouched. Off by default.
+  @IsOptional()
+  @IsBoolean()
+  repairsEnabled?: boolean;
 }

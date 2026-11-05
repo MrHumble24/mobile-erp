@@ -29,6 +29,11 @@ export function foldSourceNets(
   return byId;
 }
 
+/** Sum of a source's per-account nets (signed; money in positive, out negative). */
+export function sumAccountNets(nets: AccountNet[]): Prisma.Decimal {
+  return nets.reduce((s, n) => s.plus(n.amount), new Prisma.Decimal(0));
+}
+
 /** The account a source's money currently sits against: the one with nonzero net. */
 export function currentAccount(nets: AccountNet[] | undefined): string | null {
   if (!nets) return null;
