@@ -72,7 +72,12 @@ function SwitchField({
   disabled,
 }: {
   form: Form
-  name: "discountsEnabled" | "discountPercentAllowed" | "discountAmountAllowed" | "customerCreditEnabled"
+  name:
+    | "discountsEnabled"
+    | "discountPercentAllowed"
+    | "discountAmountAllowed"
+    | "customerCreditEnabled"
+    | "shiftsEnabled"
   label: string
   disabled: boolean
 }) {
@@ -189,6 +194,15 @@ export function CustomerCreditSection({ form, disabled }: { form: Form; disabled
         placeholder={t("credit.noLimit")}
       />
       <p className="text-xs text-muted-foreground">{t("credit.noInterest")}</p>
+    </Section>
+  )
+}
+
+export function ShiftsSection({ form, disabled }: { form: Form; disabled: boolean }) {
+  const { t } = useI18n()
+  return (
+    <Section title={t("shifts.settingsTitle")} description={t("shifts.settingsHint")}>
+      <SwitchField form={form} name="shiftsEnabled" label={t("shifts.settingsEnabled")} disabled={disabled} />
     </Section>
   )
 }

@@ -88,7 +88,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return {} as T
   }
 
-  return response.json()
+  // A legal empty body on a 2xx (e.g. `GET /shifts/current` with no open shift
+  // returns 200 Content-Length: 0) must not crash `response.json()`.
+  const text = await response.text()
+  return (text ? JSON.parse(text) : null) as T
 }
 
 export async function http<T>(path: string, options: RequestOptions = {}): Promise<T> {

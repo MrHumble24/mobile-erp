@@ -20,6 +20,7 @@ const TYPE_KEYS: Record<string, string> = {
   EXPENSE: "balance.typeExpense",
   DEVICE_EXPENSE: "balance.typeDeviceExpense",
   CUSTOMS: "balance.typeCustoms",
+  SHIFT_DIFFERENCE: "balance.typeShiftDifference",
 }
 
 /** Type codes known to the client, for the history type filter. The server owns the

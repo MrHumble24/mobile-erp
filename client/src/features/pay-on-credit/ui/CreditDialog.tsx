@@ -18,6 +18,7 @@ import {
   type CreditLineDto,
   type CreditView,
 } from "@/entities/credit"
+import { useShiftGate } from "@/entities/shift"
 import { useCreateCredit } from "../model/use-create-credit"
 import { useCreditDraft } from "../model/use-credit-draft"
 import { creditErrorKey } from "../lib/credit-error"
@@ -58,6 +59,7 @@ function CreditForm({
   const { data: customer } = useCustomer(customerId)
   const draft = useCreditDraft(dueTotal)
   const create = useCreateCredit()
+  const shiftGate = useShiftGate()
   const clientKey = React.useRef(crypto.randomUUID())
 
   const newUnpaid = fromCents(toCents(dueTotal) - toCents(draft.downPayment))
@@ -85,6 +87,8 @@ function CreditForm({
           onCreated(credit)
         },
         onError: (err) => {
+          // Shift closed elsewhere: prompt to open one (the till bar updates); keep the cart.
+          if (shiftGate(err)) return
           const key = creditErrorKey(err)
           toast.error(key ? t(key) : (err as Error).message || t("common.error"))
         },

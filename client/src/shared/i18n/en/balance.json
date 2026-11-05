@@ -61,6 +61,7 @@
   "payFrom": "Paid from",
   "typeDeviceExpense": "Phone expense",
   "typeCustoms": "Customs fee",
+  "typeShiftDifference": "Shift difference",
   "amountHidden": "Hidden",
   "paySplit": "Split"
 }

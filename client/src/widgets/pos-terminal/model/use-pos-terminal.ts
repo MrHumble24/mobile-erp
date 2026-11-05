@@ -8,6 +8,7 @@ import { useSettings } from "@/entities/settings"
 import type { DeviceDetailView } from "@/entities/device"
 import type { StockScanProduct } from "@/entities/stock"
 import type { CatalogEntry, CatalogUnit } from "@/entities/catalog"
+import { useCurrentShift } from "@/entities/shift"
 import { useCartStore, isLineBlocked, isPaymentBlocked, toLinePrices } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
@@ -44,6 +45,11 @@ export function usePosTerminal() {
   const online = useOnlineStatus()
   const creditEnabled = Boolean(settings?.customerCreditEnabled) && canSellCredit
 
+  // Shifts (ADR 0036): when enabled, selling is blocked until a shift is open.
+  const shiftsEnabled = Boolean(settings?.shiftsEnabled)
+  const { data: currentShift } = useCurrentShift(shiftsEnabled)
+  const noOpenShift = shiftsEnabled && currentShift === null
+
   const [mode, setMode] = React.useState<PosMode>("sale")
   const [customerOpen, setCustomerOpen] = React.useState(false)
   const [creditOpen, setCreditOpen] = React.useState(false)
@@ -63,6 +69,7 @@ export function usePosTerminal() {
   const defaultWarranty = settings?.defaultWarrantyDays ?? 14
   const minMargin = Number(settings?.minMarginPercent ?? 0)
   const blocked =
+    noOpenShift ||
     lines.length === 0 ||
     lines.some((line) => isLineBlocked(line, canViewCost, priceLevelCode)) ||
     isPaymentBlocked(toLinePrices(lines, priceLevelCode), paymentMethod, splitParts)
@@ -131,6 +138,8 @@ export function usePosTerminal() {
     setCreditOpen,
     resetCart,
     consign,
+    shiftsEnabled,
+    noOpenShift,
     ...checkout,
   }
 }

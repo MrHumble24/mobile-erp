@@ -1,5 +1,6 @@
 import { CheckoutReceiptModal } from "@/features/checkout"
 import { CatalogBrowser } from "@/features/catalog-sell"
+import { ShiftBar } from "@/features/manage-shift"
 import { ModeSwitch } from "./ModeSwitch"
 import { InputModeSwitch } from "./InputModeSwitch"
 import { ShortcutsHelp } from "./ShortcutsHelp"
@@ -17,6 +18,7 @@ export function PosTerminal() {
 
   return (
     <div className="space-y-5">
+      {pos.shiftsEnabled && <ShiftBar />}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <ModeSwitch mode={pos.mode} onModeChange={pos.setMode} />

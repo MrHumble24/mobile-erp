@@ -31,7 +31,7 @@ function CreditSell({ pos }: { pos: Pos }) {
         type="button"
         variant="outline"
         className="h-11 w-full gap-2 font-semibold"
-        disabled={lines.length === 0}
+        disabled={lines.length === 0 || pos.noOpenShift}
         onClick={() => pos.setCreditOpen(true)}
       >
         <HandCoins className="size-4" />

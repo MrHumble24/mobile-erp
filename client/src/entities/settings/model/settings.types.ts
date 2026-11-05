@@ -23,6 +23,8 @@ export interface StoreSettings {
   customerCreditEnabled: boolean
   /** Default per-customer credit ceiling (2-dp string); null = no cap. */
   defaultCreditLimit: string | null
+  /** Cashier shifts (ADR 0036). */
+  shiftsEnabled: boolean
   updatedAt: string
 }
 
@@ -48,4 +50,6 @@ export interface UpdateSettingsDto {
   /** Customer credit (ADR 0035). Omitted = left unchanged server-side. */
   customerCreditEnabled?: boolean
   defaultCreditLimit?: number | null
+  /** Cashier shifts (ADR 0036). Omitted = left unchanged server-side. */
+  shiftsEnabled?: boolean
 }
