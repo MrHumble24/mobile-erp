@@ -93,7 +93,7 @@ struct CategoryEditSheet: View {
                 AppFormField(label: i18n.t("catalog.categoryName")) {
                     AppTextField(placeholder: i18n.t("catalog.categoryName"), text: $name, autocapitalization: .words)
                 }
-                AppFormField(label: i18n.t("inventory.sortOrder", default: "Sort order")) {
+                AppFormField(label: i18n.t("catalog.sortOrder")) {
                     AppTextField(placeholder: "0", text: $sortOrder, keyboard: .numberPad)
                 }
                 if isEdit {

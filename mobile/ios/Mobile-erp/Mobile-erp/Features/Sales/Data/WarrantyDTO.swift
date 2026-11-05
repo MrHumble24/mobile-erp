@@ -48,9 +48,13 @@ struct ReceiptView: Decodable {
         let model: String
         let storage: String?
         let color: String?
+        /// Pieces sold on a quantity line (ADR 0030); nil for a unit line.
+        let quantity: Int?
         let price: MoneyValue
         /// The code to show: the IMEI when present, else the serial number.
         var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+        /// "× N" for a quantity line; empty for a unit line.
+        var quantityLabel: String { quantity.map { "× \($0)" } ?? "" }
     }
     struct Window: Decodable {
         let days: Int

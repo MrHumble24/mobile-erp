@@ -9,7 +9,7 @@ struct PosCheckoutBar: View {
 
     private var cart: PosCart { model.cart }
     private var allPriced: Bool {
-        !cart.isEmpty && cart.lines.allSatisfy { moneyToDouble($0.price) > 0 }
+        !cart.isEmpty && cart.lines.allSatisfy { $0.lineTotal > 0 }
     }
     private var paymentValid: Bool { model.payment.isValid(total: cart.subtotal) }
 

@@ -75,10 +75,16 @@ struct PosReceiptSheet: View {
                         .font(.mono(13, weight: .semibold))
                         .foregroundStyle(Tokens.ink)
                         .frame(maxWidth: .infinity, alignment: .center)
-                    Text(sale.unitCode)
+                    Text(sale.unitCode.isEmpty ? sale.quantityLabel : sale.unitCode)
                         .font(.mono(11))
                         .foregroundStyle(Tokens.muted)
                         .frame(maxWidth: .infinity, alignment: .center)
+                    if let unitPrice = sale.unitPrice {
+                        Text("\(sale.quantityLabel) · \(MoneyText.format(unitPrice))")
+                            .font(.mono(10))
+                            .foregroundStyle(Tokens.muted)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
                     if let imei2 = sale.imei2, !imei2.isEmpty {
                         Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)")
                             .font(.mono(10))
@@ -182,7 +188,7 @@ struct PosReceiptSheet: View {
         [
             i18n.t("pos.storeName"),
             "\(i18n.t("pos.receiptNumber", default: "Receipt #")): \(sale.receiptId.prefix(8).uppercased())",
-            "\(sale.modelLabel) (\(sale.unitCode))",
+            "\(sale.modelLabel) (\(sale.unitCode.isEmpty ? sale.quantityLabel : sale.unitCode))",
             "\(i18n.t("pos.totalDue", default: "TOTAL")): \(MoneyText.format(sale.salePrice))",
             sale.warrantyEndsAt.map { "\(i18n.t("pos.warrantyUntil", default: "Warranty")): \(Self.date($0))" } ?? "",
             i18n.t("pos.thankYou", default: "Thank you!"),

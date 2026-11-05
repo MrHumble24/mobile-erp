@@ -115,6 +115,32 @@ struct RegisteredDevice: Decodable, Identifiable {
 
 private struct AddDevicesBody: Encodable { let devices: [IntakeDeviceDTO] }
 
+/// One quantity purchase line staged for a shipment (ADR 0030): N pieces of a
+/// QUANTITY product at a cost per piece. `salePrice`/line total is derived.
+struct ShipmentItemDTO: Encodable, Identifiable {
+    let id = UUID()
+    let modelId: String
+    let quantity: Int
+    let unitCost: Decimal
+    /// Resolved product name, for the staged-list display; not sent.
+    let label: String
+
+    var lineTotal: Decimal { unitCost * Decimal(quantity) }
+
+    enum CodingKeys: String, CodingKey { case modelId, quantity, unitCost }
+}
+
+/// One purchased line as returned by `POST /shipments/:id/items`
+/// (server `PurchasedLineView`).
+struct PurchasedLine: Decodable, Identifiable {
+    let modelId: String
+    let quantity: Int
+    let unitCost: String
+    var id: String { modelId }
+}
+
+private struct AddItemsBody: Encodable { let items: [ShipmentItemDTO] }
+
 /// The only place that talks to `/shipments`. Reads need `shipment.read`,
 /// shipment writes need `shipment.manage`, device intake needs `device.create`.
 @MainActor
@@ -137,5 +163,11 @@ struct ShipmentsRepository {
     /// allocated landed cost (for the post-intake summary).
     func addDevices(_ id: String, _ devices: [IntakeDeviceDTO]) async throws -> [RegisteredDevice] {
         try await api.post("/shipments/\(id)/devices", body: AddDevicesBody(devices: devices))
+    }
+
+    /// Add quantity stock lines to a shipment (ADR 0030). Money leaves the
+    /// shipment's account; each line writes a PURCHASE stock movement.
+    func addItems(_ id: String, _ items: [ShipmentItemDTO]) async throws -> [PurchasedLine] {
+        try await api.post("/shipments/\(id)/items", body: AddItemsBody(items: items))
     }
 }

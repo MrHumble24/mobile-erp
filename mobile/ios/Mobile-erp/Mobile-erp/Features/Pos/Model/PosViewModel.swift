@@ -1,11 +1,11 @@
 import Foundation
 import Observation
 
-/// POS terminal state + actions: scan an IMEI into the cart (gated: exists · in
-/// stock · not already queued · not a duplicate), attach a customer, then check
-/// out every line. One `POST /sales` per device online, or one outbox entry per
-/// device offline — each with its own `expectedVersion`. The completed sales
-/// drive the receipt result sheet.
+/// POS terminal state + actions: scan a code into the cart — a unit (gated:
+/// exists · in stock · not already queued · not a duplicate) confirmed into the
+/// cart, or a quantity product's barcode added straight in (ADR 0030) — attach a
+/// customer, then check out every line. One `POST /sales` per line online, or one
+/// outbox entry per line offline. The completed sales drive the receipt sheet.
 @MainActor
 @Observable
 final class PosViewModel {
@@ -13,12 +13,13 @@ final class PosViewModel {
     /// How the customer pays (Cash / Card / Split). Default Cash.
     let payment = PaymentSelection()
     var errorKey: String?
-    /// A scanned IMEI awaiting the cashier's confirm tap before it joins the cart
+    /// A scanned unit awaiting the cashier's confirm tap before it joins the cart
     /// (or an error variant explaining why it can't). Drives the confirm sheet.
     var pendingScan: PendingScan?
     var busy = false
     var completed: [CompletedSale]?
     var defaultWarrantyDays: Int?
+    var showProductSearch = false
 
     // Customer typeahead.
     var customerHits: [PosCustomerHit] = []
@@ -37,30 +38,53 @@ final class PosViewModel {
         }
     }
 
-    /// Resolve a scanned IMEI from the offline cache and stage it for confirmation
-    /// (gated: exists · not already queued · in stock · not already in the cart).
-    /// Nothing enters the cart here — `confirmScan()` does, after the cashier taps
-    /// Confirm. A gate failure stages the matching error for the sheet's error
-    /// variant.
+    /// Resolve a scanned code. A unit (IMEI/serial) wins and is staged for the
+    /// confirm sheet (gated); a quantity product's barcode is added straight to
+    /// the cart (a re-scan raises the quantity). Units and cached products resolve
+    /// offline; online, an un-cached barcode is resolved via `GET /scan/:code`.
     func scan(_ raw: String) {
-        guard container != nil else { return }
+        guard let container else { return }
         let code = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let found = repo.lookup(code) else {
-            pendingScan = PendingScan(code: code, device: nil, errorKey: "common.notFound"); return
+        guard !code.isEmpty else { return }
+        // 1. Unit (wins) — local cache, works offline and online.
+        if let found = repo.lookup(code) {
+            stageUnit(found)
+            return
         }
+        // 2. Quantity product barcode — local cache.
+        if let product = repo.lookupProduct(code) {
+            cart.addProduct(product)
+            return
+        }
+        // 3. Online fallback for a product not yet synced to the cache.
+        if container.connectivity.isOnline {
+            Task {
+                if let product = try? await repo.scanProduct(code) {
+                    cart.addProduct(product)
+                } else {
+                    pendingScan = PendingScan(code: code, device: nil, errorKey: "common.notFound")
+                }
+            }
+            return
+        }
+        pendingScan = PendingScan(code: code, device: nil, errorKey: "common.notFound")
+    }
+
+    /// Stage a resolved unit for confirmation, running the sell gates.
+    private func stageUnit(_ found: ScannedDevice) {
         if repo.pendingSoldCodes().contains(found.code) {
             pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.alreadyQueued"); return
         }
         guard found.inStock else {
             pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.deviceConflict"); return
         }
-        if cart.lines.contains(where: { $0.device.code == found.code }) {
+        if cart.lines.contains(where: { $0.device?.code == found.code }) {
             pendingScan = PendingScan(code: found.code, device: nil, errorKey: "pos.duplicateDevice"); return
         }
-        pendingScan = PendingScan(code: code, device: found, errorKey: nil)
+        pendingScan = PendingScan(code: found.code, device: found, errorKey: nil)
     }
 
-    /// Commit the staged scan into the cart. No-op (just dismiss) for an error
+    /// Commit the staged unit into the cart. No-op (just dismiss) for an error
     /// variant, where `device` is nil.
     func confirmScan() {
         defer { pendingScan = nil }
@@ -70,6 +94,9 @@ final class PosViewModel {
 
     func dismissScan() { pendingScan = nil }
 
+    /// Add a quantity product found by name search (`GET /stock?search=`).
+    func addProduct(_ product: PosCartProduct) { cart.addProduct(product) }
+
     /// Typeahead search for an existing customer to attach.
     func searchCustomers(_ query: String) {
         guard container != nil else { return }
@@ -77,39 +104,11 @@ final class PosViewModel {
     }
 
     func dismissResult() { completed = nil }
-
     func clearError() { errorKey = nil }
 
-    #if DEBUG
-    /// Seed a demo cart line + payment method for screenshots, bypassing the
-    /// cache so captures don't depend on synced stock. `mode` is "cash" or
-    /// "split" (`-posDemo cash|split`).
-    func seedDemo(_ mode: String) {
-        // `-posDemo serial` seeds a serial unit (no IMEI) for serial-POS captures.
-        let serialDemo = mode == "serial"
-        cart.add(ScannedDevice(id: "demo",
-                               imei: serialDemo ? nil : "356938035643809",
-                               imei2: nil,
-                               serialNumber: serialDemo ? "PS5-CFI1215A" : nil,
-                               version: 1, statusCode: "IN_STOCK",
-                               modelLabel: serialDemo ? "Sony PlayStation 5" : "iPhone 13",
-                               targetPrice: serialDemo ? "6500000" : "1200000"),
-                 warrantyDays: defaultWarrantyDays)
-        if payment.accounts.isEmpty {
-            payment.setAccounts([PaymentAccount(code: PaymentAccounts.cash, label: "Cash"),
-                                 PaymentAccount(code: PaymentAccounts.card, label: "Card")])
-        }
-        if mode == "split" {
-            payment.method = .split
-            payment.splitAmounts = ["CASH": "800000", "CARD": "400000"]
-        }
-    }
-    #endif
-
-    /// Check out every cart line. Online lines POST sequentially; a line that
-    /// fails the network is queued to the outbox (same `clientMutationId`), while
-    /// an HTTP verdict stops the run. Offline, every line is queued. Succeeded or
-    /// queued lines leave the cart so a retry is idempotent on the rest.
+    /// Check out every cart line (unit or quantity product). One request per line;
+    /// the cart's single Cash/Card/Split choice is allocated across the line totals
+    /// so each sale's payments sum to its own price. Offline, every line queues.
     func checkout() {
         guard let container, !cart.isEmpty, !busy else { return }
         busy = true
@@ -118,32 +117,14 @@ final class PosViewModel {
         let cashier = container.session.user?.displayName ?? ""
         let customer = cart.customer
         let lines = cart.lines
-        // The cart's single Cash/Card/Split choice, allocated across the lines so
-        // each per-device sale's payments sum to its own price.
         let perLinePayments = allocateSalePayments(
             breakdown: payment.breakdown(total: cart.subtotal),
-            linePrices: lines.map { Decimal(string: $0.price) ?? .zero })
+            linePrices: lines.map { $0.lineTotal })
 
         Task {
             var results: [CompletedSale] = []
-            // ponytail: an inline NEW customer is re-sent per line (postSale
-            // returns no customer id to reuse) → N lines may create N customers.
-            // Mirrors the web; upgrade by creating the customer once up front and
-            // attaching the returned id to every line.
             for (index, line) in lines.enumerated() {
-                let payload = buildSalePayload(
-                    imei: line.device.imei,
-                    serialNumber: line.device.serialNumber,
-                    salePrice: moneyToDouble(line.price),
-                    clientMutationId: line.clientMutationId,
-                    expectedVersion: line.device.version,
-                    customerId: customer?.id,
-                    customerName: customer?.id == nil ? customer?.name : nil,
-                    customerPhone: customer?.id == nil ? customer?.phone : nil,
-                    warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
-                    notes: line.notes,
-                    payments: perLinePayments[index]
-                )
+                let payload = payload(for: line, customer: customer, payments: perLinePayments[index])
                 let now = Date()
                 var receiptId = line.clientMutationId
                 var pending = !online
@@ -152,22 +133,18 @@ final class PosViewModel {
                         let id = try await repo.postSale(payload)
                         if !id.isEmpty { receiptId = id }
                     } catch {
-                        // Network failure → queue; an HTTP verdict stops the run.
                         if (error as? AppError)?.statusCode == nil {
-                            try? repo.enqueueSale(payload, baseVersion: line.device.version)
+                            try? repo.enqueueSale(payload, baseVersion: line.device?.version)
                             pending = true
                         } else {
-                            busy = false
-                            errorKey = "common.error"
-                            break
+                            busy = false; errorKey = "common.error"; break
                         }
                     }
                 } else {
-                    try? repo.enqueueSale(payload, baseVersion: line.device.version)
+                    try? repo.enqueueSale(payload, baseVersion: line.device?.version)
                 }
-                results.append(completedSale(line, receiptId: receiptId,
-                                              cashier: cashier, customer: customer,
-                                              at: now, pending: pending))
+                results.append(completedSale(line, receiptId: receiptId, cashier: cashier,
+                                             customer: customer, at: now, pending: pending))
                 cart.remove(line.id)
             }
             busy = false
@@ -180,16 +157,43 @@ final class PosViewModel {
         }
     }
 
+    /// Build the sale request for a line: a unit (imei/serial + version) or a
+    /// quantity product (modelId + quantity, no warranty). `salePrice` is the line
+    /// total; a new inline customer is re-sent per line (mirrors the web).
+    private func payload(for line: PosCartLine, customer: PosCartCustomer?,
+                         payments: [SalePaymentPost]) -> SaleCreatePayload {
+        let total = NSDecimalNumber(decimal: line.lineTotal).doubleValue
+        if let product = line.product {
+            return buildSalePayload(
+                modelId: product.modelId, quantity: line.quantity, salePrice: total,
+                clientMutationId: line.clientMutationId,
+                customerId: customer?.id,
+                customerName: customer?.id == nil ? customer?.name : nil,
+                customerPhone: customer?.id == nil ? customer?.phone : nil,
+                warrantyDays: nil, notes: line.notes, payments: payments)
+        }
+        return buildSalePayload(
+            imei: line.device?.imei, serialNumber: line.device?.serialNumber, salePrice: total,
+            clientMutationId: line.clientMutationId, expectedVersion: line.device?.version,
+            customerId: customer?.id,
+            customerName: customer?.id == nil ? customer?.name : nil,
+            customerPhone: customer?.id == nil ? customer?.phone : nil,
+            warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
+            notes: line.notes, payments: payments)
+    }
+
     private func completedSale(_ line: PosCartLine, receiptId: String, cashier: String,
                                customer: PosCartCustomer?, at now: Date, pending: Bool) -> CompletedSale {
-        let days = Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
+        let days = line.isProduct ? nil : Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
         return CompletedSale(
             receiptId: receiptId,
-            imei: line.device.imei,
-            imei2: line.device.imei2,
-            serialNumber: line.device.serialNumber,
-            modelLabel: line.device.modelLabel,
-            salePrice: line.price,
+            imei: line.device?.imei,
+            imei2: line.device?.imei2,
+            serialNumber: line.device?.serialNumber,
+            modelLabel: line.modelLabel,
+            quantity: line.isProduct ? line.quantity : nil,
+            unitPrice: line.isProduct ? line.price : nil,
+            salePrice: NSDecimalNumber(decimal: line.lineTotal).stringValue,
             soldAt: now,
             cashier: cashier,
             warrantyDays: days,

@@ -20,6 +20,7 @@ struct ModelFormSheet: View {
     @State private var barcode: String
     @State private var modelCode: String
     @State private var customsCode: String
+    @State private var salePrice: String
     @State private var attributes: [AttributeDef]
     @State private var saving = false
     @State private var error: String?
@@ -40,6 +41,7 @@ struct ModelFormSheet: View {
         _barcode = State(initialValue: model?.barcode ?? "")
         _modelCode = State(initialValue: model?.modelCode ?? "")
         _customsCode = State(initialValue: model?.customsCode ?? "")
+        _salePrice = State(initialValue: model?.salePrice ?? "")
         _attributes = State(initialValue: model?.attributes ?? [])
         savedKeys = Set((model?.attributes ?? []).map(\.key))
         originalKind = model?.kindCode ?? "IMEI"
@@ -70,12 +72,22 @@ struct ModelFormSheet: View {
                         .font(.ui(.body)).foregroundStyle(Tokens.text)
                         .frame(minHeight: Tokens.Space.minTouch)
                 }
-                AppFormField(label: i18n.t("inventory.customsCode")) {
-                    AppTextField(placeholder: i18n.t("inventory.customsCode"), text: $customsCode,
-                                 autocapitalization: .characters)
-                    Text(i18n.t("inventory.customsCodeHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                if kindCode == "QUANTITY" {
+                    // A quantity product has a price per piece and no unit specs or
+                    // customs code (ADR 0030).
+                    AppFormField(label: i18n.t("catalog.salePrice")) {
+                        AppTextField(placeholder: i18n.t("catalog.unitPrice"), text: $salePrice,
+                                     keyboard: .decimalPad, font: .mono(15, weight: .medium))
+                            .sanitizeDecimal($salePrice)
+                    }
+                } else {
+                    AppFormField(label: i18n.t("inventory.customsCode")) {
+                        AppTextField(placeholder: i18n.t("inventory.customsCode"), text: $customsCode,
+                                     autocapitalization: .characters)
+                        Text(i18n.t("inventory.customsCodeHint")).font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                    }
+                    AttributesEditor(attributes: $attributes, savedKeys: savedKeys)
                 }
-                AttributesEditor(attributes: $attributes, savedKeys: savedKeys)
                 if let error {
                     Text(error).font(.ui(.caption)).foregroundStyle(Tokens.danger)
                 }
@@ -145,17 +157,22 @@ struct ModelFormSheet: View {
         let reindexed = attributes.enumerated().map { i, a -> AttributeDef in
             var copy = a; copy.sortOrder = i; return copy
         }
+        // A quantity product carries a price per piece and no customs code; every
+        // other kind carries a customs code and no sale price (ADR 0030).
+        let isQuantity = kindCode == "QUANTITY"
+        let price: Decimal? = isQuantity ? Decimal(string: salePrice.trimmingCharacters(in: .whitespaces)) : nil
+        let customs = isQuantity ? nil : nilIfBlank(customsCode)
         do {
             let repo = DeviceModelRepository(container)
             if let model {
                 try await repo.update(id: model.id, brand: b, name: n, isActive: isActive,
                                       kindCode: kindCode, categoryId: categoryId,
                                       barcode: nilIfBlank(barcode), modelCode: nilIfBlank(modelCode),
-                                      customsCode: nilIfBlank(customsCode), attributes: reindexed)
+                                      customsCode: customs, salePrice: price, attributes: reindexed)
             } else {
                 try await repo.create(brand: b, name: n, kindCode: kindCode, categoryId: categoryId,
                                       barcode: nilIfBlank(barcode), modelCode: nilIfBlank(modelCode),
-                                      customsCode: nilIfBlank(customsCode), attributes: reindexed)
+                                      customsCode: customs, salePrice: price, attributes: reindexed)
             }
             await store.loadModels()
             container.toasts.success(i18n.t("common.success"))

@@ -58,7 +58,7 @@ struct ReceiptSheet: View {
             ForEach(Array(r.items.enumerated()), id: \.offset) { _, item in
                 VStack(spacing: 2) {
                     Text(item.model).font(.mono(12))
-                    Text(item.unitCode).font(.mono(10))
+                    Text(item.unitCode.isEmpty ? item.quantityLabel : item.unitCode).font(.mono(10))
                     if let imei2 = item.imei2, !imei2.isEmpty {
                         Text("\(i18n.t("inventory.imei2", default: "IMEI 2")): \(imei2)").font(.mono(10))
                     }
@@ -112,7 +112,7 @@ struct ReceiptSheet: View {
             "\(i18n.t("pos.cashier")): \(r.cashier)",
             String(repeating: "-", count: 30),
         ]
-        lines += r.items.map { "\($0.model) (\($0.unitCode))  \(MoneyText.format($0.price.string))" }
+        lines += r.items.map { "\($0.model) (\($0.unitCode.isEmpty ? $0.quantityLabel : $0.unitCode))  \(MoneyText.format($0.price.string))" }
         lines.append(String(repeating: "-", count: 30))
         lines.append("\(i18n.t("pos.totalDue")): \(MoneyText.format(r.total.string))")
         lines.append(i18n.t("pos.thankYou"))

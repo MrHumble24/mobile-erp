@@ -51,7 +51,8 @@ private struct ReturnRowView: View {
         HStack(alignment: .top, spacing: Tokens.Space.sm) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.model).font(.ui(.body)).foregroundStyle(Tokens.text)
-                Text(row.unitCode).font(.data(.regular)).foregroundStyle(Tokens.text)
+                Text(row.unitCode.isEmpty ? row.quantityLabel : row.unitCode)
+                    .font(.data(.regular)).foregroundStyle(Tokens.text)
                 if let reason = row.reason, !reason.isEmpty {
                     Text(reason).font(.ui(.caption)).foregroundStyle(Tokens.muted)
                 }

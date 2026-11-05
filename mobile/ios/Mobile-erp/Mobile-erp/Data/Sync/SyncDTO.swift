@@ -7,11 +7,33 @@ nonisolated struct ChangesPage {
     let nextSince: String?
     let devices: [DeviceRow]
     let partners: [PartnerRow]
+    let products: [ProductRow]
 
     init(json: [String: Any]) {
         nextSince = json["nextSince"] as? String
         devices = (json["devices"] as? [[String: Any]] ?? []).map(DeviceRow.init)
         partners = (json["partners"] as? [[String: Any]] ?? []).map(PartnerRow.init)
+        products = (json["products"] as? [[String: Any]] ?? []).map(ProductRow.init)
+    }
+}
+
+/// A quantity product from the feed's `products[]` (ADR 0030). `quantity` may be
+/// negative; `salePrice` is a Decimal string or nil.
+nonisolated struct ProductRow {
+    let modelId, brand, name: String
+    let barcode: String?
+    let salePrice: String?
+    let quantity: Int
+
+    init(_ p: [String: Any]) {
+        modelId = p["modelId"] as? String ?? ""
+        brand = p["brand"] as? String ?? ""
+        name = p["name"] as? String ?? ""
+        barcode = p["barcode"] as? String
+        if let s = p["salePrice"] as? String { salePrice = s }
+        else if let n = p["salePrice"] as? NSNumber { salePrice = n.stringValue }
+        else { salePrice = nil }
+        quantity = (p["quantity"] as? NSNumber)?.intValue ?? 0
     }
 }
 

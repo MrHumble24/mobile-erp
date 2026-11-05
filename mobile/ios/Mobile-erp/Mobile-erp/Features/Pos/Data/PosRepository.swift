@@ -26,6 +26,29 @@ struct PosRepository {
         )
     }
 
+    /// Resolve a quantity product by its barcode from the offline cache
+    /// (`ProductEntity`, synced from `/sync/changes`). Nil when not cached.
+    func lookupProduct(_ barcode: String) -> PosCartProduct? {
+        let descriptor = FetchDescriptor<ProductEntity>(
+            predicate: #Predicate { $0.barcode == barcode }
+        )
+        guard let p = try? context.fetch(descriptor).first else { return nil }
+        let name = "\(p.brand) \(p.name)".trimmingCharacters(in: .whitespaces)
+        return PosCartProduct(modelId: p.modelId, name: name, barcode: p.barcode,
+                              salePrice: p.salePrice, quantityInStock: p.quantity)
+    }
+
+    /// Resolve a code online via `GET /scan/:code` (ADR 0030). Returns the
+    /// quantity product when the code is a product barcode; nil for a unit or a
+    /// 404 (units resolve from the local cache).
+    func scanProduct(_ code: String) async throws -> PosCartProduct? {
+        let result: ScanResultDTO = try await api.get("/scan/\(code)")
+        guard result.kind == "product", let p = result.product else { return nil }
+        let name = "\(p.brand) \(p.name)".trimmingCharacters(in: .whitespaces)
+        return PosCartProduct(modelId: p.modelId, name: name, barcode: p.barcode,
+                              salePrice: p.salePrice, quantityInStock: p.quantity)
+    }
+
     /// Unit codes (IMEI or serial) with a pending offline `sale.create` in the
     /// outbox — POS treats these as already sold so a re-scan is rejected until
     /// the push reconciles. Read-only over the outbox; the cache is never mutated.
@@ -52,7 +75,8 @@ struct PosRepository {
     }
 
     /// Offline checkout → enqueue to the outbox; the push drain sends it later.
-    func enqueueSale(_ payload: SaleCreatePayload, baseVersion: Int) throws {
+    /// `baseVersion` is nil for a quantity sale (no device lock, ADR 0030).
+    func enqueueSale(_ payload: SaleCreatePayload, baseVersion: Int?) throws {
         try Outbox(context: context).enqueue(.saleCreate, payload: payload, baseVersion: baseVersion)
     }
 

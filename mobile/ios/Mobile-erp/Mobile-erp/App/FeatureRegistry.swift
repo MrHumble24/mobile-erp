@@ -17,6 +17,7 @@ enum FeatureRegistry {
         PosModule.feature,
         SalesModule.feature,
         InventoryModule.feature,
+        StockModule.feature,
         ShipmentsModule.feature,
         QcModule.feature,
         ConsignmentsModule.feature,

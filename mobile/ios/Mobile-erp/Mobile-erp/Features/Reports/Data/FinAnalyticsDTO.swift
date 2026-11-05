@@ -54,11 +54,15 @@ struct ReturnRow: Decodable, Identifiable {
     let imei: String?
     let serialNumber: String?
     let model: String
+    /// Pieces for a quantity-product return (ADR 0030); nil for a unit return.
+    let quantity: Int?
     let refundAmount: Double
     let reason: String?
     let returnedAt: String
     /// The code to show: the IMEI when present, else the serial number.
     var unitCode: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+    /// "× N" for a quantity return; empty for a unit return.
+    var quantityLabel: String { quantity.map { "× \($0)" } ?? "" }
 }
 
 struct ReturnsPage: Decodable {
