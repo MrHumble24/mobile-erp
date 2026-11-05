@@ -12,6 +12,7 @@ import uzInventory from "./uz/inventory.json"
 import uzNav from "./uz/nav.json"
 import uzPartners from "./uz/partners.json"
 import uzPos from "./uz/pos.json"
+import uzPricing from "./uz/pricing.json"
 import uzQc from "./uz/qc.json"
 import uzReports from "./uz/reports.json"
 import uzSales from "./uz/sales.json"
@@ -33,6 +34,7 @@ import enInventory from "./en/inventory.json"
 import enNav from "./en/nav.json"
 import enPartners from "./en/partners.json"
 import enPos from "./en/pos.json"
+import enPricing from "./en/pricing.json"
 import enQc from "./en/qc.json"
 import enReports from "./en/reports.json"
 import enSales from "./en/sales.json"
@@ -58,6 +60,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     nav: uzNav,
     partners: uzPartners,
     pos: uzPos,
+    pricing: uzPricing,
     qc: uzQc,
     reports: uzReports,
     sales: uzSales,
@@ -80,6 +83,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     nav: enNav,
     partners: enPartners,
     pos: enPos,
+    pricing: enPricing,
     qc: enQc,
     reports: enReports,
     sales: enSales,
