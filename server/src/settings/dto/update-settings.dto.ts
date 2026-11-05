@@ -1,5 +1,8 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -70,4 +73,40 @@ export class UpdateSettingsDto {
   @Min(0)
   @Max(365)
   overdueReminderDays!: number;
+
+  // Discounts (Change 7/12, ADR 0034). Optional so an existing settings PUT
+  // that omits them leaves the stored values untouched.
+  @IsOptional()
+  @IsBoolean()
+  discountsEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  discountPercentAllowed?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  discountAmountAllowed?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsNumber({ maxDecimalPlaces: 2 }, { each: true })
+  @Min(0, { each: true })
+  @Max(100, { each: true })
+  discountPresetsPercent?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsNumber({ maxDecimalPlaces: 2 }, { each: true })
+  @Min(0, { each: true })
+  discountPresetsAmount?: number[];
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  maxDiscountPercent?: number;
 }

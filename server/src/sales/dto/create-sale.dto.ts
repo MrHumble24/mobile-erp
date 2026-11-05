@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
@@ -39,6 +40,17 @@ export class SalePaymentDto {
   @IsPositive()
   @Max(1_000_000_000)
   amount!: number;
+}
+
+/** A per-line discount (Change 7/12, ADR 0034). Final = list − discount. */
+export class SaleDiscountDto {
+  @IsIn(['PERCENT', 'AMOUNT'])
+  mode!: 'PERCENT' | 'AMOUNT';
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  value!: number;
 }
 
 export class CreateSaleDto {
@@ -114,4 +126,28 @@ export class CreateSaleDto {
   @ValidateNested({ each: true })
   @Type(() => SalePaymentDto)
   payments?: SalePaymentDto[];
+
+  /**
+   * Price level for the line (ADR 0034). Omit to follow the customer's level,
+   * else RETAIL. The server resolves the list price itself.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  priceLevelCode?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SaleDiscountDto)
+  discount?: SaleDiscountDto;
+
+  /**
+   * The till's own list price for the line (offline replay only). Trusted only
+   * on the sync push path; ignored online, where the server resolves it.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  listPrice?: number;
 }

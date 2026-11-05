@@ -71,6 +71,22 @@ for atomicity (inventory module does not exist in this worktree):
 - `customers`: inline customer upsert-by-phone / create during checkout.
 Also reads `store_settings` (id=1) for `defaultWarrantyDays` and `qc_inspections`.
 
+## Pricing & discounts (ADR 0034)
+
+`POST /sales` also accepts `priceLevelCode?` (default: the customer's level,
+else `RETAIL`) and `discount?{mode:'PERCENT'|'AMOUNT',value}`. The server
+resolves the line's list price (via `PricingService`) and computes the final
+price (`SalesPricingService` + `pricing/lib/checkout-pricing.ts`): `salePrice`
+must equal list − discount (400 with the computed figure otherwise); no list
+price keeps the old "sent price is the price" behaviour; `sale.price.override`
+sends any price; a discount needs `discountsEnabled` + its mode allowed, may not
+exceed the list price, and its percent may not exceed max(cashier max, customer
+standing) unless `sale.discount.unlimited`. The sync replay path trusts the
+till. The sale stores `listPriceSnapshot` + `priceLevelCode`; `SaleView` gains
+`listPrice`, `discountAmount` (derived) and `priceLevelCode`. Returns live in
+`SalesReturnsService` (split out).
+
 ## Must never
 
-Store `netProfit`/`channel`; put cost fields in the receipt; inject another module's repo.
+Store `netProfit`/`channel`/the discount amount; put cost fields in the receipt;
+inject another module's repo.

@@ -1,0 +1,66 @@
+// ---------------------------------------------------------------------------
+// Price levels and per-product / per-unit price lists (Change 12, ADR 0034).
+//
+// Three levels seed: RETAIL (walk-in), WHOLESALE, PARTNER (other shops). A
+// lookup, not an enum, so a fourth level is a row (database.md).
+//
+// No second copy of the retail price: a unit's RETAIL own price stays in
+// `Device.targetPrice` and a quantity product's RETAIL price stays in
+// `DeviceModel.salePrice`. `unit_prices` holds a unit's WHOLESALE/PARTNER own
+// prices; `product_prices` holds product prices per storage for WHOLESALE/
+// PARTNER (and RETAIL per storage for phones, which had no column before).
+// See pricing/lib/price-resolution.ts for the resolution order.
+// ---------------------------------------------------------------------------
+
+/// Which price a sale uses. Follows the customer; the seller may switch it.
+model PriceLevel {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  productPrices ProductPrice[]
+  unitPrices    UnitPrice[]
+  customers     Customer[]
+  sales         Sale[]
+
+  @@map("price_levels")
+}
+
+/// A product's price at one storage and level. `storage` is "" for "any
+/// storage" (the only form for quantity products and products with no storage
+/// attribute). RETAIL at "" for a quantity product is NOT stored here — it is
+/// `DeviceModel.salePrice`; the resolver folds it in. A phone's per-storage
+/// RETAIL price (new) does live here.
+model ProductPrice {
+  id        String      @id @default(uuid())
+  modelId   String
+  model     DeviceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  storage   String      @default("")
+  levelCode String
+  level     PriceLevel  @relation(fields: [levelCode], references: [code])
+  price     Decimal     @db.Decimal(14, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([modelId, storage, levelCode])
+  @@index([modelId])
+  @@map("product_prices")
+}
+
+/// A unit's own price at one level, winning over the product price. RETAIL own
+/// price is `Device.targetPrice`, not a row here, so there is no second copy.
+model UnitPrice {
+  id        String     @id @default(uuid())
+  deviceId  String
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  levelCode String
+  level     PriceLevel @relation(fields: [levelCode], references: [code])
+  price     Decimal    @db.Decimal(14, 2)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([deviceId, levelCode])
+  @@index([deviceId])
+  @@map("unit_prices")
+}

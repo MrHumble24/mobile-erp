@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { buildImageUrl } from '../common/lib/image-url.js';
+import { PricingService } from '../pricing/pricing.service.js';
+import type { ResolvedPrices } from '../pricing/types/pricing.types.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CatalogRepository } from './catalog.repository.js';
 import type {
@@ -26,6 +28,7 @@ export class CatalogService {
   constructor(
     private readonly repo: CatalogRepository,
     private readonly stores: StoresService,
+    private readonly pricing: PricingService,
   ) {}
 
   async list(query: CatalogQuery): Promise<CatalogEntry[]> {
@@ -38,6 +41,21 @@ export class CatalogService {
       ...units.map(unitProductToEntry),
       ...quantities.map(quantityProductToEntry),
     ];
+    // Card prices are the product-level list price per level at "any storage";
+    // per-unit prices are resolved in `units()` after a card is tapped.
+    const priceMap = await this.pricing.pricesForProducts([
+      ...units.map((u) => ({
+        modelId: u.modelId,
+        storage: '',
+        salePrice: null,
+      })),
+      ...quantities.map((q) => ({
+        modelId: q.modelId,
+        storage: '',
+        salePrice: q.salePrice,
+      })),
+    ]);
+    for (const e of entries) e.prices = priceMap.get(e.modelId) ?? {};
     entries.sort(
       (a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name),
     );
@@ -47,8 +65,25 @@ export class CatalogService {
   async units(modelId: string): Promise<CatalogUnit[]> {
     const storeId = await this.stores.currentStoreId();
     const rows = await this.repo.sellableUnits(storeId, modelId);
-    return rows.map(unitToView);
+    const priceMap = await this.pricing.pricesForUnits(
+      rows.map((r) => ({
+        deviceId: r.id,
+        modelId,
+        storage: storageOf(r.specs),
+        targetPrice: r.targetPrice,
+        salePrice: null,
+      })),
+    );
+    return rows.map((r) => unitToView(r, priceMap.get(r.id) ?? {}));
   }
+}
+
+function storageOf(specs: unknown): string {
+  if (specs && typeof specs === 'object' && !Array.isArray(specs)) {
+    const value = (specs as Record<string, unknown>).storage;
+    if (typeof value === 'string') return value;
+  }
+  return '';
 }
 
 function unitProductToEntry(row: UnitProductRow): CatalogEntry {
@@ -66,6 +101,7 @@ function unitProductToEntry(row: UnitProductRow): CatalogEntry {
     maxTargetPrice:
       row.maxTargetPrice === null ? null : row.maxTargetPrice.toFixed(2),
     salePrice: null,
+    prices: {},
   };
 }
 
@@ -82,15 +118,17 @@ function quantityProductToEntry(row: QuantityProductRow): CatalogEntry {
     minTargetPrice: null,
     maxTargetPrice: null,
     salePrice: row.salePrice === null ? null : row.salePrice.toFixed(2),
+    prices: {},
   };
 }
 
-function unitToView(row: UnitRow): CatalogUnit {
+function unitToView(row: UnitRow, prices: ResolvedPrices): CatalogUnit {
   return {
     id: row.id,
     code: row.imei ?? row.serialNumber,
     specs: row.specs,
     gradeCode: row.gradeCode,
     targetPrice: row.targetPrice === null ? null : row.targetPrice.toFixed(2),
+    prices,
   };
 }

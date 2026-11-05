@@ -1,4 +1,12 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class CreateCustomerDto {
   @IsString()
@@ -15,4 +23,17 @@ export class CreateCustomerDto {
   @IsString()
   @MaxLength(500)
   notes?: string;
+
+  /** Default price level for this customer (ADR 0034). Defaults to RETAIL. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  priceLevelCode?: string;
+
+  /** Standing discount percent on the customer's card (0–100). */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  standingDiscountPercent?: number;
 }

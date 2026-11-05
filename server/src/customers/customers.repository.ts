@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { buildCustomerWhere } from './lib/customer-query.js';
 import type { CustomerStats, CustomerView } from './types/customer.types.js';
@@ -8,8 +9,36 @@ const customerSelect = {
   name: true,
   phone: true,
   notes: true,
+  priceLevelCode: true,
+  standingDiscountPercent: true,
   createdAt: true,
 } as const;
+
+interface CustomerRow {
+  id: string;
+  name: string;
+  phone: string | null;
+  notes: string | null;
+  priceLevelCode: string;
+  standingDiscountPercent: Prisma.Decimal;
+  createdAt: Date;
+}
+
+function toView(row: CustomerRow): CustomerView {
+  return {
+    ...row,
+    standingDiscountPercent: row.standingDiscountPercent.toFixed(2),
+  };
+}
+
+/** Fields a create/update may write (undefined = leave unchanged). */
+export interface CustomerWrite {
+  name?: string;
+  phone?: string;
+  notes?: string;
+  priceLevelCode?: string;
+  standingDiscountPercent?: number;
+}
 
 /** All Prisma access for customers. Sale aggregates are derived in the service. */
 @Injectable()
@@ -17,29 +46,35 @@ export class CustomersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Full filtered customer set (no pagination — service sorts and slices). */
-  findMany(search?: string, hasPurchases?: boolean): Promise<CustomerView[]> {
-    return this.prisma.customer.findMany({
+  async findMany(
+    search?: string,
+    hasPurchases?: boolean,
+  ): Promise<CustomerView[]> {
+    const rows = await this.prisma.customer.findMany({
       where: buildCustomerWhere(search, hasPurchases),
       orderBy: { createdAt: 'desc' },
       select: customerSelect,
     });
+    return rows.map(toView);
   }
 
   /** Lightweight typeahead for POS checkout: top 10 name/phone matches. */
-  lookup(query?: string): Promise<CustomerView[]> {
-    return this.prisma.customer.findMany({
+  async lookup(query?: string): Promise<CustomerView[]> {
+    const rows = await this.prisma.customer.findMany({
       where: buildCustomerWhere(query),
       orderBy: { createdAt: 'desc' },
       take: 10,
       select: customerSelect,
     });
+    return rows.map(toView);
   }
 
-  findById(id: string): Promise<CustomerView | null> {
-    return this.prisma.customer.findUnique({
+  async findById(id: string): Promise<CustomerView | null> {
+    const row = await this.prisma.customer.findUnique({
       where: { id },
       select: customerSelect,
     });
+    return row ? toView(row) : null;
   }
 
   findByPhone(phone: string): Promise<{ id: string } | null> {
@@ -68,22 +103,20 @@ export class CustomersRepository {
     return { total: rows.length, newThisMonth, withPurchases, repeatBuyers };
   }
 
-  create(data: {
-    name: string;
-    phone?: string;
-    notes?: string;
-  }): Promise<CustomerView> {
-    return this.prisma.customer.create({ data, select: customerSelect });
+  async create(data: CustomerWrite & { name: string }): Promise<CustomerView> {
+    const row = await this.prisma.customer.create({
+      data,
+      select: customerSelect,
+    });
+    return toView(row);
   }
 
-  update(
-    id: string,
-    data: { name?: string; phone?: string; notes?: string },
-  ): Promise<CustomerView> {
-    return this.prisma.customer.update({
+  async update(id: string, data: CustomerWrite): Promise<CustomerView> {
+    const row = await this.prisma.customer.update({
       where: { id },
       data,
       select: customerSelect,
     });
+    return toView(row);
   }
 }

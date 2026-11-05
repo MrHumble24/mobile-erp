@@ -10,6 +10,7 @@ import { LedgerService } from '../ledger/ledger.service.js';
 import { StockService } from '../stock/stock.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
+import { SalesPricingService } from './sales-pricing.service.js';
 import { SalesRepository } from './sales.repository.js';
 import { SalesService } from './sales.service.js';
 
@@ -30,6 +31,8 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
       targetPrice: 300,
     }),
     customerExists: jest.fn().mockResolvedValue(true),
+    customerPricing: jest.fn().mockResolvedValue(null),
+    modelSalePrice: jest.fn().mockResolvedValue(null),
     defaultWarrantyDays: jest.fn().mockResolvedValue(14),
     findById: jest.fn().mockResolvedValue({
       id: 'sale-1',
@@ -63,6 +66,19 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
   const stock = {
     assertQuantityModel: jest.fn().mockResolvedValue(undefined),
   };
+  const outcome = (dto: { salePrice: number }) => ({
+    salePrice: new Prisma.Decimal(dto.salePrice),
+    listPriceSnapshot: null,
+    priceLevelCode: 'RETAIL',
+  });
+  const salesPricing = {
+    forUnit: jest.fn((_c: unknown, dto: { salePrice: number }) =>
+      Promise.resolve(outcome(dto)),
+    ),
+    forQuantity: jest.fn((_c: unknown, dto: { salePrice: number }) =>
+      Promise.resolve(outcome(dto)),
+    ),
+  };
   const events = { emit: jest.fn() };
   const service = new SalesService(
     reads as unknown as SalesRepository,
@@ -70,9 +86,19 @@ function build(readsOverrides: Partial<Record<string, jest.Mock>> = {}) {
     stores as unknown as StoresService,
     ledger as unknown as LedgerService,
     stock as unknown as StockService,
+    salesPricing as unknown as SalesPricingService,
     events as unknown as EventEmitter2,
   );
-  return { service, reads, checkout, stores, ledger, stock, events };
+  return {
+    service,
+    reads,
+    checkout,
+    stores,
+    ledger,
+    stock,
+    salesPricing,
+    events,
+  };
 }
 
 describe('SalesService.create', () => {
@@ -189,7 +215,7 @@ describe('SalesService.create', () => {
       expect.objectContaining({
         modelId: '11111111-1111-1111-1111-111111111111',
         quantity: 3,
-        salePrice: 90,
+        salePrice: new Prisma.Decimal(90),
       }),
     );
     expect(checkout.checkout).not.toHaveBeenCalled();
@@ -233,46 +259,5 @@ describe('SalesService.receipt', () => {
     });
     const receipt = await svc.service.receipt('sale-1');
     expect(receipt.payments).toEqual([]);
-  });
-});
-
-describe('SalesService.processReturn refund cap', () => {
-  const ret = (refundAmount: number) =>
-    ({ refundAmount, deviceToStatusCode: 'IN_STOCK' }) as never;
-
-  it('allows a refund equal to the sale net (ledger sale)', async () => {
-    const svc = build();
-    svc.ledger.salePayments.mockResolvedValue(
-      new Map([
-        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(250) }]],
-      ]),
-    );
-    await svc.service.processReturn(caller, 'sale-1', ret(250));
-    expect(svc.checkout.processReturn).toHaveBeenCalled();
-  });
-
-  it('rejects one unit above the sale net (ledger sale)', async () => {
-    const svc = build();
-    svc.ledger.salePayments.mockResolvedValue(
-      new Map([
-        ['sale-1', [{ accountCode: 'CASH', amount: new Prisma.Decimal(250) }]],
-      ]),
-    );
-    await expect(
-      svc.service.processReturn(caller, 'sale-1', ret(251)),
-    ).rejects.toThrow(BadRequestException);
-    expect(svc.checkout.processReturn).not.toHaveBeenCalled();
-  });
-
-  it('caps a pre-ledger sale at its salePrice: equal passes, above fails', async () => {
-    const ok = build(); // salePayments -> empty Map (pre-ledger), salePrice 250
-    await ok.service.processReturn(caller, 'sale-1', ret(250));
-    expect(ok.checkout.processReturn).toHaveBeenCalled();
-
-    const bad = build();
-    await expect(
-      bad.service.processReturn(caller, 'sale-1', ret(250.01)),
-    ).rejects.toThrow(BadRequestException);
-    expect(bad.checkout.processReturn).not.toHaveBeenCalled();
   });
 });

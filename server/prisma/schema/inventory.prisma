@@ -75,6 +75,7 @@ model Device {
   consignments     Consignment[]
   conflicts        SyncConflict[]
   cashTransactions CashTransaction[]
+  unitPrices       UnitPrice[]
 
   @@index([statusCode])
   @@index([modelId])

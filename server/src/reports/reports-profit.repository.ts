@@ -30,6 +30,14 @@ export class ReportsProfitRepository {
     });
   }
 
+  /** Σ(listPriceSnapshot − salePrice) over sales that carry a snapshot. */
+  discountsTotals(from?: Date, to?: Date) {
+    return this.prisma.sale.aggregate({
+      where: { ...this.saleWhere(from, to), listPriceSnapshot: { not: null } },
+      _sum: { listPriceSnapshot: true, salePrice: true },
+    });
+  }
+
   returnsRefunded(from?: Date, to?: Date) {
     return this.prisma.saleReturn.aggregate({
       where: from || to ? { returnedAt: { gte: from, lte: to } } : {},

@@ -60,6 +60,8 @@ export interface DeviceChange {
     warrantyEndsAt: Date | null;
   } | null;
   latestInspection: { gradeCode: string | null; notes: string | null } | null;
+  /** Resolved list price per level so an offline till can switch level (ADR 0034). */
+  prices: Record<string, string | null>;
   updatedAt: Date;
 }
 
@@ -82,6 +84,8 @@ export interface QuantityProductChange {
   /** For the offline grid (ADR 0031). */
   categoryId: string | null;
   imageUrl: string | null;
+  /** Resolved list price per level (ADR 0034). */
+  prices: Record<string, string | null>;
 }
 
 /** Offline-cache feed. nextSince is set only when the device page was capped. */

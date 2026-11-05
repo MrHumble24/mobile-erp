@@ -4,6 +4,10 @@ export interface CustomerView {
   name: string;
   phone: string | null;
   notes: string | null;
+  /** Default price level for this customer (ADR 0034). */
+  priceLevelCode: string;
+  /** Standing discount percent on the card (2-dp string, "0.00" = none). */
+  standingDiscountPercent: string;
   createdAt: Date;
 }
 

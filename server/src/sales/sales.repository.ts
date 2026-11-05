@@ -18,6 +18,8 @@ const saleSelect = {
   id: true,
   salePrice: true,
   landedCostSnapshot: true,
+  listPriceSnapshot: true,
+  priceLevelCode: true,
   soldAt: true,
   consignmentId: true,
   notes: true,
@@ -152,6 +154,9 @@ export class SalesRepository {
     version: number;
     landedCost: Prisma.Decimal;
     targetPrice: Prisma.Decimal | null;
+    modelId: string;
+    specs: Prisma.JsonValue;
+    model: { salePrice: Prisma.Decimal | null };
   } | null> {
     return this.prisma.device.findFirst({
       where: unitCodeWhere(code),
@@ -161,16 +166,35 @@ export class SalesRepository {
         version: true,
         landedCost: true,
         targetPrice: true,
+        modelId: true,
+        specs: true,
+        model: { select: { salePrice: true } },
       },
     });
   }
 
   async customerExists(id: string): Promise<boolean> {
-    const row = await this.prisma.customer.findUnique({
+    return (await this.customerPricing(id)) !== null;
+  }
+
+  /** The customer's default level + standing discount, for checkout pricing. */
+  customerPricing(id: string): Promise<{
+    priceLevelCode: string;
+    standingDiscountPercent: Prisma.Decimal;
+  } | null> {
+    return this.prisma.customer.findUnique({
       where: { id },
-      select: { id: true },
+      select: { priceLevelCode: true, standingDiscountPercent: true },
     });
-    return row !== null;
+  }
+
+  /** The salePrice (per piece) of a quantity product, for its list price. */
+  async modelSalePrice(modelId: string): Promise<Prisma.Decimal | null> {
+    const row = await this.prisma.deviceModel.findUnique({
+      where: { id: modelId },
+      select: { salePrice: true },
+    });
+    return row?.salePrice ?? null;
   }
 
   findSaleForReturn(id: string): Promise<{

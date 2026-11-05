@@ -90,6 +90,7 @@ export class DevicesQueryRepository {
       model: row.model,
       status: row.status,
       latestInspection: row.inspections[0] ?? null,
+      prices: {}, // filled by DevicesService from PricingService
     };
   }
 

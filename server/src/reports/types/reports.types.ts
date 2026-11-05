@@ -11,6 +11,8 @@ export interface ProfitReport extends SaleTotals {
   netOperatingIncome: number;
   byChannel: { retail: number; b2b: number };
   returnsRefunded: number;
+  /** Total given away in discounts: Σ(listPriceSnapshot − salePrice), ADR 0034. */
+  discountsGiven: number;
 }
 
 export interface ExpenseReportRow {

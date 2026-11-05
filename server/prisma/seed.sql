@@ -31,6 +31,13 @@ INSERT INTO stock_movement_types (code, label, "sortOrder") VALUES
   ('COUNT_CORRECTION', 'Count correction', 50)
 ON CONFLICT (code) DO NOTHING;
 
+-- Price levels (Change 12, ADR 0034). Also inserted by the migration.
+INSERT INTO price_levels (code, label, "sortOrder") VALUES
+  ('RETAIL',    'Retail (walk-in)', 10),
+  ('WHOLESALE', 'Wholesale',        20),
+  ('PARTNER',   'Partner shop',     30)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO cosmetic_grades (code, label, "sortOrder") VALUES
   ('A', 'Like new', 10), ('B', 'Minor wear', 20), ('C', 'Visible wear', 30), ('D', 'Heavy wear', 40)
 ON CONFLICT (code) DO NOTHING;
@@ -108,6 +115,9 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('sale.create',          'sale',        'create',    'POS checkout'),
   ('sale.return',          'sale',        'return',    'Process warranty returns'),
   ('sale.profit.view',     'sale',        'profit.view', 'See net profit / margins'),
+  ('sale.price.override',  'sale',        'price.override', 'Sell at a free price, ignoring the list price'),
+  ('sale.discount.unlimited','sale',      'discount.unlimited', 'Give a discount above the cashier limit'),
+  ('price.manage',         'price',       'manage',    'Set product and unit prices for every level'),
   ('customer.read',        'customer',    'read',      'View customers'),
   ('customer.manage',      'customer',    'manage',    'Create / edit customers'),
   ('consignment.read',     'consignment', 'read',      'View consignments'),

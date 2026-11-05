@@ -12,7 +12,8 @@ Financial read model (PRD Module 5/6). Read-only; computes, never writes.
 ## Exposes (all `report.finance`)
 
 - `GET /profit?from&to` — revenue, cogs, grossProfit, expenses,
-  netOperatingIncome, unitsSold, byChannel {retail,b2b}, returnsRefunded.
+  netOperatingIncome, unitsSold, byChannel {retail,b2b}, returnsRefunded,
+  discountsGiven (Σ listPriceSnapshot − salePrice over snapshotted sales, ADR 0034).
 - `GET /trend?from&to&bucket=day|week|month` — per-bucket revenue, cogs,
   grossProfit, expenses, unitsSold, returnsRefunded. Empty buckets zero-filled
   in the service (`lib/trend.ts`), range defaults to 30 days.

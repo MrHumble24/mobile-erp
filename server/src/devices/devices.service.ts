@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
+import { Prisma } from '../generated/client/client.js';
+import { PricingService } from '../pricing/pricing.service.js';
 import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
@@ -29,6 +31,7 @@ export class DevicesService {
     private readonly status: DevicesStatusRepository,
     private readonly expense: DevicesExpenseRepository,
     private readonly models: DeviceModelsService,
+    private readonly pricing: PricingService,
   ) {}
 
   list(dto: ListDevicesDto): Promise<PaginatedDevices> {
@@ -50,12 +53,34 @@ export class DevicesService {
     if (!device) {
       throw new NotFoundException(`Device with IMEI ${imei} not found`);
     }
-    return device;
+    return this.withPrices(device);
   }
 
   /** Non-throwing by-code lookup (imei/imei2/serial) for the till scan route. */
-  findByCode(code: string): Promise<DeviceDetailView | null> {
-    return this.query.findDetailByImei(code);
+  async findByCode(code: string): Promise<DeviceDetailView | null> {
+    const device = await this.query.findDetailByImei(code);
+    return device ? this.withPrices(device) : null;
+  }
+
+  /** Resolve the unit's list price per level so a till can switch level offline. */
+  private async withPrices(
+    device: DeviceDetailView,
+  ): Promise<DeviceDetailView> {
+    const storage =
+      typeof device.specs.storage === 'string' ? device.specs.storage : '';
+    const map = await this.pricing.pricesForUnits([
+      {
+        deviceId: device.id,
+        modelId: device.modelId,
+        storage,
+        targetPrice:
+          device.targetPrice === null
+            ? null
+            : new Prisma.Decimal(device.targetPrice),
+        salePrice: null,
+      },
+    ]);
+    return { ...device, prices: map.get(device.id) ?? {} };
   }
 
   async getHistory(id: string): Promise<DeviceStatusHistoryView[]> {

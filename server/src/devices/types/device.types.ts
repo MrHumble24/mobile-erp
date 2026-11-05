@@ -41,6 +41,8 @@ export interface DeviceDetailView extends DeviceView {
   model: DeviceModelRef;
   status: { code: string; label: string };
   latestInspection: QcInspectionSummary | null;
+  /** Resolved list price per level so a till can switch level offline (ADR 0034). */
+  prices: Record<string, string | null>;
 }
 
 export interface DeviceStatusHistoryView {

@@ -34,6 +34,7 @@ import { StockModule } from './stock/stock.module.js';
 import { ScanModule } from './scan/scan.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { LookupModule } from './lookup/lookup.module.js';
+import { PricingModule } from './pricing/pricing.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -72,6 +73,7 @@ import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.i
     ScanModule,
     CatalogModule,
     LookupModule,
+    PricingModule,
   ],
   controllers: [AppController],
   providers: [

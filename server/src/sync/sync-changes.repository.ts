@@ -120,6 +120,7 @@ function toDeviceChange(row: DeviceRow): DeviceChange {
     latestInspection: inspection
       ? { gradeCode: inspection.gradeCode, notes: inspection.notes }
       : null,
+    prices: {}, // filled by SyncChangesService from PricingService
     updatedAt: row.updatedAt,
   };
 }

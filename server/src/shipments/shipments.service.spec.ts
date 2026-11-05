@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
@@ -46,6 +47,8 @@ function build(
   const ledger = {} as unknown as LedgerService;
   const stock = {
     assertQuantityModel: jest.fn().mockResolvedValue(undefined),
+    purchaseTotalsByShipment: jest.fn().mockResolvedValue(new Map()),
+    shipmentPurchaseLines: jest.fn().mockResolvedValue([]),
   } as unknown as StockService;
   const customs = {
     currentFeeMap: jest.fn().mockResolvedValue(customsFees),
@@ -188,5 +191,43 @@ describe('ShipmentsService.addDevices customs stamping', () => {
     await service.addDevices('ship-1', intake(), user(['device.create']));
     const [, inputs] = (intakeRepo.addDevices as jest.Mock).mock.calls[0];
     expect(inputs[0].customsFee).toBe(0);
+  });
+});
+
+describe('ShipmentsService.get stock lines (ADR 0030/0034)', () => {
+  const line = {
+    id: 'mv1',
+    modelId: 'm1',
+    brand: 'Generic',
+    name: 'Cable',
+    quantity: 10,
+    unitCost: new Prisma.Decimal(10),
+    lineTotal: new Prisma.Decimal(100),
+    occurredAt: new Date(),
+  };
+
+  it('returns purchase lines and their total, with cost for a cost-viewer', async () => {
+    const { service, stock } = build();
+    (stock.shipmentPurchaseLines as jest.Mock).mockResolvedValue([line]);
+    const out = await service.get(
+      user(['shipment.read', 'device.cost.view']),
+      'ship-1',
+    );
+    expect(stock.shipmentPurchaseLines).toHaveBeenCalledWith('ship-1');
+    expect(out.stockLinesTotal).toBe('100.00');
+    expect(out.stockLines[0]).toMatchObject({
+      modelId: 'm1',
+      quantity: 10,
+      unitCost: '10.00',
+      lineTotal: '100.00',
+    });
+  });
+
+  it('hides unitCost/lineTotal without device.cost.view', async () => {
+    const { service, stock } = build();
+    (stock.shipmentPurchaseLines as jest.Mock).mockResolvedValue([line]);
+    const out = await service.get(user(['shipment.read']), 'ship-1');
+    expect(out.stockLines[0].unitCost).toBeNull();
+    expect(out.stockLines[0].lineTotal).toBeNull();
   });
 });

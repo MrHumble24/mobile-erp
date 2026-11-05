@@ -31,7 +31,9 @@ Offline mutation queue, conflict resolution, and the offline-cache feed (PRD §5
   quantity, categoryId, imageUrl }`, ADR 0030/0031) so an offline till can sell
   and show them — the full list each
   sync (not `since`-filtered; no cost fields). The `sale.create` mutation
-  accepts a quantity sale (no device lock, never conflicts).
+  accepts a quantity sale (no device lock, never conflicts). Each device change
+  and product carries `prices{RETAIL,WHOLESALE,PARTNER}` (resolved via
+  `PricingService`, ADR 0034) so an offline till can switch level.
 
 ## Structure
 

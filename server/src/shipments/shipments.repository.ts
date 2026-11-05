@@ -128,6 +128,9 @@ function toShipmentView(
     deviceCount: row._count.devices,
     unitExpenseTotal: t.unitExpenseTotal,
     customsFeeTotal: t.customsFeeTotal,
+    // Placeholder: quantity purchases live in stock_movements, which this module
+    // never reads — ShipmentsService fills this from StockService (ADR 0030/0034).
+    stockLinesTotal: '0.00',
     devicesWithoutCustomsFee: t.devicesWithoutCustomsFee,
   };
 }

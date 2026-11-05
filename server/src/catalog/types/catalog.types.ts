@@ -1,4 +1,5 @@
 import type { Prisma } from '../../generated/client/client.js';
+import type { ResolvedPrices } from '../../pricing/types/pricing.types.js';
 
 /**
  * One product card on the till grid. Identity is shared by every kind; the
@@ -19,6 +20,8 @@ export interface CatalogEntry {
   minTargetPrice: string | null;
   maxTargetPrice: string | null;
   salePrice: string | null;
+  /** Product-level list price per level at "any storage" (ADR 0034). */
+  prices: ResolvedPrices;
 }
 
 /** One in-stock unit the seller picks after tapping an IMEI/SERIAL card. */
@@ -30,6 +33,8 @@ export interface CatalogUnit {
   /** Latest QC cosmetic grade, or null when the unit was never inspected. */
   gradeCode: string | null;
   targetPrice: string | null;
+  /** This unit's resolved list price per level (ADR 0034). */
+  prices: ResolvedPrices;
 }
 
 /** Raw row for an IMEI/SERIAL product with at least one IN_STOCK unit. */

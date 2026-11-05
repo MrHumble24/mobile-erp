@@ -16,6 +16,8 @@ export interface StockLevelView {
   averageCost: string | null;
   /** Σ(quantity × unitCostSnapshot); null without the cost permission. */
   value: string | null;
+  /** Resolved list price per level (ADR 0034). */
+  prices: Record<string, string | null>;
 }
 
 /** One stock movement row, newest first. */
@@ -83,6 +85,22 @@ export interface PurchasedLineView {
   unitCost: string;
 }
 
+/**
+ * One quantity PURCHASE movement of a shipment, read back for the shipment
+ * detail. `unitCost`/`lineTotal` are cost figures the caller redacts per
+ * permission. Newest last.
+ */
+export interface ShipmentStockLine {
+  id: string;
+  modelId: string;
+  brand: string;
+  name: string;
+  quantity: number;
+  unitCost: Prisma.Decimal;
+  lineTotal: Prisma.Decimal;
+  occurredAt: Date;
+}
+
 /** The scan answer when a code resolves to a quantity product (ADR 0030). */
 export interface QuantityProductView {
   modelId: string;
@@ -94,4 +112,6 @@ export interface QuantityProductView {
   /** For the POS / offline grid (ADR 0031). */
   categoryId: string | null;
   imageUrl: string | null;
+  /** Resolved list price per level (ADR 0034). */
+  prices: Record<string, string | null>;
 }

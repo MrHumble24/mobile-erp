@@ -15,6 +15,9 @@ of. Owns no tables — it composes `DevicesService` and `StockService`.
     grid fields `categoryId`/`imageUrl` (ADR 0031).
   - `404` when the code is neither.
 
+Both answers carry `prices: { RETAIL, WHOLESALE, PARTNER }` resolved for the unit
+/ product (ADR 0034), so the till can switch level offline.
+
 ## Must never
 
 - Inject another module's repository (uses `DevicesService` + `StockService`).

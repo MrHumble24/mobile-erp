@@ -28,6 +28,12 @@ const DEFAULTS: StoreSettings = {
   lowStockThreshold: 2,
   defaultNasiyaDueDays: 30,
   overdueReminderDays: 3,
+  discountsEnabled: false,
+  discountPercentAllowed: true,
+  discountAmountAllowed: true,
+  discountPresetsPercent: [],
+  discountPresetsAmount: [],
+  maxDiscountPercent: new Prisma.Decimal(0),
   digestSentOn: null,
   updatedAt: new Date(0),
 };
