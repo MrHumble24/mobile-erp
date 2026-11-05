@@ -66,6 +66,26 @@ export function CustomerTableRow({
           <span className="text-xs text-muted-foreground">—</span>
         )}
       </TableCell>
+      <TableCell className="text-sm">
+        {Number(customer.creditOutstanding) > 0 ? (
+          <div className="space-y-0.5">
+            <div className="font-mono font-semibold">{formatMoney(customer.creditOutstanding)}</div>
+            {Number(customer.creditOverdue) > 0 && (
+              <Badge variant="destructive" className="text-[10px]">
+                {t("credit.overdue")}: {formatMoney(customer.creditOverdue)}
+              </Badge>
+            )}
+            <div className="text-[10px] text-muted-foreground">
+              {t("credit.effectiveLimit")}:{" "}
+              {customer.effectiveCreditLimit === null
+                ? t("credit.noLimit")
+                : formatMoney(customer.effectiveCreditLimit)}
+            </div>
+          </div>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1">
           <Button

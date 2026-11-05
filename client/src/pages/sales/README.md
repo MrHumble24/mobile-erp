@@ -25,7 +25,9 @@ Two tabs (`Sales` | `Warranty lookup`), ClickUp style like `pages/qc` /
 - Profit column/tile and landed cost render only with `sale.profit.view`
   (server also redacts the fields).
 - Return flow reuses `features/warranty-lookup`'s `ReturnSaleDialog`; the page
-  composes it (features never import each other).
+  composes it (features never import each other). A sale with a `creditId` shows
+  an "On credit" banner linking to `/credits`, and its return passes `onCredit`
+  so the dialog explains no cash is handed back and offers no refund amount (ADR 0035).
 - Date presets come from `shared/lib/date-range`; no business logic in presets.
 
 ## Payment

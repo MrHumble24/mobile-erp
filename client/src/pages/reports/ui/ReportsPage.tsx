@@ -15,6 +15,7 @@ import { OverviewTab } from "./OverviewTab"
 import { SalesTab } from "./SalesTab"
 import { ExpensesTab } from "./ExpensesTab"
 import { NasiyaTab } from "./NasiyaTab"
+import { CreditReportTab } from "./CreditReportTab"
 import { InventoryTab } from "./InventoryTab"
 import { PricingTab } from "./PricingTab"
 import { ClosingTab } from "./ClosingTab"
@@ -25,6 +26,7 @@ const BASE_TABS = [
   "sales",
   "expenses",
   "nasiya",
+  "credit",
   "inventory",
   "pricing",
   "closing",
@@ -49,7 +51,9 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t("reports.title")} description={t("reports.subtitle")} />
-      {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && <ReportFilterRow range={range} />}
+      {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && tab !== "credit" && (
+        <ReportFilterRow range={range} />
+      )}
 
       <Tabs value={tab} onValueChange={setTab}>
         <div className="overflow-x-auto pb-1">
@@ -65,6 +69,7 @@ export function ReportsPage() {
         <TabsContent value="sales" className="mt-5"><SalesTab {...props} /></TabsContent>
         <TabsContent value="expenses" className="mt-5"><ExpensesTab {...props} /></TabsContent>
         <TabsContent value="nasiya" className="mt-5"><NasiyaTab {...props} /></TabsContent>
+        <TabsContent value="credit" className="mt-5"><CreditReportTab /></TabsContent>
         <TabsContent value="inventory" className="mt-5"><InventoryTab {...props} /></TabsContent>
         <TabsContent value="pricing" className="mt-5"><PricingTab {...props} /></TabsContent>
         <TabsContent value="closing" className="mt-5"><ClosingTab {...props} /></TabsContent>

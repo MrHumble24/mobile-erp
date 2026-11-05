@@ -42,6 +42,7 @@ function CustomerForm({
       notes: customer?.notes ?? "",
       priceLevelCode: customer?.priceLevelCode ?? "RETAIL",
       standingDiscountPercent: String(Number(customer?.standingDiscountPercent ?? 0)),
+      creditLimit: customer?.creditLimit == null ? "" : String(Number(customer.creditLimit)),
     },
   })
   const pending = create.isPending || update.isPending
@@ -53,6 +54,7 @@ function CustomerForm({
       notes: values.notes || undefined,
       priceLevelCode: values.priceLevelCode,
       standingDiscountPercent: Number(values.standingDiscountPercent),
+      creditLimit: values.creditLimit.trim() === "" ? null : Number(values.creditLimit),
     }
     const opts = {
       onSuccess: () => {

@@ -13,6 +13,10 @@ const QcPage = lazy(() => import("@/pages/qc"))
 const SalesPage = lazy(() => import("@/pages/sales"))
 const SaleReceiptPage = lazy(() => import("@/pages/sales/ui/SaleReceiptPage"))
 const CustomersPage = lazy(() => import("@/pages/customers"))
+const CreditsPage = lazy(() => import("@/pages/credits"))
+const CreditContractPage = lazy(() =>
+  import("@/pages/credits").then((m) => ({ default: m.CreditContractPage }))
+)
 const ConsignmentsPage = lazy(() => import("@/pages/consignments"))
 const PartnersPage = lazy(() => import("@/pages/partners"))
 const ExpensesPage = lazy(() => import("@/pages/expenses"))
@@ -52,6 +56,8 @@ function ProtectedRoutes() {
         <Route element={<RequirePermission permission="sale.read" />}>
           <Route path="/sales" element={<SalesPage />} />
           <Route path="/sales/:id/receipt" element={<SaleReceiptPage />} />
+          <Route path="/credits" element={<CreditsPage />} />
+          <Route path="/credits/:id/contract" element={<CreditContractPage />} />
         </Route>
         <Route element={<RequirePermission permission="customer.read" />}>
           <Route path="/customers" element={<CustomersPage />} />

@@ -7,8 +7,9 @@ split into section cards, with a single Save and a dirty indicator.
 
 - `model/settings-schema.ts` — zod schema (ranges mirror the server
   `UpdateSettingsDto`) plus `toFormValues` / `toUpdateDto` mappers.
-- Sections: Store Identity, Sales (currency fixed to USD), Nasiya defaults,
-  Telegram & closing digest. Shows `updatedAt` as the last-updated stamp.
+- Sections: Store Identity, Sales (currency fixed to USD), Discounts, Customer
+  credit (the switch + default limit, ADR 0035), Nasiya defaults, Telegram &
+  closing digest. Shows `updatedAt` as the last-updated stamp.
 
 ## Behaviour
 

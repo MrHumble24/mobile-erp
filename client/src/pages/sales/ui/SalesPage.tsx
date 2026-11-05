@@ -21,6 +21,8 @@ interface ReturnTarget {
   id: string
   salePrice: number
   payments: SalePaymentLine[]
+  /** A sale sold on credit: the return lowers the debt, hands back no cash. */
+  onCredit: boolean
 }
 
 function useSaleDialogs() {
@@ -50,6 +52,7 @@ export function SalesPage() {
           id: sale.id,
           salePrice: Number(sale.salePrice),
           payments: sale.payments,
+          onCredit: Boolean(sale.creditId),
         }),
     }),
     [d]
@@ -116,6 +119,7 @@ export function SalesPage() {
           saleId={d.returnTarget.id}
           salePrice={d.returnTarget.salePrice}
           payments={d.returnTarget.payments}
+          onCredit={d.returnTarget.onCredit}
           open={Boolean(d.returnTarget)}
           onOpenChange={(open) => !open && d.setReturnTarget(null)}
         />

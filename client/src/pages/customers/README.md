@@ -10,7 +10,9 @@ filters, summary tiles, a table, pagination, the detail sheet, and the
   state, `has`, `sort`, pagination). Single source of filters for the page.
 - `lib/customers-csv.ts` — exports the current page via `shared/lib/csv`.
 - `ui/` — page shell, filter row, metric tiles, table + row, detail sheet,
-  purchase-history list, warranty badge.
+  purchase-history list, warranty badge. The row + detail show the credit
+  position (left to pay, overdue, limit in use) and the detail lists the
+  customer's credits (`CustomerCreditsList`), all from `entities/credit` (ADR 0035).
 
 ## Data
 

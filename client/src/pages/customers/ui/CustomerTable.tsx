@@ -39,6 +39,7 @@ export function CustomerTable({
             <TableHead>{t("customers.colTotalSpent")}</TableHead>
             <TableHead>{t("customers.colLastPurchase")}</TableHead>
             <TableHead>{t("customers.colWarranty")}</TableHead>
+            <TableHead>{t("credit.outstanding")}</TableHead>
             <TableHead className="text-right">{t("common.actions")}</TableHead>
           </TableRow>
         </TableHeader>

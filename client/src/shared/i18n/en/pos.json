@@ -41,6 +41,7 @@
   "quickTarget": "target",
   "quickRound": "round $10",
   "removeLine": "Remove device",
+  "lineDetails": "Line details",
   "lineCount": "Devices",
   "subtotal": "Subtotal",
   "warrantySummary": "Warranty",

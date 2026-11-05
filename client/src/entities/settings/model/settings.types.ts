@@ -19,6 +19,10 @@ export interface StoreSettings {
   discountPresetsAmount: number[]
   /** The cashier ceiling, a 2-dp percent string. */
   maxDiscountPercent: string
+  /** Customer credit (ADR 0035). */
+  customerCreditEnabled: boolean
+  /** Default per-customer credit ceiling (2-dp string); null = no cap. */
+  defaultCreditLimit: string | null
   updatedAt: string
 }
 
@@ -41,4 +45,7 @@ export interface UpdateSettingsDto {
   discountPresetsPercent?: number[]
   discountPresetsAmount?: number[]
   maxDiscountPercent?: number
+  /** Customer credit (ADR 0035). Omitted = left unchanged server-side. */
+  customerCreditEnabled?: boolean
+  defaultCreditLimit?: number | null
 }
