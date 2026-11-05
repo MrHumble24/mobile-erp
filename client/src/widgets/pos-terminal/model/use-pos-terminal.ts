@@ -41,6 +41,8 @@ export function usePosTerminal() {
   const canOverridePrice = useAuthStore((s) => s.hasPermission("sale.price.override"))
   const canDiscountUnlimited = useAuthStore((s) => s.hasPermission("sale.discount.unlimited"))
   const canSellCredit = useAuthStore((s) => s.hasPermission("sale.credit"))
+  // A trade-in is buying a phone, so it needs the buying permission (ADR 0039).
+  const canTradeIn = useAuthStore((s) => s.hasPermission("purchase.create"))
   const me = useAuthStore((s) => s.user?.id)
   const online = useOnlineStatus()
   const creditEnabled = Boolean(settings?.customerCreditEnabled) && canSellCredit
@@ -141,6 +143,7 @@ export function usePosTerminal() {
     customerOpen,
     setCustomerOpen,
     creditEnabled,
+    canTradeIn,
     hasTradeIn,
     online,
     creditOpen,

@@ -40,6 +40,8 @@ export function SalesPage() {
   const hasProfitView = useAuthStore((s) => s.hasPermission("sale.profit.view"))
   const canReturn = useAuthStore((s) => s.hasPermission("sale.return"))
   const canReadUsers = useAuthStore((s) => s.hasPermission("user.read"))
+  // Paying a trade-in's value back needs the buying permission (ADR 0039).
+  const canBuy = useAuthStore((s) => s.hasPermission("purchase.create"))
 
   const filters = useSalesFilters()
   const { data, isLoading } = useSales(filters.queryFilters)
@@ -54,11 +56,13 @@ export function SalesPage() {
           id: sale.id,
           salePrice: Number(sale.salePrice),
           payments: sale.payments,
-          tradeInValue: (sale.tradeIns ?? []).reduce((sum, ti) => sum + Number(ti.value), 0),
+          tradeInValue: canBuy
+            ? (sale.tradeIns ?? []).reduce((sum, ti) => sum + Number(ti.value), 0)
+            : 0,
           onCredit: Boolean(sale.creditId),
         }),
     }),
-    [d]
+    [d, canBuy]
   )
 
   return (

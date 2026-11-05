@@ -78,7 +78,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
         </div>
         <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
-        <TradeInSection offline={!pos.online} />
+        {pos.canTradeIn && <TradeInSection offline={!pos.online} />}
         <TotalsPanel isPending={pos.isPending} disabled={pos.blocked} onCheckout={pos.handleCheckout} />
         {pos.creditEnabled && <CreditSell pos={pos} />}
       </div>
@@ -93,7 +93,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
           <PriceLevelControl />
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
           <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />
-          <TradeInSection offline={!pos.online} />
+          {pos.canTradeIn && <TradeInSection offline={!pos.online} />}
         </div>
       </div>
       <div className="shrink-0 space-y-2">
