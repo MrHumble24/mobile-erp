@@ -31,6 +31,8 @@ model User {
   cashTransactions    CashTransaction[]
   customsPriceLists   CustomsPriceList[]
   stockMovements      StockMovement[]
+  creditsCreated      CustomerCredit[]
+  creditPayments      CreditPayment[]
 
   @@map("users")
 }

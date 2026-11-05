@@ -14,7 +14,8 @@ Outbound Telegram alerts for the owner (PRD Module 6). No HTTP routes.
   `minMarginPercent`), consignment created, partner payment. After a sale or a
   consignment it also sends a low-stock list (`StockAlertRulesService.lowStock`),
   deduped by a per-process fingerprint so the same list is not re-sent.
-- `TelegramCron` — overdue consignments daily at 09:00; closing digest every
+- `TelegramCron` — overdue consignments **and overdue customer credit** daily at
+  09:00 (credit via `CreditsReadService.overdue`, ADR 0035); closing digest every
   minute, gated by `shouldSendDigest` against `closingTime` and the
   `StoreSettings.digestSentOn` once-per-day marker. Digest content from
   `ReportsService.dailyClosing` + total outstanding (sum of partner balances) +

@@ -47,6 +47,7 @@ export function toSaleView(row: SaleRow): SaleView {
     soldBy: { id: row.soldBy.id, name: fullName(row.soldBy.profile) },
     warranty: row.warranty,
     consignmentId: row.consignmentId,
+    creditId: row.creditId,
     notes: row.notes,
     payments: [],
     return: row.return

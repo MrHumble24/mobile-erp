@@ -109,4 +109,18 @@ export class UpdateSettingsDto {
   @Min(0)
   @Max(100)
   maxDiscountPercent?: number;
+
+  // Customer credit (Change 6, ADR 0035). Optional so a PUT that omits them
+  // leaves the stored values untouched. Off by default.
+  @IsOptional()
+  @IsBoolean()
+  customerCreditEnabled?: boolean;
+
+  /** Default credit ceiling per customer; omit/null = no cap. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  defaultCreditLimit?: number | null;
 }

@@ -10,8 +10,10 @@ payments / purchases / overhead post rows automatically.
 
 - `cash_transactions` (the ledger), `cash_accounts` and `cash_transaction_types`
   (lookups; CASH/CARD and OPENING/DEPOSIT/WITHDRAWAL/CORRECTION/TRANSFER +
-  SALE/REFUND/PARTNER_PAYMENT/PURCHASE/OVERHEAD/EXPENSE seeded in both
-  `seed.sql` and the migration — `migrate deploy` never runs the seed).
+  SALE/REFUND/PARTNER_PAYMENT/PURCHASE/OVERHEAD/EXPENSE + CREDIT_PAYMENT seeded
+  in both `seed.sql` and the migration — `migrate deploy` never runs the seed).
+  A `CREDIT_PAYMENT` row links to its payment via `creditPaymentId` (ADR 0035);
+  a credit sale itself posts no SALE row.
 - The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
   transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
   and deriving a source's current account from its rows (`lib/source-nets.ts`).

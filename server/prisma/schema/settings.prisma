@@ -28,6 +28,11 @@ model StoreSettings {
   discountPresetsPercent Json    @default("[]") @db.JsonB
   discountPresetsAmount  Json    @default("[]") @db.JsonB
   maxDiscountPercent     Decimal @default(0) @db.Decimal(5, 2)
+  /// Customer credit (Change 6, ADR 0035). Off by default so a fresh shop sells
+  /// only for cash/card. `defaultCreditLimit` is the ceiling applied to a
+  /// customer with no own limit; null = no cap.
+  customerCreditEnabled  Boolean  @default(false)
+  defaultCreditLimit     Decimal? @db.Decimal(14, 2)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

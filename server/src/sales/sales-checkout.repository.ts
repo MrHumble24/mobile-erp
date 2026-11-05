@@ -1,4 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StockService } from '../stock/stock.service.js';
@@ -9,7 +10,7 @@ import type {
   SalePayment,
 } from './types/sale.types.js';
 
-type Tx = Parameters<Parameters<PrismaService['$transaction']>[0]>[0];
+type Tx = PrismaTx;
 
 /**
  * Atomic device-status writes that accompany a sale. Every method runs in one
@@ -29,39 +30,47 @@ export class SalesCheckoutRepository {
     private readonly stock: StockService,
   ) {}
 
-  /** Creates the sale, marks the device SOLD, opens the warranty, posts SALE rows. */
-  async checkout(input: CheckoutInput): Promise<string> {
-    return this.prisma.$transaction(async (tx) => {
-      const customerId = await this.resolveCustomer(tx, input);
-      await this.advanceDevice(
-        tx,
-        input.deviceId,
-        input.expectedVersion,
-        'IN_STOCK',
-        'SOLD',
-        input.soldById,
-        'sale',
-      );
-      const sale = await tx.sale.create({
-        data: {
-          storeId: input.storeId,
-          deviceId: input.deviceId,
-          customerId,
-          soldById: input.soldById,
-          salePrice: input.salePrice,
-          landedCostSnapshot: input.landedCostSnapshot,
-          listPriceSnapshot: input.listPriceSnapshot,
-          priceLevelCode: input.priceLevelCode,
-          soldAt: input.soldAt,
-          notes: input.notes,
-          clientMutationId: input.clientMutationId,
-          warranty: { create: input.warranty },
-        },
-        select: { id: true },
-      });
-      await this.postSalePayments(tx, input, sale.id);
-      return sale.id;
+  /**
+   * Creates the sale, marks the device SOLD, opens the warranty, posts SALE
+   * rows. Runs in `outer` when a caller (a credit cart) needs this to be part
+   * of its own transaction; otherwise it opens its own (ADR 0035).
+   */
+  async checkout(input: CheckoutInput, outer?: Tx): Promise<string> {
+    const run = (tx: Tx) => this.doCheckout(tx, input);
+    return outer ? run(outer) : this.prisma.$transaction(run);
+  }
+
+  private async doCheckout(tx: Tx, input: CheckoutInput): Promise<string> {
+    const customerId = await this.resolveCustomer(tx, input);
+    await this.advanceDevice(
+      tx,
+      input.deviceId,
+      input.expectedVersion,
+      'IN_STOCK',
+      'SOLD',
+      input.soldById,
+      'sale',
+    );
+    const sale = await tx.sale.create({
+      data: {
+        storeId: input.storeId,
+        deviceId: input.deviceId,
+        customerId,
+        creditId: input.creditId,
+        soldById: input.soldById,
+        salePrice: input.salePrice,
+        landedCostSnapshot: input.landedCostSnapshot,
+        listPriceSnapshot: input.listPriceSnapshot,
+        priceLevelCode: input.priceLevelCode,
+        soldAt: input.soldAt,
+        notes: input.notes,
+        clientMutationId: input.clientMutationId,
+        warranty: { create: input.warranty },
+      },
+      select: { id: true },
     });
+    await this.postSalePayments(tx, input, sale.id);
+    return sale.id;
   }
 
   /** One SALE ledger row per tender line (shared by unit + quantity checkout). */
@@ -97,47 +106,57 @@ export class SalesCheckoutRepository {
    * rows. `landedCostSnapshot = quantity × average` so profit means the same
    * everywhere. No warranty. Stock may go below zero — nothing is blocked.
    */
-  async checkoutQuantity(input: QuantityCheckoutInput): Promise<string> {
-    return this.prisma.$transaction(async (tx) => {
-      const customerId = await this.resolveCustomer(tx, input);
-      const unitCost = await this.stock.averageCost(
-        input.storeId,
-        input.modelId,
-        tx,
-      );
-      const sale = await tx.sale.create({
-        data: {
-          storeId: input.storeId,
-          modelId: input.modelId,
-          quantity: input.quantity,
-          customerId,
-          soldById: input.soldById,
-          salePrice: input.salePrice,
-          landedCostSnapshot: unitCost.times(input.quantity),
-          listPriceSnapshot: input.listPriceSnapshot,
-          priceLevelCode: input.priceLevelCode,
-          soldAt: input.soldAt,
-          notes: input.notes,
-          clientMutationId: input.clientMutationId,
-        },
-        select: { id: true },
-      });
-      await this.stock.postMovement(
-        {
-          storeId: input.storeId,
-          modelId: input.modelId,
-          typeCode: 'SALE',
-          quantity: -input.quantity,
-          unitCostSnapshot: unitCost,
-          saleId: sale.id,
-          createdById: input.soldById,
-          occurredAt: input.soldAt,
-        },
-        tx,
-      );
-      await this.postSalePayments(tx, input, sale.id);
-      return sale.id;
+  async checkoutQuantity(
+    input: QuantityCheckoutInput,
+    outer?: Tx,
+  ): Promise<string> {
+    const run = (tx: Tx) => this.doCheckoutQuantity(tx, input);
+    return outer ? run(outer) : this.prisma.$transaction(run);
+  }
+
+  private async doCheckoutQuantity(
+    tx: Tx,
+    input: QuantityCheckoutInput,
+  ): Promise<string> {
+    const customerId = await this.resolveCustomer(tx, input);
+    const unitCost = await this.stock.averageCost(
+      input.storeId,
+      input.modelId,
+      tx,
+    );
+    const sale = await tx.sale.create({
+      data: {
+        storeId: input.storeId,
+        modelId: input.modelId,
+        quantity: input.quantity,
+        customerId,
+        creditId: input.creditId,
+        soldById: input.soldById,
+        salePrice: input.salePrice,
+        landedCostSnapshot: unitCost.times(input.quantity),
+        listPriceSnapshot: input.listPriceSnapshot,
+        priceLevelCode: input.priceLevelCode,
+        soldAt: input.soldAt,
+        notes: input.notes,
+        clientMutationId: input.clientMutationId,
+      },
+      select: { id: true },
     });
+    await this.stock.postMovement(
+      {
+        storeId: input.storeId,
+        modelId: input.modelId,
+        typeCode: 'SALE',
+        quantity: -input.quantity,
+        unitCostSnapshot: unitCost,
+        saleId: sale.id,
+        createdById: input.soldById,
+        occurredAt: input.soldAt,
+      },
+      tx,
+    );
+    await this.postSalePayments(tx, input, sale.id);
+    return sale.id;
   }
 
   /**

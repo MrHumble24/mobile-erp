@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConsignmentsService } from '../consignments/consignments.service.js';
+import { CreditsReadService } from '../credits/credits-read.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PartnersService } from '../partners/partners.service.js';
 import { ReportsService } from '../reports/reports.service.js';
@@ -21,23 +22,29 @@ export class TelegramCron {
     private readonly partners: PartnersService,
     private readonly settings: SettingsService,
     private readonly ledger: LedgerService,
+    private readonly credits: CreditsReadService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
   async overdue(): Promise<void> {
     await this.run(async () => {
       const rows = await this.consignments.overdue();
-      if (rows.length === 0) return;
-      await this.telegram.send(
-        messages.overdueConsignments(
-          rows.map((c) => ({
-            partner: c.partnerShopName,
-            imei: c.imei ?? c.serialNumber ?? '',
-            agreedPrice: Number(c.agreedPrice),
-            dueDate: c.dueDate,
-          })),
-        ),
-      );
+      if (rows.length > 0) {
+        await this.telegram.send(
+          messages.overdueConsignments(
+            rows.map((c) => ({
+              partner: c.partnerShopName,
+              imei: c.imei ?? c.serialNumber ?? '',
+              agreedPrice: Number(c.agreedPrice),
+              dueDate: c.dueDate,
+            })),
+          ),
+        );
+      }
+      const credits = await this.credits.overdue();
+      if (credits.length > 0) {
+        await this.telegram.send(messages.overdueCredits(credits));
+      }
     });
   }
 

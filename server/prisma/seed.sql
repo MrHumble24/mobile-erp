@@ -82,7 +82,8 @@ INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
   ('OVERHEAD',        'Shipment overhead',100),
   ('EXPENSE',         'Expense',          110),
   ('DEVICE_EXPENSE',  'Device expense',   120),
-  ('CUSTOMS',         'Customs fee',      130)
+  ('CUSTOMS',         'Customs fee',      130),
+  ('CREDIT_PAYMENT',  'Credit payment',   140)
 ON CONFLICT (code) DO NOTHING;
 
 -- ADR 0026: per-phone expense supersedes shipment overhead. OVERHEAD stays in
@@ -117,6 +118,7 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('sale.profit.view',     'sale',        'profit.view', 'See net profit / margins'),
   ('sale.price.override',  'sale',        'price.override', 'Sell at a free price, ignoring the list price'),
   ('sale.discount.unlimited','sale',      'discount.unlimited', 'Give a discount above the cashier limit'),
+  ('sale.credit',          'sale',        'credit',    'Sell on customer credit (nasiya)'),
   ('price.manage',         'price',       'manage',    'Set product and unit prices for every level'),
   ('customer.read',        'customer',    'read',      'View customers'),
   ('customer.manage',      'customer',    'manage',    'Create / edit customers'),

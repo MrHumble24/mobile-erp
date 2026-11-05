@@ -95,6 +95,8 @@ export interface LedgerPost {
   partnerPaymentId?: string;
   deviceId?: string;
   shipmentId?: string;
+  /** Ties a CREDIT_PAYMENT row to its credit payment (ADR 0035). */
+  creditPaymentId?: string;
   createdById: string;
 }
 

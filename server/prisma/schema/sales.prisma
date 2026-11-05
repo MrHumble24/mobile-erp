@@ -14,10 +14,14 @@ model Customer {
   /// A standing discount percent on the customer's card (0 = none). Raises the
   /// cashier's discount ceiling for this customer (ADR 0034).
   standingDiscountPercent Decimal @default(0) @db.Decimal(5, 2)
+  /// This customer's own credit ceiling (ADR 0035). Overrides the settings
+  /// default when set; null means "use the default" (and no default = no cap).
+  creditLimit             Decimal? @db.Decimal(14, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sales Sale[]
+  sales   Sale[]
+  credits CustomerCredit[]
 
   @@index([priceLevelCode])
   @@map("customers")
@@ -49,6 +53,11 @@ model Sale {
   customer         Customer?    @relation(fields: [customerId], references: [id])
   consignmentId    String?      @unique
   consignment      Consignment? @relation(fields: [consignmentId], references: [id])
+  /// The credit agreement this sale belongs to (ADR 0035), null for a normal
+  /// paid sale. A credit sale posts NO SALE ledger rows; its money flows through
+  /// CreditPayment. A returned credit sale drops out of the agreed total.
+  creditId         String?
+  credit           CustomerCredit? @relation(fields: [creditId], references: [id])
   soldById         String
   soldBy           User         @relation(fields: [soldById], references: [id])
 
@@ -80,6 +89,7 @@ model Sale {
   @@index([modelId])
   @@index([storeId])
   @@index([priceLevelCode])
+  @@index([creditId])
   @@map("sales")
 }
 

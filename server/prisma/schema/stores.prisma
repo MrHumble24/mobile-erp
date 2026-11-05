@@ -23,6 +23,7 @@ model Store {
   partnerPayments PartnerPayment[]
   cashTransactions CashTransaction[]
   stockMovements   StockMovement[]
+  customerCredits  CustomerCredit[]
 
   @@map("stores")
 }

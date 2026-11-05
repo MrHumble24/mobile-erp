@@ -86,7 +86,18 @@ till. The sale stores `listPriceSnapshot` + `priceLevelCode`; `SaleView` gains
 `listPrice`, `discountAmount` (derived) and `priceLevelCode`. Returns live in
 `SalesReturnsService` (split out).
 
+## Customer credit (ADR 0035)
+
+`SaleView` carries `creditId` (null for a normal paid sale). `SalesCreditService`
+(exported) checks out one credit-cart line through the **same** checkout path as
+a normal sale — reusing `SalesCheckoutRepository` inside the credit module's
+transaction (`checkout`/`checkoutQuantity` accept an optional outer `tx`) — but
+posts **no SALE ledger rows** and stamps `creditId`. A credit sale's return
+refunds nothing: `assertRefundWithinSale` caps a no-SALE-row credit sale at 0
+(money flows through `CreditPayment`, not here).
+
 ## Must never
 
 Store `netProfit`/`channel`/the discount amount; put cost fields in the receipt;
-inject another module's repo.
+inject another module's repo. Write a second checkout path for credit — reuse
+`SalesCreditService`.

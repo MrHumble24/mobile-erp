@@ -22,6 +22,7 @@ const saleSelect = {
   priceLevelCode: true,
   soldAt: true,
   consignmentId: true,
+  creditId: true,
   notes: true,
   quantity: true,
   device: {
@@ -203,6 +204,7 @@ export class SalesRepository {
     modelId: string | null;
     quantity: number | null;
     storeId: string;
+    creditId: string | null;
     salePrice: Prisma.Decimal;
     landedCostSnapshot: Prisma.Decimal;
   } | null> {
@@ -214,6 +216,7 @@ export class SalesRepository {
         modelId: true,
         quantity: true,
         storeId: true,
+        creditId: true,
         salePrice: true,
         landedCostSnapshot: true,
       },

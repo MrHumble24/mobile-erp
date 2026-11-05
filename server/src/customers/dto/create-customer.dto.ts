@@ -36,4 +36,11 @@ export class CreateCustomerDto {
   @Min(0)
   @Max(100)
   standingDiscountPercent?: number;
+
+  /** This customer's own credit ceiling (ADR 0035); null = use the default. */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  creditLimit?: number | null;
 }

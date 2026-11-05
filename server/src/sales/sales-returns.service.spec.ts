@@ -20,6 +20,7 @@ function build() {
       modelId: null,
       quantity: null,
       storeId: 'store-1',
+      creditId: null,
       salePrice: new Prisma.Decimal(250),
       landedCostSnapshot: new Prisma.Decimal(100),
     }),
@@ -72,6 +73,38 @@ describe('SalesReturnsService refund cap (ADR 0028)', () => {
     const bad = build();
     await expect(
       bad.service.processReturn(caller, 'sale-1', ret(250.01)),
+    ).rejects.toThrow(BadRequestException);
+    expect(bad.checkout.processReturn).not.toHaveBeenCalled();
+  });
+
+  it('caps a credit sale at zero (no SALE rows; money came via CreditPayment, ADR 0035)', async () => {
+    const svc = build();
+    svc.reads.findSaleForReturn.mockResolvedValue({
+      id: 'sale-1',
+      deviceId: 'dev-1',
+      modelId: null,
+      quantity: null,
+      storeId: 'store-1',
+      creditId: 'credit-1',
+      salePrice: new Prisma.Decimal(250),
+      landedCostSnapshot: new Prisma.Decimal(100),
+    });
+    await svc.service.processReturn(caller, 'sale-1', ret(0)); // zero passes
+    expect(svc.checkout.processReturn).toHaveBeenCalled();
+
+    const bad = build();
+    bad.reads.findSaleForReturn.mockResolvedValue({
+      id: 'sale-1',
+      deviceId: 'dev-1',
+      modelId: null,
+      quantity: null,
+      storeId: 'store-1',
+      creditId: 'credit-1',
+      salePrice: new Prisma.Decimal(250),
+      landedCostSnapshot: new Prisma.Decimal(100),
+    });
+    await expect(
+      bad.service.processReturn(caller, 'sale-1', ret(1)),
     ).rejects.toThrow(BadRequestException);
     expect(bad.checkout.processReturn).not.toHaveBeenCalled();
   });
