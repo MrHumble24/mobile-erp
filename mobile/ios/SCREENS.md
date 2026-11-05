@@ -510,3 +510,35 @@ ledger-type label is added to `BalanceFormat`. Permissions refresh on foreground
 DEBUG self-check: `ShiftMathSelfCheck` (−20,000 on an 11,480,000 vs 11,500,000
 count). DEBUG args: `-open shifts`, `-openShift first` (first shift's report),
 `-posShiftOpen 1`, `-posShiftClose 1` (the till open / close sheets).
+
+### Buying from customers & trade-in (Step 9, ADR 0039)
+
+A second way a unit enters stock: bought from a walk-in customer, or taken in
+part payment at the till. Lives in `Features/Purchases`; the till arm is in
+`Features/Pos`. **Online only.** **No passport / ID field anywhere** — the
+seller is a `Customer` (name + phone).
+
+| Screen | File | Permission | Purpose |
+|---|---|---|---|
+| **Purchases list** (`PurchasesView`) | `Features/Purchases/UI/PurchasesView.swift` | `purchase.read` | Date filter, IMEI/serial search, rows (seller, model, code, date, price paid when sent, trade-in tag). More tab. |
+| **Purchase detail** (`PurchaseDetailSheet`) | `Features/Purchases/UI/PurchaseDetailSheet.swift` | `purchase.read` | Unit, seller (+call), price paid / account (redacted without cost), who / when. |
+| **Buy a phone** (`BuyPhoneSheet`) | `Features/Purchases/UI/BuyPhoneSheet.swift` | `purchase.create` | Seller (existing or new name+phone), an IMEI/serial model, identifier (camera scan), the model's attributes, price paid, cash/card. |
+| **Trade-in** (`PosTradeInSheet`) | `Features/Pos/UI/PosTradeInSheet.swift` | Till (`purchase.create`) | From the checkout bar: a model + identifier + value. The value lowers what the customer pays; a minus row in the cart, removable. |
+
+Till (`Features/Pos`): the Trade-in action shows only with `purchase.create`,
+needs a customer, and is online only (disabled offline). `TradeInAllocation`
+(pure, `TradeInAllocationSelfCheck`) places each trade-in — largest first — on
+one cart line (price ≥ value), so each sale posts `tradeIns[]` with `payments`
+summing to `salePrice − Σ values`; the checkout bar shows `Trade-in −X` and the
+amount to pay. A sold line's trade-ins are dropped so a retry never resends them;
+a trade-in cart is never queued offline; credit is not offered with a trade-in.
+`SaleDetailSheet` / `ReceiptSheet` list the trade-ins and the amount paid; a
+return of a sale with a trade-in shows the note and, with `purchase.create`, caps
+the refund at money paid + Σ trade-in values (else money paid only). The
+`CUSTOMER_PURCHASE` ledger-type label is added to `BalanceFormat` (history +
+shift report). A customer-bought unit has no shipment — iOS does not display a
+unit's shipment, so nothing breaks (the field is simply absent).
+
+DEBUG self-check: `TradeInAllocationSelfCheck`. DEBUG args: `-open purchases`,
+`-openBuyPhone 1` (buy sheet), `-buyModel <modelId>` (preselect a model in the
+buy sheet), `-tradeInModel <modelId>` (preselect in the till trade-in sheet).

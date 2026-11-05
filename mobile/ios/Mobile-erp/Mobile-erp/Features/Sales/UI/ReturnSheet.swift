@@ -18,6 +18,9 @@ struct ReturnSheet: View {
     /// A credit sale (ADR 0035): the return lowers the debt and hands back no
     /// cash, so the note is shown and the refund is 0.
     var isCredit = false
+    /// The sale had a trade-in (ADR 0039): the traded-in phone stays with the
+    /// shop and the trade-in part is refunded in cash — show the note.
+    var hasTradeIns = false
     let onDone: () -> Void
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -50,6 +53,14 @@ struct ReturnSheet: View {
                 if isCredit {
                     Section {
                         Label(i18n.t("credit.returnNote"), systemImage: "info.circle")
+                            .font(.footnote)
+                            .foregroundStyle(Tokens.muted)
+                    }
+                }
+                if hasTradeIns {
+                    Section {
+                        Label(i18n.t("purchases.returnTradeInNote", default: "The traded-in phone stays with the shop. The refund can be up to the money paid plus the trade-in value; the trade-in part is paid back in cash."),
+                              systemImage: "info.circle")
                             .font(.footnote)
                             .foregroundStyle(Tokens.muted)
                     }
@@ -159,6 +170,8 @@ struct ReturnSheet: View {
                 switch e.statusCode {
                 case 409: error = i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.")
                 case 400: error = i18n.t("sales.refundTooHigh")
+                case 403 where e.code == "TRADE_IN_REFUND_FORBIDDEN":
+                    error = i18n.t("sales.refundTooHigh")
                 default: error = e.message
                 }
             } catch {

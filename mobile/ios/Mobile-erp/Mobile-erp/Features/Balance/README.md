@@ -29,6 +29,11 @@ with manual entries. Mirrors the web `balance` feature.
 ## Must never
 - Talk HTTP outside `BalanceRepository`; parse money as a Double; queue a write.
 
+## Ledger-type labels
+- `BalanceFormat.typeKey` maps each ledger type to a `balance.type*` key; it
+  feeds the history rows and the shift report. `CUSTOMER_PURCHASE` (Step 9) and
+  `REPAIR_PAYMENT` / `REPAIR_OUTSIDE` (Step 10) are mapped here.
+
 ## Screenshots (DEBUG)
 `-open balance` lands on the screen; `-openBalanceEntry opening|deposit|withdraw|correction|transfer`
 opens that entry sheet.

@@ -57,6 +57,18 @@ struct SalePaymentLine: Decodable, Identifiable {
     var id: String { accountCode }
 }
 
+/// One phone taken in part payment on a sale (`tradeIns[]`, ADR 0039). `value`
+/// is customer-facing (never cost-redacted). Model is a brand+name ref.
+struct SaleTradeInView: Decodable, Identifiable {
+    let deviceId: String
+    let imei: String?
+    let serialNumber: String?
+    let model: SaleModelRef
+    let value: MoneyValue
+    var id: String { deviceId }
+    var code: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
+}
+
 /// A completed sale as returned by `/sales`. Cost fields (`landedCostSnapshot`,
 /// `netProfit`) are redacted — OMITTED — for under-privileged users, so they are
 /// optional here; never assume a value. Channel is DERIVED from `consignmentId`.
@@ -86,8 +98,15 @@ struct SaleView: Decodable, Identifiable {
     let priceLevelCode: String?
     /// The credit this sale belongs to, or nil for an ordinary paid sale (ADR 0035).
     let creditId: String?
+    /// Phones taken in part payment (ADR 0039); nil/[] for an ordinary sale.
+    let tradeIns: [SaleTradeInView]?
 
     var isB2B: Bool { consignmentId != nil }
+    /// Σ of the trade-in values on this sale (money the customer did not tender).
+    var tradeInTotal: Decimal {
+        (tradeIns ?? []).reduce(.zero) { $0 + (Decimal(string: $1.value.string) ?? .zero) }
+    }
+    var hasTradeIns: Bool { !(tradeIns ?? []).isEmpty }
     /// Sold on credit — the return lowers the debt and hands back no cash.
     var isCredit: Bool { creditId != nil }
     /// Show the pricing block when a discount was given or the level is not retail.

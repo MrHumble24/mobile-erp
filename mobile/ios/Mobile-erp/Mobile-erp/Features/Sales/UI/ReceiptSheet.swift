@@ -74,6 +74,14 @@ struct ReceiptSheet: View {
                 if let discount = r.discountAmount { row(i18n.t("pricing.discount"), "− \(MoneyText.format(discount.string))") }
             }
             row(i18n.t("pos.totalDue"), MoneyText.format(r.total.string), bold: true)
+            if r.hasTradeIns {
+                ForEach(r.tradeIns ?? []) { t in
+                    row(i18n.t("purchases.tradeInLabel", default: "Trade-in"), "− \(MoneyText.format(t.value.string))")
+                }
+                let paid = (Decimal(string: r.total.string) ?? 0) - r.tradeInTotal
+                row(i18n.t("purchases.amountPaid", default: "Amount paid"),
+                    MoneyText.format(NSDecimalNumber(decimal: paid).stringValue), bold: true)
+            }
             if !payments.isEmpty {
                 ForEach(payments) { p in
                     row(PaymentAccounts.label(p.accountCode, i18n), MoneyText.format(p.amount.string))

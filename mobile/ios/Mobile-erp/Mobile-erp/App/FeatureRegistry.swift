@@ -26,6 +26,7 @@ enum FeatureRegistry {
         ExpensesModule.feature,
         BalanceModule.feature,
         CreditModule.feature,
+        PurchasesModule.feature,
         ShiftsModule.feature,
         ReportsModule.feature,
         CustomsModule.feature,
