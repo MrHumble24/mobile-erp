@@ -50,7 +50,10 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   the sale's own unit cost (`landedCostSnapshot ÷ quantity`); no device moves.
 - `GET /sales/:id/receipt` (`sale.read`) → `ReceiptView` (no cost fields). Carries
   `payments: [{ accountCode, amount }]` (the SALE rows; `[]` when none) so a
-  printed receipt can show the cash and card parts.
+  printed receipt can show the cash and card parts, plus `store {name,address,
+  phone}` + `footer` for the thermal header (ADR 0043) and `bonus {earned,spent}`.
+  The scannable code a receipt needs is the `saleId` (and `items[].imei`);
+  price-tag per-level prices come from `GET /pricing/units/:id` + the device view.
 
 `SaleView` = `{ id, device{imei,imei2,serialNumber,model{brand,name,kindCode},specs}|null,
 model{brand,name,kindCode}|null, quantity|null, customer, salePrice,

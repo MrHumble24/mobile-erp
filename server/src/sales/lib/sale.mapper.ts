@@ -74,6 +74,9 @@ export function toReceiptView(row: SaleRow): ReceiptView {
     saleId: row.id,
     soldAt: row.soldAt,
     cashier: fullName(row.soldBy.profile),
+    // Filled by the service from the store record + settings (ADR 0043).
+    store: { name: null, address: null, phone: null },
+    footer: null,
     items: [
       {
         imei: row.device?.imei ?? null,

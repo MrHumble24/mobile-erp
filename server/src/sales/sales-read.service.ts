@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { BonusService } from '../bonus/bonus.service.js';
 import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { SettingsService } from '../settings/settings.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
 import { SalesRepository } from './sales.repository.js';
 import type {
@@ -25,6 +27,8 @@ export class SalesReadService {
     private readonly ledger: LedgerService,
     private readonly purchases: CustomerPurchasesService,
     private readonly bonus: BonusService,
+    private readonly stores: StoresService,
+    private readonly settings: SettingsService,
   ) {}
 
   async findByClientMutationId(id: string): Promise<SaleView | null> {
@@ -58,13 +62,17 @@ export class SalesReadService {
   async receipt(id: string): Promise<ReceiptView> {
     const receipt = await this.reads.receipt(id);
     if (!receipt) throw new NotFoundException(`Sale ${id} not found`);
-    const [payments, tradeIns, bonus] = await Promise.all([
+    const [payments, tradeIns, bonus, store, settings] = await Promise.all([
       this.ledger.salePayments([id]),
       this.purchases.tradeInsBySale([id]),
       this.bonus.summaryBySale([id]),
+      this.stores.getIdentity(),
+      this.settings.get(),
     ]);
     return {
       ...receipt,
+      store: { name: store.name, address: store.address, phone: store.phone },
+      footer: settings.receiptFooter,
       payments: payments.get(id) ?? [],
       tradeIns: tradeIns.get(id) ?? [],
       bonus: bonus.get(id) ?? NO_BONUS,

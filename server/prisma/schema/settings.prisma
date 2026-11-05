@@ -47,6 +47,12 @@ model StoreSettings {
   bonusEnabled           Boolean  @default(false)
   bonusEarnPercent       Decimal  @default(0) @db.Decimal(5, 2)
   bonusMaxRedeemPercent  Decimal  @default(0) @db.Decimal(5, 2)
+  /// Printing switches (ADR 0043). The server only stores the shop's choice;
+  /// printing itself is client work. All off / default by default.
+  /// `receiptPaperWidthMm` is 58 or 80 (default 80).
+  receiptPrintingEnabled Boolean  @default(false)
+  receiptPaperWidthMm    Int      @default(80)
+  priceTagsEnabled       Boolean  @default(false)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

@@ -150,6 +150,10 @@ export interface ReceiptView {
   saleId: string;
   soldAt: Date;
   cashier: string;
+  /** Shop identity for the receipt header (ADR 0043), from the store record. */
+  store: { name: string | null; address: string | null; phone: string | null };
+  /** Free-text receipt footer (store_settings.receiptFooter), or null. */
+  footer: string | null;
   items: {
     imei: string | null;
     imei2: string | null;
