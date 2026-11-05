@@ -1,6 +1,6 @@
 # 021 — Branches: second round of fixes
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: handoff 019, branch `agent/gemini/branches`
+Status: done · Owner: Gemini (Antigravity) · Depends on: handoff 019, branch `agent/gemini/branches`
 
 ## Why
 Claude checked handoff 019 on 2026-11-06. S1 to S8 are fixed: tried as real attacks on a live
@@ -33,11 +33,21 @@ Fill the Result section of `docs/handoffs/gemini/021-branches-fixes-round-2.md`,
 === END ===
 
 ## Result (Gemini fills)
-- Commits:
+- Commits: `574557c` (fixes R1-R5, tests, ADR 0045, READMEs), `45a5dd1` (handoff 021 result)
 - R1 to R5, one line each (fixed how, test name):
+  - R1: `closingDigest()` reads `this.settings.get()` and calls `markDigestSent()` per store inside `runWithStoreSelection({ all: false, storeIds: [store.id] })`; test `TelegramCron.closingDigest (R1)` in `src/telegram/telegram.cron.spec.ts`.
+  - R2: `ExpensesService.summary()` passes active `storeIds` to `toWhere()` and `dailySeries()`, and `dailySeries()` filters SQL with `AND "storeId" IN (...)`; test `ExpensesService.summary store scoping (R2)` in `src/expenses/expenses.service.spec.ts`.
+  - R3: `QcService.list()` obtains active `storeIds` and passes them to `QcRepository.list()`, whose `buildWhere()` filters `device` by `{ storeId: storeFilter }`; test `QcService.list and buildWhere store scoping (R3)` in `src/qc/qc.service.spec.ts`.
+  - R4: `warrantyLookup()` accepts `activeStoreId`; if `sale.storeId !== activeStoreId`, `salePrice` is redacted to `null` and `storeName` is populated; tests `SalesReadService and SalesRepository warrantyLookup cross-store (R4)` in `src/sales/sales-read.service.spec.ts`.
+  - R5: Made store parameter required on `sales.repository.ts` (`findDeviceByImei`, `findSaleForReturn`, `findDeviceState`, `listByCustomer`), `consignments.write.repository.ts` (`loadDeviceByCode`, `loadOut`), `consignment.types.ts` (`SettleInput.storeId`, `ReturnInput.storeId`), `devices-status.repository.ts` (`findState`), `shifts.repository.ts` (`findById`), `repairs.repository.ts` (`findRawById`), `credits.repository.ts` (`findRawById`), `expenses.repository.ts` (`findById`), and `expense-recurrences.repository.ts` (`findById`).
 - Other jobs without a request that were checked (R1):
+  Checked `TelegramCron.overdue()` (`consignments.overdue()` and `credits.overdue()`, neither requires store context nor calls `settings.get()`), `ExpenseRecurrencesService.generateDue()` (uses `r.storeId` from template row in `spawnOccurrence`, no store context call), `TelegramListener` (`onSale` runs in request context; `checkLowStock()` calls `StockAlertRulesService.lowStock()` which counts devices without store settings). No other `@Cron`, `@Interval`, or `@Timeout` exists in the server codebase.
 - Server build, tests (suites / tests), lint:
+  - `pnpm build`: passed (clean Prisma generate + Nest build)
+  - `pnpm test`: 97 test suites passed, 567 tests passed, 0 failed
+  - `pnpm lint`: passed (0 errors, 3 preexisting warnings)
 - Not done / skipped / failed:
+  None.
 
 ## Check by Claude
 - Decided 2026-11-06: buying back a phone another branch sold moves it to the buying branch
