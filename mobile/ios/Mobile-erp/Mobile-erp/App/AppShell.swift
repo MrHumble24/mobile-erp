@@ -12,7 +12,8 @@ struct AppShell: View {
 
     private var visible: [FeatureModule] {
         var mods = FeatureRegistry.all.filter {
-            $0.permission == nil || container.session.can($0.permission!)
+            ($0.permission == nil || container.session.can($0.permission!))
+                && ($0.isEnabled?(container) ?? true)
         }
         if container.devAccess.showsTab { mods.append(DevConsoleModule.feature) }
         return mods
@@ -26,11 +27,11 @@ struct AppShell: View {
                     container.router.selection = visible.first?.id ?? ""
                 }
                 #if DEBUG
-                // Screenshot helper: `-open home|pos|sales|inventory|shipments|qc|consignments|partners|customers|expenses|balance|reports|customs|users|settings|more`.
+                // Screenshot helper: `-open home|pos|sales|inventory|shipments|qc|consignments|partners|customers|expenses|balance|purchases|repairs|reports|customs|users|settings|more`.
                 if let open = UserDefaults.standard.string(forKey: "open"),
                    let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
                              "inventory": "inventory", "stock": "stock", "shipments": "shipments", "qc": "qc",
-                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "balance": "balance", "credits": "credits", "shifts": "shifts", "users": "users", "reports": "reports", "customs": "customs", "settings": "settings",
+                             "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "balance": "balance", "credits": "credits", "purchases": "purchases", "repairs": "repairs", "shifts": "shifts", "users": "users", "reports": "reports", "customs": "customs", "settings": "settings",
                              "more": MoreTab.id][open] {
                     container.router.selection = id
                 }
@@ -74,7 +75,7 @@ struct AppShell: View {
                         .toolbarBackground(Tokens.ground, for: .navigationBar)
                         .toolbar { toolbarContent }
                 }
-                .tabItem { Label(i18n.t(module.labelKey), systemImage: module.systemImage) }
+                .tabItem { Label(module.label(i18n), systemImage: module.systemImage) }
                 .tag(module.id)
             }
             if !more.isEmpty {

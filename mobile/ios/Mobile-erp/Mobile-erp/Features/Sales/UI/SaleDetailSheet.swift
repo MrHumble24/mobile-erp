@@ -15,16 +15,25 @@ struct SaleDetailSheet: View {
     @State private var showReturn = false
 
     private var canReturn: Bool { container.session.can("sale.return") && !sale.isReturned }
+    /// Refunding the trade-in part (paid back in cash, phone stays ours) needs
+    /// `purchase.create` (ADR 0039); without it the cap is the money actually paid.
+    private var canRefundTradeIn: Bool { container.session.can("purchase.create") }
 
-    /// The refund ceiling: what was tendered (sum of payment lines), or the sale
-    /// price when there are no tender lines — mirrors the server cap (ADR 0028). A
-    /// credit sale's return hands back no cash (ADR 0035), so its cap is zero.
-    private var maxRefund: Decimal {
-        if sale.isCredit { return 0 }
+    /// The money actually tendered: Σ payment lines, or the sale price for a
+    /// pre-ledger sale (never for a trade-in sale, which tendered less).
+    private var moneyPaid: Decimal {
         if let lines = sale.payments, !lines.isEmpty {
             return lines.reduce(.zero) { $0 + (Decimal(string: $1.amount.string) ?? .zero) }
         }
-        return Decimal(string: sale.salePrice.string) ?? .zero
+        return sale.hasTradeIns ? 0 : (Decimal(string: sale.salePrice.string) ?? .zero)
+    }
+
+    /// The refund ceiling — mirrors the server cap (ADR 0028/0039). A credit
+    /// sale hands back no cash (ADR 0035), so zero. With `purchase.create` the
+    /// trade-in value may also be refunded in cash; without it only the money paid.
+    private var maxRefund: Decimal {
+        if sale.isCredit { return 0 }
+        return canRefundTradeIn ? moneyPaid + sale.tradeInTotal : moneyPaid
     }
 
     var body: some View {
@@ -41,7 +50,7 @@ struct SaleDetailSheet: View {
         .background(Tokens.card)
         .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id, payments: sale.payments ?? []) }
         .sheet(isPresented: $showReturn) {
-            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund, isQuantity: sale.isQuantitySale, isCredit: sale.isCredit) {
+            ReturnSheet(saleId: sale.id, payments: sale.payments ?? [], maxRefund: maxRefund, isQuantity: sale.isQuantitySale, isCredit: sale.isCredit, hasTradeIns: sale.hasTradeIns) {
                 container.toasts.success(i18n.t("sales.returnSuccess"))
                 onChanged()
                 dismiss()
@@ -128,6 +137,24 @@ struct SaleDetailSheet: View {
                             }
                         }
                     }
+                }
+            }
+            if sale.hasTradeIns {
+                fact(i18n.t("purchases.tradeInLabel", default: "Trade-in")) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        ForEach(sale.tradeIns ?? []) { t in
+                            HStack(spacing: Tokens.Space.sm) {
+                                Text(t.code.isEmpty ? t.model.label : t.code)
+                                    .font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                                Text("− \(MoneyText.format(t.value.string))")
+                                    .font(.data(.regular)).foregroundStyle(Tokens.success)
+                            }
+                        }
+                    }
+                }
+                fact(i18n.t("purchases.amountPaid", default: "Amount paid")) {
+                    MoneyText(value: NSDecimalNumber(decimal: moneyPaid).stringValue, size: 15)
+                        .foregroundStyle(Tokens.text)
                 }
             }
             if let net = sale.netProfit {

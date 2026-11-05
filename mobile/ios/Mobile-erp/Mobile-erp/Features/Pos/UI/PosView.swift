@@ -114,6 +114,7 @@ struct PosView: View {
         if let arg = KitDebugLaunch.consume("posSellDiscount") { model.debugSellDiscount(arg, container: container) }
         if let code = KitDebugLaunch.consume("posScan") { model.scan(code); model.confirmScan() }
         if KitDebugLaunch.consume("posCredit") != nil { model.debugOpenCredit() }
+        if KitDebugLaunch.consume("posTradeIn") != nil { model.debugSeedTradeIn() }
         if KitDebugLaunch.consume("posShiftOpen") != nil {
             Task { await model.shift.load(); model.shift.showOpen = true }
         }

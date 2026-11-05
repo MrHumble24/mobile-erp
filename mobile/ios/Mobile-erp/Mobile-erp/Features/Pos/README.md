@@ -50,3 +50,14 @@ checkout (one sale per device; the server's `CreateSaleDto` takes a single
   `ScannedDevice`/`CompletedSale` carry `imei2`; when a scan resolves via the
   second IMEI the `ScanConfirmSheet` subtitle shows both so the cashier sees the
   match. POS receipt / result rows show IMEI 2 when present.
+
+## Trade-in at the till (Step 9, ADR 0039)
+- The "Trade-in" action (checkout bar) shows only with `purchase.create`, needs
+  a customer, and is online only. `PosTradeInSheet` adds a phone (model +
+  identifier + value) to `cart.tradeIns`; rows show a minus amount in the cart.
+- `TradeInAllocation` (pure, `TradeInAllocationSelfCheck`) places each trade-in
+  on one line (largest first, price ≥ value). Checkout tenders `amountToPay`
+  (cart − trade-ins); each line posts `tradeIns[]` with `payments` summing to
+  `salePrice − Σ values`. A sold line's trade-ins are dropped (no double-send on
+  retry); a trade-in cart is never queued offline; credit is hidden with a
+  trade-in. `PosTradeInSheet`/`PurchaseModel` are reused from `Features/Purchases`.

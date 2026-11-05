@@ -231,6 +231,9 @@ nonisolated struct SaleCreatePayload: Encodable {
     /// The till's list price for the line — trusted only on the offline replay
     /// path; the server ignores it online.
     let listPrice: Double?
+    /// Phones taken in part payment on this line (ADR 0039); omitted when none.
+    /// Online only — never set on an offline (queued) sale.
+    let tradeIns: [SaleTradeInPost]?
 }
 
 /// Pure builder — one payload shape for both the online POST and the offline
@@ -254,7 +257,8 @@ func buildSalePayload(
     payments: [SalePaymentPost]? = nil,
     priceLevelCode: String? = nil,
     discount: SaleDiscountPost? = nil,
-    listPrice: Double? = nil
+    listPrice: Double? = nil,
+    tradeIns: [SaleTradeInPost]? = nil
 ) -> SaleCreatePayload {
     let existing = (customerId ?? "").trimmingCharacters(in: .whitespaces)
     let name = (customerName ?? "").trimmingCharacters(in: .whitespaces)
@@ -277,7 +281,8 @@ func buildSalePayload(
         payments: (payments?.isEmpty ?? true) ? nil : payments,
         priceLevelCode: nonEmpty(priceLevelCode),
         discount: discount,
-        listPrice: listPrice
+        listPrice: listPrice,
+        tradeIns: (tradeIns?.isEmpty ?? true) ? nil : tradeIns
     )
 }
 

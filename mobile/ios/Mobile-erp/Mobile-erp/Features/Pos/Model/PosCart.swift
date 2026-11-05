@@ -15,8 +15,12 @@ final class PosCart {
     var level: String = PriceLevels.defaultCode
     /// Discount rules + the user's price permissions, set when settings load.
     var config = PosDiscountConfig()
+    /// Phones the customer gives in part payment (ADR 0039). Online only; each is
+    /// allocated to one line at checkout (`TradeInAllocation`).
+    private(set) var tradeIns: [PosTradeIn] = []
 
     var isEmpty: Bool { lines.isEmpty }
+    var hasTradeIns: Bool { !tradeIns.isEmpty }
     var count: Int { lines.count }
 
     /// The customer's standing discount percent (0 when none / walk-in).
@@ -114,7 +118,12 @@ final class PosCart {
     }
 
     func remove(_ id: String) { lines.removeAll { $0.id == id } }
-    func clear() { lines = []; customer = nil; level = PriceLevels.defaultCode }
+    func clear() { lines = []; customer = nil; level = PriceLevels.defaultCode; tradeIns = [] }
+
+    // MARK: - Trade-ins (ADR 0039)
+
+    func addTradeIn(_ t: PosTradeIn) { tradeIns.append(t) }
+    func removeTradeIn(_ id: String) { tradeIns.removeAll { $0.id == id } }
 
     func setPrice(_ id: String, _ value: String) { patch(id) { $0.price = value } }
     func setWarranty(_ id: String, _ value: String) { patch(id) { $0.warrantyDays = value } }

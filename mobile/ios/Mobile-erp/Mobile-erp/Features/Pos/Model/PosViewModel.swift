@@ -176,11 +176,20 @@ final class PosViewModel {
     func clearError() { errorKey = nil }
 
     /// Check out every cart line (unit or quantity product). One request per line;
-    /// the cart's single Cash/Card/Split choice is allocated across the line totals
-    /// so each sale's payments sum to its own price. Offline, every line queues.
+    /// the cart's single Cash/Card/Split choice is allocated across each line's
+    /// **payable** amount — its price minus the trade-ins placed on it (ADR 0039)
+    /// — so each sale's payments sum to `salePrice − Σ trade-in values`. A sale
+    /// with a trade-in is online only and is never queued; a sold line's trade-ins
+    /// are dropped so a retry after a partial failure never resends them. Offline,
+    /// every (trade-in-free) line queues. Payload + result building live in
+    /// `PosCheckoutPayload`.
     func checkout() {
         guard let container, !cart.isEmpty, !busy else { return }
         let online = container.connectivity.isOnline
+        // Trade-ins are online only — never queued (the server refuses them there).
+        if cart.hasTradeIns && !online { errorKey = "purchases.tradeInOffline"; return }
+        let plan = planCartTradeIns()
+        guard plan.ok else { errorKey = "purchases.tradeInExceedsLine"; return }
         // Shifts (ADR 0036): online, selling needs an open shift; offline is let
         // through (the server trusts replays). Keep the cart and prompt to open.
         guard !shift.blocksSale(online: online) else { errorKey = "shifts.shiftRequired"; return }
@@ -190,13 +199,15 @@ final class PosViewModel {
         let customer = cart.customer
         let lines = cart.lines
         let perLinePayments = allocateSalePayments(
-            breakdown: payment.breakdown(total: cart.subtotal),
-            linePrices: lines.map { cart.finalTotal($0) })
+            breakdown: payment.breakdown(total: plan.amountToPay),
+            linePrices: lines.map { plan.payableByLine[$0.id] ?? cart.finalTotal($0) })
 
         Task {
             var results: [CompletedSale] = []
             for (index, line) in lines.enumerated() {
-                let payload = payload(for: line, customer: customer, payments: perLinePayments[index])
+                let tradeIns = tradeInPosts(for: line.id, plan: plan)
+                let payload = payload(for: line, customer: customer,
+                                      payments: perLinePayments[index], tradeIns: tradeIns)
                 let now = Date()
                 var receiptId = line.clientMutationId
                 var pending = !online
@@ -204,14 +215,23 @@ final class PosViewModel {
                     do {
                         let id = try await repo.postSale(payload)
                         if !id.isEmpty { receiptId = id }
+                        // Sold with its trade-ins — drop them so a retry never resends them.
+                        for t in plan.itemsByLine[line.id] ?? [] { cart.removeTradeIn(t) }
                     } catch {
                         let appError = error as? AppError
                         if appError?.statusCode == nil {
-                            try? repo.enqueueSale(payload, baseVersion: line.device?.version)
-                            pending = true
+                            // A trade-in sale must never queue offline (server refuses it).
+                            if tradeIns == nil {
+                                try? repo.enqueueSale(payload, baseVersion: line.device?.version)
+                                pending = true
+                            } else {
+                                busy = false; errorKey = "purchases.tradeInOffline"; break
+                            }
                         } else if appError?.statusCode == 409, appError?.code == "NO_OPEN_SHIFT" {
                             busy = false; errorKey = "shifts.shiftRequired"
                             await shift.refresh(); break   // keep the cart
+                        } else if appError?.statusCode == 403, appError?.code == "TRADE_IN_FORBIDDEN" {
+                            busy = false; errorKey = "common.error"; break
                         } else {
                             busy = false; errorKey = "common.error"; break
                         }
@@ -232,69 +252,5 @@ final class PosViewModel {
                 payment.splitAmounts = [:]
             }
         }
-    }
-
-    /// Build the sale request for a line: a unit (imei/serial + version) or a
-    /// quantity product (modelId + quantity, no warranty). `salePrice` is the line
-    /// total; a new inline customer is re-sent per line (mirrors the web).
-    private func payload(for line: PosCartLine, customer: PosCartCustomer?,
-                         payments: [SalePaymentPost]) -> SaleCreatePayload {
-        let total = NSDecimalNumber(decimal: cart.finalTotal(line)).doubleValue
-        let list = cart.listPrice(line)
-        let listDouble = list.map { NSDecimalNumber(decimal: $0).doubleValue }
-        // Send a discount only on a list-priced, non-overridden line with one set.
-        let discount: SaleDiscountPost? = {
-            guard list != nil, !line.priceOverridden,
-                  line.discountMode != .none, line.discountDecimal > 0 else { return nil }
-            return SaleDiscountPost(
-                mode: line.discountMode == .percent ? "PERCENT" : "AMOUNT",
-                value: NSDecimalNumber(decimal: line.discountDecimal).doubleValue)
-        }()
-        if let product = line.product {
-            return buildSalePayload(
-                modelId: product.modelId, quantity: line.quantity, salePrice: total,
-                clientMutationId: line.clientMutationId,
-                customerId: customer?.id,
-                customerName: customer?.id == nil ? customer?.name : nil,
-                customerPhone: customer?.id == nil ? customer?.phone : nil,
-                warrantyDays: nil, notes: line.notes, payments: payments,
-                priceLevelCode: cart.level, discount: discount, listPrice: listDouble)
-        }
-        return buildSalePayload(
-            imei: line.device?.imei, serialNumber: line.device?.serialNumber, salePrice: total,
-            clientMutationId: line.clientMutationId, expectedVersion: line.device?.version,
-            customerId: customer?.id,
-            customerName: customer?.id == nil ? customer?.name : nil,
-            customerPhone: customer?.id == nil ? customer?.phone : nil,
-            warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
-            notes: line.notes, payments: payments,
-            priceLevelCode: cart.level, discount: discount, listPrice: listDouble)
-    }
-
-    private func completedSale(_ line: PosCartLine, receiptId: String, cashier: String,
-                               customer: PosCartCustomer?, at now: Date, pending: Bool) -> CompletedSale {
-        let days = line.isProduct ? nil : Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
-        let final = cart.finalTotal(line)
-        let list = cart.listPrice(line)
-        let discount = list != nil ? (list! - final) : 0
-        return CompletedSale(
-            receiptId: receiptId,
-            imei: line.device?.imei,
-            imei2: line.device?.imei2,
-            serialNumber: line.device?.serialNumber,
-            modelLabel: line.modelLabel,
-            quantity: line.isProduct ? line.quantity : nil,
-            unitPrice: line.isProduct ? line.price : nil,
-            salePrice: NSDecimalNumber(decimal: final).stringValue,
-            soldAt: now,
-            cashier: cashier,
-            warrantyDays: days,
-            warrantyEndsAt: days.map { now.addingTimeInterval(Double($0) * 86_400) },
-            customerName: nonEmpty(customer?.name),
-            pending: pending,
-            listPrice: list.map { NSDecimalNumber(decimal: $0).stringValue },
-            discountAmount: discount > 0 ? NSDecimalNumber(decimal: discount).stringValue : nil,
-            priceLevelCode: cart.level
-        )
     }
 }

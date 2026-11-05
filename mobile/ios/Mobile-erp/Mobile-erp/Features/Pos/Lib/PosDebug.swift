@@ -33,6 +33,19 @@ extension PosViewModel {
         showCredit = true
     }
 
+    /// Seed a priced cart + a customer + a trade-in, then open the cart, for a
+    /// screenshot of the trade-in rows and the "Trade-in −X / amount to pay"
+    /// totals (`-posTradeIn`). The customer makes the Trade-in action live.
+    func debugSeedTradeIn() {
+        seedDemo("cash")
+        cart.attach(PosCartCustomer(id: "00db5413-e1a6-408e-b51a-2687ca065345",
+                                    name: "Walkthrough Buyer", phone: "+9989179117152"))
+        cart.addTradeIn(PosTradeIn(id: newUUID(), modelId: "demo", modelLabel: "iPhone 12",
+                                   imei: "356938035643800", imei2: nil, serialNumber: nil,
+                                   specs: [:], value: 400000))
+        showCart = true
+    }
+
     /// Seed a mixed cart from the cache: a scanned unit plus three pieces of a
     /// quantity product. `arg` is "<unitCode>,<barcode>" (`-posMix`).
     func debugSeedMix(_ arg: String) {

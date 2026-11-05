@@ -45,10 +45,27 @@ struct ReceiptView: Decodable {
     let listPrice: MoneyValue?
     let discountAmount: MoneyValue?
     let priceLevelCode: String?
+    /// Phones taken in part payment (ADR 0039); nil/[] for an ordinary sale. The
+    /// value is customer-facing, printed on the receipt.
+    let tradeIns: [TradeIn]?
 
     var showsPricing: Bool {
         (Decimal(string: discountAmount?.string ?? "0") ?? 0) > 0
             || (priceLevelCode != nil && priceLevelCode != PriceLevels.retail)
+    }
+    var hasTradeIns: Bool { !(tradeIns ?? []).isEmpty }
+    /// Σ of the trade-in values (netted off what the customer tendered).
+    var tradeInTotal: Decimal {
+        (tradeIns ?? []).reduce(.zero) { $0 + (Decimal(string: $1.value.string) ?? .zero) }
+    }
+
+    struct TradeIn: Decodable, Identifiable {
+        let deviceId: String
+        let imei: String?
+        let serialNumber: String?
+        let value: MoneyValue
+        var id: String { deviceId }
+        var code: String { UnitCode.display(imei: imei, serialNumber: serialNumber) }
     }
 
     struct Item: Decodable {

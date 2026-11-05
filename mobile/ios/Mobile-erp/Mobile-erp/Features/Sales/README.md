@@ -50,3 +50,10 @@ Completed sales, receipts, returns, and warranty lookup.
 - `SaleDevice.imei2` / `ReceiptView.Item.imei2` (optional) render under the IMEI
   in the sale detail sheet and the printable receipt when present. The offline
   warranty cache lookup matches either IMEI.
+
+## Trade-ins (Step 9, ADR 0039)
+- `SaleView.tradeIns` / `ReceiptView.tradeIns` (optional) list the phones taken
+  in part payment; the sale detail and the receipt show each as a minus line plus
+  the amount actually paid. The return refund caps at money paid + Σ trade-in
+  values with `purchase.create`, else money paid only (`ReturnSheet` shows the
+  note); a 403 `TRADE_IN_REFUND_FORBIDDEN` maps to the refund-too-high message.

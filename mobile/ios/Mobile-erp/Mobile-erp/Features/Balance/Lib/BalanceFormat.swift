@@ -19,6 +19,9 @@ enum BalanceFormat {
         case "REFUND": "balance.typeRefund"
         case "PARTNER_PAYMENT": "balance.typePartnerPayment"
         case "PURCHASE": "balance.typePurchase"
+        case "CUSTOMER_PURCHASE": "balance.typeCustomerPurchase"
+        case "REPAIR_PAYMENT": "balance.typeRepairPayment"
+        case "REPAIR_OUTSIDE": "balance.typeRepairOutside"
         case "OVERHEAD": "balance.typeOverhead"
         case "EXPENSE": "balance.typeExpense"
         case "DEVICE_EXPENSE": "balance.typeDeviceExpense"
@@ -31,7 +34,8 @@ enum BalanceFormat {
     /// Known type codes for the filter dropdown, in display order.
     static let allTypeCodes = [
         "OPENING", "DEPOSIT", "WITHDRAWAL", "CORRECTION", "TRANSFER",
-        "SALE", "REFUND", "PARTNER_PAYMENT", "PURCHASE", "OVERHEAD", "EXPENSE",
+        "SALE", "REFUND", "PARTNER_PAYMENT", "PURCHASE", "CUSTOMER_PURCHASE",
+        "REPAIR_PAYMENT", "REPAIR_OUTSIDE", "OVERHEAD", "EXPENSE",
         "DEVICE_EXPENSE", "CUSTOMS", "SHIFT_DIFFERENCE",
     ]
 
