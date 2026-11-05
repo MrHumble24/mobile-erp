@@ -42,6 +42,14 @@ struct SaleWarranty: Decodable {
     let endsAt: String?
 }
 
+/// One tender line of a sale (`{ accountCode, amount }`). `amount` is a Decimal
+/// string. Older cached sales have no `payments` array — model it optional.
+struct SalePaymentLine: Decodable, Identifiable {
+    let accountCode: String
+    let amount: MoneyValue
+    var id: String { accountCode }
+}
+
 /// A completed sale as returned by `/sales`. Cost fields (`landedCostSnapshot`,
 /// `netProfit`) are redacted — OMITTED — for under-privileged users, so they are
 /// optional here; never assume a value. Channel is DERIVED from `consignmentId`.
@@ -58,6 +66,8 @@ struct SaleView: Decodable, Identifiable {
     let consignmentId: String?
     /// Set once the device came back; the return action hides when present.
     let returnedAt: String?
+    /// How the sale was tendered; `[]` when none, nil for pre-feature cached data.
+    let payments: [SalePaymentLine]?
 
     var isB2B: Bool { consignmentId != nil }
     var isReturned: Bool { returnedAt != nil }

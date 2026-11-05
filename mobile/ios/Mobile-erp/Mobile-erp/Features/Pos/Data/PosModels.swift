@@ -90,6 +90,10 @@ nonisolated struct SaleCreatePayload: Encodable {
     let customer: InlineCustomerPayload?
     let warrantyDays: Int?
     let notes: String?
+    /// How the sale was tendered; nil (omitted) means a single CASH payment of
+    /// the whole price. Carried verbatim into the offline outbox, so an offline
+    /// split survives the sync push.
+    let payments: [SalePaymentPost]?
 }
 
 /// Pure builder — one payload shape for both the online POST and the offline
@@ -104,7 +108,8 @@ func buildSalePayload(
     customerName: String?,
     customerPhone: String?,
     warrantyDays: Int?,
-    notes: String?
+    notes: String?,
+    payments: [SalePaymentPost]? = nil
 ) -> SaleCreatePayload {
     let existing = (customerId ?? "").trimmingCharacters(in: .whitespaces)
     let name = (customerName ?? "").trimmingCharacters(in: .whitespaces)
@@ -120,7 +125,8 @@ func buildSalePayload(
         customerId: existing.isEmpty ? nil : existing,
         customer: inline,
         warrantyDays: warrantyDays,
-        notes: nonEmpty(notes)
+        notes: nonEmpty(notes),
+        payments: (payments?.isEmpty ?? true) ? nil : payments
     )
 }
 
@@ -162,6 +168,14 @@ enum PosSelfCheck {
             customerPhone: "+998", warrantyDays: 30, notes: "n")
         assert(existing.customerId == "cust-1" && existing.customer == nil)
         assert(moneyToDouble("1250.50") == 1250.5)
+        // Empty payments omit the key; a real split keeps it.
+        assert(!keys(inline).contains("payments"))
+        let split = buildSalePayload(
+            imei: "123456789012345", salePrice: 100, clientMutationId: "m",
+            expectedVersion: 3, customerId: nil, customerName: nil,
+            customerPhone: nil, warrantyDays: nil, notes: nil,
+            payments: [SalePaymentPost(accountCode: "CARD", amount: 100)])
+        assert(keys(split).contains("payments"))
     }()
 }
 #endif

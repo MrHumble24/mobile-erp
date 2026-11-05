@@ -83,7 +83,7 @@ struct ExpenseRecurringTab: View {
             do {
                 try await repo.update(id: row.id, UpdateExpenseRecurrenceDto(
                     categoryId: nil, amount: nil, description: nil, vendor: nil,
-                    frequency: nil, nextDueAt: nil, isActive: !row.isActive))
+                    frequency: nil, nextDueAt: nil, isActive: !row.isActive, accountCode: nil))
                 await load()
             } catch let e as AppError { container.toasts.error(e.message) }
             catch { container.toasts.error(error.localizedDescription) }

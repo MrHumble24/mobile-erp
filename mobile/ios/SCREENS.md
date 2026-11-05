@@ -231,3 +231,33 @@ Device status becomes "Consigned" -> Partner ledger balance increases
 | **Store Settings** | ✅ Full | ❌ | ❌ |
 | **Sync & Outbox** | ✅ Full | ✅ View Queue | ✅ View Queue |
 
+---
+
+## 5. Cash / Card Payments (where money moves)
+
+Every money movement is recorded against a ledger account (`CASH`, `CARD`, …).
+Two shared controls in the kit carry this everywhere; account options come from
+`GET /ledger/balances` when the user has `balance.read`, else the two known codes
+`CASH`/`CARD` (cashiers).
+
+- **`AccountPicker`** (`Shared/UI/AccountPicker.swift`) — one account, default
+  Cash. Used by Log Expense, Recurring Expense, Record Payment, Shipment Form.
+- **`PaymentMethodField`** + **`PaymentSelection`** (`Shared/UI/PaymentMethodField.swift`)
+  — Cash / Card / Split, with a per-account amount and a live "left to assign"
+  for a split. Used by POS checkout.
+- Account naming/loading is `PaymentAccounts` (`Shared/UI/PaymentAccount.swift`).
+
+| Screen | Behaviour |
+| :--- | :--- |
+| **POS Checkout** (`PosCheckoutBar`) | Cash / Card / Split; a split must add up to the cart total before Pay enables. One `POST /sales` per phone, so the cart-level split is allocated across the lines by `allocateSalePayments` (`Features/Pos/Lib/PosPayments.swift`, pure, Decimal) — each sale's `payments` sum to its own price. The chosen split rides in the offline outbox too. |
+| **Sale Detail / Receipt** (`SaleDetailSheet`, `ReceiptSheet`) | Shows the tender line(s); nothing when `payments` is empty. |
+| **Sale Return** (`ReturnSheet`) | One read-only line naming the account(s) the refund returns to. |
+| **Expenses** (`LogExpenseSheet`, `ExpenseDetailSheet`, rows) | Account picker (default Cash); detail + rows show the account. |
+| **Recurring Expense** (`ExpenseRecurrenceSheet`) | Account picker (default Cash). |
+| **Partner Payment** (`RecordPaymentSheet`) | Account picker (default Cash). Note: the partner ledger endpoint does not carry the account, so history cannot show it yet. |
+| **Shipment Form / Detail** (`ShipmentFormSheet`, `ShipmentDetailSheet`) | "Paid from" picker on create (default Cash), read-only afterwards. |
+| **Store Balance** (`BalanceView`) | History already renders the automatic types (`SALE`, `REFUND`, `PARTNER_PAYMENT`, `PURCHASE`, `OVERHEAD`, `EXPENSE`) and offers them in the type filter; `balance`/`total` decode from number or decimal string. |
+
+DEBUG screenshot args added: `-posDemo cash|split` (seeds a demo checkout line),
+`-openExpense new`, `-openShipmentForm new`, `-openPartnerPayment 1`.
+

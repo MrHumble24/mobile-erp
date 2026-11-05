@@ -16,6 +16,8 @@ struct ShipmentFormSheet: View {
     @State private var expected = ""
     @State private var overhead = ""
     @State private var notes = ""
+    @State private var accountCode = PaymentAccounts.cash
+    @State private var accounts: [PaymentAccount] = []
     @State private var busy = false
     @State private var error: String?
 
@@ -37,6 +39,12 @@ struct ShipmentFormSheet: View {
                     LabeledField(i18n.t("shipments.expectedCount"), text: $expected, keyboard: .numberPad)
                     LabeledField(i18n.t("shipments.overheadCost"), text: $overhead, keyboard: .decimalPad)
                     LabeledField(i18n.t("common.notes"), text: $notes)
+                    if !editing {
+                        VStack(alignment: .leading, spacing: Tokens.Space.sm) {
+                            Text(i18n.t("balance.payFrom")).font(.ui(.label)).foregroundStyle(Tokens.muted)
+                            AccountPicker(accounts: accounts, selection: $accountCode)
+                        }
+                    }
                 }
                 if let error {
                     Section { Text(error).foregroundStyle(Tokens.danger).font(.footnote) }
@@ -69,6 +77,10 @@ struct ShipmentFormSheet: View {
     private func loadSuppliers() async {
         guard !editing, suppliers.isEmpty else { return }
         suppliers = (try? await SuppliersRepository(api: container.api).list()) ?? []
+        accounts = await PaymentAccounts.load(
+            api: container.api,
+            canReadBalances: container.session.can("balance.read"),
+            i18n: i18n)
     }
 
     private func submit() async {
@@ -85,7 +97,8 @@ struct ShipmentFormSheet: View {
             shipmentDate: ISO8601DateFormatter().string(from: date),
             expectedCount: count,
             overheadCost: overhead.asDecimal,
-            notes: notes.trimmedOrNil
+            notes: notes.trimmedOrNil,
+            paymentAccountCode: editing ? nil : accountCode
         )
         let repo = ShipmentsRepository(api: container.api)
         do {

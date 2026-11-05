@@ -11,6 +11,7 @@ struct PosCheckoutBar: View {
     private var allPriced: Bool {
         !cart.isEmpty && cart.lines.allSatisfy { moneyToDouble($0.price) > 0 }
     }
+    private var paymentValid: Bool { model.payment.isValid(total: cart.subtotal) }
 
     var body: some View {
         VStack(spacing: Tokens.Space.lg) {
@@ -25,6 +26,9 @@ struct PosCheckoutBar: View {
                         .foregroundStyle(Tokens.text)
                 }
             }
+            AppFormField(label: i18n.t("balance.paidWith")) {
+                PaymentMethodField(selection: model.payment, total: cart.subtotal)
+            }
             Button {
                 model.checkout()
             } label: {
@@ -35,7 +39,7 @@ struct PosCheckoutBar: View {
                 }
             }
             .buttonStyle(.pillPrimary)
-            .disabled(model.busy || !allPriced)
+            .disabled(model.busy || !allPriced || !paymentValid)
         }
     }
 }

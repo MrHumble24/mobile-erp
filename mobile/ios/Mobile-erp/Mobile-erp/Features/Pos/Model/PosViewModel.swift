@@ -10,6 +10,8 @@ import Observation
 @Observable
 final class PosViewModel {
     let cart = PosCart()
+    /// How the customer pays (Cash / Card / Split). Default Cash.
+    let payment = PaymentSelection()
     var errorKey: String?
     /// A scanned IMEI awaiting the cashier's confirm tap before it joins the cart
     /// (or an error variant explaining why it can't). Drives the confirm sheet.
@@ -30,6 +32,12 @@ final class PosViewModel {
         guard self.container == nil else { return }
         self.container = container
         Task { defaultWarrantyDays = await repo.defaultWarrantyDays() }
+        Task {
+            payment.setAccounts(await PaymentAccounts.load(
+                api: container.api,
+                canReadBalances: container.session.can("balance.read"),
+                i18n: container.i18n))
+        }
     }
 
     /// Resolve a scanned IMEI from the offline cache and stage it for confirmation
@@ -75,6 +83,26 @@ final class PosViewModel {
 
     func clearError() { errorKey = nil }
 
+    #if DEBUG
+    /// Seed a demo cart line + payment method for screenshots, bypassing the
+    /// cache so captures don't depend on synced stock. `mode` is "cash" or
+    /// "split" (`-posDemo cash|split`).
+    func seedDemo(_ mode: String) {
+        cart.add(ScannedDevice(id: "demo", imei: "356938035643809", imei2: nil,
+                               version: 1, statusCode: "IN_STOCK",
+                               modelLabel: "iPhone 13", targetPrice: "1200000"),
+                 warrantyDays: defaultWarrantyDays)
+        if payment.accounts.isEmpty {
+            payment.setAccounts([PaymentAccount(code: PaymentAccounts.cash, label: "Cash"),
+                                 PaymentAccount(code: PaymentAccounts.card, label: "Card")])
+        }
+        if mode == "split" {
+            payment.method = .split
+            payment.splitAmounts = ["CASH": "800000", "CARD": "400000"]
+        }
+    }
+    #endif
+
     /// Check out every cart line. Online lines POST sequentially; a line that
     /// fails the network is queued to the outbox (same `clientMutationId`), while
     /// an HTTP verdict stops the run. Offline, every line is queued. Succeeded or
@@ -87,6 +115,11 @@ final class PosViewModel {
         let cashier = container.session.user?.displayName ?? ""
         let customer = cart.customer
         let lines = cart.lines
+        // The cart's single Cash/Card/Split choice, allocated across the lines so
+        // each per-device sale's payments sum to its own price.
+        let perLinePayments = allocateSalePayments(
+            breakdown: payment.breakdown(total: cart.subtotal),
+            linePrices: lines.map { Decimal(string: $0.price) ?? .zero })
 
         Task {
             var results: [CompletedSale] = []
@@ -94,7 +127,7 @@ final class PosViewModel {
             // returns no customer id to reuse) → N lines may create N customers.
             // Mirrors the web; upgrade by creating the customer once up front and
             // attaching the returned id to every line.
-            for line in lines {
+            for (index, line) in lines.enumerated() {
                 let payload = buildSalePayload(
                     imei: line.device.imei,
                     salePrice: moneyToDouble(line.price),
@@ -104,7 +137,8 @@ final class PosViewModel {
                     customerName: customer?.id == nil ? customer?.name : nil,
                     customerPhone: customer?.id == nil ? customer?.phone : nil,
                     warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
-                    notes: line.notes
+                    notes: line.notes,
+                    payments: perLinePayments[index]
                 )
                 let now = Date()
                 var receiptId = line.clientMutationId
@@ -136,6 +170,8 @@ final class PosViewModel {
             if !results.isEmpty {
                 container.toasts.success(i18n("pos.saleSuccess", count: results.count))
                 completed = results
+                payment.method = .cash
+                payment.splitAmounts = [:]
             }
         }
     }

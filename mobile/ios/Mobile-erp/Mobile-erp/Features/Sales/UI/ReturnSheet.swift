@@ -5,6 +5,9 @@ import SwiftUI
 /// offline.
 struct ReturnSheet: View {
     let saleId: String
+    /// The sale's tender lines — the refund returns to these same account(s).
+    /// Informational only; empty hides the line.
+    var payments: [SalePaymentLine] = []
     let onDone: () -> Void
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
@@ -16,6 +19,11 @@ struct ReturnSheet: View {
     @State private var busy = false
     @State private var error: String?
 
+    /// Accounts the refund returns to, as sent on the original sale.
+    private var refundDestination: String {
+        payments.map { PaymentAccounts.label($0.accountCode, i18n) }.joined(separator: ", ")
+    }
+
     private var refundValid: Bool {
         SalesInput.money(refund) >= 0 && !refund.trimmingCharacters(in: .whitespaces).isEmpty
     }
@@ -23,6 +31,13 @@ struct ReturnSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                if !payments.isEmpty {
+                    Section {
+                        Text("\(i18n.t("balance.paidWith")): \(refundDestination)")
+                            .font(.footnote)
+                            .foregroundStyle(Tokens.muted)
+                    }
+                }
                 Section(i18n.t("sales.refundAmount", default: "Refund Amount")) {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("$")

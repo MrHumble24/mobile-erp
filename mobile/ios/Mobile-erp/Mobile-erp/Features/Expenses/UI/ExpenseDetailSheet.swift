@@ -50,6 +50,11 @@ struct ExpenseDetailSheet: View {
     private func facts(_ e: Expense) -> some View {
         VStack(spacing: 0) {
             FactRow(label: i18n.t("expenses.amount")) { MoneyText(value: e.amount, size: 15) }
+            if let code = e.accountCode {
+                FactRow(label: i18n.t("balance.payFrom")) {
+                    Text(PaymentAccounts.label(code, i18n)).font(.ui(.body))
+                }
+            }
             FactRow(label: i18n.t("expenses.incurredAt")) { Text(KitDate.day(e.incurredAt)).font(.data(.regular)) }
             FactRow(label: i18n.t("expenses.vendor")) { Text(e.vendor?.isEmpty == false ? e.vendor! : "—").font(.ui(.body)) }
             FactRow(label: i18n.t("expenses.isRecurring")) { Text(i18n.t(e.isRecurring ? "common.yes" : "common.no")).font(.ui(.body)) }

@@ -16,6 +16,8 @@ struct ExpenseRecurrenceSheet: View {
     @State private var nextDueAt: Date
     @State private var vendor: String
     @State private var description: String
+    @State private var accountCode: String
+    @State private var accounts: [PaymentAccount] = []
     @State private var saving = false
 
     init(categories: [ExpenseCategory], recurrence: ExpenseRecurrence?, onDone: @escaping (String?) async -> Void) {
@@ -28,6 +30,7 @@ struct ExpenseRecurrenceSheet: View {
         _nextDueAt = State(initialValue: recurrence.flatMap { KitDate.parse($0.nextDueAt) } ?? Date())
         _vendor = State(initialValue: recurrence?.vendor ?? "")
         _description = State(initialValue: recurrence?.description ?? "")
+        _accountCode = State(initialValue: recurrence?.accountCode ?? PaymentAccounts.cash)
     }
 
     private var amountValue: Double? {
@@ -61,6 +64,9 @@ struct ExpenseRecurrenceSheet: View {
                     ])
                 }
                 AppFormField(label: i18n.t("expenses.nextDueAt")) { AppDateField(date: $nextDueAt) }
+                AppFormField(label: i18n.t("balance.payFrom")) {
+                    AccountPicker(accounts: accounts, selection: $accountCode)
+                }
                 Button(action: submit) {
                     Text(i18n.t("common.save")).frame(maxWidth: .infinity)
                 }
@@ -73,6 +79,12 @@ struct ExpenseRecurrenceSheet: View {
         .scrollDismissesKeyboard(.interactively)
         .background(Tokens.card)
         .presentationDetents([.large])
+        .task {
+            accounts = await PaymentAccounts.load(
+                api: container.api,
+                canReadBalances: container.session.can("balance.read"),
+                i18n: i18n)
+        }
     }
 
     private func submit() {
@@ -91,11 +103,13 @@ struct ExpenseRecurrenceSheet: View {
                 if let recurrence {
                     try await repo.update(id: recurrence.id, UpdateExpenseRecurrenceDto(
                         categoryId: categoryId, amount: amountValue, description: desc,
-                        vendor: payee, frequency: frequency, nextDueAt: iso, isActive: nil))
+                        vendor: payee, frequency: frequency, nextDueAt: iso, isActive: nil,
+                        accountCode: accountCode))
                 } else {
                     try await repo.create(CreateExpenseRecurrenceDto(
                         categoryId: categoryId, amount: amountValue, description: desc,
-                        vendor: payee, frequency: frequency, nextDueAt: iso))
+                        vendor: payee, frequency: frequency, nextDueAt: iso,
+                        accountCode: accountCode))
                 }
                 await onDone(i18n.t("expenses.recurrenceSaved"))
                 dismiss()

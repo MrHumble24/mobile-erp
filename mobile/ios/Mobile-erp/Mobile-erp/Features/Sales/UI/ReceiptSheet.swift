@@ -4,6 +4,9 @@ import SwiftUI
 /// cost/profit, ever) and renders it monospaced. Copy + system print both work.
 struct ReceiptSheet: View {
     let saleId: String
+    /// Tender lines from the sale view; the server receipt has no payments, so
+    /// they ride in from the detail. Empty → the paid-with block is hidden.
+    var payments: [SalePaymentLine] = []
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
@@ -64,6 +67,11 @@ struct ReceiptSheet: View {
             }
             rule
             row(i18n.t("pos.totalDue"), MoneyText.format(r.total.string), bold: true)
+            if !payments.isEmpty {
+                ForEach(payments) { p in
+                    row(PaymentAccounts.label(p.accountCode, i18n), MoneyText.format(p.amount.string))
+                }
+            }
             if let w = r.warranty, let endsAt = w.endsAt {
                 row(i18n.t("pos.warrantyUntil"), SaleDate.day(endsAt))
             }

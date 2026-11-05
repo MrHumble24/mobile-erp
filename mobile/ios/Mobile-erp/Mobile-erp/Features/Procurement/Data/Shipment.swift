@@ -10,12 +10,15 @@ struct Shipment: Decodable, Identifiable {
     let deviceCount: Int
     let overheadCost: String?
     let notes: String?
+    /// Account the purchase + overhead left from, fixed at creation. Optional so
+    /// older cached shipments still decode.
+    let paymentAccountCode: String?
 
     var isComplete: Bool { deviceCount >= expectedCount }
     /// Date portion only, for list rows.
     var dateLabel: String { String(shipmentDate.prefix(10)) }
 
-    init(id: String, supplierId: String, shipmentDate: String, expectedCount: Int, deviceCount: Int = 0, overheadCost: String? = nil, notes: String? = nil) {
+    init(id: String, supplierId: String, shipmentDate: String, expectedCount: Int, deviceCount: Int = 0, overheadCost: String? = nil, notes: String? = nil, paymentAccountCode: String? = nil) {
         self.id = id
         self.supplierId = supplierId
         self.shipmentDate = shipmentDate
@@ -23,6 +26,7 @@ struct Shipment: Decodable, Identifiable {
         self.deviceCount = deviceCount
         self.overheadCost = overheadCost
         self.notes = notes
+        self.paymentAccountCode = paymentAccountCode
     }
 
     init(from decoder: Decoder) throws {
@@ -34,10 +38,11 @@ struct Shipment: Decodable, Identifiable {
         deviceCount = (try? c.decodeIfPresent(Int.self, forKey: .deviceCount)) ?? 0
         overheadCost = c.decimalString(.overheadCost)
         notes = try? c.decodeIfPresent(String.self, forKey: .notes)
+        paymentAccountCode = try? c.decodeIfPresent(String.self, forKey: .paymentAccountCode)
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, supplierId, shipmentDate, expectedCount, deviceCount, overheadCost, notes
+        case id, supplierId, shipmentDate, expectedCount, deviceCount, overheadCost, notes, paymentAccountCode
     }
 }
 
@@ -50,6 +55,8 @@ struct ShipmentWriteDTO: Encodable {
     let expectedCount: Int
     let overheadCost: Decimal?
     let notes: String?
+    /// Sent only on create (the server fixes it); omitted on update.
+    let paymentAccountCode: String?
 }
 
 /// One device staged for batch intake, as the server expects it per unit.

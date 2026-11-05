@@ -31,6 +31,10 @@ struct ShipmentsListView: View {
             if store == nil { store = makeStore() }
             await store?.reload()
         }
+        #if DEBUG
+        // Screenshot helper: `-openShipmentForm new` opens the create form.
+        .task { if KitDebugLaunch.consume("openShipmentForm") == "new" { showNew = true } }
+        #endif
         .sheet(isPresented: $showNew, onDismiss: afterNewDismiss) {
             ShipmentFormSheet(existing: nil) { created in pendingIntake = created }
         }

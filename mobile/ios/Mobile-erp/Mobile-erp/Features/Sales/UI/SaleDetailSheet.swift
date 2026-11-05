@@ -28,9 +28,9 @@ struct SaleDetailSheet: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(Tokens.card)
-        .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id) }
+        .sheet(isPresented: $showReceipt) { ReceiptSheet(saleId: sale.id, payments: sale.payments ?? []) }
         .sheet(isPresented: $showReturn) {
-            ReturnSheet(saleId: sale.id) {
+            ReturnSheet(saleId: sale.id, payments: sale.payments ?? []) {
                 container.toasts.success(i18n.t("sales.returnSuccess"))
                 onChanged()
                 dismiss()
@@ -71,6 +71,19 @@ struct SaleDetailSheet: View {
         VStack(spacing: 0) {
             fact(i18n.t("sales.salePrice")) {
                 MoneyText(value: sale.salePrice.string, size: 15).foregroundStyle(Tokens.text)
+            }
+            if let payments = sale.payments, !payments.isEmpty {
+                fact(i18n.t("balance.paidWith")) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        ForEach(payments) { p in
+                            HStack(spacing: Tokens.Space.sm) {
+                                Text(PaymentAccounts.label(p.accountCode, i18n))
+                                    .font(.ui(.caption)).foregroundStyle(Tokens.muted)
+                                MoneyText(value: p.amount.string, size: 14).foregroundStyle(Tokens.text)
+                            }
+                        }
+                    }
+                }
             }
             if let net = sale.netProfit {
                 fact(i18n.t("sales.netProfit")) {
