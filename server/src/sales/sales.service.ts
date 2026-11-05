@@ -17,11 +17,15 @@ import {
 } from '../telegram/events/telegram-events.js';
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
-import { ReturnSaleDto } from './dto/return-sale.dto.js';
-import { assertRefundWithinSale, buildRefundPostings } from './lib/refund.js';
 import { resolveSalePayments } from './lib/payments.js';
 import { resolveSaleTarget } from './lib/sale-target.js';
 import { warrantyEndsAt } from './lib/warranty.js';
+import {
+  SalesPricingService,
+  type CheckoutOptions,
+  type CustomerPricing,
+  type PricingOutcome,
+} from './sales-pricing.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
 import type {
@@ -39,6 +43,7 @@ export class SalesService {
     private readonly stores: StoresService,
     private readonly ledger: LedgerService,
     private readonly stock: StockService,
+    private readonly salesPricing: SalesPricingService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -50,37 +55,64 @@ export class SalesService {
   async create(
     caller: AuthenticatedUser,
     dto: CreateSaleDto,
+    options?: CheckoutOptions,
   ): Promise<SaleView> {
     if (dto.clientMutationId) {
       const existing = await this.findByClientMutationId(dto.clientMutationId);
       if (existing) return existing; // idempotent replay — no side effects
     }
     const target = resolveSaleTarget(dto);
+    const customer = await this.customerPricing(dto.customerId);
     if (target.kind === 'quantity') {
-      return this.createQuantity(caller, dto, target.modelId, target.quantity);
-    }
-    const code = target.code;
-    const device = await this.reads.findDeviceByImei(code);
-    if (!device) {
-      throw new NotFoundException(`Device ${code} not found`);
-    }
-    if (device.statusCode !== 'IN_STOCK') {
-      throw new ConflictException(
-        `Device ${code} is ${device.statusCode}, not available for sale`,
+      return this.createQuantity(
+        caller,
+        dto,
+        target.modelId,
+        target.quantity,
+        customer,
+        options,
       );
     }
-    if (dto.customerId && !(await this.reads.customerExists(dto.customerId))) {
-      throw new BadRequestException(`Customer ${dto.customerId} not found`);
+    const device = await this.reads.findDeviceByImei(target.code);
+    if (!device) throw new NotFoundException(`Device ${target.code} not found`);
+    if (device.statusCode !== 'IN_STOCK') {
+      throw new ConflictException(
+        `Device ${target.code} is ${device.statusCode}, not available for sale`,
+      );
     }
+    const pricing = await this.salesPricing.forUnit(
+      caller,
+      dto,
+      device,
+      customer,
+      options,
+    );
     const payments = resolveSalePayments(
       dto.payments,
       dto.salePrice,
       await this.ledger.activeAccountCodes(),
     );
-
     const days = dto.warrantyDays ?? (await this.reads.defaultWarrantyDays());
     const soldAt = new Date();
-    return this.runCheckout(caller, dto, device, soldAt, days, payments);
+    return this.runCheckout(
+      caller,
+      dto,
+      device,
+      soldAt,
+      days,
+      payments,
+      pricing,
+    );
+  }
+
+  /** Fetch a customer's pricing defaults; 400 when the id does not exist. */
+  private async customerPricing(
+    customerId?: string,
+  ): Promise<CustomerPricing | null> {
+    if (!customerId) return null;
+    const c = await this.reads.customerPricing(customerId);
+    if (!c) throw new BadRequestException(`Customer ${customerId} not found`);
+    return c;
   }
 
   private async runCheckout(
@@ -95,14 +127,17 @@ export class SalesService {
     soldAt: Date,
     days: number,
     payments: SalePayment[],
+    pricing: PricingOutcome,
   ): Promise<SaleView> {
     try {
       const saleId = await this.checkout.checkout({
         storeId: await this.stores.currentStoreId(),
         deviceId: device.id,
         expectedVersion: dto.expectedVersion ?? device.version,
-        salePrice: dto.salePrice,
+        salePrice: pricing.salePrice,
         landedCostSnapshot: device.landedCost,
+        listPriceSnapshot: pricing.listPriceSnapshot,
+        priceLevelCode: pricing.priceLevelCode,
         soldById: caller.id,
         soldAt,
         notes: dto.notes,
@@ -133,20 +168,29 @@ export class SalesService {
   }
 
   /**
-   * A quantity-product sale (ADR 0030): no device, no warranty, no margin
-   * alert. The checkout transaction snapshots the moving-average cost and posts
-   * the SALE stock movement. Idempotent on `clientMutationId` like any sale.
+   * A quantity-product sale (ADR 0030): no device, no warranty. The checkout
+   * transaction snapshots the moving-average cost and posts the SALE stock
+   * movement. Idempotent on `clientMutationId` like any sale.
    */
   private async createQuantity(
     caller: AuthenticatedUser,
     dto: CreateSaleDto,
     modelId: string,
     quantity: number,
+    customer: CustomerPricing | null,
+    options?: CheckoutOptions,
   ): Promise<SaleView> {
     await this.stock.assertQuantityModel(modelId);
-    if (dto.customerId && !(await this.reads.customerExists(dto.customerId))) {
-      throw new BadRequestException(`Customer ${dto.customerId} not found`);
-    }
+    const salePrice = await this.reads.modelSalePrice(modelId);
+    const pricing = await this.salesPricing.forQuantity(
+      caller,
+      dto,
+      modelId,
+      quantity,
+      salePrice,
+      customer,
+      options,
+    );
     const payments = resolveSalePayments(
       dto.payments,
       dto.salePrice,
@@ -157,7 +201,9 @@ export class SalesService {
         storeId: await this.stores.currentStoreId(),
         modelId,
         quantity,
-        salePrice: dto.salePrice,
+        salePrice: pricing.salePrice,
+        listPriceSnapshot: pricing.listPriceSnapshot,
+        priceLevelCode: pricing.priceLevelCode,
         soldById: caller.id,
         soldAt: new Date(),
         notes: dto.notes,
@@ -226,56 +272,6 @@ export class SalesService {
     if (!receipt) throw new NotFoundException(`Sale ${id} not found`);
     const payments = (await this.ledger.salePayments([id])).get(id) ?? [];
     return { ...receipt, payments };
-  }
-
-  async processReturn(
-    caller: AuthenticatedUser,
-    id: string,
-    dto: ReturnSaleDto,
-  ): Promise<SaleView> {
-    const sale = await this.reads.findSaleForReturn(id);
-    if (!sale) throw new NotFoundException(`Sale ${id} not found`);
-
-    const saleNets = (await this.ledger.salePayments([id])).get(id) ?? [];
-    assertRefundWithinSale(dto.refundAmount, sale.salePrice, saleNets);
-    const refundPostings = buildRefundPostings(dto.refundAmount, saleNets);
-
-    if (sale.deviceId === null) {
-      // Quantity sale: restore the pieces at the sale's own unit cost.
-      const unitCost = sale.landedCostSnapshot.div(sale.quantity!);
-      await this.checkout.processReturn({
-        saleId: id,
-        deviceId: null,
-        expectedVersion: 0,
-        toStatusCode: dto.deviceToStatusCode,
-        refundAmount: dto.refundAmount,
-        reason: dto.reason,
-        processedById: caller.id,
-        storeId: sale.storeId,
-        refundPostings,
-        quantityRestore: {
-          modelId: sale.modelId!,
-          quantity: sale.quantity!,
-          unitCost,
-        },
-      });
-      return this.require(id);
-    }
-
-    const device = await this.reads.findDeviceState(sale.deviceId);
-    if (!device) throw new NotFoundException(`Sale ${id} device missing`);
-    await this.checkout.processReturn({
-      saleId: id,
-      deviceId: sale.deviceId,
-      expectedVersion: dto.expectedVersion ?? device.version,
-      toStatusCode: dto.deviceToStatusCode,
-      refundAmount: dto.refundAmount,
-      reason: dto.reason,
-      processedById: caller.id,
-      storeId: sale.storeId,
-      refundPostings,
-    });
-    return this.require(id);
   }
 
   private async require(id: string): Promise<SaleView> {

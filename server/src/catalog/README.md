@@ -29,3 +29,8 @@ units drop out of both reads.
 - Return a consigned / sold / defective unit (filter by IN_STOCK).
 
 Target/sale prices are sale-side, not cost, so nothing here is redacted.
+
+Each card and each unit also carries `prices: { RETAIL, WHOLESALE, PARTNER }`
+(resolved via `PricingService`, null where unset; ADR 0034) so the till can show
+and switch level. A card's `prices` is the product-level price at "any storage";
+each unit's `prices` is resolved for its own storage.

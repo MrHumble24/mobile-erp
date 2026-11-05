@@ -18,6 +18,16 @@ model StoreSettings {
   minMarginPercent    Decimal  @default(0) @db.Decimal(5, 2)
   /// Fallback low-stock threshold when no StockAlertRule matches.
   lowStockThreshold   Int      @default(2)
+  /// Discounts (Change 12/7, ADR 0034). Off by default so a fresh shop sells at
+  /// list price. `maxDiscountPercent` is the largest discount a cashier may give
+  /// without the owner, as a percent of the list price. Presets are up to five
+  /// suggested values per mode (percent values / fixed amounts).
+  discountsEnabled       Boolean @default(false)
+  discountPercentAllowed Boolean @default(true)
+  discountAmountAllowed  Boolean @default(true)
+  discountPresetsPercent Json    @default("[]") @db.JsonB
+  discountPresetsAmount  Json    @default("[]") @db.JsonB
+  maxDiscountPercent     Decimal @default(0) @db.Decimal(5, 2)
   /// Date the closing digest was last sent, so the minute-cron fires once a day.
   digestSentOn        DateTime? @db.Date
   updatedAt           DateTime @updatedAt

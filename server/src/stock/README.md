@@ -31,8 +31,11 @@ number. Only `QUANTITY` models (ADR 0029) have stock.
 SALE/RETURN movements and `shipments` posts PURCHASE movements inside their own
 transaction. `findByBarcode` (scan), `productsForFeed` (sync),
 `totalStockValue` (inventory report), `assertQuantityModel` (validation).
+`shipmentPurchaseLines(id)` + `purchaseTotalsByShipment(ids)` let the shipments
+module read back its quantity purchases without touching stock tables (ADR 0034).
 `QuantityProductView` (scan + sync) also carries `categoryId` + `imageUrl` for
-the POS/offline grid (ADR 0031).
+the POS/offline grid (ADR 0031) and `prices{RETAIL,WHOLESALE,PARTNER}` + the
+stock list carries `prices` too (resolved via `PricingService`, ADR 0034).
 
 ## Must never
 

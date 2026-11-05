@@ -14,6 +14,8 @@ export interface SaleRow {
   id: string;
   salePrice: Money;
   landedCostSnapshot: Money;
+  listPriceSnapshot: Money | null;
+  priceLevelCode: string | null;
   soldAt: Date;
   consignmentId: string | null;
   notes: string | null;
@@ -76,6 +78,12 @@ export interface SaleView {
   salePrice: Money;
   landedCostSnapshot: Money;
   netProfit: Money;
+  /** The frozen list price before discount (null when the line had no price). */
+  listPrice: Money | null;
+  /** Derived: listPrice − salePrice (null when no snapshot). */
+  discountAmount: Money | null;
+  /** The level the sale was priced at (null for pre-feature sales). */
+  priceLevelCode: string | null;
   soldAt: Date;
   soldBy: { id: string; name: string };
   warranty: { days: number; startsAt: Date; endsAt: Date } | null;
@@ -151,8 +159,10 @@ export interface CheckoutInput {
   storeId: string;
   deviceId: string;
   expectedVersion: number;
-  salePrice: number;
+  salePrice: Money;
   landedCostSnapshot: Money;
+  listPriceSnapshot: Money | null;
+  priceLevelCode: string | null;
   soldById: string;
   soldAt: Date;
   notes?: string;
@@ -173,7 +183,9 @@ export interface QuantityCheckoutInput {
   storeId: string;
   modelId: string;
   quantity: number;
-  salePrice: number;
+  salePrice: Money;
+  listPriceSnapshot: Money | null;
+  priceLevelCode: string | null;
   soldById: string;
   soldAt: Date;
   notes?: string;

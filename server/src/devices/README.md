@@ -13,7 +13,8 @@ transitions and status history. Intake (creation + landed cost) belongs to
   `imei2: string | null`, `serialNumber: string | null` and
   `latestInspection { id, passed, gradeCode, batteryHealth, inspectedAt } | null`.
 - `GET /by-imei/:imei` — POS lookup by any unit code: device + model
-  (incl. `kindCode`) + status + latest QC summary (`device.read`). The `:imei`
+  (incl. `kindCode`) + status + latest QC summary + `prices{RETAIL,WHOLESALE,
+  PARTNER}` resolved for the unit (ADR 0034) (`device.read`). The `:imei`
   path segment is the scanned/typed code; it matches `imei`, `imei2` **or**
   `serialNumber` (ADR 0029, `lib/unit-code.ts`).
 - `GET /:id`, `GET /:id/history` (`device.read`).

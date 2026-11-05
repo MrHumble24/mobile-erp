@@ -19,6 +19,9 @@ function build() {
       .fn()
       .mockResolvedValue({ _sum: { refundAmount: 50 } }),
     expensesTotal: jest.fn().mockResolvedValue({ _sum: { amount: 250 } }),
+    discountsTotals: jest
+      .fn()
+      .mockResolvedValue({ _sum: { listPriceSnapshot: 90, salePrice: 60 } }),
   };
   const pricingRepo = { rollingAverages: jest.fn().mockResolvedValue([]) };
   const service = new ReportsService(
@@ -42,6 +45,7 @@ describe('ReportsService.profit', () => {
     expect(r.unitsSold).toBe(4);
     expect(r.byChannel).toEqual({ retail: 700, b2b: 300 });
     expect(r.returnsRefunded).toBe(50);
+    expect(r.discountsGiven).toBe(30);
   });
 
   it('treats null aggregate sums as zero', async () => {

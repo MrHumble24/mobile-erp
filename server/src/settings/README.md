@@ -16,6 +16,10 @@ Store-wide configuration singleton (PRD Module 6), `store_settings` row id = 1.
 - `digestSentOn` (`@db.Date`, nullable) — the day the Telegram closing digest
   last went out, so the minute-cron fires it once per day. Written only by
   `SettingsService.markDigestSent(date)`; not exposed on the write DTO.
+- Discounts (ADR 0034): `discountsEnabled` (default false), `discountPercentAllowed`,
+  `discountAmountAllowed`, `discountPresetsPercent`/`discountPresetsAmount`
+  (≤ 5 numbers each), `maxDiscountPercent` (cashier ceiling). Optional on the
+  write DTO — an omitted field is left unchanged. Read by checkout.
 
 ## Exposes
 

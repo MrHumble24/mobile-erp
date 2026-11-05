@@ -5,11 +5,15 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreateSaleDto } from './dto/create-sale.dto.js';
 import { ListSalesQueryDto } from './dto/list-sales.query.dto.js';
 import { ReturnSaleDto } from './dto/return-sale.dto.js';
+import { SalesReturnsService } from './sales-returns.service.js';
 import { SalesService } from './sales.service.js';
 
 @Controller('sales')
 export class SalesController {
-  constructor(private readonly sales: SalesService) {}
+  constructor(
+    private readonly sales: SalesService,
+    private readonly returns: SalesReturnsService,
+  ) {}
 
   @Post()
   @RequirePermissions('sale.create')
@@ -54,6 +58,6 @@ export class SalesController {
     @Param('id') id: string,
     @Body() dto: ReturnSaleDto,
   ) {
-    return this.sales.processReturn(caller, id, dto);
+    return this.returns.processReturn(caller, id, dto);
   }
 }

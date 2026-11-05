@@ -37,6 +37,12 @@ export function toSaleView(row: SaleRow): SaleView {
     salePrice: row.salePrice,
     landedCostSnapshot: row.landedCostSnapshot,
     netProfit: row.salePrice.minus(row.landedCostSnapshot),
+    listPrice: row.listPriceSnapshot,
+    discountAmount:
+      row.listPriceSnapshot === null
+        ? null
+        : row.listPriceSnapshot.minus(row.salePrice),
+    priceLevelCode: row.priceLevelCode,
     soldAt: row.soldAt,
     soldBy: { id: row.soldBy.id, name: fullName(row.soldBy.profile) },
     warranty: row.warranty,

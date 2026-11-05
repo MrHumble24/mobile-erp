@@ -5,7 +5,9 @@ B2B "Nasiya" device transfers and their resolution (PRD Module 4).
 ## Exposes (HTTP, all under `/consignments`)
 
 - `POST /` — `consignment.create`. One-tap transfer. `{ imei?, serialNumber?,
-  partnerId, agreedPrice, dueDate, notes?, clientMutationId?, expectedVersion? }`.
+  partnerId, agreedPrice?, dueDate, notes?, clientMutationId?, expectedVersion? }`.
+  `agreedPrice` is optional: omitted, it defaults to the unit's PARTNER list
+  price (ADR 0034; 400 if the unit has none); an explicit value always wins.
   Send **exactly one** of `imei`/`serialNumber` (400 otherwise); resolved against
   imei, imei2 or serialNumber (ADR 0029). Idempotent on `clientMutationId`;
   device must be IN_STOCK (409 otherwise); enforces the partner credit limit

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { PricingService } from '../pricing/pricing.service.js';
 import { SalesService } from '../sales/sales.service.js';
 import { CustomersRepository } from './customers.repository.js';
 import { CreateCustomerDto } from './dto/create-customer.dto.js';
@@ -23,6 +24,7 @@ export class CustomersService {
   constructor(
     private readonly repo: CustomersRepository,
     private readonly sales: SalesService,
+    private readonly pricing: PricingService,
   ) {}
 
   lookup(query?: string): Promise<CustomerView[]> {
@@ -61,14 +63,28 @@ export class CustomersService {
   async create(dto: CreateCustomerDto): Promise<CustomerView> {
     const phone = normalizeUzPhone(dto.phone);
     await this.assertPhoneFree(phone);
-    return this.repo.create({ name: dto.name, phone, notes: dto.notes });
+    if (dto.priceLevelCode) await this.pricing.assertLevel(dto.priceLevelCode);
+    return this.repo.create({
+      name: dto.name,
+      phone,
+      notes: dto.notes,
+      priceLevelCode: dto.priceLevelCode,
+      standingDiscountPercent: dto.standingDiscountPercent,
+    });
   }
 
   async update(id: string, dto: UpdateCustomerDto): Promise<CustomerView> {
     await this.require(id);
     const phone = normalizeUzPhone(dto.phone);
     await this.assertPhoneFree(phone, id);
-    return this.repo.update(id, { name: dto.name, phone, notes: dto.notes });
+    if (dto.priceLevelCode) await this.pricing.assertLevel(dto.priceLevelCode);
+    return this.repo.update(id, {
+      name: dto.name,
+      phone,
+      notes: dto.notes,
+      priceLevelCode: dto.priceLevelCode,
+      standingDiscountPercent: dto.standingDiscountPercent,
+    });
   }
 
   private async toListItem(customer: CustomerView): Promise<CustomerListItem> {

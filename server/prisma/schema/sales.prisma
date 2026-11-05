@@ -7,11 +7,19 @@ model Customer {
   name      String
   phone     String?  @unique
   notes     String?
+  /// The price level the till defaults to for this customer (Change 12). A
+  /// walk-in with no card is RETAIL; a shop is PARTNER; a reseller WHOLESALE.
+  priceLevelCode String     @default("RETAIL")
+  priceLevel     PriceLevel @relation(fields: [priceLevelCode], references: [code])
+  /// A standing discount percent on the customer's card (0 = none). Raises the
+  /// cashier's discount ceiling for this customer (ADR 0034).
+  standingDiscountPercent Decimal @default(0) @db.Decimal(5, 2)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   sales Sale[]
 
+  @@index([priceLevelCode])
   @@map("customers")
 }
 
@@ -47,6 +55,15 @@ model Sale {
   salePrice          Decimal @db.Decimal(14, 2)
   /// Device.landedCost at sale time so later edits don't rewrite history.
   landedCostSnapshot Decimal @db.Decimal(14, 2)
+  /// The list price (before discount) at sale time for the level used, frozen
+  /// so reports can show "given away in discounts" (ADR 0034). Null when the
+  /// shop had set no price for the line (old behaviour: salePrice is the price)
+  /// and on sales predating the feature. The discount amount is DERIVED
+  /// (listPriceSnapshot − salePrice), never stored.
+  listPriceSnapshot  Decimal?    @db.Decimal(14, 2)
+  /// The price level the sale was priced at (null for pre-feature sales).
+  priceLevelCode     String?
+  priceLevel         PriceLevel? @relation(fields: [priceLevelCode], references: [code])
 
   soldAt    DateTime @default(now())
   notes     String?
@@ -62,6 +79,7 @@ model Sale {
   @@index([deviceId])
   @@index([modelId])
   @@index([storeId])
+  @@index([priceLevelCode])
   @@map("sales")
 }
 

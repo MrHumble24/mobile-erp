@@ -1,9 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { DevicesService } from '../devices/devices.service.js';
 import { resolveUnitCode } from '../devices/lib/unit-code.js';
 import { PartnersService } from '../partners/partners.service.js';
+import { PricingService } from '../pricing/pricing.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
   ConsignmentCreatedEvent,
@@ -40,6 +46,8 @@ export class ConsignmentsService {
     private readonly writes: ConsignmentsWriteRepository,
     private readonly partners: PartnersService,
     private readonly stores: StoresService,
+    private readonly devices: DevicesService,
+    private readonly pricing: PricingService,
     private readonly events: EventEmitter2,
   ) {}
 
@@ -59,7 +67,7 @@ export class ConsignmentsService {
       if (existing) return existing;
     }
     const code = resolveUnitCode(dto);
-    const agreedPrice = new Prisma.Decimal(dto.agreedPrice);
+    const agreedPrice = await this.resolveAgreedPrice(code, dto.agreedPrice);
     // ponytail: credit check reads balance outside the write txn; a concurrent
     // transfer could briefly overshoot the limit. Acceptable at bazaar scale.
     await this.partners.assertWithinCreditLimit(dto.partnerId, agreedPrice);
@@ -85,6 +93,35 @@ export class ConsignmentsService {
       ),
     );
     return view;
+  }
+
+  /**
+   * An explicit agreed price wins; otherwise use the unit's PARTNER list price
+   * (ADR 0034). 404 if the unit is missing, 400 if it has no PARTNER price.
+   */
+  private async resolveAgreedPrice(
+    code: string,
+    explicit?: number,
+  ): Promise<Prisma.Decimal> {
+    if (explicit !== undefined) return new Prisma.Decimal(explicit);
+    const device = await this.devices.findByCode(code);
+    if (!device) throw new NotFoundException(`Device ${code} not found`);
+    const price = await this.pricing.listPriceForUnit('PARTNER', {
+      deviceId: device.id,
+      modelId: device.modelId,
+      storage: storageOf(device.specs),
+      targetPrice:
+        device.targetPrice === null
+          ? null
+          : new Prisma.Decimal(device.targetPrice),
+      salePrice: null,
+    });
+    if (price === null) {
+      throw new BadRequestException(
+        `Unit ${code} has no PARTNER price; provide an agreed price`,
+      );
+    }
+    return price;
   }
 
   list(query: ListConsignmentsQuery): Promise<ConsignmentPage> {
@@ -137,4 +174,9 @@ export class ConsignmentsService {
       changedById: caller.id,
     });
   }
+}
+
+function storageOf(specs: Record<string, unknown>): string {
+  const value = specs.storage;
+  return typeof value === 'string' ? value : '';
 }

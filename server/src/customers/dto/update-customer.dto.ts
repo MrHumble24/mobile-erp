@@ -1,4 +1,12 @@
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateCustomerDto {
   @IsOptional()
@@ -16,4 +24,15 @@ export class UpdateCustomerDto {
   @IsString()
   @MaxLength(500)
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  priceLevelCode?: string;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  standingDiscountPercent?: number;
 }

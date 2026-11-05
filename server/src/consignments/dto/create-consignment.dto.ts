@@ -28,10 +28,16 @@ export class CreateConsignmentDto {
   @IsUUID()
   partnerId!: string;
 
+  /**
+   * The price agreed with the partner. Omit to use the unit's PARTNER list
+   * price (ADR 0034); an explicit value always wins. 400 if omitted and the
+   * unit has no PARTNER price.
+   */
+  @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   @Max(1_000_000_000)
-  agreedPrice!: number;
+  agreedPrice?: number;
 
   @IsString()
   dueDate!: string;

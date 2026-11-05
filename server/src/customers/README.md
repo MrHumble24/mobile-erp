@@ -15,8 +15,13 @@ aggregates are **derived from sales, never stored**.
 - `GET /customers/:id` (`customer.read`) → `CustomerListItem` (404 if missing).
 - `GET /customers/:id/sales` (`customer.read`) → `SaleView[]` — newest first
   (delegates to `SalesService`; cost/profit fields redacted per permission).
-- `POST /customers` (`customer.manage`) `{ name, phone?, notes? }` → `CustomerView`.
-- `PATCH /customers/:id` (`customer.manage`) `{ name?, phone?, notes? }` → `CustomerView`.
+- `POST /customers` (`customer.manage`) `{ name, phone?, notes?, priceLevelCode?,
+  standingDiscountPercent? }` → `CustomerView`.
+- `PATCH /customers/:id` (`customer.manage`) same optional fields → `CustomerView`.
+
+`CustomerView` carries `priceLevelCode` (default `RETAIL`, validated against
+active price levels) and `standingDiscountPercent` (2-dp string) — the till's
+default level and discount ceiling for this customer (ADR 0034).
 
 `CustomerListItem` = `CustomerView` + `{ purchaseCount, totalSpent, lastPurchaseAt,
 activeWarranties, returnsCount }`.

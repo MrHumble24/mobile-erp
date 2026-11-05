@@ -1,5 +1,6 @@
 import { Prisma } from '../generated/client/client.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { PricingService } from '../pricing/pricing.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { StockRepository } from './stock.repository.js';
 import { StockService } from './stock.service.js';
@@ -35,7 +36,10 @@ function build(quantityInStock = 6) {
   const stores = {
     currentStoreId: jest.fn().mockResolvedValue('store-1'),
   } as unknown as StoresService;
-  return { service: new StockService(repo, stores), repo };
+  const pricing = {
+    pricesForProducts: jest.fn().mockResolvedValue(new Map()),
+  } as unknown as PricingService;
+  return { service: new StockService(repo, stores, pricing), repo };
 }
 
 const caller = {

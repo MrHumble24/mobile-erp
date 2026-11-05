@@ -50,6 +50,8 @@ describe('SaleCreateHandler (offline replay by serial)', () => {
     await handler.apply(ctx, dto);
     expect(dto.clientMutationId).toBe('m-1');
     expect(dto.expectedVersion).toBe(2);
-    expect(sales.create).toHaveBeenCalledWith(ctx.caller, dto);
+    expect(sales.create).toHaveBeenCalledWith(ctx.caller, dto, {
+      trustClientPrice: true,
+    });
   });
 });

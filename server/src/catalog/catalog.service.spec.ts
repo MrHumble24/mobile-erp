@@ -1,4 +1,5 @@
 import { Prisma } from '../generated/client/client.js';
+import { PricingService } from '../pricing/pricing.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CatalogRepository } from './catalog.repository.js';
 import { CatalogService } from './catalog.service.js';
@@ -10,9 +11,14 @@ function build() {
     sellableUnits: jest.fn().mockResolvedValue([]),
   };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
+  const pricing = {
+    pricesForProducts: jest.fn().mockResolvedValue(new Map()),
+    pricesForUnits: jest.fn().mockResolvedValue(new Map()),
+  };
   const service = new CatalogService(
     repo as unknown as CatalogRepository,
     stores as unknown as StoresService,
+    pricing as unknown as PricingService,
   );
   return { service, repo };
 }

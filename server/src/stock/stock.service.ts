@@ -1,20 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { Prisma } from '../generated/client/client.js';
+import { PricingService } from '../pricing/pricing.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { AdjustStockDto } from './dto/adjust-stock.dto.js';
-import {
-  averageCost,
-  valuation,
-  type StockAggregate,
-} from './lib/stock-math.js';
+import { averageCost, type StockAggregate } from './lib/stock-math.js';
+import { toLevelView, toMovementView } from './lib/stock-view.js';
 import { StockRepository } from './stock.repository.js';
 import type {
   QuantityProductView,
-  StockLevelRow,
+  ShipmentStockLine,
   StockLevelView,
   StockMovementInput,
-  StockMovementView,
   StockMovementsPage,
 } from './types/stock.types.js';
 
@@ -32,6 +29,7 @@ export class StockService {
   constructor(
     private readonly repo: StockRepository,
     private readonly stores: StoresService,
+    private readonly pricing: PricingService,
   ) {}
 
   async list(
@@ -45,7 +43,16 @@ export class StockService {
       query.search,
     );
     const canViewCost = caller.permissions.has('device.cost.view');
-    return rows.map((r) => toLevelView(r, canViewCost));
+    const priceMap = await this.pricing.pricesForProducts(
+      rows.map((r) => ({
+        modelId: r.modelId,
+        storage: '',
+        salePrice: r.salePrice,
+      })),
+    );
+    return rows.map((r) =>
+      toLevelView(r, canViewCost, priceMap.get(r.modelId) ?? {}),
+    );
   }
 
   async movements(
@@ -167,19 +174,50 @@ export class StockService {
     barcode: string,
     storeId?: string,
   ): Promise<QuantityProductView | null> {
-    return this.repo.findByBarcode(
+    const product = await this.repo.findByBarcode(
       storeId ?? (await this.stores.currentStoreId()),
       barcode,
     );
+    if (!product) return null;
+    return (await this.attachProductPrices([product]))[0];
   }
 
   async productsForFeed(storeId: string): Promise<QuantityProductView[]> {
-    return this.repo.quantityProductsForFeed(storeId);
+    return this.attachProductPrices(
+      await this.repo.quantityProductsForFeed(storeId),
+    );
+  }
+
+  /** Resolve each product's list price per level (ADR 0034). */
+  private async attachProductPrices(
+    products: QuantityProductView[],
+  ): Promise<QuantityProductView[]> {
+    const map = await this.pricing.pricesForProducts(
+      products.map((p) => ({
+        modelId: p.modelId,
+        storage: '',
+        salePrice:
+          p.salePrice === null ? null : new Prisma.Decimal(p.salePrice),
+      })),
+    );
+    return products.map((p) => ({ ...p, prices: map.get(p.modelId) ?? {} }));
   }
 
   /** Total quantity-stock value for the inventory report (all stores). */
   totalStockValue(): Promise<Prisma.Decimal> {
     return this.repo.totalStockValue();
+  }
+
+  /** A shipment's quantity PURCHASE lines (newest last). For shipment detail. */
+  shipmentPurchaseLines(shipmentId: string): Promise<ShipmentStockLine[]> {
+    return this.repo.shipmentPurchaseLines(shipmentId);
+  }
+
+  /** Σ purchase line totals per shipment, for the shipment list/detail totals. */
+  purchaseTotalsByShipment(
+    shipmentIds: string[],
+  ): Promise<Map<string, Prisma.Decimal>> {
+    return this.repo.purchaseTotalsByShipment(shipmentIds);
   }
 
   /** 400 unless the model exists and is a QUANTITY product. */
@@ -203,68 +241,13 @@ export class StockService {
     const [row] = await this.repo
       .listStock(storeId, undefined, undefined)
       .then((rows) => rows.filter((r) => r.modelId === modelId));
-    return toLevelView(row, caller.permissions.has('device.cost.view'));
+    const priceMap = await this.pricing.pricesForProducts([
+      { modelId: row.modelId, storage: '', salePrice: row.salePrice },
+    ]);
+    return toLevelView(
+      row,
+      caller.permissions.has('device.cost.view'),
+      priceMap.get(row.modelId) ?? {},
+    );
   }
-}
-
-function toLevelView(row: StockLevelRow, canViewCost: boolean): StockLevelView {
-  const v = valuation({
-    quantity: Number(row.quantity),
-    value: new Prisma.Decimal(row.value),
-    latestPurchaseCost: new Prisma.Decimal(row.latestPurchaseCost),
-  });
-  return {
-    modelId: row.modelId,
-    brand: row.brand,
-    name: row.name,
-    barcode: row.barcode,
-    modelCode: row.modelCode,
-    categoryId: row.categoryId,
-    salePrice:
-      row.salePrice === null
-        ? null
-        : new Prisma.Decimal(row.salePrice).toFixed(2),
-    quantity: v.quantity,
-    averageCost: canViewCost ? v.averageCost.toFixed(2) : null,
-    value: canViewCost ? v.value.toFixed(2) : null,
-  };
-}
-
-interface MovementRow {
-  id: string;
-  quantity: number;
-  unitCostSnapshot: Prisma.Decimal;
-  shipmentId: string | null;
-  saleId: string | null;
-  note: string | null;
-  occurredAt: Date;
-  type: { code: string; label: string };
-  createdBy: {
-    id: string;
-    profile: { firstName: string; lastName: string | null } | null;
-  } | null;
-}
-
-function toMovementView(
-  m: MovementRow,
-  canViewCost: boolean,
-): StockMovementView {
-  const p = m.createdBy?.profile;
-  return {
-    id: m.id,
-    typeCode: m.type.code,
-    typeLabel: m.type.label,
-    quantity: m.quantity,
-    unitCostSnapshot: canViewCost ? m.unitCostSnapshot.toFixed(2) : null,
-    shipmentId: m.shipmentId,
-    saleId: m.saleId,
-    note: m.note,
-    occurredAt: m.occurredAt,
-    createdBy: m.createdBy
-      ? {
-          id: m.createdBy.id,
-          name: p ? `${p.firstName} ${p.lastName ?? ''}`.trim() : '',
-        }
-      : null,
-  };
 }

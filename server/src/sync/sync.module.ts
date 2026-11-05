@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConsignmentsModule } from '../consignments/consignments.module.js';
 import { PartnersModule } from '../partners/partners.module.js';
+import { PricingModule } from '../pricing/pricing.module.js';
 import { SalesModule } from '../sales/sales.module.js';
 import { StockModule } from '../stock/stock.module.js';
 import { StoresModule } from '../stores/stores.module.js';
@@ -23,6 +24,7 @@ import { SyncService } from './sync.service.js';
     PartnersModule,
     StockModule,
     StoresModule,
+    PricingModule,
   ],
   controllers: [SyncController],
   providers: [

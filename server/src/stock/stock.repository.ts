@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { StockAggregate } from './lib/stock-math.js';
 import type {
   QuantityProductView,
+  ShipmentStockLine,
   StockLevelRow,
   StockMovementInput,
 } from './types/stock.types.js';
@@ -155,6 +156,7 @@ export class StockRepository {
       quantity: Number(r.quantity),
       categoryId: r.categoryId,
       imageUrl: buildImageUrl(r.imageFileName),
+      prices: {}, // filled by the caller from PricingService
     }));
   }
 
@@ -186,6 +188,7 @@ export class StockRepository {
       quantity: agg.quantity,
       categoryId: model.categoryId,
       imageUrl: buildImageUrl(model.imageFileName),
+      prices: {}, // filled by the caller from PricingService
     };
   }
 
@@ -198,5 +201,49 @@ export class StockRepository {
                  FROM stock_movements`,
     );
     return new Prisma.Decimal(row?.value ?? 0);
+  }
+
+  /** PURCHASE movements of a shipment with their model (newest last). */
+  async shipmentPurchaseLines(
+    shipmentId: string,
+  ): Promise<ShipmentStockLine[]> {
+    const rows = await this.prisma.stockMovement.findMany({
+      where: { shipmentId, typeCode: 'PURCHASE' },
+      orderBy: { occurredAt: 'asc' },
+      select: {
+        id: true,
+        quantity: true,
+        unitCostSnapshot: true,
+        occurredAt: true,
+        model: { select: { id: true, brand: true, name: true } },
+      },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      modelId: r.model.id,
+      brand: r.model.brand,
+      name: r.model.name,
+      quantity: r.quantity,
+      unitCost: r.unitCostSnapshot,
+      lineTotal: r.unitCostSnapshot.times(r.quantity),
+      occurredAt: r.occurredAt,
+    }));
+  }
+
+  /** Σ(quantity × unitCostSnapshot) of PURCHASE lines, per shipment. */
+  async purchaseTotalsByShipment(
+    shipmentIds: string[],
+  ): Promise<Map<string, Prisma.Decimal>> {
+    if (shipmentIds.length === 0) return new Map();
+    const rows = await this.prisma.$queryRaw<
+      { shipmentId: string; total: Prisma.Decimal }[]
+    >(Prisma.sql`
+      SELECT "shipmentId", coalesce(sum(quantity * "unitCostSnapshot"), 0)::numeric AS total
+      FROM stock_movements
+      WHERE "typeCode" = 'PURCHASE' AND "shipmentId" IN (${Prisma.join(shipmentIds)})
+      GROUP BY "shipmentId"`);
+    return new Map(
+      rows.map((r) => [r.shipmentId, new Prisma.Decimal(r.total)]),
+    );
   }
 }
