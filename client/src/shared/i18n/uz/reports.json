@@ -9,7 +9,7 @@
   "tab_sales": "Savdolar",
   "tab_expenses": "Xarajatlar",
   "tab_nasiya": "Nasiyalar",
-  "tab_credit": "Customer credit",
+  "tab_credit": "Muddatli to'lov",
   "tab_inventory": "Ombor",
   "tab_pricing": "Narxlar",
   "tab_closing": "Kassa yopilishi",
@@ -91,5 +91,5 @@
   "profit": "Foyda",
   "loss": "Zarar",
   "allMetrics": "Barchasi",
-  "customsTab": "Customs fees"
+  "customsTab": "Bojxona to'lovlari"
 }

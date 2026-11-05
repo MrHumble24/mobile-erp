@@ -32,7 +32,7 @@
   "pageRange": "{total} tadan {from}–{to}",
   "perPage": "Sahifada",
   "intakeDevices": "Qurilmalarni qabul qilish",
-  "scanImei": "IMEI skanerlang yoki kiriting (15 xona)",
+  "scanImei": "IMEI yoki seriya raqamini skanerlang yoki kiriting",
   "imeiLength": "IMEI aynan 15 ta raqamdan iborat bo'lishi kerak",
   "duplicateImei": "Ushbu IMEI bazada mavjud yoki partiyada takrorlandi",
   "registeredProgress": "{registered} ta kiritildi / kutilayotgan: {expected} ta",
@@ -49,7 +49,7 @@
   "supplierName": "Yetkazib beruvchi nomi",
   "supplierCountry": "Davlat",
   "supplierContact": "Aloqa / Telefon",
-  "unitExpenseTotal": "Phone expenses",
-  "customsFeeTotal": "Customs fees",
-  "devicesWithoutCustomsFee": "{count} phones have no customs fee"
+  "unitExpenseTotal": "Qurilma xarajatlari",
+  "customsFeeTotal": "Bojxona to'lovlari",
+  "devicesWithoutCustomsFee": "{count} ta qurilmaning bojxona to'lovi yo'q"
 }

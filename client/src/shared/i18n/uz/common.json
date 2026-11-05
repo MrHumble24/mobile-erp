@@ -32,9 +32,9 @@
   "required": "Majburiy",
   "notFound": "Ma'lumot topilmadi",
   "select": "Tanlang",
-  "print": "Print",
-  "from": "From",
-  "to": "To",
-  "previous": "Previous",
-  "next": "Next"
+  "print": "Chop etish",
+  "from": "Dan",
+  "to": "Gacha",
+  "previous": "Oldingi",
+  "next": "Keyingi"
 }

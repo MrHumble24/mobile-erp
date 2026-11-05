@@ -23,14 +23,14 @@
   "statusOnline": "Onlayn",
   "collapseSidebar": "Menyuni yig'ish",
   "expandSidebar": "Menyuni ochish",
-  "sync": "Sync",
+  "sync": "Sinxronlash",
   "more": "Yana",
-  "balance": "Balance",
-  "customs": "Customs fees",
-  "stock": "Stock",
-  "categories": "Categories",
-  "credits": "Customer credit",
-  "shifts": "Shifts",
-  "purchases": "Customer purchases",
-  "repairs": "Repairs"
+  "balance": "Kassa balansi",
+  "customs": "Bojxona to'lovlari",
+  "stock": "Miqdoriy qoldiq",
+  "categories": "Kategoriyalar",
+  "credits": "Muddatli to'lov",
+  "shifts": "Smenalar",
+  "purchases": "Qurilma xaridi",
+  "repairs": "Ta'mirlash"
 }

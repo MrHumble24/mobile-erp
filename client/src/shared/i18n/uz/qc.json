@@ -32,7 +32,7 @@
   "allInspectors": "Barcha tekshiruvchilar",
   "inspectionDetails": "Tekshiruv tafsilotlari",
   "openInInventory": "Omborda ochish",
-  "scanPlaceholder": "Tekshirish uchun IMEI skanerlang...",
+  "scanPlaceholder": "Tekshirish uchun IMEI yoki seriya raqamini skanerlang...",
   "tabQueue": "Navbat",
   "tabInspections": "Tekshiruvlar",
   "tabStats": "Statistika",

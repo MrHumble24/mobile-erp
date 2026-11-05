@@ -1,6 +1,6 @@
 # 017 — Uzbek text for the new features
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: nothing (013 can be done in the same pass)
+Status: done · Owner: Gemini (Antigravity) · Depends on: nothing (013 can be done in the same pass)
 
 ## Why
 On 2026-11-05 Claude built store balance, customs fees, product kinds, the till catalog, price
@@ -46,10 +46,104 @@ Commit as `feat(i18n): uzbek text for balance, catalog, pricing, credit, shifts,
 === END ===
 
 ## Result (Gemini fills)
-- Commit:
-- Term chosen for customer credit:
+- Commit: `0125a7c`
+- Term chosen for customer credit: Muddatli to'lov
 - Keys translated (per file):
+  - `repairs.json`: 106 keys
+  - `catalog.json`: 89 keys
+  - `balance.json`: 68 keys
+  - `credit.json`: 61 keys
+  - `pricing.json`: 40 keys
+  - `shifts.json`: 38 keys
+  - `customs.json`: 35 keys
+  - `sync.json`: 35 keys
+  - `purchases.json`: 34 keys
+  - `inventory.json`: 12 keys
+  - `nav.json`: 9 keys
+  - `pos.json`: 6 keys
+  - `common.json`: 5 keys
+  - `sales.json`: 4 keys
+  - `shipments.json`: 4 keys
+  - `reports.json`: 2 keys
+  - `consignments.json`: 2 keys
+  - `qc.json`: 1 key
+  Total: 551 keys
 - Keys left the same as English, and why:
+  - `auth.emailPlaceholder = admin@malika.uz`: example email address placeholder
+  - `inventory.model = Model`: technical/hardware specification label identical in Uzbek
+  - `inventory.imei2 = IMEI 2`: technical hardware identifier acronym
+  - `pos.storeName = MALIKA SMARTPHONES`: store brand name
+  - `pos.modeNasiya = Nasiya`: partner shop credit mode name
+  - `purchases.tradeInAction = Trade-in`: standard retail trade-in term in Uzbekistan
+  - `purchases.tradeInLabel = Trade-in`: standard retail trade-in term in Uzbekistan
+  - `repairs.imei = IMEI`: technical hardware identifier acronym
+  - `repairs.model = Model`: hardware specification label
+  - `reports.group_model = Model`: grouping category label
+  - `shifts.count = {count}`: template placeholder with no translatable text
+  - `sync.colImei = IMEI`: technical hardware identifier acronym
+  - `sync.colTerminal = Terminal`: standard device/hardware term
 - Keys changed from "IMEI" to "IMEI yoki seriya raqami":
+  - `pos.scanPrompt`: "IMEI yoki seriya raqamini skanerlang yoki kiriting"
+  - `inventory.scanOrSearch`: "IMEI yoki seriya raqamini skanerlang yoki qidiring..."
+  - `inventory.searchPlaceholder`: "IMEI, seriya raqami yoki model bo'yicha qidirish..."
+  - `sales.filterSearch`: "IMEI, seriya raqami, mijoz yoki telefon bo'yicha qidirish"
+  - `sales.imeiPlaceholder`: "IMEI yoki seriya raqamini kiriting..."
+  - `shipments.scanImei`: "IMEI yoki seriya raqamini skanerlang yoki kiriting"
+  - `consignments.searchPlaceholder`: "IMEI, seriya raqami yoki hamkor bo'yicha qidirish"
+  - `consignments.device`: "Qurilma (IMEI / seriya raqami)"
+  - `qc.scanPlaceholder`: "Tekshirish uchun IMEI yoki seriya raqamini skanerlang..."
 - Strings that need a code change:
+  - None. All keys have proper placeholders and structured strings without requiring code changes.
 - Output of checks 1 to 4 (paste):
+
+```
+Check 1: Keys identical between EN and UZ
+auth.emailPlaceholder = admin@malika.uz
+inventory.model = Model
+inventory.imei2 = IMEI 2
+pos.storeName = MALIKA SMARTPHONES
+pos.modeNasiya = Nasiya
+purchases.tradeInAction = Trade-in
+purchases.tradeInLabel = Trade-in
+repairs.imei = IMEI
+repairs.model = Model
+reports.group_model = Model
+shifts.count = {count}
+sync.colImei = IMEI
+sync.colTerminal = Terminal
+
+Check 2: Key set parity across all 25 files
+client/src/shared/i18n/uz/auth.json True
+client/src/shared/i18n/uz/balance.json True
+client/src/shared/i18n/uz/catalog.json True
+client/src/shared/i18n/uz/common.json True
+client/src/shared/i18n/uz/consignments.json True
+client/src/shared/i18n/uz/credit.json True
+client/src/shared/i18n/uz/customers.json True
+client/src/shared/i18n/uz/customs.json True
+client/src/shared/i18n/uz/dashboard.json True
+client/src/shared/i18n/uz/expenses.json True
+client/src/shared/i18n/uz/inventory.json True
+client/src/shared/i18n/uz/nav.json True
+client/src/shared/i18n/uz/partners.json True
+client/src/shared/i18n/uz/pos.json True
+client/src/shared/i18n/uz/pricing.json True
+client/src/shared/i18n/uz/purchases.json True
+client/src/shared/i18n/uz/qc.json True
+client/src/shared/i18n/uz/repairs.json True
+client/src/shared/i18n/uz/reports.json True
+client/src/shared/i18n/uz/sales.json True
+client/src/shared/i18n/uz/settings.json True
+client/src/shared/i18n/uz/shifts.json True
+client/src/shared/i18n/uz/shipments.json True
+client/src/shared/i18n/uz/sync.json True
+client/src/shared/i18n/uz/users.json True
+
+Check 3: Placeholder consistency
+All placeholders match exactly across all files (0 mismatches).
+
+Check 4: cd client && pnpm lint && pnpm build
+$ oxlint (passed, no errors)
+✓ built in 5.63s
+PWA v2.0.0 (precache 138 entries)
+```

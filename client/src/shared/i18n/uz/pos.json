@@ -1,7 +1,7 @@
 {
   "title": "Kassa terminali (POS)",
-  "cart": "Cart",
-  "scanPrompt": "IMEI skanerlang yoki kiriting (15 xona)",
+  "cart": "Savat",
+  "scanPrompt": "IMEI yoki seriya raqamini skanerlang yoki kiriting",
   "cartEmpty": "Savatda qurilma yo'q",
   "deviceCard": "Tanlangan qurilma",
   "salePrice": "Sotuv narxi",
@@ -41,7 +41,7 @@
   "quickTarget": "mo'ljal narx",
   "quickRound": "yaxlitlash ($10)",
   "removeLine": "Qurilmani o'chirish",
-  "lineDetails": "Line details",
+  "lineDetails": "Mahsulot tafsilotlari",
   "lineCount": "{count} ta qurilma",
   "subtotal": "Oraliq summa",
   "warrantySummary": "Kafolat",
@@ -80,7 +80,7 @@
   "scToggleCustomer": "Mijoz qidirish",
   "scToggleMode": "Sotuv / Nasiya rejimini almashtirish",
   "alreadyQueued": "Allaqachon navbatda",
-  "findProduct": "Find a product by name",
-  "decreaseQuantity": "Decrease quantity",
-  "increaseQuantity": "Increase quantity"
+  "findProduct": "Mahsulotni nomi bo'yicha qidirish",
+  "decreaseQuantity": "Miqdorni kamaytirish",
+  "increaseQuantity": "Miqdorni oshirish"
 }

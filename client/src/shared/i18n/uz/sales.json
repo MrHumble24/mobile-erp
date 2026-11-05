@@ -6,7 +6,7 @@
   "channelRetail": "Chakana (Retail)",
   "channelB2B": "Ulgurji (B2B)",
   "filterChannel": "Kanal",
-  "filterSearch": "IMEI, mijoz yoki telefon bo'yicha qidirish",
+  "filterSearch": "IMEI, seriya raqami, mijoz yoki telefon bo'yicha qidirish",
   "filterStatus": "Holati",
   "statusActive": "Faol (qaytarilmagan)",
   "statusReturned": "Qaytarilgan",
@@ -39,7 +39,7 @@
   "viewConsignment": "Nasiyani ko'rish",
   "openDevice": "Qurilmani ochish",
   "openSale": "Savdoni ochish",
-  "imeiPlaceholder": "IMEI kiriting (15 xona)...",
+  "imeiPlaceholder": "IMEI yoki seriya raqamini kiriting...",
   "warrantyLookup": "Kafolat tekshirish (IMEI)",
   "remainingDays": "Qolgan kafolat kunlari",
   "warrantyExpired": "Kafolat muddati tugagan",
@@ -66,6 +66,6 @@
   "customerSaved": "Mijoz muvaffaqiyatli saqlandi",
   "receipt": "Chek",
   "printReceipt": "Chekni chop etish",
-  "refundGoesBack": "Refund returns the same way it was paid: {accounts}",
-  "refundTooHigh": "The refund cannot be more than what was paid"
+  "refundGoesBack": "Qaytarish to'langan usulda amalga oshiriladi: {accounts}",
+  "refundTooHigh": "Qaytarish summasi to'langan summadan ko'p bo'lishi mumkin emas"
 }
