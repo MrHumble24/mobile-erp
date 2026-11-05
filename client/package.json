@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node --test src/entities/sync/lib/drain.spec.ts",
+    "test": "node --test src/entities/sync/lib/drain.spec.ts src/features/checkout/lib/payment.spec.ts",
     "preview": "vite preview",
     "graphify": "graphify update ."
   },

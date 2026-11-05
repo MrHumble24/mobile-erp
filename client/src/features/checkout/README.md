@@ -13,9 +13,10 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
 - UI: `CartLines`, `CartLine`, `PriceGuidance`, `CustomerPanel`, `CustomerSearch`,
   `NewCustomerForm`, `TotalsPanel`, `PaymentPanel`, `CheckoutReceiptModal`.
 - `lib/to-sale-dto.ts`, `lib/line-blockers.ts`, `lib/payment.ts` — pure mappers/rules.
-  `payment.ts` turns the cart's method + split parts into each line's `payments`
-  (`cash` → omitted, `card` → one CARD line, `split` → the parts) and exposes
-  `isPaymentBlocked` so an unbalanced split cannot check out.
+  `payment.ts`'s `buildCartPayments` turns the cart's method + split parts into each
+  line's `payments` (`cash` → omitted, `card` → one CARD line, `split` →
+  `allocateSplit`); `isPaymentBlocked` stops an unbalanced split checking out. Tested
+  in `lib/payment.spec.ts`.
 
 ## Exposes (index.ts)
 `useCartStore`, `useCheckout`, `isLineBlocked`, `isPaymentBlocked`, `CartLines`,
@@ -33,11 +34,12 @@ clears the line, and returns `queuedCount`; the POS shows a "queued" toast.
 
 ## Payment
 The cashier picks Cash, Card or Split (`PaymentPanel` → `entities/ledger`'s
-`PaymentMethodField`). Split is offered only for a single-line cart (one price to
-divide); a stale split on a multi-line cart resets to cash. The chosen tender rides
-in each line's `payments`, so an offline-queued sale keeps its split.
+`PaymentMethodField`). Split divides the whole **cart total** into one amount per
+account (cash X, card Y, X + Y = total). At checkout `allocateSplit` walks the
+phones in cart order and pays each from the parts in order (cash until used up,
+then card), cent-exact; a phone that straddles the boundary gets two payment
+lines, every other phone one, and each sale's `payments` sums to its own price.
+The same allocation feeds the offline outbox, so a queued split survives reload.
 
 ## Open questions
-- Multi-line split is deliberately out: one shared split across several sales would
-  have to re-allocate per line to each sale's price. Add when the shop asks for it.
 - Below-cost confirm only fires when the user can see cost (`device.cost.view`).

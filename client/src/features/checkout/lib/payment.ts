@@ -1,38 +1,75 @@
-import { splitRemaining, type PaymentMethod, type PaymentPart } from "@/entities/ledger"
-import type { CartLine } from "../model/cart.store"
+import type { PaymentMethod, PaymentPart } from "@/entities/ledger"
 
-export function cartTotal(lines: CartLine[]): number {
+/** The two fields the payment maths reads off a cart line. */
+export interface LinePrice {
+  lineId: string
+  salePrice: number
+}
+
+/** Integer minor units, so amounts never drift through float arithmetic. */
+const toCents = (amount: number): number => Math.round(amount * 100)
+
+export function cartTotal(lines: LinePrice[]): number {
   return lines.reduce((sum, line) => sum + (line.salePrice || 0), 0)
 }
 
-/** Split needs one price to divide, so it only applies to a single-line cart. */
-export function splitAllowed(lines: CartLine[]): boolean {
-  return lines.length === 1
-}
-
-/** The method actually used: a stale "split" on a multi-line cart falls back to cash. */
-export function effectiveMethod(method: PaymentMethod, lines: CartLine[]): PaymentMethod {
-  if (method === "split" && !splitAllowed(lines)) return "cash"
-  return method
-}
-
-/** True when the split does not sum to the total, so checkout must be blocked. */
+/** True when a split's parts do not add up to the cart total; checkout is blocked. */
 export function isPaymentBlocked(
-  lines: CartLine[],
+  lines: LinePrice[],
   method: PaymentMethod,
   parts: PaymentPart[]
 ): boolean {
-  if (effectiveMethod(method, lines) !== "split") return false
-  return splitRemaining(cartTotal(lines), parts) !== 0
+  if (method !== "split") return false
+  const assigned = parts.reduce((sum, p) => sum + toCents(p.amount), 0)
+  return assigned !== toCents(cartTotal(lines))
 }
 
-/** Payments for one sale line. Undefined = single CASH line of the full price. */
-export function linePayments(
-  line: CartLine,
+/**
+ * Spread a cart-total split across the line-sales in cart order, cent-exact.
+ * Each phone's price is drawn from the parts in their given order (e.g. cash
+ * until the cash part is used up, then card); a phone that straddles a part
+ * boundary gets two payment lines, every other phone one. Each line's payments
+ * therefore sum to its own price — what the server checks. Call only on a
+ * balanced split (`isPaymentBlocked` false), else trailing lines fall short.
+ */
+export function allocateSplit(
+  lines: LinePrice[],
+  parts: PaymentPart[]
+): Record<string, PaymentPart[]> {
+  const pool = parts
+    .filter((p) => p.amount > 0)
+    .map((p) => ({ accountCode: p.accountCode, cents: toCents(p.amount) }))
+  const result: Record<string, PaymentPart[]> = {}
+  for (const line of lines) {
+    let remaining = toCents(line.salePrice)
+    const payments: PaymentPart[] = []
+    for (const part of pool) {
+      if (remaining <= 0) break
+      if (part.cents <= 0) continue
+      const take = Math.min(remaining, part.cents)
+      payments.push({ accountCode: part.accountCode, amount: take / 100 })
+      part.cents -= take
+      remaining -= take
+    }
+    result[line.lineId] = payments
+  }
+  return result
+}
+
+/**
+ * Payments for every line of the cart, keyed by `lineId`. One source of truth
+ * for both the online checkout and the offline outbox.
+ * - cash → `undefined` (server posts one CASH line of the full price)
+ * - card → one CARD line of the price
+ * - split → the cart-total allocation above
+ */
+export function buildCartPayments(
+  lines: LinePrice[],
   method: PaymentMethod,
-  splitParts: PaymentPart[]
-): PaymentPart[] | undefined {
-  if (method === "cash") return undefined
-  if (method === "card") return [{ accountCode: "CARD", amount: line.salePrice }]
-  return splitParts.filter((p) => p.amount > 0)
+  parts: PaymentPart[]
+): Record<string, PaymentPart[] | undefined> {
+  if (method === "split") return allocateSplit(lines, parts)
+  const perLine = (line: LinePrice): PaymentPart[] | undefined =>
+    method === "card" ? [{ accountCode: "CARD", amount: line.salePrice }] : undefined
+  return Object.fromEntries(lines.map((line) => [line.lineId, perLine(line)]))
 }

@@ -64,9 +64,14 @@ function SplitRows({
   const accounts = useAccountOptions()
   const remaining = splitRemaining(total, parts)
 
+  // Emit every account in the options' order (cash, card, …) so the checkout
+  // allocation consumes the parts in a stable, predictable sequence.
   const setAmount = (code: string, amount: number) => {
-    const others = parts.filter((p) => p.accountCode !== code)
-    onPartsChange([...others, { accountCode: code, amount }])
+    const next = new Map(parts.map((p) => [p.accountCode, p.amount]))
+    next.set(code, amount)
+    onPartsChange(
+      accounts.map((a) => ({ accountCode: a.accountCode, amount: next.get(a.accountCode) ?? 0 }))
+    )
   }
 
   return (

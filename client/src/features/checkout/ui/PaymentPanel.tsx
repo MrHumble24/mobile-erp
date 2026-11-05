@@ -1,10 +1,9 @@
-import * as React from "react"
 import { PaymentMethodField } from "@/entities/ledger"
 import { useCartStore } from "../model/cart.store"
-import { cartTotal, splitAllowed } from "../lib/payment"
+import { cartTotal } from "../lib/payment"
 
-/** POS "Paid with" control, bound to the cart store. Split is offered only for
- *  a single-line cart; a stale split on a multi-line cart is reset to cash. */
+/** POS "Paid with" control, bound to the cart store. Split divides the whole
+ *  cart total across accounts; the allocation per phone happens at checkout. */
 export function PaymentPanel() {
   const lines = useCartStore((s) => s.lines)
   const method = useCartStore((s) => s.paymentMethod)
@@ -13,11 +12,6 @@ export function PaymentPanel() {
   const setParts = useCartStore((s) => s.setSplitParts)
 
   const total = cartTotal(lines)
-  const allowSplit = splitAllowed(lines)
-
-  React.useEffect(() => {
-    if (!allowSplit && method === "split") setMethod("cash")
-  }, [allowSplit, method, setMethod])
 
   const handleMethod = (next: typeof method) => {
     setMethod(next)
@@ -31,7 +25,6 @@ export function PaymentPanel() {
       parts={parts}
       onMethodChange={handleMethod}
       onPartsChange={setParts}
-      allowSplit={allowSplit}
     />
   )
 }

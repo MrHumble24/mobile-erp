@@ -6,7 +6,7 @@ import { customerKeys } from "@/entities/customer"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
 import { toSaleDto } from "../lib/to-sale-dto"
-import { effectiveMethod, linePayments } from "../lib/payment"
+import { buildCartPayments } from "../lib/payment"
 
 export interface CheckoutResult {
   /** Sales confirmed by the server now. */
@@ -46,11 +46,10 @@ export function useCheckout() {
       // Snapshot now; removeLine mutates the store as we go.
       const snapshot = useCartStore.getState()
       const lines = [...snapshot.lines]
-      const method = effectiveMethod(snapshot.paymentMethod, lines)
-      const splitParts = snapshot.splitParts
+      const payments = buildCartPayments(lines, snapshot.paymentMethod, snapshot.splitParts)
       for (const line of lines) {
         const customer = useCartStore.getState().customer
-        const dto = toSaleDto(line, customer, linePayments(line, method, splitParts))
+        const dto = toSaleDto(line, customer, payments[line.lineId])
         try {
           const sale = await saleRepository.create(dto)
           saleIds.push(sale.id)
