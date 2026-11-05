@@ -36,7 +36,14 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
     private val _form = MutableStateFlow(CustomerFormUi())
     val form: StateFlow<CustomerFormUi> = _form.asStateFlow()
 
-    init { refresh() }
+    /** The shop's default credit limit (ADR 0035), shown as a hint on the form; null = no cap. */
+    private val _defaultCreditLimit = MutableStateFlow<String?>(null)
+    val defaultCreditLimit: StateFlow<String?> = _defaultCreditLimit.asStateFlow()
+
+    init {
+        refresh()
+        viewModelScope.launch { _defaultCreditLimit.value = runCatching { repo.defaultCreditLimit() }.getOrNull() }
+    }
 
     fun refresh() {
         _filters.value = _filters.value.copy(page = 1)
@@ -92,6 +99,7 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
         notes: String?,
         priceLevelCode: String,
         standingDiscountPercent: Double,
+        creditLimit: Double?,
         online: Boolean,
     ) {
         if (!online) { _form.value = CustomerFormUi(error = "common.offline"); return }
@@ -99,9 +107,9 @@ class CustomersViewModel(private val repo: CustomersRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 if (id == null) {
-                    repo.create(name, phone, notes, priceLevelCode, standingDiscountPercent)
+                    repo.create(name, phone, notes, priceLevelCode, standingDiscountPercent, creditLimit)
                 } else {
-                    repo.update(id, name, phone, notes, priceLevelCode, standingDiscountPercent)
+                    repo.update(id, name, phone, notes, priceLevelCode, standingDiscountPercent, creditLimit)
                 }
                 _form.value = CustomerFormUi(done = true)
                 refresh()

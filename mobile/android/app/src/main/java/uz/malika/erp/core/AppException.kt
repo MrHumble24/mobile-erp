@@ -14,6 +14,8 @@ class AppException(
     val statusCode: Int,
     override val message: String,
     val error: String? = null,
+    /** A machine-readable `code` from the body (e.g. `NO_OPEN_SHIFT`), when present. */
+    val code: String? = null,
 ) : Exception(message) {
 
     /** True when the request never reached the server (no connectivity). */
@@ -36,7 +38,7 @@ class AppException(
                     null -> "Request failed"
                     else -> m.toString()
                 }
-                AppException(code, message, json.optString("error").ifBlank { null })
+                AppException(code, message, json.optString("error").ifBlank { null }, json.optString("code").ifBlank { null })
             } catch (_: Exception) {
                 AppException(code, body)
             }

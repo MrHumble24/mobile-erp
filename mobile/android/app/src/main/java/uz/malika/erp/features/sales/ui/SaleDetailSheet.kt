@@ -85,7 +85,12 @@ fun SaleDetailSheet(
                 if (retail) t("sales.channelRetail", null) else t("sales.channelB2B", null),
                 color = if (retail) Tokens.info else Tokens.warning,
             )
+            if (sale.onCredit) StatusChip(t("credit.title", null), color = Tokens.info)
             if (sale.returnedAt != null) StatusChip(t("sales.returned", null), color = Tokens.danger)
+        }
+        if (sale.onCredit) {
+            Spacer(Modifier.height(Tokens.Space.sm))
+            Text(t("credit.returnNote", null), style = MaterialTheme.typography.bodySmall, color = Tokens.muted)
         }
         Spacer(Modifier.height(Tokens.Space.lg))
 

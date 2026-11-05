@@ -119,6 +119,36 @@ fun DiscountsSection(form: SettingsFormState) {
     }
 }
 
+/** Customer credit (Change 6, ADR 0035): off by default; the default limit shows when on. */
+@Composable
+fun CreditSettingsSection(form: SettingsFormState) {
+    val t = LocalT.current
+    SectionCard(t("credit.settingsTitle", null), t("credit.pageDescription", null)) {
+        Column {
+            ToggleRow(t("credit.settingsEnabled", null), form.customerCreditEnabled) { form.customerCreditEnabled = it }
+            if (form.customerCreditEnabled) {
+                Spacer(Modifier.height(Tokens.Space.md))
+                AppFormField(
+                    t("credit.settingsDefaultLimit", null),
+                    form.defaultCreditLimit,
+                    { form.defaultCreditLimit = it },
+                    keyboardType = KeyboardType.Decimal,
+                    placeholder = t("credit.noLimit", null),
+                )
+            }
+        }
+    }
+}
+
+/** Cashier shifts (Change 11, ADR 0036): one switch, off by default. */
+@Composable
+fun ShiftsSettingsSection(form: SettingsFormState) {
+    val t = LocalT.current
+    SectionCard(t("shifts.settingsTitle", null), t("shifts.settingsHint", null)) {
+        ToggleRow(t("shifts.settingsEnabled", null), form.shiftsEnabled) { form.shiftsEnabled = it }
+    }
+}
+
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {

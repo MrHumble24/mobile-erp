@@ -59,6 +59,10 @@ interface SalesApi {
     @GET("customers/lookup")
     suspend fun customerLookup(@Query("q") q: String?): List<CustomerDto>
 
+    /** One customer with purchase + credit aggregates (ADR 0035). */
+    @GET("customers/{id}")
+    suspend fun customer(@Path("id") id: String): CustomerListItemDto
+
     @GET("customers/{id}/sales")
     suspend fun customerSales(@Path("id") id: String): List<SaleDto>
 

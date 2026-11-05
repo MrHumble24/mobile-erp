@@ -36,6 +36,8 @@ data class FormTarget(
     val notes: String?,
     val priceLevelCode: String = PriceLevel.DEFAULT,
     val standingDiscountPercent: String = "0",
+    /** The customer's own credit ceiling (ADR 0035); "" = use the shop default. */
+    val creditLimit: String = "",
 )
 
 /**
@@ -48,11 +50,13 @@ fun CustomerFormSheet(vm: CustomersViewModel, target: FormTarget, online: Boolea
     val t = LocalT.current
     val context = LocalContext.current
     val ui by vm.form.collectAsState()
+    val defaultLimit by vm.defaultCreditLimit.collectAsState()
     var name by remember { mutableStateOf(target.name) }
     var phone by remember { mutableStateOf(target.phone ?: "") }
     var notes by remember { mutableStateOf(target.notes ?: "") }
     var level by remember { mutableStateOf(target.priceLevelCode) }
     var standingDiscount by remember { mutableStateOf(target.standingDiscountPercent.takeIf { it != "0" } ?: "") }
+    var creditLimit by remember { mutableStateOf(target.creditLimit) }
     var nameError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(ui.done) {
@@ -93,6 +97,19 @@ fun CustomerFormSheet(vm: CustomersViewModel, target: FormTarget, online: Boolea
                 keyboardType = KeyboardType.Decimal,
                 placeholder = t("pricing.standingDiscountHint", null),
             )
+            AppFormField(
+                t("credit.creditLimit", null),
+                creditLimit,
+                { creditLimit = it },
+                enabled = !ui.busy,
+                keyboardType = KeyboardType.Decimal,
+                placeholder = t("credit.creditLimitHint", null),
+            )
+            Text(
+                defaultLimit?.let { "${t("credit.settingsDefaultLimit", null)}: $it" } ?: t("credit.noLimit", null),
+                style = MaterialTheme.typography.bodySmall,
+                color = Tokens.muted,
+            )
             ui.error?.let { Text(t(it, null), color = Tokens.danger, style = MaterialTheme.typography.bodySmall) }
             PillButton(
                 text = t("common.save", null),
@@ -100,7 +117,8 @@ fun CustomerFormSheet(vm: CustomersViewModel, target: FormTarget, online: Boolea
                     if (name.trim().isEmpty()) { nameError = t("customers.errNameRequired", null); return@PillButton }
                     vm.submit(
                         target.id, name.trim(), phone.trim(), notes.trim(),
-                        level, standingDiscount.trim().toDoubleOrNull() ?: 0.0, online,
+                        level, standingDiscount.trim().toDoubleOrNull() ?: 0.0,
+                        creditLimit.trim().toDoubleOrNull(), online,
                     )
                 },
                 enabled = !ui.busy && online,

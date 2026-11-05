@@ -26,7 +26,16 @@ class AuthRepository(
         result.user.toDomain()
     }
 
-    suspend fun me(): AuthUser = runApi { api.me().toDomain() }
+    /**
+     * Re-read the current user from `/auth/me` and persist it, so a newly granted
+     * permission applies without signing out (the phone apps only read permissions
+     * at sign-in otherwise). Returns the refreshed user.
+     */
+    suspend fun me(): AuthUser = runApi {
+        val dto = api.me()
+        secure.put(SecureStore.Keys.USER, json.encodeToString(AuthUserDto.serializer(), dto))
+        dto.toDomain()
+    }
 
     /** The persisted session, or null when absent/expired. Pure-local, no network. */
     fun cachedUser(): AuthUser? {

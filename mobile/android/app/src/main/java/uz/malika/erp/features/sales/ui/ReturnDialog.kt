@@ -46,6 +46,7 @@ fun ReturnDialog(
     toaster: Toaster,
     refundAccounts: List<String> = emptyList(),
     maxRefund: BigDecimal = BigDecimal.ZERO,
+    onCredit: Boolean = false,
     onClose: () -> Unit,
 ) {
     val t = LocalT.current
@@ -69,6 +70,10 @@ fun ReturnDialog(
         title = { Text(t("sales.returnDevice", null), style = MaterialTheme.typography.titleMedium) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (onCredit) {
+                    Text(t("credit.returnNote", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
+                    Spacer(Modifier.height(12.dp))
+                }
                 AppFormField(
                     label = t("sales.refundAmount", null),
                     value = refund,

@@ -12,7 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import uz.malika.erp.AppContainer
+import uz.malika.erp.app.LocalCan
+import uz.malika.erp.features.credit.ui.OnCreditSheet
 import uz.malika.erp.features.sales.data.CustomersRepository
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.model.PosState
@@ -22,8 +26,11 @@ import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.payments.ui.PaymentMethodField
 import uz.malika.erp.shared.payments.ui.PaymentSelection
 import uz.malika.erp.shared.payments.ui.rememberAccountOptions
+import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppFormField
+import uz.malika.erp.shared.ui.ButtonVariant
 import uz.malika.erp.shared.ui.PillButton
+import uz.malika.erp.ui.theme.Tokens
 import java.math.BigDecimal
 
 /**
@@ -39,6 +46,8 @@ fun PosCheckoutForm(
     state: PosState,
     online: Boolean,
     api: SalesApi,
+    shiftBlocked: Boolean = false,
+    onOpenShift: () -> Unit = {},
 ) {
     val t = LocalT.current
     val busy = state.busy
@@ -46,6 +55,8 @@ fun PosCheckoutForm(
     var notes by remember { mutableStateOf("") }
     var customer by remember { mutableStateOf(CustomerSelection()) }
     var payment by remember { mutableStateOf(PaymentSelection()) }
+    var creditOpen by remember { mutableStateOf(false) }
+    val canCredit = LocalCan.current("sale.credit")
     val lookupRepo = remember { CustomersRepository(api) }
     val accounts by rememberAccountOptions(container)
 
@@ -82,6 +93,12 @@ fun PosCheckoutForm(
         Spacer(Modifier.height(16.dp))
         CartTotalsView(priced.totals)
         Spacer(Modifier.height(16.dp))
+        if (shiftBlocked) {
+            Text(t("shifts.shiftRequired", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
+            Spacer(Modifier.height(8.dp))
+            PillButton(t("shifts.openShift", null), onOpenShift, Modifier.fillMaxWidth(), variant = ButtonVariant.OUTLINE)
+            Spacer(Modifier.height(8.dp))
+        }
         PillButton(
             text = if (busy) t("pos.completingSale", null) else t("pos.checkoutButton", null),
             onClick = {
@@ -95,7 +112,31 @@ fun PosCheckoutForm(
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !busy && pricesValid && payValid,
+            enabled = !busy && pricesValid && payValid && !shiftBlocked,
         )
+        if (state.creditEnabled && canCredit) {
+            Spacer(Modifier.height(12.dp))
+            if (!online) Text(t("credit.errorOffline", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
+            PillButton(
+                text = t("credit.payOnCredit", null),
+                onClick = { creditOpen = true },
+                modifier = Modifier.fillMaxWidth(),
+                variant = ButtonVariant.OUTLINE,
+                enabled = online && !busy && pricesValid && !shiftBlocked,
+            )
+        }
+    }
+
+    if (creditOpen) {
+        AppBottomSheet(onDismiss = { creditOpen = false }) {
+            OnCreditSheet(
+                container = container,
+                priced = priced,
+                level = state.level,
+                customerId = customer.customerId,
+                onSold = { vm.resetCart() },
+                onDismiss = { creditOpen = false },
+            )
+        }
     }
 }

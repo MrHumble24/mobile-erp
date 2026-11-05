@@ -33,6 +33,12 @@ class CustomersRepository(private val api: SalesApi) {
 
     suspend fun stats(): CustomerStats = runApi { api.customerStats().toDomain() }
 
+    /** One customer with purchase + credit aggregates (`GET /customers/:id`). */
+    suspend fun get(id: String): CustomerListItem = runApi { api.customer(id).toDomain() }
+
+    /** The shop's default credit limit (ADR 0035); null = no cap. */
+    suspend fun defaultCreditLimit(): String? = runApi { api.settings().defaultCreditLimit }
+
     suspend fun lookup(query: String?): List<Customer> = runApi {
         api.customerLookup(query?.takeIf { it.isNotBlank() }).map { it.toDomain() }
     }
@@ -47,6 +53,7 @@ class CustomersRepository(private val api: SalesApi) {
         notes: String?,
         priceLevelCode: String,
         standingDiscountPercent: Double,
+        creditLimit: Double?,
     ): Customer = runApi {
         api.createCustomer(
             CreateCustomerBody(
@@ -55,6 +62,7 @@ class CustomersRepository(private val api: SalesApi) {
                 notes = notes?.takeIf { it.isNotBlank() }?.trim(),
                 priceLevelCode = priceLevelCode,
                 standingDiscountPercent = standingDiscountPercent,
+                creditLimit = creditLimit,
             ),
         ).toDomain()
     }
@@ -66,6 +74,7 @@ class CustomersRepository(private val api: SalesApi) {
         notes: String?,
         priceLevelCode: String,
         standingDiscountPercent: Double,
+        creditLimit: Double?,
     ): Customer = runApi {
         api.updateCustomer(
             id,
@@ -75,6 +84,7 @@ class CustomersRepository(private val api: SalesApi) {
                 notes = notes?.takeIf { it.isNotBlank() }?.trim(),
                 priceLevelCode = priceLevelCode,
                 standingDiscountPercent = standingDiscountPercent,
+                creditLimit = creditLimit,
             ),
         ).toDomain()
     }
