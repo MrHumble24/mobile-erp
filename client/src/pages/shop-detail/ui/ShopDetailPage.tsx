@@ -3,6 +3,7 @@ import { useParams } from "react-router"
 import { ArrowLeft, MapPin, Store, PackageX } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
+import { useBranding } from "@/entities/company"
 import { useStorefrontConfig, useStorefrontProduct, type StorefrontVariantView } from "@/entities/storefront"
 import { StorefrontHeader } from "@/widgets/storefront-header"
 import { StorefrontOrderModal } from "@/features/storefront-order"
@@ -14,6 +15,7 @@ import { Link } from "@/shared/ui/link"
 export function ShopDetailPage() {
   const { modelId } = useParams<{ modelId: string }>()
   const { t } = useI18n()
+  const { data: branding } = useBranding()
   const { data: config, isLoading: configLoading } = useStorefrontConfig()
   const { data: product, isLoading: productLoading, error: productError } = useStorefrontProduct(modelId ?? "")
 
@@ -47,7 +49,7 @@ export function ShopDetailPage() {
             <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
               <Store className="size-4 text-muted-foreground" />
             </div>
-            <span className="font-display font-semibold text-sm">Malika Store</span>
+            <span className="font-display font-semibold text-sm">{branding?.name}</span>
           </div>
         </header>
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -64,7 +66,6 @@ export function ShopDetailPage() {
     return (
       <div className="min-h-screen bg-muted flex flex-col">
         <StorefrontHeader
-          shopName={config.shopName}
           contactPhone={config.contactPhone}
           contactTelegram={config.contactTelegram}
         />
@@ -99,7 +100,6 @@ export function ShopDetailPage() {
   return (
     <div className="min-h-screen bg-muted flex flex-col">
       <StorefrontHeader
-        shopName={config.shopName}
         contactPhone={config.contactPhone}
         contactTelegram={config.contactTelegram}
       />
