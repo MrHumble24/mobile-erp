@@ -536,6 +536,28 @@ Proposed:
   shop asks for it. Then we learn what the tax system needs and connect
   to it.
 
+### Change 16 — backup and restore, with storage providers
+
+What the user said (2026-11-06): the system needs full backup and restore
+management. Backups must be sent to different places such as Google Drive,
+Microsoft OneDrive or Telegram, built as an adapter pattern so more places can
+be added, and set up from Settings.
+
+How it fits what we have: the PRD already asks for daily encrypted database
+backups. This adds the places to send them, the restore, and the settings
+screen.
+
+Decided by Claude as defaults (the user can change any): the backup holds the
+whole database and the pictures, for the whole company; it is always
+encrypted before it leaves the server; the key lives on the server, not in
+the database; logins to Drive, OneDrive and Telegram are stored encrypted and
+never shown; made by hand and every day at a chosen time; the last 14 are
+kept per place; owner only; a restore is all or nothing, makes a safety
+backup first, and asks for the shop's name and the owner's password.
+
+Status: backlog. The handoff is `docs/handoffs/gemini/023-backup-and-restore.md`.
+Everything not started is listed in `docs/plan/backlog.md`.
+
 ## Order of work (proposal, for discussion)
 
 Everything above depends on the ledger and the product catalog. The
