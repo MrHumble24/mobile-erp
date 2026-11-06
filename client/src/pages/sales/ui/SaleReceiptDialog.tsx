@@ -1,5 +1,6 @@
 import { useI18n } from "@/shared/i18n"
 import { useSaleReceipt, ReceiptPrintView } from "@/entities/sale"
+import { usePrintSettings } from "@/entities/settings"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 
 export function SaleReceiptDialog({
@@ -13,6 +14,7 @@ export function SaleReceiptDialog({
 }) {
   const { t } = useI18n()
   const { data: receipt, isLoading } = useSaleReceipt(open ? saleId : null)
+  const { receiptPrintingEnabled, receiptPaperWidthMm } = usePrintSettings()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -32,7 +34,13 @@ export function SaleReceiptDialog({
           {!isLoading && !receipt && (
             <div className="py-12 text-center text-sm text-muted-foreground">{t("common.notFound")}</div>
           )}
-          {receipt && <ReceiptPrintView receipt={receipt} />}
+          {receipt && (
+            <ReceiptPrintView
+              receipt={receipt}
+              paperWidthMm={receiptPaperWidthMm}
+              canPrint={receiptPrintingEnabled}
+            />
+          )}
         </div>
       </DialogPopup>
     </Dialog>

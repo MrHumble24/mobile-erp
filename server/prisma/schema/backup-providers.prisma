@@ -1,0 +1,54 @@
+// ---------------------------------------------------------------------------
+// Backup storage-provider configuration (handoff 023 PART 3/4). One row per
+// provider holds whether it is on, its non-secret settings and its connection
+// state. Secrets (bot token, OAuth client id/secret, refresh token) live in the
+// `secrets` store, never here. LOCAL has no row (always on, nothing to set up).
+// ---------------------------------------------------------------------------
+
+/// Per-place config + connection state. `config` is non-secret settings only:
+/// Telegram `{ chatId }`; Drive/OneDrive `{ folderId, folderName, accountName,
+/// accountEmail }`. The status is a lookup (no enums).
+model BackupProviderConfig {
+  providerCode  String               @id
+  provider      BackupProvider       @relation(fields: [providerCode], references: [code], onDelete: Cascade)
+  enabled       Boolean              @default(false)
+  config        Json                 @default("{}") @db.JsonB
+  statusCode    String               @default("NEVER_USED")
+  status        BackupProviderStatus @relation(fields: [statusCode], references: [code])
+  lastSuccessAt DateTime?
+  lastError     String?
+  updatedAt     DateTime             @updatedAt
+
+  @@index([statusCode])
+  @@map("backup_provider_configs")
+}
+
+/// Place status lookup: OK, NEEDS_RECONNECT, ERROR, NEVER_USED. Seeded in the
+/// migration + seed.sql.
+model BackupProviderStatus {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  configs BackupProviderConfig[]
+
+  @@map("backup_provider_statuses")
+}
+
+/// Single-use OAuth `state` for the connect flow (PART 4). Bound to the user who
+/// started it and to the provider; short-lived; `usedAt` marks it consumed.
+/// `redirectTo` is the validated return URL (never taken raw from the request).
+model BackupOauthState {
+  state        String    @id
+  providerCode String
+  userId       String
+  codeVerifier String?
+  redirectTo   String
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  usedAt       DateTime?
+
+  @@index([expiresAt])
+  @@map("backup_oauth_states")
+}

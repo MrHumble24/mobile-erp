@@ -1,7 +1,6 @@
 import * as React from "react"
 import { ChevronDown, UserPlus, User, X } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { formatNumber } from "@/shared/lib/format"
 import { useDebounce } from "@/shared/lib/hooks/use-debounce"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -15,6 +14,7 @@ import {
   CommandList,
 } from "@/shared/ui/command"
 import { useCustomers } from "../model/use-customers"
+import { CustomerPoints } from "./CustomerPoints"
 
 /** Who a purchase / trade-in is from: an existing customer, or a new name + phone. */
 export type CustomerSelection =
@@ -79,11 +79,7 @@ function ExistingSearch({ onChange }: { onChange: (v: CustomerSelection) => void
                 >
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="truncate">{c.name}</span>
-                    {c.bonusBalance !== null && (
-                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                        {t("customers.bonusPickerPoints", { points: formatNumber(c.bonusBalance) })}
-                      </span>
-                    )}
+                    <CustomerPoints points={c.bonusBalance} />
                   </span>
                   {c.phone && <span className="ml-auto text-xs text-muted-foreground font-mono">{c.phone}</span>}
                 </CommandItem>

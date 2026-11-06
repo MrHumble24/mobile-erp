@@ -4,6 +4,7 @@ export type {
   TradeInView,
   SaleTradeInDto,
   SalePaymentLine,
+  SaleBonus,
   SaleReturnRef,
   SaleStats,
   ReceiptView,
@@ -29,4 +30,5 @@ export { warrantyRemainingDays } from "./lib/warranty-remaining"
 export { useSaleReceipts } from "./model/use-sale-receipts"
 export { formatReceiptText } from "./lib/format-receipt"
 export { combineReceipts } from "./lib/combine-receipts"
-export { ReceiptPrintView, ReceiptPaper } from "./ui/ReceiptPrintView"
+export { ReceiptPrintView } from "./ui/receipt/ReceiptPrintView"
+export { ReceiptPaper } from "./ui/receipt/ReceiptPaper"

@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
-import { formatMoney } from "@/shared/lib/format"
+import { formatNumber } from "@/shared/lib/format"
 import { useOnlineStatus } from "@/shared/lib/offline"
 import { useCustomerBonus } from "@/entities/bonus"
 import { Button } from "@/shared/ui/button"
@@ -55,11 +55,11 @@ export function BonusRedeemControl() {
     <div className="space-y-2 rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{t("pos.bonusBalance")}</span>
-        <span className="font-medium">{formatMoney(bonus.balance)}</span>
+        <span className="font-medium">{formatNumber(bonus.balance)}</span>
       </div>
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{t("pos.bonusMax")}</span>
-        <span className="font-medium">{formatMoney(max)}</span>
+        <span className="font-medium">{formatNumber(max)}</span>
       </div>
       <div className="flex items-center gap-2">
         <Input

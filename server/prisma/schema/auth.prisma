@@ -132,6 +132,18 @@ model UserPermission {
   @@map("user_permissions")
 }
 
+/// Session cutoff (handoff 023, ADR 0051). One row. Every token issued before
+/// `validAfterSec` (unix seconds) is rejected by the auth guard. It lives in the
+/// database — not an ephemeral DATA_DIR file — so a restore writes it into the
+/// restored state and it survives both the restore and a redeploy.
+model SessionGate {
+  id            String   @id @default("default")
+  validAfterSec BigInt   @default(0)
+  updatedAt     DateTime @updatedAt
+
+  @@map("session_gate")
+}
+
 /// Stores assigned to a user (Change 9, ADR 0045).
 model UserStore {
   userId     String

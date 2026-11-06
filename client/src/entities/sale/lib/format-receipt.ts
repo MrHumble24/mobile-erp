@@ -1,15 +1,25 @@
 import type { ReceiptView } from "../model/sale.types"
 import { formatMoney } from "@/shared/lib/format"
 import { unitCode } from "@/shared/lib/unit-code"
+import { receiptBonusLines } from "./receipt-bonus"
 
 export function formatReceiptText(receipt: ReceiptView, t: (key: string) => string): string {
   const dateStr = new Date(receipt.soldAt).toLocaleString()
+  const storeName = receipt.store.name ? `${receipt.store.name} · ` : ""
+  const bonus = receiptBonusLines(receipt.bonus, t)
+  const paidWithPointsStr = bonus.paidWithPoints
+    ? `\n🎁 ${bonus.paidWithPoints.label}: − ${bonus.paidWithPoints.amount}`
+    : ""
+  const pointsEarnedStr = bonus.pointsEarned
+    ? `⭐ ${bonus.pointsEarned.label}: ${bonus.pointsEarned.amount}\n`
+    : ""
   const warrantyStr = receipt.warranty
     ? `\n🛡 ${t("pos.officialWarranty")}: ${receipt.warranty.days} kun (${new Date(receipt.warranty.endsAt).toLocaleDateString()} gacha)`
     : ""
   const customerStr = receipt.customer
     ? `\n👤 ${t("pos.customer")}: ${receipt.customer.name}${receipt.customer.phone ? ` (${receipt.customer.phone})` : ""}`
     : ""
+  const footerStr = receipt.footer ? `\n${receipt.footer}` : ""
 
   const itemsStr = receipt.items
     .map((item) => {
@@ -29,7 +39,7 @@ export function formatReceiptText(receipt: ReceiptView, t: (key: string) => stri
           .join("\n")
       : ""
 
-  return `🧾 ${t("pos.storeName")} · ${t("pos.receiptTitle")}
+  return `🧾 ${storeName}${t("pos.receiptTitle")}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ${t("pos.receiptNumber")}: #${receipt.saleId.slice(0, 8).toUpperCase()}
 ${t("pos.soldAt")}: ${dateStr}
@@ -37,9 +47,8 @@ ${t("pos.cashier")}: ${receipt.cashier}${customerStr}
 ─────────────────────────
 ${itemsStr}${tradeInStr}
 ─────────────────────────
-💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${warrantyStr}
+💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${paidWithPointsStr}${warrantyStr}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-${t("pos.thankYou")}
-${t("pos.storeLocation")}`
+${pointsEarnedStr}${t("pos.thankYou")}${footerStr}`
 }
 

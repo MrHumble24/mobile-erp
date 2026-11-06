@@ -31,6 +31,12 @@ export interface SalePaymentLine {
   amount: string
 }
 
+/** Loyalty points a sale earned and spent (ADR 0043), as 2-dp decimal strings. */
+export interface SaleBonus {
+  earned: string
+  spent: string
+}
+
 /** The product sold on a quantity sale (ADR 0030); set when `device` is null. */
 export interface SaleModelRef {
   brand: string
@@ -77,6 +83,8 @@ export interface SaleView {
   payments: SalePaymentLine[]
   /** Phones taken in part payment (ADR 0039); [] when none. */
   tradeIns: TradeInView[]
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus
 }
 
 export interface SaleStats {
@@ -108,6 +116,10 @@ export interface ReceiptView {
   saleId: string
   soldAt: string
   cashier: string
+  /** Shop identity for the receipt header, from the store record (ADR 0043). */
+  store: { name: string | null; address: string | null; phone: string | null }
+  /** Free-text receipt footer (store_settings.receiptFooter); the server sends it as `footer`. */
+  footer: string | null
   items: ReceiptItem[]
   total: string
   /** Sum of list prices and total discount, when a discount was given (ADR 0034). */
@@ -120,6 +132,8 @@ export interface ReceiptView {
   payments?: SalePaymentLine[]
   /** Phones taken in part payment (ADR 0039); [] when none. */
   tradeIns?: TradeInView[]
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus
 }
 
 export interface WarrantyLookupView {

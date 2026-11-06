@@ -35,5 +35,6 @@
   "repairs": "Repairs",
   "transfers": "Transfers",
   "stores": "Stores",
-  "orders": "Orders"
+  "orders": "Orders",
+  "backups": "Backups"
 }

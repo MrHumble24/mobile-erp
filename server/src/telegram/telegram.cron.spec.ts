@@ -51,6 +51,7 @@ describe('TelegramCron.closingDigest (R1)', () => {
       ledger as never,
       credits as never,
       stores as never,
+      { isActive: () => false } as never,
     );
 
     // Call closingDigest outside of any store context

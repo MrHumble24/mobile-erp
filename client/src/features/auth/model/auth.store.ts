@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { configureHttp } from "@/shared/api/http"
+import { useMaintenanceStore } from "@/shared/lib/maintenance.store"
 
 export interface AuthUserProfile {
   fullName: string
@@ -51,6 +52,13 @@ export const useAuthStore = create<AuthState>()(
 configureHttp({
   getToken: () => useAuthStore.getState().token,
   onUnauthorized: () => {
+    // During a restore the overlay owns the aftermath (it ends every session
+    // and shows a "sign in again" message); don't yank the user to /login and
+    // lose that explanation.
+    if (useMaintenanceStore.getState().active) {
+      useAuthStore.getState().clearSession()
+      return
+    }
     useAuthStore.getState().clearSession()
     if (typeof window !== "undefined" && window.location.pathname !== "/login") {
       window.location.href = "/login"

@@ -45,6 +45,13 @@ export class AuthService {
     return { accessToken, user: await this.me(creds.id) };
   }
 
+  /** Re-check a signed-in user's own password (restore confirmation). */
+  async verifyPassword(email: string, password: string): Promise<boolean> {
+    const creds = await this.repo.findByEmail(email);
+    if (!creds || !creds.isActive) return false;
+    return argon2.verify(creds.passwordHash, password);
+  }
+
   async me(userId: string): Promise<MeView> {
     const identity = await this.repo.findIdentity(userId);
     if (!identity) throw new UnauthorizedException('User no longer exists');

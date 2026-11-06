@@ -23,6 +23,7 @@ import {
   Wrench,
   Store,
   ShoppingBag,
+  DatabaseBackup,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -78,6 +79,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { to: "/users", labelKey: "nav.users", permission: "user.manage", icon: ShieldCheck },
       { to: "/stores", labelKey: "nav.stores", permission: "store.manage", icon: Store },
       { to: "/sync", labelKey: "nav.sync", permission: "sync.resolve", icon: RefreshCw },
+      { to: "/backups", labelKey: "nav.backups", permission: "backup.read", icon: DatabaseBackup },
       { to: "/settings", labelKey: "nav.settings", permission: "settings.manage", icon: Settings },
     ],
   },

@@ -1,5 +1,5 @@
 import { useI18n } from "@/shared/i18n"
-import { formatMoney } from "@/shared/lib/format"
+import { formatMoney, formatNumber } from "@/shared/lib/format"
 import {
   useProfitReport,
   useProfitBreakdown,
@@ -94,6 +94,21 @@ export function OverviewTab({ range, onBreakdown }: ReportTabProps) {
           className="w-full sm:max-w-xs"
         />
       )}
+      {profit.data &&
+        (profit.data.bonusPointsEarned > 0 || profit.data.bonusPointsSpent > 0) && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricCard
+              label={t("reports.pointsEarned")}
+              value={formatNumber(profit.data.bonusPointsEarned)}
+              variant="white"
+            />
+            <MetricCard
+              label={t("reports.pointsSpent")}
+              value={formatNumber(profit.data.bonusPointsSpent)}
+              variant="white"
+            />
+          </div>
+        )}
       <TrendChart
         title={t("reports.trendTitle")}
         data={trend.data ?? []}

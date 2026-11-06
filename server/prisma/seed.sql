@@ -197,8 +197,38 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('transfer.receive',     'transfer',    'receive',   'Receive stock transfers'),
   ('transfer.read',        'transfer',    'read',      'View stock transfers'),
   ('order.read',           'order',       'read',      'View storefront orders'),
-  ('order.manage',         'order',       'manage',    'Manage storefront order status')
+  ('order.manage',         'order',       'manage',    'Manage storefront order status'),
+  ('backup.read',          'backup',      'read',      'View backups, places and settings'),
+  ('backup.manage',        'backup',      'manage',    'Make, download, delete backups and change settings'),
+  ('backup.restore',       'backup',      'restore',   'Restore the whole system from a backup')
 ON CONFLICT (code) DO UPDATE SET description = EXCLUDED.description;
+
+-- Backup lookups (handoff 023). Mirrored in the backups migration.
+INSERT INTO backup_run_statuses (code, label, "sortOrder", "isActive", "isTerminal") VALUES
+  ('RUNNING','Running',0,true,false),
+  ('SUCCESS','Success',1,true,true),
+  ('FAILED','Failed',2,true,true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO backup_target_statuses (code, label, "sortOrder", "isActive", "isTerminal") VALUES
+  ('PENDING','Pending',0,true,false),
+  ('UPLOADED','Uploaded',1,true,true),
+  ('FAILED','Failed',2,true,true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO backup_providers (code, label, "sortOrder", "isActive") VALUES
+  ('LOCAL','Server disk',0,true),
+  ('TELEGRAM','Telegram',1,true),
+  ('GOOGLE_DRIVE','Google Drive',2,true),
+  ('ONEDRIVE','Microsoft OneDrive',3,true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO backup_provider_statuses (code, label, "sortOrder", "isActive") VALUES
+  ('NEVER_USED','Never used',0,true),
+  ('OK','OK',1,true),
+  ('NEEDS_RECONNECT','Needs reconnecting',2,true),
+  ('ERROR','Error',3,true)
+ON CONFLICT (code) DO NOTHING;
 
 -- Roles ----------------------------------------------------------------------
 INSERT INTO roles (code, name, description, "isSystem", "updatedAt") VALUES

@@ -1,6 +1,6 @@
 import { ShoppingCart } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { formatMoney } from "@/shared/lib/format"
+import { formatMoney, formatNumber } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
 import { cartTotals } from "../lib/line-pricing"
@@ -55,7 +55,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
         {plan.redeem.total > 0 && (
           <SummaryRow
             label={t("pos.bonusPoints")}
-            value={`− ${formatMoney(plan.redeem.total)}`}
+            value={`− ${formatNumber(plan.redeem.total)}`}
           />
         )}
         <div className="border-t border-[#e8e8e8] pt-2">

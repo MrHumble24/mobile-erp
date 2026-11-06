@@ -37,6 +37,7 @@ const SettingsPage = lazy(() => import("@/pages/settings"))
 const ShopPage = lazy(() => import("@/pages/shop"))
 const ShopDetailPage = lazy(() => import("@/pages/shop-detail"))
 const OrdersPage = lazy(() => import("@/pages/orders"))
+const BackupsPage = lazy(() => import("@/pages/backups"))
 
 function SuspenseFallback() {
   return (
@@ -116,6 +117,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="settings.manage" />}>
           <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="backup.read" />}>
+          <Route path="/backups" element={<BackupsPage />} />
         </Route>
       </Route>
     </Route>
