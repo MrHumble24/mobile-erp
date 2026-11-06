@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module.js';
+import { StoresModule } from '../stores/stores.module.js';
 import { TelegramModule } from '../telegram/telegram.module.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsController } from './backups.controller.js';
 import { BackupsCron } from './backups.cron.js';
 import { BackupsRepository } from './backups.repository.js';
 import { BackupsService } from './backups.service.js';
+import { RestoreController } from './restore.controller.js';
+import { RestoreService } from './restore.service.js';
 import type { BackupStorage } from './storage/backup-storage.js';
 import { LocalStorage } from './storage/local.storage.js';
 import { StorageRegistry } from './storage/storage.registry.js';
@@ -18,10 +22,11 @@ const STORAGE_ADAPTERS = [LocalStorage];
 
 /** Backups & restore (handoff 023, ADR 0051). */
 @Module({
-  imports: [TelegramModule],
-  controllers: [BackupsController],
+  imports: [TelegramModule, AuthModule, StoresModule],
+  controllers: [BackupsController, RestoreController],
   providers: [
     BackupsService,
+    RestoreService,
     BackupRunner,
     BackupsRepository,
     BackupsCron,

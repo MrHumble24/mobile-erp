@@ -154,14 +154,32 @@ export class BackupsRepository {
     });
   }
 
-  finishRestoreRun(
+  /**
+   * Record a restore's outcome. Upsert, not update: a successful restore
+   * replaces the whole database — including the RUNNING row written before it —
+   * so on success we re-insert the audit row; on a rolled-back failure the row
+   * survived and we update it.
+   */
+  upsertRestoreOutcome(
     id: string,
+    base: {
+      performedById: string;
+      sourceRunId: string | null;
+      sourceLabel: string;
+    },
     status: 'SUCCESS' | 'FAILED',
     extra: { safetyRunId?: string; error?: string } = {},
   ) {
-    return this.prisma.restoreRun.update({
+    return this.prisma.restoreRun.upsert({
       where: { id },
-      data: { statusCode: status, finishedAt: new Date(), ...extra },
+      create: {
+        id,
+        ...base,
+        statusCode: status,
+        finishedAt: new Date(),
+        ...extra,
+      },
+      update: { statusCode: status, finishedAt: new Date(), ...extra },
     });
   }
 

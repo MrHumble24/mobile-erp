@@ -25,6 +25,7 @@
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "ref:import": "tsx scripts/ref-import.ts",
     "backup:open": "tsx scripts/open-backup.ts",
+    "test:restore": "tsx scripts/restore.e2e.ts",
     "graphify": "graphify update ."
   },
   "dependencies": {

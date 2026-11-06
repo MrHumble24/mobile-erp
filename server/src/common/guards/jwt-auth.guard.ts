@@ -7,10 +7,12 @@ import {
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
+import { SessionGateService } from '../runtime/session-gate.service.js';
 
 interface JwtPayload {
   sub: string;
   email: string;
+  iat?: number;
 }
 
 interface RequestWithAuth {
@@ -24,6 +26,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwt: JwtService,
+    private readonly sessionGate: SessionGateService,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -37,18 +40,23 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractToken(req.headers.authorization);
     if (!token) throw new UnauthorizedException('Missing bearer token');
 
+    let payload: JwtPayload;
     try {
-      const payload = await this.jwt.verifyAsync<JwtPayload>(token, {
+      payload = await this.jwt.verifyAsync<JwtPayload>(token, {
         algorithms: ['HS256'],
       });
-      req.user = {
-        id: payload.sub,
-        email: payload.email,
-        permissions: new Set<string>(),
-      };
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
     }
+    // A restore ends every session: tokens issued before the cutoff are dead.
+    if (!this.sessionGate.isTokenValid(payload.iat)) {
+      throw new UnauthorizedException('Session ended; sign in again');
+    }
+    req.user = {
+      id: payload.sub,
+      email: payload.email,
+      permissions: new Set<string>(),
+    };
     return true;
   }
 
