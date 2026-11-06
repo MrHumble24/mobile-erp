@@ -1,5 +1,7 @@
 import { promises as fsp } from 'node:fs';
 import {
+  chunkTimeoutMs,
+  fetchWithTimeout,
   ProviderAuthError,
   ProviderError,
   withRetry,
@@ -45,11 +47,11 @@ async function putOne(
     'Content-Range': `bytes ${offset}-${end - 1}/${opts.totalSize}`,
   };
   if (opts.accessToken) headers.Authorization = `Bearer ${opts.accessToken}`;
-  const res = await fetch(opts.sessionUrl, {
-    method: 'PUT',
-    headers,
-    body: new Uint8Array(buf),
-  });
+  const res = await fetchWithTimeout(
+    opts.sessionUrl,
+    { method: 'PUT', headers, body: new Uint8Array(buf) },
+    chunkTimeoutMs(),
+  );
   if (res.status === 308 || res.status === 202) return null; // resume incomplete
   if (res.ok)
     return (await res.json().catch(() => ({}))) as Record<string, unknown>;

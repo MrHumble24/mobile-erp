@@ -1,4 +1,4 @@
-import { fetchJson, ProviderError } from './provider-http.js';
+import { fetchJson, fetchWithTimeout, ProviderError } from './provider-http.js';
 
 /** Thin Telegram Bot API client for backups. Fixed host (env override for
  * tests). The backup chat is its own private chat/channel, not staff chat. */
@@ -61,7 +61,7 @@ export async function getFileBytes(
     'Telegram getFile',
     `${base()}/bot${token}/getFile?file_id=${encodeURIComponent(fileId)}`,
   );
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `${base()}/file/bot${token}/${meta.result.file_path}`,
   );
   if (!res.ok)
