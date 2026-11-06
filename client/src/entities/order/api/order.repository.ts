@@ -6,6 +6,7 @@ import type {
   StorefrontOrderPage,
   ListOrdersQuery,
   UpdateOrderStatusDto,
+  HandOverOrderDto,
 } from "./order.types"
 
 export const orderRepository = {
@@ -21,6 +22,18 @@ export const orderRepository = {
   updateStatus: (id: string, dto: UpdateOrderStatusDto) =>
     http<StorefrontOrderView>(`/storefront-orders/${id}/status`, {
       method: "PATCH",
+      body: dto,
+    }),
+
+  hold: (id: string, dto?: { deviceId?: string }) =>
+    http<StorefrontOrderDetailView>(`/storefront-orders/${id}/hold`, {
+      method: "POST",
+      body: dto ?? {},
+    }),
+
+  handOver: (id: string, dto: HandOverOrderDto) =>
+    http<StorefrontOrderDetailView>(`/storefront-orders/${id}/hand-over`, {
+      method: "POST",
       body: dto,
     }),
 }

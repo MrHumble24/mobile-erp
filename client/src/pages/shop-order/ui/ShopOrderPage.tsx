@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router"
-import { ArrowLeft, RefreshCw, AlertCircle } from "lucide-react"
+import { ArrowLeft, AlertCircle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { usePublicOrder, useStorefrontConfig } from "@/entities/storefront"
 import { Button } from "@/shared/ui/button"
@@ -7,6 +7,7 @@ import { Skeleton } from "@/shared/ui/skeleton"
 import { useOrderPaymentStatus } from "../model/use-order-payment-status"
 import { OrderStatusCard } from "./OrderStatusCard"
 import { OrderAmountBreakdown } from "./OrderAmountBreakdown"
+import { OrderPaymentTimeoutAlert } from "./OrderPaymentTimeoutAlert"
 
 function OrderNotFoundView() {
   const { t } = useI18n()
@@ -65,27 +66,10 @@ export function ShopOrderPage() {
 
       <main className="flex-1 max-w-xl mx-auto w-full p-4 space-y-4">
         <OrderStatusCard order={order} paymentState={paymentState} />
-
         {paymentState === "TIMEOUT" && (
-          <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 space-y-3">
-            <div className="flex items-start gap-2.5">
-              <AlertCircle className="size-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-xs space-y-1">
-                <p className="font-semibold text-amber-800 dark:text-amber-300">
-                  {t("storefront.paymentNotReceivedTitle")}
-                </p>
-                <p className="text-muted-foreground">{t("storefront.paymentNotReceivedDesc")}</p>
-              </div>
-            </div>
-            <Button size="sm" onClick={handlePayAgain} disabled={isPending} className="w-full text-xs font-semibold gap-1.5">
-              <RefreshCw className={`size-3.5 ${isPending ? "animate-spin" : ""}`} />
-              <span>{t("storefront.payAgain")}</span>
-            </Button>
-          </div>
+          <OrderPaymentTimeoutAlert onPayAgain={handlePayAgain} isPending={isPending} />
         )}
-
         <OrderAmountBreakdown order={order} />
-
         <div className="pt-2 text-center">
           <Button variant="ghost" size="sm" render={<Link to="/shop" />} className="text-xs text-muted-foreground">
             {t("storefront.continueShopping")}

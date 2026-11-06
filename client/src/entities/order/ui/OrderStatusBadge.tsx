@@ -2,9 +2,10 @@ import { Badge } from "@/shared/ui/badge"
 import { useI18n } from "@/shared/i18n"
 import type { OrderStatusCode } from "../api/order.types"
 
-const STATUS_VARIANTS: Record<OrderStatusCode, "blue" | "violet" | "emerald" | "destructive"> = {
+const STATUS_VARIANTS: Record<OrderStatusCode, "blue" | "violet" | "amber" | "emerald" | "destructive"> = {
   NEW: "blue",
   CONTACTED: "violet",
+  SHIPPED: "amber",
   DONE: "emerald",
   CANCELLED: "destructive",
 }
@@ -12,6 +13,7 @@ const STATUS_VARIANTS: Record<OrderStatusCode, "blue" | "violet" | "emerald" | "
 const STATUS_LABELS: Record<OrderStatusCode, string> = {
   NEW: "orders.statusNew",
   CONTACTED: "orders.statusContacted",
+  SHIPPED: "orders.statusShipped",
   DONE: "orders.statusDone",
   CANCELLED: "orders.statusCancelled",
 }

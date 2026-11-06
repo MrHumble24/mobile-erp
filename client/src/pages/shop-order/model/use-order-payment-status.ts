@@ -10,6 +10,14 @@ export type PaymentState =
   | "TIMEOUT"
   | "TERMINAL"
 
+function classifyPaymentError(err: unknown): PaymentState {
+  const code = httpErrorCode(err)
+  if (code === "ORDER_ALREADY_PAID") return "PAID"
+  if (code === "NOT_AN_ONLINE_ORDER") return "ON_RECEIPT"
+  if (code === "ORDER_TERMINAL") return "TERMINAL"
+  return "UNPAID"
+}
+
 export function useOrderPaymentStatus(orderId?: string) {
   const payMutation = usePayStorefrontOrder()
   const [paymentState, setPaymentState] = React.useState<PaymentState>("CHECKING")
@@ -23,37 +31,24 @@ export function useOrderPaymentStatus(orderId?: string) {
       setCheckoutUrl(res.checkoutUrl)
       setPaymentState("UNPAID")
     } catch (err: unknown) {
-      const code = httpErrorCode(err)
-      if (code === "ORDER_ALREADY_PAID") {
-        setPaymentState("PAID")
-      } else if (code === "NOT_AN_ONLINE_ORDER") {
-        setPaymentState("ON_RECEIPT")
-      } else if (code === "ORDER_TERMINAL") {
-        setPaymentState("TERMINAL")
-      } else {
-        setPaymentState("UNPAID")
-      }
+      setPaymentState(classifyPaymentError(err))
     }
   }, [orderId, payMutation])
 
-  // Initial check
   React.useEffect(() => {
     checkPayment()
   }, [checkPayment])
 
-  // Polling every 3s while UNPAID up to 20 attempts (60 seconds)
   React.useEffect(() => {
     if (paymentState !== "UNPAID") return
     if (attempts >= 20) {
       setPaymentState("TIMEOUT")
       return
     }
-
     const timer = setTimeout(() => {
       setAttempts((prev) => prev + 1)
       checkPayment()
     }, 3000)
-
     return () => clearTimeout(timer)
   }, [paymentState, attempts, checkPayment])
 

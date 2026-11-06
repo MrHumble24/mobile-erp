@@ -1,9 +1,10 @@
-import { Phone, ExternalLink } from "lucide-react"
+import { Phone, ExternalLink, MapPin, Store } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDateTime } from "@/shared/lib/format"
 import { OrderStatusBadge, type StorefrontOrderView } from "@/entities/order"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { Button } from "@/shared/ui/button"
+import { Badge } from "@/shared/ui/badge"
 
 export function OrdersTable({
   orders,
@@ -31,16 +32,16 @@ export function OrdersTable({
               <TableHead>{t("orders.createdAt")}</TableHead>
               <TableHead>{t("orders.customer")}</TableHead>
               <TableHead>{t("orders.product")}</TableHead>
-              <TableHead>{t("orders.branch")}</TableHead>
+              <TableHead>{t("storefront.fulfillmentMethod")}</TableHead>
               <TableHead>{t("orders.status")}</TableHead>
               <TableHead className="text-right">{t("orders.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders.map((order) => {
-              const specsSummary = order.specs
-                ? Object.values(order.specs).filter(Boolean).join(" • ")
-                : null
+              const isDelivery = order.fulfillmentMethodCode === "DELIVERY"
+              const isPaid = order.payment?.statusCode === "PAID"
+              const isRefundDue = order.payment?.statusCode === "REFUND_DUE"
 
               return (
                 <TableRow
@@ -71,17 +72,32 @@ export function OrdersTable({
                       </span>
                       {order.modelName || order.productName}
                     </div>
-                    {specsSummary && (
-                      <div className="text-[11px] text-muted-foreground">
-                        {specsSummary}
+                    {order.deviceId && (
+                      <div className="text-[10px] text-muted-foreground font-mono">
+                        #{order.deviceId.slice(0, 8)}
                       </div>
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-foreground whitespace-nowrap">
-                    {order.storeName}
+                    <div className="flex items-center gap-1.5">
+                      {isDelivery ? <MapPin className="size-3 text-primary" /> : <Store className="size-3 text-muted-foreground" />}
+                      <span>{isDelivery ? (order.deliveryZoneName || t("storefront.delivery")) : order.storeName}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <OrderStatusBadge status={order.statusCode} />
+                    <div className="flex flex-col gap-1 items-start">
+                      <OrderStatusBadge status={order.statusCode} />
+                      {isPaid && (
+                        <Badge variant="emerald" className="text-[9px] px-1 py-0">
+                          {order.payment?.providerLabel || "Paid"}
+                        </Badge>
+                      )}
+                      {isRefundDue && (
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                          {t("orders.refundOwed")}
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

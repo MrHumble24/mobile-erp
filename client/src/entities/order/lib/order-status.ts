@@ -4,11 +4,18 @@ export function isOrderTerminal(status: OrderStatusCode): boolean {
   return status === "DONE" || status === "CANCELLED"
 }
 
-export function allowedOrderTransitions(status: OrderStatusCode): OrderStatusCode[] {
+export function allowedOrderTransitions(
+  status: OrderStatusCode,
+  fulfillmentMethod?: string,
+): OrderStatusCode[] {
   switch (status) {
     case "NEW":
       return ["CONTACTED", "CANCELLED"]
     case "CONTACTED":
+      return fulfillmentMethod === "DELIVERY"
+        ? ["SHIPPED", "DONE", "CANCELLED"]
+        : ["DONE", "CANCELLED"]
+    case "SHIPPED":
       return ["DONE", "CANCELLED"]
     case "DONE":
     case "CANCELLED":
@@ -18,6 +25,10 @@ export function allowedOrderTransitions(status: OrderStatusCode): OrderStatusCod
   }
 }
 
-export function canTransitionOrder(from: OrderStatusCode, to: OrderStatusCode): boolean {
-  return allowedOrderTransitions(from).includes(to)
+export function canTransitionOrder(
+  from: OrderStatusCode,
+  to: OrderStatusCode,
+  fulfillmentMethod?: string,
+): boolean {
+  return allowedOrderTransitions(from, fulfillmentMethod).includes(to)
 }

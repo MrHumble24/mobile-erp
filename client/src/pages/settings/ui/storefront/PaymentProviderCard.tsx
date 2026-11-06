@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, Copy, KeyRound, ShieldAlert } from "lucide-react"
+import { Check, Copy } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { httpErrorCode } from "@/shared/api/http"
 import {
@@ -15,6 +15,7 @@ import { Badge } from "@/shared/ui/badge"
 import { toast } from "@/shared/ui/sonner"
 import { ProviderSecretDialog } from "./ProviderSecretDialog"
 import { ProviderFields } from "./ProviderFields"
+import { ProviderActionButtons } from "./ProviderActionButtons"
 
 function useProviderActions(config: OnlinePaymentProviderConfig) {
   const { t } = useI18n()
@@ -104,26 +105,15 @@ export function PaymentProviderCard({
     }
   }
 
+  const badgeVariant = config.secretStatus === "set" ? "default" : config.secretStatus === "missing" ? "outline" : "destructive"
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-sm">{config.label}</span>
-          <Badge
-            variant={
-              config.secretStatus === "set"
-                ? "default"
-                : config.secretStatus === "missing"
-                  ? "outline"
-                  : "destructive"
-            }
-            className="text-[10px] px-2 py-0.5"
-          >
-            {config.secretStatus === "set"
-              ? t("settings.secretSet")
-              : config.secretStatus === "missing"
-                ? t("settings.secretMissing")
-                : t("settings.secretUnreadable")}
+          <Badge variant={badgeVariant} className="text-[10px] px-2 py-0.5">
+            {t(`settings.secret${config.secretStatus.charAt(0).toUpperCase() + config.secretStatus.slice(1)}` as any)}
           </Badge>
         </div>
         <Switch
@@ -159,46 +149,18 @@ export function PaymentProviderCard({
       />
 
       {!disabled && (
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              updateProvider.mutate(
-                { code: config.providerCode, dto: { settings } },
-                { onSuccess: () => toast.success(t("settings.providerSaved")), onError: () => toast.error(t("common.error")) },
-              )
-            }
-            disabled={updateProvider.isPending}
-            className="h-8 text-xs font-semibold"
-          >
-            {t("settings.saveSettings")}
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setSecretDialogOpen(true)}
-            className="h-8 gap-1.5 text-xs font-semibold"
-          >
-            <KeyRound className="size-3.5" />
-            <span>{t("settings.setSecret")}</span>
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            onClick={handleCheck}
-            disabled={checkMutation.isPending}
-            className="h-8 gap-1.5 text-xs font-semibold"
-          >
-            <ShieldAlert className="size-3.5" />
-            <span>{checkMutation.isPending ? t("common.checking") : t("settings.checkProvider")}</span>
-          </Button>
-        </div>
+        <ProviderActionButtons
+          onSaveSettings={() =>
+            updateProvider.mutate(
+              { code: config.providerCode, dto: { settings } },
+              { onSuccess: () => toast.success(t("settings.providerSaved")), onError: () => toast.error(t("common.error")) },
+            )
+          }
+          onOpenSecretDialog={() => setSecretDialogOpen(true)}
+          onCheck={handleCheck}
+          isPending={updateProvider.isPending}
+          isChecking={checkMutation.isPending}
+        />
       )}
 
       <ProviderSecretDialog
