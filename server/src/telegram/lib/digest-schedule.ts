@@ -1,6 +1,8 @@
+import { getLocalDateString, getLocalHhMm } from '../../common/time-zone.js';
+
 /**
  * Closing-digest scheduling, kept pure so the once-per-day guard is unit-tested
- * without mocking the clock. closingTime is "HH:mm" in server local time; the
+ * without mocking the clock. closingTime is "HH:mm" in company time zone; the
  * marker (StoreSettings.digestSentOn, a @db.Date) round-trips as UTC midnight of
  * the local day it was saved for.
  */
@@ -10,11 +12,20 @@ function hhmmLocal(d: Date): string {
 }
 
 /** UTC-midnight of `now`'s local calendar day — the value stored in digestSentOn. */
-export function todayMarker(now: Date): Date {
+export function todayMarker(now: Date, timeZone?: string): Date {
+  if (timeZone) {
+    const localDate = getLocalDateString(now, timeZone);
+    return new Date(`${localDate}T00:00:00.000Z`);
+  }
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 }
 
-function sameLocalDay(marker: Date, now: Date): boolean {
+function sameLocalDay(marker: Date, now: Date, timeZone?: string): boolean {
+  if (timeZone) {
+    const markerDate = getLocalDateString(marker, 'UTC');
+    const nowDate = getLocalDateString(now, timeZone);
+    return markerDate === nowDate;
+  }
   return (
     marker.getUTCFullYear() === now.getFullYear() &&
     marker.getUTCMonth() === now.getMonth() &&
@@ -27,9 +38,11 @@ export function shouldSendDigest(
   now: Date,
   closingTime: string,
   digestSentOn: Date | null,
+  timeZone?: string,
 ): boolean {
-  if (hhmmLocal(now) !== closingTime) return false;
-  if (digestSentOn && sameLocalDay(digestSentOn, now)) return false;
+  const currentHhmm = timeZone ? getLocalHhMm(now, timeZone) : hhmmLocal(now);
+  if (currentHhmm !== closingTime) return false;
+  if (digestSentOn && sameLocalDay(digestSentOn, now, timeZone)) return false;
   return true;
 }
 

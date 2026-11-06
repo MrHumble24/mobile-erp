@@ -20,6 +20,9 @@ future cloud drives) must be stored securely without exposing credentials in HTT
   Manageable via `PUT /settings/telegram-token` with test message trigger.
 - **Branding endpoint**: `GET /branding` is public and cacheable, exposing only company name,
   logo URL, theme code, default language, and currency formatting.
+- **Time zone & day boundaries**: `CompanyProfile.timeZone` governs local calendar days
+  and closing digest timings (computed via `time-zone.ts` into exact UTC bounds)
+  rather than naive UTC or server clock.
 
 ## Consequences
 - Environments only need `DATABASE_URL`, `PORT`, and optional `DATA_DIR`.

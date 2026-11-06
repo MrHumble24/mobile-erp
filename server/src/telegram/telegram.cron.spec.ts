@@ -1,4 +1,5 @@
 import { TelegramCron } from './telegram.cron.js';
+import { getLocalHhMm } from '../common/time-zone.js';
 
 describe('TelegramCron.closingDigest (R1)', () => {
   it('runs with no store context and two stores without throwing, building one block per store', async () => {
@@ -17,8 +18,7 @@ describe('TelegramCron.closingDigest (R1)', () => {
       list: jest.fn().mockResolvedValue([{ outstanding: 500 }]),
     };
     const now = new Date();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const currentTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const currentTime = getLocalHhMm(now, 'Asia/Tashkent');
 
     const settings = {
       get: jest.fn().mockResolvedValue({
@@ -41,6 +41,9 @@ describe('TelegramCron.closingDigest (R1)', () => {
         { id: 'store-2', name: 'Store 2' },
       ]),
     };
+    const company = {
+      getTimeZone: jest.fn().mockResolvedValue('Asia/Tashkent'),
+    };
 
     const cron = new TelegramCron(
       telegram as never,
@@ -51,6 +54,7 @@ describe('TelegramCron.closingDigest (R1)', () => {
       ledger as never,
       credits as never,
       stores as never,
+      company as never,
     );
 
     // Call closingDigest outside of any store context
