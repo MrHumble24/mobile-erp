@@ -167,6 +167,16 @@ data class ReceiptData(
     val tradeIns: List<ReceiptTradeIn> = emptyList(),
     /** What the customer actually tendered (total − Σ trade-in values); null when none. */
     val amountPaid: String? = null,
+    /** Shop identity for the receipt header (ADR 0043). */
+    val storeName: String? = null,
+    val storeAddress: String? = null,
+    val storePhone: String? = null,
+    /** Free-text receipt footer, or null. */
+    val footer: String? = null,
+    /** Loyalty points spent (ADR 0043); null when none spent. */
+    val pointsSpent: String? = null,
+    /** Loyalty points earned (ADR 0043); null when none earned. */
+    val pointsEarned: String? = null,
 )
 
 /** Map the server receipt payload into the shared render model. */
@@ -186,6 +196,13 @@ fun ReceiptDto.toReceiptData() = ReceiptData(
     },
     total = total,
     warrantyUntil = warranty?.endsAt,
+    payments = payments.map { AccountAmount(it.accountCode, uz.malika.erp.shared.lib.parseMoney(it.amount)) },
+    storeName = store.name,
+    storeAddress = store.address,
+    storePhone = store.phone,
+    footer = footer,
+    pointsSpent = bonus.spent.takeIf { uz.malika.erp.shared.lib.parseMoney(it).signum() > 0 },
+    pointsEarned = bonus.earned.takeIf { uz.malika.erp.shared.lib.parseMoney(it).signum() > 0 },
     tradeIns = tradeIns.map {
         ReceiptTradeIn("${it.model.brand} ${it.model.name}".trim(), UnitCode.display(it.imei, it.serialNumber), it.value)
     },

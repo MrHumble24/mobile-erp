@@ -64,6 +64,8 @@ data class SaleDto(
     val priceLevelCode: String? = null,
     /** Phones taken in part payment (ADR 0039); their values lower the amount paid. */
     val tradeIns: List<SaleTradeInDto> = emptyList(),
+    /** Loyalty points earned and spent on this sale (ADR 0043). */
+    val bonus: SaleBonusDto = SaleBonusDto(),
 )
 
 /** One tender line of a sale (its SALE ledger rows). `amount` is a decimal string. */
@@ -140,6 +142,14 @@ data class ReceiptDto(
     val customer: ReceiptCustomerDto? = null,
     /** Trade-ins taken in part payment (ADR 0039), for the printed receipt. */
     val tradeIns: List<SaleTradeInDto> = emptyList(),
+    /** How the sale was tendered; `[]` when none. */
+    val payments: List<SalePaymentDto> = emptyList(),
+    /** Loyalty points earned and spent on this sale (ADR 0043). */
+    val bonus: SaleBonusDto = SaleBonusDto(),
+    /** Shop identity for the receipt header (ADR 0043). */
+    val store: ReceiptStoreDto = ReceiptStoreDto(),
+    /** Free-text receipt footer, or null. */
+    val footer: String? = null,
 )
 
 @Serializable

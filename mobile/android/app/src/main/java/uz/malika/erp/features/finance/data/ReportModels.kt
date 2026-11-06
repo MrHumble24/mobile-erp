@@ -26,6 +26,10 @@ data class ProfitReport(
     @Serializable(with = FlexMoneySerializer::class) val returnsRefunded: String = "0",
     /** Σ listPriceSnapshot − salePrice over snapshotted sales (ADR 0034). */
     @Serializable(with = FlexMoneySerializer::class) val discountsGiven: String = "0",
+    /** Loyalty points earned (ADR 0043); a plain number, not money. */
+    val bonusPointsEarned: Double = 0.0,
+    /** Loyalty points spent (ADR 0043, positive magnitude); not money. */
+    val bonusPointsSpent: Double = 0.0,
 )
 
 @Serializable

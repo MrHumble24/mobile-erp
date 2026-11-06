@@ -61,6 +61,14 @@ data class PosState(
     val bonusEnabled: Boolean = false,
     val customerBonus: uz.malika.erp.features.sales.data.CustomerBonus? = null,
     val bonusRequested: java.math.BigDecimal = java.math.BigDecimal.ZERO,
+    // Receipt printing + shop identity (ADR 0043), from till settings.
+    val tillSettingsLoaded: Boolean = false,
+    val receiptPrintingEnabled: Boolean = false,
+    val receiptPaperWidthMm: Int = 80,
+    val storeName: String? = null,
+    val storeAddress: String? = null,
+    val storePhone: String? = null,
+    val receiptFooter: String? = null,
 ) {
     /** The whole cart priced at the current level — the single brain the UI reads. */
     val priced: PricedCart
@@ -114,5 +122,12 @@ data class PosState(
         shiftsEnabled = shiftsEnabled,
         canTradeIn = canTradeIn,
         bonusEnabled = bonusEnabled,
+        tillSettingsLoaded = tillSettingsLoaded,
+        receiptPrintingEnabled = receiptPrintingEnabled,
+        receiptPaperWidthMm = receiptPaperWidthMm,
+        storeName = storeName,
+        storeAddress = storeAddress,
+        storePhone = storePhone,
+        receiptFooter = receiptFooter,
     )
 }

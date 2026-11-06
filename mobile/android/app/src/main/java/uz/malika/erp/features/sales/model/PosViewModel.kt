@@ -16,6 +16,7 @@ import uz.malika.erp.features.sales.data.ScannedDevice
 import uz.malika.erp.features.sales.lib.Discount
 import uz.malika.erp.features.sales.lib.DiscountMode
 import uz.malika.erp.features.sales.lib.PriceLevel
+import uz.malika.erp.features.sales.lib.fromCents
 import uz.malika.erp.shared.payments.AccountAmount
 import uz.malika.erp.shared.payments.PaymentSplit
 import java.math.BigDecimal
@@ -61,6 +62,13 @@ class PosViewModel(
                 creditEnabled = ts.creditEnabled,
                 shiftsEnabled = ts.shiftsEnabled,
                 bonusEnabled = ts.bonusEnabled,
+                tillSettingsLoaded = true,
+                receiptPrintingEnabled = ts.receiptPrintingEnabled,
+                receiptPaperWidthMm = ts.receiptPaperWidthMm,
+                storeName = ts.storeName,
+                storeAddress = ts.storeAddress,
+                storePhone = ts.storePhone,
+                receiptFooter = ts.receiptFooter,
             )
         }
     }
@@ -254,7 +262,12 @@ class PosViewModel(
                 val allocation = if (parts.isEmpty()) emptyList() else PaymentSplit.allocate(finals, parts)
                 val ops = SaleCreate.ops(priced.lines, s.level, customerId, customerName, customerPhone, notes, allocation)
                 val ids = ops.map { repo.enqueueSale(it.payload, it.baseVersion) }
-                _state.value = s.cleared(completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts))
+                val pointsSpent = s.bonusPlan.totalCents.fromCents().takeIf { it.signum() > 0 }?.toPlainString()
+                _state.value = s.cleared(completed = buildPosReceipt(
+                    ids.first(), cashierName, s.level, priced, online, customerName, parts,
+                    storeName = s.storeName, storeAddress = s.storeAddress, storePhone = s.storePhone,
+                    footer = s.receiptFooter, pointsSpent = pointsSpent,
+                ))
             } catch (_: Exception) {
                 _state.value = _state.value.copy(busy = false, errorKey = "common.error")
             }

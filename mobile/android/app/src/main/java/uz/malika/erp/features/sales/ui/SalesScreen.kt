@@ -47,10 +47,12 @@ import uz.malika.erp.app.Destination
 import uz.malika.erp.app.LocalCan
 import uz.malika.erp.core.nowIso
 import uz.malika.erp.data.remote.HttpClient
+import uz.malika.erp.features.sales.data.PosRepository
 import uz.malika.erp.features.sales.data.Sale
 import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.SalesRepository
+import uz.malika.erp.features.sales.data.TillSettings
 import uz.malika.erp.features.sales.data.refundCap
 import uz.malika.erp.shared.lib.formatDate
 import uz.malika.erp.shared.lib.parseMoney
@@ -86,6 +88,9 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
         },
     )
     val detailRepo = remember { SalesRepository(api, container.db, HttpClient.json) }
+    val tillRepo = remember { PosRepository(api, container.db, container.outbox, HttpClient.json) }
+    var tillSettings by remember { mutableStateOf<TillSettings?>(null) }
+    LaunchedEffect(online) { tillSettings = runCatching { tillRepo.tillSettings(online) }.getOrNull() }
     val listUi by vm.list.collectAsState()
     val filters by vm.filters.collectAsState()
     val stats by vm.stats.collectAsState()
@@ -222,7 +227,12 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
 
     receiptUi.data?.let { data ->
         AppBottomSheet(onDismiss = { vm.clearReceipt() }) {
-            ReceiptSheet(data) { vm.clearReceipt() }
+            ReceiptSheet(
+                data,
+                onClose = { vm.clearReceipt() },
+                printEnabled = tillSettings?.receiptPrintingEnabled == true,
+                paperWidthMm = tillSettings?.receiptPaperWidthMm ?: 80,
+            )
         }
     }
 

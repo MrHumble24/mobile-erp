@@ -98,7 +98,10 @@ private fun PosViewModel.finishCheckoutDirect(
         )
         return
     }
+    val pointsSpent = before.bonusPlan.totalCents.fromCents().takeIf { it.signum() > 0 }?.toPlainString()
     _state.value = s.cleared(completed = buildTradeInReceipt(
         result.saleIds.first(), cashierName, before.level, priced, online, customerName, parts, before.tradeIns,
+        storeName = before.storeName, storeAddress = before.storeAddress, storePhone = before.storePhone,
+        footer = before.receiptFooter, pointsSpent = pointsSpent,
     ))
 }

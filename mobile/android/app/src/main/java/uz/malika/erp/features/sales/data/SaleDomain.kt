@@ -34,6 +34,9 @@ data class Sale(
     val priceLevelCode: String? = null,
     /** Phones taken in part payment (ADR 0039); empty for a plain sale. */
     val tradeIns: List<SaleTradeIn> = emptyList(),
+    /** Loyalty points spent and earned on this sale (ADR 0043), as strings. */
+    val bonusSpent: String = "0",
+    val bonusEarned: String = "0",
 ) {
     val channel: SaleChannel get() = if (consignmentId != null) SaleChannel.B2B else SaleChannel.RETAIL
 
@@ -96,6 +99,8 @@ fun SaleDto.toDomain() = Sale(
     discountAmount = discountAmount,
     priceLevelCode = priceLevelCode,
     tradeIns = tradeIns.map { SaleTradeIn(it.model.let { m -> "${m.brand} ${m.name}".trim() }, UnitCode.display(it.imei, it.serialNumber), it.value) },
+    bonusSpent = bonus.spent,
+    bonusEarned = bonus.earned,
 )
 
 /** Aggregate stats for the sales list header. Money stays a string; profit is redacted (nullable). */
