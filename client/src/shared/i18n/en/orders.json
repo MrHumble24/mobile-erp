@@ -27,5 +27,18 @@
   "newBadge": "New",
   "confirmCancel": "Are you sure you want to cancel this order?",
   "statusUpdated": "Order status updated",
-  "saleNotFound": "Sale not found or belongs to another store"
+  "saleNotFound": "Sale not found or belongs to another store",
+  "statusAll": "All",
+  "actionMarkContacted": "Mark contacted",
+  "actionMarkDone": "Mark done",
+  "confirmContacted": "Mark this order as contacted?",
+  "confirmDone": "Mark this order as completed?",
+  "phoneCopied": "Phone number copied",
+  "notFoundMessage": "Order not found or belongs to another store",
+  "cancelNoteLabel": "Cancellation note (optional)",
+  "offlineNotice": "Online only. Connect to the internet to manage orders.",
+  "timeJustNow": "just now",
+  "timeMinutesAgo": "{m}m ago",
+  "timeHoursAgo": "{h}h ago",
+  "timeDaysAgo": "{d}d ago"
 }

@@ -1,6 +1,6 @@
 # 029 — Online orders on the phone apps (Android and iOS)
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: 027 (merged)
+Status: merged · Owner: Gemini (Antigravity), finished by Claude's builder · Depends on: 027 (merged)
 
 ## Why
 The public shop page takes orders since handoff 022 (ADR 0049, 0050). Staff see them on the
@@ -60,12 +60,53 @@ Commit on this branch, adding files by path (never `git add -A`): Android, then 
 Fill the Result section of `docs/handoffs/gemini/029-mobile-storefront-orders.md` in THIS worktree, set Status to done, and commit that too.
 === END ===
 
-## Result (Gemini fills)
-- Commits (Android, iOS, docs):
+## Result (Claude's builder finished it after Gemini's quota ran out)
+Gemini had left an Android start only (orders `data/` + `lib/`, badge field on
+`NavItem`, a badge row in `MoreScreen`, and the i18n keys in `orders.json`).
+Claude kept that data/lib layer and the i18n keys unchanged, kept the `NavItem.badge`
+and `MoreScreen` badge edits, and built the rest (model/ui/registry on Android, the
+whole iOS slice, tests, docs).
+
+- Commits (Android, iOS, docs): three on `agent/gemini/mobile-orders` —
+  `feat(android): online storefront orders…`, `feat(ios): online storefront orders…`,
+  and the docs commit holding this file.
 - Items 1 to 6, one line each, per platform:
-- Tests added (names):
-- Gradle and xcodebuild last lines:
-- The live try, step by step (seen / not seen), per platform:
-- Not done / skipped / failed:
+  1. More-tab "Orders" entry, `order.read`, NEW badge from `/stats` refreshed on
+     More open and after a status change — Android (OrdersFeature + OrdersBadge),
+     iOS (OrdersModule + OrdersBadge, MoreTab row).
+  2. List: status chips (All/New/Contacted/Done/Cancelled), newest-first, pages of 20
+     on scroll, pull-to-refresh, offline/empty/error kit states — both.
+  3. Detail: everything from the row + note + handler/when + history; phone dials on
+     tap, long-press copies — both.
+  4. Status buttons (`order.manage`) for the allowed moves only, each confirmed; a
+     refusal shows the server message, a 404 closes the screen — both.
+  5. Offline: list shows the kit offline note; nothing cached, no change queued — both.
+  6. Text: reused Gemini's `orders.json` keys (+ `nav.orders`); registered the `orders`
+     namespace in `I18n.kt` / `I18n.swift` (it was missing) — both.
+- Tests added: Android `OrderLogicTest` (JUnit); iOS `OrderRulesSelfCheck` (DEBUG
+  self-check) covering allowed actions, target mapping, terminal, and time-ago buckets.
+- Gradle and xcodebuild last lines: `BUILD SUCCESSFUL in 4s … testDebugUnitTest` (pass);
+  `** BUILD SUCCEEDED **`.
+- The live try, step by step: not seen — Claude did not run an emulator or simulator
+  (orchestrator does the live try).
+- Not done / skipped / failed: no cancellation note (the server status DTO has none) and
+  no "mark done" sale link on phones (web-only); both are deliberate. Decisions recorded
+  in ADR 0059.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Gemini ran out of its limit with only a start on Android; a
+  Claude builder agent finished both platforms. Gates run by Claude: Android builds, 148 unit
+  tests pass; iOS builds.
+- Seen by Claude on an Android emulator, against a copy of the working data with two test
+  orders placed through the public shop route: the More tab shows "Orders" with a badge of 2;
+  the list shows both orders, newest first, with status chips; an order opens with the phone
+  number, product, store, the customer's note, the buttons and the history; "mark contacted"
+  asks once, then the status, "handled by" and the history change (checked in the database
+  too); after closing, the list shows the new status.
+- One change by Claude, both platforms: the confirmation's dismiss button said "Cancel", the
+  same word as the "Cancel order" action, so that dialog had two identical buttons. It says
+  "Back" now.
+- Differences from the handoff, accepted: no note on cancelling (the server takes none).
+- Not seen: anything on iOS (build only); "mark done", "cancel order", the 404 path, offline,
+  paging, the dialer; the Back key did not close the sheet on the emulator (a tap outside did).
+  The Uzbek is Gemini's and wants a native look.

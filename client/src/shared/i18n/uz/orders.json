@@ -27,5 +27,18 @@
   "newBadge": "Yangi",
   "confirmCancel": "Buyurtmani bekor qilishni tasdiqlaysizmi?",
   "statusUpdated": "Buyurtma holati yangilandi",
-  "saleNotFound": "Ushbu savdo topilmadi yoki boshqa do'konga tegishli"
+  "saleNotFound": "Ushbu savdo topilmadi yoki boshqa do'konga tegishli",
+  "statusAll": "Barchasi",
+  "actionMarkContacted": "Bog'lanildi deb belgilash",
+  "actionMarkDone": "Bajarildi deb belgilash",
+  "confirmContacted": "Buyurtma bilan bog'lanilganini tasdiqlaysizmi?",
+  "confirmDone": "Buyurtma bajarilganini tasdiqlaysizmi?",
+  "phoneCopied": "Telefon raqami nusxalandi",
+  "notFoundMessage": "Buyurtma topilmadi yoki boshqa do'konga tegishli",
+  "cancelNoteLabel": "Bekor qilish izohi (ixtiyoriy)",
+  "offlineNotice": "Faqat onlayn. Buyurtmalarni boshqarish uchun internetga ulaning.",
+  "timeJustNow": "hozirgina",
+  "timeMinutesAgo": "{m} daqiqa oldin",
+  "timeHoursAgo": "{h} soat oldin",
+  "timeDaysAgo": "{d} kun oldin"
 }

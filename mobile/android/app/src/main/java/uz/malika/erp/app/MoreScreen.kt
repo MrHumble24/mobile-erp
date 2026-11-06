@@ -1,6 +1,8 @@
 package uz.malika.erp.app
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -22,12 +25,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,6 +43,7 @@ import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.ui.AppBottomSheet
 import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -51,10 +59,15 @@ fun MoreScreen(
     stores: List<UserStore>,
     onSwitchStore: (String) -> Unit,
     onSelect: (String) -> Unit,
+    onRefreshMore: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val t = LocalT.current
     var showSwitchSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        onRefreshMore?.invoke()
+    }
 
     Column(
         modifier
@@ -188,6 +201,7 @@ fun MoreScreen(
 
 @Composable
 private fun MoreRow(item: NavItem, t: Translate, onClick: () -> Unit) {
+    val badgeCount = item.badge?.collectAsState()?.value
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).heightIn(min = 52.dp)
             .padding(horizontal = Tokens.Space.lg, vertical = Tokens.Space.sm),
@@ -203,6 +217,25 @@ private fun MoreRow(item: NavItem, t: Translate, onClick: () -> Unit) {
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
+        if (badgeCount != null && badgeCount > 0) {
+            Box(
+                modifier = Modifier
+                    .padding(end = Tokens.Space.sm)
+                    .clip(RoundedCornerShape(Tokens.Radius.pill))
+                    .background(Tokens.action)
+                    .padding(horizontal = 7.dp, vertical = 2.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = badgeCount.toString(),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = MonoFamily,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = Color.White,
+                )
+            }
+        }
         Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = Tokens.muted, modifier = Modifier.size(20.dp))
     }
 }

@@ -54,6 +54,9 @@ object InventoryFeature : FeatureModule {
   reconciled, never dropped.
 - **Every other write is online-only**: gate on `container.connectivity.online`
   and block with a "needs connection" message. Never fake-queue it.
+- **Online storefront orders** (`features/orders/`, handoff 029): the More-tab
+  "Orders" screen (`order.read`), a NEW-order badge via `OrdersBadge`, and status
+  buttons (`order.manage`). Online only — nothing cached, no change queued.
 
 ## Developer Console & logging (`features/devconsole/`)
 - Reach it from login ("Developer settings", code `153535`) or, once signed in,

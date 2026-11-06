@@ -14,7 +14,7 @@ import org.json.JSONObject
  */
 private val NAMESPACES = listOf(
     "auth", "balance", "catalog", "common", "consignments", "credit", "customers", "customs", "dashboard",
-    "expenses", "inventory", "nav", "partners", "pos", "pricing", "purchases", "qc",
+    "expenses", "inventory", "nav", "orders", "partners", "pos", "pricing", "purchases", "qc",
     "reports", "repairs", "sales", "settings", "shifts", "shipments", "stores", "users",
 )
 private val LOCALES = listOf("uz", "en")
