@@ -24,3 +24,4 @@ Warm Sand, Nord slate) without arbitrary hex colors scattered in application cod
 ## Consequences
 - Theme switching updates all components instantly without page reload.
 - New components must use semantic tokens; raw hex classes fail CI tests.
+- Printed paper components (receipt, repair ticket, contract, price tags) intentionally remain black-on-white.

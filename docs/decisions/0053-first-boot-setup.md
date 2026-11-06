@@ -10,13 +10,15 @@ on the network must be protected from hostile takeovers while remaining easy to 
 
 ## Decision
 - `GET /setup/status` (public) returns `{ needsSetup }`, true only when zero users exist.
-- On first boot with zero users, the server generates a random 8-character setup code,
-  stores it in `<DATA_DIR>/setup-code.txt`, and logs it once to the console.
+- On first boot with zero users, the server generates a 32-character setup code,
+  logs it once to console, stores only its SHA-256 hash in `<DATA_DIR>/setup-code.txt`,
+  and validates candidate codes using constant-time comparison.
 - `POST /setup` (public, throttled) accepts the code and wizard answers. Inside an
   atomic transaction protected by `pg_advisory_xact_lock`, it provisions the owner
   (ADMIN role), company profile, initial store, ledger accounts, and switches.
 - Upon completion, the setup code file is unlinked. Subsequent calls return 409 Conflict.
 - Failed setup code attempts are rate-limited to 5 per 15-minute window.
+- If the users table is ever emptied, setup opens again and generates a new code.
 - If an owner is ever locked out, `pnpm bootstrap:admin` remains available via server CLI.
 
 ## Consequences
