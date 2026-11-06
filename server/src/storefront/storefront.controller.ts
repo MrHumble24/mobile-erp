@@ -68,6 +68,17 @@ export class StorefrontController {
     return this.storefront.createOrder(dto);
   }
 
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('orders/:id/pay')
+  @HttpCode(HttpStatus.OK)
+  payOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body?: { provider?: string },
+  ): Promise<{ checkoutUrl: string }> {
+    return this.storefront.payOrder(id, body?.provider);
+  }
+
   @RequirePermissions('settings.manage')
   @Get('settings')
   getSettings(): Promise<StorefrontSettingsView> {

@@ -17,7 +17,9 @@ import { StorefrontOrdersService } from './storefront-orders.service.js';
 import { StorefrontPublicOrdersService } from './storefront-public-orders.service.js';
 import { StorefrontRepository } from './storefront.repository.js';
 import { StorefrontSettingsRepository } from './storefront-settings.repository.js';
+import { StorefrontPayService } from './storefront-pay.service.js';
 import { StorefrontService } from './storefront.service.js';
+import { OnlinePaymentsModule } from '../online-payments/online-payments.module.js';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { StorefrontService } from './storefront.service.js';
     StoresModule,
     LedgerModule,
     SalesModule,
+    OnlinePaymentsModule,
   ],
   controllers: [
     StorefrontController,
@@ -36,6 +39,7 @@ import { StorefrontService } from './storefront.service.js';
   providers: [
     StorefrontService,
     StorefrontPublicOrdersService,
+    StorefrontPayService,
     StorefrontOrdersService,
     StorefrontOrdersFulfillService,
     StorefrontDeliveryZonesService,
@@ -47,6 +51,7 @@ import { StorefrontService } from './storefront.service.js';
   ],
   exports: [
     StorefrontService,
+    StorefrontPayService,
     StorefrontOrdersService,
     StorefrontDeliveryZonesService,
   ],

@@ -45,6 +45,13 @@ const ORDER_INCLUDE = {
   fulfillmentMethod: { select: { label: true } },
   paymentMethod: { select: { label: true } },
   deliveryZone: { select: { name: true } },
+  payments: {
+    include: {
+      provider: { select: { label: true } },
+      status: { select: { label: true } },
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
   statusHistory: {
     include: {
       toStatus: { select: { label: true } },
@@ -158,12 +165,10 @@ export class StorefrontOrdersRepository {
     const conditions: Prisma.DeviceWhereInput[] = [
       { modelId, storeId, statusCode: 'IN_STOCK' },
     ];
-    if (specs?.storage) {
+    if (specs?.storage)
       conditions.push({ specs: { path: ['storage'], equals: specs.storage } });
-    }
-    if (specs?.color) {
+    if (specs?.color)
       conditions.push({ specs: { path: ['color'], equals: specs.color } });
-    }
     return client.device.findFirst({
       where: conditions.length === 1 ? conditions[0] : { AND: conditions },
       orderBy: { createdAt: 'asc' },

@@ -48,6 +48,7 @@ import { SetupModule } from './setup/setup.module.js';
 import { BackupsModule } from './backups/backups.module.js';
 import { DataWipeModule } from './data-wipe/data-wipe.module.js';
 import { RuntimeModule } from './common/runtime/runtime.module.js';
+import { OnlinePaymentsModule } from './online-payments/online-payments.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { MaintenanceGuard } from './common/guards/maintenance.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
@@ -102,6 +103,7 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     CompanyModule,
     SetupModule,
     DataWipeModule,
+    OnlinePaymentsModule,
   ],
   controllers: [AppController],
   providers: [

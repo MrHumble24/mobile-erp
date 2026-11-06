@@ -38,6 +38,18 @@ export interface RawOrderRecord {
   handledAt: Date | null;
   handledBy?: ProfileHolder | null;
   saleId: string | null;
+  payments?: Array<{
+    id: string;
+    providerCode: string;
+    provider?: { label: string } | null;
+    statusCode: string;
+    status?: { label: string } | null;
+    amount: { toFixed(dp: number): string } | number | string;
+    paidAt: Date | null;
+    cancelledAt: Date | null;
+    refundedAt: Date | null;
+    createdAt: Date;
+  }>;
   createdAt: Date;
   updatedAt: Date;
   statusHistory?: Array<{
@@ -89,6 +101,23 @@ export function toStorefrontOrderListItem(
     handledAt: row.handledAt,
     handledByName: fullName(row.handledBy),
     saleId: row.saleId,
+    payment:
+      row.payments && row.payments.length > 0
+        ? {
+            id: row.payments[0].id,
+            providerCode: row.payments[0].providerCode,
+            providerLabel:
+              row.payments[0].provider?.label ?? row.payments[0].providerCode,
+            statusCode: row.payments[0].statusCode,
+            statusLabel:
+              row.payments[0].status?.label ?? row.payments[0].statusCode,
+            amount: Number(row.payments[0].amount).toFixed(2),
+            paidAt: row.payments[0].paidAt,
+            cancelledAt: row.payments[0].cancelledAt,
+            refundedAt: row.payments[0].refundedAt,
+            createdAt: row.payments[0].createdAt,
+          }
+        : null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };

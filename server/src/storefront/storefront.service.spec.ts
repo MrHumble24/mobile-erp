@@ -65,6 +65,8 @@ describe('StorefrontService', () => {
       zonesRepo,
       pricing,
       ordersService,
+      { listConfigs: jest.fn().mockResolvedValue([]) } as any,
+      { payOrder: jest.fn() } as any,
     );
   });
 
@@ -116,6 +118,7 @@ describe('StorefrontService', () => {
         deliveryFreeFrom: null,
         deliveryNote: null,
         deliveryZones: [],
+        paymentProviders: [],
       });
     });
   });

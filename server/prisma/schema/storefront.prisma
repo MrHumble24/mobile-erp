@@ -113,6 +113,7 @@ model StorefrontOrder {
 
   statusHistory    StorefrontOrderStatusHistory[]
   cashTransactions CashTransaction[]
+  payments         OnlinePayment[]
 
   @@index([storeId])
   @@index([modelId])
