@@ -49,7 +49,7 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token');
     }
     // A restore ends every session: tokens issued before the cutoff are dead.
-    if (!this.sessionGate.isTokenValid(payload.iat)) {
+    if (!(await this.sessionGate.isValid(payload.iat))) {
       throw new UnauthorizedException('Session ended; sign in again');
     }
     req.user = {
