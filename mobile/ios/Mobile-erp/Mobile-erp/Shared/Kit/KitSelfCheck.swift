@@ -10,6 +10,7 @@ enum KitSelfCheck {
         checkCSV()
         checkRouter()
         checkBonusText()
+        runCustomerBonusSelfChecks()
     }
 
     private static func checkCSV() {

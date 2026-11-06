@@ -106,6 +106,11 @@ private struct PosCustomerSearchSheet: View {
                     Button { onSelect(hit) } label: {
                         HStack {
                             Text(hit.name)
+                            if let bonus = hit.bonusBalance {
+                                Text(i18n.t("customers.bonusPickerPoints", ["points": BonusText.format(bonus)]))
+                                    .font(.ui(.caption))
+                                    .foregroundStyle(Tokens.muted)
+                            }
                             Spacer()
                             if let phone = hit.phone {
                                 Text(phone).font(.mono(12)).foregroundStyle(Tokens.muted)
