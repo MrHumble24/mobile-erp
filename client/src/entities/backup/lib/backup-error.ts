@@ -1,10 +1,8 @@
-import { HttpError } from "@/shared/api/http"
+import { HttpError, httpErrorCode } from "@/shared/api/http"
 
 /** The stable `code` the server attaches to a failed `/backups` response. */
 export function backupErrorCode(err: unknown): string | undefined {
-  return err instanceof HttpError
-    ? (err.data as { code?: string } | undefined)?.code
-    : undefined
+  return httpErrorCode(err)
 }
 
 /** HTTP status of a failed request, or undefined for a non-HTTP error. */

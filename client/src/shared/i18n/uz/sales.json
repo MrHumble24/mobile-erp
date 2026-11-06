@@ -54,6 +54,8 @@
   "returnToDefective": "Nuqsonli qismga o'tkazish",
   "returnSuccess": "Qurilma qaytarildi",
   "returnConflict": "Ushbu savdo boshqa terminalda o'zgartirildi. Sahifani yangilab, qayta urinib ko'ring.",
+  "returnBoughtBack": "This phone was bought back, so this sale can no longer be returned.",
+  "returnTradeInForbidden": "Returning the trade-in part of this sale needs the purchase permission.",
   "alreadyReturned": "Ushbu savdo allaqachon qaytarilgan",
   "noSalesFound": "Savdolar topilmadi",
   "customersTitle": "Mijozlar",

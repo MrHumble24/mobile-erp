@@ -1,7 +1,6 @@
 import * as React from "react"
 import { useForm, useWatch, Controller, type UseFormReturn } from "react-hook-form"
 import { useI18n } from "@/shared/i18n"
-import { HttpError } from "@/shared/api/http"
 import {
   UsedUnitFields,
   useDeviceModels,
@@ -18,6 +17,7 @@ import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { toast } from "@/shared/ui/sonner"
+import { buyErrorMessage } from "../lib/buy-error"
 
 interface BuyPhoneValues extends UsedUnitValues {
   pricePaid: number
@@ -67,12 +67,6 @@ function PriceFields({ form }: { form: UseFormReturn<BuyPhoneValues> }) {
       />
     </div>
   )
-}
-
-function buyErrorMessage(err: unknown, t: (k: string) => string): string {
-  const code = (err as HttpError)?.statusCode
-  if (code === 409) return (err as HttpError).message || t("purchases.buyConflict")
-  return err instanceof Error ? err.message : t("common.error")
 }
 
 function BuyPhoneForm({ onDone }: { onDone: () => void }) {
