@@ -10,6 +10,7 @@ const ACTIVE_DEVICE_STATUSES = [
   'DEFECTIVE',
   'CONSIGNED',
   'IN_TRANSIT',
+  'RESERVED',
 ];
 
 /** All Prisma access for the stores, user_stores, and store settings tables. */

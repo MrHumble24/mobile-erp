@@ -121,7 +121,14 @@ export class SalesCreateService {
   ): Promise<SaleView> {
     const device = await this.reads.findDeviceByImei(code, storeId);
     if (!device) throw new NotFoundException(`Device ${code} not found`);
-    if (device.statusCode !== 'IN_STOCK') {
+    const isHold =
+      device.statusCode === 'RESERVED' &&
+      Boolean(options?.storefrontOrderId) &&
+      (await this.reads.isDeviceHeldByOrder(
+        device.id,
+        options!.storefrontOrderId!,
+      ));
+    if (device.statusCode !== 'IN_STOCK' && !isHold) {
       throw new ConflictException(
         `Device ${code} is ${device.statusCode}, not available for sale`,
       );
@@ -152,6 +159,7 @@ export class SalesCreateService {
       caller,
       (tx) => this.checkout.checkout(input, tx),
       tender,
+      options,
     );
     const view = await this.read.require(saleId);
     this.events.emit(
@@ -203,6 +211,7 @@ export class SalesCreateService {
       caller,
       (tx) => this.checkout.checkoutQuantity(input, tx),
       tender,
+      options,
     );
     return this.read.require(saleId);
   }
@@ -256,6 +265,7 @@ export class SalesCreateService {
     caller: AuthenticatedUser,
     checkout: (tx?: PrismaTx) => Promise<string>,
     tender: Tender,
+    options?: CheckoutOptions,
   ): Promise<string> {
     const paid = tender.payments.reduce((s, p) => s.plus(p.amount), ZERO);
     const needsBonus =
@@ -271,6 +281,7 @@ export class SalesCreateService {
         storeId,
         checkout,
         afterSale,
+        options?.tx,
       );
     } catch (e) {
       if (dto.clientMutationId && isUniqueViolation(e)) {

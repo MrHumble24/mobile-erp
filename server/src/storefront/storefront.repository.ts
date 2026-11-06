@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { StorefrontSettingsRepository } from './storefront-settings.repository.js';
 import type {
   StorefrontCategoryView,
   StorefrontSettingsView,
@@ -26,81 +27,21 @@ export interface PublicModelRow {
   salePrice: Prisma.Decimal | null;
 }
 
-export interface CreateOrderInput {
-  storeId: string;
-  modelId: string;
-  specs: Record<string, unknown>;
-  customerName: string;
-  customerPhone: string;
-  note?: string;
-}
-
 @Injectable()
 export class StorefrontRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly settingsRepo: StorefrontSettingsRepository,
+  ) {}
 
-  async getSettings(): Promise<StorefrontSettingsView> {
-    const row = await this.prisma.storefrontSettings.findUnique({
-      where: { id: 1 },
-    });
-    if (!row) {
-      return {
-        enabled: false,
-        showPrices: true,
-        contactPhone: null,
-        contactTelegram: null,
-        categoryIds: [],
-      };
-    }
-    const catIds = Array.isArray(row.categoryIds)
-      ? (row.categoryIds as string[])
-      : [];
-    return {
-      enabled: row.enabled,
-      showPrices: row.showPrices,
-      contactPhone: row.contactPhone,
-      contactTelegram: row.contactTelegram,
-      categoryIds: catIds,
-    };
+  getSettings(): Promise<StorefrontSettingsView> {
+    return this.settingsRepo.getSettings();
   }
 
-  async updateSettings(
+  updateSettings(
     data: Partial<StorefrontSettingsView>,
   ): Promise<StorefrontSettingsView> {
-    const updatePayload: Prisma.StorefrontSettingsUpdateInput = {};
-    if (data.enabled !== undefined) updatePayload.enabled = data.enabled;
-    if (data.showPrices !== undefined)
-      updatePayload.showPrices = data.showPrices;
-    if (data.contactPhone !== undefined)
-      updatePayload.contactPhone = data.contactPhone;
-    if (data.contactTelegram !== undefined)
-      updatePayload.contactTelegram = data.contactTelegram;
-    if (data.categoryIds !== undefined)
-      updatePayload.categoryIds = data.categoryIds;
-
-    const row = await this.prisma.storefrontSettings.upsert({
-      where: { id: 1 },
-      create: {
-        id: 1,
-        enabled: data.enabled ?? false,
-        showPrices: data.showPrices ?? true,
-        contactPhone: data.contactPhone ?? null,
-        contactTelegram: data.contactTelegram ?? null,
-        categoryIds: data.categoryIds ?? [],
-      },
-      update: updatePayload,
-    });
-
-    const catIds = Array.isArray(row.categoryIds)
-      ? (row.categoryIds as string[])
-      : [];
-    return {
-      enabled: row.enabled,
-      showPrices: row.showPrices,
-      contactPhone: row.contactPhone,
-      contactTelegram: row.contactTelegram,
-      categoryIds: catIds,
-    };
+    return this.settingsRepo.updateSettings(data);
   }
 
   activeStores(): Promise<StorefrontStoreView[]> {
@@ -153,20 +94,38 @@ export class StorefrontRepository {
     const result = new Map<string, Map<string, number>>();
     if (modelIds.length === 0 || storeIds.length === 0) return result;
 
-    const grouped = await this.prisma.stockMovement.groupBy({
-      by: ['modelId', 'storeId'],
-      where: {
-        modelId: { in: modelIds },
-        storeId: { in: storeIds },
-      },
-      _sum: { quantity: true },
-    });
+    const [grouped, openOrders] = await Promise.all([
+      this.prisma.stockMovement.groupBy({
+        by: ['modelId', 'storeId'],
+        where: {
+          modelId: { in: modelIds },
+          storeId: { in: storeIds },
+        },
+        _sum: { quantity: true },
+      }),
+      this.prisma.storefrontOrder.groupBy({
+        by: ['modelId', 'storeId'],
+        where: {
+          modelId: { in: modelIds },
+          storeId: { in: storeIds },
+          statusCode: { in: ['NEW', 'CONTACTED', 'SHIPPED'] },
+        },
+        _count: { id: true },
+      }),
+    ]);
+
+    const openOrderMap = new Map<string, number>();
+    for (const o of openOrders) {
+      openOrderMap.set(`${o.modelId}:${o.storeId}`, o._count.id);
+    }
 
     for (const row of grouped) {
       if (!result.has(row.modelId)) {
         result.set(row.modelId, new Map());
       }
-      result.get(row.modelId)!.set(row.storeId, row._sum.quantity ?? 0);
+      const sum = row._sum.quantity ?? 0;
+      const open = openOrderMap.get(`${row.modelId}:${row.storeId}`) ?? 0;
+      result.get(row.modelId)!.set(row.storeId, Math.max(0, sum - open));
     }
     return result;
   }
@@ -194,11 +153,21 @@ export class StorefrontRepository {
     specs?: Record<string, unknown>,
   ): Promise<number> {
     if (kindCode === 'QUANTITY') {
-      const agg = await this.prisma.stockMovement.aggregate({
-        where: { modelId, storeId },
-        _sum: { quantity: true },
-      });
-      return agg._sum.quantity ?? 0;
+      const [agg, openOrdersCount] = await Promise.all([
+        this.prisma.stockMovement.aggregate({
+          where: { modelId, storeId },
+          _sum: { quantity: true },
+        }),
+        this.prisma.storefrontOrder.count({
+          where: {
+            modelId,
+            storeId,
+            statusCode: { in: ['NEW', 'CONTACTED', 'SHIPPED'] },
+          },
+        }),
+      ]);
+      const qty = agg._sum.quantity ?? 0;
+      return Math.max(0, qty - openOrdersCount);
     }
 
     const conditions: Prisma.DeviceWhereInput[] = [
@@ -222,33 +191,6 @@ export class StorefrontRepository {
     }
     return this.prisma.device.count({
       where: conditions.length === 1 ? conditions[0] : { AND: conditions },
-    });
-  }
-
-  async createOrder(input: CreateOrderInput): Promise<{ id: string }> {
-    return this.prisma.$transaction(async (tx) => {
-      const order = await tx.storefrontOrder.create({
-        data: {
-          storeId: input.storeId,
-          modelId: input.modelId,
-          specs: input.specs as Prisma.InputJsonValue,
-          customerName: input.customerName,
-          customerPhone: input.customerPhone,
-          note: input.note ?? null,
-          statusCode: 'NEW',
-        },
-        select: { id: true },
-      });
-
-      await tx.storefrontOrderStatusHistory.create({
-        data: {
-          orderId: order.id,
-          toStatusCode: 'NEW',
-          note: 'Online order created',
-        },
-      });
-
-      return order;
     });
   }
 }

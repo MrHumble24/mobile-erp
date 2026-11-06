@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -48,6 +49,31 @@ export class CreateStorefrontOrderDto {
   @IsString()
   @MaxLength(1000)
   note?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['PICKUP', 'DELIVERY', 'pickup', 'delivery'])
+  fulfillmentMethod?: string;
+
+  /** Alias for fulfillmentMethod. */
+  @IsOptional()
+  @IsString()
+  @IsIn(['PICKUP', 'DELIVERY', 'pickup', 'delivery'])
+  deliveryMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  address?: string;
+
+  @IsOptional()
+  @IsUUID()
+  deliveryZoneId?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['ON_RECEIPT', 'ONLINE', 'on_receipt', 'online'])
+  paymentMethod?: string;
 
   /** Hidden honeypot field — should remain empty. */
   @IsOptional()

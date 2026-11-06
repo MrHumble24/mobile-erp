@@ -10,6 +10,14 @@ export interface StorefrontCategoryView {
   name: string;
 }
 
+export interface StorefrontDeliveryZoneView {
+  id: string;
+  name: string;
+  fee: string;
+  sortOrder: number;
+  isActive?: boolean;
+}
+
 export type StorefrontConfigView =
   | { enabled: false }
   | {
@@ -20,6 +28,13 @@ export type StorefrontConfigView =
       showPrices: boolean;
       stores: StorefrontStoreView[];
       categories: StorefrontCategoryView[];
+      pickupEnabled: boolean;
+      deliveryEnabled: boolean;
+      deliveryPricingMode: string;
+      deliveryFlatFee: string | null;
+      deliveryFreeFrom: string | null;
+      deliveryNote: string | null;
+      deliveryZones: StorefrontDeliveryZoneView[];
     };
 
 export interface StorefrontProductCard {
@@ -57,6 +72,22 @@ export interface StorefrontSettingsView {
   contactPhone: string | null;
   contactTelegram: string | null;
   categoryIds: string[];
+  pickupEnabled: boolean;
+  deliveryEnabled: boolean;
+  deliveryPricingModeCode: string;
+  deliveryFlatFee: string | null;
+  deliveryFreeFrom: string | null;
+  deliveryNote: string | null;
+}
+
+export interface PublicStorefrontOrderView {
+  id: string;
+  statusCode: string;
+  statusLabel: string;
+  fulfillmentMethod: string;
+  productName: string;
+  priceSnapshot: string | null;
+  deliveryFeeSnapshot: string;
 }
 
 export interface StorefrontOrderListItem {
@@ -71,6 +102,16 @@ export interface StorefrontOrderListItem {
   customerName: string;
   customerPhone: string;
   note: string | null;
+  fulfillmentMethodCode: string;
+  fulfillmentMethodLabel: string;
+  address: string | null;
+  deliveryZoneId: string | null;
+  deliveryZoneName: string | null;
+  paymentMethodCode: string;
+  paymentMethodLabel: string;
+  priceSnapshot: string | null;
+  deliveryFeeSnapshot: string;
+  deviceId: string | null;
   statusCode: string;
   statusLabel: string;
   handledAt: Date | null;

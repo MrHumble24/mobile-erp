@@ -158,6 +158,20 @@ export class SalesRepository {
     });
   }
 
+  async isDeviceHeldByOrder(
+    deviceId: string,
+    orderId: string,
+  ): Promise<boolean> {
+    const count = await this.prisma.storefrontOrder.count({
+      where: {
+        id: orderId,
+        deviceId,
+        statusCode: { in: ['NEW', 'CONTACTED', 'SHIPPED'] },
+      },
+    });
+    return count > 0;
+  }
+
   async customerExists(id: string): Promise<boolean> {
     return (await this.customerPricing(id)) !== null;
   }

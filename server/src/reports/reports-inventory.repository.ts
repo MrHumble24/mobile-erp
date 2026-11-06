@@ -32,8 +32,8 @@ export class ReportsInventoryRepository {
         : Prisma.empty;
     const rows = await this.prisma.$queryRaw<TotalsRow[]>(Prisma.sql`
       SELECT
-        count(*) FILTER (WHERE "statusCode" = 'IN_STOCK')::int AS "inStockUnits",
-        coalesce(sum("landedCost") FILTER (WHERE "statusCode" = 'IN_STOCK'), 0)::float8 AS "inStockLandedValue",
+        count(*) FILTER (WHERE "statusCode" IN ('IN_STOCK', 'RESERVED'))::int AS "inStockUnits",
+        coalesce(sum("landedCost") FILTER (WHERE "statusCode" IN ('IN_STOCK', 'RESERVED')), 0)::float8 AS "inStockLandedValue",
         count(*) FILTER (WHERE "statusCode" = 'DEFECTIVE')::int AS "defectiveUnits",
         count(*) FILTER (WHERE "statusCode" = 'CONSIGNED')::int AS "consignedUnits"
       FROM devices
@@ -76,7 +76,7 @@ export class ReportsInventoryRepository {
              avg(EXTRACT(EPOCH FROM (now() - d."intakeDate")) / 86400)::float8 AS "avgDaysInStock"
       FROM devices d
       JOIN device_models m ON m.id = d."modelId"
-      WHERE d."statusCode" = 'IN_STOCK' ${store}
+      WHERE d."statusCode" IN ('IN_STOCK', 'RESERVED') ${store}
       GROUP BY 1, 2
       ORDER BY "landedValue" DESC
     `);
@@ -98,7 +98,7 @@ export class ReportsInventoryRepository {
             ELSE '90+'
           END AS bucket
         FROM devices d
-        WHERE d."statusCode" = 'IN_STOCK' ${store}
+        WHERE d."statusCode" IN ('IN_STOCK', 'RESERVED') ${store}
       ) x
       GROUP BY bucket
     `);

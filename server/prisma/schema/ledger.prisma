@@ -84,6 +84,9 @@ model CashTransaction {
   /// (ADR 0040); null otherwise.
   repairId           String?
   repair             Repair?             @relation(fields: [repairId], references: [id])
+  /// The order a DELIVERY_FEE row belongs to (033); null otherwise.
+  orderId            String?
+  order              StorefrontOrder?    @relation(fields: [orderId], references: [id])
   createdById        String
   createdBy          User                @relation(fields: [createdById], references: [id])
   createdAt          DateTime            @default(now())
@@ -103,5 +106,6 @@ model CashTransaction {
   @@index([shiftId])
   @@index([repairPaymentId])
   @@index([repairId])
+  @@index([orderId])
   @@map("cash_transactions")
 }

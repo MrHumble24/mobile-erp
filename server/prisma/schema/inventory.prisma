@@ -80,6 +80,7 @@ model Device {
   unitPrices        UnitPrice[]
   customerPurchases CustomerPurchase[]
   transferLines     StockTransferLine[]
+  storefrontOrders  StorefrontOrder[]
 
   @@index([statusCode])
   @@index([modelId])

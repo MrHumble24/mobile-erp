@@ -199,6 +199,7 @@ export interface ReceiptView {
 export interface CheckoutInput {
   storeId: string;
   deviceId: string;
+  fromStatusCode?: string;
   expectedVersion: number;
   salePrice: Money;
   landedCostSnapshot: Money;

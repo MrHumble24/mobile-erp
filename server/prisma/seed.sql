@@ -5,6 +5,7 @@
 INSERT INTO device_statuses (code, label, "sortOrder", "isTerminal") VALUES
   ('IN_STOCK',   'In stock',   10, false),
   ('DEFECTIVE',  'Defective',  20, false),
+  ('RESERVED',   'Reserved',   25, false),
   ('CONSIGNED',  'Consigned',  30, false),
   ('IN_TRANSIT', 'In transit', 35, false),
   ('SOLD',       'Sold',       40, true)
@@ -44,12 +45,32 @@ INSERT INTO repair_statuses (code, label, "sortOrder", "isTerminal") VALUES
   ('CANCELLED',  'Cancelled',  50, true)
 ON CONFLICT (code) DO NOTHING;
 
--- Storefront order statuses (Change 10, ADR 0049).
+-- Storefront order statuses (Change 10, ADR 0049; 033 adds SHIPPED).
 INSERT INTO storefront_order_statuses (code, label, "sortOrder", "isTerminal", "isActive") VALUES
   ('NEW',       'New',       10, false, true),
   ('CONTACTED', 'Contacted', 20, false, true),
+  ('SHIPPED',   'Shipped',   25, false, true),
   ('DONE',      'Done',      30, true,  true),
   ('CANCELLED', 'Cancelled', 40, true,  true)
+ON CONFLICT (code) DO NOTHING;
+
+-- Storefront delivery pricing modes (033)
+INSERT INTO delivery_pricing_modes (code, label, "sortOrder", "isActive") VALUES
+  ('FREE',    'Free',     10, true),
+  ('FLAT',    'Flat fee', 20, true),
+  ('BY_ZONE', 'By zone',  30, true)
+ON CONFLICT (code) DO NOTHING;
+
+-- Storefront fulfillment methods (033)
+INSERT INTO storefront_fulfillment_methods (code, label, "sortOrder", "isActive") VALUES
+  ('PICKUP',   'Pickup',   10, true),
+  ('DELIVERY', 'Delivery', 20, true)
+ON CONFLICT (code) DO NOTHING;
+
+-- Storefront payment methods (033)
+INSERT INTO storefront_payment_methods (code, label, "sortOrder", "isActive") VALUES
+  ('ON_RECEIPT', 'On receipt', 10, true),
+  ('ONLINE',     'Online',     20, true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Price levels (Change 12, ADR 0034). Also inserted by the migration.
@@ -108,7 +129,8 @@ INSERT INTO cash_transaction_types (code, label, "sortOrder") VALUES
   ('SHIFT_DIFFERENCE','Shift difference', 150),
   ('CUSTOMER_PURCHASE','Customer purchase',160),
   ('REPAIR_PAYMENT',  'Repair payment',   170),
-  ('REPAIR_OUTSIDE',  'Repair outside master', 180)
+  ('REPAIR_OUTSIDE',  'Repair outside master', 180),
+  ('DELIVERY_FEE',    'Delivery fee',     190)
 ON CONFLICT (code) DO NOTHING;
 
 -- ADR 0026: per-phone expense supersedes shipment overhead. OVERHEAD stays in

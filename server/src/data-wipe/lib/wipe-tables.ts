@@ -114,9 +114,13 @@ export const KEPT_TABLES = [
   'bonus_transaction_types',
   'product_kinds',
   'price_levels',
-  // the shop page's own settings and its order statuses (handoff 022)
+  // the shop page's own settings and its order statuses (handoff 022, 033)
   'storefront_settings',
   'storefront_order_statuses',
+  'delivery_pricing_modes',
+  'storefront_fulfillment_methods',
+  'storefront_payment_methods',
+  'delivery_zones',
   // user-managed list (configured once, like an account; seeded in seed.sql)
   'expense_categories',
   // the record of who erased what

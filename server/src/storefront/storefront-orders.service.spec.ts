@@ -1,10 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
+import { Prisma } from '../generated/client/client.js';
+import type { PrismaService } from '../prisma/prisma.service.js';
+import type { StorefrontOrdersFulfillService } from './storefront-orders-fulfill.service.js';
 import type { StorefrontOrdersRepository } from './storefront-orders.repository.js';
 import { StorefrontOrdersService } from './storefront-orders.service.js';
 
 describe('StorefrontOrdersService', () => {
   let service: StorefrontOrdersService;
   let repo: jest.Mocked<StorefrontOrdersRepository>;
+  let prisma: jest.Mocked<PrismaService>;
+  let fulfill: jest.Mocked<StorefrontOrdersFulfillService>;
 
   const mockOrder = {
     id: 'ord-1',
@@ -14,6 +19,16 @@ describe('StorefrontOrdersService', () => {
     customerName: 'Sardor',
     customerPhone: '+998901112233',
     note: null,
+    fulfillmentMethodCode: 'PICKUP',
+    fulfillmentMethod: { label: 'Pickup' },
+    address: null,
+    deliveryZoneId: null,
+    deliveryZone: null,
+    paymentMethodCode: 'ON_RECEIPT',
+    paymentMethod: { label: 'On receipt' },
+    priceSnapshot: new Prisma.Decimal(999),
+    deliveryFeeSnapshot: new Prisma.Decimal(0),
+    deviceId: null,
     statusCode: 'NEW',
     handledById: null,
     handledAt: null,
@@ -21,7 +36,7 @@ describe('StorefrontOrdersService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     store: { name: 'Branch 1' },
-    model: { brand: 'Apple', name: 'iPhone 15' },
+    model: { brand: 'Apple', name: 'iPhone 15', kindCode: 'QUANTITY' },
     status: { label: 'New' },
     handledBy: null,
     statusHistory: [],
@@ -34,9 +49,21 @@ describe('StorefrontOrdersService', () => {
       findOrderById: jest.fn(),
       findSaleInStore: jest.fn(),
       updateOrderStatus: jest.fn(),
+      findOldestInStockUnit: jest.fn(),
+      holdDevice: jest.fn(),
+      releaseDevice: jest.fn(),
     } as unknown as jest.Mocked<StorefrontOrdersRepository>;
 
-    service = new StorefrontOrdersService(repo);
+    prisma = {
+      $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb({})),
+    } as unknown as jest.Mocked<PrismaService>;
+
+    fulfill = {
+      hold: jest.fn(),
+      handOver: jest.fn(),
+    } as unknown as jest.Mocked<StorefrontOrdersFulfillService>;
+
+    service = new StorefrontOrdersService(repo, prisma, fulfill);
   });
 
   describe('store scoping', () => {
@@ -90,6 +117,67 @@ describe('StorefrontOrdersService', () => {
         'CONTACTED',
         'user-1',
         undefined,
+        expect.anything(),
+      );
+    });
+
+    it('auto-holds unit on NEW -> CONTACTED for unit products', async () => {
+      const unitOrder = {
+        ...mockOrder,
+        model: { brand: 'Apple', name: 'iPhone 15', kindCode: 'IMEI' },
+      };
+      repo.findOrderById.mockResolvedValue(unitOrder);
+      repo.findOldestInStockUnit.mockResolvedValue({ id: 'dev-1' } as never);
+      repo.updateOrderStatus.mockResolvedValue({
+        ...unitOrder,
+        statusCode: 'CONTACTED',
+        deviceId: 'dev-1',
+        status: { label: 'Contacted' },
+      });
+
+      const res = await service.updateStatus('store-1', 'ord-1', 'user-1', {
+        statusCode: 'CONTACTED',
+      });
+
+      expect(res.statusCode).toBe('CONTACTED');
+      expect(repo.findOldestInStockUnit).toHaveBeenCalledWith(
+        'm1',
+        'store-1',
+        { storage: '256GB' },
+        expect.anything(),
+      );
+      expect(repo.holdDevice).toHaveBeenCalledWith(
+        'ord-1',
+        'dev-1',
+        'user-1',
+        expect.anything(),
+      );
+    });
+
+    it('auto-releases unit on CANCELLED if order had a device held', async () => {
+      const heldOrder = {
+        ...mockOrder,
+        statusCode: 'CONTACTED',
+        deviceId: 'dev-1',
+      };
+      repo.findOrderById.mockResolvedValue(heldOrder);
+      repo.updateOrderStatus.mockResolvedValue({
+        ...heldOrder,
+        statusCode: 'CANCELLED',
+        deviceId: null,
+        status: { label: 'Cancelled' },
+      });
+
+      const res = await service.updateStatus('store-1', 'ord-1', 'user-1', {
+        statusCode: 'CANCELLED',
+      });
+
+      expect(res.statusCode).toBe('CANCELLED');
+      expect(repo.releaseDevice).toHaveBeenCalledWith(
+        'ord-1',
+        'dev-1',
+        'user-1',
+        expect.anything(),
       );
     });
 

@@ -1,6 +1,6 @@
 # 033 — Online shop part 2, step 1 of 3 (server): delivery, a held phone, hand-over
 
-Status: ready, not started · Owner: not assigned (a strong model; not a free one) · Depends on: nothing
+Status: done · Owner: Gemini 2.5 Pro · Depends on: nothing
 
 Start: `git worktree add .worktrees/shop2-server -b agent/<owner>/shop2-server main`, own database
 `mobile_erp_shop2`, own ports (API 3170, website 5220). Steps 1 and 2 share this worktree.
@@ -76,12 +76,134 @@ Commit by path (never `git add -A`, never `.env`). Do not edit `client/**`, `mob
 
 ## Result (the builder fills)
 - Branch / commits:
+  - Branch: `agent/gemini/shop2-server`
+  - Commits: `b219d5cf` ("feat(storefront): online shop delivery, stock reservation, and order hand-over (handoff 033)")
 - Lint, tests, e2e (last lines):
+  - `pnpm lint`:
+    ```
+    ✖ 24 problems (0 errors, 24 warnings)
+    ```
+  - `pnpm test`:
+    ```
+    Test Suites: 137 passed, 137 total
+    Tests:       782 passed, 782 total
+    Snapshots:   0 total
+    Time:        3.575 s, estimated 4 s
+    Ran all test suites.
+    ```
+  - `pnpm test:shop2`:
+    ```
+    PASS test/shop2.e2e-spec.ts
+      Online Shop Part 2: Delivery & Reservation (e2e)
+        ✓ 1. pickup order -> confirm -> refused at till -> hand over (100 ms)
+        ✓ 2. delivery order with flat fee -> confirm -> SHIPPED -> hand over (fee row) (67 ms)
+        ✓ 3. cancel a confirmed order (unit back IN_STOCK) (30 ms)
+        ✓ 4. two confirms racing for the last unit (24 ms)
+
+    Test Suites: 1 passed, 1 total
+    Tests:       4 passed, 4 total
+    Snapshots:   0 total
+    Time:        1.537 s, estimated 2 s
+    Ran all test suites matching test/shop2.e2e-spec.ts.
+    ```
+  - `pnpm test:wipe`:
+    ```
+    1. erase, no extras: ALWAYS empty, CONTACTS/CATALOG/KEPT kept   ✓
+    2. erase, both extras: those empty too, KEPT untouched          ✓
+    3. failure mid-erase: every table exactly as it was             ✓
+    4. erase then restore the safety backup: the data is back       ✓
+
+    All data-wipe e2e checks passed.
+    ```
+  - `pnpm test:restore`:
+    ```
+    1. round-trip: data restored to its first value          ✓
+    2. fail-half-way: changed data left untouched             ✓
+    3. rollback on uploads-swap failure: data + uploads back  ✓
+    4. rollback on migrate failure: data + uploads back       ✓
+
+    restore e2e: PASS
+    ```
+  - Empty database test:
+    All 31 migrations applied with `npx prisma migrate deploy`; `prisma/seed.sql` executed with 0 errors.
+
 - The `IN_STOCK` list (file, line, sellable or owned, changed or not):
+  | File:Line | Category | Changed? | Reason |
+  |---|---|---|---|
+  | `server/src/catalog/catalog.repository.ts:38` | Sellable | No | Till catalog devices query; RESERVED excluded from till |
+  | `server/src/catalog/catalog.repository.ts:50` | Sellable | No | Till catalog devices query; RESERVED excluded from till |
+  | `server/src/catalog/catalog.repository.ts:99` | Sellable | No | Till catalog unit lookup; RESERVED excluded from till |
+  | `server/src/consignments/consignments.write.repository.ts:38` | Sellable | No | Consignment requires freely sellable IN_STOCK unit |
+  | `server/src/consignments/consignments.write.repository.ts:94` | Sellable | No | Consignment return defaults to restoring to IN_STOCK |
+  | `server/src/consignments/dto/return-consignment.dto.ts:18` | Sellable | No | Return status choice |
+  | `server/src/customer-purchases/customer-purchases.write.repository.ts:142` | Sellable | No | Customer buyback enters stock as IN_STOCK |
+  | `server/src/customer-purchases/customer-purchases.write.repository.ts:153` | Sellable | No | Buyback status history to IN_STOCK |
+  | `server/src/customer-purchases/customer-purchases.write.repository.ts:181` | Sellable | No | Buyback device update to IN_STOCK |
+  | `server/src/customer-purchases/customer-purchases.write.repository.ts:184` | Sellable | No | Buyback device history to IN_STOCK |
+  | `server/src/devices/devices-query.repository.ts:61` | Sellable | No | Default active devices filter |
+  | `server/src/devices/types/status-transitions.ts:8-14` | Both | Changed | Added transitions `['IN_STOCK', 'RESERVED']`, `['RESERVED', 'IN_STOCK']`, `['RESERVED', 'SOLD']` |
+  | `server/src/qc/qc.service.ts:18` | Sellable | No | Inspectable statuses set; RESERVED cannot be QC'd |
+  | `server/src/qc/qc.service.ts:58` | Sellable | No | QC pass status check |
+  | `server/src/qc/qc.service.ts:61` | Sellable | No | QC fail status update |
+  | `server/src/reports/reports-inventory.repository.ts:35` | Owned | Changed | Updated `WHERE "statusCode" IN ('IN_STOCK', 'RESERVED')` so held units are counted in stock |
+  | `server/src/reports/reports-inventory.repository.ts:36` | Owned | Changed | Updated `WHERE "statusCode" IN ('IN_STOCK', 'RESERVED')` so landed value is unchanged by a hold |
+  | `server/src/reports/reports-inventory.repository.ts:79` | Owned | Changed | Updated `WHERE d."statusCode" IN ('IN_STOCK', 'RESERVED')` for stock aging report |
+  | `server/src/reports/reports-inventory.repository.ts:101` | Owned | Changed | Updated `WHERE d."statusCode" IN ('IN_STOCK', 'RESERVED')` for inventory breakdown by model |
+  | `server/src/reports/reports-model-pricing.repository.ts:28` | Sellable | No | Available units filter for model pricing stats |
+  | `server/src/sales/dto/return-sale.dto.ts:23` | Sellable | No | Sale return choice to IN_STOCK or DEFECTIVE |
+  | `server/src/sales/sales-checkout.repository.ts:50` | Sellable/Held | Changed | Added support for `fromStatusCode ?? 'IN_STOCK'` to allow transitioning `RESERVED` -> `SOLD` |
+  | `server/src/sales/sales-create.service.ts:131` | Sellable/Held | Changed | Allows selling a `RESERVED` device when `options.storefrontOrderId` is provided and device is held by that order |
+  | `server/src/sales/sales-credit.service.ts:81` | Sellable | No | Credit checkout strictly requires IN_STOCK |
+  | `server/src/shipments/shipments-intake.repository.ts:217` | Sellable | No | Intake creates new devices with status IN_STOCK |
+  | `server/src/shipments/shipments-intake.repository.ts:219` | Sellable | No | Intake device history to IN_STOCK |
+  | `server/src/stock-alert-rules/stock-alert-rules.repository.ts:39` | Sellable | No | Stock alert rules count available sellable stock |
+  | `server/src/stock-transfers/lib/transfer-execution.ts:71` | Sellable | No | Transfer out strictly requires IN_STOCK |
+  | `server/src/stock-transfers/lib/transfer-execution.ts:133` | Sellable | No | Transfer cancellation restores to IN_STOCK |
+  | `server/src/stock-transfers/lib/transfer-validation.ts:52` | Sellable | No | Transfer validation requires IN_STOCK |
+  | `server/src/storefront/storefront-catalog.repository.ts:32` | Sellable | No | Public catalog queries IN_STOCK units, subtracting open orders for quantity products |
+  | `server/src/storefront/storefront.repository.ts:77` | Sellable | No | In-stock units for model pricing resolution |
+  | `server/src/storefront/storefront.repository.ts:174` | Sellable | No | Count of available model units in store |
+  | `server/src/stores/stores.repository.ts:9` | Owned | Changed | Added `'RESERVED'` to `ACTIVE_DEVICE_STATUSES` so store deletion is prevented if it holds reserved stock |
+  - Named helpers created in `server/src/devices/lib/device-status.ts`:
+    - `isDeviceOwned(status)` (`OWNED_DEVICE_STATUSES = ['IN_STOCK', 'RESERVED']`)
+    - `isDeviceSellable(status)` (`SELLABLE_DEVICE_STATUSES = ['IN_STOCK']`)
+
 - Route table for the website:
+  | Method | Path | Permission | Body | Answer |
+  |---|---|---|---|---|
+  | GET | `/storefront/config` | None (public) | None | `{ enabled, shopName, contactPhone, contactTelegram, showPrices, stores, categories, pickupEnabled, deliveryEnabled, deliveryPricingMode, deliveryFlatFee, deliveryFreeFrom, deliveryNote, deliveryZones }` |
+  | GET | `/storefront/products` | None (public) | None | `StorefrontProductCard[]` (in-stock units and quantity stock minus open orders) |
+  | GET | `/storefront/products/:modelId` | None (public) | None | `StorefrontProductDetail` with variants |
+  | POST | `/storefront/orders` | None (public) | `{ name, phone, modelId, specs?, storeId, note?, fulfillmentMethod?: 'PICKUP'\|'DELIVERY', address?, deliveryZoneId?, paymentMethod?: 'ON_RECEIPT'\|'ONLINE', hp? }` | `{ id }` (freezes `priceSnapshot` and `deliveryFeeSnapshot`, rejects ONLINE payment until 034) |
+  | GET | `/storefront/orders/:id` | None (public) | None | `{ id, statusCode, statusLabel, fulfillmentMethod, productName, priceSnapshot, deliveryFeeSnapshot }` |
+  | GET | `/storefront/settings` | `settings.manage` | None | `StorefrontSettingsView` |
+  | PUT | `/storefront/settings` | `settings.manage` | `{ enabled?, showPrices?, contactPhone?, contactTelegram?, categoryIds?, pickupEnabled?, deliveryEnabled?, deliveryPricingModeCode?, deliveryFlatFee?, deliveryFreeFrom?, deliveryNote? }` | `StorefrontSettingsView` |
+  | GET | `/storefront/delivery-zones` | `settings.manage` | None | `StorefrontDeliveryZoneView[]` |
+  | POST | `/storefront/delivery-zones` | `settings.manage` | `{ name, fee, sortOrder?, isActive? }` | `StorefrontDeliveryZoneView` |
+  | PUT | `/storefront/delivery-zones/:id` | `settings.manage` | `{ name?, fee?, sortOrder?, isActive? }` | `StorefrontDeliveryZoneView` |
+  | DELETE | `/storefront/delivery-zones/:id` | `settings.manage` | None | `{ deleted: true }` (refused 400 if referenced by orders) |
+  | GET | `/storefront-orders` | `order.read` | None (query: `status`, `from`, `to`, `page`, `pageSize`) | `{ items: StorefrontOrderListItem[], total, page, pageSize }` |
+  | GET | `/storefront-orders/stats` | `order.read` | None | `{ newCount }` |
+  | GET | `/storefront-orders/:id` | `order.read` | None | `StorefrontOrderDetail` (includes delivery/payment snapshots and status history) |
+  | PATCH | `/storefront-orders/:id/status` | `order.manage` | `{ statusCode: 'CONTACTED'\|'SHIPPED'\|'DONE'\|'CANCELLED', saleId? }` | `StorefrontOrderDetail` (auto-holds oldest unit on confirm if pay-on-receipt; auto-releases on cancel) |
+  | POST | `/storefront-orders/:id/hold` | `order.manage` | `{ deviceId? }` | `StorefrontOrderDetail` (explicit hold: named unit or oldest; 409 on collision) |
+  | POST | `/storefront-orders/:id/hand-over` | `order.manage` | `{ payments: [{ accountCode, amount }], deliveryFeeAccountCode? }` | `StorefrontOrderDetail` (makes sale at frozen price, posts DELIVERY_FEE if fee > 0, marks DONE) |
+
 - Decisions taken that the Decided table does not cover:
+  - Added Postgres partial unique index `storefront_orders_device_held_idx` (`WHERE "deviceId" IS NOT NULL AND "statusCode" IN ('NEW', 'CONTACTED', 'SHIPPED')`) to guarantee DB-enforced single-hold exclusivity across concurrent operations.
+  - `handOver` automatically executes with `storefrontOrderId` and `trustClientPrice: true`, allowing checkout at the agreed snapshot price while still enforcing till shift checks and permissions.
+  - In delivery fee calculation, threshold evaluation `orderPrice >= deliveryFreeFrom` produces a free delivery ($0.00 fee) when active.
+  - Delivery zones cannot be deleted when referenced by orders (`ZONE_IN_USE` error); staff are advised to deactivate them instead.
+
 - Not done / skipped / failed:
+  - None. All requirements delivered, tested, documented, and verified.
 
 ## Check by Claude
 Before merging: the gate; my own walk on a throwaway database; the till refusing a held phone;
 stock value unchanged by a hold; `security-auditor` on the public routes.
+- 2026-11-07: gate run by Claude on the committed code: lint 0 errors, 782 unit tests, the
+  shop e2e (4 of 4), the erase e2e and the restore e2e all pass. No Prisma enum; one migration.
+- NOT done: the security audit and Claude's own walk on a throwaway database. The user said
+  to skip the security check to save tokens (2026-11-07). The code was not read line by line.
+- Watch: several files are close to the 300-line limit (`sales-create.service.ts` 296,
+  `sales.repository.ts` 291, `storefront-orders.repository.ts` 288). Step 2 must not grow them.

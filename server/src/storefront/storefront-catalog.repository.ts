@@ -69,14 +69,41 @@ export class StorefrontCatalogRepository {
     });
   }
 
-  /** Counted products with pieces left in at least one of the stores. */
+  /** Counted products with pieces left in at least one of the stores (subtracting open orders). */
   private async quantityModelIdsInStock(storeIds: string[]): Promise<string[]> {
-    const rows = await this.prisma.stockMovement.groupBy({
+    const movements = await this.prisma.stockMovement.groupBy({
       by: ['modelId', 'storeId'],
       where: { storeId: { in: storeIds } },
       _sum: { quantity: true },
       having: { quantity: { _sum: { gt: 0 } } },
     });
-    return [...new Set(rows.map((r) => r.modelId))];
+    if (movements.length === 0) return [];
+
+    const modelIds = [...new Set(movements.map((r) => r.modelId))];
+    const openOrders = await this.prisma.storefrontOrder.groupBy({
+      by: ['modelId', 'storeId'],
+      where: {
+        modelId: { in: modelIds },
+        storeId: { in: storeIds },
+        statusCode: { in: ['NEW', 'CONTACTED', 'SHIPPED'] },
+      },
+      _count: { id: true },
+    });
+
+    const openOrderMap = new Map<string, number>();
+    for (const o of openOrders) {
+      openOrderMap.set(`${o.modelId}:${o.storeId}`, o._count.id);
+    }
+
+    const availableModelIds = new Set<string>();
+    for (const m of movements) {
+      const sum = m._sum.quantity ?? 0;
+      const open = openOrderMap.get(`${m.modelId}:${m.storeId}`) ?? 0;
+      if (sum - open > 0) {
+        availableModelIds.add(m.modelId);
+      }
+    }
+
+    return [...availableModelIds];
   }
 }
