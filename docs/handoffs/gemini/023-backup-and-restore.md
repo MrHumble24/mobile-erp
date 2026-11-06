@@ -1,6 +1,6 @@
 # 023 — Backup and restore, with storage providers (server and website)
 
-Status: backlog (not started; the user decides when) · Owner: not assigned · Asked by the user on 2026-11-06
+Status: building · Owner: Claude Opus 4.8 (`opus48` agent), orchestrated by Claude · Asked by the user on 2026-11-06; started the same day on the user's word. Parts 1 and 2 first; 3, 4 and 5 after Claude has checked them.
 
 ## Why
 The shop's whole business lives in one database and one folder of pictures. The PRD already asks
@@ -19,14 +19,22 @@ the task, not extras.
 |---|---|
 | What is in a backup | The whole database and the uploads folder (product pictures), in one file, with a manifest. One backup covers the whole company, all branches. |
 | Encryption | Always. The file is encrypted on the server before it goes anywhere. A backup that cannot be encrypted is not made. |
-| The encryption key | Comes from the server's environment (`BACKUP_ENCRYPTION_KEY`), never from the database, never shown on screen. Without it a backup cannot be opened, so the owner must keep a copy outside the server. Settings shows only whether a key is set. |
-| Provider logins and tokens | Stored encrypted (key `SECRETS_KEY` from the environment). The API never returns them; it only says "connected". |
+| The encryption key | A passphrase the owner types once in Settings (the user wants configuration in the app, not in env files). It is kept in the encrypted secrets store and never shown again; the old env value `BACKUP_PASSPHRASE` still works as a fallback. Each backup's key is derived from the passphrase. Without the passphrase a backup cannot be opened, so the owner must remember it or keep it somewhere safe: it is what lets them restore onto a brand new server. |
+| Provider logins and tokens | Stored in the same encrypted secrets store. Its master key is made by the server on first boot and kept in a file in the data folder, not in the database (an env value may override it). The API never returns a secret; it only says "set" or "connected". |
 | First providers | Server disk, Telegram, Google Drive, Microsoft OneDrive. S3-style storage later, as one more adapter. |
 | When | By hand, and on a schedule: every day at a chosen time. |
 | How many are kept | The last N per place (default 14). Older ones are deleted where the place allows deleting. |
 | Who | New permissions `backup.read`, `backup.manage`, `backup.restore`. Owner only by default. |
 | Restore | All or nothing. A safety backup is made first. The owner types the shop's name and their password to confirm. Everyone is signed out afterwards. |
 | Not in the first version | Restoring one table or one branch; backups per branch; a backup the customer can read without the system. |
+
+## What exists already (ADR 0010)
+Shell scripts in `server/scripts/`: `backup-db.sh`, `restore-db.sh`, `verify-backup.sh`. They dump
+the database with `pg_dump`, encrypt with `openssl` and the passphrase in `BACKUP_PASSPHRASE`, and
+are run by hand or by cron on the shop's PC. They do not include the pictures, send nothing
+anywhere, and have no screen. This task moves the job into the app. The new ADR supersedes 0010;
+the scripts are removed or rewritten for the new file format, and a small command-line tool must
+remain that opens a backup when the app itself is gone.
 
 ## Scope
 `server/**`, `client/**`, docs, and the deploy files needed to have `pg_dump` / `pg_restore` on
@@ -36,15 +44,16 @@ the server. Not `mobile/**`.
 Build backup and restore on the server and the website. Do not ask questions; where something is open, take the simplest safe option and write it in the ADR. Build the parts in order and commit after each; part 1 must be useful alone.
 
 First:
-- Read `CLAUDE.md` and every file in `.agent/rules/`. They are binding. Read this whole file, including "Decided" above, and ADRs 0023, 0031, 0045 and the READMEs of `server/src/settings`, `telegram`, `stores`, `access`, `auth`, `sync`.
+- Read `CLAUDE.md` and every file in `.agent/rules/`. They are binding. Read this whole file, including "Decided" and "What exists already" above, `server/scripts/*.sh`, and ADRs 0010, 0023, 0031, 0045 and the READMEs of `server/src/settings`, `telegram`, `stores`, `access`, `auth`, `sync`.
 - Worktree: `git worktree add .worktrees/<agent>-backup -b agent/<agent>/backup main`. Never commit to `main`, never push.
 - Your own database: `createdb mobile_erp_backup && pg_dump mobile_erp_main | psql -q mobile_erp_backup`; copy `server/.env` from the main checkout and change only the database name. **Every restore test runs against a throwaway database you created for it. Never restore into `mobile_erp_main`, `mobile_erp` or any database you did not create in this task.**
 - Your own servers on your own ports. Never stop a process you did not start.
 - No new dependency for the provider APIs: Google Drive, Microsoft Graph and Telegram are plain HTTPS; use Node's `fetch`. A tar or zip library, if Node has no built-in way, is the one dependency you may add; say which and why in the ADR.
 
 PART 1 — make a backup, keep it on the server, list it, download it
+0. A small secrets module first (`server/src/secrets/`): on first use the server makes a random master key and writes it to a file in the data folder (`DATA_DIR`, default `./data`, owner-only file permissions; env `APP_MASTER_KEY` may override). It stores named secrets encrypted with AES-256-GCM in one table; a secret can be set, asked "is it set", and read only by server code. No route ever returns one. Keep it small and general: the first-boot setup task (handoff 024) will reuse it as it is.
 A. Module `server/src/backups/` (controller, service, repository; split by responsibility, files ≤300 lines):
-- The file: a database dump made by `pg_dump` (custom format), the uploads folder, and `manifest.json` (format version, app version, the name of the last applied migration, creation time, size and SHA-256 of each part). Packed into one archive, then encrypted with AES-256-GCM using `BACKUP_ENCRYPTION_KEY`, streamed (never the whole file in memory). File name `backup-<yyyy-mm-dd>-<hhmm>-<short id>.mbk`.
+- The file: a database dump made by `pg_dump` (custom format), the uploads folder, and `manifest.json` (format version, app version, the name of the last applied migration, creation time, size and SHA-256 of each part). Packed into one archive, then encrypted with AES-256-GCM, streamed, with a key derived (scrypt, a fresh salt per backup, the salt and parameters in the file's header) from the backup passphrase: the secret `backup.passphrase`, set through a write-only route, with env `BACKUP_PASSPHRASE` as the fallback. No passphrase, no backup (never the whole file in memory). File name `backup-<yyyy-mm-dd>-<hhmm>-<short id>.mbk`.
 - `pg_dump` and `pg_restore` are started with `spawn` and an argument array, never through a shell, never with text built from input. The password goes in the child's environment, never on the command line. If the program is missing or its version is older than the server's, the backup fails with a clear message. Add what the deploy needs so both programs exist on the server (the project deploys to Railway with Nixpacks; add the config file and say in the Result what you added).
 - Tables (new schema file; lookups, no enums): company-wide backup settings (schedule on/off, time of day, how many to keep); backup runs (who or "schedule", start, end, size, checksum, file name, status, error); one row per place a run was sent to (status, the place's own reference to the file, error). Statuses are lookup tables.
 - One backup at a time: a second request while one runs is refused with `BACKUP_RUNNING`. A run that died with the server is marked failed at start-up.
@@ -70,7 +79,7 @@ PART 2 — restore
 - Then, in this order: make a safety backup (LOCAL) and stop if it fails; switch the server to maintenance (every route except health and the restore's own status answers 503 `MAINTENANCE`; scheduled jobs do nothing); run `pg_restore --clean --if-exists --single-transaction` so the database is either fully the backup or untouched; run the pending migrations; replace the uploads folder by extracting to a new folder and swapping it in; end every session (all tokens made before the restore stop working); leave maintenance. If any step fails the database is as it was, the uploads folder is as it was, and maintenance ends with the error recorded.
 - Extracting: refuse any entry with an absolute path, `..`, a link, or a name outside the expected set. Never trust a file name from inside the archive.
 - `POST /backups/:id/restore` and `POST /backups/restore-upload` need `backup.restore`, the shop's name typed exactly, and the caller's password checked again. Restore runs are recorded (who, when, from which backup, result).
-- The restore must be proven in a test that uses a real throwaway database: make data, back up, change the data, restore, and the data is the first data again; and a restore that is made to fail half-way leaves the changed data untouched.
+- The restore must be proven in a test that uses a real throwaway database (its own command, for example `pnpm test:restore`, so the normal `pnpm test` stays fast and needs no database; the test creates and drops its own databases with a random name): make data, back up, change the data, restore, and the data is the first data again; and a restore that is made to fail half-way leaves the changed data untouched.
 
 PART 3 — Telegram
 - Sends the encrypted file with the bot (`TELEGRAM_BOT_TOKEN` already exists) to a chat chosen in Settings. This must be a private chat or channel for backups, not the shop's staff group; say so on the screen.
@@ -98,7 +107,8 @@ Checks:
 - `cd server && pnpm build && pnpm test && pnpm lint`; `cd client && pnpm test && pnpm lint && pnpm build`.
 - Tests next to the files: encrypt then decrypt gives the same bytes; a changed byte fails the checksum; a wrong key fails cleanly; the archive checks; each adapter against a fake HTTP server (parts, retry, revoked login); retention; one-at-a-time; the two restore tests in Part 2; the permission and secret-leak tests.
 - A real walk-through on your own servers, written with what you saw: back up; download; change data; restore; data is back; connect Telegram to a test chat and see the parts arrive. For Google and Microsoft say plainly whether you had real OAuth apps to test with; if not, write "not seen" and what was tested with the fake server.
-- Docs: `docs/decisions/0051-backup-and-restore.md` and `0052-client-backups.md` (≤40 lines each), module and slice READMEs, the server package README (environment variables, deploy needs, how to restore onto a new server by hand when the app itself is gone).
+- A command-line tool (`server/scripts/`, run with `tsx`) that decrypts and unpacks a backup file given the passphrase, with no database and no running app; the old `.sh` scripts are removed or rewritten to the new format, never left behind doing the old thing.
+- Docs: `docs/decisions/0051-backup-and-restore.md` (it supersedes 0010; mark 0010 as superseded) and `0052-client-backups.md` (≤40 lines each), module and slice READMEs, the server package README (environment variables, deploy needs, how to restore onto a new server by hand when the app itself is gone).
 - `graphify update .` in `server/`, `client/` and the root. Add files by path. Do not merge, do not push.
 
 Do not: edit `mobile/**`, `docs/PRD.md`, `docs/plan/*`, `.agent/rules/*`, `.claude/*`; add an enum; store or return a secret in plain text; restore into a database you did not create.

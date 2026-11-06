@@ -549,14 +549,41 @@ screen.
 
 Decided by Claude as defaults (the user can change any): the backup holds the
 whole database and the pictures, for the whole company; it is always
-encrypted before it leaves the server; the key lives on the server, not in
-the database; logins to Drive, OneDrive and Telegram are stored encrypted and
+encrypted before it leaves the server; the owner types a passphrase once in Settings and must keep it safe; logins to Drive, OneDrive and Telegram are stored encrypted and
 never shown; made by hand and every day at a chosen time; the last 14 are
 kept per place; owner only; a restore is all or nothing, makes a safety
 backup first, and asks for the shop's name and the owner's password.
 
-Status: backlog. The handoff is `docs/handoffs/gemini/023-backup-and-restore.md`.
-Everything not started is listed in `docs/plan/backlog.md`.
+Status: being built (see Change 17's last paragraph). The handoff is
+`docs/handoffs/gemini/023-backup-and-restore.md`. Everything not started is
+listed in `docs/plan/backlog.md`.
+
+### Change 17 — first-boot setup, in-app configuration, branding, themes
+
+What the user said (2026-11-06): the system will be sold to other shops, so
+when it starts for the first time it must walk the owner through a setup.
+Most configuration must be done inside the app, not in env files. The shop
+must be able to set its own logo and other details. A few ready-made themes
+to choose from would be great.
+
+What is typed into the code or the env today: the first owner, the Telegram
+bot token, the name "Malika", the dollar sign, and most colors.
+
+Decided by Claude as defaults (the user can change any): only the database
+address, the port and the data folder stay in the environment; secrets are
+typed in the app and stored encrypted; the setup needs a one-time code that
+the server prints on first boot, so a stranger cannot take over a fresh
+install; name, logo, currency, time zone, language and theme belong to the
+company, branch details stay per branch; one currency per company; logo as
+PNG, JPG or WebP; four ready-made themes, one for the whole shop, no color
+editor yet; phone apps later.
+
+Status: backlog. The handoff is
+`docs/handoffs/gemini/024-onboarding-branding-themes.md` (five parts).
+
+Change 16 (backup and restore) was started on 2026-11-06 on the user's word,
+built by Opus 4.8 and checked by Claude; its backup passphrase and provider
+logins follow the same "in the app, encrypted" rule.
 
 ## Order of work (proposal, for discussion)
 

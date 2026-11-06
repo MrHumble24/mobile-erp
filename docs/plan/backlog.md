@@ -6,11 +6,12 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## In progress now (not backlog, listed so nothing is counted twice)
 - Step 11 on the website, in parts through OpenCode: receipt printing (`docs/handoffs/opencode/007`).
 - Online storefront, server and website: `docs/handoffs/gemini/022` (written, waiting to be given to Gemini).
+- Backup and restore: `docs/handoffs/gemini/023-backup-and-restore.md`. Started 2026-11-06 with Opus 4.8, Claude orchestrating. Parts 1 and 2 (backup on the server, restore) first; then Telegram, Google Drive and OneDrive, and the website screen.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| Backup and restore, with storage providers (server disk, Telegram, Google Drive, OneDrive) | `docs/handoffs/gemini/023-backup-and-restore.md` | Asked 2026-11-06. Five parts. The most dangerous feature: needs a security check and a real restore test before merging. Needs `pg_dump` on the server and two new environment keys. |
+| First-boot setup, in-app configuration, shop branding (logo, name, currency, time zone) and themes | `docs/handoffs/gemini/024-onboarding-branding-themes.md` | Asked 2026-11-06. Five parts, large. Its Part 1 reuses the secrets store that the backup work builds. The theme part first has to replace about 485 colors typed into the pages. |
 | Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
