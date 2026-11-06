@@ -83,9 +83,7 @@ export class CustomerPurchasesWriteRepository {
     const existing = await this.findColliding(tx, input.unit);
     if (!existing) return this.createDevice(tx, input, landedCost);
     if (existing.statusCode !== 'SOLD') {
-      throw new ConflictException(
-        'A unit with this IMEI or serial number already exists',
-      );
+      throw unitExists();
     }
     return this.buyBack(tx, existing, input, landedCost);
   }
@@ -192,11 +190,17 @@ export class CustomerPurchasesWriteRepository {
       });
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ConflictException(
-          'A unit with this IMEI or serial number already exists',
-        );
+        throw unitExists();
       }
       throw error;
     }
   }
+}
+
+/** The unit is already ours and is not SOLD, so it cannot be bought (ADR 0044). */
+function unitExists(): ConflictException {
+  return new ConflictException({
+    message: 'A unit with this IMEI or serial number already exists',
+    code: 'PURCHASE_UNIT_EXISTS',
+  });
 }
