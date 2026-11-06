@@ -118,8 +118,10 @@ VALUES
   ('transfer.read',    'transfer', 'read',    'View stock transfers')
 ON CONFLICT ("code") DO UPDATE SET "description" = EXCLUDED."description";
 
+-- Only for roles that exist: on a brand-new database the roles come from
+-- seed.sql, which runs after the migrations and grants these itself.
 INSERT INTO "role_permissions" ("roleCode", "permissionCode")
-SELECT r.role, r.perm
+SELECT v.role, v.perm
 FROM (VALUES
   ('ADMIN', 'store.manage'),
   ('ADMIN', 'store.all'),
@@ -129,9 +131,8 @@ FROM (VALUES
   ('CASHIER', 'transfer.read'),
   ('CASHIER', 'transfer.create'),
   ('CASHIER', 'transfer.receive')
-) AS r(role, perm)
-JOIN "roles" ro ON ro."code" = r.role
-JOIN "permissions" p ON p."code" = r.perm
+) AS v(role, perm)
+JOIN "roles" r ON r."code" = v.role
 ON CONFLICT DO NOTHING;
 
 -- Populate existing users into user_stores for existing stores
