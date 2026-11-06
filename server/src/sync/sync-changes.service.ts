@@ -37,7 +37,7 @@ export class SyncChangesService {
     const canReadPartners = caller.permissions.has('partner.read');
     const storeId = await this.stores.currentStoreId();
     const [devices, partners, products] = await Promise.all([
-      this.repo.devicesSince(since),
+      this.repo.devicesSince(since, storeId),
       canReadPartners
         ? this.partners.list()
         : Promise.resolve<Awaited<ReturnType<PartnersService['list']>>>([]),

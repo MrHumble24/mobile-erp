@@ -16,9 +16,16 @@ export class SyncChangesRepository {
 
   readonly pageSize = PAGE_SIZE;
 
-  async devicesSince(since: Date): Promise<DeviceChange[]> {
+  /**
+   * Units of ONE store changed since `since` (ADR 0045: a branch never sees
+   * another branch's stock, online or in the offline cache).
+   * ponytail: a unit transferred away simply stops appearing, so the old
+   * store's cache keeps its last row until the next full pull (store switch or
+   * sign-in). Add tombstones if stale rows ever matter.
+   */
+  async devicesSince(since: Date, storeId: string): Promise<DeviceChange[]> {
     const rows = await this.prisma.device.findMany({
-      where: { updatedAt: { gt: since } },
+      where: { updatedAt: { gt: since }, storeId },
       orderBy: { updatedAt: 'asc' },
       take: PAGE_SIZE,
       select: {

@@ -22,3 +22,4 @@ Offline mutation queue, conflict resolution, and offline-cache feed (PRD §5).
 ## Must never
 
 Inject foreign repositories; persist rejected mutations; select cost fields in feed.
+- `GET /sync/changes` answers for the active store only: its units and its product stock (ADR 0045).
