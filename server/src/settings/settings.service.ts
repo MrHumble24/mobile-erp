@@ -60,10 +60,13 @@ export class SettingsService {
     private readonly stores: StoresService,
   ) {}
 
-  async get(): Promise<StoreSettingsView> {
-    const storeId = await this.stores.currentStoreId();
-    const row = (await this.repo.get(storeId)) ?? { ...DEFAULTS, storeId };
-    return this.withIdentity(storeId, row);
+  async get(storeId?: string): Promise<StoreSettingsView> {
+    const targetStoreId = storeId ?? (await this.stores.currentStoreId());
+    const row = (await this.repo.get(targetStoreId)) ?? {
+      ...DEFAULTS,
+      storeId: targetStoreId,
+    };
+    return this.withIdentity(targetStoreId, row);
   }
 
   async update(dto: UpdateSettingsDto): Promise<StoreSettingsView> {

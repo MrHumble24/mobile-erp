@@ -12,19 +12,19 @@ export class TelegramService {
 
   constructor(private readonly settings: SettingsService) {}
 
-  async send(text: string): Promise<void> {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const { telegramChatId } = await this.settings.get();
-    if (!token || !telegramChatId) {
-      if (!this.warnedMissing) {
-        this.logger.debug(
-          'Telegram not configured (token/chatId missing); skipping',
-        );
-        this.warnedMissing = true;
-      }
-      return;
-    }
+  async send(text: string, storeId?: string): Promise<void> {
     try {
+      const token = process.env.TELEGRAM_BOT_TOKEN;
+      const { telegramChatId } = await this.settings.get(storeId);
+      if (!token || !telegramChatId) {
+        if (!this.warnedMissing) {
+          this.logger.debug(
+            'Telegram not configured (token/chatId missing); skipping',
+          );
+          this.warnedMissing = true;
+        }
+        return;
+      }
       const res = await fetch(
         `https://api.telegram.org/bot${token}/sendMessage`,
         {

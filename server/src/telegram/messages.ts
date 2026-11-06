@@ -162,6 +162,30 @@ export function dailyDigest(p: {
   );
 }
 
+export function storefrontOrderPlaced(p: {
+  storeName: string;
+  customerName: string;
+  customerPhone: string;
+  productName: string;
+  specs?: Record<string, unknown>;
+  note?: string;
+}): string {
+  const specsParts = p.specs
+    ? Object.entries(p.specs)
+        .filter(([, v]) => Boolean(v))
+        .map(([, v]) => String(v))
+    : [];
+  const specsStr = specsParts.length > 0 ? ` (${specsParts.join(', ')})` : '';
+  const noteStr = p.note ? `\nIzoh: ${p.note}` : '';
+  return (
+    `🛒 Yangi onlayn buyurtma:\n` +
+    `Mijoz: ${p.customerName} (${p.customerPhone})\n` +
+    `Mahsulot: ${p.productName}${specsStr}\n` +
+    `Filial: ${p.storeName}` +
+    noteStr
+  );
+}
+
 function money(n: number): string {
   return `$${n.toLocaleString('en-US')}`;
 }

@@ -35,6 +35,7 @@ model Store {
   settings          StoreSettings?
   transfersSent     StockTransfer[] @relation("TransferSource")
   transfersReceived StockTransfer[] @relation("TransferTarget")
+  storefrontOrders  StorefrontOrder[]
 
   @@map("stores")
 }

@@ -119,7 +119,8 @@ VALUES
 ON CONFLICT ("code") DO UPDATE SET "description" = EXCLUDED."description";
 
 INSERT INTO "role_permissions" ("roleCode", "permissionCode")
-VALUES
+SELECT r.role, r.perm
+FROM (VALUES
   ('ADMIN', 'store.manage'),
   ('ADMIN', 'store.all'),
   ('ADMIN', 'transfer.create'),
@@ -128,6 +129,9 @@ VALUES
   ('CASHIER', 'transfer.read'),
   ('CASHIER', 'transfer.create'),
   ('CASHIER', 'transfer.receive')
+) AS r(role, perm)
+JOIN "roles" ro ON ro."code" = r.role
+JOIN "permissions" p ON p."code" = r.perm
 ON CONFLICT DO NOTHING;
 
 -- Populate existing users into user_stores for existing stores

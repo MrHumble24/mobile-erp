@@ -44,6 +44,14 @@ INSERT INTO repair_statuses (code, label, "sortOrder", "isTerminal") VALUES
   ('CANCELLED',  'Cancelled',  50, true)
 ON CONFLICT (code) DO NOTHING;
 
+-- Storefront order statuses (Change 10, ADR 0049).
+INSERT INTO storefront_order_statuses (code, label, "sortOrder", "isTerminal", "isActive") VALUES
+  ('NEW',       'New',       10, false, true),
+  ('CONTACTED', 'Contacted', 20, false, true),
+  ('DONE',      'Done',      30, true,  true),
+  ('CANCELLED', 'Cancelled', 40, true,  true)
+ON CONFLICT (code) DO NOTHING;
+
 -- Price levels (Change 12, ADR 0034). Also inserted by the migration.
 INSERT INTO price_levels (code, label, "sortOrder") VALUES
   ('RETAIL',    'Retail (walk-in)', 10),
@@ -129,6 +137,11 @@ SELECT s.id, now()
 FROM stores s
 WHERE NOT EXISTS (SELECT 1 FROM store_settings ss WHERE ss."storeId" = s.id);
 
+-- Storefront settings singleton (Change 10, ADR 0049).
+INSERT INTO storefront_settings (id, enabled, "showPrices", "categoryIds", "updatedAt") VALUES
+  (1, false, true, '[]'::jsonb, now())
+ON CONFLICT (id) DO NOTHING;
+
 -- Permissions: "<resource>.<action>" ----------------------------------------
 INSERT INTO permissions (code, resource, action, description) VALUES
   ('device.read',          'device',      'read',      'View inventory'),
@@ -182,7 +195,9 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('store.all',            'store',       'all',       'Access every store and all-stores view'),
   ('transfer.create',      'transfer',    'create',    'Create and send stock transfers'),
   ('transfer.receive',     'transfer',    'receive',   'Receive stock transfers'),
-  ('transfer.read',        'transfer',    'read',      'View stock transfers')
+  ('transfer.read',        'transfer',    'read',      'View stock transfers'),
+  ('order.read',           'order',       'read',      'View storefront orders'),
+  ('order.manage',         'order',       'manage',    'Manage storefront order status')
 ON CONFLICT (code) DO UPDATE SET description = EXCLUDED.description;
 
 -- Roles ----------------------------------------------------------------------
@@ -204,6 +219,7 @@ INSERT INTO role_permissions ("roleCode", "permissionCode") VALUES
   ('CASHIER', 'consignment.read'), ('CASHIER', 'consignment.create'),
   ('CASHIER', 'partner.read'),
   ('CASHIER', 'transfer.read'), ('CASHIER', 'transfer.create'), ('CASHIER', 'transfer.receive'),
+  ('CASHIER', 'order.read'), ('CASHIER', 'order.manage'),
   ('QC', 'device.read'), ('QC', 'device.create'), ('QC', 'device.update'), ('QC', 'device.status.change'),
   ('QC', 'shipment.read'), ('QC', 'shipment.manage'),
   ('QC', 'qc.read'), ('QC', 'qc.create'),
