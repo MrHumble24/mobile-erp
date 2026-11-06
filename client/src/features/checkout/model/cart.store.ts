@@ -7,6 +7,7 @@ import type { PaymentMethod, PaymentPart } from "@/entities/ledger"
 import type { Discount, LevelCode, LevelPrices } from "@/entities/pricing"
 import { spreadCartDiscount } from "../lib/cart-discount"
 import { lineListCents } from "../lib/line-pricing"
+import { useBonusRedeemStore } from "./bonus-redeem.store"
 
 export interface CartCustomer {
   id?: string
@@ -227,14 +228,16 @@ export const useCartStore = create<CartState>()(
 
       setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
       setSplitParts: (splitParts) => set({ splitParts }),
-      clear: () =>
+      clear: () => {
+        useBonusRedeemStore.getState().reset()
         set({
           lines: [],
           customer: null,
           priceLevelCode: "RETAIL",
           paymentMethod: "cash",
           splitParts: [],
-        }),
+        })
+      },
     }),
     {
       name: "mobile-erp-pos-cart",

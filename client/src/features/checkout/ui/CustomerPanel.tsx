@@ -8,6 +8,7 @@ import { Label } from "@/shared/ui/label"
 import { CustomerSearch } from "./CustomerSearch"
 import { NewCustomerForm } from "./NewCustomerForm"
 import { useCartStore, type CartCustomer } from "../model/cart.store"
+import { useBonusRedeemStore } from "../model/bonus-redeem.store"
 
 export interface CustomerPanelProps {
   searchOpen: boolean
@@ -40,13 +41,19 @@ export function CustomerPanel({ searchOpen, onSearchOpenChange }: CustomerPanelP
   const { t } = useI18n()
   const customer = useCartStore((s) => s.customer)
   const setCustomer = useCartStore((s) => s.setCustomer)
+  const resetRedeem = useBonusRedeemStore((s) => s.reset)
   const [isNew, setIsNew] = React.useState(false)
+
+  const chooseCustomer = (next: CartCustomer | null) => {
+    setCustomer(next)
+    resetRedeem()
+  }
 
   if (customer) {
     return (
       <div className="space-y-2">
         <Label>{t("pos.customer")}</Label>
-        <SelectedCustomer customer={customer} onClear={() => setCustomer(null)} />
+        <SelectedCustomer customer={customer} onClear={() => chooseCustomer(null)} />
       </div>
     )
   }
@@ -69,7 +76,7 @@ export function CustomerPanel({ searchOpen, onSearchOpenChange }: CustomerPanelP
       {isNew ? (
         <NewCustomerForm
           onAdd={(c) => {
-            setCustomer(c)
+            chooseCustomer(c)
             setIsNew(false)
           }}
         />
@@ -78,7 +85,7 @@ export function CustomerPanel({ searchOpen, onSearchOpenChange }: CustomerPanelP
           open={searchOpen}
           onOpenChange={onSearchOpenChange}
           onSelect={(c) =>
-            setCustomer({
+            chooseCustomer({
               id: c.id,
               name: c.name,
               phone: c.phone || undefined,

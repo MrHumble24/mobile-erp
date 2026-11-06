@@ -1,9 +1,11 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { adjustBonusSchema, toAdjustBonusDto } from "./adjust-bonus.schema.ts"
+import { makeAdjustBonusSchema, toAdjustBonusDto } from "./adjust-bonus.schema.ts"
+
+const schema = makeAdjustBonusSchema((key) => key)
 
 function parse(amount: string, reason = "owner correction") {
-  return adjustBonusSchema.safeParse({ amount, reason })
+  return schema.safeParse({ amount, reason })
 }
 
 test("a zero amount is refused", () => {

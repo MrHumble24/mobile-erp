@@ -4,7 +4,8 @@ import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
 import { cartTotals } from "../lib/line-pricing"
-import { useCartTradeInPlan } from "../model/use-trade-in-plan"
+import { useCartTenderPlan } from "../model/use-tender-plan"
+import { BonusRedeemControl } from "./BonusRedeemControl"
 import { PaymentPanel } from "./PaymentPanel"
 
 export interface TotalsPanelProps {
@@ -27,7 +28,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
   const lines = useCartStore((s) => s.lines)
   const level = useCartStore((s) => s.priceLevelCode)
   const totals = cartTotals(lines, level)
-  const plan = useCartTradeInPlan()
+  const plan = useCartTenderPlan()
   const withWarranty = lines.filter((line) => line.kind === "unit" && line.warrantyDays > 0).length
 
   return (
@@ -45,16 +46,23 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
           label={t("pos.warrantySummary")}
           value={t("pos.warrantyCount", { count: withWarranty })}
         />
-        {plan.tradeInTotal > 0 && (
+        {plan.tradeIn.tradeInTotal > 0 && (
           <SummaryRow
             label={t("purchases.tradeInLabel")}
-            value={`− ${formatMoney(plan.tradeInTotal)}`}
+            value={`− ${formatMoney(plan.tradeIn.tradeInTotal)}`}
+          />
+        )}
+        {plan.redeem.total > 0 && (
+          <SummaryRow
+            label={t("pos.bonusPoints")}
+            value={`− ${formatMoney(plan.redeem.total)}`}
           />
         )}
         <div className="border-t border-[#e8e8e8] pt-2">
           <SummaryRow label={t("pos.totalDue")} value={formatMoney(plan.amountToPay)} strong />
         </div>
       </div>
+      {lines.length > 0 && <BonusRedeemControl />}
       {lines.length > 0 && <PaymentPanel />}
       <Button
         type="button"

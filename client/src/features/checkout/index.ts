@@ -10,8 +10,16 @@ export {
 export { useCheckout, CheckoutLineError, type CheckoutResult } from "./model/use-checkout"
 export { useTradeInStore, type TradeInDraft } from "./model/trade-in.store"
 export { useCartTradeInPlan, type CartTradeInPlan } from "./model/use-trade-in-plan"
+export {
+  useCartTenderPlan,
+  buildCartTenderPlan,
+  type CartTenderPlan,
+  type TenderBonusInput,
+} from "./model/use-tender-plan"
+export { useBonusRedeemStore } from "./model/bonus-redeem.store"
 export { isLineBlocked } from "./lib/line-blockers"
 export { isPaymentBlocked } from "./lib/payment"
+export { checkoutErrorKey } from "./lib/checkout-error"
 export { toLinePrices, lineFinalPrice, lineHasList, lineListCents, cartTotals } from "./lib/line-pricing"
 export { toCreditLine, toCreditLines } from "./lib/to-credit-line"
 export { CartLines } from "./ui/CartLines"

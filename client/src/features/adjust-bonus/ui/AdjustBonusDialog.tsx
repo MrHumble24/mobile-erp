@@ -13,7 +13,7 @@ import { Button } from "@/shared/ui/button"
 import { Form } from "@/shared/ui/form"
 import { toast } from "@/shared/ui/sonner"
 import {
-  adjustBonusSchema,
+  makeAdjustBonusSchema,
   toAdjustBonusDto,
   type AdjustBonusValues,
 } from "../model/adjust-bonus.schema"
@@ -23,7 +23,7 @@ function AdjustBonusForm({ customerId, onDone }: { customerId: string; onDone: (
   const { t } = useI18n()
   const adjust = useAdjustCustomerBonus()
   const form = useForm<AdjustBonusValues>({
-    resolver: zodResolver(adjustBonusSchema),
+    resolver: zodResolver(makeAdjustBonusSchema(t)),
     defaultValues: { amount: "", reason: "" },
   })
 

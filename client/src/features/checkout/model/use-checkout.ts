@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { HttpError, isNetworkError } from "@/shared/api/http"
+import { isOnline } from "@/shared/lib/offline"
 import { saleRepository, saleKeys, type SaleTradeInDto } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
 import { stockKeys } from "@/entities/stock"
@@ -7,10 +8,12 @@ import { catalogKeys } from "@/entities/catalog"
 import { customerKeys } from "@/entities/customer"
 import { customerPurchaseKeys } from "@/entities/customer-purchase"
 import { ledgerKeys } from "@/entities/ledger"
+import { bonusKeys, type CustomerBonus } from "@/entities/bonus"
 import { enqueueMutation, MUTATION_TYPES } from "@/entities/sync"
 import { useCartStore } from "./cart.store"
 import { useTradeInStore, type TradeInDraft } from "./trade-in.store"
-import { buildCartTradeInPlan } from "./use-trade-in-plan"
+import { useBonusRedeemStore } from "./bonus-redeem.store"
+import { buildCartTenderPlan } from "./use-tender-plan"
 import { toSaleDto } from "../lib/to-sale-dto"
 import { buildCartPayments } from "../lib/payment"
 import { cartLineLabel } from "../lib/cart-line-label"
@@ -60,8 +63,10 @@ function toTradeInDtos(drafts: TradeInDraft[]): SaleTradeInDto[] {
  *
  * Trade-ins (ADR 0039) are allocated to the lines that can carry them; each line's
  * payments are sent as its price − the trade-ins put on it, and those trade-ins ride
- * that line's POST. A trade-in's draft is dropped as its line commits, so a retry
- * never sends it twice. Online only — a cart with trade-ins is never queued.
+ * that line's POST. Bonus points (ADR 0043) ride on top, one `bonusRedeem` per line;
+ * the same online-only rule applies. A trade-in's draft is dropped as its line
+ * commits, so a retry never sends it twice. Online only — a cart with trade-ins or
+ * spent points is never queued.
  */
 export function useCheckout() {
   const queryClient = useQueryClient()
@@ -76,7 +81,17 @@ export function useCheckout() {
       const level = snapshot.priceLevelCode
       const tradeIns = useTradeInStore.getState().tradeIns
       const hasTradeIns = tradeIns.length > 0
-      const plan = buildCartTradeInPlan(lines, level, tradeIns)
+      const customerId = snapshot.customer?.id
+      const bonus = customerId
+        ? queryClient.getQueryData<CustomerBonus>(bonusKeys.detail(customerId))
+        : undefined
+      const plan = buildCartTenderPlan(lines, level, tradeIns, {
+        requested: useBonusRedeemStore.getState().requested,
+        balance: Number(bonus?.balance ?? 0),
+        maxPercent: Number(bonus?.maxRedeemPercent ?? 0),
+        allowed: Boolean(customerId) && Boolean(bonus?.enabled) && isOnline(),
+      })
+      const hasPoints = plan.redeem.total > 0
       const payments = buildCartPayments(plan.payableLines, snapshot.paymentMethod, snapshot.splitParts)
       const draftById = new Map(tradeIns.map((t) => [t.id, t]))
 
@@ -84,7 +99,9 @@ export function useCheckout() {
         const customer = useCartStore.getState().customer
         const linePayments = payments[line.lineId]?.filter((p) => p.amount > 0)
         const dto = toSaleDto(line, customer, level, linePayments?.length ? linePayments : undefined)
-        const lineTradeInIds = plan.itemsByLine[line.lineId] ?? []
+        const linePoints = plan.redeem.byLine[line.lineId] ?? 0
+        if (linePoints > 0) dto.bonusRedeem = linePoints
+        const lineTradeInIds = plan.tradeIn.itemsByLine[line.lineId] ?? []
         if (lineTradeInIds.length > 0) {
           dto.tradeIns = toTradeInDtos(
             lineTradeInIds.map((id) => draftById.get(id)).filter((d): d is TradeInDraft => Boolean(d))
@@ -94,11 +111,16 @@ export function useCheckout() {
           const sale = await saleRepository.create(dto)
           saleIds.push(sale.id)
           useCartStore.getState().removeLine(line.lineId)
+          // Keep a retry after a later failure from spending these points twice.
+          if (linePoints > 0) {
+            const redeem = useBonusRedeemStore.getState()
+            redeem.setRequested(Math.max(0, redeem.requested - linePoints))
+          }
           if (lineTradeInIds.length > 0) useTradeInStore.getState().removeMany(lineTradeInIds)
         } catch (err) {
-          // A trade-in is never queued for sync (the server refuses it on replay,
-          // ADR 0039): a cart with trade-ins surfaces the failure instead.
-          if (isNetworkError(err) && !hasTradeIns) {
+          // A trade-in or spent points are never queued for sync (the server
+          // refuses them on replay, ADR 0039/0043): surface the failure instead.
+          if (isNetworkError(err) && !hasTradeIns && !hasPoints) {
             await enqueueMutation({
               id: line.clientMutationId,
               type: MUTATION_TYPES.saleCreate,
@@ -114,6 +136,11 @@ export function useCheckout() {
         }
       }
       return { saleIds, queuedCount }
+    },
+    onSuccess: () => {
+      useBonusRedeemStore.getState().reset()
+      queryClient.invalidateQueries({ queryKey: bonusKeys.all })
+      queryClient.invalidateQueries({ queryKey: customerKeys.lookups() })
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: saleKeys.lists() })
