@@ -40,13 +40,15 @@ enum BonusRedeemPlanner {
     ) -> BonusRedeemPlan {
         let requestedCents = max(0, toCents(requested))
         let balanceCents = max(0, toCents(balance))
-        let pct = (maxPercent as NSDecimalNumber).doubleValue
+        let pct = Swift.max(0, maxPercent)
 
         var caps: [Int] = []
         for line in lines {
             let priceCents = max(0, toCents(line.price))
             let dueCents = max(0, toCents(line.due))
-            let percentCap = Int(round(Double(priceCents) * pct / 100.0))
+            // Exact decimal maths, half up to a cent like the server: a Double here can
+            // land one cent above the server's limit and get "use maximum" refused.
+            let percentCap = toCents(Decimal(priceCents) * pct / 10000)
             caps.append(min(percentCap, dueCents))
         }
 

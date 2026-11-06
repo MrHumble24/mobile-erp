@@ -151,3 +151,15 @@ Fill the Result section of `docs/handoffs/gemini/030-step11-ios.md` in THIS work
   None.
 
 ## Check by Claude
+- 2026-11-06: the build passes (run by Claude, as found and after two fixes). The money path was
+  read line by line: the planner, the checkout, the refusal maps, the receipts' print gate.
+  NOT yet seen on a simulator or a phone, and the DEBUG self-checks only run at launch, so
+  they have not run under Claude either. Not merged until a live try.
+- Eight files had one blank line added by the editor and not committed: discarded.
+- Fixed by Claude on the branch:
+  1. The points cap per line used `Double`; it is exact decimal maths now, half up to a cent
+     like the server, so "use maximum" can never be one cent over the server's limit.
+  2. A slow bonus answer for a customer who was changed meanwhile could land on the new
+     customer: the answer is dropped unless the customer is still the same.
+- Noted, not changed: `Shared/Kit/KitSelfCheck.swift` calls the till's planner self-check (a
+  shared file reaching up into a feature); `PosReceiptSheet.swift` is 281 lines, close to 300.

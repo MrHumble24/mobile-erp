@@ -35,7 +35,10 @@ extension PosViewModel {
         }
         Task {
             let repo = CustomersRepository(api: container.api)
-            if let b = try? await repo.bonus(id), b.enabled {
+            let answer = try? await repo.bonus(id)
+            // The customer may have been changed while the answer was on its way.
+            guard self.cart.customer?.id == id else { return }
+            if let b = answer, b.enabled {
                 self.customerBonus = b
                 let plan = self.planCartBonus()
                 if self.bonusRequested > plan.max {
