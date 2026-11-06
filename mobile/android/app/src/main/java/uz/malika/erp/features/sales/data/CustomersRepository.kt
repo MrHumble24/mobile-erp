@@ -47,6 +47,15 @@ class CustomersRepository(private val api: SalesApi) {
         api.customerSales(customerId).map { it.toCustomerSale() }
     }
 
+    suspend fun bonus(customerId: String): CustomerBonusDto = runApi {
+        api.customerBonus(customerId)
+    }
+
+    /** Manual bonus-point correction (permission `bonus.adjust`). Online only. */
+    suspend fun adjustBonus(customerId: String, amount: Double, reason: String): CustomerBonusDto = runApi {
+        api.adjustCustomerBonus(customerId, AdjustBonusBody(amount, reason.trim()))
+    }
+
     suspend fun create(
         name: String,
         phone: String?,

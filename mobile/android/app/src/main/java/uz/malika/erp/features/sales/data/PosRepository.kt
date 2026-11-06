@@ -131,6 +131,14 @@ private fun SettingsDto.toTillSettings() = TillSettings(
     discount = toDiscountSettings(),
     creditEnabled = customerCreditEnabled,
     shiftsEnabled = shiftsEnabled,
+    bonusEnabled = bonusEnabled,
+    receiptPrintingEnabled = receiptPrintingEnabled,
+    receiptPaperWidthMm = receiptPaperWidthMm,
+    priceTagsEnabled = priceTagsEnabled,
+    storeName = storeName,
+    storeAddress = storeAddress,
+    storePhone = storePhone,
+    receiptFooter = receiptFooter,
 )
 
 /** Map the settings payload into the till's discount rules (ADR 0034). */

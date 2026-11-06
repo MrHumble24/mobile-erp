@@ -15,6 +15,17 @@ data class TillSettings(
     val discount: DiscountSettings = DiscountSettings(),
     val creditEnabled: Boolean = false,
     val shiftsEnabled: Boolean = false,
+    // Bonus points (ADR 0043).
+    val bonusEnabled: Boolean = false,
+    // Receipt / price-tag printing (ADR 0043).
+    val receiptPrintingEnabled: Boolean = false,
+    val receiptPaperWidthMm: Int = 80,
+    val priceTagsEnabled: Boolean = false,
+    // Store identity shown on receipts.
+    val storeName: String? = null,
+    val storeAddress: String? = null,
+    val storePhone: String? = null,
+    val receiptFooter: String? = null,
 )
 
 /**

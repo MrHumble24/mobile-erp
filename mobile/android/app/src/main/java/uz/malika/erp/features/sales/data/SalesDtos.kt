@@ -205,26 +205,6 @@ data class QuantityProductDto(
     val prices: Map<String, String?>? = null,
 )
 
-/**
- * `GET /settings` — only the till-relevant fields. Discount fields (ADR 0034)
- * are optional so older/partial payloads decode; money is a Decimal string.
- */
-@Serializable
-data class SettingsDto(
-    val defaultWarrantyDays: Int = 0,
-    val discountsEnabled: Boolean = false,
-    val discountPercentAllowed: Boolean = true,
-    val discountAmountAllowed: Boolean = true,
-    val discountPresetsPercent: List<Double> = emptyList(),
-    val discountPresetsAmount: List<Double> = emptyList(),
-    val maxDiscountPercent: String? = null,
-    // Customer credit (ADR 0035) and shifts (ADR 0036) — the till reads these to
-    // show "On credit" and to gate selling while shifts are on.
-    val customerCreditEnabled: Boolean = false,
-    val defaultCreditLimit: String? = null,
-    val shiftsEnabled: Boolean = false,
-)
-
 /** The `latestSale` blob cached on a device row by `/sync/changes` (offline warranty). */
 @Serializable
 data class CachedSaleDto(

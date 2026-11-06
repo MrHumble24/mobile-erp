@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import uz.malika.erp.features.sales.data.Customer
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatPoints
 import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.ui.theme.Tokens
 import uz.malika.erp.shared.ui.AppFormField
 import uz.malika.erp.shared.ui.AppTextField
 import uz.malika.erp.shared.ui.ButtonVariant
@@ -89,6 +91,13 @@ fun CustomerPicker(
                 Row(Modifier.fillMaxWidth()) {
                     Column(Modifier.weight(1f)) {
                         Text(picked!!.name, style = MaterialTheme.typography.titleSmall)
+                        picked!!.bonusBalance?.let { balance ->
+                            Text(
+                                t("customers.bonusPickerPoints", mapOf("points" to formatPoints(balance))),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Tokens.muted,
+                            )
+                        }
                         picked!!.phone?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                     }
                     PillButton(t("common.cancel", null), { picked = null }, variant = ButtonVariant.GHOST, enabled = enabled)
