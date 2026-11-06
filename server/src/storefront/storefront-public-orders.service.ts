@@ -242,7 +242,8 @@ export class StorefrontPublicOrdersService {
       dto.modelId,
       dto.storeId,
       model.kindCode,
-      dto.specs,
+      // A plain object: a DTO class has no index signature, and the build rejects it.
+      dto.specs ? { ...dto.specs } : undefined,
     );
     if (inStock <= 0) {
       throw new BadRequestException({
