@@ -20,6 +20,7 @@ Warm Sand, Nord slate) without arbitrary hex colors scattered in application cod
   and primary surfaces, continuously asserted via `theme-tokens.spec.ts`.
 - **Zero Flash**: Applied via `data-theme` on `document.documentElement` before first paint
   using an inline script in `index.html`.
+- **Dark Themes Enabled & Token Previews**: Dark themes (`obsidian`, `nord`) are enabled across migrations and seeds; theme previews in setup wizard and company settings are rendered directly from theme CSS tokens instead of hardcoded hex values.
 
 ## Consequences
 - Theme switching updates all components instantly without page reload.

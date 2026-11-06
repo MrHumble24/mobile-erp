@@ -70,7 +70,7 @@ function SidebarLinkElement({
         collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
           ? "bg-primary text-primary-foreground shadow-xs"
-          : "text-muted-foreground hover:bg-black/[0.04] hover:text-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
       <Icon className="size-4 shrink-0 stroke-[2.2]" />

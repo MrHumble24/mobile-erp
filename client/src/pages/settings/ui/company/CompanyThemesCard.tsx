@@ -11,7 +11,9 @@ interface CompanyThemesCardProps {
 
 const FALLBACK_THEMES = [
   { code: "caldera", name: "Caldera Light" },
+  { code: "obsidian", name: "Obsidian Dark" },
   { code: "sand", name: "Warm Sand" },
+  { code: "nord", name: "Nord Slate" },
 ]
 
 export function CompanyThemesCard({
@@ -59,8 +61,14 @@ export function CompanyThemesCard({
                   <span className="text-xs font-semibold">{th.name}</span>
                   {isSelected && <div className="h-2 w-2 rounded-full bg-primary" />}
                 </div>
-                <div className="h-7 rounded-md border border-border/40 flex items-center px-2 text-[10px] text-muted-foreground">
-                  Aa 123
+                <div
+                  data-theme={th.code}
+                  className="h-7 rounded-md border border-border bg-background text-foreground flex items-center justify-between px-2 text-[10px]"
+                >
+                  <span>Aa 123</span>
+                  <span className="h-4 px-1.5 rounded-full text-[9px] font-medium bg-primary text-primary-foreground flex items-center">
+                    OK
+                  </span>
                 </div>
               </div>
             )

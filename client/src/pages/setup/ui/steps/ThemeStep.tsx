@@ -1,5 +1,6 @@
 import { Button, Card, CardContent } from "@/shared/ui"
 import { useI18n } from "@/shared/i18n"
+import { useThemes } from "@/entities/company"
 import type { WizardState, WizardUpdate } from "./types"
 
 interface Props {
@@ -9,13 +10,28 @@ interface Props {
   onBack: () => void
 }
 
+const FALLBACK_THEMES = [
+  { code: "caldera", name: "Caldera Light" },
+  { code: "obsidian", name: "Obsidian Dark" },
+  { code: "sand", name: "Warm Sand" },
+  { code: "nord", name: "Nord Slate" },
+]
+
+const THEME_DESCRIPTIONS: Record<string, string> = {
+  caldera: "Default warm light retail theme",
+  obsidian: "High-contrast dark palette",
+  sand: "Subtle desert ochre palette",
+  nord: "Arctic slate dark palette",
+}
+
 export function ThemeStep({ state, update, onNext, onBack }: Props) {
   const { t } = useI18n()
+  const { data: serverThemes } = useThemes()
 
-  const themes = [
-    { code: "caldera", name: "Caldera Light", desc: "Default warm light retail theme", bg: "#f8f9fa", fg: "#202020", primary: "#202020" },
-    { code: "sand", name: "Warm Sand", desc: "Subtle desert ochre palette", bg: "#f7f5f0", fg: "#262320", primary: "#383129" },
-  ]
+  const themes = (serverThemes && serverThemes.length > 0 ? serverThemes : FALLBACK_THEMES).map((th) => ({
+    ...th,
+    desc: THEME_DESCRIPTIONS[th.code] || "",
+  }))
 
   const currentTheme = state.company.themeCode || "caldera"
 
@@ -48,15 +64,15 @@ export function ThemeStep({ state, update, onNext, onBack }: Props) {
                   {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
                 </div>
                 <div
-                  className="h-12 rounded-lg border p-2 flex items-center justify-between"
-                  style={{ backgroundColor: th.bg, color: th.fg, borderColor: th.fg + "20" }}
+                  data-theme={th.code}
+                  className="h-12 rounded-lg border border-border bg-background text-foreground p-2 flex items-center justify-between"
                 >
                   <span className="text-xs font-medium">Text preview</span>
-                  <div className="h-5 px-2 rounded-full text-[10px] font-semibold flex items-center justify-center" style={{ backgroundColor: th.primary, color: th.bg }}>
+                  <div className="h-5 px-2 rounded-full text-[10px] font-semibold flex items-center justify-center bg-primary text-primary-foreground">
                     Action
                   </div>
                 </div>
-                <div className="text-[11px] text-muted-foreground">{th.desc}</div>
+                {th.desc && <div className="text-[11px] text-muted-foreground">{th.desc}</div>}
               </CardContent>
             </Card>
           )
