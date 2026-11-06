@@ -575,6 +575,12 @@ the handoff's detail list; create + status + parts + money + report cover it.
 DEBUG args: `-open repairs`, `-openNewRepair 1` (new ticket), `-openRepair 1`
 (first ticket's detail), `-openRepairReport 1` (report).
 
+## Step 11: Bonus Points, Printing Settings & Buy-back Refusals
+
+Settings gains bonus points configuration (`bonusEnabled`, `bonusEarnPercent`, `bonusMaxRedeemPercent`) and printing settings (`receiptPrintingEnabled`, `receiptPaperWidth`, `priceTagsEnabled`). `StoreFlags` caches these along with store identity and receipt footer.
+
+Customer detail gains bonus points summary, transaction history and point adjustment (`CustomerBonusSection`, `CustomerBonusAdjustSheet`). At POS, `PosBonusRedeemControl` manages point redemptions via `BonusRedeemPlanner`. Receipts support 58mm/80mm widths and custom footer when enabled. Buy-back refusals map to specific error messages (`SALE_UNIT_BOUGHT_BACK`, `TRADE_IN_REFUND_FORBIDDEN`, `PURCHASE_UNIT_EXISTS`).
+
 ## i18n (Steps 9 & 10)
 
 `purchases` is bundled from the web (English in both locales). `repairs` is not

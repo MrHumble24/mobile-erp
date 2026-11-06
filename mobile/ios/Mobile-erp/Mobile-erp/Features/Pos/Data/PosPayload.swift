@@ -44,6 +44,8 @@ nonisolated struct SaleCreatePayload: Encodable {
     /// Phones taken in part payment on this line (ADR 0039); omitted when none.
     /// Online only — never set on an offline (queued) sale.
     let tradeIns: [SaleTradeInPost]?
+    /// Loyalty bonus points redeemed on this line (ADR 0043); omitted when none.
+    let bonusRedeem: Double?
 }
 
 /// Pure builder — one payload shape for both the online POST and the offline
@@ -68,7 +70,8 @@ func buildSalePayload(
     priceLevelCode: String? = nil,
     discount: SaleDiscountPost? = nil,
     listPrice: Double? = nil,
-    tradeIns: [SaleTradeInPost]? = nil
+    tradeIns: [SaleTradeInPost]? = nil,
+    bonusRedeem: Double? = nil
 ) -> SaleCreatePayload {
     let existing = (customerId ?? "").trimmingCharacters(in: .whitespaces)
     let name = (customerName ?? "").trimmingCharacters(in: .whitespaces)
@@ -76,6 +79,7 @@ func buildSalePayload(
         existing.isEmpty && !name.isEmpty
             ? InlineCustomerPayload(name: name, phone: nonEmpty(customerPhone))
             : nil
+    let redeem = (bonusRedeem != nil && bonusRedeem! > 0) ? bonusRedeem : nil
     return SaleCreatePayload(
         imei: nonEmpty(imei),
         serialNumber: nonEmpty(serialNumber),
@@ -92,7 +96,8 @@ func buildSalePayload(
         priceLevelCode: nonEmpty(priceLevelCode),
         discount: discount,
         listPrice: listPrice,
-        tradeIns: (tradeIns?.isEmpty ?? true) ? nil : tradeIns
+        tradeIns: (tradeIns?.isEmpty ?? true) ? nil : tradeIns,
+        bonusRedeem: redeem
     )
 }
 

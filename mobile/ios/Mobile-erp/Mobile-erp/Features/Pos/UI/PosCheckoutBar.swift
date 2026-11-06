@@ -32,6 +32,7 @@ struct PosCheckoutBar: View {
                     .font(.ui(.caption)).foregroundStyle(Tokens.danger)
             }
             if shiftBlocked { shiftBlock }
+            PosBonusRedeemControl(model: model)
             AppFormField(label: i18n.t("balance.paidWith")) {
                 PaymentMethodField(selection: model.payment, total: model.amountToPay)
             }
@@ -46,8 +47,8 @@ struct PosCheckoutBar: View {
             }
             .buttonStyle(.pillPrimary)
             .disabled(model.busy || !allPriced || !paymentValid || cart.hasInvalidDiscount || shiftBlocked || !planOk)
-            // Credit is not offered with a trade-in (ADR 0039).
-            if model.creditAvailable && !hasTradeIns { creditButton }
+            // Credit is not offered with a trade-in (ADR 0039) or bonus points (ADR 0043).
+            if model.creditAvailable && !hasTradeIns && model.bonusRedeemTotal == 0 { creditButton }
         }
         .sheet(isPresented: $showCartDiscount) {
             PosDiscountSheet(
@@ -78,7 +79,7 @@ struct PosCheckoutBar: View {
                             .font(.data(.regular)).foregroundStyle(Tokens.success)
                     }
                 }
-                FactRow(label: i18n.t("pos.subtotal"), last: !hasTradeIns) {
+                FactRow(label: i18n.t("pos.subtotal"), last: !hasTradeIns && model.bonusRedeemTotal == 0) {
                     Text(MoneyText.format(NSDecimalNumber(decimal: cart.subtotal).stringValue))
                         .font(.data(.large)).foregroundStyle(Tokens.text)
                 }
@@ -87,6 +88,14 @@ struct PosCheckoutBar: View {
                         Text("− \(MoneyText.format(NSDecimalNumber(decimal: model.tradeInTotal).stringValue))")
                             .font(.data(.regular)).foregroundStyle(Tokens.success)
                     }
+                }
+                if model.bonusRedeemTotal > 0 {
+                    FactRow(label: i18n.t("pos.bonusPoints")) {
+                        Text("− \(BonusText.format(NSDecimalNumber(decimal: model.bonusRedeemTotal).stringValue))")
+                            .font(.data(.regular)).foregroundStyle(Tokens.success)
+                    }
+                }
+                if hasTradeIns || model.bonusRedeemTotal > 0 {
                     FactRow(label: i18n.t("purchases.amountPaid", default: "Amount to pay"), last: true) {
                         Text(MoneyText.format(NSDecimalNumber(decimal: model.amountToPay).stringValue))
                             .font(.data(.large)).foregroundStyle(Tokens.text)

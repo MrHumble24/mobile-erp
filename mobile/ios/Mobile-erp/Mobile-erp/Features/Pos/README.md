@@ -52,12 +52,10 @@ checkout (one sale per device; the server's `CreateSaleDto` takes a single
   match. POS receipt / result rows show IMEI 2 when present.
 
 ## Trade-in at the till (Step 9, ADR 0039)
-- The "Trade-in" action (checkout bar) shows only with `purchase.create`, needs
-  a customer, and is online only. `PosTradeInSheet` adds a phone (model +
-  identifier + value) to `cart.tradeIns`; rows show a minus amount in the cart.
-- `TradeInAllocation` (pure, `TradeInAllocationSelfCheck`) places each trade-in
-  on one line (largest first, price ≥ value). Checkout tenders `amountToPay`
-  (cart − trade-ins); each line posts `tradeIns[]` with `payments` summing to
-  `salePrice − Σ values`. A sold line's trade-ins are dropped (no double-send on
-  retry); a trade-in cart is never queued offline; credit is hidden with a
-  trade-in. `PosTradeInSheet`/`PurchaseModel` are reused from `Features/Purchases`.
+- "Trade-in" (`purchase.create`, online only, customer required). Uses `TradeInAllocation`.
+  Checkout tenders `amountToPay` (`cart - tradeIns - bonusRedeem`).
+
+## Bonus points at the till (Step 11, ADR 0043, ADR 0047)
+- `BonusRedeemPlanner`: pure port of `bonus-redeem.ts` allocating redeemed points across lines.
+- `PosBonusRedeemControl` on checkout bar: inputs points up to cap. Offline or error mapped via `PosCheckoutError`.
+  Points are excluded on credit checkout. Line with points never queues offline.

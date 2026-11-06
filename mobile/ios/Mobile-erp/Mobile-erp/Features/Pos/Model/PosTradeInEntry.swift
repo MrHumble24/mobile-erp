@@ -11,8 +11,8 @@ extension PosViewModel {
     /// Σ of the cart's trade-in values (netted off what the customer pays).
     var tradeInTotal: Decimal { cart.tradeIns.reduce(.zero) { $0 + $1.value } }
 
-    /// What the customer still tenders: the cart total minus the trade-ins.
-    var amountToPay: Decimal { cart.subtotal - tradeInTotal }
+    /// What the customer still tenders: the cart total minus trade-ins minus points.
+    var amountToPay: Decimal { max(0, cart.subtotal - tradeInTotal - bonusRedeemTotal) }
 
     /// A trade-in needs a named customer (an existing one or an inline name).
     var tradeInHasCustomer: Bool {

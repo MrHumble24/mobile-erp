@@ -65,6 +65,7 @@ struct PosCustomerPanel: View {
             Button(i18n.t("common.clear", default: "Clear"), role: .destructive) {
                 cart.detachCustomer()
                 cart.setLevel(PriceLevels.defaultCode)
+                model.clearBonus()
                 addNew = false
             }
             .buttonStyle(.pillGhost)
@@ -74,7 +75,10 @@ struct PosCustomerPanel: View {
     @ViewBuilder private var newCustomerFields: some View {
         AppTextField(placeholder: i18n.t("pos.customerName"), text: Binding(
             get: { cart.customer?.name ?? "" },
-            set: { cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone) }))
+            set: {
+                model.clearBonus()
+                cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone)
+            }))
         AppTextField(placeholder: i18n.t("pos.customerPhone"), text: customerPhoneBinding, keyboard: .phonePad)
             .sanitizePhone(customerPhoneBinding)
     }
