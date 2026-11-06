@@ -46,7 +46,7 @@ export function OrderDetailSheet({
         ) : (
           <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)]">
             {/* Customer Section */}
-            <div className="p-4 rounded-2xl bg-[#f8f9fa] border border-[#e8e8e8] space-y-2">
+            <div className="p-4 rounded-2xl bg-muted border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <User className="size-3.5" />
@@ -66,7 +66,7 @@ export function OrderDetailSheet({
             </div>
 
             {/* Product Section */}
-            <div className="p-4 rounded-2xl bg-white border border-[#e8e8e8] space-y-3">
+            <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <ShoppingBag className="size-3.5" />
                 {t("orders.product")}
@@ -84,7 +84,7 @@ export function OrderDetailSheet({
                   {Object.entries(order.specs).map(([key, val]) => (
                     <span
                       key={key}
-                      className="text-xs px-2.5 py-1 rounded-md bg-[#f4f4f5] text-[#3f3f46] font-medium"
+                      className="text-xs px-2.5 py-1 rounded-md bg-muted text-foreground font-medium"
                     >
                       {key}: {val}
                     </span>
@@ -95,7 +95,7 @@ export function OrderDetailSheet({
 
             {/* Store & Timestamps */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-[#f8f9fa] border border-[#e8e8e8] space-y-1">
+              <div className="p-3 rounded-xl bg-muted border border-border space-y-1">
                 <span className="text-muted-foreground flex items-center gap-1 font-medium">
                   <MapPin className="size-3" />
                   {t("orders.branch")}
@@ -103,7 +103,7 @@ export function OrderDetailSheet({
                 <div className="font-semibold text-foreground">{order.storeName}</div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#f8f9fa] border border-[#e8e8e8] space-y-1">
+              <div className="p-3 rounded-xl bg-muted border border-border space-y-1">
                 <span className="text-muted-foreground flex items-center gap-1 font-medium">
                   <Calendar className="size-3" />
                   {t("orders.createdAt")}
@@ -140,7 +140,7 @@ export function OrderDetailSheet({
 
             {/* Actions for order.manage */}
             {canManage && (
-              <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+              <div className="space-y-2 pt-2 border-t border-border">
                 <div className="text-xs font-semibold text-muted-foreground">
                   {t("orders.actions")}
                 </div>
@@ -153,7 +153,7 @@ export function OrderDetailSheet({
 
             {/* Status History Timeline */}
             {order.history && order.history.length > 0 && (
-              <div className="space-y-3 pt-3 border-t border-[#f0f0f0]">
+              <div className="space-y-3 pt-3 border-t border-border">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {t("orders.history")}
                 </div>
@@ -161,7 +161,7 @@ export function OrderDetailSheet({
                   {order.history.map((h) => (
                     <div
                       key={h.id}
-                      className="text-xs p-2.5 rounded-xl bg-[#f8f9fa] border border-[#f0f0f0] space-y-1"
+                      className="text-xs p-2.5 rounded-xl bg-muted border border-border space-y-1"
                     >
                       <div className="flex items-center justify-between text-muted-foreground">
                         <span className="font-medium text-foreground">

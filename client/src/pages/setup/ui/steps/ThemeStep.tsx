@@ -14,9 +14,7 @@ export function ThemeStep({ state, update, onNext, onBack }: Props) {
 
   const themes = [
     { code: "caldera", name: "Caldera Light", desc: "Default warm light retail theme", bg: "#f8f9fa", fg: "#202020", primary: "#202020" },
-    { code: "obsidian", name: "Obsidian Dark", desc: "Sleek high-contrast dark theme", bg: "#121214", fg: "#f4f4f5", primary: "#ffffff" },
     { code: "sand", name: "Warm Sand", desc: "Subtle desert ochre palette", bg: "#f7f5f0", fg: "#262320", primary: "#383129" },
-    { code: "nord", name: "Nord Slate", desc: "Cool arctic slate blue design", bg: "#f0f4f8", fg: "#1a2530", primary: "#2563eb" },
   ]
 
   const currentTheme = state.company.themeCode || "caldera"

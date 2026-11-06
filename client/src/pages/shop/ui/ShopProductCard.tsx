@@ -22,9 +22,9 @@ export function ShopProductCard({
   return (
     <Link
       to={`/shop/${product.modelId}`}
-      className="group flex flex-col bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden hover:border-[#b3b3b3] transition-all hover:shadow-md no-underline text-foreground"
+      className="group flex flex-col bg-card rounded-2xl border border-border overflow-hidden hover:border-input transition-all hover:shadow-md no-underline text-foreground"
     >
-      <div className="aspect-square w-full bg-[#f8f9fa] relative overflow-hidden flex items-center justify-center p-4">
+      <div className="aspect-square w-full bg-muted relative overflow-hidden flex items-center justify-center p-4">
         <AssetImage
           path={product.imageUrl}
           alt={product.name}
@@ -47,7 +47,7 @@ export function ShopProductCard({
           </h3>
         </div>
 
-        <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+        <div className="space-y-2 pt-2 border-t border-border">
           <div className="font-display font-bold text-lg text-foreground whitespace-nowrap tabular-nums">
             {priceDisplay}
           </div>
@@ -56,9 +56,9 @@ export function ShopProductCard({
             {product.stores.map((st) => (
               <span
                 key={st.id}
-                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-[#f4f4f5] text-[#52525b]"
+                className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground"
               >
-                <MapPin className="size-3 text-[#71717a]" />
+                <MapPin className="size-3 text-muted-foreground" />
                 {st.name}
               </span>
             ))}

@@ -11,9 +11,7 @@ interface CompanyThemesCardProps {
 
 const FALLBACK_THEMES = [
   { code: "caldera", name: "Caldera Light" },
-  { code: "obsidian", name: "Obsidian Dark" },
   { code: "sand", name: "Warm Sand" },
-  { code: "nord", name: "Nord Slate" },
 ]
 
 export function CompanyThemesCard({

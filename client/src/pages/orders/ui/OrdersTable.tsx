@@ -16,14 +16,14 @@ export function OrdersTable({
 
   if (orders.length === 0) {
     return (
-      <div className="py-16 text-center text-muted-foreground bg-white rounded-2xl border border-[#e8e8e8]">
+      <div className="py-16 text-center text-muted-foreground bg-card rounded-2xl border border-border">
         <p className="text-sm font-medium">{t("orders.noOrders")}</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -45,7 +45,7 @@ export function OrdersTable({
               return (
                 <TableRow
                   key={order.id}
-                  className="cursor-pointer hover:bg-[#f8f9fa] transition-colors"
+                  className="cursor-pointer hover:bg-muted transition-colors"
                   onClick={() => onSelectOrder(order)}
                 >
                   <TableCell className="text-xs text-muted-foreground whitespace-nowrap">

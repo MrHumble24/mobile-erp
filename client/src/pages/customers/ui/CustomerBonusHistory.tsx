@@ -30,7 +30,7 @@ export function CustomerBonusHistory({ history }: { history: BonusHistoryRow[] }
   }
 
   return (
-    <ul className="divide-y divide-[#e8e8e8] rounded-[12px] border border-border">
+    <ul className="divide-y divide-border rounded-[12px] border border-border">
       {history.map((row) => (
         <li key={row.id} className="flex items-start justify-between gap-3 p-2.5">
           <div className="min-w-0 space-y-0.5">

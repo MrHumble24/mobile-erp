@@ -91,8 +91,6 @@ export class CompanyRepository {
   }
 
   async findTheme(code: string) {
-    return this.prisma.theme.findUnique({
-      where: { code },
-    });
+    return this.prisma.theme.findFirst({ where: { code, isActive: true } });
   }
 }

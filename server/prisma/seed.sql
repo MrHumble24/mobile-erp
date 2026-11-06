@@ -227,9 +227,9 @@ ON CONFLICT (code) DO NOTHING;
 -- Themes ---------------------------------------------------------------------
 INSERT INTO themes (code, name, "sortOrder", "isActive", "createdAt", "updatedAt") VALUES
   ('caldera',  'Caldera Light', 10, true, now(), now()),
-  ('obsidian', 'Obsidian Dark', 20, true, now(), now()),
+  ('obsidian', 'Obsidian Dark', 20, false, now(), now()),
   ('sand',     'Warm Sand',     30, true, now(), now()),
-  ('nord',     'Nord Slate',    40, true, now(), now())
+  ('nord',     'Nord Slate',    40, false, now(), now())
 ON CONFLICT (code) DO NOTHING;
 
 -- Role × permission matrix -----------------------------------------------------

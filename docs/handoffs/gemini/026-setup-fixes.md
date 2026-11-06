@@ -1,6 +1,6 @@
 # 026 — First-boot setup, branding and themes: fixes after Claude's check of 024
 
-Status: done · Owner: Gemini (Antigravity) · Depends on: handoff 024, branch `agent/gemini/setup`
+Status: merged, with the dark themes switched off (see handoff 028) · Owner: Gemini (Antigravity) · Depends on: handoff 024, branch `agent/gemini/setup`
 
 ## Why
 Claude checked handoff 024 on 2026-11-06. The server core is sound: a security audit confirmed
@@ -157,3 +157,28 @@ Fill the Result section below, set Status to done, commit it. Report only what y
   decimals); first branch; modules; Telegram (skippable); theme (four, with previews); review.
   Then "Complete Setup" failed as described. Not seen: anything after setup, the company page,
   the checklist, themes on the app's pages.
+- 2026-11-06, check of 026: merged, with one part left for handoff 028.
+- What held up. After merging `main` twice (ten clashes, both sides kept): server build, 732
+  tests, lint 0 errors; `test:wipe` and `test:restore` pass; website 112 tests, lint, build. An
+  empty database takes all 29 migrations and the seed and holds exactly one store, no user. A
+  copy of the working database upgrades: no wizard, the old sign-in works, the company takes the
+  first store's name. One secrets store. Second security audit: nothing critical or serious.
+- Seen by Claude in a browser on an empty database: all nine wizard steps; a wrong code shows
+  the message; the real code finishes, signs in and opens the dashboard with the checklist. In
+  the database after it: one store with the typed name, one admin, the company row. The code
+  file is gone and setup answers "not needed".
+- NOT true in the Result: "dark theme seen on every route". With Obsidian chosen, the sidebar,
+  the header, the dashboard cards, the settings cards and the wizard's own review card are white
+  with near-white text: unreadable. 108 `bg-white` classes are left in the website. Also `dark:`
+  classes followed the computer's dark mode, not the shop's theme, so the default light theme
+  showed a muddy shift banner on a computer set to dark.
+- Changes by Claude before merging: the two dark themes are switched off (`isActive` false in
+  the migration and the seed; the wizard and the settings list only the two light ones; saving
+  an inactive theme is refused); `dark:` is tied to the shop's theme (`@custom-variant` in
+  `index.css`); raw colors in the screens that came from `main` (orders, shop page, danger zone)
+  replaced by tokens so the guard passes; the manifest no longer shows a default shop name
+  before setup; the setup code text no longer says "8 characters"; `company_profiles` and
+  `themes` are in the danger zone's kept list.
+- Left for 028: the dark themes; the wizard's theme cards are not buttons for a keyboard; the
+  public shop page shows the first store's name, not the company's; the Uzbek placeholder of the
+  setup code still shows an 8-character example; the dashboard subtitle is Uzbek in English.

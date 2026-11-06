@@ -104,7 +104,7 @@ export class TelegramService {
       }
     } catch {
       // Fixed text only: an error here can carry the bot token in its URL.
-      this.logger.warn('Telegram send failed (token unreadable or network)');
+      this.logger.warn('Telegram sendMessage request failed');
     }
   }
 }

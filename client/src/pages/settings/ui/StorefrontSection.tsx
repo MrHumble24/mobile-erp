@@ -116,7 +116,7 @@ export function StorefrontSection({ disabled }: { disabled: boolean }) {
     <Section title={t("settings.sectionStorefront")} description={t("settings.sectionStorefrontDesc")}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         {/* Public URL display */}
-        <div className="p-3.5 rounded-xl bg-[#f8f9fa] border border-[#e8e8e8] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-3.5 rounded-xl bg-muted border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <span className="text-xs font-semibold text-muted-foreground block">
               {t("settings.storefrontUrl")}
@@ -140,7 +140,7 @@ export function StorefrontSection({ disabled }: { disabled: boolean }) {
               href="/shop"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center size-8 rounded-full border border-[#e8e8e8] hover:bg-[#f0f0f0] transition-colors"
+              className="inline-flex items-center justify-center size-8 rounded-full border border-border hover:bg-muted transition-colors"
             >
               <ExternalLink className="size-3.5 text-muted-foreground" />
             </a>
@@ -201,7 +201,7 @@ export function StorefrontSection({ disabled }: { disabled: boolean }) {
 
         {/* Categories selector */}
         {categories && categories.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+          <div className="space-y-2 pt-2 border-t border-border">
             <Label className="text-xs font-semibold">
               {t("settings.storefrontCategories")}
             </Label>

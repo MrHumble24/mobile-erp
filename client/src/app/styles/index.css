@@ -11,6 +11,9 @@
 @import "@fontsource/sometype-mono/400.css";
 @import "@fontsource/sometype-mono/500.css";
 
+/* `dark:` follows the shop's theme, never the computer's own dark mode. */
+@custom-variant dark (&:where([data-theme="obsidian"], [data-theme="obsidian"] *, [data-theme="nord"], [data-theme="nord"] *));
+
 @theme {
   /* Colors */
   --color-signal-white: #ffffff;

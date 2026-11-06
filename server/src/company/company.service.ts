@@ -127,8 +127,12 @@ export class CompanyService {
   }
 
   async getManifest() {
-    const profile = await this.repo.getProfile();
-    const name = profile.name || 'ERP';
+    const [hasUsers, profile] = await Promise.all([
+      this.repo.hasUsers(),
+      this.repo.getProfile(),
+    ]);
+    // Before setup the default name is not the shop's; same rule as getBranding.
+    const name = (hasUsers && profile.name) || 'ERP';
     return {
       name,
       short_name: name,

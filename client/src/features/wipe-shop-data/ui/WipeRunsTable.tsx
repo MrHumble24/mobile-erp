@@ -21,7 +21,7 @@ export function WipeRunsTable({ enabled }: { enabled: boolean }) {
   return (
     <section className="space-y-3">
       <h3 className="text-sm font-semibold">{t("backups.wipeRecordTitle")}</h3>
-      <div className="overflow-x-auto rounded-[16px] border border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]">
+      <div className="overflow-x-auto rounded-[16px] border border-border bg-card shadow-[var(--shadow-xs)]">
         <Table>
           <TableHeader>
             <TableRow>
