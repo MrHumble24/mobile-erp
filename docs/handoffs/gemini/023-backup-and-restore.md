@@ -226,6 +226,27 @@ whose file is gone reads FAILED "file missing"); `backups.repository.ts` split
   `isSet(name)`, `state(name)` → set|missing|unreadable, `read(name)` (server-only;
   throws on unreadable), `clear(name)`, plus `AppKeyService.getKey()`/`dataDir()`.
 
+## Provider fix round (2026-11-06, commits `fda45c5`, `183707d`)
+Six audit items; no route path/shape/field changed (website branch safe). Gate
+green (638 → **648 tests**, 0 lint errors) and `pnpm test:restore` passes.
+- (serious) **Timeouts**: every provider request has an AbortController timeout,
+  each chunk its own, and each place's whole upload is bounded (withDeadline), so
+  a stalled remote is recorded FAILED within the bound instead of holding the
+  run + the one-at-a-time lock. Tunable via `BACKUP_HTTP/CHUNK/PLACE_TIMEOUT_MS`.
+  Test: fake server holds the connection open → fails fast; the run ends
+  partly-failed with LOCAL intact and the next backup can start.
+- **Telegram download** streams the parts one at a time (hash while streaming,
+  digest failure → stream error before the restore uses the file).
+- **Restore staging** from a remote is byte-capped (can't fill the disk).
+- **OAuth state** is claimed with one conditional `updateMany` (count ≠ 1 = used).
+- **Drive** refuses a resumable-session URL whose origin isn't the Google host
+  before sending the token.
+- **OneDrive** seals the rotated refresh token each refresh (new
+  `Destination.onRefreshToken`), so it no longer drifts to "needs reconnecting";
+  the caveat is removed from ADR 0056 + README.
+Still **not seen with the real Telegram/Google/Microsoft services** (no outbound
+access); all six proven against the fake servers.
+
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
   database, and a look at one backup file to confirm it is unreadable without the key.
