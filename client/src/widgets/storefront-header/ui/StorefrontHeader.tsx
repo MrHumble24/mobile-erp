@@ -1,20 +1,22 @@
-import { Store, Phone, Send, Globe } from "lucide-react"
+import { Phone, Send, Globe } from "lucide-react"
+import { useBranding } from "@/entities/company"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
+import { AssetImage } from "@/shared/ui"
 
 export interface StorefrontHeaderProps {
-  shopName?: string
   contactPhone?: string | null
   contactTelegram?: string | null
 }
 
 export function StorefrontHeader({
-  shopName = "Malika Store",
   contactPhone,
   contactTelegram,
 }: StorefrontHeaderProps) {
   const { locale, setLocale } = useI18n()
+  const { data: branding } = useBranding()
+  const shopName = branding?.name?.trim() ?? ""
 
   const toggleLocale = () => {
     const next: Locale = locale === "uz" ? "en" : "uz"
@@ -31,17 +33,25 @@ export function StorefrontHeader({
     <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
         <Link to="/shop" className="flex items-center gap-2.5 no-underline text-foreground">
-          <div className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs">
-            <Store className="size-5" />
-          </div>
-          <div>
-            <span className="font-display font-bold text-base tracking-tight leading-tight block">
-              {shopName}
-            </span>
-            <span className="text-[11px] text-muted-foreground hidden sm:block">
-              Online Catalog
-            </span>
-          </div>
+          {(shopName || branding?.logoUrl) && (
+            <div className="size-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-display font-bold text-sm shrink-0 shadow-xs overflow-hidden">
+              {branding?.logoUrl ? (
+                <AssetImage path={branding.logoUrl} alt={shopName} className="size-full" />
+              ) : (
+                shopName.charAt(0).toUpperCase()
+              )}
+            </div>
+          )}
+          {shopName && (
+            <div>
+              <span className="font-display font-bold text-base tracking-tight leading-tight block">
+                {shopName}
+              </span>
+              <span className="text-[11px] text-muted-foreground hidden sm:block">
+                Online Catalog
+              </span>
+            </div>
+          )}
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">

@@ -1,6 +1,6 @@
 # 012 — Small fixes: the shop's own name everywhere, wizard theme cards, dashboard text
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Found by Claude while checking the setup wizard and the shop page on 2026-11-06. The app is
@@ -53,11 +53,31 @@ Fill the Result section of `docs/handoffs/opencode/012-small-fixes-2.md`, set St
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (opencode/big-pickle)
+- Commits: `15bf7acc` — code; this handoff file committed separately on the same branch.
 - Items 1 to 4, one line each (files changed):
-- Which control was used for the theme cards, and why:
+  1. Shop name/logo now come from `useBranding`: `client/src/widgets/storefront-header/ui/StorefrontHeader.tsx`, `client/src/pages/shop/ui/ShopPage.tsx`, `client/src/pages/shop-detail/ui/ShopDetailPage.tsx`, `client/src/widgets/storefront-header/README.md`.
+  2. Theme cards are real `Button` controls with `aria-pressed` and a focus ring: `client/src/pages/setup/ui/steps/ThemeStep.tsx`, `client/src/pages/settings/ui/company/CompanyThemesCard.tsx`.
+  3. Theme preview, action and theme names/descriptions moved to `setup.*`: `client/src/pages/setup/ui/steps/ThemeStep.tsx`, `client/src/shared/i18n/en/setup.json`, `client/src/shared/i18n/uz/setup.json` (same English in both files).
+  4. Dashboard subtitle moved to `dashboard.subtitle`: `client/src/pages/dashboard/ui/DashboardPage.tsx`, `client/src/shared/i18n/en/dashboard.json`, `client/src/shared/i18n/uz/dashboard.json` (Uzbek sentence unchanged).
+- Which control was used for the theme cards, and why: the existing shadcn `Button` from `@/shared/ui` with `aria-pressed` and `focus-visible:ring-2 focus-visible:ring-ring`; `shared/ui` has no radio-group primitive, so a button avoids adding a new shadcn component while giving native Tab/Enter/Space behaviour.
 - `pnpm test`, `pnpm lint`, `pnpm build`, the grep (last lines):
-- Not done / skipped / failed:
+  - `pnpm test`: 113 tests, 113 pass, 0 fail (theme guard included).
+  - `pnpm lint`: exit 0; only existing warnings, no errors.
+  - `pnpm build`: `tsc -b && vite build` succeeded; built in 6.69s.
+  - `grep -rn "Malika" src --include='*.tsx' --include='*.ts' | grep -v "spec.ts" | wc -l`: `0`.
+- Not done / skipped / failed: no browser was opened, so no screen was seen and visual layout was not verified. The grep found only the three original "Malika Store" occurrences, all removed; no other file needed fixing. New i18n keys are flat (`themePreviewText`, `themeCalderaName`, …) because `translate()` resolves only the first `namespace.key` segment, so the nested example would not resolve. `graphify update .` ran in `client/` and at the repo root.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was accurate. After merging `main`: 113 website
+  tests, lint 0 errors, build pass.
+- Seen in a browser on a copy of the working data, with a test logo uploaded: the public shop
+  page shows the company's name and logo; the sidebar and the settings show the logo; the
+  theme cards in the settings are real buttons (Tab reaches them, Enter chooses, `aria-pressed`
+  follows); the dashboard subtitle comes from the text files.
+- Two changes by Claude. (1) The theme cards had lost their border (the ghost button's
+  `border-none` won): `border-solid` added in both files. (2) An older bug from handoff 026: the
+  logo was shown with a plain `<img src="/uploads/...">`, which points at the website's address,
+  not the server's, so it was a broken picture wherever the two differ (here and on Railway).
+  All four places (sidebar, sign-in, settings, shop header) now use `AssetImage`.
+- Not seen: the wizard's theme step (needs an empty database; same button as the settings).

@@ -1,5 +1,6 @@
 {
   "title": "Management Dashboard",
+  "subtitle": "Today's sales figures, income and stock levels",
   "periodToday": "Today",
   "periodWeek": "This Week",
   "periodMonth": "This Month",
