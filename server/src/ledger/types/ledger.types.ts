@@ -38,10 +38,18 @@ export interface AccountBalance {
   balance: string;
 }
 
+export interface StoreBalanceBreakdown {
+  storeId: string;
+  storeName: string;
+  accounts: AccountBalance[];
+  total: string;
+}
+
 export interface BalanceSummary {
   accounts: AccountBalance[];
   /** Sum of every account, as a 2-dp decimal string. */
   total: string;
+  stores?: StoreBalanceBreakdown[];
 }
 
 /** One account's balance at the day's start and now, for the Telegram digest. */

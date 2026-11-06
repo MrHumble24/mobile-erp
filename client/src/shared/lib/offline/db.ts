@@ -70,3 +70,7 @@ export async function idbPutMany<T>(store: StoreName, values: T[]): Promise<void
 export async function idbDelete(store: StoreName, key: IDBValidKey): Promise<void> {
   await (await db()).delete(store, key)
 }
+
+export async function idbClear(store: StoreName): Promise<void> {
+  await (await db()).clear(store)
+}

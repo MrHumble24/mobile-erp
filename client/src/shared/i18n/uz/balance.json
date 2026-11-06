@@ -1,6 +1,11 @@
 {
   "title": "Kassa balansi",
   "pageDescription": "Do'kondagi naqd va karta pullari hamda ularning barcha harakatlari",
+  "allStores": "Barcha do'konlar",
+  "storeBreakdown": "Do'konlar bo'yicha taqsimot",
+  "store": "Do'kon",
+  "cash": "Naqd",
+  "bank": "Karta / Bank",
   "total": "Jami",
   "belowZero": "Noldan past",
   "history": "Tarix",

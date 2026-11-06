@@ -13,6 +13,7 @@ export interface AuthUser {
   profile: AuthUserProfile
   roles: string[]
   permissions: string[]
+  stores?: { id: string; name: string }[]
 }
 
 interface AuthState {

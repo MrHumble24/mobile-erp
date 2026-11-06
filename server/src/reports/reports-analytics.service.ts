@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PartnersService } from '../partners/partners.service.js';
 import { StockService } from '../stock/stock.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import {
   ProfitBreakdownQueryDto,
   ReturnsQueryDto,
@@ -34,28 +35,38 @@ export class ReportsAnalyticsService {
     private readonly inventoryRepo: ReportsInventoryRepository,
     private readonly partners: PartnersService,
     private readonly stock: StockService,
+    private readonly stores: StoresService,
   ) {}
 
   async trend(query: TrendQueryDto): Promise<TrendPoint[]> {
+    const storeIds = await this.stores.currentStoreIds();
     const { from, to } = rangeOrDefault(query);
-    const rows = await this.trendRepo.series(from, to, query.bucket);
+    const rows = await this.trendRepo.series(from, to, query.bucket, storeIds);
     return fillTrend(rows, from, to, query.bucket);
   }
 
   async profitBreakdown(
     query: ProfitBreakdownQueryDto,
   ): Promise<BreakdownRow[]> {
+    const storeIds = await this.stores.currentStoreIds();
     const { from, to } = rangeOrDefault(query);
-    const rows = await this.breakdownRepo.breakdown(query.groupBy, from, to);
+    const rows = await this.breakdownRepo.breakdown(
+      query.groupBy,
+      from,
+      to,
+      storeIds,
+    );
     return toBreakdownRows(rows);
   }
 
   async returns(query: ReturnsQueryDto): Promise<ReturnsPage> {
+    const storeIds = await this.stores.currentStoreIds();
     const { items, total } = await this.returnsRepo.page(
       parseDate(query.from),
       parseDate(query.to),
       query.page,
       query.pageSize,
+      storeIds,
     );
     return { items, total, page: query.page, pageSize: query.pageSize };
   }
@@ -64,12 +75,13 @@ export class ReportsAnalyticsService {
     from?: string;
     to?: string;
   }): Promise<ConsignmentsReport> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = parseDate(query.from);
     const to = parseDate(query.to);
     const [[createdCount, settledCount, returnedCount], revenueRows, partners] =
       await Promise.all([
-        this.consignmentsRepo.counts(from, to),
-        this.consignmentsRepo.settledRevenueByPartner(from, to),
+        this.consignmentsRepo.counts(from, to, storeIds),
+        this.consignmentsRepo.settledRevenueByPartner(from, to, storeIds),
         this.partners.list(),
       ]);
     const revenueOf = new Map(
@@ -104,12 +116,13 @@ export class ReportsAnalyticsService {
   }
 
   async inventory(): Promise<InventoryReport> {
+    const storeIds = await this.stores.currentStoreIds();
     const [totals, byStatus, byModel, agingRaw, quantityValue] =
       await Promise.all([
-        this.inventoryRepo.totals(),
-        this.inventoryRepo.byStatus(),
-        this.inventoryRepo.byModel(),
-        this.inventoryRepo.agingRaw(),
+        this.inventoryRepo.totals(storeIds),
+        this.inventoryRepo.byStatus(storeIds),
+        this.inventoryRepo.byModel(storeIds),
+        this.inventoryRepo.agingRaw(storeIds),
         this.stock.totalStockValue(),
       ]);
     // Stock value includes quantity stock (ADR 0030). Units stay phone-centric:

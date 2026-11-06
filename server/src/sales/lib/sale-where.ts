@@ -42,7 +42,10 @@ function searchOr(search?: string): Prisma.SaleWhereInput['OR'] {
  * stats. `warranty: 'active'` implies "not returned" (a returned unit is no
  * longer under active cover).
  */
-export function buildSaleWhere(filters: SaleFilters): Prisma.SaleWhereInput {
+export function buildSaleWhere(
+  filters: SaleFilters,
+  storeIds?: string[],
+): Prisma.SaleWhereInput {
   const now = new Date();
   const where: Prisma.SaleWhereInput = {
     soldById: filters.soldById,
@@ -50,6 +53,10 @@ export function buildSaleWhere(filters: SaleFilters): Prisma.SaleWhereInput {
     soldAt: soldAtRange(filters.from, filters.to),
     consignmentId: consignmentFilter(filters.channel),
   };
+
+  if (storeIds && storeIds.length > 0) {
+    where.storeId = storeIds.length === 1 ? storeIds[0] : { in: storeIds };
+  }
 
   const or = searchOr(filters.search);
   if (or) where.OR = or;

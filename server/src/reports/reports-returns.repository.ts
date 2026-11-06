@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { storeFilterPrisma } from './lib/store-filter.js';
 import { ReturnRow } from './types/reports.types.js';
 
 /** Paginated sale-return list joined with its device and processor. */
@@ -13,9 +14,13 @@ export class ReportsReturnsRepository {
     to: Date | undefined,
     page: number,
     pageSize: number,
+    storeIds?: string[],
   ): Promise<{ items: ReturnRow[]; total: number }> {
     const where: Prisma.SaleReturnWhereInput =
       from || to ? { returnedAt: { gte: from, lte: to } } : {};
+    if (storeIds && storeIds.length > 0) {
+      where.sale = { storeId: storeFilterPrisma(storeIds) };
+    }
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.saleReturn.findMany({
         where,

@@ -1,4 +1,4 @@
-export type DeviceStatus = "IN_STOCK" | "DEFECTIVE" | "CONSIGNED" | "SOLD"
+export type DeviceStatus = "IN_STOCK" | "DEFECTIVE" | "CONSIGNED" | "SOLD" | "IN_TRANSIT"
 
 export interface DeviceSpecs {
   storage?: string

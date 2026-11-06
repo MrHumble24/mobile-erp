@@ -27,16 +27,27 @@ export class ShiftsRepository {
     return this.prisma.$transaction(fn);
   }
 
-  findOpenByCashier(cashierId: string): Promise<ShiftRow | null> {
+  findOpenByCashier(
+    cashierId: string,
+    storeId?: string,
+  ): Promise<ShiftRow | null> {
     return this.prisma.shift.findFirst({
-      where: { cashierId, closedAt: null },
+      where: {
+        cashierId,
+        closedAt: null,
+        ...(storeId ? { storeId } : {}),
+      },
       include: CASHIER_INCLUDE,
     });
   }
 
-  findById(id: string): Promise<ShiftRow | null> {
-    return this.prisma.shift.findUnique({
-      where: { id },
+  findById(id: string, storeIds: string[]): Promise<ShiftRow | null> {
+    const where: Prisma.ShiftWhereInput = {
+      id,
+      storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+    };
+    return this.prisma.shift.findFirst({
+      where,
       include: CASHIER_INCLUDE,
     });
   }

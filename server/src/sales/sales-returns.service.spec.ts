@@ -1,9 +1,10 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BonusService } from '../bonus/bonus.service.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomerPurchasesService } from '../customer-purchases/customer-purchases.service.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { SalesCheckoutRepository } from './sales-checkout.repository.js';
 import { SalesRepository } from './sales.repository.js';
 import { SalesReturnsService } from './sales-returns.service.js';
@@ -47,18 +48,52 @@ function build() {
     reverseForSale: jest.fn().mockResolvedValue(undefined),
     summaryBySale: jest.fn().mockResolvedValue(new Map()),
   };
+  const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store-1'),
+  };
   const service = new SalesReturnsService(
     reads as unknown as SalesRepository,
     checkout as unknown as SalesCheckoutRepository,
     ledger as unknown as LedgerService,
     purchases as unknown as CustomerPurchasesService,
     bonus as unknown as BonusService,
+    stores as unknown as StoresService,
   );
-  return { service, reads, checkout, ledger, purchases, bonus };
+  return { service, reads, checkout, ledger, purchases, bonus, stores };
 }
 
 const ret = (refundAmount: number) =>
   ({ refundAmount, deviceToStatusCode: 'IN_STOCK' }) as never;
+
+describe('SalesReturnsService store scoping (S3)', () => {
+  it('passes active storeId to findSaleForReturn and findDeviceState', async () => {
+    const svc = build();
+    await svc.service.processReturn(caller, 'sale-1', ret(250));
+    expect(svc.reads.findSaleForReturn).toHaveBeenCalledWith(
+      'sale-1',
+      'store-1',
+    );
+    expect(svc.reads.findDeviceState).toHaveBeenCalledWith('dev-1', 'store-1');
+  });
+
+  it('refuses a return when the sale belongs to another store (404)', async () => {
+    const svc = build();
+    svc.reads.findSaleForReturn.mockResolvedValue(null);
+    await expect(
+      svc.service.processReturn(caller, 'sale-1', ret(250)),
+    ).rejects.toThrow(NotFoundException);
+    expect(svc.checkout.processReturn).not.toHaveBeenCalled();
+  });
+
+  it('refuses a return when the device is not found in the active store (404)', async () => {
+    const svc = build();
+    svc.reads.findDeviceState.mockResolvedValue(null);
+    await expect(
+      svc.service.processReturn(caller, 'sale-1', ret(250)),
+    ).rejects.toThrow(NotFoundException);
+    expect(svc.checkout.processReturn).not.toHaveBeenCalled();
+  });
+});
 
 describe('SalesReturnsService buy-back gate (ADR 0044)', () => {
   it('refuses a return once the unit has been bought back', async () => {

@@ -8,6 +8,7 @@ import { DeviceModelsService } from '../device-models/device-models.service.js';
 import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import { Prisma } from '../generated/client/client.js';
 import { PricingService } from '../pricing/pricing.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { DevicesExpenseRepository } from './devices-expense.repository.js';
 import { DevicesQueryRepository } from './devices-query.repository.js';
 import { DevicesStatusRepository } from './devices-status.repository.js';
@@ -32,11 +33,13 @@ export class DevicesService {
     private readonly expense: DevicesExpenseRepository,
     private readonly models: DeviceModelsService,
     private readonly pricing: PricingService,
+    private readonly stores: StoresService,
   ) {}
 
-  list(dto: ListDevicesDto): Promise<PaginatedDevices> {
+  async list(dto: ListDevicesDto): Promise<PaginatedDevices> {
     const { page, pageSize, ...filters } = dto;
-    return this.query.list(filters, page, pageSize);
+    const storeIds = await this.stores.currentStoreIds();
+    return this.query.list(filters, page, pageSize, storeIds);
   }
 
   get(id: string): Promise<DeviceView> {
@@ -44,12 +47,14 @@ export class DevicesService {
   }
 
   /** In-stock/defective devices with no QC inspection yet (for the QC queue stats). */
-  countAwaitingInspection(): Promise<number> {
-    return this.query.countAwaitingInspection();
+  async countAwaitingInspection(): Promise<number> {
+    const storeIds = await this.stores.currentStoreIds();
+    return this.query.countAwaitingInspection(storeIds);
   }
 
   async getByImei(imei: string): Promise<DeviceDetailView> {
-    const device = await this.query.findDetailByImei(imei);
+    const storeIds = await this.stores.currentStoreIds();
+    const device = await this.query.findDetailByImei(imei, storeIds);
     if (!device) {
       throw new NotFoundException(`Device with IMEI ${imei} not found`);
     }
@@ -58,7 +63,8 @@ export class DevicesService {
 
   /** Non-throwing by-code lookup (imei/imei2/serial) for the till scan route. */
   async findByCode(code: string): Promise<DeviceDetailView | null> {
-    const device = await this.query.findDetailByImei(code);
+    const storeIds = await this.stores.currentStoreIds();
+    const device = await this.query.findDetailByImei(code, storeIds);
     return device ? this.withPrices(device) : null;
   }
 
@@ -157,7 +163,8 @@ export class DevicesService {
     reason?: string,
     expectedVersion?: number,
   ): Promise<DeviceView> {
-    const state = await this.status.findState(deviceId);
+    const storeIds = await this.stores.currentStoreIds();
+    const state = await this.status.findState(deviceId, storeIds);
     if (!state) throw new NotFoundException(`Device ${deviceId} not found`);
     if (!isAllowedTransition(state.statusCode, toStatusCode)) {
       throw new BadRequestException(
@@ -182,7 +189,8 @@ export class DevicesService {
   }
 
   private async require(id: string): Promise<DeviceView> {
-    const device = await this.query.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const device = await this.query.findById(id, storeIds);
     if (!device) throw new NotFoundException(`Device ${id} not found`);
     return device;
   }

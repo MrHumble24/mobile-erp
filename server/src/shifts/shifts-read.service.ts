@@ -24,7 +24,8 @@ export class ShiftsReadService {
 
   /** My open shift with its live figures, or null when none is open. */
   async current(caller: AuthenticatedUser): Promise<ShiftReportView | null> {
-    const shift = await this.repo.findOpenByCashier(caller.id);
+    const storeId = await this.stores.currentStoreId();
+    const shift = await this.repo.findOpenByCashier(caller.id, storeId);
     return shift ? this.buildReport(shift) : null;
   }
 
@@ -41,7 +42,8 @@ export class ShiftsReadService {
     caller: AuthenticatedUser,
     id: string,
   ): Promise<ShiftRow> {
-    const shift = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const shift = await this.repo.findById(id, storeIds);
     if (!shift) throw new NotFoundException(`Shift ${id} not found`);
     if (shift.cashierId !== caller.id && !caller.permissions.has(MANAGE)) {
       throw new ForbiddenException('You may only view your own shifts');

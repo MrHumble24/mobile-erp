@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ConsignmentsWriteRepository } from './consignments.write.repository.js';
@@ -6,6 +6,12 @@ import { ConsignmentsWriteRepository } from './consignments.write.repository.js'
 const D = (n: number) => new Prisma.Decimal(n);
 
 function makeTx() {
+  const consignmentMock = {
+    findUnique: jest.fn(),
+    findFirst: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  };
   return {
     device: {
       findUnique: jest.fn(),
@@ -13,11 +19,7 @@ function makeTx() {
       updateMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     deviceStatusHistory: { create: jest.fn().mockResolvedValue({}) },
-    consignment: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
+    consignment: consignmentMock,
     sale: { create: jest.fn().mockResolvedValue({}) },
   };
 }
@@ -130,21 +132,21 @@ describe('ConsignmentsWriteRepository.createTransfer', () => {
 describe('ConsignmentsWriteRepository.settle', () => {
   it('rejects settling a consignment that is not OUT', async () => {
     const tx = makeTx();
-    tx.consignment.findUnique.mockResolvedValue({
+    tx.consignment.findFirst.mockResolvedValue({
       statusCode: 'SETTLED',
       storeId: 'store-1',
       agreedPrice: D(500),
       device: { id: 'd1', statusCode: 'SOLD', version: 1, landedCost: D(100) },
     });
-    await expect(build(tx).settle('c1', { soldById: 'u1' })).rejects.toThrow(
-      ConflictException,
-    );
+    await expect(
+      build(tx).settle('c1', { soldById: 'u1', storeId: 'store-1' }),
+    ).rejects.toThrow(ConflictException);
     expect(tx.sale.create).not.toHaveBeenCalled();
   });
 
   it('snapshots landed cost and defaults salePrice to agreedPrice', async () => {
     const tx = makeTx();
-    tx.consignment.findUnique.mockResolvedValue({
+    tx.consignment.findFirst.mockResolvedValue({
       statusCode: 'OUT',
       storeId: 'store-9',
       agreedPrice: D(500),
@@ -176,7 +178,7 @@ describe('ConsignmentsWriteRepository.settle', () => {
       createdById: 'u1',
       createdAt: new Date(),
     });
-    await build(tx).settle('c1', { soldById: 'u1' });
+    await build(tx).settle('c1', { soldById: 'u1', storeId: 'store-1' });
     expect(tx.sale.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         salePrice: D(500),
@@ -186,5 +188,43 @@ describe('ConsignmentsWriteRepository.settle', () => {
         storeId: 'store-9',
       }),
     });
+  });
+
+  it('rejects settling a consignment from another store (404, S4)', async () => {
+    const tx = makeTx();
+    tx.consignment.findFirst.mockResolvedValue(null);
+    await expect(
+      build(tx).settle('c1', { soldById: 'u1', storeId: 'store-1' }),
+    ).rejects.toThrow(NotFoundException);
+    expect(tx.consignment.findFirst).toHaveBeenCalledWith({
+      where: { id: 'c1', storeId: 'store-1' },
+      select: expect.any(Object),
+    });
+    expect(tx.sale.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects returnToStock when consignment belongs to another store (404, S4)', async () => {
+    const tx = makeTx();
+    tx.consignment.findFirst.mockResolvedValue(null);
+    await expect(
+      build(tx).returnToStock('c1', { changedById: 'u1', storeId: 'store-1' }),
+    ).rejects.toThrow(NotFoundException);
+    expect(tx.consignment.findFirst).toHaveBeenCalledWith({
+      where: { id: 'c1', storeId: 'store-1' },
+      select: expect.any(Object),
+    });
+  });
+
+  it('rejects createTransfer when unit belongs to another store (404, S4)', async () => {
+    const tx = makeTx();
+    tx.device.findFirst.mockResolvedValue(null);
+    await expect(build(tx).createTransfer(transfer)).rejects.toThrow(
+      NotFoundException,
+    );
+    expect(tx.device.findFirst).toHaveBeenCalledWith({
+      where: expect.objectContaining({ storeId: 'store-1' }),
+      select: expect.any(Object),
+    });
+    expect(tx.consignment.create).not.toHaveBeenCalled();
   });
 });

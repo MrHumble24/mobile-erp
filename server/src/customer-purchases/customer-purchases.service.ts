@@ -105,8 +105,8 @@ export class CustomerPurchasesService {
   async list(
     query: ListCustomerPurchasesQueryDto,
   ): Promise<CustomerPurchasePage> {
-    const storeId = await this.stores.currentStoreId();
-    const { items, total } = await this.repo.list(storeId, query);
+    const storeIds = await this.stores.currentStoreIds();
+    const { items, total } = await this.repo.list(storeIds, query);
     const accounts = await this.ledger.customerPurchaseAccounts(
       items.map((i) => i.id),
     );
@@ -119,7 +119,8 @@ export class CustomerPurchasesService {
   }
 
   async get(id: string): Promise<CustomerPurchaseView> {
-    const row = await this.repo.findById(id);
+    const storeIds = await this.stores.currentStoreIds();
+    const row = await this.repo.findById(id, storeIds);
     if (!row) throw new NotFoundException(`Customer purchase ${id} not found`);
     const account = (await this.ledger.customerPurchaseAccounts([id])).get(id);
     return toPurchaseView(row, account ?? null);

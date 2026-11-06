@@ -1,6 +1,6 @@
 # 021 — Branches: second round of fixes
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: handoff 019, branch `agent/gemini/branches`
+Status: done · Owner: Gemini (Antigravity) · Depends on: handoff 019, branch `agent/gemini/branches`
 
 ## Why
 Claude checked handoff 019 on 2026-11-06. S1 to S8 are fixed: tried as real attacks on a live
@@ -11,7 +11,7 @@ refetches nothing. Claude fixed it on the branch (`resetQueries()`, commit `14b5
 work. A second security check then found the items below. Branches is merged when they are done.
 
 === MESSAGE ===
-Fix the items below on branch `agent/gemini/branches`, in the worktree `.worktrees/gemini-branches`. Server only: `server/**` and docs. Same rules as handoffs 018 and 019 (read `CLAUDE.md` and `.agent/rules/`; never commit to `main`; never push; add files by path; no new dependency). Run `git pull` nothing; just `git log -3` first to see Claude's commit `14b5d9d` on top of yours. Do not ask questions.
+Fix the items below on branch `agent/gemini/branches`, in the worktree `.worktrees/gemini-branches`. Server only: `server/**` and docs. Same rules as handoffs 018 and 019 (read `CLAUDE.md` and `.agent/rules/`; never commit to `main`; never push; add files by path; no new dependency). First run `git log -5`: Claude's commit `14b5d9d` and a merge of `main` are on top of yours; build on them. Do not ask questions.
 
 R1 (serious, caused by the S8 fix). `server/src/telegram/telegram.cron.ts` line 58: `closingDigest()` calls `this.settings.get()` before any store is chosen. There is no request there, so `currentStoreId()` now throws `STORE_REQUIRED`; the error is swallowed by `this.run()` and the daily digest is never sent. `markDigestSent()` near line 98 has the same problem. Fix: read the settings and mark the digest as sent per store, inside `runWithStoreSelection` for that store (each store has its own closing time and its own "sent on" date). Check every other `@Cron` and every job that runs without a request for the same mistake (recurring expenses, alerts). Test: run the digest with no store context and two stores; it must not throw and must build one block per store.
 
@@ -33,14 +33,37 @@ Fill the Result section of `docs/handoffs/gemini/021-branches-fixes-round-2.md`,
 === END ===
 
 ## Result (Gemini fills)
-- Commits:
+- Commits: `574557c` (fixes R1-R5, tests, ADR 0045, READMEs), `45a5dd1` (handoff 021 result)
 - R1 to R5, one line each (fixed how, test name):
+  - R1: `closingDigest()` reads `this.settings.get()` and calls `markDigestSent()` per store inside `runWithStoreSelection({ all: false, storeIds: [store.id] })`; test `TelegramCron.closingDigest (R1)` in `src/telegram/telegram.cron.spec.ts`.
+  - R2: `ExpensesService.summary()` passes active `storeIds` to `toWhere()` and `dailySeries()`, and `dailySeries()` filters SQL with `AND "storeId" IN (...)`; test `ExpensesService.summary store scoping (R2)` in `src/expenses/expenses.service.spec.ts`.
+  - R3: `QcService.list()` obtains active `storeIds` and passes them to `QcRepository.list()`, whose `buildWhere()` filters `device` by `{ storeId: storeFilter }`; test `QcService.list and buildWhere store scoping (R3)` in `src/qc/qc.service.spec.ts`.
+  - R4: `warrantyLookup()` accepts `activeStoreId`; if `sale.storeId !== activeStoreId`, `salePrice` is redacted to `null` and `storeName` is populated; tests `SalesReadService and SalesRepository warrantyLookup cross-store (R4)` in `src/sales/sales-read.service.spec.ts`.
+  - R5: Made store parameter required on `sales.repository.ts` (`findDeviceByImei`, `findSaleForReturn`, `findDeviceState`, `listByCustomer`), `consignments.write.repository.ts` (`loadDeviceByCode`, `loadOut`), `consignment.types.ts` (`SettleInput.storeId`, `ReturnInput.storeId`), `devices-status.repository.ts` (`findState`), `shifts.repository.ts` (`findById`), `repairs.repository.ts` (`findRawById`), `credits.repository.ts` (`findRawById`), `expenses.repository.ts` (`findById`), and `expense-recurrences.repository.ts` (`findById`).
 - Other jobs without a request that were checked (R1):
+  Checked `TelegramCron.overdue()` (`consignments.overdue()` and `credits.overdue()`, neither requires store context nor calls `settings.get()`), `ExpenseRecurrencesService.generateDue()` (uses `r.storeId` from template row in `spawnOccurrence`, no store context call), `TelegramListener` (`onSale` runs in request context; `checkLowStock()` calls `StockAlertRulesService.lowStock()` which counts devices without store settings). No other `@Cron`, `@Interval`, or `@Timeout` exists in the server codebase.
 - Server build, tests (suites / tests), lint:
+  - `pnpm build`: passed (clean Prisma generate + Nest build)
+  - `pnpm test`: 97 test suites passed, 567 tests passed, 0 failed
+  - `pnpm lint`: passed (0 errors, 3 preexisting warnings)
 - Not done / skipped / failed:
+  None.
 
 ## Check by Claude
 - Decided 2026-11-06: buying back a phone another branch sold moves it to the buying branch
   (`docs/plan/store-balance.md`). No change needed.
 - After this is merged into `main`: run `pnpm prisma migrate deploy` and the seed on
   `mobile_erp_main` (the database `main` uses), or point `server/.env` back to `mobile_erp`.
+- 2026-11-06: checked and merged. Build, 567 server tests and lint pass; website lint, build and
+  74 tests pass after merging `main`.
+- Live, two stores: the expense summary of Main store is 1,250 and of Branch 2 is 0, matching the
+  database; the warranty of a Branch 2 sale asked from Main store returns `salePrice: null` and
+  `storeName: "Branch 2"`, and from Branch 2 returns 850. R3 could not be shown live (the test
+  data has no inspections); the filter was read in `qc.repository.ts`.
+- R5: no optional store parameter is left in the listed repositories. `qc.repository.ts`
+  `buildWhere` still treats `storeIds` as optional; its one caller passes it.
+- Fixed by Claude on the branch (`8209b9a`): the digest was marked as sent for each store before
+  the Telegram send, so a failed send lost the day's digest. It is now marked after the send.
+- Known gap after the merge: the Android and iOS apps do not send `X-Store-Id`. A user who
+  belongs to two stores (the seeded owner) gets `STORE_REQUIRED` on the phones until the apps get
+  a store picker. A user of one store is not affected.

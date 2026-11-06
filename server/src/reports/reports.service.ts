@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { toNumber } from '../common/lib/to-number.js';
+import { StoresService } from '../stores/stores.service.js';
 import {
   DailyClosingQueryDto,
   DateRangeQueryDto,
   ExpenseReportQueryDto,
   ModelPricingQueryDto,
 } from './dto/reports-query.dto.js';
-import { bucketStarts } from './lib/trend.js';
 import { withExpenseShare } from './lib/share.js';
+import { bucketStarts } from './lib/trend.js';
 import { ReportsDailyClosingRepository } from './reports-daily-closing.repository.js';
 import { ReportsExpensesRepository } from './reports-expenses.repository.js';
 import { ReportsModelPricingRepository } from './reports-model-pricing.repository.js';
@@ -28,20 +29,22 @@ export class ReportsService {
     private readonly expensesRepo: ReportsExpensesRepository,
     private readonly pricingRepo: ReportsModelPricingRepository,
     private readonly closingRepo: ReportsDailyClosingRepository,
+    private readonly stores: StoresService,
   ) {}
 
   async profit(query: DateRangeQueryDto): Promise<ProfitReport> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = parseDate(query.from);
     const to = parseDate(query.to);
     const [sales, retail, b2b, returns, expenses, discounts, bonus] =
       await Promise.all([
-        this.profitRepo.salesTotals(from, to),
-        this.profitRepo.channelRevenue('retail', from, to),
-        this.profitRepo.channelRevenue('b2b', from, to),
-        this.profitRepo.returnsRefunded(from, to),
-        this.profitRepo.expensesTotal(from, to),
-        this.profitRepo.discountsTotals(from, to),
-        this.profitRepo.bonusByType(from, to),
+        this.profitRepo.salesTotals(from, to, storeIds),
+        this.profitRepo.channelRevenue('retail', from, to, storeIds),
+        this.profitRepo.channelRevenue('b2b', from, to, storeIds),
+        this.profitRepo.returnsRefunded(from, to, storeIds),
+        this.profitRepo.expensesTotal(from, to, storeIds),
+        this.profitRepo.discountsTotals(from, to, storeIds),
+        this.profitRepo.bonusByType(from, to, storeIds),
       ]);
 
     const revenue = toNumber(sales._sum.salePrice);
@@ -73,14 +76,20 @@ export class ReportsService {
   async expenses(
     query: ExpenseReportQueryDto,
   ): Promise<ExpenseReportRowWithShare[]> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = parseDate(query.from);
     const to = parseDate(query.to);
     const rows =
       query.groupBy === 'month'
-        ? await this.expensesRepo.byMonth(from, to, query.categoryId)
+        ? await this.expensesRepo.byMonth(from, to, query.categoryId, storeIds)
         : query.groupBy === 'day'
-          ? await this.expensesRepo.byDay(from, to, query.categoryId)
-          : await this.expensesRepo.byCategory(from, to, query.categoryId);
+          ? await this.expensesRepo.byDay(from, to, query.categoryId, storeIds)
+          : await this.expensesRepo.byCategory(
+              from,
+              to,
+              query.categoryId,
+              storeIds,
+            );
     return withExpenseShare(rows);
   }
 
@@ -92,13 +101,14 @@ export class ReportsService {
   }
 
   async dailyClosing(query: DailyClosingQueryDto): Promise<DailyClosingReport> {
+    const storeIds = await this.stores.currentStoreIds();
     const from = startOfDay(query.date);
     const to = new Date(from.getTime() + DAY_MS);
     const [sales, expenses, newC, settledC] = await Promise.all([
-      this.closingRepo.salesForDay(from, to),
-      this.closingRepo.expensesForDay(from, to),
-      this.closingRepo.newConsignments(from, to),
-      this.closingRepo.settledConsignments(from, to),
+      this.closingRepo.salesForDay(from, to, storeIds),
+      this.closingRepo.expensesForDay(from, to, storeIds),
+      this.closingRepo.newConsignments(from, to, storeIds),
+      this.closingRepo.settledConsignments(from, to, storeIds),
     ]);
     const revenue = toNumber(sales._sum.salePrice);
     return {
@@ -115,8 +125,9 @@ export class ReportsService {
   async dailyClosingRange(
     query: DateRangeQueryDto,
   ): Promise<DailyClosingReport[]> {
+    const storeIds = await this.stores.currentStoreIds();
     const { from, to } = rangeOrDefault(query);
-    const rows = await this.closingRepo.rangeByDay(from, to);
+    const rows = await this.closingRepo.rangeByDay(from, to, storeIds);
     const byDay = new Map(
       rows.map((r) => [new Date(r.bucket).toISOString().slice(0, 10), r]),
     );

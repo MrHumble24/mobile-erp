@@ -24,9 +24,16 @@ export class ConsignmentsRepository {
     return row ? toConsignmentView(row) : null;
   }
 
-  async findById(id: string): Promise<ConsignmentView | null> {
-    const row = await this.prisma.consignment.findUnique({
-      where: { id },
+  async findById(
+    id: string,
+    storeIds?: string[],
+  ): Promise<ConsignmentView | null> {
+    const where: Prisma.ConsignmentWhereInput = {
+      id,
+      ...(storeIds?.length ? { storeId: { in: storeIds } } : {}),
+    };
+    const row = await this.prisma.consignment.findFirst({
+      where,
       include: withImei,
     });
     return row ? toConsignmentView(row) : null;
@@ -36,8 +43,9 @@ export class ConsignmentsRepository {
     filters: ConsignmentFilters,
     page: number,
     pageSize: number,
+    storeIds?: string[],
   ): Promise<ConsignmentPage> {
-    const where = buildConsignmentWhere(filters);
+    const where = buildConsignmentWhere(filters, new Date(), storeIds);
     const [rows, total] = await this.prisma.$transaction([
       this.prisma.consignment.findMany({
         where,
@@ -55,13 +63,20 @@ export class ConsignmentsRepository {
    * Tiles for the filtered set. Status/overdue are dropped from the base so the
    * breakdown (open, overdue, outstanding) is shown regardless of the tab.
    */
-  async stats(filters: ConsignmentFilters): Promise<ConsignmentStats> {
-    const base = buildConsignmentWhere({
-      partnerId: filters.partnerId,
-      search: filters.search,
-      from: filters.from,
-      to: filters.to,
-    });
+  async stats(
+    filters: ConsignmentFilters,
+    storeIds?: string[],
+  ): Promise<ConsignmentStats> {
+    const base = buildConsignmentWhere(
+      {
+        partnerId: filters.partnerId,
+        search: filters.search,
+        from: filters.from,
+        to: filters.to,
+      },
+      new Date(),
+      storeIds,
+    );
     const out: Prisma.ConsignmentWhereInput = { ...base, statusCode: 'OUT' };
     const [total, openCount, overdueCount, agg] =
       await this.prisma.$transaction([

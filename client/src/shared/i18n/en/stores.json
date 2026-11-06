@@ -1,0 +1,19 @@
+{
+  "title": "Stores",
+  "subtitle": "Manage branches and points of sale",
+  "newStore": "New Store",
+  "editStore": "Edit Store",
+  "storeName": "Store Name",
+  "namePlaceholder": "e.g., Branch 2",
+  "address": "Address",
+  "addressPlaceholder": "e.g., Malika Bozor, C-42",
+  "phone": "Phone",
+  "status": "Status",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "deactivate": "Deactivate",
+  "confirmDeactivate": "Are you sure you want to deactivate {name}?",
+  "deactivated": "Store deactivated",
+  "saved": "Store saved successfully",
+  "noStores": "No stores found"
+}

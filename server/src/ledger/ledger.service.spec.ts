@@ -25,6 +25,7 @@ function build(
   } as unknown as LedgerRepository;
   const stores = {
     currentStoreId: () => Promise.resolve(STORE),
+    currentStoreIds: () => Promise.resolve([STORE]),
   } as StoresService;
   return { service: new LedgerService(repo, stores), repo };
 }

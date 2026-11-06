@@ -15,6 +15,7 @@ export interface UserView {
   createdAt: string
   profile: UserProfileData | null
   roles: string[]
+  stores?: { id: string; name: string }[]
 }
 
 export interface CreateUserDto {
@@ -27,6 +28,7 @@ export interface CreateUserDto {
     telegramHandle?: string
   }
   roleCodes: string[]
+  storeIds?: string[]
 }
 
 export interface UpdateUserDto {
@@ -38,6 +40,7 @@ export interface UpdateUserDto {
     locale?: string
   }
   isActive?: boolean
+  storeIds?: string[]
 }
 
 export interface UserListFilters {

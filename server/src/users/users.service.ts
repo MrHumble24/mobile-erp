@@ -84,6 +84,7 @@ export class UsersService {
       passwordHash,
       profile: dto.profile,
       roleCodes: dto.roleCodes,
+      storeIds: dto.storeIds,
     });
   }
 

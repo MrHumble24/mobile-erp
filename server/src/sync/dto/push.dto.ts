@@ -31,6 +31,10 @@ export class MutationDto {
   @Min(0)
   baseVersion?: number;
 
+  @IsOptional()
+  @IsUUID()
+  storeId?: string;
+
   @IsString()
   occurredAt!: string;
 }

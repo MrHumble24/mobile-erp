@@ -12,6 +12,7 @@ import { toast } from "@/shared/ui/sonner"
 import { UserProfileForm } from "./UserProfileForm"
 import { UserRolesSection } from "./UserRolesSection"
 import { UserPermissionMatrix } from "./UserPermissionMatrix"
+import { UserStoresSection } from "./UserStoresSection"
 import { ResetPasswordDialog } from "./ResetPasswordDialog"
 
 function StatusActions({ user, isSelf }: { user: UserView; isSelf: boolean }) {
@@ -67,6 +68,7 @@ function DetailBody({ user, isSelf }: { user: UserView; isSelf: boolean }) {
         <TabsList>
           <TabsTrigger value="profile">{t("users.tabProfile")}</TabsTrigger>
           <TabsTrigger value="roles">{t("users.roles")}</TabsTrigger>
+          <TabsTrigger value="stores">{t("users.stores")}</TabsTrigger>
           <TabsTrigger value="permissions">{t("users.tabOverrides")}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-4">
@@ -74,6 +76,9 @@ function DetailBody({ user, isSelf }: { user: UserView; isSelf: boolean }) {
         </TabsContent>
         <TabsContent value="roles" className="mt-4">
           <UserRolesSection user={user} isSelf={isSelf} />
+        </TabsContent>
+        <TabsContent value="stores" className="mt-4">
+          <UserStoresSection user={user} />
         </TabsContent>
         <TabsContent value="permissions" className="mt-4">
           <UserPermissionMatrix user={user} isSelf={isSelf} />

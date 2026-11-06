@@ -28,16 +28,20 @@ export class ExpenseRecurrencesRepository {
     private readonly ledger: LedgerService,
   ) {}
 
-  findAll() {
+  findAll(storeIds?: string[]) {
     return this.prisma.expenseRecurrence.findMany({
+      where: storeIds?.length ? { storeId: { in: storeIds } } : {},
       include: INCLUDE,
       orderBy: [{ isActive: 'desc' }, { nextDueAt: 'asc' }],
     });
   }
 
-  findById(id: string) {
-    return this.prisma.expenseRecurrence.findUnique({
-      where: { id },
+  findById(id: string, storeIds: string[]) {
+    return this.prisma.expenseRecurrence.findFirst({
+      where: {
+        id,
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
+      },
       include: INCLUDE,
     });
   }

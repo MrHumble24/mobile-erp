@@ -7,10 +7,10 @@ import type {
   LedgerTransferDto,
 } from "./ledger.types"
 
-export function useLedgerBalances() {
+export function useLedgerBalances(allStores?: boolean) {
   return useQuery({
-    queryKey: ledgerKeys.balances(),
-    queryFn: () => ledgerRepository.balances(),
+    queryKey: ledgerKeys.balances(allStores),
+    queryFn: () => ledgerRepository.balances(allStores),
   })
 }
 

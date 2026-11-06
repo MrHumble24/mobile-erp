@@ -65,7 +65,9 @@ export class QcRepository {
   }
 }
 
-function buildWhere(filters: InspectionFilters): Prisma.QcInspectionWhereInput {
+export function buildWhere(
+  filters: InspectionFilters,
+): Prisma.QcInspectionWhereInput {
   const where: Prisma.QcInspectionWhereInput = {};
   if (filters.deviceId) where.deviceId = filters.deviceId;
   if (filters.imei) where.device = unitCodeWhere(filters.imei);
@@ -79,6 +81,19 @@ function buildWhere(filters: InspectionFilters): Prisma.QcInspectionWhereInput {
     where.inspectedAt = {};
     if (filters.from) where.inspectedAt.gte = filters.from;
     if (filters.to) where.inspectedAt.lte = filters.to;
+  }
+  if (filters.storeIds) {
+    const storeFilter =
+      filters.storeIds.length === 1
+        ? filters.storeIds[0]
+        : { in: filters.storeIds };
+    if (where.device) {
+      where.device = {
+        AND: [where.device, { storeId: storeFilter }],
+      };
+    } else {
+      where.device = { storeId: storeFilter };
+    }
   }
   return where;
 }

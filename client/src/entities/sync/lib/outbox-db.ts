@@ -34,3 +34,7 @@ export async function getCursor(): Promise<string | null> {
 export function setCursor(cursor: string): Promise<void> {
   return idbPut(STORES.meta, cursor, CURSOR_KEY)
 }
+
+export function clearCursor(): Promise<void> {
+  return idbDelete(STORES.meta, CURSOR_KEY)
+}

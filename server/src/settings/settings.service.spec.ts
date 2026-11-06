@@ -23,6 +23,7 @@ function build() {
     upsert: jest.fn().mockResolvedValue(ROW),
   };
   const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store-1'),
     getIdentity: jest
       .fn()
       .mockResolvedValue({ name: 'Malika', address: 'Chorsu', phone: '+998' }),
@@ -66,7 +67,8 @@ describe('SettingsService', () => {
       address: 'New Addr',
       phone: '+111',
     });
-    const persisted = repo.upsert.mock.calls[0][0];
+    expect(repo.upsert.mock.calls[0][0]).toBe('store-1');
+    const persisted = repo.upsert.mock.calls[0][1];
     expect(persisted).not.toHaveProperty('storeName');
     expect(persisted).toMatchObject({ closingTime: '19:00' });
   });

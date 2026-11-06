@@ -3,6 +3,7 @@ import {
   ArrayUnique,
   IsArray,
   IsEmail,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -28,4 +29,10 @@ export class CreateUserDto {
   @ArrayUnique()
   @IsString({ each: true })
   roleCodes!: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  storeIds?: string[];
 }

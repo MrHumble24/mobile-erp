@@ -24,7 +24,10 @@ function build() {
     shiftRows: jest.fn().mockResolvedValue([]),
     shiftDifferences: jest.fn().mockResolvedValue(new Map()),
   };
-  const stores = { currentStoreId: jest.fn().mockResolvedValue('store1') };
+  const stores = {
+    currentStoreId: jest.fn().mockResolvedValue('store1'),
+    currentStoreIds: jest.fn().mockResolvedValue(['store1']),
+  };
   const service = new ShiftsReadService(
     repo as never,
     ledger as never,

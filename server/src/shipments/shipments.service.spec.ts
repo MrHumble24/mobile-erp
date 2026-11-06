@@ -43,6 +43,7 @@ function build(
   } as unknown as DeviceModelsService;
   const stores = {
     currentStoreId: jest.fn().mockResolvedValue('store-1'),
+    currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
   } as unknown as StoresService;
   const ledger = {} as unknown as LedgerService;
   const stock = {

@@ -2,6 +2,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AccessService } from '../access/access.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { AuthRepository } from './auth.repository.js';
 import { LoginDto } from './dto/login.dto.js';
 import { MeView } from './types/auth.types.js';
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly repo: AuthRepository,
     private readonly jwt: JwtService,
     private readonly access: AccessService,
+    private readonly stores: StoresService,
   ) {}
 
   async login(dto: LoginDto): Promise<{ accessToken: string; user: MeView }> {
@@ -47,6 +49,15 @@ export class AuthService {
     const identity = await this.repo.findIdentity(userId);
     if (!identity) throw new UnauthorizedException('User no longer exists');
     const permissions = await this.access.getEffectivePermissions(userId);
-    return { ...identity, permissions: [...permissions] };
+    const userStores = await this.stores.storesForUser({
+      id: userId,
+      email: identity.email,
+      permissions,
+    });
+    return {
+      ...identity,
+      permissions: [...permissions],
+      stores: userStores.map((s) => ({ id: s.id, name: s.name })),
+    };
   }
 }

@@ -1,6 +1,7 @@
 import { useLocation } from "react-router"
 import { PanelLeftClose, PanelLeftOpen, Search, ShoppingCart } from "lucide-react"
 import { useAuthStore } from "@/features/auth"
+import { StorePicker } from "@/features/switch-store"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
@@ -47,7 +48,7 @@ function HeaderCenterActions({ onOpenSearch }: { onOpenSearch: () => void }) {
     <Button
       variant="outline"
       onClick={onOpenSearch}
-      className="hidden md:flex items-center justify-start gap-2.5 h-9 px-3.5 rounded-full bg-[#f8f9fa] border border-[#e8e8e8] text-xs font-normal text-[#838383] hover:border-[#b3b3b3] hover:text-[#202020] transition-colors cursor-pointer w-48 lg:w-72 shadow-none"
+      className="hidden lg:flex items-center justify-start gap-2.5 h-9 px-3.5 rounded-full bg-[#f8f9fa] border border-[#e8e8e8] text-xs font-normal text-[#838383] hover:border-[#b3b3b3] hover:text-[#202020] transition-colors cursor-pointer w-48 lg:w-72 shadow-none"
     >
       <Search className="size-4 text-[#838383] shrink-0" />
       <span className="truncate flex-1 text-left">{t("nav.searchPlaceholder")}</span>
@@ -75,7 +76,7 @@ function HeaderRightActions({
       <Button
         variant="ghost"
         size="icon"
-        className="md:hidden size-9 rounded-full text-[#646464]"
+        className="lg:hidden size-9 rounded-full text-[#646464]"
         onClick={onOpenSearch}
         aria-label={t("nav.searchPlaceholder")}
       >
@@ -92,6 +93,7 @@ function HeaderRightActions({
         </Link>
       )}
 
+      <StorePicker />
       <SyncStatusIndicator />
 
       <Button

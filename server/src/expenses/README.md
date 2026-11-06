@@ -20,12 +20,12 @@ Operational expense ledger + recurring templates (PRD Module 5).
     (description+vendor), `minAmount`/`maxAmount`, `isRecurring`; `sort`
     (`incurredAt|amount|createdAt`) + `dir`; paginated. `expense.read`.
   - `GET /summary?from&to` — `{ total, previousTotal, count, byCategory[],
-    topCategory, daily[] }`. `expense.read`.
+    topCategory, daily[] }` scoped to active store(s). `expense.read`.
   - `GET :id`, `POST`, `PATCH :id`, `DELETE :id` (soft delete) — `expense.manage`.
-    Create takes `accountCode?` (default CASH); every response carries the
-    derived `accountCode`. Create posts an `EXPENSE` row; an amount edit posts
-    the difference, an `accountCode` move reverses the old and posts the new, a
-    soft delete reverses — never an edit of a row (ADR 0025).
+    `findById` strictly scopes by active store (`storeIds`). Create takes `accountCode?`
+    (default CASH); every response carries the derived `accountCode`. Create posts an
+    `EXPENSE` row; an amount edit posts the difference, an `accountCode` move reverses
+    the old and posts the new, a soft delete reverses — never an edit of a row (ADR 0025).
 - REST `/expense-recurrences`: `GET`, `POST`, `PATCH :id`,
   `POST /generate` (spawn all due). Reads `expense.read`, writes `expense.manage`.
   Template stores `accountCode` (default CASH); each spawned expense posts its

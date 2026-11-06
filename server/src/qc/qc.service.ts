@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { DevicesService } from '../devices/devices.service.js';
+import { StoresService } from '../stores/stores.service.js';
 import { CreateInspectionDto } from './dto/create-inspection.dto.js';
 import { ListInspectionsDto } from './dto/list-inspections.dto.js';
 import { QcLookupsRepository } from './qc-lookups.repository.js';
@@ -22,6 +23,7 @@ export class QcService {
     private readonly repo: QcRepository,
     private readonly lookups: QcLookupsRepository,
     private readonly devices: DevicesService,
+    private readonly stores: StoresService,
   ) {}
 
   async createInspection(
@@ -41,9 +43,10 @@ export class QcService {
     return inspection;
   }
 
-  list(dto: ListInspectionsDto): Promise<PaginatedInspections> {
+  async list(dto: ListInspectionsDto): Promise<PaginatedInspections> {
     const { page, pageSize } = dto;
-    return this.repo.list(toFilters(dto), page, pageSize);
+    const storeIds = await this.stores.currentStoreIds();
+    return this.repo.list({ ...toFilters(dto), storeIds }, page, pageSize);
   }
 
   /** QC pass/fail drives the device between IN_STOCK and DEFECTIVE. */

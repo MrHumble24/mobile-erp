@@ -6,6 +6,7 @@ import { PartnersModule } from '../partners/partners.module.js';
 import { ReportsModule } from '../reports/reports.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
 import { StockAlertRulesModule } from '../stock-alert-rules/stock-alert-rules.module.js';
+import { StoresModule } from '../stores/stores.module.js';
 import { TelegramCron } from './telegram.cron.js';
 import { TelegramListener } from './telegram.listener.js';
 import { TelegramService } from './telegram.service.js';
@@ -19,6 +20,7 @@ import { TelegramService } from './telegram.service.js';
     ReportsModule,
     LedgerModule,
     CreditsModule,
+    StoresModule,
   ],
   providers: [TelegramService, TelegramListener, TelegramCron],
 })
