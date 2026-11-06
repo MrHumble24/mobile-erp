@@ -110,6 +110,8 @@ export class StorefrontOrdersRepository {
         model: { select: { brand: true, name: true } },
         priceSnapshot: true,
         deliveryFeeSnapshot: true,
+        paymentMethodCode: true,
+        payments: { select: { statusCode: true } },
       },
     });
   }

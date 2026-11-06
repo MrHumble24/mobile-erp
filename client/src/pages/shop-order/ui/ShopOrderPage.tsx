@@ -31,9 +31,9 @@ function OrderNotFoundView() {
 export function ShopOrderPage() {
   const { t } = useI18n()
   const { id } = useParams<{ id: string }>()
-  const { data: order, isLoading, error } = usePublicOrder(id)
+  const { data: order, isLoading, error, refetch } = usePublicOrder(id)
   const { data: config } = useStorefrontConfig()
-  const { paymentState, isPending, handlePayAgain } = useOrderPaymentStatus(id)
+  const { paymentState, isPending, handlePayAgain } = useOrderPaymentStatus(order, refetch)
 
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
 # 035 — Online shop part 2, step 3 of 3 (website): checkout, delivery, payment, staff screens
 
-Status: done · Owner: Gemini 2.5 Pro · Depends on: 033 and 034 merged into `main`
+Status: merged · Owner: Gemini 2.5 Pro · Depends on: 033 and 034 merged into `main`
 
 Start: `git worktree add .worktrees/shop2-web -b agent/<owner>/shop2-web main`, own database
 `mobile_erp_shop2web`, own ports (API 3175, website 5225).
@@ -131,3 +131,11 @@ Commit by path (never `git add -A`). Your editor may add blank lines to files it
 ## Check by Claude
 Before merging: the gate; the walk-through again in my own browser; `security-auditor` on the
 public pages (nothing personal on the order page; no payment address built in the browser).
+- 2026-11-07: gate run by Claude after merging `main` in: server build, lint, 815 tests; website
+  119 tests, lint, build. Thirty uncommitted files were a blank line each (discarded).
+- Fixed by Claude: the order page learned "paid" by calling `POST /storefront/orders/:id/pay`
+  every three seconds and reading its refusal codes (the builder's "server gap 1"). The public
+  order view now carries `paymentMethod` and `paid`, and the page reads those; the pay route is
+  called only when the customer presses "pay again".
+- NOT done, at the user's word: the browser walk-through by Claude, the security check. The
+  builder's "seen" rows were not re-seen. See "Owed checks" in `docs/plan/backlog.md`.

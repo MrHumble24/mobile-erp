@@ -134,4 +134,6 @@ export interface PublicStorefrontOrderView {
   productName: string
   priceSnapshot: string | null
   deliveryFeeSnapshot: string
+  paymentMethod: string
+  paid: boolean
 }

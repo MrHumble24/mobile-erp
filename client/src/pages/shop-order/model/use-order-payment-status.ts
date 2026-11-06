@@ -1,6 +1,5 @@
 import * as React from "react"
-import { httpErrorCode } from "@/shared/api/http"
-import { usePayStorefrontOrder } from "@/entities/storefront"
+import { usePayStorefrontOrder, type PublicStorefrontOrderView } from "@/entities/storefront"
 
 export type PaymentState =
   | "CHECKING"
@@ -10,59 +9,49 @@ export type PaymentState =
   | "TIMEOUT"
   | "TERMINAL"
 
-function classifyPaymentError(err: unknown): PaymentState {
-  const code = httpErrorCode(err)
-  if (code === "ORDER_ALREADY_PAID") return "PAID"
-  if (code === "NOT_AN_ONLINE_ORDER") return "ON_RECEIPT"
-  if (code === "ORDER_TERMINAL") return "TERMINAL"
-  return "UNPAID"
-}
+const POLL_MS = 3000
+const POLL_LIMIT = 20
 
-export function useOrderPaymentStatus(orderId?: string) {
+/**
+ * What the order page says about payment. "Paid" comes only from the server's
+ * public order view (`paid`), never from the address bar. While an online order
+ * is unpaid the page asks the server again every few seconds, for about a minute.
+ */
+export function useOrderPaymentStatus(
+  order: PublicStorefrontOrderView | undefined,
+  refetch: () => Promise<unknown>
+) {
   const payMutation = usePayStorefrontOrder()
-  const [paymentState, setPaymentState] = React.useState<PaymentState>("CHECKING")
-  const [checkoutUrl, setCheckoutUrl] = React.useState<string | null>(null)
   const [attempts, setAttempts] = React.useState(0)
 
-  const checkPayment = React.useCallback(async () => {
-    if (!orderId) return
-    try {
-      const res = await payMutation.mutateAsync({ id: orderId })
-      setCheckoutUrl(res.checkoutUrl)
-      setPaymentState("UNPAID")
-    } catch (err: unknown) {
-      setPaymentState(classifyPaymentError(err))
-    }
-  }, [orderId, payMutation])
-
-  React.useEffect(() => {
-    checkPayment()
-  }, [checkPayment])
+  const paymentState: PaymentState = !order
+    ? "CHECKING"
+    : order.paid
+      ? "PAID"
+      : order.paymentMethod !== "ONLINE"
+        ? "ON_RECEIPT"
+        : order.statusCode === "CANCELLED" || order.statusCode === "DONE"
+          ? "TERMINAL"
+          : attempts >= POLL_LIMIT
+            ? "TIMEOUT"
+            : "UNPAID"
 
   React.useEffect(() => {
     if (paymentState !== "UNPAID") return
-    if (attempts >= 20) {
-      setPaymentState("TIMEOUT")
-      return
-    }
-    const timer = setTimeout(() => {
-      setAttempts((prev) => prev + 1)
-      checkPayment()
-    }, 3000)
+    const timer = setTimeout(async () => {
+      await refetch()
+      setAttempts((n) => n + 1)
+    }, POLL_MS)
     return () => clearTimeout(timer)
-  }, [paymentState, attempts, checkPayment])
+  }, [paymentState, attempts, refetch])
 
   const handlePayAgain = () => {
-    if (checkoutUrl) {
-      window.location.href = checkoutUrl
-    } else if (orderId) {
-      payMutation.mutate({ id: orderId }, {
-        onSuccess: (res) => {
-          window.location.href = res.checkoutUrl
-        },
-      })
-    }
+    if (!order) return
+    payMutation.mutate(
+      { id: order.id },
+      { onSuccess: (res) => { window.location.href = res.checkoutUrl } }
+    )
   }
 
-  return { paymentState, checkoutUrl, isPending: payMutation.isPending, handlePayAgain }
+  return { paymentState, isPending: payMutation.isPending, handlePayAgain }
 }
