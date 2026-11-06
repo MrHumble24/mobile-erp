@@ -30,6 +30,16 @@ export function isNetworkError(err: unknown): err is NetworkError {
   return err instanceof NetworkError
 }
 
+/**
+ * The stable server `code` on a failed response (e.g. `BONUS_DISABLED`), also
+ * read from a small wrapper that copied it (checkout's `CheckoutLineError`).
+ */
+export function httpErrorCode(err: unknown): string | undefined {
+  const source = err instanceof HttpError ? err.data : err
+  const code = (source as { code?: unknown } | null | undefined)?.code
+  return typeof code === "string" ? code : undefined
+}
+
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
 interface RequestOptions {
@@ -67,7 +77,8 @@ export function configureHttp(options: {
 }
 
 /** The API origin. Exported so an `<img>` can load a `/uploads/...` asset path. */
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000"
+const viteEnv = (import.meta as ImportMeta & { env?: { VITE_API_URL?: string } }).env
+export const API_BASE_URL = viteEnv?.VITE_API_URL || "http://localhost:3000"
 
 /** Turns a server-relative asset path (`/uploads/x.png`) into an absolute URL. */
 export function apiAssetUrl(path: string | null | undefined): string | null {

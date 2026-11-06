@@ -1,3 +1,4 @@
+import * as React from "react"
 import { ImageOff } from "lucide-react"
 import { apiAssetUrl } from "@/shared/api/http"
 import { cn } from "@/shared/lib/utils"
@@ -18,7 +19,16 @@ export interface AssetImageProps {
  */
 export function AssetImage({ path, alt, className, iconClassName }: AssetImageProps) {
   const src = apiAssetUrl(path)
-  if (!src) {
+  const [failedSrc, setFailedSrc] = React.useState<string | null>(null)
+  const [previousSrc, setPreviousSrc] = React.useState(src)
+
+  // A new path gets its own try: forget which source failed when the source changes.
+  if (previousSrc !== src) {
+    setPreviousSrc(src)
+    setFailedSrc(null)
+  }
+
+  if (!src || failedSrc === src) {
     return (
       <div
         className={cn(
@@ -32,5 +42,13 @@ export function AssetImage({ path, alt, className, iconClassName }: AssetImagePr
       </div>
     )
   }
-  return <img src={src} alt={alt} loading="lazy" className={cn("object-cover", className)} />
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      className={cn("object-cover", className)}
+      onError={() => setFailedSrc(src)}
+    />
+  )
 }

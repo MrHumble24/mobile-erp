@@ -1,0 +1,29 @@
+// ---------------------------------------------------------------------------
+// Danger zone: erase the shop's data (ADR 0057). This is the KEPT record of
+// every erase — it is never itself erased. `performedById` is a userId string
+// (not an FK: the erase keeps users, but keeping this self-contained mirrors
+// restore_runs). `rowsErased` is a JSONB map { tableName: count } (open-ended
+// by database.md). Reuses the backup_run_statuses lookup (RUNNING/SUCCESS/
+// FAILED) like restore_runs — no new status table, no enum.
+// ---------------------------------------------------------------------------
+
+model DataWipeRun {
+  id            String          @id @default(uuid())
+  performedById String
+  /// Whether the optional extra groups were included in this erase.
+  contacts      Boolean         @default(false)
+  catalog       Boolean         @default(false)
+  /// The pre-erase safety backup (restore it to undo the erase).
+  safetyRunId   String?
+  /// { "sales": 12, "devices": 7, ... } — rows deleted per table.
+  rowsErased    Json            @default("{}") @db.JsonB
+  startedAt     DateTime        @default(now())
+  finishedAt    DateTime?
+  statusCode    String
+  status        BackupRunStatus @relation(fields: [statusCode], references: [code])
+  error         String?
+  createdAt     DateTime        @default(now())
+
+  @@index([startedAt])
+  @@map("data_wipe_runs")
+}

@@ -4,9 +4,9 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
-- Online storefront, server and website: `docs/handoffs/gemini/022`. Gemini reports it done (branch `agent/gemini/storefront`); waiting for Claude's check.
-- First-boot setup, in-app configuration, branding and themes: `docs/handoffs/gemini/024`. Given to Gemini by the user; Gemini reports it done (branch `agent/gemini/setup`); waiting for Claude's check. It built its own secrets store at the same time as the backup work did; the two must be joined into one before both are merged.
+- Online storefront, server and website (`docs/handoffs/gemini/022`): checked by Claude on 2026-11-06, no critical or serious security problem; a fix list is with Gemini (`docs/handoffs/gemini/025-storefront-fixes.md`). Merged when that is done.
+- First-boot setup, branding and themes (`docs/handoffs/gemini/024`): checked by Claude on 2026-11-06 and not mergeable yet: the wizard cannot finish from the screen, there are two secrets stores, themes are half done, one serious security item. Fix list: `docs/handoffs/gemini/026-setup-fixes.md`.
+- Danger zone (erase the shop's data): `docs/handoffs/opus48/002-danger-zone.md`. Started 2026-11-06 with Opus 4.8, Claude running and checking it.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
@@ -17,8 +17,7 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
-| Step 11 website: buy-back messages and the ADR for the step (part 7) | part 6 merged | OpenCode 009. |
-| Uzbek for all the English text added by step 11 on the website | part 7 merged | For Gemini, one pass. |
+| Uzbek for all the English text added by step 11 on the website (handoffs 003 to 009), and a native check of the Uzbek written by Opus 4.8 for backups and the danger zone | nothing: step 11 on the website is merged | For Gemini, one pass. |
 | Branches on the phone apps (store picker, the store sent with every request) | nothing | Until then a user of two stores gets an error on the phones. |
 | Step 11 on the phone apps (bonus points, printing, buy-back) | step 11 website done | Android and iOS. |
 | Storefront orders on the phone apps | handoff 022 merged | Read the list, change the status. |

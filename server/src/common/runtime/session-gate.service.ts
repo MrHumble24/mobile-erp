@@ -41,6 +41,17 @@ export class SessionGateService implements OnModuleInit {
     }
   }
 
+  /**
+   * The reset cutoff in unix seconds: the moment the last erase or restore ended
+   * every session (0 if there has never been one). An offline mutation whose
+   * `occurredAt` is before this belongs to the shop as it was before the reset,
+   * so the sync path drops it rather than replaying it into the clean data.
+   */
+  async cutoffSec(): Promise<number> {
+    await this.ensureLoaded();
+    return this.validAfterSec;
+  }
+
   /** A token is valid only if the cutoff is known and it was issued at/after it. */
   async isValid(iatSec: number | undefined): Promise<boolean> {
     if (!(await this.ensureLoaded())) return false;

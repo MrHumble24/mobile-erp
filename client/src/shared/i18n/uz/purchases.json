@@ -20,6 +20,7 @@
   "buyHint": "Mijozdan ishlatilgan qurilma sotib olish",
   "buySuccess": "Qurilma sotib olindi va omborga qo'shildi",
   "buyConflict": "Ushbu IMEI yoki seriya raqami allaqachon mavjud",
+  "buyNotSold": "This phone is not a sold unit, so it cannot be bought back.",
   "boughtFromCustomer": "Mijozdan sotib olingan",
   "boughtFromTitle": "Ushbu mijozdan sotib olingan",
   "tradeInAction": "Trade-in",

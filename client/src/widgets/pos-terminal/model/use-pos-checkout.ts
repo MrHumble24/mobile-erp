@@ -19,7 +19,7 @@ function failureMessage(
   err: CheckoutLineError,
   t: (k: string, p?: Record<string, string | number>) => string
 ) {
-  const bonusKey = checkoutErrorKey(err.code)
+  const bonusKey = checkoutErrorKey(err)
   const reason =
     bonusKey
       ? t(bonusKey)

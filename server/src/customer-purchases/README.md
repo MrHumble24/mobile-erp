@@ -48,3 +48,5 @@ imei2,serialNumber,model}, pricePaid, accountCode|null, saleId|null, soldBy, occ
 - Undo a trade-in purchase when its sale is returned — the phone stays ours.
 - Post a ledger row for a trade-in (its value netted the sale total).
 - Expose `pricePaid` unredacted. Reach past `LedgerService` into its repository.
+
+Refusing a unit that is already ours and not SOLD answers 409 with `code: PURCHASE_UNIT_EXISTS`.
