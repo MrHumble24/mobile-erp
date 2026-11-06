@@ -1,6 +1,6 @@
 # 022 — Online storefront, first version (server and website)
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` at or after "Merge paying with points at the till"
+Status: done · Owner: Gemini (Antigravity) · Depends on: `main` at or after "Merge paying with points at the till"
 
 ## Why
 The client wants customers to see what is in stock on a public web page and leave an order. No
@@ -82,12 +82,170 @@ Fill the Result section of `docs/handoffs/gemini/022-online-storefront.md` and s
 
 ## Result (Gemini fills)
 - Branch / commits:
+  - Branch: `agent/gemini/storefront` in `.worktrees/gemini-storefront`
+  - Part 1 commit: `a98abc1` ("feat(server): online storefront public routes, order intake and staff order management")
+  - Part 2 commit: `98c0b4a` ("feat(client): storefront public pages, order placement and staff order management")
 - Migration name:
+  - `20261106014718_storefront`
 - Server build, tests (suites / tests, before → after), lint:
+  - Test suites: 98 passed → 101 passed (+3 suites: `storefront.service.spec.ts`, `storefront-orders.service.spec.ts`, `storefront.leak.spec.ts`)
+  - Tests: 569 passed → 593 passed (+24 unit, leak, and authorization tests)
+  - Lint: 0 errors
+  - Build: clean (`npx prisma generate && nest build`)
 - Website tests, lint, build:
+  - Tests: 82 passed → 85 passed (+3 tests in `src/entities/order/lib/order-status.spec.ts`)
+  - Lint: 0 errors (`oxlint`)
+  - Build: clean (`tsc -b && vite build`)
 - Browser walk-through, each step: seen / not seen, and the numbers:
+  1. Turn the storefront on (in settings): **seen** (PUT `/storefront/settings` returned 200 `{ enabled: true, showPrices: true, contactPhone: "+998 71 200 00 00", contactTelegram: "@malikastore", categoryIds: [] }`)
+  2. Open `/shop` in a private window (not signed in): **seen** (unauthenticated browser opened `http://localhost:5190/shop` without redirect to `/login`; rendered header with store brand, phone, Telegram, search input, category filters, and product grid)
+  3. The stock shown for one phone model equals what the till's catalog shows for the same model, added over both stores: **seen** (iPhone 16 Pro Max till catalog: Main store = 2 in stock, Branch 2 = 1 in stock, total = 3; `/shop` product card displayed "3 dona mavjud", "Main store", "Branch 2", "dan $9,500,000")
+  4. Place an order for Branch 2: **seen** (opened order modal for iPhone 16 Pro Max, entered name "Ali Valiyev", phone "+998 90 123 45 67", selected "Branch 2", submitted order; received 201 `{ id: "f8e98fff-fdc2-4fd3-a2c8-eed9ba239967" }`)
+  5. It appears in `/orders` only when the active store is Branch 2: **seen** (GET `/storefront-orders` with `X-Store-Id: fd32393a-e9d5-46ab-b87c-48b07a692247` [Branch 2] lists order `f8e98fff-fdc2-4fd3-a2c8-eed9ba239967` with status `NEW` [4 total orders for Branch 2]; with `X-Store-Id: a4fecb82-bc76-4299-b65c-97121e2ae8bf` [Main store] returns 0 occurrences of this order [6 orders for Main store])
+  6. Move it to CONTACTED then DONE: **seen** (PATCH `/storefront-orders/f8e98fff-fdc2-4fd3-a2c8-eed9ba239967/status` with `statusCode: "CONTACTED"` returned status `CONTACTED`; subsequent PATCH with `statusCode: "DONE"` returned status `DONE`)
+  7. Place a second one and cancel it: **seen** (placed second order `7cabf6f5-5ff2-414d-8f75-73fd4b6961b0` for Branch 2; PATCH status with `statusCode: "CANCELLED"` returned status `CANCELLED`)
+  8. Turn prices off and see "ask": **seen** (PUT `/storefront/settings` with `showPrices: false`; `/shop` cards updated price display to "Narxni so'rang" / "Ask")
+  9. Turn the storefront off and see the "not available" message: **seen** (PUT `/storefront/settings` with `enabled: false`; `/shop` rendered "Do'kon sahifasi hozirda mavjud emas" / "The shop page is not available")
+  10. Open `/shop` at 390 wide: **seen** (emulated 390x844 viewport; `window.innerWidth: 390`, `body.scrollWidth: 390`, no horizontal overflow, 10 cards displayed responsively)
 - Decisions taken:
+  - Documented in `docs/decisions/0049-storefront.md` (server) and `docs/decisions/0050-client-storefront.md` (website).
+  - Storefront settings modeled as a company-wide singleton row (`id = 1`) in `storefront_settings` (not per-store).
+  - Reverse relations placed across `stores.prisma`, `catalog.prisma`, `sales.prisma`, `auth.prisma` keeping each schema under 150 lines.
+  - Strict data-shaping responses via DTOs/types prevent leakage of IMEI, serial numbers, unit IDs, purchase/landed costs, QC grades/notes, and permissions. Verified by automated leak test suite `storefront.leak.spec.ts`.
+  - Rate limiting enforced via NestJS throttler (5 orders/min on order intake, 120/min on catalog reads).
+  - Honeypot field `hp` accepted as 201 and dropped silently to protect against automated bots.
+  - Public pages (`/shop`, `/shop/:modelId`) mounted outside AppShell with lightweight public header; `client/src/shared/api/http.ts` extended with `public?: boolean` to suppress auth headers and 401 redirects.
+  - Staff orders page (`/orders`) mounted under `order.read` inside AppShell with live badge polling `/storefront-orders/stats`.
 - **Contract for the phone apps** (the staff routes for orders: request and response shapes, permissions, status codes, error codes):
+  - **1. List orders for active store**:
+    - `GET /storefront-orders?status&from&to&page&pageSize`
+    - Permission: `order.read`
+    - Headers: `Authorization: Bearer <token>`, `X-Store-Id: <storeId>`
+    - Query parameters:
+      - `status`: optional string enum filter (`NEW`, `CONTACTED`, `DONE`, `CANCELLED`)
+      - `from`: optional ISO date string
+      - `to`: optional ISO date string
+      - `page`: optional integer (default 1)
+      - `pageSize`: optional integer (default 20, max 100)
+    - Response: `200 OK`
+      ```json
+      {
+        "items": [
+          {
+            "id": "uuid",
+            "storeId": "uuid",
+            "storeName": "string",
+            "modelId": "uuid",
+            "brand": "string",
+            "productName": "string",
+            "specs": { "color": "white", "storage": "256gb" },
+            "customerName": "string",
+            "customerPhone": "string",
+            "note": "string | null",
+            "statusCode": "NEW | CONTACTED | DONE | CANCELLED",
+            "statusLabel": "New | Contacted | Done | Cancelled",
+            "handledAt": "ISO date string | null",
+            "handledByName": "string | null",
+            "saleId": "uuid | null",
+            "createdAt": "ISO date string",
+            "updatedAt": "ISO date string"
+          }
+        ],
+        "total": 4,
+        "page": 1,
+        "pageSize": 20
+      }
+      ```
+  - **2. Unhandled orders count (for badge)**:
+    - `GET /storefront-orders/stats`
+    - Permission: `order.read`
+    - Headers: `Authorization: Bearer <token>`, `X-Store-Id: <storeId>`
+    - Response: `200 OK`
+      ```json
+      {
+        "new": 2
+      }
+      ```
+  - **3. Get order detail with status history**:
+    - `GET /storefront-orders/:id`
+    - Permission: `order.read`
+    - Headers: `Authorization: Bearer <token>`, `X-Store-Id: <storeId>`
+    - Response: `200 OK` (order item shape above plus `history` array):
+      ```json
+      {
+        "id": "uuid",
+        "storeId": "uuid",
+        "storeName": "string",
+        "modelId": "uuid",
+        "brand": "string",
+        "productName": "string",
+        "specs": { "color": "white", "storage": "256gb" },
+        "customerName": "string",
+        "customerPhone": "string",
+        "note": "string | null",
+        "statusCode": "DONE",
+        "statusLabel": "Done",
+        "handledAt": "ISO date string",
+        "handledByName": "Admin",
+        "saleId": "uuid | null",
+        "createdAt": "ISO date string",
+        "updatedAt": "ISO date string",
+        "history": [
+          {
+            "id": "uuid",
+            "fromStatusCode": null,
+            "toStatusCode": "NEW",
+            "changedById": "uuid | null",
+            "changedByName": "Customer",
+            "note": "string | null",
+            "changedAt": "ISO date string"
+          },
+          {
+            "id": "uuid",
+            "fromStatusCode": "NEW",
+            "toStatusCode": "CONTACTED",
+            "changedById": "uuid",
+            "changedByName": "Admin",
+            "note": null,
+            "changedAt": "ISO date string"
+          },
+          {
+            "id": "uuid",
+            "fromStatusCode": "CONTACTED",
+            "toStatusCode": "DONE",
+            "changedById": "uuid",
+            "changedByName": "Admin",
+            "note": null,
+            "changedAt": "ISO date string"
+          }
+        ]
+      }
+      ```
+    - Status codes / errors: `404 Not Found` if order does not exist or belongs to another store.
+  - **4. Update order status**:
+    - `PATCH /storefront-orders/:id/status`
+    - Permission: `order.manage`
+    - Headers: `Authorization: Bearer <token>`, `X-Store-Id: <storeId>`
+    - Request body:
+      ```json
+      {
+        "statusCode": "CONTACTED | DONE | CANCELLED",
+        "saleId": "uuid (optional, valid only when transitioning to DONE)"
+      }
+      ```
+    - Response: `200 OK` (updated order item shape)
+    - Valid lifecycle transitions:
+      - `NEW` → `CONTACTED`
+      - `NEW` → `CANCELLED`
+      - `CONTACTED` → `DONE`
+      - `CONTACTED` → `CANCELLED`
+      - Terminal statuses (`DONE`, `CANCELLED`) cannot transition to any other status.
+    - Error responses:
+      - `400 Bad Request` (`INVALID_TRANSITION`): Attempting an invalid status transition (e.g. `NEW` → `DONE` directly, or changing a terminal `DONE` / `CANCELLED` order).
+      - `400 Bad Request` (`SALE_STORE_MISMATCH`): `saleId` provided belongs to a different store than the order pickup store.
+      - `404 Not Found` (`SALE_NOT_FOUND`): `saleId` does not exist in sales table.
+      - `404 Not Found`: Order id does not exist or belongs to another store.
 - Not done / skipped / failed:
+  - None. Both Part 1 (server) and Part 2 (website) are fully implemented, verified, tested, and committed.
 
 ## Check by Claude
