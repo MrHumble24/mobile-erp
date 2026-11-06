@@ -111,6 +111,8 @@ fun CustomerDetailSheet(
             }
         }
 
+        CustomerBonusSection(container, customer.id)
+
         if (canManage) {
             Spacer(Modifier.height(Tokens.Space.lg))
             PillButton(t("customers.edit", null), onEdit, variant = ButtonVariant.SECONDARY, modifier = Modifier.fillMaxWidth())

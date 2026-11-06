@@ -43,6 +43,8 @@ object SaleCreate {
         discount: Discount? = null,
         listPrice: BigDecimal? = null,
         tradeIns: List<TradeInDraft> = emptyList(),
+        /** Points spent on this sale, as a number; omitted when zero or null. */
+        bonusRedeem: BigDecimal? = null,
     ): JsonObject = buildJsonObject {
         // Exactly one identifier (ADR 0029): the server resolves it against imei,
         // imei2 or serialNumber. A phone sends `imei`, a serial unit `serialNumber`.
@@ -52,6 +54,7 @@ object SaleCreate {
         warrantyDays?.let { put("warrantyDays", it) }
         appendPricing(priceLevelCode, discount, listPrice)
         appendTradeIns(tradeIns)
+        bonusRedeem?.takeIf { it.signum() > 0 }?.let { put("bonusRedeem", JsonPrimitive(it)) }
     }
 
     /**
@@ -72,6 +75,8 @@ object SaleCreate {
         discount: Discount? = null,
         listPrice: BigDecimal? = null,
         tradeIns: List<TradeInDraft> = emptyList(),
+        /** Points spent on this sale, as a number; omitted when zero or null. */
+        bonusRedeem: BigDecimal? = null,
     ): JsonObject = buildJsonObject {
         put("modelId", modelId)
         put("quantity", quantity)
@@ -79,6 +84,7 @@ object SaleCreate {
         appendShared(customerId, customerName, customerPhone, notes, payments)
         appendPricing(priceLevelCode, discount, listPrice)
         appendTradeIns(tradeIns)
+        bonusRedeem?.takeIf { it.signum() > 0 }?.let { put("bonusRedeem", JsonPrimitive(it)) }
     }
 
     /**

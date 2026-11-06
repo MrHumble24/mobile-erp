@@ -25,8 +25,10 @@ fun printReceipt(
     header: List<String>,
     rows: List<PrintRow>,
     footer: List<String>,
+    paperWidthMm: Int,
 ) {
-    val html = buildHtml(title, header, rows, footer)
+    val width = if (paperWidthMm == 80) 80 else 58
+    val html = buildHtml(title, header, rows, footer, width)
     val webView = WebView(context)
     webView.webViewClient = object : WebViewClient() {
         override fun onPageFinished(view: WebView, url: String) {
@@ -49,6 +51,7 @@ private fun buildHtml(
     header: List<String>,
     rows: List<PrintRow>,
     footer: List<String>,
+    paperWidthMm: Int = 58,
 ): String {
     val body = StringBuilder()
     body.append("<div class='c b big'>").append(esc(title)).append("</div>")
@@ -68,8 +71,8 @@ private fun buildHtml(
     return """
         <!doctype html><html><head><meta charset="utf-8"/>
         <style>
-          @page { size: 58mm auto; margin: 2mm; }
-          body { font-family: monospace; font-size: 9pt; width: 54mm; margin: 0; }
+          @page { size: ${paperWidthMm}mm auto; margin: 2mm; }
+          body { font-family: monospace; font-size: 9pt; width: ${paperWidthMm - 4}mm; margin: 0; }
           .c { text-align: center; }
           .b { font-weight: bold; }
           .big { font-size: 11pt; }

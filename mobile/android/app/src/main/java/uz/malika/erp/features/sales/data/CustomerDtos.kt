@@ -20,6 +20,8 @@ data class CustomerDto(
     val standingDiscountPercent: String = "0",
     /** This customer's own credit ceiling (2-dp string); null = use the default (ADR 0035). */
     val creditLimit: String? = null,
+    /** Bonus-points balance (a Decimal string); null when bonus is off for the store/customer. */
+    val bonusBalance: String? = null,
 )
 
 /** `/customers/stats` aggregate tiles. */

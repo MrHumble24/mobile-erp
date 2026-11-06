@@ -64,6 +64,8 @@ data class SaleDto(
     val priceLevelCode: String? = null,
     /** Phones taken in part payment (ADR 0039); their values lower the amount paid. */
     val tradeIns: List<SaleTradeInDto> = emptyList(),
+    /** Loyalty points earned and spent on this sale (ADR 0043). */
+    val bonus: SaleBonusDto = SaleBonusDto(),
 )
 
 /** One tender line of a sale (its SALE ledger rows). `amount` is a decimal string. */
@@ -140,6 +142,14 @@ data class ReceiptDto(
     val customer: ReceiptCustomerDto? = null,
     /** Trade-ins taken in part payment (ADR 0039), for the printed receipt. */
     val tradeIns: List<SaleTradeInDto> = emptyList(),
+    /** How the sale was tendered; `[]` when none. */
+    val payments: List<SalePaymentDto> = emptyList(),
+    /** Loyalty points earned and spent on this sale (ADR 0043). */
+    val bonus: SaleBonusDto = SaleBonusDto(),
+    /** Shop identity for the receipt header (ADR 0043). */
+    val store: ReceiptStoreDto = ReceiptStoreDto(),
+    /** Free-text receipt footer, or null. */
+    val footer: String? = null,
 )
 
 @Serializable
@@ -203,26 +213,6 @@ data class QuantityProductDto(
     val quantity: Int = 0,
     /** Resolved list prices per level (ADR 0034). */
     val prices: Map<String, String?>? = null,
-)
-
-/**
- * `GET /settings` — only the till-relevant fields. Discount fields (ADR 0034)
- * are optional so older/partial payloads decode; money is a Decimal string.
- */
-@Serializable
-data class SettingsDto(
-    val defaultWarrantyDays: Int = 0,
-    val discountsEnabled: Boolean = false,
-    val discountPercentAllowed: Boolean = true,
-    val discountAmountAllowed: Boolean = true,
-    val discountPresetsPercent: List<Double> = emptyList(),
-    val discountPresetsAmount: List<Double> = emptyList(),
-    val maxDiscountPercent: String? = null,
-    // Customer credit (ADR 0035) and shifts (ADR 0036) — the till reads these to
-    // show "On credit" and to gate selling while shifts are on.
-    val customerCreditEnabled: Boolean = false,
-    val defaultCreditLimit: String? = null,
-    val shiftsEnabled: Boolean = false,
 )
 
 /** The `latestSale` blob cached on a device row by `/sync/changes` (offline warranty). */

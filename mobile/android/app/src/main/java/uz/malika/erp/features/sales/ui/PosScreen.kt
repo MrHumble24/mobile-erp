@@ -233,7 +233,11 @@ fun PosScreen(container: AppContainer, api: SalesApi) {
 
     state.completed?.let { done ->
         AppBottomSheet(onDismiss = { vm.dismissReceipt() }) {
-            PosReceiptSheet(done) { vm.dismissReceipt() }
+            PosReceiptSheet(
+                done,
+                printEnabled = state.tillSettingsLoaded && state.receiptPrintingEnabled,
+                paperWidthMm = state.receiptPaperWidthMm,
+            ) { vm.dismissReceipt() }
         }
     }
 }
@@ -243,7 +247,7 @@ private fun readMode(container: AppContainer): PosMode =
     runCatching { PosMode.valueOf(container.secure.get(POS_MODE_KEY) ?: "") }.getOrDefault(PosMode.SCAN)
 
 @Composable
-private fun PosReceiptSheet(data: ReceiptData, onNewSale: () -> Unit) {
+private fun PosReceiptSheet(data: ReceiptData, printEnabled: Boolean, paperWidthMm: Int, onNewSale: () -> Unit) {
     val t = LocalT.current
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
@@ -259,13 +263,15 @@ private fun PosReceiptSheet(data: ReceiptData, onNewSale: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             variant = ButtonVariant.OUTLINE,
         )
-        Spacer(Modifier.height(8.dp))
-        PillButton(
-            text = t("pos.printCheque", null),
-            onClick = { printReceiptData(context, t, data) },
-            modifier = Modifier.fillMaxWidth(),
-            variant = ButtonVariant.OUTLINE,
-        )
+        if (printEnabled) {
+            Spacer(Modifier.height(8.dp))
+            PillButton(
+                text = t("pos.printCheque", null),
+                onClick = { printReceiptData(context, t, data, paperWidthMm) },
+                modifier = Modifier.fillMaxWidth(),
+                variant = ButtonVariant.OUTLINE,
+            )
+        }
         Spacer(Modifier.height(8.dp))
         PillButton(t("pos.newSale", null), onNewSale, Modifier.fillMaxWidth())
     }

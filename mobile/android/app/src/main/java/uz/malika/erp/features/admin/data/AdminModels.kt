@@ -120,6 +120,14 @@ data class StoreSettingsDto(
     val customerCreditEnabled: Boolean = false,
     val defaultCreditLimit: JsonElement? = null,
     val shiftsEnabled: Boolean = false,
+    // Bonus points (ADR 0043).
+    val bonusEnabled: Boolean = false,
+    val bonusEarnPercent: JsonElement? = null,
+    val bonusMaxRedeemPercent: JsonElement? = null,
+    // Receipt / price-tag printing (ADR 0043).
+    val receiptPrintingEnabled: Boolean = false,
+    val receiptPaperWidthMm: Int = 80,
+    val priceTagsEnabled: Boolean = false,
     // Repairs (Change 13, ADR 0040).
     val repairsEnabled: Boolean = false,
 ) {
@@ -133,6 +141,12 @@ data class StoreSettingsDto(
     /** The default credit limit as a plain string; "" when null (no cap). */
     val defaultCreditLimitStr: String
         get() = defaultCreditLimit?.takeIf { it.toString() != "null" }?.jsonPrimitive?.content ?: ""
+
+    val bonusEarnPercentStr: String
+        get() = bonusEarnPercent?.jsonPrimitive?.content ?: "0"
+
+    val bonusMaxRedeemPercentStr: String
+        get() = bonusMaxRedeemPercent?.jsonPrimitive?.content ?: "0"
 }
 
 // ── Write bodies ──────────────────────────────────────────────────────────────
