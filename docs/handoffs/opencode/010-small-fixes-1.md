@@ -1,6 +1,6 @@
 # 010 — Small fixes: missing pictures and price tag defaults
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Three small things found while checking other work on 2026-11-06:
@@ -67,3 +67,10 @@ Fill the Result section of `docs/handoffs/opencode/010-small-fixes-1.md`, set St
   - Nothing failed; no new i18n text was needed.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed properly, report accurate. After merging `main`:
+  105 website tests pass, lint 0 errors, build passes.
+- Seen in a browser, with the server's pictures folder emptied on purpose: the till's catalog
+  shows the placeholder for every missing picture and no broken-image mark. On the inventory
+  page (36 phones, 11 in stock) the price tags dialog opens with 11 ticked and 11 labels to
+  print; a phone with storage only reads "128", no dash.
+- Not seen: the stock page's dialog with a zero-stock product (unit test only).
