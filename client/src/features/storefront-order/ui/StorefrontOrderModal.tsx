@@ -54,7 +54,7 @@ function useOrderSubmit({
         name: values.name.trim(),
         phone: values.phone.trim(),
         fulfillmentMethod: values.fulfillmentMethod,
-        storeId: isDelivery ? undefined : values.storeId,
+        storeId: values.storeId || availableStores[0]?.id,
         address: isDelivery ? values.address.trim() : undefined,
         deliveryZoneId: isDelivery && values.deliveryZoneId ? values.deliveryZoneId : undefined,
         paymentMethod: isOnline ? "ONLINE" : "ON_RECEIPT",
