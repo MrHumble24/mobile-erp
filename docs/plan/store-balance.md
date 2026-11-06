@@ -585,6 +585,24 @@ Change 16 (backup and restore) was started on 2026-11-06 on the user's word,
 built by Opus 4.8 and checked by Claude; its backup passphrase and provider
 logins follow the same "in the app, encrypted" rule.
 
+### Change 18 — danger zone: erase the shop's data
+
+What the user said (2026-11-06): one feature, a danger zone. It should
+clean up everything inside the app, but it should warn us.
+
+Decided by Claude as defaults (the user can change any): it always erases
+what the shop did (sales, stock, money, repairs, orders, points); the owner
+may also tick "customers, partners, suppliers" and "the product catalog";
+it never erases users, branches, settings, saved logins, backups or the
+lists the system needs; a safety backup is always made first, so an erase
+can be undone by restoring it; the owner types the shop's name and their
+password and ticks "I understand"; owner only; everyone is signed out
+afterwards. Going back to the very first start (also erasing users and
+settings) waits for the setup wizard.
+
+Status: being built by Opus 4.8, run and checked by Claude. The handoff is
+`docs/handoffs/opus48/002-danger-zone.md`.
+
 ## Order of work (proposal, for discussion)
 
 Everything above depends on the ledger and the product catalog. The

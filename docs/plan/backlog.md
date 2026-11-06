@@ -7,6 +7,7 @@ Updated by Claude when something is added, started or finished. Last update: 202
 - Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
 - Online storefront, server and website (`docs/handoffs/gemini/022`): checked by Claude on 2026-11-06, no critical or serious security problem; a fix list is with Gemini (`docs/handoffs/gemini/025-storefront-fixes.md`). Merged when that is done.
 - First-boot setup, branding and themes (`docs/handoffs/gemini/024`): checked by Claude on 2026-11-06 and not mergeable yet: the wizard cannot finish from the screen, there are two secrets stores, themes are half done, one serious security item. Fix list: `docs/handoffs/gemini/026-setup-fixes.md`.
+- Danger zone (erase the shop's data): `docs/handoffs/opus48/002-danger-zone.md`. Started 2026-11-06 with Opus 4.8, Claude running and checking it.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
