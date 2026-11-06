@@ -15,21 +15,29 @@ enum OutboxType: String {
 @MainActor
 struct Outbox {
     let context: ModelContext
+    var storeIDProvider: (() -> String?)? = nil
 
     /// Queue an offline mutation. `id` doubles as the server idempotency key.
     @discardableResult
-    func enqueue(_ type: OutboxType, payload: some Encodable, baseVersion: Int? = nil) throws -> String {
+    func enqueue(
+        _ type: OutboxType,
+        payload: some Encodable,
+        baseVersion: Int? = nil,
+        storeId: String? = nil
+    ) throws -> String {
         let data = try JSONEncoder().encode(payload)
+        let resolvedStoreId = storeId ?? storeIDProvider?()
         let entry = OutboxEntry(
             id: newUUID(),
             type: type.rawValue,
             payloadJSON: String(decoding: data, as: UTF8.self),
             baseVersion: baseVersion,
-            occurredAt: ISO8601DateFormatter().string(from: Date())
+            occurredAt: ISO8601DateFormatter().string(from: Date()),
+            storeId: resolvedStoreId
         )
         context.insert(entry)
         try context.save()
-        AppLog.info("outbox", "enqueue \(type.rawValue) \(entry.id)")
+        AppLog.info("outbox", "enqueue \(type.rawValue) \(entry.id) store=\(resolvedStoreId ?? "none")")
         return entry.id
     }
 

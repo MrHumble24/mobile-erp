@@ -28,6 +28,7 @@ func runDebugSelfChecks() {
 
     runLoggingSelfChecks()
     runScanTextSelfChecks()
+    runStoreBranchSelfChecks()
 }
 
 /// Ring-buffer cap/order and secret masking for the dev-console logging.
@@ -67,5 +68,85 @@ private func makeJWT(exp: Int) -> String {
             .replacingOccurrences(of: "=", with: "")
     }
     return "\(seg(["alg": "HS256"])).\(seg(["exp": exp])).sig"
+}
+
+/// Unit tests for branch & store rules (Item 2, header, offline queue).
+private func runStoreBranchSelfChecks() {
+    let s1 = UserStore(id: "s1", name: "Main store")
+    let s2 = UserStore(id: "s2", name: "Branch 2")
+
+    // 1. Item 2 rules: one store; several and none saved; saved one gone
+    assert(StoreManager.resolveActiveStore(stores: [s1], savedStoreID: nil) == "s1")
+    assert(StoreManager.resolveActiveStore(stores: [s1], savedStoreID: "old") == "s1")
+    assert(StoreManager.resolveActiveStore(stores: [s1, s2], savedStoreID: nil) == nil)
+    assert(StoreManager.resolveActiveStore(stores: [s1, s2], savedStoreID: "s2") == "s2")
+    assert(StoreManager.resolveActiveStore(stores: [s1, s2], savedStoreID: "deleted") == nil)
+
+    // 2. Offline queue: queued change keeps its own store after a switch
+    var activeStore: String? = "store-A"
+    var outbox: [OutboxEntry] = []
+    func fakeEnqueue(_ type: String) {
+        outbox.append(OutboxEntry(
+            id: UUID().uuidString,
+            type: type,
+            payloadJSON: "{}",
+            baseVersion: 1,
+            occurredAt: "2026-11-06T12:00:00Z",
+            storeId: activeStore
+        ))
+    }
+    fakeEnqueue("sale.create")
+    assert(outbox[0].storeId == "store-A")
+
+    activeStore = "store-B"
+    fakeEnqueue("sale.create")
+    assert(outbox[1].storeId == "store-B")
+
+    activeStore = "store-A"
+    assert(outbox[0].storeId == "store-A")
+    assert(outbox[1].storeId == "store-B")
+
+    // 3. Header rule: added on requests, absent on /auth/login
+    final class TestURLProtocol: URLProtocol {
+        static var lastRequest: URLRequest?
+        override class func canInit(with request: URLRequest) -> Bool { true }
+        override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+        override func startLoading() {
+            Self.lastRequest = request
+            let resp = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!
+            client?.urlProtocol(self, didReceive: resp, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: Data("{}".utf8))
+            client?.urlProtocolDidFinishLoading(self)
+        }
+        override func stopLoading() {}
+    }
+
+    let config = URLSessionConfiguration.ephemeral
+    config.protocolClasses = [TestURLProtocol.self]
+    let testSession = URLSession(configuration: config)
+
+    nonisolated(unsafe) var testStoreID: String? = "store-test"
+    let testClient = APIClient(
+        baseURL: { URL(string: "http://localhost")! },
+        token: { "token" },
+        storeID: { testStoreID },
+        session: testSession
+    )
+
+    let sem = DispatchSemaphore(value: 0)
+    Task { @MainActor in
+        let _: Empty = try! await testClient.get("/sync/changes")
+        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == "store-test")
+
+        let _: Empty = try! await testClient.post("/auth/login", body: ["email": "a", "password": "b"])
+        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
+
+        testStoreID = nil
+        let _: Empty = try! await testClient.get("/sync/changes")
+        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
+
+        sem.signal()
+    }
+    sem.wait()
 }
 #endif

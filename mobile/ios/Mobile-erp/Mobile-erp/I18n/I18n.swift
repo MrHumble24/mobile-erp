@@ -18,7 +18,7 @@ final class I18n {
     static let namespaces = [
         "auth", "balance", "catalog", "common", "consignments", "credit", "customers", "customs", "dashboard",
         "expenses", "inventory", "nav", "partners", "pos", "pricing", "purchases", "qc",
-        "reports", "repairs", "sales", "settings", "shifts", "shipments", "users",
+        "reports", "repairs", "sales", "settings", "shifts", "shipments", "stores", "users",
     ]
     static let defaultLocale = "uz"
     private static let localeKey = "ui_locale"

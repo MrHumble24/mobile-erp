@@ -88,6 +88,23 @@ struct PullService {
         }
     }
 
+    /// Delete cached offline copies of devices and products on store switch (Item 4).
+    func clearOfflineCopies() {
+        try? context.delete(model: DeviceEntity.self)
+        try? context.delete(model: ProductEntity.self)
+        try? context.save()
+    }
+
+    /// Reset sync cursor to drain from the start for a newly selected store (Item 4).
+    func resetCursor() {
+        let key = SyncMeta.cursorKey
+        if let row = try? context.fetch(FetchDescriptor<SyncMeta>(
+            predicate: #Predicate { $0.key == key })).first {
+            context.delete(row)
+            try? context.save()
+        }
+    }
+
     private func cursor() -> String? {
         let key = SyncMeta.cursorKey
         return try? context.fetch(FetchDescriptor<SyncMeta>(
