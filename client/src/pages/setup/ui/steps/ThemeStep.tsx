@@ -67,7 +67,7 @@ export function ThemeStep({ state, update, onNext, onBack }: Props) {
               </div>
               <div
                 data-theme={th.code}
-                className="h-12 w-full rounded-lg border border-border bg-background text-foreground p-2 flex items-center justify-between"
+                className="theme-swatch h-12 w-full rounded-lg border border-border bg-background text-foreground p-2 flex items-center justify-between"
               >
                 <span className="text-xs font-medium">{t("setup.themePreviewText")}</span>
                 <div className="h-5 px-2 rounded-full text-[10px] font-semibold flex items-center justify-center bg-primary text-primary-foreground">

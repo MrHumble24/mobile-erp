@@ -59,7 +59,7 @@ export function CompanyThemesCard({
                 </div>
                 <div
                   data-theme={th.code}
-                  className="mt-2 h-7 w-full rounded-md border border-border bg-background text-foreground flex items-center justify-between px-2 text-[10px]"
+                  className="theme-swatch mt-2 h-7 w-full rounded-md border border-border bg-background text-foreground flex items-center justify-between px-2 text-[10px]"
                 >
                   <span>Aa 123</span>
                   <span className="h-4 px-1.5 rounded-full text-[9px] font-medium bg-primary text-primary-foreground flex items-center">
