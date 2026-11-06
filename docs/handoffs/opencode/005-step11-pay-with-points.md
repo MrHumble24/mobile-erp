@@ -1,6 +1,6 @@
 # 005 — Step 11, part 3 of 6: paying with points at the till
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 004 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 004 (merged)
 
 ## Why
 Part 3 of the step 11 website work (see 003 for the list of parts). The server accepts
@@ -70,10 +70,20 @@ Fill the Result section of `docs/handoffs/opencode/005-step11-pay-with-points.md
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
-- Files changed:
-- `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
-- Not done / skipped / failed:
+- Not filled. OpenCode wrote the code and stopped at 01:32 without committing or reporting.
 
 ## Check by Claude
+- 2026-11-06: the work was found uncommitted (24 files). Claude ran the checks (82 tests pass,
+  lint 0 errors, build passes), read the code, committed it on the branch as found, merged `main`
+  into it (one clash in the `test` script of `package.json`, both sides kept) and merged it.
+- The maths file and its spec follow the handoff exactly. The checkout also lowers the requested
+  points after each committed line, so a retry after a failure cannot spend points twice.
+- Seen in a browser and on the server (bonus on, earn 5%, max 50%): a customer with 1,000 points
+  bought a 30,000 cable; the till showed balance 1,000, maximum 1,000, "Points − 1,000", to pay
+  29,000; the receipt shows 29,000 in cash; the points ledger got SPEND −1,000 and EARN +1,450
+  (5% of 29,000); balance 1,450.
+- Left for part 4 (006): the till's own customer search (`features/checkout/ui/CustomerSearch.tsx`)
+  does not show the points next to the name (part 2 changed `CustomerPicker`, which the till does
+  not use); the sticky bar at the bottom of a narrow till shows the cart total, not the amount to
+  pay after points; the receipt does not show the points yet (that is part 4 itself).
+- Not seen: a split payment with points; a trade-in with points; the offline message.
