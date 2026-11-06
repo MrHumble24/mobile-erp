@@ -1,6 +1,6 @@
 # 008 — Step 11, part 6 of 7: price tags
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 007 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 007 (merged)
 
 ## Why
 Part 6 of the step 11 website work. Settings has a "Print price tags" switch (part 1) that does
@@ -46,10 +46,40 @@ Fill the Result section of `docs/handoffs/opencode/008-step11-price-tags.md`, se
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (`opencode/big-pickle`).
+- Commits: `55fc6c7` feat(client): add price tag printing; this handoff is committed separately on the same branch.
 - Files changed:
+  - `client/src/features/print-price-tags/` (new slice: types, dialog, sheet, tag, action, README, index).
+  - `client/src/pages/inventory/lib/device-price-tags.ts` + spec.
+  - `client/src/pages/stock/lib/product-price-tags.ts` + spec.
+  - `client/src/pages/inventory/ui/DevicesTab.tsx`, `InventoryFilters.tsx`, README.
+  - `client/src/pages/stock/ui/StockPage.tsx`, README.
+  - `client/src/app/styles/index.css` (added print rules only).
+  - `client/src/shared/i18n/{en,uz}/inventory.json` (same English keys in both).
+  - `client/package.json` (two spec files added to `test`).
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
+  - `pnpm install`: `Already up to date` / `Done in 2ms using pnpm v12.16.1`.
+  - `pnpm test`: `tests 90` · `pass 90` · `fail 0` · `cancelled 0` · `skipped 0` · `todo 0` (includes the six new price-tag assertions).
+  - `pnpm lint`: exit 0; warnings only, all pre-existing. No lint finding in any file added or changed by this task.
+  - `pnpm build`: `✓ built in 5.60s`; PWA precache 153 entries.
+- Graph: `graphify update .` ran in `client/` (3458 nodes, 10717 edges) and at the repo root (13485 nodes, 26565 edges). Root skipped `graph.html` because the graph exceeds the 5000-node visualisation limit.
+- Docs touched: `client/src/features/print-price-tags/README.md`, `client/src/pages/inventory/README.md`, `client/src/pages/stock/README.md`, this handoff.
 - Not done / skipped / failed:
+  - The browser and the print preview were **not opened** by this agent; Claude checks them.
+  - Nothing else failed or was skipped.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed properly, report accurate. After merging `main`:
+  91 website tests pass, lint 0 errors, build passes.
+- One change by Claude on the branch: the printable sheet sat inside the dialog (`max-h-[92vh]`,
+  inside a scrolling box), where paper output would be cut off after the first screenful; with 36
+  rows that is most of the labels. The printed copy is now a portal under `<body>`, the dialog
+  keeps a preview, and the print styles lay out only the sheet while it is mounted.
+- Seen in a browser (owner, the switch on): the button on the inventory devices tab and on the
+  stock page; the dialog with 36 rows ticked and a preview with barcodes; Clear gives 0 labels
+  and a disabled Print; ticking one gives 1; closing removes the printed copy; with the switch
+  off the button is gone. The print styles were applied on screen by script to check them: only
+  the sheet is laid out (three columns, the app and the dialog are `display: none`).
+- Not seen: a real print preview or paper (the print window blocks the browser tools). Rows
+  without a price print no price; sold phones in the list get a label too unless the list is
+  filtered to "in stock" first.

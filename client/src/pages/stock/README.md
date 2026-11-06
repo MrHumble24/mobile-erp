@@ -12,6 +12,8 @@ name / barcode / model code.
   (`AdjustStockDialog`, shown only with `stock.adjust`),
   `entities/product-category` (category filter).
 - A product's movements open in a paginated drawer.
+- With `priceTagsEnabled`, `features/print-price-tags` prints tags for the rows
+  on screen.
 
 ## Must never
 

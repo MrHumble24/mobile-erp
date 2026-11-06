@@ -4,7 +4,7 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
+- Step 11 on the website, in parts through OpenCode: parts 1 to 6 merged; the last part, buy-back and return messages with the step's ADR, is next (`docs/handoffs/opencode/009`).
 - Online storefront, server and website (`docs/handoffs/gemini/022`): checked by Claude on 2026-11-06, no critical or serious security problem; a fix list is with Gemini (`docs/handoffs/gemini/025-storefront-fixes.md`). Merged when that is done.
 - First-boot setup, branding and themes (`docs/handoffs/gemini/024`): checked by Claude on 2026-11-06 and not mergeable yet: the wizard cannot finish from the screen, there are two secrets stores, themes are half done, one serious security item. Fix list: `docs/handoffs/gemini/026-setup-fixes.md`.
 - Danger zone (erase the shop's data): `docs/handoffs/opus48/002-danger-zone.md`. Started 2026-11-06 with Opus 4.8, Claude running and checking it.
@@ -18,7 +18,6 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
-| Step 11 website: buy-back messages and the ADR for the step (part 7) | part 6 merged | OpenCode 009. |
 | Uzbek for all the English text added by step 11 on the website | part 7 merged | For Gemini, one pass. |
 | Branches on the phone apps (store picker, the store sent with every request) | nothing | Until then a user of two stores gets an error on the phones. |
 | Step 11 on the phone apps (bonus points, printing, buy-back) | step 11 website done | Android and iOS. |
