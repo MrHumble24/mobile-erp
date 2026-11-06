@@ -14,6 +14,7 @@ import { isPlausiblePhone } from './lib/phone.js';
 import { resolveMinUnitPrice } from './lib/product-pricing.js';
 import { StorefrontDeliveryZonesRepository } from './storefront-delivery-zones.repository.js';
 import { StorefrontOrdersRepository } from './storefront-orders.repository.js';
+import { OnlinePaymentsRepository } from '../online-payments/online-payments.repository.js';
 import {
   PublicModelRow,
   StorefrontRepository,
@@ -40,6 +41,7 @@ export class StorefrontPublicOrdersService {
     private readonly zonesRepo: StorefrontDeliveryZonesRepository,
     private readonly pricing: PricingService,
     private readonly telegram: TelegramService,
+    private readonly paymentsRepo: OnlinePaymentsRepository,
   ) {}
 
   async getPublicOrder(id: string): Promise<PublicStorefrontOrderView> {
@@ -84,10 +86,14 @@ export class StorefrontPublicOrdersService {
     const payment = (dto.paymentMethod ?? 'ON_RECEIPT').toUpperCase();
 
     if (payment === 'ONLINE') {
-      throw new BadRequestException({
-        code: 'ONLINE_PAYMENT_NOT_AVAILABLE',
-        message: 'Online payment is not yet available; pay on receipt',
-      });
+      const configs = await this.paymentsRepo.listConfigs();
+      const hasActive = configs.some((c) => c.isEnabled);
+      if (!hasActive) {
+        throw new BadRequestException({
+          code: 'ONLINE_PAYMENT_NOT_AVAILABLE',
+          message: 'Online payment is not yet available; pay on receipt',
+        });
+      }
     }
 
     let address: string | null = null;

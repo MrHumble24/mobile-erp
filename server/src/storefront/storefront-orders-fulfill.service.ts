@@ -131,7 +131,40 @@ export class StorefrontOrdersFulfillService {
     }
 
     const fee = new Prisma.Decimal(order.deliveryFeeSnapshot);
-    if (fee.greaterThan(0) && !dto.deliveryFeeAccountCode) {
+    const paidPayment = order.payments?.find((p) => p.statusCode === 'PAID');
+    let finalPayments = dto.payments;
+    let finalFeeAccount = dto.deliveryFeeAccountCode;
+
+    if (paidPayment) {
+      if (dto.payments && dto.payments.length > 0) {
+        const hasOther = dto.payments.some(
+          (p) => p.accountCode !== paidPayment.providerCode,
+        );
+        if (hasOther) {
+          throw new BadRequestException({
+            code: 'PAYMENT_ACCOUNT_MISMATCH',
+            message: `Order was paid online via ${paidPayment.providerCode}; other payments are refused`,
+          });
+        }
+      }
+      if (
+        fee.greaterThan(0) &&
+        dto.deliveryFeeAccountCode &&
+        dto.deliveryFeeAccountCode !== paidPayment.providerCode
+      ) {
+        throw new BadRequestException({
+          code: 'DELIVERY_FEE_ACCOUNT_MISMATCH',
+          message: `Delivery fee for order paid via ${paidPayment.providerCode} must use ${paidPayment.providerCode} account`,
+        });
+      }
+      finalPayments = [
+        {
+          accountCode: paidPayment.providerCode,
+          amount: Number(order.priceSnapshot),
+        },
+      ];
+      finalFeeAccount = paidPayment.providerCode;
+    } else if (fee.greaterThan(0) && !dto.deliveryFeeAccountCode) {
       throw new BadRequestException({
         code: 'DELIVERY_FEE_ACCOUNT_REQUIRED',
         message: 'Account code is required to record delivery fee',
@@ -165,7 +198,7 @@ export class StorefrontOrdersFulfillService {
           {
             ...saleTarget,
             salePrice: Number(order.priceSnapshot),
-            payments: dto.payments,
+            payments: finalPayments,
             customer: { name: order.customerName, phone: order.customerPhone },
           },
           {
@@ -180,7 +213,7 @@ export class StorefrontOrdersFulfillService {
         await this.ledger.post(
           {
             storeId,
-            accountCode: dto.deliveryFeeAccountCode!,
+            accountCode: finalFeeAccount!,
             typeCode: 'DELIVERY_FEE',
             amount: fee,
             orderId: order.id,

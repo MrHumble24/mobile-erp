@@ -116,8 +116,25 @@ export class StorefrontOrdersService {
         await this.repo.holdDevice(order.id, unit.id, userId, tx);
       }
 
-      if (dto.statusCode === 'CANCELLED' && order.deviceId) {
-        await this.repo.releaseDevice(order.id, order.deviceId, userId, tx);
+      if (dto.statusCode === 'CANCELLED') {
+        if (order.deviceId) {
+          await this.repo.releaseDevice(order.id, order.deviceId, userId, tx);
+        }
+        await tx.onlinePayment?.updateMany({
+          where: { orderId: order.id, statusCode: 'PAID' },
+          data: {
+            statusCode: 'REFUND_DUE',
+            reason: 'Order cancelled by staff',
+          },
+        });
+        await tx.onlinePayment?.updateMany({
+          where: { orderId: order.id, statusCode: 'CREATED' },
+          data: {
+            statusCode: 'CANCELLED',
+            cancelledAt: new Date(),
+            reason: 'Order cancelled by staff',
+          },
+        });
       }
 
       const updated = await this.repo.updateOrderStatus(

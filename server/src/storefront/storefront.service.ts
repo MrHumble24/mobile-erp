@@ -18,6 +18,8 @@ import { resolveCatalogPrices } from './lib/product-pricing.js';
 import { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
 import { StorefrontDeliveryZonesRepository } from './storefront-delivery-zones.repository.js';
 import { StorefrontPublicOrdersService } from './storefront-public-orders.service.js';
+import { StorefrontPayService } from './storefront-pay.service.js';
+import { OnlinePaymentsRepository } from '../online-payments/online-payments.repository.js';
 import {
   PublicModelRow,
   PublicUnitRow,
@@ -48,17 +50,24 @@ export class StorefrontService {
     private readonly zonesRepo: StorefrontDeliveryZonesRepository,
     private readonly pricing: PricingService,
     private readonly ordersService: StorefrontPublicOrdersService,
+    private readonly paymentsRepo: OnlinePaymentsRepository,
+    private readonly payService: StorefrontPayService,
   ) {}
 
   async getConfig(): Promise<StorefrontConfigView> {
     const settings = await this.repo.getSettings();
     if (!settings.enabled) return { enabled: false };
 
-    const [stores, categories, zones] = await Promise.all([
+    const [stores, categories, zones, paymentConfigs] = await Promise.all([
       this.repo.activeStores(),
       this.repo.activeCategories(settings.categoryIds),
       this.zonesRepo.findActive(),
+      this.paymentsRepo.listConfigs(),
     ]);
+
+    const paymentProviders = paymentConfigs
+      .filter((c) => c.isEnabled)
+      .map((c) => ({ code: c.providerCode, label: c.provider.label }));
 
     return {
       enabled: true,
@@ -80,6 +89,7 @@ export class StorefrontService {
         fee: z.fee.toFixed(2),
         sortOrder: z.sortOrder,
       })),
+      paymentProviders,
     };
   }
 
@@ -214,6 +224,13 @@ export class StorefrontService {
 
   createOrder(dto: CreateStorefrontOrderDto): Promise<{ id: string }> {
     return this.ordersService.createOrder(dto);
+  }
+
+  payOrder(
+    orderId: string,
+    providerCode?: string,
+  ): Promise<{ checkoutUrl: string }> {
+    return this.payService.payOrder(orderId, providerCode);
   }
 
   getPublicOrder(id: string): Promise<PublicStorefrontOrderView> {

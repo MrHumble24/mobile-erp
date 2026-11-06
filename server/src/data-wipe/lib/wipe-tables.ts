@@ -13,6 +13,8 @@
 
 /** Everything the shop did. Erased on every wipe. Children-before-parents. */
 export const ALWAYS_TABLES = [
+  // online payments point at orders and providers (handoff 034)
+  'online_payments',
   // shop-page orders (handoff 022): they point at sales and products, so they go first
   'storefront_order_status_history',
   'storefront_orders',
@@ -121,6 +123,10 @@ export const KEPT_TABLES = [
   'storefront_fulfillment_methods',
   'storefront_payment_methods',
   'delivery_zones',
+  // online payments lookups and configs (handoff 034)
+  'online_payment_providers',
+  'online_payment_statuses',
+  'online_payment_provider_configs',
   // user-managed list (configured once, like an account; seeded in seed.sql)
   'expense_categories',
   // the record of who erased what

@@ -79,6 +79,7 @@ describe('StorefrontPublicOrdersService createOrder & validation', () => {
       zonesRepo,
       pricing,
       telegram,
+      { listConfigs: jest.fn().mockResolvedValue([]) } as any,
     );
   });
 

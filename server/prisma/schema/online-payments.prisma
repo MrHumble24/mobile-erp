@@ -1,0 +1,76 @@
+// ---------------------------------------------------------------------------
+// Online payments (Payme, Click) — ADR 0063
+// Extensible adapter pattern for local payment gateways.
+// ---------------------------------------------------------------------------
+
+/// Payment gateway providers (PAYME, CLICK seeded).
+model OnlinePaymentProvider {
+  code      String   @id
+  label     String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  configs   OnlinePaymentProviderConfig[]
+  payments  OnlinePayment[]
+
+  @@map("online_payment_providers")
+}
+
+/// State machine for online payments (CREATED, PAID, CANCELLED, REFUND_DUE, REFUNDED).
+model OnlinePaymentStatus {
+  code       String   @id
+  label      String
+  isTerminal Boolean  @default(false)
+  sortOrder  Int      @default(0)
+
+  payments   OnlinePayment[]
+
+  @@map("online_payment_statuses")
+}
+
+/// Per-provider settings (non-secret fields in settings JSONB; secrets sealed in SecretsService).
+/// Example settings:
+/// PAYME: {"merchantId": "64a...", "testMerchantId": "64a..."}
+/// CLICK: {"serviceId": "12345", "merchantId": "67890"}
+model OnlinePaymentProviderConfig {
+  id           String                @id @default(uuid())
+  providerCode String                @unique @map("provider_code")
+  isEnabled    Boolean               @default(false) @map("is_enabled")
+  isTestMode   Boolean               @default(true) @map("is_test_mode")
+  allowedIps   Json?                 @map("allowed_ips") @db.JsonB
+  settings     Json                  @default("{}") @map("settings") @db.JsonB
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  provider     OnlinePaymentProvider @relation(fields: [providerCode], references: [code])
+
+  @@map("online_payment_provider_configs")
+}
+
+/// Online payment record for an order. An order may have multiple payment attempts,
+/// but at most one active/paid payment.
+model OnlinePayment {
+  id                 String                @id @default(uuid())
+  orderId            String                @map("order_id")
+  providerCode       String                @map("provider_code")
+  statusCode         String                @map("status_code")
+  amount             Decimal               @db.Decimal(14, 2)
+  providerTransId    String?               @map("provider_trans_id")
+  providerPrepareId  String?               @map("provider_prepare_id")
+  rawPayload         Json?                 @map("raw_payload") @db.JsonB
+  reason             String?
+  paidAt             DateTime?             @map("paid_at")
+  cancelledAt        DateTime?             @map("cancelled_at")
+  refundedAt         DateTime?             @map("refunded_at")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+
+  order              StorefrontOrder       @relation(fields: [orderId], references: [id])
+  provider           OnlinePaymentProvider @relation(fields: [providerCode], references: [code])
+  status             OnlinePaymentStatus   @relation(fields: [statusCode], references: [code])
+
+  @@unique([providerCode, providerTransId])
+  @@index([orderId])
+  @@index([statusCode])
+  @@map("online_payments")
+}
