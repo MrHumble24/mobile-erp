@@ -111,7 +111,7 @@ struct CustomerBonusSection: View {
     }
 
     private func load() async {
-        guard container.connectivity.isOnline else { return }
+        guard container.connectivity.isOnline, container.storeFlags.bonusEnabled else { return }
         let repo = CustomersRepository(api: container.api)
         if let res = try? await repo.bonus(customerId) {
             self.bonus = res

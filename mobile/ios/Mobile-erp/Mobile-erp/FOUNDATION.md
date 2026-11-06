@@ -165,3 +165,10 @@ floating actions / scanner overlay, not everywhere.
   `common.confirm`; toasts/CSV take caller-supplied strings.
 - Conflict inbox UI is wave 1; `ConflictStore` ships the fetch/resolve calls.
 - Sometype Mono registered via `UIAppFonts`; SF Mono is the automatic fallback.
+
+## Step 11: Bonus Points, Printing Preferences & Buy-back Refusals
+- **Settings & Flags**: `StoreSettings` and `StoreFlags` carry `bonusEnabled`, `bonusEarnPercent`, `bonusMaxRedeemPercent`, `receiptPrintingEnabled`, `receiptPaperWidthMm` (58 or 80 mm, default 80), and `priceTagsEnabled`. Flags retain last-known values if a refresh fails offline.
+- **Points Presentation**: Formatted with thousands grouped by space and `.00` dropped via `BonusText` (plain numbers, never currency).
+- **POS & Customers**: Points redemption is capped by customer balance and line dues via pure `BonusRedeemPlanner`. Customer bonus history and adjustments are online-only. An offline sale with points is blocked.
+- **Receipts & Print**: Store identity and footer appear on POS and Sales receipts (removing placeholder labels). Thermal printing is width-aware (32 chars for 58 mm, 48 chars for 80 mm via `BonusReceiptLayout`), and the Print button is hidden when printing is disabled.
+- **Refusal Codes**: Clear messages map `SALE_UNIT_BOUGHT_BACK` to `sales.returnBoughtBack`, `TRADE_IN_REFUND_FORBIDDEN` to `sales.returnTradeInForbidden`, and `PURCHASE_UNIT_EXISTS` to `purchases.buyNotSold`.

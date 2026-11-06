@@ -96,6 +96,7 @@ struct PosCustomerPanel: View {
 private struct PosCustomerSearchSheet: View {
     let model: PosViewModel
     let onSelect: (PosCustomerHit) -> Void
+    @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
@@ -110,7 +111,7 @@ private struct PosCustomerSearchSheet: View {
                     Button { onSelect(hit) } label: {
                         HStack {
                             Text(hit.name)
-                            if let bonus = hit.bonusBalance {
+                            if container.storeFlags.bonusEnabled, let bonus = hit.bonusBalance {
                                 Text(i18n.t("customers.bonusPickerPoints", ["points": BonusText.format(bonus)]))
                                     .font(.ui(.caption))
                                     .foregroundStyle(Tokens.muted)
