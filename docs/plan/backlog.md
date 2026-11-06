@@ -4,14 +4,14 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Nothing is with a builder right now. Merged on 2026-11-06: the online storefront (022, 025), first-boot setup with company profile and themes (024, 026; dark themes switched off), the danger zone (opus48/002), OpenCode 010 and 011 (fixed black and white out of the website), branches on the phone apps (Gemini 027), OpenCode 012 (small fixes 2).
+- Nothing is with a builder right now. Merged on 2026-11-06: the online storefront (022, 025), first-boot setup with company profile and themes (024, 026; dark themes switched off), the danger zone (opus48/002), OpenCode 010 and 011 (fixed black and white out of the website), branches on the phone apps (Gemini 027), OpenCode 012 (small fixes 2) and 013 (`pnpm reset-password`).
+- Stopped half way on 2026-11-06 when Gemini ran out of its limit, work uncommitted in the worktrees: Gemini 028 (dark themes, 14 files changed) and Gemini 029 (orders on phones, Android started, iOS not).
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
 | Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
-| A way back in for a locked-out owner (`pnpm reset-password`) | `docs/handoffs/opencode/013-owner-recovery-command.md` | Written 2026-11-06. For Big Pickle; its first server task. |
 | Dark themes seen on every page, fixed and switched on | `docs/handoffs/gemini/028-dark-themes.md` | Open since OpenCode 011 was merged (2026-11-06). Needs eyes: Gemini. |
 | Online orders on the phone apps (list, details, status buttons) | `docs/handoffs/gemini/029-mobile-storefront-orders.md` | Written 2026-11-06. |
 
