@@ -117,14 +117,61 @@ Fill the Result section below and set Status to done. Report only what you ran a
 === END ===
 
 ## Result (builder fills)
-- Branch / commits, per part:
-- Deploy changes (how `pg_dump` and `pg_restore` get onto the server):
-- New environment variables:
-- Server build, tests (suites / tests, before → after), lint; website tests, lint, build:
-- Walk-through, each step: seen / not seen:
-- Google Drive and OneDrive: tested with real apps or only with the fake server:
-- Decisions taken:
-- Not done / skipped / failed:
+Scope done by `opus48`: step 0 (secrets), PART 1, PART 2, SAFETY. PART 3
+(Telegram), PART 4 (Drive/OneDrive) and PART 5 (website) are left for later
+builders — the adapter interface and routes are built so each needs no change to
+this code (one new file + one line in `STORAGE_ADAPTERS` + one `backup_providers`
+row).
+
+- Branch / commits, per part: branch `agent/opus48/backup` (worktree, not pushed).
+  - secrets module: `0c02f62`
+  - PART 1 (backups): `945f9cf`
+  - PART 2 (restore): `9f27946`
+- Deploy changes: `server/nixpacks.toml` adds `postgresql_17` (keeps Nixpacks'
+  auto packages via `"..."`) so `pg_dump`/`pg_restore` land on PATH on Railway.
+  Client major must be ≥ the managed Postgres major (a backup refuses an older
+  client); `PG_BIN_DIR` overrides the location.
+- New environment variables: `DATA_DIR` (server-only state: master key + session
+  cutoff; default `./data`), `APP_MASTER_KEY` (override the master key file, 32
+  bytes base64/hex), `BACKUPS_DIR` (where `.mbk` files go, default `./backups`),
+  `PG_BIN_DIR` (optional pg tools dir), `BACKUP_MAX_UPLOAD_BYTES` (restore-upload
+  cap, default 2 GiB). `BACKUP_PASSPHRASE` kept as a fallback (now in-app too).
+  Removed the old script-only `BACKUP_DIR` / `BACKUP_RETENTION_DAYS`.
+- Server build/tests/lint: `pnpm build` clean; `pnpm test` 97 suites/567 tests →
+  **106 suites / 598 tests**, ~1.4 s, no DB; `pnpm lint` 0 errors (3 pre-existing
+  warnings, files I did not touch). Real-DB restore test `pnpm test:restore`
+  (own throwaway DBs): both cases PASS. Website: not in my scope (PART 5).
+- Walk-through (ran on my own API, ports 3140/3141, own DBs — all **seen**):
+  make a backup (SUCCESS, 370 KB encrypted, LOCAL target); file header is `MBK1`
+  + no plaintext table names; `scripts/open-backup.ts` decrypts + unpacks, dump
+  is a valid custom archive (71 tables), **wrong passphrase fails cleanly**;
+  download returns the exact encrypted bytes; passphrase route is write-only
+  (204, empty body), settings expose only `passphraseSet`; secret-leak scan over
+  every response = none; **cashier gets 403 on all 8 routes**. Restore: wrong
+  shop name / wrong password → 403 (nothing touched); a real restore reverted
+  drifted data, made a safety backup, cycled maintenance, **ended every session**
+  (pre-restore token → 401), wrote a SUCCESS audit row; login resumes after the
+  1-second cutoff. Restore round-trip + fail-half-way atomicity: seen via
+  `pnpm test:restore`.
+- Google Drive and OneDrive: not in my scope (PART 4) — not built, not tested.
+- Decisions taken: (1) added `tar` (Node has no archive format; used once, with a
+  safe-extract entry filter). (2) `.mbk` = encrypted tar of manifest + pg_dump
+  (custom) + `uploads.tar`; AES-256-GCM + scrypt, streamed. (3) Secrets store is a
+  general module reused by the passphrase; master key in `DATA_DIR`, never in the
+  DB. (4) Sessions end via a DATA_DIR cutoff file (survives the restore) checked
+  in the JWT guard — one int compare/request; cutoff is `now+1s`, so a login in
+  the same second as a restore is rejected (<1 s window, errs safe). (5) A restore
+  replaces the DB including its own RUNNING audit row, so the outcome is
+  re-recorded by upsert, best-effort — a bookkeeping failure never fails an
+  already-done restore. (6) `restore-upload` takes the raw body (octet-stream) +
+  `x-restore-*` headers, streamed to disk — no multer dependency. (7) `POST
+  /backups` awaits the run (small shop DB; website polls the list).
+- Not done / skipped / failed: PART 3/4/5 (other builders). The safety backup's
+  DB row and the source run's status are captured in the dump but wiped/staled by
+  a successful restore (the file survives in `BACKUPS_DIR`; `markStaleRunsFailed`
+  tidies RUNNING rows on next boot) — a known, documented limit of "restore
+  replaces the DB". I did not run a destructive restore through the shared dev
+  API; the live restore I saw ran against a throwaway copy on my own port 3141.
 
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
