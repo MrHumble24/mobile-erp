@@ -13,7 +13,7 @@ Facts checked by Claude on 2026-11-07:
   and `model/PosBonus.kt`. `_state` is `internal`, so an extension in the same module can use it.
 - `PosScreen.kt` holds two components: `PosScreen` and the private `PosReceiptSheet`.
 - `DeviceSheet.kt` holds `DeviceSheet`, `DeviceSheetBody` and two small private helpers,
-  `SectionTitle` and `ImeiCopyRow`. `DeviceSheetSections.kt` next to it is 157 lines.
+  `SectionTitle` and `ImeiCopyRow`. `DeviceSheetSections.kt` next to it is 209 lines, so it stays under 250 with the two helpers.
 - Gemini is working on the server and the website (factory reset). Nobody else touches Android.
 
 === MESSAGE ===
