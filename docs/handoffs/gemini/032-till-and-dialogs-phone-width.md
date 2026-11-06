@@ -1,6 +1,6 @@
 # 032 — Website: the till and every dialog at phone width with very large amounts
 
-Status: done · Owner: Gemini (Antigravity): it needs eyes in a browser · Depends on: nothing
+Status: merged · Owner: Gemini (Antigravity)
 
 Start: `git worktree add .worktrees/gemini-till-width -b agent/gemini/till-width main`
 
@@ -179,3 +179,21 @@ Fill the Result section of `docs/handoffs/gemini/032-till-and-dialogs-phone-widt
   - None. Everything seen and fixed.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Tests (113), lint and build pass, run by Claude on the
+  committed code. The x1000 stress change was left uncommitted in the worktree, as asked;
+  Claude used it for the look below, then discarded it.
+- The change itself is one consistent pattern over 53 files: the label may shorten
+  (`min-w-0 truncate`), the amount never does (`shrink-0 whitespace-nowrap tabular-nums`).
+  No amount was given `truncate`.
+- Seen by Claude in a 390px frame with amounts 1000 times bigger (own servers, 3130 / 5195):
+  the till in catalog mode with three lines in the cart, the sticky bar ("$125,000,000" and
+  the button side by side), the receipt after the sale; the customer, credit and sale detail
+  sheets. Measured on each: the page does not scroll sideways, the sheet is as wide as the
+  screen, no amount is clipped, wrapped or outside its box. Wide tables scroll in their own box.
+- Not re-seen by Claude: the other ~50 rows of the table (taken from Gemini's table, which says
+  "yes" on every row), the expense sheet (did not open in the frame), 768 and 1024.
+- Side effect of the look: three small test sales were made on the test database (the sticky
+  bar's button sells straight away in catalog mode).
+- Found in passing and fixed here: the sales table's first column header showed the raw key
+  `inventory.device` (no such key). It uses `sales.deviceSection` now.
+

@@ -35,7 +35,7 @@ export function SalesTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>{t("inventory.device")}</TableHead>
+            <TableHead>{t("sales.deviceSection")}</TableHead>
             <TableHead>{t("sales.filterChannel")}</TableHead>
             <TableHead>{t("sales.customer")}</TableHead>
             <TableHead>{t("sales.salePrice")}</TableHead>
