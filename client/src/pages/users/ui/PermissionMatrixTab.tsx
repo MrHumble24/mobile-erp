@@ -42,7 +42,7 @@ function ResourceGroup({
   const codes = perms.map((p) => p.code)
   const allOn = codes.every((c) => selected.has(c))
   return (
-    <div className="space-y-3 rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="space-y-3 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
       <label className="flex cursor-pointer items-center gap-2">
         <Checkbox
           checked={allOn}
@@ -55,7 +55,7 @@ function ResourceGroup({
       </label>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
         {perms.map((p) => (
-          <label key={p.code} className="flex cursor-pointer items-start gap-2 rounded-[8px] p-2 text-xs hover:bg-[#f8f9fa]">
+          <label key={p.code} className="flex cursor-pointer items-start gap-2 rounded-[8px] p-2 text-xs hover:bg-muted">
             <Checkbox
               checked={selected.has(p.code)}
               disabled={disabled}
@@ -120,7 +120,7 @@ function RoleEditor({ role, permissions }: { role: RoleView; permissions: Permis
         <p className="text-xs text-muted-foreground">{t("users.systemRoleMatrixLocked")}</p>
       )}
       {dirty && !role.isSystem && (
-        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
           <span className="text-xs text-muted-foreground">{t("users.unsavedChanges")}</span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setSelected(initial)}>

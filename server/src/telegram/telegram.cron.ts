@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { CompanyService } from '../company/company.service.js';
 import { MaintenanceService } from '../common/runtime/maintenance.service.js';
 import { ConsignmentsService } from '../consignments/consignments.service.js';
 import { CreditsReadService } from '../credits/credits-read.service.js';
@@ -27,6 +28,7 @@ export class TelegramCron {
     private readonly ledger: LedgerService,
     private readonly credits: CreditsReadService,
     private readonly stores: StoresService,
+    private readonly company: CompanyService,
     private readonly maintenance: MaintenanceService,
   ) {}
 
@@ -57,34 +59,9 @@ export class TelegramCron {
   async closingDigest(): Promise<void> {
     await this.run(async () => {
       const now = new Date();
-      const activeStores = await this.stores.list(false);
-      const storeBlocks: messages.DigestStoreBlock[] = [];
-      let digestDate = '';
-      const dueStoreIds: string[] = [];
-
-      for (const store of activeStores) {
-        await runWithStoreSelection(
-          { all: false, storeIds: [store.id] },
-          async () => {
-            const { closingTime, digestSentOn } = await this.settings.get();
-            if (!shouldSendDigest(now, closingTime, digestSentOn)) return;
-
-            const closing = await this.reports.dailyClosing({});
-            digestDate = closing.date;
-            const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
-            const balances = await this.ledger.digestBalances(dayStart);
-            storeBlocks.push({
-              storeName: store.name,
-              unitsSold: closing.unitsSold,
-              revenue: closing.revenue,
-              netProfit: closing.grossProfit,
-              expenses: closing.expenses,
-              balances,
-            });
-            dueStoreIds.push(store.id);
-          },
-        );
-      }
+      const timeZone = await this.company.getTimeZone();
+      const { storeBlocks, dueStoreIds, digestDate } =
+        await this.collectDigestBlocks(now, timeZone);
 
       if (storeBlocks.length === 0) return;
 
@@ -96,19 +73,60 @@ export class TelegramCron {
 
       await this.telegram.send(
         messages.dailyDigest({
-          date: digestDate || todayMarker(now).toISOString().slice(0, 10),
+          date:
+            digestDate || todayMarker(now, timeZone).toISOString().slice(0, 10),
           outstanding,
           stores: storeBlocks,
         }),
       );
 
-      // Mark only after the message went out: a failed send is retried next minute.
       for (const storeId of dueStoreIds) {
         await runWithStoreSelection({ all: false, storeIds: [storeId] }, () =>
-          this.settings.markDigestSent(todayMarker(now)),
+          this.settings.markDigestSent(todayMarker(now, timeZone)),
         );
       }
     });
+  }
+
+  private async collectDigestBlocks(
+    now: Date,
+    timeZone: string,
+  ): Promise<{
+    storeBlocks: messages.DigestStoreBlock[];
+    dueStoreIds: string[];
+    digestDate: string;
+  }> {
+    const activeStores = await this.stores.list(false);
+    const storeBlocks: messages.DigestStoreBlock[] = [];
+    let digestDate = '';
+    const dueStoreIds: string[] = [];
+
+    for (const store of activeStores) {
+      await runWithStoreSelection(
+        { all: false, storeIds: [store.id] },
+        async () => {
+          const { closingTime, digestSentOn } = await this.settings.get();
+          if (!shouldSendDigest(now, closingTime, digestSentOn, timeZone))
+            return;
+
+          const closing = await this.reports.dailyClosing({});
+          digestDate = closing.date;
+          const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
+          const balances = await this.ledger.digestBalances(dayStart);
+          storeBlocks.push({
+            storeName: store.name,
+            unitsSold: closing.unitsSold,
+            revenue: closing.revenue,
+            netProfit: closing.grossProfit,
+            expenses: closing.expenses,
+            balances,
+          });
+          dueStoreIds.push(store.id);
+        },
+      );
+    }
+
+    return { storeBlocks, dueStoreIds, digestDate };
   }
 
   private async run(fn: () => Promise<void>): Promise<void> {

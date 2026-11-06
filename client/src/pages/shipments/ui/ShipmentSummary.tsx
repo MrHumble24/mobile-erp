@@ -55,7 +55,7 @@ export function ShipmentSummary({
 }) {
   const { t } = useI18n()
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm border border-[#e8e8e8] rounded-[16px] p-4 bg-[#f8f9fa] shadow-[var(--shadow-xs)]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm border border-border rounded-[16px] p-4 bg-muted shadow-[var(--shadow-xs)]">
       <SupplierLine supplier={supplier} />
       <Row label={t("shipments.shipmentDate")} value={formatDate(shipment.shipmentDate)} />
       <Row label={t("shipments.expectedCount")} value={String(shipment.expectedCount)} />

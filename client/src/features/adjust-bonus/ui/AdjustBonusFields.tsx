@@ -37,7 +37,7 @@ export function AdjustBonusFields({ form }: { form: UseFormReturn<AdjustBonusVal
         )}
       />
       {Number(amount) < 0 && (
-        <p className="text-xs text-[#e53935]">{t("customers.bonusAdjustNegative")}</p>
+        <p className="text-xs text-destructive">{t("customers.bonusAdjustNegative")}</p>
       )}
       <FormField
         control={form.control}

@@ -8,19 +8,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#202020] text-white rounded-full hover:bg-[#2a2a2a] active:scale-[0.99] border-none shadow-none",
+          "bg-primary text-primary-foreground rounded-full hover:bg-primary/90 active:scale-[0.99] border-none shadow-none",
         secondary:
-          "bg-[#f8f9fa] text-[#202020] rounded-full border border-[#e8e8e8] hover:bg-[#eeeeee] active:scale-[0.99] shadow-none",
+          "bg-muted text-foreground rounded-full border border-border hover:bg-muted active:scale-[0.99] shadow-none",
         outline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] hover:border-[#b3b3b3] active:scale-[0.99] shadow-none",
+          "bg-transparent text-foreground border border-border rounded-full hover:bg-muted hover:border-foreground/40 active:scale-[0.99] shadow-none",
         pillOutline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] active:scale-[0.99] shadow-none",
+          "bg-transparent text-foreground border border-border rounded-full hover:bg-muted active:scale-[0.99] shadow-none",
         ghost:
-          "bg-transparent text-[#2a2a2a] rounded-full font-medium hover:bg-black/[0.04] active:scale-[0.99] border-none shadow-none",
+          "bg-transparent text-foreground rounded-full font-medium hover:bg-black/[0.04] active:scale-[0.99] border-none shadow-none",
         destructive:
-          "bg-[#e53935] text-white rounded-full hover:bg-[#d32f2f] active:scale-[0.99] border-none shadow-none",
+          "bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 active:scale-[0.99] border-none shadow-none",
         link:
-          "text-[#0091ff] underline-offset-4 hover:underline p-0 h-auto rounded-none border-none font-medium",
+          "text-primary underline-offset-4 hover:underline p-0 h-auto rounded-none border-none font-medium",
       },
       size: {
         default: "h-9 px-5 text-sm",

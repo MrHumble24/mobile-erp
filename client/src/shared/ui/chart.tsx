@@ -44,7 +44,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-[#838383] [&_.recharts-cartesian-grid_line]:stroke-[#e8e8e8] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#e8e8e8]",
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border",
           className
         )}
         {...props}
@@ -101,9 +101,9 @@ function ChartTooltipContent({
   if (!active || !payload?.length) return null
 
   return (
-    <div className="rounded-[10px] border border-[#e8e8e8] bg-white px-3 py-2 text-xs shadow-[var(--shadow-md)]">
+    <div className="rounded-[10px] border border-border bg-white px-3 py-2 text-xs shadow-[var(--shadow-md)]">
       {!hideLabel && (
-        <p className="mb-1 font-semibold text-[#202020]">
+        <p className="mb-1 font-semibold text-foreground">
           {labelFormatter ? labelFormatter(label) : label}
         </p>
       )}
@@ -119,8 +119,8 @@ function ChartTooltipContent({
                 className="size-2.5 shrink-0 rounded-[2px]"
                 style={{ background: item.color ?? config[key]?.color }}
               />
-              <span className="text-[#646464]">{labelText}</span>
-              <span className="ml-auto font-mono font-semibold text-[#202020]">
+              <span className="text-muted-foreground">{labelText}</span>
+              <span className="ml-auto font-mono font-semibold text-foreground">
                 {valueFormatter
                   ? valueFormatter(numeric, item)
                   : item.value}
@@ -155,7 +155,7 @@ function ChartLegendContent({
       {payload.map((item) => {
         const key = String(item.dataKey ?? item.value ?? "")
         return (
-          <div key={key} className="flex items-center gap-1.5 text-xs text-[#646464]">
+          <div key={key} className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span
               className="size-2.5 rounded-[2px]"
               style={{ background: item.color }}

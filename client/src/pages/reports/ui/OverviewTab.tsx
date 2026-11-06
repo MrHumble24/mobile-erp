@@ -59,7 +59,7 @@ function TileGrid({
             value={tile.value}
             subtext={tile.subtext}
             variant={tile.dark ? "dark" : "white"}
-            className="w-full hover:border-[#6647f0]/40"
+            className="w-full hover:border-primary/40"
           />
         </Button>
       ))}

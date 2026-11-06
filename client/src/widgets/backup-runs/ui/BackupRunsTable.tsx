@@ -30,13 +30,13 @@ export function BackupRunsTable({
       {isLoading && <Skeleton className="h-40 rounded-[16px]" />}
 
       {runs && runs.length === 0 && (
-        <div className="rounded-[16px] border border-dashed border-[#d4d4d4] bg-white p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-[16px] border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
           {t("backups.runsEmpty")}
         </div>
       )}
 
       {runs && runs.length > 0 && (
-        <div className="overflow-x-auto rounded-[16px] border border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]">
+        <div className="overflow-x-auto rounded-[16px] border border-border bg-card shadow-[var(--shadow-xs)]">
           <Table>
             <TableHeader>
               <TableRow>

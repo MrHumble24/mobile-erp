@@ -18,7 +18,7 @@ function ConsignmentsSection({ items }: { items: ConsignmentView[] }) {
   const { t } = useI18n()
   return (
     <section className="space-y-2">
-      <h4 className="text-sm font-semibold text-[#090c1d]">{t("nav.consignments")}</h4>
+      <h4 className="text-sm font-semibold text-foreground">{t("nav.consignments")}</h4>
       <Table>
         <TableHeader>
           <TableRow>
@@ -47,7 +47,7 @@ function LedgerSection({ entries }: { entries: LedgerEntry[] }) {
   const { t } = useI18n()
   return (
     <section className="space-y-2">
-      <h4 className="text-sm font-semibold text-[#090c1d]">{t("reports.ledger")}</h4>
+      <h4 className="text-sm font-semibold text-foreground">{t("reports.ledger")}</h4>
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
@@ -32,6 +33,7 @@ import {
 } from "./SettingsSections"
 import { BonusSection } from "./BonusSection"
 import { PrintingSection } from "./PrintingSection"
+import { CompanySection } from "./CompanySection"
 import { StorefrontSection } from "./StorefrontSection"
 
 function SettingsForm({
@@ -95,15 +97,44 @@ function SettingsForm({
 
 export function SettingsPage() {
   const { t } = useI18n()
+  const [activeTab, setActiveTab] = useState<"company" | "branch">("company")
   const canManage = useAuthStore((s) => s.user?.permissions?.includes("settings.manage") ?? false)
   const { data: settings, isLoading } = useSettings()
 
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader title={t("settings.title")} description={t("settings.subtitle")} />
-      <StorefrontSection disabled={!canManage} />
-      {isLoading && <Skeleton className="h-96 rounded-[16px]" />}
-      {settings && <SettingsForm settings={settings} canManage={canManage} />}
+
+      <div className="flex items-center gap-2 border-b border-border pb-3">
+        <Button
+          variant={activeTab === "company" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setActiveTab("company")}
+          className="rounded-full text-xs font-semibold h-8 px-4"
+        >
+          {t("settings.tabCompany")}
+        </Button>
+        <Button
+          variant={activeTab === "branch" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => setActiveTab("branch")}
+          className="rounded-full text-xs font-semibold h-8 px-4"
+        >
+          {t("settings.tabBranch")}
+        </Button>
+      </div>
+
+      {activeTab === "company" ? (
+        <>
+          <CompanySection disabled={!canManage} />
+          <StorefrontSection disabled={!canManage} />
+        </>
+      ) : (
+        <>
+          {isLoading && <Skeleton className="h-96 rounded-[16px]" />}
+          {settings && <SettingsForm settings={settings} canManage={canManage} />}
+        </>
+      )}
     </div>
   )
 }

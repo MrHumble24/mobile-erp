@@ -45,7 +45,7 @@ export function UserStoresSection({ user }: { user: UserView }) {
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>{t("users.stores")}</Label>
-        <div className="grid grid-cols-1 gap-2 p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px]">
+        <div className="grid grid-cols-1 gap-2 p-3 bg-muted border border-border rounded-[12px]">
           {stores?.map((s) => (
             <label
               key={s.id}

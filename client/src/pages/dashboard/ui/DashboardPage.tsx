@@ -8,6 +8,7 @@ import { DashboardMetrics } from "./DashboardMetrics"
 import { DashboardLowStockTable } from "./DashboardLowStockTable"
 import { DashboardOverdueConsignmentsTable } from "./DashboardOverdueConsignmentsTable"
 import { DashboardModelPricingTable } from "./DashboardModelPricingTable"
+import { SetupChecklist } from "@/widgets/setup-checklist"
 
 function DashboardActions() {
   const { t } = useI18n()
@@ -18,7 +19,7 @@ function DashboardActions() {
       {hasPermission("expense.read") && (
         <Link to="/expenses" className="no-underline">
           <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5">
-            <DollarSign className="w-3.5 h-3.5 text-[#646464]" />
+            <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
             <span>{t("nav.expenses")}</span>
           </Button>
         </Link>
@@ -45,6 +46,8 @@ export function DashboardPage() {
         description="Do'konning bugungi savdo ko'rsatkichlari, tushumlar va ombor qoldig'i tahlili"
         actions={<DashboardActions />}
       />
+
+      <SetupChecklist />
 
       <DashboardMetrics />
 

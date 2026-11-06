@@ -108,11 +108,11 @@ export function CheckoutReceiptModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="sm:max-w-md max-h-[92vh] overflow-y-auto">
         <DialogHeader className="text-center sm:text-center items-center pb-2">
-          <div className="size-12 rounded-full bg-[#00c07a]/15 text-[#00c07a] flex items-center justify-center mb-1">
+          <div className="size-12 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1">
             <CheckCircle2 className="size-6 stroke-[2.2]" />
           </div>
           <DialogTitle className="text-lg font-bold">{t("pos.saleSuccess")}</DialogTitle>
-          <DialogDescription className="text-xs text-[#646464]">
+          <DialogDescription className="text-xs text-muted-foreground">
             {t("pos.chequeSubtitle")}
           </DialogDescription>
         </DialogHeader>

@@ -17,12 +17,11 @@ pnpm prisma generate
 | `PORT`                    | HTTP port (default 3000)                            |
 | `TRUST_PROXY_HOPS`        | Number of reverse-proxy hops to trust for client IP and rate limiting (default `0`, set to `1` on Railway). |
 | `DATABASE_URL`            | Postgres connection string                          |
-| `JWT_SECRET`              | HS256 signing secret (required)                     |
 | `JWT_EXPIRES_IN`          | Access-token lifetime, default `12h` (ADR 0005)     |
 | `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
 | `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
-| `UPLOADS_DIR`             | Where product pictures are stored (default `./uploads`, git-ignored, created on start). **On Railway point this at a mounted volume** — a plain directory is wiped on every deploy and the pictures vanish (ADR 0031). |
-| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key**, restore staging and the restore **recovery markers** (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** — else the key is regenerated each deploy and every secret becomes unreadable; a persistent volume also keeps the recovery markers across a redeploy (ADR 0051). The session cutoff now lives in the database, not here. |
+| `UPLOADS_DIR`             | Where product pictures and company logos are stored (default `./uploads`, git-ignored). **On Railway point this at a mounted volume** (ADR 0031). |
+| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key**, restore staging and the restore **recovery markers** (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** (ADR 0051). |
 | `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: hex, or base64 that round-trips, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
 | `BACKUPS_DIR`             | Where encrypted `*.mbk` backups are written (default `./backups`, git-ignored, never served over HTTP). On Railway use a mounted volume for an on-server copy. |
 | `BACKUP_PASSPHRASE`       | Fallback backup passphrase. Prefer setting it in-app (Settings → Backups, stored encrypted); env is used only when no readable in-app passphrase is set. Lose it = every backup unrecoverable. |
@@ -30,9 +29,14 @@ pnpm prisma generate
 | `BACKUP_MAX_UPLOAD_BYTES` | Largest restore upload accepted (default 2 GiB). |
 | `PG_BIN_DIR`              | Optional directory holding `pg_dump`/`pg_restore` when they are not on `PATH`. |
 | `PUBLIC_URL`              | The server's own public origin, used for the OAuth callback address (ADR 0056). On Railway set it to the app's URL; in dev it defaults to `http://localhost:<PORT>`. |
-| `TELEGRAM_BOT_TOKEN`      | Fallback Telegram bot token for backups (also set in-app). Missing → the place is "not set up". |
+| `TELEGRAM_BOT_TOKEN`      | Fallback Telegram bot token for backups and notifications. |
 | `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Google OAuth client for the Drive place (also set in-app). |
 | `MICROSOFT_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Microsoft OAuth client for the OneDrive place (also set in-app). |
+
+## First-boot setup & locked-out recovery
+
+- **First-boot onboarding**: On a fresh install with zero users, the server generates a one-time setup code, prints it to the console log, and saves it to `<DATA_DIR>/setup-code.txt`. The web client detects `needsSetup: true` from `GET /setup/status` and presents the onboarding wizard. Completing setup provisions the owner and first branch, unlinks the setup code file, and blocks future setup calls (409 Conflict).
+- **Locked-out owner recovery**: If an administrator is locked out or loses credentials, run `pnpm bootstrap:admin` on the host to create or restore the administrative account from `BOOTSTRAP_ADMIN_*` variables.
 
 ## First-run sequence (order matters)
 

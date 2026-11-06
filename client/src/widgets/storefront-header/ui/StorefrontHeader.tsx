@@ -28,7 +28,7 @@ export function StorefrontHeader({
     : null
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#e8e8e8]">
+    <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
         <Link to="/shop" className="flex items-center gap-2.5 no-underline text-foreground">
           <div className="size-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold shadow-xs">

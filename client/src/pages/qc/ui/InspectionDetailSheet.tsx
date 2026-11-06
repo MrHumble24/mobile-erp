@@ -22,7 +22,7 @@ function DefectList({ item, labels }: { item: QcInspectionListItem; labels: Map<
   return (
     <div className="space-y-2">
       {item.defects.map((d) => (
-        <div key={d.defectCode} className="border border-[#e8e8e8] rounded-[12px] bg-[#f8f9fa] p-2.5">
+        <div key={d.defectCode} className="border border-border rounded-[12px] bg-muted p-2.5">
           <p className="text-sm font-medium">{labels.get(d.defectCode) ?? d.defectCode}</p>
           {d.notes && <p className="text-xs text-muted-foreground mt-0.5">{d.notes}</p>}
         </div>
@@ -36,7 +36,7 @@ function Body({ item, defectTypes }: { item: QcInspectionListItem; defectTypes: 
   const labels = new Map(defectTypes.map((d) => [d.code, d.label]))
   return (
     <div className="space-y-5 my-4">
-      <div className="space-y-1.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] p-3.5">
+      <div className="space-y-1.5 border border-border rounded-[14px] bg-muted p-3.5">
         <div className="flex items-center justify-between">
           <span className="font-mono text-sm font-medium">{unitCode(item.device)}</span>
           <Badge variant={item.passed ? "mint" : "destructive"} size="sm">

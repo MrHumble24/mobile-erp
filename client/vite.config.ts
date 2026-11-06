@@ -16,21 +16,22 @@ export default defineConfig({
     // offline cache, never by the service worker.
     VitePWA({
       registerType: 'autoUpdate',
+      manifest: false,
       workbox: {
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
       },
-      manifest: {
-        name: 'Malika ERP',
-        short_name: 'Malika ERP',
-        start_url: '/',
-        display: 'standalone',
-        background_color: '#f8f9fa',
-        theme_color: '#202020',
-      },
     }),
   ],
+  server: {
+    proxy: {
+      '/manifest.webmanifest': {
+        target: process.env.VITE_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

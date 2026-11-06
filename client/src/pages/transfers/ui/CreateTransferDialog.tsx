@@ -217,7 +217,7 @@ export function CreateTransferDialog({
             />
           </div>
 
-          <div className="p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px] space-y-2">
+          <div className="p-3 bg-muted border border-border rounded-[12px] space-y-2">
             <Label className="text-xs">{t("transfers.addQuantityProduct")}</Label>
             <div className="flex gap-2">
               <div className="flex-1">

@@ -18,7 +18,7 @@ import { recordedByName } from "../lib/expenses-csv"
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-[#f0f0f0] py-2">
+    <div className="flex items-start justify-between gap-4 border-b border-border py-2">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
@@ -39,7 +39,7 @@ function ExpenseBody({
   const { t } = useI18n()
   return (
     <div className="my-4 space-y-4">
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-[#f8f9fa] p-4 text-center">
+      <div className="rounded-[16px] border border-border bg-muted p-4 text-center">
         <p className="font-mono text-3xl font-bold text-destructive">
           {formatMoney(expense.amount)}
         </p>

@@ -19,7 +19,7 @@ export function CreditTotals({ credit }: { credit: CreditView }) {
   return (
     <div className="grid grid-cols-2 gap-2.5">
       {rows.map(([label, value]) => (
-        <div key={label} className="rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+        <div key={label} className="rounded-[12px] border border-border bg-muted p-3">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
           <div className="mt-0.5 text-sm font-semibold">{value}</div>
         </div>
@@ -38,7 +38,7 @@ export function CreditGoods({ credit }: { credit: CreditView }) {
         return (
           <div
             key={sale.saleId}
-            className="flex items-center justify-between gap-3 rounded-[10px] border border-[#e8e8e8] bg-white p-2.5 text-sm"
+            className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
           >
             <div className="min-w-0">
               <p className="truncate font-medium">
@@ -66,7 +66,7 @@ export function CreditPlan({ credit }: { credit: CreditView }) {
       {credit.instalments.map((inst, i) => (
         <div
           key={inst.id}
-          className="flex items-center justify-between gap-3 rounded-[10px] border border-[#e8e8e8] bg-white p-2.5 text-sm"
+          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
         >
           <div>
             <p className="font-medium">{t("credit.instalment", { n: i + 1 })}</p>
@@ -96,7 +96,7 @@ export function CreditPayments({ credit }: { credit: CreditView }) {
       {credit.payments.map((p) => (
         <div
           key={p.id}
-          className="flex items-center justify-between gap-3 rounded-[10px] border border-[#e8e8e8] bg-white p-2.5 text-sm"
+          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
         >
           <div>
             <p className="font-medium">{accountLabel(p.accountCode, undefined, t)}</p>

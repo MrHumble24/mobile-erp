@@ -22,7 +22,7 @@ export function SaleReceiptDialog({
         <DialogHeader className="text-center sm:text-center items-center pb-2">
           <DialogTitle className="text-lg font-bold">{t("pos.receiptTitle")}</DialogTitle>
           {receipt && (
-            <DialogDescription className="text-xs text-[#646464]">
+            <DialogDescription className="text-xs text-muted-foreground">
               {t("pos.receiptNumber")}: #{receipt.saleId.slice(0, 8).toUpperCase()}
             </DialogDescription>
           )}

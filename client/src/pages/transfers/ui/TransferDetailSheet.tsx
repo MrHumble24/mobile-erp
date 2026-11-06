@@ -96,7 +96,7 @@ export function TransferDetailSheet({
         </SheetHeader>
 
         <div className="space-y-6 my-4">
-          <div className="grid grid-cols-2 gap-3 p-3 bg-[#f8f9fa] border border-[#e8e8e8] rounded-[12px] text-xs">
+          <div className="grid grid-cols-2 gap-3 p-3 bg-muted border border-border rounded-[12px] text-xs">
             <div>
               <span className="text-muted-foreground block">
                 {t("transfers.sentAt")}:
@@ -137,7 +137,7 @@ export function TransferDetailSheet({
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t("transfers.lines")} ({transfer.lines.length})
             </h4>
-            <div className="border border-[#e8e8e8] rounded-[10px] overflow-hidden">
+            <div className="border border-border rounded-[10px] overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>

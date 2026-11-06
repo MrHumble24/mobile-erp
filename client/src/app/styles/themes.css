@@ -1,0 +1,92 @@
+:root,
+[data-theme="caldera"] {
+  --background: #ffffff;
+  --foreground: #202020;
+  --card: #ffffff;
+  --card-foreground: #202020;
+  --popover: #ffffff;
+  --popover-foreground: #202020;
+  --primary: #202020;
+  --primary-foreground: #ffffff;
+  --secondary: #f8f9fa;
+  --secondary-foreground: #202020;
+  --muted: #f8f9fa;
+  --muted-foreground: #646464;
+  --accent: #f8f9fa;
+  --accent-foreground: #202020;
+  --destructive: #e53935;
+  --destructive-foreground: #ffffff;
+  --border: #e8e8e8;
+  --input: #e8e8e8;
+  --ring: #0091ff;
+  --surface-card: #f8f9fa;
+}
+
+[data-theme="obsidian"] {
+  --background: #0f1117;
+  --foreground: #f0f2f5;
+  --card: #181b24;
+  --card-foreground: #f0f2f5;
+  --popover: #181b24;
+  --popover-foreground: #f0f2f5;
+  --primary: #f0f2f5;
+  --primary-foreground: #0f1117;
+  --secondary: #1e222d;
+  --secondary-foreground: #f0f2f5;
+  --muted: #1e222d;
+  --muted-foreground: #9aa0ad;
+  --accent: #1e222d;
+  --accent-foreground: #f0f2f5;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #262a36;
+  --input: #262a36;
+  --ring: #3b82f6;
+  --surface-card: #12151c;
+}
+
+[data-theme="sand"] {
+  --background: #fcfaf6;
+  --foreground: #2c2723;
+  --card: #ffffff;
+  --card-foreground: #2c2723;
+  --popover: #ffffff;
+  --popover-foreground: #2c2723;
+  --primary: #3c3228;
+  --primary-foreground: #fcfaf6;
+  --secondary: #f5f0e8;
+  --secondary-foreground: #2c2723;
+  --muted: #f2ebe0;
+  --muted-foreground: #756c63;
+  --accent: #f2ebe0;
+  --accent-foreground: #2c2723;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e6ded1;
+  --input: #e6ded1;
+  --ring: #b45309;
+  --surface-card: #f5f0e8;
+}
+
+[data-theme="nord"] {
+  --background: #242933;
+  --foreground: #eceff4;
+  --card: #2e3440;
+  --card-foreground: #eceff4;
+  --popover: #2e3440;
+  --popover-foreground: #eceff4;
+  --primary: #88c0d0;
+  --primary-foreground: #2e3440;
+  --secondary: #3b4252;
+  --secondary-foreground: #eceff4;
+  --muted: #3b4252;
+  --muted-foreground: #d8dee9;
+  --accent: #3b4252;
+  --accent-foreground: #eceff4;
+  --destructive: #bf616a;
+  --destructive-foreground: #eceff4;
+  --border: #434c5e;
+  --input: #434c5e;
+  --ring: #88c0d0;
+  --surface-card: #2e3440;
+}

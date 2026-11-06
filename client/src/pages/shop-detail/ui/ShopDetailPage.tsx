@@ -22,8 +22,8 @@ export function ShopDetailPage() {
 
   if (configLoading || productLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa]">
-        <div className="h-16 border-b border-[#e8e8e8] bg-white" />
+      <div className="min-h-screen bg-muted">
+        <div className="h-16 border-b border-border bg-card" />
         <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
           <Skeleton className="h-8 w-32 rounded-full" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -41,8 +41,8 @@ export function ShopDetailPage() {
 
   if (!config?.enabled) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex flex-col">
-        <header className="h-16 border-b border-[#e8e8e8] bg-white flex items-center px-4">
+      <div className="min-h-screen bg-muted flex flex-col">
+        <header className="h-16 border-b border-border bg-card flex items-center px-4">
           <div className="max-w-6xl mx-auto w-full flex items-center gap-2">
             <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
               <Store className="size-4 text-muted-foreground" />
@@ -62,7 +62,7 @@ export function ShopDetailPage() {
 
   if (productError || !product) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex flex-col">
+      <div className="min-h-screen bg-muted flex flex-col">
         <StorefrontHeader
           shopName={config.shopName}
           contactPhone={config.contactPhone}
@@ -97,7 +97,7 @@ export function ShopDetailPage() {
     : product.stores.map((st) => ({ id: st.id, name: st.name }))
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-muted flex flex-col">
       <StorefrontHeader
         shopName={config.shopName}
         contactPhone={config.contactPhone}
@@ -113,9 +113,9 @@ export function ShopDetailPage() {
           <span>{t("storefront.backToCatalog")}</span>
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-white p-5 sm:p-8 rounded-3xl border border-[#e8e8e8]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-card p-5 sm:p-8 rounded-3xl border border-border">
           {/* Image */}
-          <div className="aspect-square bg-[#f8f9fa] rounded-2xl flex items-center justify-center p-6 overflow-hidden">
+          <div className="aspect-square bg-muted rounded-2xl flex items-center justify-center p-6 overflow-hidden">
             <AssetImage
               path={product.imageUrl}
               alt={product.name}
@@ -177,7 +177,7 @@ export function ShopDetailPage() {
               )}
 
               {/* Stock in branches */}
-              <div className="space-y-2 pt-3 border-t border-[#f0f0f0]">
+              <div className="space-y-2 pt-3 border-t border-border">
                 <div className="text-xs font-semibold text-muted-foreground">
                   {t("storefront.availableBranches")}
                 </div>
@@ -185,7 +185,7 @@ export function ShopDetailPage() {
                   {(selectedVariant?.stores ?? []).map((st) => (
                     <div
                       key={st.id}
-                      className="flex items-center justify-between text-xs p-2 rounded-lg bg-[#f8f9fa] border border-[#f0f0f0]"
+                      className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted border border-border"
                     >
                       <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
                         <MapPin className="size-3.5 text-muted-foreground" />

@@ -24,7 +24,7 @@ export interface CloseShiftDialogProps {
 
 function InfoRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-sm">
+    <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5 text-sm">
       <span className="text-muted-foreground">{label}</span>
       <span className={`font-mono font-bold ${tone ?? ""}`}>{value}</span>
     </div>
@@ -36,7 +36,7 @@ function DifferenceRow({ expected, counted }: { expected: string; counted: strin
   const diff = shiftDifference(counted, expected)
   const kind = differenceKind(diff)
   const tone =
-    kind === "short" ? "text-[#d92d20]" : kind === "over" ? "text-[#027a48]" : "text-muted-foreground"
+    kind === "short" ? "text-destructive" : kind === "over" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
   const label =
     kind === "short" ? t("shifts.shortage") : kind === "over" ? t("shifts.surplus") : t("shifts.noDifference")
   return <InfoRow label={label} value={formatMoney(diff)} tone={tone} />

@@ -5,6 +5,7 @@
 
 # Uploaded product pictures (default UPLOADS_DIR; on Railway a mounted volume)
 /uploads
+/data
 
 # Logs
 logs

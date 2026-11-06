@@ -41,9 +41,9 @@ export function IntakeConfirmDialog({
           <DialogDescription>{t("shipments.acquisitionCost")}: {cost}</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <p className="font-mono text-lg tracking-wide text-[#090c1d]">{imei}</p>
+          <p className="font-mono text-lg tracking-wide text-foreground">{imei}</p>
           {imei2 && (
-            <p className="font-mono text-sm tracking-wide text-[#646464]">
+            <p className="font-mono text-sm tracking-wide text-muted-foreground">
               {t("inventory.imei2")}: {imei2}
             </p>
           )}

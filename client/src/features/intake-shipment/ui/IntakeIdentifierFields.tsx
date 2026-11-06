@@ -53,7 +53,7 @@ export function ImeiBlock({ form, scan, errors }: { form: Form; scan: Scan; erro
           name="dualSim"
           render={({ field }) => (
             <div className="flex items-center gap-2">
-              <Label className="text-[#646464]">{t("inventory.dualSim")}</Label>
+              <Label className="text-muted-foreground">{t("inventory.dualSim")}</Label>
               <Switch
                 checked={field.value}
                 onCheckedChange={(checked) => {

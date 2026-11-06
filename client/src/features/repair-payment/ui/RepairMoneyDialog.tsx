@@ -113,7 +113,7 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
   return (
     <div className="space-y-4 my-2">
       {cap != null && cfg.capLabel && (
-        <div className="flex items-center justify-between rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-sm">
+        <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5 text-sm">
           <span className="text-muted-foreground">{t(cfg.capLabel)}</span>
           <span className="font-mono font-semibold">{formatMoney(cap)}</span>
         </div>

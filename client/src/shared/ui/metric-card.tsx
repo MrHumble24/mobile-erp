@@ -23,7 +23,7 @@ function MetricCardHeader({
       <span
         className={cn(
           "font-body text-xs font-semibold uppercase tracking-wider block",
-          isDark ? "text-[#b3b3b3]" : "text-[#838383]"
+          "text-muted-foreground"
         )}
       >
         {label}
@@ -32,7 +32,7 @@ function MetricCardHeader({
         <span
           className={cn(
             "font-body text-xs block",
-            isDark ? "text-[#838383]" : "text-[#646464]"
+            isDark ? "text-muted-foreground" : "text-muted-foreground"
           )}
         >
           {subtext}
@@ -60,7 +60,7 @@ function MetricValue({
       ref={containerRef}
       className={cn(
         "font-display text-3xl sm:text-4xl font-bold leading-tight tracking-tight pt-3 block overflow-hidden",
-        isDark ? "text-white" : "text-[#090c1d]"
+        isDark ? "text-white" : "text-foreground"
       )}
     >
       <span
@@ -90,8 +90,8 @@ function MetricCard({
       className={cn(
         "rounded-[16px] p-6 flex flex-col justify-between min-h-[140px] shadow-[var(--shadow-xs)] transition-all",
         isDark
-          ? "bg-[#111111] text-white border border-[#2a2a2a]"
-          : "bg-white text-[#202020] border border-[#e8e8e8]",
+          ? "bg-card text-card-foreground border border-border"
+          : "bg-white text-foreground border border-border",
         className
       )}
       {...props}

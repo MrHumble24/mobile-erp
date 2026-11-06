@@ -123,20 +123,6 @@ INSERT INTO bonus_transaction_types (code, label, "sortOrder") VALUES
   ('CORRECTION', 'Manual correction',    40)
 ON CONFLICT (code) DO NOTHING;
 
--- Stores & Settings (ADR 0023, ADR 0045).
-INSERT INTO stores (id, name, "updatedAt")
-SELECT gen_random_uuid(), 'Main store', now()
-WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Main store');
-
-INSERT INTO stores (id, name, "updatedAt")
-SELECT gen_random_uuid(), 'Branch 2', now()
-WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Branch 2');
-
-INSERT INTO store_settings ("storeId", "updatedAt")
-SELECT s.id, now()
-FROM stores s
-WHERE NOT EXISTS (SELECT 1 FROM store_settings ss WHERE ss."storeId" = s.id);
-
 -- Storefront settings singleton (Change 10, ADR 0049).
 INSERT INTO storefront_settings (id, enabled, "showPrices", "categoryIds", "updatedAt") VALUES
   (1, false, true, '[]'::jsonb, now())
@@ -238,6 +224,14 @@ INSERT INTO roles (code, name, description, "isSystem", "updatedAt") VALUES
   ('QC',      'Inventory / QC',    'Intake, shipments, quality control',   true, now())
 ON CONFLICT (code) DO NOTHING;
 
+-- Themes ---------------------------------------------------------------------
+INSERT INTO themes (code, name, "sortOrder", "isActive", "createdAt", "updatedAt") VALUES
+  ('caldera',  'Caldera Light', 10, true, now(), now()),
+  ('obsidian', 'Obsidian Dark', 20, false, now(), now()),
+  ('sand',     'Warm Sand',     30, true, now(), now()),
+  ('nord',     'Nord Slate',    40, false, now(), now())
+ON CONFLICT (code) DO NOTHING;
+
 -- Role × permission matrix -----------------------------------------------------
 INSERT INTO role_permissions ("roleCode", "permissionCode")
   SELECT 'ADMIN', code FROM permissions
@@ -255,20 +249,4 @@ INSERT INTO role_permissions ("roleCode", "permissionCode") VALUES
   ('QC', 'shipment.read'), ('QC', 'shipment.manage'),
   ('QC', 'qc.read'), ('QC', 'qc.create'),
   ('QC', 'transfer.read'), ('QC', 'transfer.create'), ('QC', 'transfer.receive')
-ON CONFLICT DO NOTHING;
-
--- Dev user store assignments (Change 9, ADR 0045)
--- Owner belongs to all stores; cashier belongs only to Main store.
-INSERT INTO user_stores ("userId", "storeId")
-SELECT u.id, s.id
-FROM users u
-CROSS JOIN stores s
-WHERE u.email = 'owner@malika.uz'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO user_stores ("userId", "storeId")
-SELECT u.id, s.id
-FROM users u
-JOIN stores s ON s.name = 'Main store'
-WHERE u.email = 'cashier@malika.uz'
 ON CONFLICT DO NOTHING;

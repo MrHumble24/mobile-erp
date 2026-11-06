@@ -28,7 +28,7 @@ export function ShortcutsHelp() {
         {SHORTCUTS.map((s) => (
           <div key={s.keys} className="flex items-center justify-between text-xs py-0.5">
             <span className="text-muted-foreground">{t(s.labelKey)}</span>
-            <kbd className="rounded bg-[#f0f0f0] px-1.5 py-0.5 font-mono text-[10px]">{s.keys}</kbd>
+            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]">{s.keys}</kbd>
           </div>
         ))}
       </PopoverContent>

@@ -85,6 +85,8 @@ export const KEPT_TABLES = [
   'user_stores',
   'stores',
   'store_settings',
+  'company_profiles',
+  'themes',
   // backups + secrets
   'backup_run_statuses',
   'backup_target_statuses',

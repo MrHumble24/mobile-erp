@@ -21,7 +21,7 @@ export function ConsignDeviceRow({
 }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-2 rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-2 rounded-[14px] border border-border bg-muted p-3">
       <div className="flex items-center justify-between">
         <Label className="text-xs text-muted-foreground">
           {t("consignments.device")} #{index + 1}

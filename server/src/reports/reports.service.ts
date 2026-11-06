@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CompanyService } from '../company/company.service.js';
+import { getLocalDateString, startOfLocalDay } from '../common/time-zone.js';
 import { toNumber } from '../common/lib/to-number.js';
 import { StoresService } from '../stores/stores.service.js';
 import {
@@ -30,6 +32,7 @@ export class ReportsService {
     private readonly pricingRepo: ReportsModelPricingRepository,
     private readonly closingRepo: ReportsDailyClosingRepository,
     private readonly stores: StoresService,
+    private readonly company: CompanyService,
   ) {}
 
   async profit(query: DateRangeQueryDto): Promise<ProfitReport> {
@@ -102,7 +105,8 @@ export class ReportsService {
 
   async dailyClosing(query: DailyClosingQueryDto): Promise<DailyClosingReport> {
     const storeIds = await this.stores.currentStoreIds();
-    const from = startOfDay(query.date);
+    const timeZone = await this.company.getTimeZone();
+    const from = startOfLocalDay(query.date, timeZone);
     const to = new Date(from.getTime() + DAY_MS);
     const [sales, expenses, newC, settledC] = await Promise.all([
       this.closingRepo.salesForDay(from, to, storeIds),
@@ -112,7 +116,7 @@ export class ReportsService {
     ]);
     const revenue = toNumber(sales._sum.salePrice);
     return {
-      date: from.toISOString().slice(0, 10),
+      date: getLocalDateString(from, timeZone),
       unitsSold: sales._count,
       revenue,
       grossProfit: revenue - toNumber(sales._sum.landedCostSnapshot),
@@ -160,12 +164,4 @@ export function rangeOrDefault(
 
 function parseDate(value?: string): Date | undefined {
   return value ? new Date(value) : undefined;
-}
-
-// ponytail: naive UTC day boundary; add store-timezone offset if the digest drifts.
-function startOfDay(value?: string): Date {
-  const base = value ? new Date(value) : new Date();
-  return new Date(
-    Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()),
-  );
 }

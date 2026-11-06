@@ -62,7 +62,7 @@ function InventoryTabsNav({
       <TabsTrigger value="devices" className="gap-2">
         <span>{t("inventory.tabDevices")}</span>
         {devicesTotal != null && (
-          <Badge variant="outline" size="sm" className="font-mono text-[11px] h-5 px-1.5 bg-[#f0f1f5]">
+          <Badge variant="outline" size="sm" className="font-mono text-[11px] h-5 px-1.5 bg-muted">
             {devicesTotal}
           </Badge>
         )}
@@ -71,7 +71,7 @@ function InventoryTabsNav({
         <TabsTrigger value="models" className="gap-2">
           <span>{t("inventory.tabModels")}</span>
           {modelsCount != null && (
-            <Badge variant="outline" size="sm" className="font-mono text-[11px] h-5 px-1.5 bg-[#f0f1f5]">
+            <Badge variant="outline" size="sm" className="font-mono text-[11px] h-5 px-1.5 bg-muted">
               {modelsCount}
             </Badge>
           )}

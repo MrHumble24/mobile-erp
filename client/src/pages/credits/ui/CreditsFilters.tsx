@@ -29,7 +29,7 @@ export function CreditsFilters({ filters }: { filters: ReturnType<typeof useCred
         ))}
       </div>
       <div className="relative w-full sm:w-64">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#838383]" />
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={filters.search}
           onChange={(e) => filters.setSearch(e.target.value)}

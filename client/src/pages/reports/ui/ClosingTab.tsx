@@ -84,7 +84,7 @@ function ClosingRangeTable({ rows }: { rows: DailyClosingReport[] }) {
               <TableCell className="font-mono text-sm text-right">{formatMoney(r.expenses)}</TableCell>
             </TableRow>
           ))}
-          <TableRow className="border-t-2 border-[#e8e8e8] bg-[#f8f9fa] font-bold">
+          <TableRow className="border-t-2 border-border bg-muted font-bold">
             <TableCell>{t("common.total")}</TableCell>
             <TableCell className="text-right">{totals.unitsSold}</TableCell>
             <TableCell className="font-mono text-sm text-right">{formatMoney(totals.revenue)}</TableCell>

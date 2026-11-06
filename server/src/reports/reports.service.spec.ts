@@ -28,17 +28,37 @@ function build() {
     ]),
   };
   const pricingRepo = { rollingAverages: jest.fn().mockResolvedValue([]) };
+  const closingRepo = {
+    salesForDay: jest.fn().mockResolvedValue({
+      _sum: { salePrice: 1200, landedCostSnapshot: 800 },
+      _count: 3,
+    }),
+    expensesForDay: jest.fn().mockResolvedValue({ _sum: { amount: 150 } }),
+    newConsignments: jest.fn().mockResolvedValue(2),
+    settledConsignments: jest.fn().mockResolvedValue(1),
+  };
   const storesService = {
     currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
+  };
+  const companyService = {
+    getTimeZone: jest.fn().mockResolvedValue('Asia/Tashkent'),
   };
   const service = new ReportsService(
     profitRepo as unknown as ReportsProfitRepository,
     {} as ReportsExpensesRepository,
     pricingRepo as unknown as ReportsModelPricingRepository,
-    {} as ReportsDailyClosingRepository,
+    closingRepo as unknown as ReportsDailyClosingRepository,
     storesService as unknown as any,
+    companyService as unknown as any,
   );
-  return { service, profitRepo, pricingRepo, storesService };
+  return {
+    service,
+    profitRepo,
+    pricingRepo,
+    closingRepo,
+    storesService,
+    companyService,
+  };
 }
 
 describe('ReportsService.profit', () => {
@@ -82,5 +102,29 @@ describe('ReportsService.modelPricing', () => {
     const { service, pricingRepo } = build();
     await service.modelPricing({ windowDays: 30, modelId: 'm1' });
     expect(pricingRepo.rollingAverages).toHaveBeenCalledWith(30, 'm1');
+  });
+});
+
+describe('ReportsService.dailyClosing', () => {
+  it('computes closing report for date in company time zone', async () => {
+    const { service, closingRepo } = build();
+    const result = await service.dailyClosing({ date: '2026-11-06' });
+    expect(result.date).toBe('2026-11-06');
+    expect(result.revenue).toBe(1200);
+    expect(result.grossProfit).toBe(400);
+    expect(result.expenses).toBe(150);
+    expect(result.unitsSold).toBe(3);
+    expect(result.newConsignments).toBe(2);
+    expect(result.settledConsignments).toBe(1);
+
+    // Verify UTC boundary passed to repository (2026-11-05T19:00:00Z for Tashkent)
+    const calls = closingRepo.salesForDay.mock.calls as [
+      Date,
+      Date,
+      string[],
+    ][];
+    const [fromArg, toArg] = calls[0];
+    expect(fromArg.toISOString()).toBe('2026-11-05T19:00:00.000Z');
+    expect(toArg.toISOString()).toBe('2026-11-06T19:00:00.000Z');
   });
 });

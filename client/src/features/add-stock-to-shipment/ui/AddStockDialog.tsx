@@ -15,7 +15,7 @@ import { StockLineForm } from "./StockLineForm"
 function StagedRow({ line, onRemove }: { line: StagedLine; onRemove: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-[#f0f0f0] py-2 last:border-0">
+    <div className="flex items-center justify-between gap-2 border-b border-border py-2 last:border-0">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{line.name}</p>
         <p className="text-xs text-muted-foreground">
@@ -87,7 +87,7 @@ export function AddStockDialog({
             onAdd={(line) => setStaged((s) => [...s, line])}
           />
           {staged.length > 0 && (
-            <div className="rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] px-3 shadow-[var(--shadow-xs)]">
+            <div className="rounded-[14px] border border-border bg-muted px-3 shadow-[var(--shadow-xs)]">
               {staged.map((line, i) => (
                 <StagedRow key={`${line.modelId}-${i}`} line={line} onRemove={() => setStaged((s) => s.filter((_, j) => j !== i))} />
               ))}

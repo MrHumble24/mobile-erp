@@ -41,7 +41,7 @@ export function CreditTenderForm({
         if (!invalid && !pending) onSubmit(amount, accountCode)
       }}
     >
-      <div className="flex items-center justify-between rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-sm">
+      <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5 text-sm">
         <span className="text-muted-foreground">{capLabel}</span>
         <span className="font-mono font-semibold">{formatMoney(cap)}</span>
       </div>

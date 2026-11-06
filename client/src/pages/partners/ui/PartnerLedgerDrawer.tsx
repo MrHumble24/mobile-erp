@@ -19,7 +19,7 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
   const isConsignment = entry.kind === "consignment"
   const changeNum = Number(entry.change)
   return (
-    <div className="p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] space-y-1.5 text-sm shadow-[var(--shadow-xs)]">
+    <div className="p-3.5 border border-border rounded-[14px] bg-muted space-y-1.5 text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between items-center">
         <Badge variant={isConsignment ? "violet" : "mint"}>
           {isConsignment ? t("partners.kindConsignment") : t("partners.kindPayment")}
@@ -36,7 +36,7 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
         <span>{t("partners.runningBalance")}: {formatMoney(entry.runningBalance)}</span>
       </div>
       {entry.notes && (
-        <div className="text-xs text-muted-foreground italic bg-[#f8f9fa] border border-[#e8e8e8] p-2 rounded-[10px]">
+        <div className="text-xs text-muted-foreground italic bg-muted border border-border p-2 rounded-[10px]">
           {entry.notes}
         </div>
       )}

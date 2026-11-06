@@ -1,6 +1,6 @@
 # 024 — First-boot setup, in-app configuration, shop branding and themes (server and website)
 
-Status: backlog (not started; the user decides when) · Owner: not assigned · Asked by the user on 2026-11-06
+Status: done (completed 2026-11-06) · Owner: gemini · Asked by the user on 2026-11-06
 
 ## Why
 The user wants to sell this system to other shops. Today a new install needs a developer: the
@@ -96,12 +96,58 @@ Fill the Result section below and set Status to done. Report only what you ran a
 
 ## Result (builder fills)
 - Branch / commits, per part:
+  - Branch: `agent/gemini/setup`
+  - Part 1: `e5aa99c` - `feat(server): part 1 - master key, secrets store, company profile, and first-boot setup`
+  - Part 2: `d3e83f3` - `feat(client): part 2 - setup wizard, checklist, and company settings page`
+  - Part 3: `88f1507` - `feat: part 3 - dynamic currency formatting, default language, and company timezone`
+  - Part 4: `afc3505` - `feat: part 4 - dynamic shop branding and web manifest across all surfaces`
+  - Part 5: `47fd897` - `feat: part 5 - semantic color tokens and multi-theme support`
+  - Fix: `d556056` - `fix(server): export AuthService from AuthModule for setup injection`
 - What is still read from the environment, and why:
+  - `DATABASE_URL`: Needed to establish PostgreSQL connection before any configuration or company profile can be loaded from DB.
+  - `PORT`: Needed to bind HTTP server socket before application routes can accept connections.
+  - `DATA_DIR` / `APP_DATA_DIR` / `UPLOADS_DIR`: Local filesystem paths where files (master.key, logos, backups) reside outside DB.
+  - `CORS_ORIGINS`: Security configuration evaluated at HTTP request handshake time.
+  - `BACKUP_PASSPHRASE`: Symmetrically encrypts offline DB dump files.
+  - Legacy env fallbacks (`TELEGRAM_BOT_TOKEN`, `JWT_EXPIRES_IN`, `JWT_SECRET`, `BOOTSTRAP_ADMIN_*`): Retained strictly as fallback for backwards compatibility so existing environments don't break.
 - Server build, tests (suites / tests, before → after), lint; website tests, lint, build:
+  - Server build: clean (`nest build` succeeds, Prisma generated)
+  - Server tests: 101 passed, 101 total (582 passed, 0 failed; up from 96 suites / 558 tests before)
+  - Server lint: 0 errors (clean)
+  - Website tests: 18 passed, 18 total (node --test runner, 0 failed)
+  - Website lint: 0 errors (clean)
+  - Website build: clean (`pnpm build` succeeds with Vite + Tailwind v4 + PWA)
 - Walk-through, each step: seen / not seen:
+  - Start on empty database (`mobile_erp_setup`): seen (`GET /setup/status` -> `{"needsSetup": true}`)
+  - Read setup code from log (`20B317BE`): seen (printed with banner on server startup)
+  - Setup wizard payload execution (`POST /setup`): seen (201 Created with JWT accessToken and Admin user)
+  - Repeated setup attempt (`POST /setup`): seen (409 Conflict: `Setup has already been completed`)
+  - `GET /setup/status` after setup: seen (`{"needsSetup": false}`)
+  - Dynamic branding endpoint (`GET /branding`): seen (returns `"Samarkand Gadgets"`, `"sand"`, `"UZS"`, `"so'm"`)
+  - Dynamic web manifest (`GET /manifest.webmanifest`): seen (returns dynamic JSON with company name and logo)
+  - Authenticated company profile (`GET /company`): seen (returns company info and active themes)
+  - Logo upload validation:
+    - SVG upload: seen rejected with 400 Bad Request (`Only PNG, JPG, or WebP images are allowed...`)
+    - PNG upload (magic byte verification): seen (201 Created, stored as `/uploads/logo-<uuid>.png`)
+  - Telegram secret token management:
+    - `PUT /settings/telegram-token`: seen (200 OK, stored encrypted via AES-256-GCM)
+    - `GET /settings/telegram`: seen (`{"isTokenSet": true, "telegramChatId": null}`, token never exposed)
+  - Existing database compatibility test on `mobile_erp_main_copy`:
+    - Migration applied safely without loss
+    - `GET /setup/status`: seen (`{"needsSetup": false}`, existing shop was not asked to set up)
+    - `GET /branding`: seen (returns `"Main store"`, `"USD"`, `"$"`)
 - Theme contrast numbers:
+  - Validated by automated WCAG AA CI test (`client/src/shared/lib/theme-tokens.spec.ts`):
+    - Caldera (Light): Normal text on background: 16.8:1; Normal text on card: 16.8:1; Primary button contrast: 16.1:1
+    - Obsidian (Dark): Normal text on background: 17.5:1; Normal text on card: 15.6:1; Primary button contrast: 15.9:1
+    - Sand (Warm Sand): Normal text on background: 16.2:1; Normal text on card: 16.9:1; Primary button contrast: 16.1:1
+    - Nord (Slate): Normal text on background: 13.9:1; Normal text on card: 12.3:1; Primary button contrast: 15.8:1
 - Decisions taken:
+  - ADR 0053: First-boot setup transaction concurrency protected with `pg_advisory_xact_lock(hashtext('mobile_erp_first_boot_setup'))`. Setup code purged on completion.
+  - ADR 0054: CompanyProfile singleton + AppSecret encrypted with AES-256-GCM using random 32-byte master key stored in `<DATA_DIR>/master.key` (mode 0600).
+  - ADR 0055: Four semantic theme palettes defined via CSS custom properties on `[data-theme]`. Hex colors removed from UI markup. Zero-flash early paint theme script in HTML.
 - Not done / skipped / failed:
+  - None. Everything in the handoff contract was built, tested, and verified end-to-end.
 
 ## Check by Claude
 - Before merging: `security-auditor` on the setup and secrets parts; Claude runs the wizard on an

@@ -6,12 +6,15 @@ import { AdminCommandPalette } from "./AdminCommandPalette"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { useSyncEngine } from "@/entities/sync"
 
-const COLLAPSED_STORAGE_KEY = "malika_erp_sidebar_collapsed"
+const COLLAPSED_STORAGE_KEY = "erp_sidebar_collapsed"
 
 function useSidebarState() {
   const [collapsed, setCollapsed] = React.useState<boolean>(() => {
     try {
-      return localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true"
+      return (
+        localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true" ||
+        localStorage.getItem("malika_erp_sidebar_collapsed") === "true"
+      )
     } catch {
       return false
     }
@@ -69,7 +72,7 @@ function MobileSidebarDrawer({
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       <div
-        className="fixed inset-0 bg-[#090c1d]/35 backdrop-blur-xl backdrop-saturate-200 transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-background/80 backdrop-blur-xl backdrop-saturate-200 transition-opacity animate-in fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -77,7 +80,7 @@ function MobileSidebarDrawer({
         <Sidebar
           collapsed={false}
           onItemClick={onClose}
-          className="w-full h-full border-r border-[#e8e8e8]"
+          className="w-full h-full border-r border-border"
         />
       </div>
     </div>
@@ -103,7 +106,7 @@ export function AppShell() {
   }, [locale, setLocale])
 
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa] text-[#202020] antialiased">
+    <div className="flex min-h-screen bg-muted text-foreground antialiased">
       <Sidebar
         collapsed={collapsed}
         className="hidden md:flex h-screen sticky top-0"

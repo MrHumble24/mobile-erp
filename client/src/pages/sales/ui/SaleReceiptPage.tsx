@@ -50,12 +50,12 @@ export function SaleReceiptPage() {
 
   return (
     <div className="space-y-6">
-      <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#e8e8e8]">
+      <div className="print:hidden flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate(-1)}
-          className="gap-2 text-[#646464] hover:text-[#202020]"
+          className="gap-2 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
           <span>{t("pos.backToSales")}</span>

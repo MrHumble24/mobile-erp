@@ -20,7 +20,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b [&_tr]:border-[#e8e8e8] bg-[#f8f9fa]", className)}
+      className={cn("[&_tr]:border-b [&_tr]:border-border bg-muted", className)}
       {...props}
     />
   )
@@ -41,7 +41,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "border-t border-[#e8e8e8] bg-[#f8f9fa] font-medium [&>tr]:last:border-b-0",
+        "border-t border-border bg-muted font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-[#e8e8e8] transition-colors hover:bg-[#f8f9fa]",
+        "border-b border-border transition-colors hover:bg-muted",
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-9 px-4 text-left align-middle font-semibold whitespace-nowrap text-[#838383] uppercase tracking-wider text-[11px]",
+        "h-9 px-4 text-left align-middle font-semibold whitespace-nowrap text-muted-foreground uppercase tracking-wider text-[11px]",
         className
       )}
       {...props}
@@ -80,7 +80,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "py-2.5 px-4 align-middle whitespace-nowrap tabular-nums font-medium text-[#202020] text-sm",
+        "py-2.5 px-4 align-middle whitespace-nowrap tabular-nums font-medium text-foreground text-sm",
         className
       )}
       {...props}
@@ -95,7 +95,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-xs font-body text-[#838383]", className)}
+      className={cn("mt-4 text-xs font-body text-muted-foreground", className)}
       {...props}
     />
   )

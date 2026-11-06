@@ -43,6 +43,8 @@ import { RepairsModule } from './repairs/repairs.module.js';
 import { BonusModule } from './bonus/bonus.module.js';
 import { StorefrontModule } from './storefront/storefront.module.js';
 import { SecretsModule } from './secrets/secrets.module.js';
+import { CompanyModule } from './company/company.module.js';
+import { SetupModule } from './setup/setup.module.js';
 import { BackupsModule } from './backups/backups.module.js';
 import { DataWipeModule } from './data-wipe/data-wipe.module.js';
 import { RuntimeModule } from './common/runtime/runtime.module.js';
@@ -94,9 +96,11 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     RepairsModule,
     BonusModule,
     StorefrontModule,
-    RuntimeModule,
     SecretsModule,
+    RuntimeModule,
     BackupsModule,
+    CompanyModule,
+    SetupModule,
     DataWipeModule,
   ],
   controllers: [AppController],

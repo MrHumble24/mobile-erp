@@ -36,7 +36,7 @@ function DetailBody({
 
   return (
     <div className="my-4 space-y-5 overflow-y-auto">
-      <div className="rounded-[14px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+      <div className="rounded-[14px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
         <Row
           label={t("consignments.partner")}
           value={

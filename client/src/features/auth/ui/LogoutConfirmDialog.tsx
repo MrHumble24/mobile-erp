@@ -39,7 +39,7 @@ export function LogoutConfirmDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="max-w-md">
         <DialogHeader>
-          <div className="size-11 rounded-full bg-[#e53935]/10 flex items-center justify-center text-[#e53935] mb-2">
+          <div className="size-11 rounded-full bg-destructive/10 flex items-center justify-center text-destructive mb-2">
             <LogOut className="size-5 stroke-[2.2]" />
           </div>
           <DialogTitle>{t("auth.logoutConfirmTitle")}</DialogTitle>

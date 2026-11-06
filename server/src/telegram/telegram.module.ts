@@ -10,6 +10,7 @@ import { StoresModule } from '../stores/stores.module.js';
 import { TelegramCron } from './telegram.cron.js';
 import { TelegramListener } from './telegram.listener.js';
 import { TelegramService } from './telegram.service.js';
+import { TelegramController } from './telegram.controller.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TelegramService } from './telegram.service.js';
     CreditsModule,
     StoresModule,
   ],
+  controllers: [TelegramController],
   providers: [TelegramService, TelegramListener, TelegramCron],
   exports: [TelegramService],
 })

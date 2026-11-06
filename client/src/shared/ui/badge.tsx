@@ -8,36 +8,36 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#eeeeee] text-[#202020] border-none shadow-none",
+          "bg-muted text-foreground border-none shadow-none",
         mercury:
-          "bg-[#eeeeee] text-[#646464] border-none shadow-none",
+          "bg-muted text-muted-foreground border-none shadow-none",
         mint:
-          "bg-[#6ee7b7] text-[#090c1d] border-none shadow-none",
+          "bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-none shadow-none",
         blue:
-          "bg-[#0091ff] text-white border-none shadow-none",
+          "bg-primary text-primary-foreground border-none shadow-none",
         amber:
           "bg-amber-500/15 text-amber-700 border border-amber-500/30 shadow-none",
         violet:
-          "bg-[#6647f0]/10 text-[#6647f0] border border-[#6647f0]/20 shadow-none",
+          "bg-primary/10 text-primary border border-primary/20 shadow-none",
         emerald:
-          "bg-[#00c07a]/15 text-[#00c07a] border border-[#00c07a]/30 shadow-none",
+          "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-none",
         teal:
-          "bg-[#16c0a4]/15 text-[#16c0a4] border border-[#16c0a4]/30 shadow-none",
+          "bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/30 shadow-none",
         dark:
-          "bg-[#202020] text-white border-none shadow-none",
+          "bg-primary text-primary-foreground border-none shadow-none",
         outline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] shadow-none",
+          "bg-transparent text-foreground border border-border shadow-none",
         destructive:
           "bg-rose-500/15 text-rose-600 border border-rose-500/20 shadow-none",
         // Legacy aliases
         sulfur:
-          "bg-[#6ee7b7] text-[#090c1d] border-none shadow-none",
+          "bg-emerald-500/20 text-emerald-900 dark:text-emerald-200 border-none shadow-none",
         ember:
           "bg-rose-500/15 text-rose-600 border border-rose-500/20 shadow-none",
         plasma:
-          "bg-[#6647f0]/10 text-[#6647f0] border border-[#6647f0]/20 shadow-none",
+          "bg-primary/10 text-primary border border-primary/20 shadow-none",
         limestone:
-          "bg-[#eeeeee] text-[#202020] border-none shadow-none",
+          "bg-muted text-foreground border-none shadow-none",
       },
       size: {
         default: "px-3 py-1 text-xs",

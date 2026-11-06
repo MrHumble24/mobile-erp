@@ -23,7 +23,7 @@ function SaleRow({ sale, onOpenReceipt }: { sale: SaleView; onOpenReceipt: (id: 
   const code = saleUnitCode(sale)
   const detail = code ?? t("catalog.pieces", { count: sale.quantity ?? 0 })
   return (
-    <div className="flex items-center justify-between gap-2 py-2 border-b border-[#f0f0f0] last:border-0">
+    <div className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-0">
       <div className="min-w-0">
         <p className="text-sm font-medium truncate">{saleModelName(sale)}</p>
         <p className="text-xs text-muted-foreground font-mono">{time} · {detail}</p>
@@ -51,7 +51,7 @@ export function SessionPanel({ soldById, onOpenReceipt }: SessionPanelProps) {
         <MetricCard label={t("pos.todaySales")} value={data?.total ?? 0} />
         <MetricCard label={t("pos.todayRevenue")} value={formatMoney(revenue)} />
       </div>
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
+      <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
           {t("pos.recentSales")}
         </p>

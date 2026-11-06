@@ -11,7 +11,7 @@ function Command({
   return (
     <CommandPrimitive
       className={cn(
-        "flex size-full flex-col overflow-hidden rounded-[12px] bg-white text-[#202020]",
+        "flex size-full flex-col overflow-hidden rounded-[12px] bg-white text-foreground",
         className
       )}
       {...props}
@@ -33,7 +33,7 @@ function CommandDialog({
         className="sm:max-w-xl p-0 overflow-hidden"
         contentClassName="p-0 overflow-hidden"
       >
-        <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[#838383] [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-4 [&_[cmdk-input]]:h-11">
+        <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:size-4 [&_[cmdk-input]]:h-11">
           {children}
         </Command>
       </DialogPopup>
@@ -46,11 +46,11 @@ function CommandInput({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
-    <div className="flex items-center px-4 border-b border-[#e8e8e8]">
-      <Search className="mr-2.5 size-4 shrink-0 stroke-[2] text-[#838383]" />
+    <div className="flex items-center px-4 border-b border-border">
+      <Search className="mr-2.5 size-4 shrink-0 stroke-[2] text-muted-foreground" />
       <CommandPrimitive.Input
         className={cn(
-          "flex h-11 w-full bg-transparent py-2.5 text-sm font-body outline-none placeholder:text-[#838383] disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-11 w-full bg-transparent py-2.5 text-sm font-body outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         {...props}
@@ -76,7 +76,7 @@ function CommandEmpty({
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
   return (
     <CommandPrimitive.Empty
-      className="py-6 text-center text-xs font-body text-[#838383]"
+      className="py-6 text-center text-xs font-body text-muted-foreground"
       {...props}
     />
   )
@@ -89,7 +89,7 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       className={cn(
-        "overflow-hidden p-1 text-[#202020] [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-[#838383] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider",
+        "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider",
         className
       )}
       {...props}
@@ -103,7 +103,7 @@ function CommandSeparator({
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
     <CommandPrimitive.Separator
-      className={cn("-mx-1 h-[1px] bg-[#e8e8e8]", className)}
+      className={cn("-mx-1 h-[1px] bg-border", className)}
       {...props}
     />
   )
@@ -116,7 +116,7 @@ function CommandItem({
   return (
     <CommandPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors aria-selected:bg-[#f8f9fa] aria-selected:text-[#202020] data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+        "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors aria-selected:bg-muted aria-selected:text-foreground data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
         className
       )}
       {...props}
@@ -131,7 +131,7 @@ function CommandShortcut({
   return (
     <span
       className={cn(
-        "ml-auto text-xs tracking-widest text-[#838383] font-mono",
+        "ml-auto text-xs tracking-widest text-muted-foreground font-mono",
         className
       )}
       {...props}

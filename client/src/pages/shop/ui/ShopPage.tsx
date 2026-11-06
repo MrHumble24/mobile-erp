@@ -22,8 +22,8 @@ export function ShopPage() {
 
   if (configLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa]">
-        <div className="h-16 border-b border-[#e8e8e8] bg-white" />
+      <div className="min-h-screen bg-muted">
+        <div className="h-16 border-b border-border bg-card" />
         <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
           <Skeleton className="h-12 w-full max-w-md rounded-full" />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -38,8 +38,8 @@ export function ShopPage() {
 
   if (!config?.enabled) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex flex-col">
-        <header className="h-16 border-b border-[#e8e8e8] bg-white flex items-center px-4">
+      <div className="min-h-screen bg-muted flex flex-col">
+        <header className="h-16 border-b border-border bg-card flex items-center px-4">
           <div className="max-w-6xl mx-auto w-full flex items-center gap-2">
             <div className="size-8 rounded-lg bg-muted flex items-center justify-center">
               <Store className="size-4 text-muted-foreground" />
@@ -62,7 +62,7 @@ export function ShopPage() {
   const categories = config.categories ?? []
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-muted flex flex-col">
       <StorefrontHeader
         shopName={config.shopName}
         contactPhone={config.contactPhone}
@@ -77,7 +77,7 @@ export function ShopPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("storefront.searchPlaceholder")}
-            className="pl-10 h-11 rounded-full bg-white border-[#e8e8e8] shadow-xs"
+            className="pl-10 h-11 rounded-full bg-card border-border shadow-xs"
           />
         </div>
 

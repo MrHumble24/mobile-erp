@@ -72,7 +72,7 @@ export function OrdersPage() {
 
       {/* Orders Table */}
       {isLoading ? (
-        <div className="space-y-3 bg-white p-6 rounded-2xl border border-[#e8e8e8]">
+        <div className="space-y-3 bg-card p-6 rounded-2xl border border-border">
           <Skeleton className="h-6 w-1/4" />
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />

@@ -23,6 +23,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
+    "seed:dev": "prisma db execute --file prisma/seed.dev.sql",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "ref:import": "tsx scripts/ref-import.ts",
     "backup:open": "tsx scripts/open-backup.ts",

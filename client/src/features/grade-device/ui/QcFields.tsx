@@ -56,7 +56,7 @@ function BatteryField({ form }: { form: Form }) {
                 onChange={(e) => field.onChange(Number.isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
               />
             </FormControl>
-            <div className="h-2 rounded-full bg-[#eeeeee] overflow-hidden">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
               <div
                 className={pct < 80 ? "h-full bg-amber-500" : "h-full bg-emerald-500"}
                 style={{ width: `${pct}%` }}

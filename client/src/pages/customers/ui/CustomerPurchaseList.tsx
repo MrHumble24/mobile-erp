@@ -20,7 +20,7 @@ function PurchaseItem({
   const { t } = useI18n()
   const code = saleUnitCode(sale)
   return (
-    <div className="p-3.5 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] space-y-2 text-sm shadow-[var(--shadow-xs)]">
+    <div className="p-3.5 border border-border rounded-[14px] bg-muted space-y-2 text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between items-start gap-2">
         <div className="font-semibold">{saleModelName(sale)}</div>
         <div className="font-mono font-bold">{formatMoney(sale.salePrice)}</div>

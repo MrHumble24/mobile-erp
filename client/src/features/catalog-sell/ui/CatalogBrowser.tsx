@@ -35,7 +35,7 @@ export function CatalogBrowser({ level, excludeUnitIds, onPickUnit, onPickQuanti
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#838383]" />
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -52,7 +52,7 @@ export function CatalogBrowser({ level, excludeUnitIds, onPickUnit, onPickQuanti
           ))}
         </div>
       ) : !data || data.length === 0 ? (
-        <p className="rounded-[16px] border border-[#e8e8e8] bg-white py-12 text-center text-sm text-muted-foreground shadow-[var(--shadow-xs)]">
+        <p className="rounded-[16px] border border-border bg-white py-12 text-center text-sm text-muted-foreground shadow-[var(--shadow-xs)]">
           {t("catalog.noUnits")}
         </p>
       ) : (

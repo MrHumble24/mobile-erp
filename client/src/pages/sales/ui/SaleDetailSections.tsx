@@ -21,7 +21,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-semibold">{title}</h4>
-      <div className="space-y-1.5 rounded-[14px] border border-[#e8e8e8] bg-[#f8f9fa] p-3.5">
+      <div className="space-y-1.5 rounded-[14px] border border-border bg-muted p-3.5">
         {children}
       </div>
     </div>

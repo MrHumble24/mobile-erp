@@ -26,14 +26,14 @@ export function CatalogCard({ entry, level, onTap }: { entry: CatalogEntry; leve
       type="button"
       variant="ghost"
       onClick={onTap}
-      className="h-auto w-full flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[16px] border border-[#e8e8e8] bg-white p-0 text-left shadow-[var(--shadow-xs)] hover:bg-[#f8f9fa]"
+      className="h-auto w-full flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[16px] border border-border bg-white p-0 text-left shadow-[var(--shadow-xs)] hover:bg-muted"
     >
       <AssetImage path={entry.imageUrl} alt={entry.name} className="aspect-square w-full" />
       <span className="flex flex-1 flex-col gap-1 p-3">
-        <span className="line-clamp-2 text-sm font-semibold text-[#090c1d]">
+        <span className="line-clamp-2 text-sm font-semibold text-foreground">
           {entry.brand} {entry.name}
         </span>
-        <span className={cn("text-xs", low ? "text-red-600" : "text-[#646464]")}>
+        <span className={cn("text-xs", low ? "text-red-600" : "text-muted-foreground")}>
           {t("catalog.inStockCount", { count: entry.inStock })}
         </span>
         <span className="mt-auto pt-1 text-sm font-bold text-primary">{priceLabel(entry, level)}</span>

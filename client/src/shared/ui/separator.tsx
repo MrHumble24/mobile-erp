@@ -20,7 +20,7 @@ function Separator({
       data-slot="separator"
       orientation={orientation}
       className={cn(
-        "shrink-0 bg-[#e8e8e8]",
+        "shrink-0 bg-border",
         isHorizontal ? "h-[1px] w-full" : "w-[1px] h-full",
         className
       )}

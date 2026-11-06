@@ -30,7 +30,7 @@ export function CustomerBonusHistory({ history }: { history: BonusHistoryRow[] }
   }
 
   return (
-    <ul className="divide-y divide-[#e8e8e8] rounded-[12px] border border-[#e8e8e8]">
+    <ul className="divide-y divide-border rounded-[12px] border border-border">
       {history.map((row) => (
         <li key={row.id} className="flex items-start justify-between gap-3 p-2.5">
           <div className="min-w-0 space-y-0.5">
@@ -53,7 +53,7 @@ export function CustomerBonusHistory({ history }: { history: BonusHistoryRow[] }
           </div>
           <span
             className={`shrink-0 text-sm font-semibold tabular-nums ${
-              Number(row.amount) > 0 ? "text-[#00a86b]" : "text-[#e53935]"
+              Number(row.amount) > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
             }`}
           >
             {signedPoints(row.amount)}

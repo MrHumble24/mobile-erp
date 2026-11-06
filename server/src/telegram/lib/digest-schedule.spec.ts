@@ -20,4 +20,18 @@ describe('shouldSendDigest', () => {
     const yesterday = new Date(Date.UTC(2026, 9, 31));
     expect(shouldSendDigest(now, '20:00', yesterday)).toBe(true);
   });
+
+  it('respects specific company timezone (Tashkent +5)', () => {
+    // 15:00 UTC = 20:00 in Asia/Tashkent
+    const utcNow = new Date('2026-11-01T15:00:00.000Z');
+    expect(shouldSendDigest(utcNow, '20:00', null, 'Asia/Tashkent')).toBe(true);
+    expect(shouldSendDigest(utcNow, '15:00', null, 'Asia/Tashkent')).toBe(
+      false,
+    );
+
+    const marker = todayMarker(utcNow, 'Asia/Tashkent');
+    expect(shouldSendDigest(utcNow, '20:00', marker, 'Asia/Tashkent')).toBe(
+      false,
+    );
+  });
 });

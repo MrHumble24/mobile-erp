@@ -50,8 +50,8 @@ function Bar({ label, count, max }: { label: string; count: number; max: number 
         <span className="font-medium">{label}</span>
         <span className="text-muted-foreground">{count}</span>
       </div>
-      <div className="h-2 rounded-full bg-[#eeeeee] overflow-hidden">
-        <div className="h-full bg-[#0091ff]" style={{ width: `${pct}%` }} />
+      <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -61,7 +61,7 @@ function Breakdown({ title, rows }: { title: string; rows: { key: string; label:
   const { t } = useI18n()
   const max = Math.max(1, ...rows.map((r) => r.count))
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3">
+    <div className="rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)] space-y-3">
       <h3 className="text-sm font-semibold">{title}</h3>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("common.notFound")}</p>

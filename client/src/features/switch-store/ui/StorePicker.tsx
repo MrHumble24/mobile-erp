@@ -43,9 +43,9 @@ export function StorePicker() {
           />
         }
       >
-        <Store className="size-4 text-[#838383] shrink-0" />
+        <Store className="size-4 text-muted-foreground shrink-0" />
         <span className="max-w-[130px] truncate">{activeStore?.name ?? "..."}</span>
-        <ChevronDown className="size-3.5 text-[#838383] shrink-0" />
+        <ChevronDown className="size-3.5 text-muted-foreground shrink-0" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {stores.map((s) => {

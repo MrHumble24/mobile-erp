@@ -32,7 +32,7 @@ function DefectRow({ form, index, label }: { form: Form; index: number; label: s
           checked={Boolean(selected)}
           onCheckedChange={(val) => handleToggle(Boolean(val))}
         />
-        <label htmlFor={id} className="cursor-pointer select-none text-xs sm:text-sm text-[#202020]">
+        <label htmlFor={id} className="cursor-pointer select-none text-xs sm:text-sm text-foreground">
           {label}
         </label>
       </div>
@@ -57,13 +57,13 @@ export function DefectsChecklist({ form, defectTypes }: { form: Form; defectType
 
   return (
     <div className="space-y-2">
-      <Label className={hasError ? "text-[#e53935]" : undefined}>{t("qc.defects")}</Label>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 border border-[#e8e8e8] rounded-[12px] bg-[#f8f9fa] p-3 max-h-60 overflow-y-auto">
+      <Label className={hasError ? "text-destructive" : undefined}>{t("qc.defects")}</Label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5 border border-border rounded-[12px] bg-muted p-3 max-h-60 overflow-y-auto">
         {fields.map((f, i) => (
           <DefectRow key={f.id} form={form} index={i} label={defectTypes[i]?.label ?? f.defectCode} />
         ))}
       </div>
-      {hasError && <p className="text-xs font-medium text-[#e53935]">{t("qc.failNeedsDefect")}</p>}
+      {hasError && <p className="text-xs font-medium text-destructive">{t("qc.failNeedsDefect")}</p>}
     </div>
   )
 }

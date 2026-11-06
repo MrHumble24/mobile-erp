@@ -10,7 +10,7 @@ export function QcSummarySection({ qc }: { qc: Qc | null }) {
   const { t } = useI18n()
   if (!qc) return <p className="text-sm text-muted-foreground">{t("inventory.noQc")}</p>
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] p-4 space-y-1.5 bg-[#f8f9fa] text-sm shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border p-4 space-y-1.5 bg-muted text-sm shadow-[var(--shadow-xs)]">
       <div className="flex justify-between">
         <span className="text-muted-foreground">{t("qc.result")}:</span>
         <span className={qc.passed ? "text-emerald-600 font-semibold" : "text-destructive font-semibold"}>

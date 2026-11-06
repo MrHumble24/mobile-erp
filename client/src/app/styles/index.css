@@ -11,6 +11,9 @@
 @import "@fontsource/sometype-mono/400.css";
 @import "@fontsource/sometype-mono/500.css";
 
+/* `dark:` follows the shop's theme, never the computer's own dark mode. */
+@custom-variant dark (&:where([data-theme="obsidian"], [data-theme="obsidian"] *, [data-theme="nord"], [data-theme="nord"] *));
+
 @theme {
   /* Colors */
   --color-signal-white: #ffffff;
@@ -77,26 +80,26 @@
   --shadow-xl: 0 20px 35px -8px rgba(0, 0, 0, 0.10), 0 0 1px 1px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.16);
 
-  /* Semantic UI Tokens */
-  --color-background: var(--surface-canvas);
-  --color-foreground: var(--color-ink-black);
-  --color-card: var(--surface-canvas);
-  --color-card-foreground: var(--color-ink-black);
-  --color-popover: var(--surface-canvas);
-  --color-popover-foreground: var(--color-ink-black);
-  --color-primary: var(--color-ink-black);
-  --color-primary-foreground: var(--color-signal-white);
-  --color-secondary: var(--color-mist);
-  --color-secondary-foreground: var(--color-ink-black);
-  --color-muted: var(--color-mist);
-  --color-muted-foreground: var(--color-slate);
-  --color-accent: var(--color-mist);
-  --color-accent-foreground: var(--color-ink-black);
-  --color-destructive: #e53935;
-  --color-destructive-foreground: #ffffff;
-  --color-border: var(--color-bone);
-  --color-input: var(--color-bone);
-  --color-ring: var(--color-signal-blue);
+  /* Semantic UI Tokens mapped to dynamic theme CSS variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 :root {
@@ -123,56 +126,25 @@
   --gradient-primary-gradient: linear-gradient(83deg,rgba(64,221,255) -5%,rgba(118,18,250) 51%,rgba(250,18,227) 125%);
   --gradient-dark-fade: linear-gradient(rgb(17, 17, 17) 24%, rgb(0, 0, 0));
 
-  /* Named Radii */
-  --radius-tags: 100px;
-  --radius-cards: 12px;
-  --radius-badges: 9999px;
-  --radius-images: 16px;
-  --radius-inputs: 9px;
-  --radius-buttons: 9999px;
-  --radius-largecards: 20px;
-
-  /* Surfaces */
-  --surface-canvas: #ffffff;
-  --surface-card: #f8f9fa;
+  /* Surfaces fallback */
+  --surface-canvas: var(--background);
   --surface-section-band: #e9ebf0;
   --surface-dark-panel: #111111;
   --surface-ink-surface: #000000;
-
-  /* Shadcn Semantic Mapping */
-  --background: #ffffff;
-  --foreground: #202020;
-  --card: #ffffff;
-  --card-foreground: #202020;
-  --popover: #ffffff;
-  --popover-foreground: #202020;
-  --primary: #202020;
-  --primary-foreground: #ffffff;
-  --secondary: #f8f9fa;
-  --secondary-foreground: #202020;
-  --muted: #f8f9fa;
-  --muted-foreground: #646464;
-  --accent: #f8f9fa;
-  --accent-foreground: #202020;
-  --destructive: #e53935;
-  --destructive-foreground: #ffffff;
-  --border: #e8e8e8;
-  --input: #e8e8e8;
-  --ring: #0091ff;
   --radius: 12px;
 }
 
 @layer base {
   *, ::before, ::after {
     box-sizing: border-box;
-    border-color: #e8e8e8;
+    border-color: var(--border);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
     background-color: var(--surface-card);
-    color: var(--color-ink-black);
+    color: var(--foreground);
     font-family: var(--font-inter);
     font-weight: 400;
     line-height: 1.5;
@@ -182,7 +154,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-plus-jakarta-sans);
-    color: var(--color-onyx);
+    color: var(--foreground);
     font-weight: 700;
     letter-spacing: -0.035em;
     line-height: 1.2;

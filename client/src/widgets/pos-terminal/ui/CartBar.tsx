@@ -20,7 +20,7 @@ export function CartBar({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
     document.getElementById("pos-cart")?.scrollIntoView({ behavior: "smooth", block: "start" })
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e8e8e8] bg-white p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white p-3 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] lg:hidden">
       <div className="mx-auto flex max-w-3xl items-center gap-3">
         <Button
           type="button"

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AccessService } from '../access/access.service.js';
 import { StoresService } from '../stores/stores.service.js';
+import { CompanyService } from '../company/company.service.js';
 import { AuthRepository } from './auth.repository.js';
 import { LoginDto } from './dto/login.dto.js';
 import { MeView } from './types/auth.types.js';
@@ -20,6 +21,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly access: AccessService,
     private readonly stores: StoresService,
+    private readonly company: CompanyService,
   ) {}
 
   async login(dto: LoginDto): Promise<{ accessToken: string; user: MeView }> {
@@ -38,10 +40,14 @@ export class AuthService {
     }
 
     await this.repo.updateLastLogin(creds.id);
-    const accessToken = await this.jwt.signAsync({
-      sub: creds.id,
-      email: creds.email,
-    });
+    const sessionDuration = await this.company.getSessionDuration();
+    const accessToken = await this.jwt.signAsync(
+      {
+        sub: creds.id,
+        email: creds.email,
+      },
+      { expiresIn: sessionDuration as `${number}${'s' | 'm' | 'h' | 'd'}` },
+    );
     return { accessToken, user: await this.me(creds.id) };
   }
 

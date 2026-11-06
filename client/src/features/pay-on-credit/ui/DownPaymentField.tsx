@@ -23,7 +23,7 @@ export function DownPaymentField({
 }: DownPaymentFieldProps) {
   const { t } = useI18n()
   return (
-    <div className="space-y-3 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-3 rounded-[12px] border border-border bg-muted p-3">
       <div className="space-y-1">
         <Label>{t("credit.downPayment")}</Label>
         <Input

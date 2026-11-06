@@ -62,7 +62,7 @@ function DetailBody({ creditId }: { creditId: string }) {
       <CreditGoods credit={credit} />
       <CreditPlan credit={credit} />
       <CreditPayments credit={credit} />
-      <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+      <p className="rounded-[10px] border border-border bg-muted p-2.5 text-xs text-muted-foreground">
         {t("credit.noInterest")}
       </p>
     </div>

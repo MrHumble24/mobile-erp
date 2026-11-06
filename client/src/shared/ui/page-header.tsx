@@ -18,21 +18,21 @@ export interface PageHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 
 function PageBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#838383]">
+    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {items.map((item, index) => {
         const isLast = index === items.length - 1
         return (
           <React.Fragment key={`${item.label}-${index}`}>
-            {index > 0 && <ChevronRight className="size-3 text-[#b3b3b3] shrink-0" />}
+            {index > 0 && <ChevronRight className="size-3 text-muted-foreground shrink-0" />}
             {item.href && !isLast ? (
               <Link
                 to={item.href}
-                className="hover:text-[#202020] transition-colors truncate max-w-[120px] sm:max-w-none"
+                className="hover:text-foreground transition-colors truncate max-w-[120px] sm:max-w-none"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={cn("truncate max-w-[150px] sm:max-w-none", isLast && "font-medium text-[#202020]")}>
+              <span className={cn("truncate max-w-[150px] sm:max-w-none", isLast && "font-medium text-foreground")}>
                 {item.label}
               </span>
             )}
@@ -58,13 +58,13 @@ function PageHeaderContent({
     <div className="space-y-1 min-w-0">
       {breadcrumbs && breadcrumbs.length > 0 && <PageBreadcrumbs items={breadcrumbs} />}
       <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#090c1d] leading-tight">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground leading-tight">
           {title}
         </h1>
         {badge}
       </div>
       {description && (
-        <p className="text-xs sm:text-sm text-[#646464] font-body max-w-2xl leading-relaxed">
+        <p className="text-xs sm:text-sm text-muted-foreground font-body max-w-2xl leading-relaxed">
           {description}
         </p>
       )}
@@ -84,7 +84,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e8e8e8]/60",
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/60",
         className
       )}
       {...props}

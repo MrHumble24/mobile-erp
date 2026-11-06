@@ -6,7 +6,7 @@ import { DeviceStatusBadge, type DeviceDetailView } from "@/entities/device"
 function SpecChip({ label, value }: { label: string; value: string }) {
   return (
     <span className="text-xs text-muted-foreground">
-      {label}: <span className="font-medium text-[#202020]">{value}</span>
+      {label}: <span className="font-medium text-foreground">{value}</span>
     </span>
   )
 }
@@ -30,7 +30,7 @@ function PreviousInspection({ device }: { device: DeviceDetailView }) {
 export function DeviceHeaderCard({ device }: { device: DeviceDetailView }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-2 border border-[#e8e8e8] rounded-[14px] bg-[#f8f9fa] p-3.5">
+    <div className="space-y-2 border border-border rounded-[14px] bg-muted p-3.5">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-sm font-medium">
           <span>{unitCode(device)}</span>

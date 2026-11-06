@@ -25,8 +25,8 @@ function Line({
 
 function differenceClass(difference: string): string {
   const kind = differenceKind(difference)
-  if (kind === "short") return "text-[#d92d20]"
-  if (kind === "over") return "text-[#027a48]"
+  if (kind === "short") return "text-destructive"
+  if (kind === "over") return "text-emerald-600 dark:text-emerald-400"
   return "text-black/70"
 }
 
@@ -97,9 +97,9 @@ function AccountGroups({ report }: { report: Report }) {
         <div key={a.accountCode} className="flex items-baseline justify-between gap-2">
           <span className="text-black/70">{shiftAccountLabel(a.accountCode, t)}</span>
           <span className="font-mono text-[11px]">
-            <span className="text-[#027a48]">+{formatMoney(a.in)}</span>
+            <span className="text-emerald-600 dark:text-emerald-400">+{formatMoney(a.in)}</span>
             {" / "}
-            <span className="text-[#d92d20]">-{formatMoney(a.out)}</span>
+            <span className="text-destructive">-{formatMoney(a.out)}</span>
             {" = "}
             <span className="font-semibold">{formatMoney(a.net)}</span>
           </span>
@@ -115,12 +115,12 @@ export function ShiftReportView({ report }: { report: Report }) {
   const { t } = useI18n()
   const open = report.closedAt === null
   return (
-    <div className="printable-cheque w-full max-w-[340px] rounded-[8px] border border-[#d4d4d4] bg-white p-4 font-sans text-[12px] leading-snug text-black shadow-[var(--shadow-md)] print:border-none print:p-0 print:shadow-none">
+    <div className="printable-cheque w-full max-w-[340px] rounded-[8px] border border-neutral-300 bg-white p-4 font-sans text-[12px] leading-snug text-black shadow-[var(--shadow-md)] print:border-none print:p-0 print:shadow-none">
       <div className="space-y-0.5 border-b-2 border-dashed border-black/30 pb-2.5 text-center">
         <p className="text-sm font-black uppercase tracking-wider">{t("shifts.report")}</p>
         <p className="text-[12px] font-semibold">{report.cashier.name}</p>
         {open && (
-          <p className="text-[11px] font-semibold uppercase text-[#b54708]">{t("shifts.stillOpen")}</p>
+          <p className="text-[11px] font-semibold uppercase text-amber-600 dark:text-amber-400">{t("shifts.stillOpen")}</p>
         )}
       </div>
 
