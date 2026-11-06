@@ -5,4 +5,6 @@ export interface PriceTagItem {
   subtitle: string | null
   price: number | string | null
   code: string | null
+  /** Whether the row is ticked when the dialog opens. */
+  preselected: boolean
 }

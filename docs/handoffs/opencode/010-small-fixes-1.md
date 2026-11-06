@@ -1,6 +1,6 @@
 # 010 — Small fixes: missing pictures and price tag defaults
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Three small things found while checking other work on 2026-11-06:
@@ -43,10 +43,34 @@ Fill the Result section of `docs/handoffs/opencode/010-small-fixes-1.md`, set St
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (opencode/big-pickle)
+- Commits: 90b4594 `fix(client): asset image fallback and price tag preselection`; this handoff commit follows.
 - Files changed:
+  - `client/src/shared/ui/asset-image.tsx` — shows the existing placeholder on `onError`, and resets the failed source when `path` changes so the new picture is tried.
+  - `client/src/shared/ui/README.md` — one line: fallback also on load failure, new path retried.
+  - `client/src/features/print-price-tags/model/price-tag.types.ts` — added `preselected: boolean`.
+  - `client/src/features/print-price-tags/ui/PriceTagsDialog.tsx` — initial selection is the `preselected` rows; Select all / Clear unchanged.
+  - `client/src/features/print-price-tags/README.md` — one line: dialog starts from the page's `preselected` rows; type gains `preselected`.
+  - `client/src/pages/inventory/lib/device-price-tags.ts` — `preselected` only for `IN_STOCK`; subtitle joins only the parts that exist (no dash).
+  - `client/src/pages/inventory/lib/device-price-tags.spec.ts` — in-stock preselected, sold not; subtitle both / storage only / color only / neither.
+  - `client/src/pages/stock/lib/product-price-tags.ts` — `preselected` only when `quantity > 0`.
+  - `client/src/pages/stock/lib/product-price-tags.spec.ts` — stock > 0 preselected, zero not.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
+  - `pnpm install`: `Already up to date` / `Done in 1ms using pnpm v12.16.1`
+  - `pnpm test`: `ℹ tests 104` · `ℹ pass 104` · `ℹ fail 0` · `ℹ skipped 0`
+  - `pnpm lint`: `$ oxlint` — exit 0; 117 pre-existing warnings elsewhere in `client`, none in the touched files.
+  - `pnpm build`: `vite v8.3.5 building client environment for production...` · `✓ built in 6.56s` · PWA precache 159 entries.
+  - `graphify update .` ran in `client/` and at the repo root (rebuilt both graphs; outputs are gitignored).
 - Not done / skipped / failed:
+  - No component test for `AssetImage`: this repo has no component test framework (tests are `node:test` for pure functions only).
+  - Screens were not seen: no browser is available in this environment. Claude checks the UI.
+  - Nothing failed; no new i18n text was needed.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed properly, report accurate. After merging `main`:
+  105 website tests pass, lint 0 errors, build passes.
+- Seen in a browser, with the server's pictures folder emptied on purpose: the till's catalog
+  shows the placeholder for every missing picture and no broken-image mark. On the inventory
+  page (36 phones, 11 in stock) the price tags dialog opens with 11 ticked and 11 labels to
+  print; a phone with storage only reads "128", no dash.
+- Not seen: the stock page's dialog with a zero-stock product (unit test only).

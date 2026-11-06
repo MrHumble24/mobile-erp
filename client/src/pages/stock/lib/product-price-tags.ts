@@ -9,5 +9,6 @@ export function productsToPriceTags(products: StockLevelView[]): PriceTagItem[] 
     subtitle: null,
     price: product.salePrice,
     code: product.barcode ?? null,
+    preselected: product.quantity > 0,
   }))
 }
