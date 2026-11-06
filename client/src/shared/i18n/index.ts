@@ -28,6 +28,8 @@ import uzStores from "./uz/stores.json"
 import uzSync from "./uz/sync.json"
 import uzTransfers from "./uz/transfers.json"
 import uzUsers from "./uz/users.json"
+import uzStorefront from "./uz/storefront.json"
+import uzOrders from "./uz/orders.json"
 
 import enAuth from "./en/auth.json"
 import enBackups from "./en/backups.json"
@@ -58,6 +60,8 @@ import enStores from "./en/stores.json"
 import enSync from "./en/sync.json"
 import enTransfers from "./en/transfers.json"
 import enUsers from "./en/users.json"
+import enStorefront from "./en/storefront.json"
+import enOrders from "./en/orders.json"
 
 export type Locale = "uz" | "en"
 
@@ -92,6 +96,8 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     sync: uzSync,
     transfers: uzTransfers,
     users: uzUsers,
+    storefront: uzStorefront,
+    orders: uzOrders,
   },
   en: {
     auth: enAuth,
@@ -123,6 +129,8 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     sync: enSync,
     transfers: enTransfers,
     users: enUsers,
+    storefront: enStorefront,
+    orders: enOrders,
   },
 }
 

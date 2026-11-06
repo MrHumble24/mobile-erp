@@ -76,25 +76,19 @@ export class TelegramService {
     }
   }
 
-  async send(text: string): Promise<void> {
-    let token: string | null = null;
+  async send(text: string, storeId?: string): Promise<void> {
     try {
-      token = await this.getToken();
-    } catch {
-      this.logger.warn('Telegram bot token is unreadable; skipping send');
-      return;
-    }
-    const { telegramChatId } = await this.settings.get();
-    if (!token || !telegramChatId) {
-      if (!this.warnedMissing) {
-        this.logger.debug(
-          'Telegram not configured (token/chatId missing); skipping',
-        );
-        this.warnedMissing = true;
+      const token = await this.getToken();
+      const { telegramChatId } = await this.settings.get(storeId);
+      if (!token || !telegramChatId) {
+        if (!this.warnedMissing) {
+          this.logger.debug(
+            'Telegram not configured (token/chatId missing); skipping',
+          );
+          this.warnedMissing = true;
+        }
+        return;
       }
-      return;
-    }
-    try {
       const res = await fetch(
         `https://api.telegram.org/bot${token}/sendMessage`,
         {
@@ -109,7 +103,8 @@ export class TelegramService {
         );
       }
     } catch {
-      this.logger.warn('Telegram sendMessage request failed');
+      // Fixed text only: an error here can carry the bot token in its URL.
+      this.logger.warn('Telegram send failed (token unreadable or network)');
     }
   }
 }

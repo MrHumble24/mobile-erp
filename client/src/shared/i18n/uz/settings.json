@@ -66,5 +66,16 @@
   "updateToken": "Tokenda saqlash",
   "sendTest": "Sinov xabarini yuborish",
   "testSent": "Sinov xabari Telegramga muvaffaqiyatli yuborildi!",
-  "testFailed": "Sinov xabarini yuborishda xatolik yuz berdi"
+  "testFailed": "Sinov xabarini yuborishda xatolik yuz berdi",
+  "sectionStorefront": "Onlayn do'kon",
+  "sectionStorefrontDesc": "Mijozlar uchun ommaviy ko'rgazma sahifasi va buyurtmalar qabul qilish",
+  "storefrontEnabled": "Onlayn do'konni yoqish",
+  "storefrontShowPrices": "Narxlarni ko'rsatish (o'chirilganda 'Narxni so'rang' deb chiqadi)",
+  "storefrontPhone": "Aloqa telefoni",
+  "storefrontTelegram": "Telegram kontakt / profil",
+  "storefrontCategories": "Ko'rsatiladigan mahsulot toifalari",
+  "storefrontCategoriesAll": "Barcha toifalar ko'rsatiladi",
+  "storefrontUrl": "Onlayn do'kon havolasi",
+  "copyStorefrontUrl": "Havolani nusxalash",
+  "storefrontUrlCopied": "Do'kon havolasi nusxalandi"
 }

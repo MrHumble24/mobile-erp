@@ -13,6 +13,11 @@ export function OnEvent(): MethodDecorator {
 
 export class EventEmitterModule {
   static forRoot() {
-    return { module: EventEmitterModule };
+    return {
+      module: EventEmitterModule,
+      global: true,
+      providers: [EventEmitter2],
+      exports: [EventEmitter2],
+    };
   }
 }

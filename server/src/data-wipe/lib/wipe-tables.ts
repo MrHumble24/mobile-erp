@@ -13,6 +13,9 @@
 
 /** Everything the shop did. Erased on every wipe. Children-before-parents. */
 export const ALWAYS_TABLES = [
+  // shop-page orders (handoff 022): they point at sales and products, so they go first
+  'storefront_order_status_history',
+  'storefront_orders',
   'cash_transactions',
   'bonus_transactions',
   'qc_defects',
@@ -109,6 +112,9 @@ export const KEPT_TABLES = [
   'bonus_transaction_types',
   'product_kinds',
   'price_levels',
+  // the shop page's own settings and its order statuses (handoff 022)
+  'storefront_settings',
+  'storefront_order_statuses',
   // user-managed list (configured once, like an account; seeded in seed.sql)
   'expense_categories',
   // the record of who erased what

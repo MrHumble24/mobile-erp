@@ -66,5 +66,16 @@
   "updateToken": "Update Token",
   "sendTest": "Send Test Message",
   "testSent": "Test message sent to Telegram successfully!",
-  "testFailed": "Failed to send test message"
+  "testFailed": "Failed to send test message",
+  "sectionStorefront": "Online Storefront",
+  "sectionStorefrontDesc": "Public catalog display and online order intake",
+  "storefrontEnabled": "Enable Storefront",
+  "storefrontShowPrices": "Show Prices (when off, displays 'Ask')",
+  "storefrontPhone": "Contact Phone",
+  "storefrontTelegram": "Telegram Contact / Handle",
+  "storefrontCategories": "Visible Product Categories",
+  "storefrontCategoriesAll": "All categories visible",
+  "storefrontUrl": "Public Storefront URL",
+  "copyStorefrontUrl": "Copy Link",
+  "storefrontUrlCopied": "Storefront link copied"
 }

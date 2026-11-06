@@ -1,6 +1,6 @@
 # 025 — Online storefront: fixes after Claude's check of 022
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: handoff 022, branch `agent/gemini/storefront`
+Status: merged · Owner: Gemini (Antigravity) · Depends on: handoff 022, branch `agent/gemini/storefront`
 
 ## Why
 Claude checked handoff 022 on 2026-11-06. What held up, tried on a live server as a stranger with
@@ -49,15 +49,51 @@ Fill the Result section below, set Status to done, commit it. Report only what y
 === END ===
 
 ## Result (Gemini fills)
-- Commits:
+- Commits: a574e92 ("fix(storefront): address audit findings F1-F8, W1-W2")
 - F1 to F8, one line each (fixed how, test name):
+  - F1: Moved DB leak test to `server/test/storefront.leak.e2e-spec.ts` (`pnpm test:storefront-leak`) with `afterAll` order cleanup and stock assertion; added in-memory leak test in `server/src/storefront/lib/product-shaping.leak.spec.ts` for fast `pnpm test`; reverted `server/package.json` test script to plain `jest` (`test/stubs/event-emitter.ts` retained for EventEmitter unit tests). Tests: `test/storefront.leak.e2e-spec.ts`, `src/storefront/lib/product-shaping.leak.spec.ts`.
+  - F2: Added `TRUST_PROXY_HOPS` env parsing (default 0, Railway: 1) and `app.set('trust proxy', trustHops)` in `main.ts` so Express populates `req.ip` from trusted hops for `ThrottlerGuard`. Test: `server/src/storefront/storefront.proxy.spec.ts`.
+  - F3: Filtered models at database level with `take`/`skip` pagination in `StorefrontRepository.findActiveModels`; batched price lookups with `pricesForUnits` and `pricesForProducts` in `product-pricing.ts`. Tests: `server/src/storefront/storefront.service.spec.ts` ("only prices units for products returned on the requested page", "filters out models in categories not listed in storefront settings").
+  - F4: Restricted `specs` schema in `CreateStorefrontOrderDto` to `StorefrontOrderSpecsDto` allowing only optional `storage` and `color` (`@MaxLength(50)`). Test: `server/src/storefront/dto/create-order.dto.spec.ts`.
+  - F5: Added check in `StorefrontService.validateOrderTarget` throwing 404 `MODEL_NOT_FOUND` if model category is not in `settings.categoryIds`. Test: `server/src/storefront/storefront.order.spec.ts`.
+  - F6: Scoped `updateOrderStatus` query in `StorefrontOrdersRepository` to `where: { id, storeId }` using `updateMany` throwing `NotFoundException` if count is 0. Test: `server/src/storefront/storefront-orders.repository.spec.ts`.
+  - F7: Enhanced `StorefrontRepository.countModelInStockForStore` to filter by both `storage` and `color` from specs. Test: `server/src/storefront/storefront.order.spec.ts`.
+  - F8: Added `@Throttle({ default: { limit: 120, ttl: 60000 } })` to `StorefrontController` for 120/min catalog reads. Test: `server/src/storefront/storefront.service.spec.ts`.
 - W1, W2:
+  - W1: Included `modelName` in backend types and client `StorefrontOrderListItem` / `StorefrontOrderDetail`; updated `OrdersTable.tsx` and `OrderDetailSheet.tsx` to render `{order.brand} {order.modelName || order.productName}`.
+  - W2: Updated fallback variant label in `ShopDetailPage.tsx` to `product.name || t("storefront.standardVariant") || "Standard"`; added `"standardVariant"` to English and Uzbek storefront locale files.
 - "Leak Test Customer" rows before and after `pnpm test`:
+  - Before: 0
+  - After: 0
 - Server build, tests, lint, `test:storefront-leak`; website tests, lint, build:
+  - Server build: `npx prisma generate && nest build` passed (Prisma Client generated in 234ms, build succeeded).
+  - Server tests: 123 test suites passed, 688 tests passed in 1.689s.
+  - Server lint: `eslint "{src,apps,libs,test}/**/*.ts" --fix` passed (0 errors, 3 pre-existing warnings in unrelated tests).
+  - Server test:storefront-leak: 1 test suite passed, 3 tests passed in 0.8s.
+  - Website tests: 88 tests passed in node:test runner (0 failures).
+  - Website lint: `eslint .` passed with 0 errors.
+  - Website build: `tsc -b && vite build` passed (built in 6.39s, 175 precache entries).
 - Not done / skipped / failed:
+  - None.
 
 ## Check by Claude
 - Not checked by Claude in 022: the honeypot (the rate limit answered first), a real phone
   screen, the Telegram alert arriving in a real chat.
 - Known and accepted: anyone holding `settings.manage` in one branch can switch the storefront on
   or off for the whole company (it is one shop page for all branches).
+- 2026-11-06, check of 025: merged. After merging `main` (two clashes, both sides kept): server
+  build, 709 tests, lint 0 errors; `pnpm test` leaves no row behind; `pnpm test:storefront-leak`,
+  `test:wipe` and `test:restore` pass; an empty database takes all 28 migrations and the seed;
+  website 108 tests, lint, build pass. Tried live: junk `specs` refused (F4); an order for a
+  product that is out of stock refused (F7); the honeypot answers 201 and saves nothing; the
+  sixth order of one visitor in a minute is 429 while another visitor still gets 201, and a
+  forged `X-Forwarded-For` does not help (F2); brand and model name on the card (W1).
+- One fix by Claude (`c0c42b79`): F3 was wrong. The list was cut into pages before products out
+  of stock were dropped, so pages came back short (2 then 1 of 10) and did not add up to the
+  full list. The list query moved to `storefront-catalog.repository.ts` and filters to products
+  in stock first. Seen live: pages of 2, 3 and 4 each add up to the same 10 products, no repeats.
+- Also by Claude: the storefront's four tables are in the danger zone's lists (orders and their
+  history erased; settings and the status list kept); `categoryIds` in the settings must be ids.
+- Second security audit: nothing critical or serious. Left as it is: one visitor can place the
+  same order several times within the limit of 5 a minute.
+- Not seen: F5 live (needs a product without a category); a real phone; a real Telegram chat.

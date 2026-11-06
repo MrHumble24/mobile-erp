@@ -34,6 +34,7 @@ import {
 import { BonusSection } from "./BonusSection"
 import { PrintingSection } from "./PrintingSection"
 import { CompanySection } from "./CompanySection"
+import { StorefrontSection } from "./StorefrontSection"
 
 function SettingsForm({
   settings,
@@ -124,7 +125,10 @@ export function SettingsPage() {
       </div>
 
       {activeTab === "company" ? (
-        <CompanySection disabled={!canManage} />
+        <>
+          <CompanySection disabled={!canManage} />
+          <StorefrontSection disabled={!canManage} />
+        </>
       ) : (
         <>
           {isLoading && <Skeleton className="h-96 rounded-[16px]" />}

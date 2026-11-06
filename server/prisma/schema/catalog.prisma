@@ -81,6 +81,7 @@ model DeviceModel {
   repairs        Repair[]
   repairParts    RepairPart[]
   transferLines  StockTransferLine[]
+  storefrontOrders StorefrontOrder[]
 
   @@unique([brand, name])
   @@unique([barcode])

@@ -13,12 +13,12 @@ Updated by Claude when something is added, started or finished. Last update: 202
 |---|---|---|
 | Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
+| Branches on the phone apps (choose a store, send it with every request, switch it) | `docs/handoffs/gemini/027-mobile-branches.md` | Written 2026-11-06. Until it is done a user of two stores gets an error on the phones. |
 
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
 | Uzbek for all the English text added by step 11 on the website (handoffs 003 to 009), and a native check of the Uzbek written by Opus 4.8 for backups and the danger zone | nothing: step 11 on the website is merged | For Gemini, one pass. |
-| Branches on the phone apps (store picker, the store sent with every request) | nothing | Until then a user of two stores gets an error on the phones. |
 | Step 11 on the phone apps (bonus points, printing, buy-back) | step 11 website done | Android and iOS. |
 | Storefront orders on the phone apps | handoff 022 merged | Read the list, change the status. |
 | Mobile Uzbek strings | nothing | Gemini 014, reserved, never written. |
