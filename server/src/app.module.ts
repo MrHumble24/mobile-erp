@@ -41,6 +41,7 @@ import { ShiftsModule } from './shifts/shifts.module.js';
 import { CustomerPurchasesModule } from './customer-purchases/customer-purchases.module.js';
 import { RepairsModule } from './repairs/repairs.module.js';
 import { BonusModule } from './bonus/bonus.module.js';
+import { StorefrontModule } from './storefront/storefront.module.js';
 import { SecretsModule } from './secrets/secrets.module.js';
 import { BackupsModule } from './backups/backups.module.js';
 import { DataWipeModule } from './data-wipe/data-wipe.module.js';
@@ -92,6 +93,7 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     CustomerPurchasesModule,
     RepairsModule,
     BonusModule,
+    StorefrontModule,
     RuntimeModule,
     SecretsModule,
     BackupsModule,

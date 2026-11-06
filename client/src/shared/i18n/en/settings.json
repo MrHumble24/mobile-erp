@@ -38,5 +38,16 @@
   "receiptPaperWidth": "Receipt Paper Width",
   "paperWidth58": "58 mm",
   "paperWidth80": "80 mm",
-  "priceTagsEnabled": "Print Price Tags"
+  "priceTagsEnabled": "Print Price Tags",
+  "sectionStorefront": "Online Storefront",
+  "sectionStorefrontDesc": "Public catalog display and online order intake",
+  "storefrontEnabled": "Enable Storefront",
+  "storefrontShowPrices": "Show Prices (when off, displays 'Ask')",
+  "storefrontPhone": "Contact Phone",
+  "storefrontTelegram": "Telegram Contact / Handle",
+  "storefrontCategories": "Visible Product Categories",
+  "storefrontCategoriesAll": "All categories visible",
+  "storefrontUrl": "Public Storefront URL",
+  "copyStorefrontUrl": "Copy Link",
+  "storefrontUrlCopied": "Storefront link copied"
 }

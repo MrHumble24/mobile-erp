@@ -38,5 +38,16 @@
   "receiptPaperWidth": "Receipt Paper Width",
   "paperWidth58": "58 mm",
   "paperWidth80": "80 mm",
-  "priceTagsEnabled": "Print Price Tags"
+  "priceTagsEnabled": "Print Price Tags",
+  "sectionStorefront": "Onlayn do'kon",
+  "sectionStorefrontDesc": "Mijozlar uchun ommaviy ko'rgazma sahifasi va buyurtmalar qabul qilish",
+  "storefrontEnabled": "Onlayn do'konni yoqish",
+  "storefrontShowPrices": "Narxlarni ko'rsatish (o'chirilganda 'Narxni so'rang' deb chiqadi)",
+  "storefrontPhone": "Aloqa telefoni",
+  "storefrontTelegram": "Telegram kontakt / profil",
+  "storefrontCategories": "Ko'rsatiladigan mahsulot toifalari",
+  "storefrontCategoriesAll": "Barcha toifalar ko'rsatiladi",
+  "storefrontUrl": "Onlayn do'kon havolasi",
+  "copyStorefrontUrl": "Havolani nusxalash",
+  "storefrontUrlCopied": "Do'kon havolasi nusxalandi"
 }

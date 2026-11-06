@@ -9,6 +9,7 @@ import {
   type Response,
 } from 'express';
 import type { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
@@ -39,7 +40,17 @@ function mountUploads(app: INestApplication): void {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
+  });
+
+  const trustHops = Math.max(
+    0,
+    parseInt(process.env.TRUST_PROXY_HOPS ?? '0', 10) || 0,
+  );
+  if (trustHops > 0) {
+    app.set('trust proxy', trustHops);
+  }
 
   app.enableShutdownHooks();
 

@@ -15,6 +15,7 @@ pnpm prisma generate
 | Var                       | Purpose                                             |
 |---------------------------|-----------------------------------------------------|
 | `PORT`                    | HTTP port (default 3000)                            |
+| `TRUST_PROXY_HOPS`        | Number of reverse-proxy hops to trust for client IP and rate limiting (default `0`, set to `1` on Railway). |
 | `DATABASE_URL`            | Postgres connection string                          |
 | `JWT_SECRET`              | HS256 signing secret (required)                     |
 | `JWT_EXPIRES_IN`          | Access-token lifetime, default `12h` (ADR 0005)     |

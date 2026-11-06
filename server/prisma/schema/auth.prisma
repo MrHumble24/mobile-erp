@@ -45,6 +45,8 @@ model User {
   transfersSent          StockTransfer[]       @relation("TransfersSent")
   transfersReceived      StockTransfer[]       @relation("TransfersReceived")
   transfersCancelled     StockTransfer[]       @relation("TransfersCancelled")
+  handledOrders          StorefrontOrder[]     @relation("OrderHandledBy")
+  orderHistory           StorefrontOrderStatusHistory[] @relation("OrderStatusChangedBy")
 
   @@map("users")
 }

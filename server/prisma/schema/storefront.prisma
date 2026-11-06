@@ -1,0 +1,82 @@
+// ---------------------------------------------------------------------------
+// Online storefront (Change 10, ADR 0049).
+// Public catalog & customer order capture.
+// ---------------------------------------------------------------------------
+
+/// Company-wide storefront settings singleton (row id = 1).
+model StorefrontSettings {
+  id              Int      @id @default(1)
+  enabled         Boolean  @default(false)
+  showPrices      Boolean  @default(true)
+  contactPhone    String?
+  contactTelegram String?
+  /// Array of category UUID strings to display on the storefront.
+  categoryIds     Json     @default("[]") @db.JsonB
+  updatedAt       DateTime @updatedAt
+
+  @@map("storefront_settings")
+}
+
+/// Order lifecycle states (NEW, CONTACTED, DONE, CANCELLED).
+model StorefrontOrderStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  isTerminal Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  orders      StorefrontOrder[]
+  historyFrom StorefrontOrderStatusHistory[] @relation("OrderHistoryFrom")
+  historyTo   StorefrontOrderStatusHistory[] @relation("OrderHistoryTo")
+
+  @@map("storefront_order_statuses")
+}
+
+/// Customer pickup order left on the public website.
+model StorefrontOrder {
+  id            String   @id @default(uuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id])
+  modelId       String
+  model         DeviceModel @relation(fields: [modelId], references: [id])
+  /// Chosen variant specs: { storage?: string, color?: string }
+  specs         Json     @default("{}") @db.JsonB
+  customerName  String   @db.VarChar(100)
+  customerPhone String   @db.VarChar(30)
+  note          String?  @db.VarChar(1000)
+  statusCode    String   @default("NEW")
+  status        StorefrontOrderStatus @relation(fields: [statusCode], references: [code])
+  handledById   String?
+  handledBy     User?    @relation("OrderHandledBy", fields: [handledById], references: [id])
+  handledAt     DateTime?
+  saleId        String?
+  sale          Sale?    @relation(fields: [saleId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  statusHistory StorefrontOrderStatusHistory[]
+
+  @@index([storeId])
+  @@index([modelId])
+  @@index([statusCode])
+  @@index([createdAt])
+  @@map("storefront_orders")
+}
+
+/// Append-only audit of order status transitions.
+model StorefrontOrderStatusHistory {
+  id             String                 @id @default(uuid())
+  orderId        String
+  order          StorefrontOrder        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatusCode String?
+  fromStatus     StorefrontOrderStatus? @relation("OrderHistoryFrom", fields: [fromStatusCode], references: [code])
+  toStatusCode   String
+  toStatus       StorefrontOrderStatus  @relation("OrderHistoryTo", fields: [toStatusCode], references: [code])
+  changedById    String?
+  changedBy      User?                  @relation("OrderStatusChangedBy", fields: [changedById], references: [id])
+  note           String?
+  changedAt      DateTime               @default(now())
+
+  @@index([orderId, changedAt])
+  @@map("storefront_order_status_history")
+}

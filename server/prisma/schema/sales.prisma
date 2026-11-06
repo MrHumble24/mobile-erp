@@ -94,6 +94,7 @@ model Sale {
   tradeIns         CustomerPurchase[]
   /// Bonus-point rows earned / spent / returned on this sale (ADR 0043).
   bonusTransactions BonusTransaction[]
+  storefrontOrders StorefrontOrder[]
 
   @@index([soldAt])
   @@index([deviceId])
