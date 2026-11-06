@@ -1,6 +1,6 @@
 # 009 — Step 11, part 7 of 7: buy-back and return messages, and the ADR for the step
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged)
 
 ## Why
 The last part of the step 11 website work. The server can now buy back a phone the shop sold
@@ -95,3 +95,18 @@ Fill the Result section of `docs/handoffs/opencode/009-step11-buyback-messages.m
     file was touched.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed properly; the report was accurate and said plainly
+  where the server gave no code. After merging `main`: website 97 tests pass, lint 0 errors,
+  build passes. One reader for a server error's code (`httpErrorCode` in `shared/api/http.ts`),
+  the copies removed. ADR 0047 written, 40 lines.
+- One change by Claude on the branch: the "already ours and not sold" refusal was recognised on
+  the website by the server's exact English sentence, because the server sent no code. The
+  server now sends `code: PURCHASE_UNIT_EXISTS` (`customer-purchases.write.repository.ts`, both
+  places), the website matches the code, and the till maps the same code for a trade-in.
+  Server build, 648 tests and lint pass.
+- Not seen: any of these messages on a screen (they need a sale whose phone was bought back, a
+  refused trade-in, and a refused purchase), and the new code on a live server (my one live try
+  was refused earlier, for a missing storage value, before it reached that check). The mapping
+  is covered by unit tests only.
+- Step 11 on the website is complete with this part (handoffs 003 to 009). Left for it: Uzbek
+  for the English texts these parts added, and the phone apps.
