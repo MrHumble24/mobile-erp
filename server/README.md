@@ -20,6 +20,8 @@ pnpm prisma generate
 | `JWT_EXPIRES_IN`          | Access-token lifetime, default `12h` (ADR 0005)     |
 | `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
 | `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
+| `RESET_EMAIL`             | Account email for `reset-password`                  |
+| `RESET_PASSWORD`          | New password for `reset-password` (8–255 characters) |
 | `UPLOADS_DIR`             | Where product pictures and company logos are stored (default `./uploads`, git-ignored). **On Railway point this at a mounted volume** (ADR 0031). |
 | `DATA_DIR`                | Server-only state outside the DB: the secrets **master key**, restore staging and the restore **recovery markers** (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** (ADR 0051). |
 | `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: hex, or base64 that round-trips, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
@@ -36,7 +38,7 @@ pnpm prisma generate
 ## First-boot setup & locked-out recovery
 
 - **First-boot onboarding**: On a fresh install with zero users, the server generates a one-time setup code, prints it to the console log, and saves it to `<DATA_DIR>/setup-code.txt`. The web client detects `needsSetup: true` from `GET /setup/status` and presents the onboarding wizard. Completing setup provisions the owner and first branch, unlinks the setup code file, and blocks future setup calls (409 Conflict).
-- **Locked-out owner recovery**: If an administrator is locked out or loses credentials, run `pnpm bootstrap:admin` on the host to create or restore the administrative account from `BOOTSTRAP_ADMIN_*` variables.
+- **Locked-out owner recovery**: If the owner forgets the password, run `RESET_EMAIL=owner@example.com RESET_PASSWORD='new-pass' pnpm reset-password` on the host. It sets the new hash, reactivates the account and ends all sessions, so everyone must sign in again. `pnpm bootstrap:admin` only creates the FIRST admin; it does nothing once any user exists.
 
 ## First-run sequence (order matters)
 
@@ -47,8 +49,9 @@ pnpm bootstrap:admin           # 3. create the first ADMIN user (idempotent)
 pnpm ref:import                # 4. load the device-lookup reference lists
 ```
 
-`bootstrap:admin` does nothing once any user exists, and requires the `ADMIN`
-role from step 2 to be present.
+`bootstrap:admin` only creates the FIRST admin: it does nothing once any user
+exists, and requires the `ADMIN` role from step 2 to be present. For a later
+password reset use `pnpm reset-password` (see Locked-out owner recovery).
 
 ## Device-lookup reference lists (`pnpm ref:import`)
 
