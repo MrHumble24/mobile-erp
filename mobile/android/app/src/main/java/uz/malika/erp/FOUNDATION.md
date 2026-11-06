@@ -83,6 +83,7 @@ object InventoryFeature : FeatureModule {
 - Errors → `AppException {statusCode, message, error}`; wrap calls in `runApi {}`.
   Send clean DTOs only (`forbidNonWhitelisted`; `explicitNulls=false`).
 - **401** (non-login) auto-clears the session → login.
+- **Branch store scoping** (`X-Store-Id` header): injected in `HttpClient` for all non-login requests from `StoreManager.activeStoreId`; queued offline writes carry their active store (ADR 0058).
 
 ## Helpers
 - Permissions: `user.can("device.read")` / `LocalCan.current(code)` — CODES, never roles.
