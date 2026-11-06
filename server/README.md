@@ -16,11 +16,18 @@ pnpm prisma generate
 |---------------------------|-----------------------------------------------------|
 | `PORT`                    | HTTP port (default 3000)                            |
 | `DATABASE_URL`            | Postgres connection string                          |
+| `DATA_DIR`                | Runtime data directory for `master.key` and setup code (default `./data`, git-ignored). Mount as volume on Railway. |
+| `MASTER_KEY`              | Optional 32-byte hex master key override (AES-256-GCM) |
 | `JWT_SECRET`              | HS256 signing secret (required)                     |
-| `JWT_EXPIRES_IN`          | Access-token lifetime, default `12h` (ADR 0005)     |
-| `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
-| `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
-| `UPLOADS_DIR`             | Where product pictures are stored (default `./uploads`, git-ignored, created on start). **On Railway point this at a mounted volume** — a plain directory is wiped on every deploy and the pictures vanish (ADR 0031). |
+| `JWT_EXPIRES_IN`          | Access-token lifetime fallback, default `12h` (ADR 0005) |
+| `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin` recovery |
+| `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password for recovery                   |
+| `UPLOADS_DIR`             | Where product pictures and company logos are stored (default `./uploads`, git-ignored). Mount as volume on Railway (ADR 0031). |
+
+## First-boot setup & locked-out recovery
+
+- **First-boot onboarding**: On a fresh install with zero users, the server generates a one-time setup code, prints it to the console log, and saves it to `<DATA_DIR>/setup-code.txt`. The web client detects `needsSetup: true` from `GET /setup/status` and presents the onboarding wizard. Completing setup provisions the owner and first branch, unlinks the setup code file, and blocks future setup calls (409 Conflict).
+- **Locked-out owner recovery**: If an administrator is locked out or loses credentials, run `pnpm bootstrap:admin` on the host to create or restore the administrative account from `BOOTSTRAP_ADMIN_*` variables.
 
 ## First-run sequence (order matters)
 

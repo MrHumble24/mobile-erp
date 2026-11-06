@@ -192,6 +192,14 @@ INSERT INTO roles (code, name, description, "isSystem", "updatedAt") VALUES
   ('QC',      'Inventory / QC',    'Intake, shipments, quality control',   true, now())
 ON CONFLICT (code) DO NOTHING;
 
+-- Themes ---------------------------------------------------------------------
+INSERT INTO themes (code, name, "sortOrder", "isActive", "createdAt", "updatedAt") VALUES
+  ('caldera',  'Caldera Light', 10, true, now(), now()),
+  ('obsidian', 'Obsidian Dark', 20, true, now(), now()),
+  ('sand',     'Warm Sand',     30, true, now(), now()),
+  ('nord',     'Nord Slate',    40, true, now(), now())
+ON CONFLICT (code) DO NOTHING;
+
 -- Role × permission matrix -----------------------------------------------------
 INSERT INTO role_permissions ("roleCode", "permissionCode")
   SELECT 'ADMIN', code FROM permissions

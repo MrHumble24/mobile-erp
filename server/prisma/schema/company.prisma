@@ -1,0 +1,40 @@
+// ---------------------------------------------------------------------------
+// Company profile and themes (ADR 0054, ADR 0055).
+// Singleton row for the whole company, plus themes lookup table.
+// ---------------------------------------------------------------------------
+
+model Theme {
+  code      String   @id
+  name      String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyProfiles CompanyProfile[]
+
+  @@map("themes")
+}
+
+model CompanyProfile {
+  id                   String   @id @default("default")
+  name                 String   @default("Malika ERP")
+  legalName            String?
+  logoFile             String?
+  address              String?
+  phone                String?
+  country              String   @default("UZ")
+  timeZone             String   @default("Asia/Tashkent")
+  defaultLanguage      String   @default("uz")
+  currencyCode         String   @default("USD")
+  currencySign         String   @default("$")
+  currencySignPosition String   @default("before")
+  currencyDecimals     Int      @default(2)
+  themeCode            String   @default("caldera")
+  theme                Theme    @relation(fields: [themeCode], references: [code])
+  sessionDuration      String   @default("12h")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("company_profiles")
+}

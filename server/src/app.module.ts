@@ -41,6 +41,9 @@ import { ShiftsModule } from './shifts/shifts.module.js';
 import { CustomerPurchasesModule } from './customer-purchases/customer-purchases.module.js';
 import { RepairsModule } from './repairs/repairs.module.js';
 import { BonusModule } from './bonus/bonus.module.js';
+import { SecretsModule } from './secrets/secrets.module.js';
+import { CompanyModule } from './company/company.module.js';
+import { SetupModule } from './setup/setup.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
@@ -87,6 +90,9 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     CustomerPurchasesModule,
     RepairsModule,
     BonusModule,
+    SecretsModule,
+    CompanyModule,
+    SetupModule,
   ],
   controllers: [AppController],
   providers: [
