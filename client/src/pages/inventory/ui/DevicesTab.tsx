@@ -7,10 +7,12 @@ import { useDeviceModels } from "@/entities/device-model"
 import { type DeviceView } from "@/entities/device"
 import { unitCode } from "@/shared/lib/unit-code"
 import { EditDeviceDialog } from "@/features/edit-device"
+import { PriceTagsAction } from "@/features/print-price-tags"
 import { DeviceDrawer } from "@/widgets/device-drawer"
 import { toast } from "@/shared/ui/sonner"
 import { InventoryFilters } from "./InventoryFilters"
 import { DeviceListSection } from "./DeviceListSection"
+import { devicesToPriceTags } from "../lib/device-price-tags"
 import type { useDeviceBrowser } from "../model/use-device-browser"
 import { useDeviceSelection } from "../model/use-device-selection"
 
@@ -65,9 +67,16 @@ export function DevicesTab({ browser }: { browser: Browser }) {
   const { handleSell, handleResetFilters } = useInventoryActions(browser)
   useImeiDeepLink((imei) => sel.openDrawer({ imei }))
 
+  const priceTags = devicesToPriceTags(browser.query.data?.items ?? [], map)
+
   return (
     <div className="space-y-4">
-      <InventoryFilters filters={browser.filters} models={models} onScan={(imei) => sel.openDrawer({ imei })} />
+      <InventoryFilters
+        filters={browser.filters}
+        models={models}
+        onScan={(imei) => sel.openDrawer({ imei })}
+        actions={<PriceTagsAction items={priceTags} />}
+      />
       <DeviceListSection
         data={browser.query.data}
         isLoading={browser.query.isLoading}
