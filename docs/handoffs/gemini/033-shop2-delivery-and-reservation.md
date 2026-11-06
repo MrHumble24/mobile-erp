@@ -201,3 +201,9 @@ Commit by path (never `git add -A`, never `.env`). Do not edit `client/**`, `mob
 ## Check by Claude
 Before merging: the gate; my own walk on a throwaway database; the till refusing a held phone;
 stock value unchanged by a hold; `security-auditor` on the public routes.
+- 2026-11-07: gate run by Claude on the committed code: lint 0 errors, 782 unit tests, the
+  shop e2e (4 of 4), the erase e2e and the restore e2e all pass. No Prisma enum; one migration.
+- NOT done: the security audit and Claude's own walk on a throwaway database. The user said
+  to skip the security check to save tokens (2026-11-07). The code was not read line by line.
+- Watch: several files are close to the 300-line limit (`sales-create.service.ts` 296,
+  `sales.repository.ts` 291, `storefront-orders.repository.ts` 288). Step 2 must not grow them.
