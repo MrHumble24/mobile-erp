@@ -64,12 +64,7 @@ private fun PosViewModel.finishTradeIn(
         )
         return
     }
-    _state.value = PosState(
-        pendingSold = s.pendingSold, defaultWarrantyDays = s.defaultWarrantyDays,
-        settings = s.settings, canOverride = s.canOverride, canUnlimited = s.canUnlimited,
-        creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled, canTradeIn = s.canTradeIn,
-        completed = buildTradeInReceipt(
-            result.saleIds.first(), cashierName, before.level, priced, online, customerName, parts, before.tradeIns,
-        ),
-    )
+    _state.value = s.cleared(completed = buildTradeInReceipt(
+        result.saleIds.first(), cashierName, before.level, priced, online, customerName, parts, before.tradeIns,
+    ))
 }

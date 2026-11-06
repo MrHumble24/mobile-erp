@@ -6,6 +6,14 @@ import uz.malika.erp.features.sales.lib.DiscountSettings
 import uz.malika.erp.features.sales.lib.PriceCache
 import uz.malika.erp.shared.lib.UnitCode
 import uz.malika.erp.shared.payments.AccountAmount
+import java.math.BigDecimal
+
+/** A chosen customer's bonus balance and the store's max redeem share (ADR 0043). */
+data class CustomerBonus(
+    val customerId: String,
+    val balance: BigDecimal,
+    val maxPercent: BigDecimal,
+)
 
 /**
  * The till's settings bundle (one `GET /settings` read): the discount rules plus

@@ -98,6 +98,11 @@ class PosRepository(
 
     suspend fun defaultWarrantyDays(): Int = runApi { api.settings().defaultWarrantyDays }
 
+    /** The chosen customer's bonus balance + max redeem share (`GET /customers/:id/bonus`). */
+    suspend fun customerBonus(customerId: String): uz.malika.erp.features.sales.data.CustomerBonusDto = runApi {
+        api.customerBonus(customerId)
+    }
+
     /**
      * Till settings (ADR 0034/0035/0036). Online: fetch `GET /settings` and cache
      * the payload in `sync_meta` so an offline till still knows the discount rules,

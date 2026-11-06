@@ -79,6 +79,17 @@ class SalesLogicTest {
     }
 
     @Test
+    fun bonusRedeemIsSentOnlyWhenAboveZero() {
+        val present = SaleCreate.payload(imei = "123456789012345", salePrice = BigDecimal("10"), bonusRedeem = BigDecimal("5000"))
+        assertEquals("5000", present["bonusRedeem"]!!.jsonPrimitive.content)
+        assertNull(SaleCreate.payload(imei = "123456789012345", salePrice = BigDecimal("10")).get("bonusRedeem"))
+        assertNull(SaleCreate.payload(imei = "123456789012345", salePrice = BigDecimal("10"), bonusRedeem = BigDecimal.ZERO).get("bonusRedeem"))
+        // The queued path never sends it.
+        val ops = SaleCreate.ops(pricedLines(listOf(unitLine("123456789012345", 1, "100"))).lines, PriceLevel.RETAIL)
+        assertNull(ops.singleOrNull()?.payload?.get("bonusRedeem"))
+    }
+
+    @Test
     fun imeiMustBe15Digits() {
         assertTrue(SaleCreate.isValidImei("123456789012345"))
         assertFalse(SaleCreate.isValidImei("12345"))

@@ -53,7 +53,12 @@ class PosViewModel(
     fun loadDiscountSettings(online: Boolean) {
         viewModelScope.launch {
             val ts = repo.tillSettings(online)
-            _state.value = _state.value.copy(settings = ts.discount, creditEnabled = ts.creditEnabled, shiftsEnabled = ts.shiftsEnabled)
+            _state.value = _state.value.copy(
+                settings = ts.discount,
+                creditEnabled = ts.creditEnabled,
+                shiftsEnabled = ts.shiftsEnabled,
+                bonusEnabled = ts.bonusEnabled,
+            )
         }
     }
 
@@ -220,12 +225,7 @@ class PosViewModel(
 
     /** Empty the cart, keeping settings/flags — used after an "On credit" sale (ADR 0035). */
     fun resetCart() {
-        val s = _state.value
-        _state.value = PosState(
-            pendingSold = s.pendingSold, defaultWarrantyDays = s.defaultWarrantyDays,
-            settings = s.settings, canOverride = s.canOverride, canUnlimited = s.canUnlimited,
-            creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled, canTradeIn = s.canTradeIn,
-        )
+        _state.value = _state.value.cleared()
     }
 
     /**
@@ -251,16 +251,7 @@ class PosViewModel(
                 val allocation = if (parts.isEmpty()) emptyList() else PaymentSplit.allocate(finals, parts)
                 val ops = SaleCreate.ops(priced.lines, s.level, customerId, customerName, customerPhone, notes, allocation)
                 val ids = ops.map { repo.enqueueSale(it.payload, it.baseVersion) }
-                _state.value = PosState(
-                    pendingSold = s.pendingSold,
-                    defaultWarrantyDays = s.defaultWarrantyDays,
-                    settings = s.settings,
-                    canOverride = s.canOverride,
-                    canUnlimited = s.canUnlimited,
-                    creditEnabled = s.creditEnabled,
-                    shiftsEnabled = s.shiftsEnabled,
-                    completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts),
-                )
+                _state.value = s.cleared(completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts))
             } catch (_: Exception) {
                 _state.value = _state.value.copy(busy = false, errorKey = "common.error")
             }
