@@ -1,6 +1,6 @@
 # 013 — Uzbek copy for the offline sync layer
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: `main` ≥ merge "client offline sync"
+Status: replaced by 031 (one Uzbek pass) on 2026-11-06 · Owner: Gemini (Antigravity)
 
 ## Why
 The web client now works through bazaar internet outages (ADR 0018): POS checkouts, consignment

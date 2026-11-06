@@ -10,17 +10,14 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
+| The till and every dialog at phone width with very large amounts (website) | `docs/handoffs/gemini/032` | Written 2026-11-06, not handed out. Needs a browser, so Gemini. |
+| Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Written 2026-11-06, not handed out, owner not assigned (a strong model only). Its "Decided" table is the user's to change first. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
-| "Factory reset" in the danger zone (back to the setup wizard) | nothing: the wizard is merged | Not asked for yet. |
-| Uzbek for all the English text added by step 11 on the website (handoffs 003 to 009), and a native check of the Uzbek written by Opus 4.8 for backups and the danger zone | nothing: step 11 on the website is merged | For Gemini, one pass. |
 | A real-phone try of branches on both apps; iOS was never seen on a screen (simulator did not answer on 2026-11-06) | nothing | Claude or the user. |
-| Mobile Uzbek strings | nothing | Gemini 014, reserved, never written. |
-| The till at phone width with very large amounts; every dialog | nothing | Left unchecked after the money overflow fix (`docs/handoffs/opus48/001`). |
 
 ## Waiting on someone else
 | What | Waiting on |
