@@ -1,19 +1,13 @@
 package uz.malika.erp.features.inventory.ui
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,13 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import uz.malika.erp.i18n.Translate
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.inventory.data.DeviceDetail
 import uz.malika.erp.features.inventory.data.DeviceHistoryEntry
@@ -49,7 +39,6 @@ import uz.malika.erp.shared.ui.Loading
 import uz.malika.erp.shared.ui.PillButton
 import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.shared.ui.Toaster
-import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
 /**
@@ -241,35 +230,4 @@ private fun DeviceSheetBody(
         onDismiss = { showEdit = false; showExpense = false; showCustomsFee = false; showPrices = false },
         onChanged = onChanged,
     )
-}
-
-/** Section heading inside the sheet (Heading step, same as the dashboard cards). */
-@Composable
-private fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, color = Tokens.text)
-    Spacer(Modifier.height(Tokens.Space.sm))
-}
-
-/** One labelled IMEI line in the mono face with a copy-to-clipboard button. */
-@Composable
-private fun ImeiCopyRow(
-    label: String,
-    value: String,
-    clipboard: ClipboardManager,
-    toaster: Toaster,
-    t: Translate,
-) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            "$label: $value",
-            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
-            color = Tokens.text,
-        )
-        IconButton(onClick = {
-            clipboard.setText(AnnotatedString(value))
-            toaster.success("${t("inventory.imeiCopied", null)}: $value")
-        }) {
-            Icon(Icons.Outlined.ContentCopy, contentDescription = t("inventory.copyImei", null), tint = Tokens.muted, modifier = Modifier.size(18.dp))
-        }
-    }
 }
