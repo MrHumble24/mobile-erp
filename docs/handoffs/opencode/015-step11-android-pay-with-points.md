@@ -1,6 +1,6 @@
 # 015 — Step 11 on Android, part 2 of 4: paying with points at the till
 
-Status: done · Owner: OpenCode · Depends on: 014 (committed on the same branch)
+Status: merged · Owner: OpenCode · Depends on: 014 (committed on the same branch)
 
 ## Why
 The server accepts `bonusRedeem` on `POST /sales` (ADR 0043). The till sends one sale per cart

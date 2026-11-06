@@ -1,6 +1,6 @@
 # 017 — Step 11 on Android, part 4 of 4: buy-back refusals and the docs
 
-Status: done · Owner: OpenCode · Depends on: 016 (committed on the same branch)
+Status: merged · Owner: OpenCode · Depends on: 016 (committed on the same branch)
 
 ## Why
 The server now lets the shop buy back a phone it sold (ADR 0044), and refuses three things

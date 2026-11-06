@@ -1,6 +1,6 @@
 # 014 — Step 11 on Android, part 1 of 4: the switches and a customer's points
 
-Status: done · Owner: OpenCode · Depends on: nothing
+Status: merged · Owner: OpenCode · Depends on: nothing
 
 ## Why
 Step 11 (bonus points, printing switches, buying back a sold phone) is on the server and the

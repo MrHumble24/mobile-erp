@@ -1,6 +1,6 @@
 # 016 — Step 11 on Android, part 3 of 4: points and printing on the receipt
 
-Status: done · Owner: OpenCode · Depends on: 015 (committed on the same branch)
+Status: merged · Owner: OpenCode · Depends on: 015 (committed on the same branch)
 
 ## Why
 After a sale the phone must show what the website shows: the points spent and earned, the real
