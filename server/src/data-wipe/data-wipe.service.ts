@@ -194,14 +194,21 @@ export class DataWipeService {
     }
   }
 
+  /** Best-effort: the data is already erased, so a notice failure (e.g. no
+   * store context for the chat id on a company-wide call) must never surface as
+   * a failed wipe. */
   private async notify(req: WipeRequest): Promise<void> {
-    await this.telegram.send(
-      dataWiped({
-        by: req.email,
-        at: new Date(),
-        contacts: req.contacts,
-        catalog: req.catalog,
-      }),
-    );
+    try {
+      await this.telegram.send(
+        dataWiped({
+          by: req.email,
+          at: new Date(),
+          contacts: req.contacts,
+          catalog: req.catalog,
+        }),
+      );
+    } catch (err) {
+      this.logger.warn(`Data-wipe Telegram notice failed: ${String(err)}`);
+    }
   }
 }
