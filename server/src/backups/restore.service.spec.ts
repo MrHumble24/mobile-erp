@@ -1,11 +1,17 @@
 import { ForbiddenException } from '@nestjs/common';
+import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import { RestoreService, type RestoreRequest } from './restore.service.js';
-import { RESTORE_CONFIRM_FAILED } from './types/backup.types.js';
+import {
+  RESTORE_CONFIRM_FAILED,
+  RESTORE_RUNNING,
+} from './types/backup.types.js';
 
 function make(over: {
   storeName?: string;
   passwordOk?: boolean;
   manualRecovery?: boolean;
+  backupRunning?: boolean;
+  lock?: DestructiveLockService;
 }) {
   const repo = {
     listRuns: jest
@@ -17,7 +23,11 @@ function make(over: {
     upsertRestoreOutcome: jest.fn().mockResolvedValue(undefined),
     latestRestoreRun: jest.fn().mockResolvedValue(null),
   };
-  const backups = { startBackup: jest.fn(), download: jest.fn() };
+  const backups = {
+    startBackup: jest.fn(),
+    download: jest.fn(),
+    isRunning: () => over.backupRunning ?? false,
+  };
   const runner = {
     passphrase: jest.fn().mockResolvedValue('pw'),
     passphraseStatus: jest.fn(),
@@ -35,6 +45,7 @@ function make(over: {
     needsManualRecovery: () => over.manualRecovery ?? false,
     restoreInProgress: () => false,
   };
+  const lock = over.lock ?? new DestructiveLockService();
   const svc = new RestoreService(
     repo as never,
     restoreRepo as never,
@@ -44,8 +55,9 @@ function make(over: {
     stores as never,
     auth as never,
     recovery as never,
+    lock,
   );
-  return { svc, repo, restoreRepo, backups };
+  return { svc, repo, restoreRepo, backups, lock };
 }
 
 const req = (shopName: string): RestoreRequest => ({
@@ -79,5 +91,23 @@ describe('RestoreService confirmation', () => {
       response: { code: 'RESTORE_RUNNING' },
     });
     expect(restoreRepo.createRestoreRun).not.toHaveBeenCalled();
+  });
+
+  it('refuses while an erase holds the destructive latch (RESTORE_RUNNING)', async () => {
+    const lock = new DestructiveLockService();
+    lock.tryAcquire('wipe');
+    const { svc, restoreRepo } = make({ lock });
+    await expect(svc.restore(req('Malika Bazaar'))).rejects.toMatchObject({
+      response: { code: RESTORE_RUNNING },
+    });
+    expect(restoreRepo.createRestoreRun).not.toHaveBeenCalled();
+    expect(lock.heldBy()).toBe('wipe'); // not released by the refused restore
+  });
+
+  it('refuses while a plain backup runs (RESTORE_RUNNING)', async () => {
+    const { svc } = make({ backupRunning: true });
+    await expect(svc.restore(req('Malika Bazaar'))).rejects.toMatchObject({
+      response: { code: RESTORE_RUNNING },
+    });
   });
 });

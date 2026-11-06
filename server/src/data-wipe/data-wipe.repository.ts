@@ -123,4 +123,17 @@ export class DataWipeRepository {
       orderBy: { startedAt: 'desc' },
     });
   }
+
+  /** A run left RUNNING by a crash becomes FAILED at start-up (the erase itself
+   * is atomic, so the data is intact — only the audit row is stale). */
+  markStaleRunsFailed() {
+    return this.prisma.dataWipeRun.updateMany({
+      where: { statusCode: 'RUNNING' },
+      data: {
+        statusCode: 'FAILED',
+        error: 'Interrupted (server restarted mid-run)',
+        finishedAt: new Date(),
+      },
+    });
+  }
 }

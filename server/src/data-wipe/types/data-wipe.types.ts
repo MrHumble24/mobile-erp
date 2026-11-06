@@ -4,6 +4,7 @@ export const DATA_WIPE_RUNNING = 'DATA_WIPE_RUNNING';
 export const DATA_WIPE_NO_PASSPHRASE = 'DATA_WIPE_NO_PASSPHRASE';
 export const DATA_WIPE_PASSPHRASE_UNREADABLE =
   'DATA_WIPE_PASSPHRASE_UNREADABLE';
+export const DATA_WIPE_SAFETY_BACKUP_FAILED = 'DATA_WIPE_SAFETY_BACKUP_FAILED';
 
 /** Row counts each group would erase right now (for the confirm dialog). */
 export interface WipePreview {

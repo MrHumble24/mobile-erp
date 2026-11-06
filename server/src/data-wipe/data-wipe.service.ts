@@ -4,12 +4,14 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
+  OnModuleInit,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service.js';
+import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import { RecoveryService } from '../common/runtime/recovery.service.js';
 import { ImageStorageService } from '../device-models/image-storage.service.js';
 import { StoresService } from '../stores/stores.service.js';
-import { BackupsRepository } from '../backups/backups.repository.js';
 import { BackupsService } from '../backups/backups.service.js';
 import { TelegramService } from '../telegram/telegram.service.js';
 import { dataWiped } from '../telegram/messages.js';
@@ -20,6 +22,7 @@ import {
   DATA_WIPE_NO_PASSPHRASE,
   DATA_WIPE_PASSPHRASE_UNREADABLE,
   DATA_WIPE_RUNNING,
+  DATA_WIPE_SAFETY_BACKUP_FAILED,
   type WipePreview,
   type WipeRunView,
   type WipeStatusView,
@@ -38,21 +41,27 @@ export interface WipeRequest {
  * confirm → refuse if busy → safety backup → maintenance + erase → end
  * sessions → record + Telegram. Holds the one-at-a-time wipe lock. */
 @Injectable()
-export class DataWipeService {
+export class DataWipeService implements OnModuleInit {
   private readonly logger = new Logger(DataWipeService.name);
-  private wiping = false;
 
   constructor(
     private readonly repo: DataWipeRepository,
     private readonly runner: DataWipeRunner,
     private readonly backups: BackupsService,
-    private readonly backupsRepo: BackupsRepository,
     private readonly stores: StoresService,
     private readonly auth: AuthService,
     private readonly recovery: RecoveryService,
     private readonly images: ImageStorageService,
     private readonly telegram: TelegramService,
+    private readonly lock: DestructiveLockService,
   ) {}
+
+  /** A run left RUNNING by a crash between createRun and the commit becomes
+   * FAILED at boot (the erase itself never half-committed — the transaction
+   * rolled back), so no row sits RUNNING for ever. */
+  async onModuleInit(): Promise<void> {
+    await this.repo.markStaleRunsFailed();
+  }
 
   preview(): Promise<WipePreview> {
     return this.repo.preview();
@@ -65,7 +74,7 @@ export class DataWipeService {
   async status(): Promise<WipeStatusView> {
     const last = await this.repo.latestRun();
     return {
-      wiping: this.wiping,
+      wiping: this.lock.heldBy() === 'wipe',
       needsManualRecovery: this.recovery.needsManualRecovery(),
       last: last
         ? {
@@ -79,13 +88,22 @@ export class DataWipeService {
   }
 
   async wipe(req: WipeRequest): Promise<void> {
-    await this.confirm(req.shopName, req.email, req.password);
-    this.ensureNotBusy();
-    this.wiping = true;
+    // Busy checks + latch are taken synchronously, before any await, so an erase
+    // and a restore (which shares the latch) can never both proceed to write the
+    // same database. A plain backup running blocks the erase here; the latch
+    // blocks a plain backup from starting while this runs (BackupsService).
+    this.assertNotBusy();
+    if (!this.lock.tryAcquire('wipe')) {
+      throw new ConflictException({
+        code: DATA_WIPE_RUNNING,
+        message: 'A restore or erase is already running',
+      });
+    }
     try {
+      await this.confirm(req.shopName, req.email, req.password);
       await this.run(req);
     } finally {
-      this.wiping = false;
+      this.lock.release();
     }
   }
 
@@ -115,17 +133,32 @@ export class DataWipeService {
       this.logger.error(`Data wipe failed: ${failure.message}`);
     }
 
-    await this.repo.finishRun(record.id, {
-      status: failure ? 'FAILED' : 'SUCCESS',
-      rowsErased: counts,
-      error: failure?.message,
-    });
+    // Record the outcome. Past the committed erase this is best-effort: a write
+    // failure here must not turn a successful, irreversible erase into a 500 or
+    // leave the picture cleanup and notice unreachable.
+    await this.recordOutcome(record.id, failure, counts);
     if (failure) throw failure;
 
     // Only after the erase committed: drop the catalog pictures (never a logo —
     // only the names collected above), then notify the shop.
     if (req.catalog) await this.removeImages(images);
     await this.notify(req);
+  }
+
+  private async recordOutcome(
+    id: string,
+    failure: Error | undefined,
+    counts: Record<string, number>,
+  ): Promise<void> {
+    try {
+      await this.repo.finishRun(id, {
+        status: failure ? 'FAILED' : 'SUCCESS',
+        rowsErased: counts,
+        error: failure?.message,
+      });
+    } catch (err) {
+      this.logger.error(`data_wipe_runs outcome write failed: ${String(err)}`);
+    }
   }
 
   /** Shop name typed exactly + the caller's own password, both re-checked. */
@@ -145,9 +178,8 @@ export class DataWipeService {
     }
   }
 
-  private ensureNotBusy(): void {
+  private assertNotBusy(): void {
     if (
-      this.wiping ||
       this.backups.isRunning() ||
       this.recovery.needsManualRecovery() ||
       this.recovery.restoreInProgress()
@@ -174,16 +206,26 @@ export class DataWipeService {
     });
   }
 
-  /** Make the safety backup first; a failure here throws, so nothing is erased. */
-  private async makeSafetyBackup(
-    performedById: string,
-  ): Promise<string | null> {
-    await this.backups.startBackup(performedById);
-    const safety = (await this.backupsRepo.listRuns(1))[0];
-    if (!safety?.fileName) {
-      throw new Error('Safety backup produced no file; nothing was erased');
+  /**
+   * Make the safety backup and prove it actually opens (header, passphrase,
+   * manifest checksums) before anything is erased. A failure here throws — so
+   * nothing is erased, and the only undo path is known to work. Uses the run id
+   * `startBackup` returned, never "the newest run in the list".
+   */
+  private async makeSafetyBackup(performedById: string): Promise<string> {
+    const safetyRunId = await this.backups.startBackup(performedById, {
+      bypassLock: true,
+    });
+    try {
+      await this.backups.verifyBackup(safetyRunId);
+    } catch (err) {
+      this.logger.error(`Safety backup unusable: ${String(err)}`);
+      throw new UnprocessableEntityException({
+        code: DATA_WIPE_SAFETY_BACKUP_FAILED,
+        message: 'The safety backup could not be verified; nothing was erased',
+      });
     }
-    return safety.id;
+    return safetyRunId;
   }
 
   private async removeImages(names: string[]): Promise<void> {
