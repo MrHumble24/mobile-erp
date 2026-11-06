@@ -67,5 +67,7 @@
   "receipt": "Chek",
   "printReceipt": "Chekni chop etish",
   "refundGoesBack": "Qaytarish to'langan usulda amalga oshiriladi: {accounts}",
-  "refundTooHigh": "Qaytarish summasi to'langan summadan ko'p bo'lishi mumkin emas"
+  "refundTooHigh": "Qaytarish summasi to'langan summadan ko'p bo'lishi mumkin emas",
+  "paidWithPoints": "Paid with points",
+  "pointsEarned": "Points earned"
 }

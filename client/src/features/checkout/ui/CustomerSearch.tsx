@@ -2,7 +2,7 @@ import * as React from "react"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useDebounce } from "@/shared/lib/hooks/use-debounce"
-import { useCustomers, type CustomerView } from "@/entities/customer"
+import { CustomerPoints, useCustomers, type CustomerView } from "@/entities/customer"
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover"
 import {
   Command,
@@ -42,7 +42,10 @@ export function CustomerSearch({ open, onOpenChange, onSelect }: CustomerSearchP
             <CommandGroup>
               {customers?.map((c) => (
                 <CommandItem key={c.id} value={c.id} onSelect={() => onSelect(c)}>
-                  <span className="truncate">{c.name}</span>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate">{c.name}</span>
+                    <CustomerPoints points={c.bonusBalance} />
+                  </span>
                   {c.phone && (
                     <span className="ml-auto text-xs text-muted-foreground font-mono">{c.phone}</span>
                   )}

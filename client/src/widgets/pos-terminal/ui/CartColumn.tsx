@@ -10,7 +10,7 @@ import {
   TotalsPanel,
   TradeInSection,
   useCartStore,
-  cartTotals,
+  useCartTenderPlan,
   toCreditLines,
 } from "@/features/checkout"
 import { CreditDialog } from "@/features/pay-on-credit"
@@ -24,7 +24,7 @@ function CreditSell({ pos }: { pos: Pos }) {
   const lines = useCartStore((s) => s.lines)
   const level = useCartStore((s) => s.priceLevelCode)
   const customer = useCartStore((s) => s.customer)
-  const dueTotal = cartTotals(lines, level).dueTotal
+  const dueTotal = useCartTenderPlan().amountToPay
 
   return (
     <>

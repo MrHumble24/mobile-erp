@@ -92,5 +92,7 @@
   "profit": "Profit",
   "loss": "Loss",
   "allMetrics": "All",
-  "customsTab": "Customs fees"
+  "customsTab": "Customs fees",
+  "pointsEarned": "Points earned",
+  "pointsSpent": "Points spent"
 }

@@ -1,9 +1,17 @@
 import type { ReceiptView } from "../model/sale.types"
 import { formatMoney } from "@/shared/lib/format"
 import { unitCode } from "@/shared/lib/unit-code"
+import { receiptBonusLines } from "./receipt-bonus"
 
 export function formatReceiptText(receipt: ReceiptView, t: (key: string) => string): string {
   const dateStr = new Date(receipt.soldAt).toLocaleString()
+  const bonus = receiptBonusLines(receipt.bonus, t)
+  const paidWithPointsStr = bonus.paidWithPoints
+    ? `\n🎁 ${bonus.paidWithPoints.label}: − ${bonus.paidWithPoints.amount}`
+    : ""
+  const pointsEarnedStr = bonus.pointsEarned
+    ? `⭐ ${bonus.pointsEarned.label}: ${bonus.pointsEarned.amount}\n`
+    : ""
   const warrantyStr = receipt.warranty
     ? `\n🛡 ${t("pos.officialWarranty")}: ${receipt.warranty.days} kun (${new Date(receipt.warranty.endsAt).toLocaleDateString()} gacha)`
     : ""
@@ -37,9 +45,9 @@ ${t("pos.cashier")}: ${receipt.cashier}${customerStr}
 ─────────────────────────
 ${itemsStr}${tradeInStr}
 ─────────────────────────
-💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${warrantyStr}
+💵 ${t("pos.totalDue")}: ${formatMoney(receipt.total)}${paidWithPointsStr}${warrantyStr}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-${t("pos.thankYou")}
+${pointsEarnedStr}${t("pos.thankYou")}
 ${t("pos.storeLocation")}`
 }
 

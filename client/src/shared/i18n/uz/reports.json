@@ -92,5 +92,7 @@
   "profit": "Foyda",
   "loss": "Zarar",
   "allMetrics": "Barchasi",
-  "customsTab": "Bojxona to'lovlari"
+  "customsTab": "Bojxona to'lovlari",
+  "pointsEarned": "Points earned",
+  "pointsSpent": "Points spent"
 }
