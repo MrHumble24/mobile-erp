@@ -1,6 +1,6 @@
 # 025 — Online storefront: fixes after Claude's check of 022
 
-Status: done · Owner: Gemini (Antigravity) · Depends on: handoff 022, branch `agent/gemini/storefront`
+Status: merged · Owner: Gemini (Antigravity) · Depends on: handoff 022, branch `agent/gemini/storefront`
 
 ## Why
 Claude checked handoff 022 on 2026-11-06. What held up, tried on a live server as a stranger with
@@ -81,3 +81,19 @@ Fill the Result section below, set Status to done, commit it. Report only what y
   screen, the Telegram alert arriving in a real chat.
 - Known and accepted: anyone holding `settings.manage` in one branch can switch the storefront on
   or off for the whole company (it is one shop page for all branches).
+- 2026-11-06, check of 025: merged. After merging `main` (two clashes, both sides kept): server
+  build, 709 tests, lint 0 errors; `pnpm test` leaves no row behind; `pnpm test:storefront-leak`,
+  `test:wipe` and `test:restore` pass; an empty database takes all 28 migrations and the seed;
+  website 108 tests, lint, build pass. Tried live: junk `specs` refused (F4); an order for a
+  product that is out of stock refused (F7); the honeypot answers 201 and saves nothing; the
+  sixth order of one visitor in a minute is 429 while another visitor still gets 201, and a
+  forged `X-Forwarded-For` does not help (F2); brand and model name on the card (W1).
+- One fix by Claude (`c0c42b79`): F3 was wrong. The list was cut into pages before products out
+  of stock were dropped, so pages came back short (2 then 1 of 10) and did not add up to the
+  full list. The list query moved to `storefront-catalog.repository.ts` and filters to products
+  in stock first. Seen live: pages of 2, 3 and 4 each add up to the same 10 products, no repeats.
+- Also by Claude: the storefront's four tables are in the danger zone's lists (orders and their
+  history erased; settings and the status list kept); `categoryIds` in the settings must be ids.
+- Second security audit: nothing critical or serious. Left as it is: one visitor can place the
+  same order several times within the limit of 5 a minute.
+- Not seen: F5 live (needs a product without a category); a real phone; a real Telegram chat.
