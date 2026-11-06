@@ -1,6 +1,14 @@
 /** Outcome of a single queued mutation processed by POST /sync/push. */
 export type MutationStatus = 'applied' | 'duplicate' | 'conflict' | 'rejected';
 
+/**
+ * Rejection reason for a mutation queued before the last erase or restore. The
+ * client treats this exact string as "drop it, do not retry" (it belongs to the
+ * shop as it was before the reset). Contract shared with the web client's
+ * `drain.ts`.
+ */
+export const MUTATION_BEFORE_RESET = 'MUTATION_BEFORE_RESET';
+
 export interface MutationResult {
   id: string;
   status: MutationStatus;

@@ -52,7 +52,9 @@ export class BackupRunner {
     return st; // 'missing' or 'unreadable'
   }
 
-  async run(triggeredById: string | null, keepLast: number): Promise<void> {
+  /** Runs a backup and returns the run id (so a caller can verify that exact
+   * file, not "the newest run in the list"). */
+  async run(triggeredById: string | null, keepLast: number): Promise<string> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) throw new Error('DATABASE_URL is not set');
 
@@ -92,6 +94,7 @@ export class BackupRunner {
     } finally {
       await fsp.rm(work, { recursive: true, force: true });
     }
+    return run.id;
   }
 
   /** The happy path: build the file, send it everywhere, record, retain. */

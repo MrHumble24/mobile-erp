@@ -22,6 +22,7 @@ const caller = (perms: string[] = ['sale.create']): AuthenticatedUser => ({
 function build(
   handlerOverrides: Record<string, unknown> = {},
   storesOverrides: Record<string, unknown> = {},
+  cutoffSec = 0,
 ) {
   const handler = {
     permission: 'sale.create',
@@ -39,10 +40,12 @@ function build(
     allowedStoreIds: jest.fn().mockResolvedValue(['store-1']),
     ...storesOverrides,
   };
+  const sessionGate = { cutoffSec: jest.fn().mockResolvedValue(cutoffSec) };
   const service = new SyncService(
     registry as unknown as SyncHandlerRegistry,
     repo as unknown as SyncRepository,
     stores as unknown as StoresService,
+    sessionGate as never,
   );
   return { service, handler, registry, repo, stores };
 }
@@ -69,6 +72,26 @@ describe('SyncService.push dispatch', () => {
       status: 'applied',
       record: { id: 'sale-1' },
     });
+    expect(handler.apply).toHaveBeenCalled();
+  });
+
+  it('drops a mutation queued before the last erase/restore (MUTATION_BEFORE_RESET)', async () => {
+    const cutoff = Math.floor(Date.parse('2026-11-05T00:00:00.000Z') / 1000);
+    const { service, handler } = build({}, {}, cutoff);
+    const result = await pushOne(service); // mutation.occurredAt is 2026-11-01
+    expect(result).toEqual({
+      id: 'm-1',
+      status: 'rejected',
+      error: 'MUTATION_BEFORE_RESET',
+    });
+    expect(handler.apply).not.toHaveBeenCalled();
+  });
+
+  it('keeps applying mutations made after the reset', async () => {
+    const cutoff = Math.floor(Date.parse('2026-10-01T00:00:00.000Z') / 1000);
+    const { service, handler } = build({}, {}, cutoff);
+    const result = await pushOne(service); // 2026-11-01 is after the cutoff
+    expect(result.status).toBe('applied');
     expect(handler.apply).toHaveBeenCalled();
   });
 

@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { SessionGateService } from '../common/runtime/session-gate.service.js';
 import { runWithStoreSelection } from '../stores/lib/store-context.js';
 import { StoresService } from '../stores/stores.service.js';
 import { MutationDto, PushDto } from './dto/push.dto.js';
@@ -11,7 +12,11 @@ import type {
 import { errorMessage } from './lib/error-message.js';
 import { validateDto } from './lib/validate-dto.js';
 import { SyncRepository } from './sync.repository.js';
-import type { MutationResult, PushResponse } from './types/sync.types.js';
+import {
+  MUTATION_BEFORE_RESET,
+  type MutationResult,
+  type PushResponse,
+} from './types/sync.types.js';
 
 /**
  * Applies a terminal's offline mutation queue in order. Each mutation is
@@ -25,12 +30,16 @@ export class SyncService {
     private readonly registry: SyncHandlerRegistry,
     private readonly repo: SyncRepository,
     private readonly stores: StoresService,
+    private readonly sessionGate: SessionGateService,
   ) {}
 
   async push(caller: AuthenticatedUser, dto: PushDto): Promise<PushResponse> {
+    const cutoffSec = await this.sessionGate.cutoffSec();
     const results: MutationResult[] = [];
     for (const mutation of dto.mutations) {
-      results.push(await this.dispatch(caller, dto.terminalId, mutation));
+      results.push(
+        await this.dispatch(caller, dto.terminalId, mutation, cutoffSec),
+      );
     }
     return { results };
   }
@@ -39,7 +48,13 @@ export class SyncService {
     caller: AuthenticatedUser,
     terminalId: string,
     mutation: MutationDto,
+    cutoffSec: number,
   ): Promise<MutationResult> {
+    // A mutation queued before the last erase/restore belongs to the old data;
+    // drop it instead of replaying it into the clean shop (M1, ADR 0057).
+    if (cutoffSec > 0 && this.isBeforeReset(mutation.occurredAt, cutoffSec)) {
+      return reject(mutation.id, MUTATION_BEFORE_RESET);
+    }
     const handler = this.registry.get(mutation.type);
     if (!handler) {
       return reject(mutation.id, `Unknown mutation type ${mutation.type}`);
@@ -136,6 +151,15 @@ export class SyncService {
       baseVersion: mutation.baseVersion ?? 0,
     });
     return id;
+  }
+
+  /** True when the mutation happened strictly before the reset second. An
+   * unparseable timestamp is not treated as stale (it falls through to the
+   * normal validation path). */
+  private isBeforeReset(occurredAt: string, cutoffSec: number): boolean {
+    const ms = Date.parse(occurredAt);
+    if (Number.isNaN(ms)) return false;
+    return Math.floor(ms / 1000) < cutoffSec;
   }
 }
 

@@ -49,6 +49,18 @@ test("rejected is retained with its error, not removed", () => {
   assert.deepEqual(plan.reject, [{ id: "a", error: "insufficient permission" }])
 })
 
+test("a mutation rejected as before the reset is dropped, not retained", () => {
+  const plan = planDrain(
+    [entry("a"), entry("b")],
+    [
+      { id: "a", status: "rejected", error: "MUTATION_BEFORE_RESET" },
+      { id: "b", status: "rejected", error: "insufficient permission" },
+    ],
+  )
+  assert.deepEqual(plan.remove, ["a"])
+  assert.deepEqual(plan.reject, [{ id: "b", error: "insufficient permission" }])
+})
+
 test("conflict is removed and its conflictId collected", () => {
   const plan = planDrain(
     [entry("a")],
