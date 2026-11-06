@@ -124,6 +124,13 @@ fun CustomerPicker(
                     Spacer(Modifier.height(6.dp))
                     AppCard(Modifier.fillMaxWidth(), onClick = { picked = c; results = emptyList() }) {
                         Text(c.name, style = MaterialTheme.typography.titleSmall)
+                        c.bonusBalance?.let { balance ->
+                            Text(
+                                t("customers.bonusPickerPoints", mapOf("points" to formatPoints(balance))),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Tokens.muted,
+                            )
+                        }
                         c.phone?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                     }
                 }

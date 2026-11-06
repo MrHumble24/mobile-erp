@@ -84,3 +84,16 @@ Fill the Result section of `docs/handoffs/opencode/014-step11-android-settings-p
 - Not done / skipped / failed: Screens were not seen — no phone/emulator available; verified by compilation and unit tests only. Nothing skipped or failed.
 
 ## Check by Claude
+- 2026-11-06: build and unit tests pass (run by Claude, twice: as found and after the fixes).
+  Code read, not yet seen on a phone: the live try is done once for all four parts.
+- The model was `nemotron-3.5-super-vl-free`, not Big Pickle.
+- Three bugs found by reading and fixed by Claude on the branch:
+  1. The "Correct points" sheet closed itself the moment it opened and toasted "Points
+     corrected": it watched the bonus state, which is already loaded when the sheet opens. A
+     refusal also wiped the loaded section. Now `adjust` is a suspend call that returns the
+     refusal; the sheet stays open with the message and what was typed.
+  2. The "Correct points" button sat inside the "has history" branch, so a customer with no
+     rows could never be corrected.
+  3. Points showed only on the picked customer's card, not in the search rows.
+- Points use the same comma grouping as `formatMoney` (`1,450`); the handoff's `1 450` was only
+  an example of grouping.

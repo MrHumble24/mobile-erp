@@ -10,18 +10,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import uz.malika.erp.AppContainer
-import uz.malika.erp.features.sales.model.CustomerBonusState
 import uz.malika.erp.features.sales.model.CustomerBonusViewModel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.features.sales.lib.adjustBonusError
@@ -32,8 +31,8 @@ import uz.malika.erp.ui.theme.Tokens
 
 /**
  * Manual bonus-point correction sheet (`bonus.adjust`, online only). On success
- * toasts, closes, and asks the parent to reload so the section shows the new
- * balance and row. A server refusal shows its message in the sheet.
+ * toasts and closes; the view model already holds the new balance and row. A
+ * server refusal shows its message in the sheet and keeps what was typed.
  */
 @Composable
 fun AdjustBonusSheet(
@@ -41,7 +40,6 @@ fun AdjustBonusSheet(
     customerId: String,
     vm: CustomerBonusViewModel,
     onDismiss: () -> Unit,
-    onApplied: () -> Unit,
 ) {
     val t = LocalT.current
     val online by container.connectivity.online.collectAsState()
@@ -49,22 +47,7 @@ fun AdjustBonusSheet(
     var reason by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-    val state by vm.state.collectAsState()
-
-    LaunchedEffect(state) {
-        when (val s = state) {
-            is CustomerBonusState.Ok -> {
-                container.toaster.success(t("customers.bonusAdjusted", null))
-                onDismiss()
-                onApplied()
-            }
-            is CustomerBonusState.Fail -> {
-                busy = false
-                error = s.message
-            }
-            else -> Unit
-        }
-    }
+    val scope = rememberCoroutineScope()
 
     AppBottomSheet(onDismiss = onDismiss) {
         Column(
@@ -83,7 +66,6 @@ fun AdjustBonusSheet(
                 onValueChange = { amount = it; error = null },
                 keyboardType = KeyboardType.Text,
                 placeholder = t("customers.bonusAmountPlaceholder", null),
-                error = error,
             )
             Spacer(Modifier.height(Tokens.Space.md))
             AppFormField(
@@ -104,7 +86,16 @@ fun AdjustBonusSheet(
                     val key = adjustBonusError(amount, reason)
                     if (key == null) {
                         busy = true
-                        vm.adjust(amount.toDouble(), reason.trim())
+                        scope.launch {
+                            val refusal = vm.adjust(amount.trim().toDouble(), reason.trim())
+                            busy = false
+                            if (refusal == null) {
+                                container.toaster.success(t("customers.bonusAdjusted", null))
+                                onDismiss()
+                            } else {
+                                error = t(refusal, null)
+                            }
+                        }
                     } else {
                         error = t(key, null)
                     }

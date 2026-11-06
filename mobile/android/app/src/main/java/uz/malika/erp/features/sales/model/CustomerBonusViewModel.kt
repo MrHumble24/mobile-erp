@@ -36,14 +36,14 @@ class CustomerBonusViewModel(
         }
     }
 
-    /** Posts the correction and puts the answer in the state. */
-    fun adjust(amount: Double, reason: String) {
-        viewModelScope.launch {
-            try {
-                _state.value = CustomerBonusState.Ok(repo.adjustBonus(customerId, amount, reason))
-            } catch (e: Exception) {
-                _state.value = CustomerBonusState.Fail((e as? AppException)?.message ?: "error")
-            }
-        }
+    /**
+     * Posts the correction. On success the state holds the new balance and row;
+     * on a refusal the loaded state is left as it is and the message is returned.
+     */
+    suspend fun adjust(amount: Double, reason: String): String? = try {
+        _state.value = CustomerBonusState.Ok(repo.adjustBonus(customerId, amount, reason))
+        null
+    } catch (e: Exception) {
+        (e as? AppException)?.message?.takeIf { it.isNotBlank() } ?: "common.error"
     }
 }

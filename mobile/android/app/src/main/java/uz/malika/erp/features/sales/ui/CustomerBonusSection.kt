@@ -87,15 +87,16 @@ fun CustomerBonusSection(container: AppContainer, customerId: String) {
                 BonusHistoryRow(t, row)
                 Spacer(Modifier.height(Tokens.Space.sm))
             }
-            if (canAdjust) {
-                Spacer(Modifier.height(Tokens.Space.lg))
-                PillButton(
-                    text = t("customers.bonusCorrect", null),
-                    onClick = { openAdjust = true },
-                    variant = ButtonVariant.OUTLINE,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+        }
+        // Outside the history branch: a customer with no rows yet can still be corrected.
+        if (canAdjust) {
+            Spacer(Modifier.height(Tokens.Space.lg))
+            PillButton(
+                text = t("customers.bonusCorrect", null),
+                onClick = { openAdjust = true },
+                variant = ButtonVariant.OUTLINE,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 
@@ -105,7 +106,6 @@ fun CustomerBonusSection(container: AppContainer, customerId: String) {
             customerId = customerId,
             vm = vm,
             onDismiss = { openAdjust = false },
-            onApplied = { vm.load() },
         )
     }
 }
