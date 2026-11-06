@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { toast } from "@/shared/ui/sonner"
-import { useCheckout, CheckoutLineError } from "@/features/checkout"
+import { useCheckout, CheckoutLineError, checkoutErrorKey } from "@/features/checkout"
 import { useShiftGate } from "@/entities/shift"
 import { focusScanner } from "./use-pos-scanner"
 
@@ -19,12 +19,15 @@ function failureMessage(
   err: CheckoutLineError,
   t: (k: string, p?: Record<string, string | number>) => string
 ) {
+  const bonusKey = checkoutErrorKey(err.code)
   const reason =
-    err.statusCode === 404
-      ? t("common.notFound")
-      : err.statusCode === 409
-        ? t("pos.deviceConflict")
-        : (err.statusCode === 400 && pricingReason(err.message, t)) || err.message
+    bonusKey
+      ? t(bonusKey)
+      : err.statusCode === 404
+        ? t("common.notFound")
+        : err.statusCode === 409
+          ? t("pos.deviceConflict")
+          : (err.statusCode === 400 && pricingReason(err.message, t)) || err.message
   return t("pos.lineFailed", { imei: err.imei, reason })
 }
 

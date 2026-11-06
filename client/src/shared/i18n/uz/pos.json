@@ -82,5 +82,17 @@
   "alreadyQueued": "Allaqachon navbatda",
   "findProduct": "Mahsulotni nomi bo'yicha qidirish",
   "decreaseQuantity": "Miqdorni kamaytirish",
-  "increaseQuantity": "Miqdorni oshirish"
+  "increaseQuantity": "Miqdorni oshirish",
+  "bonusPoints": "Points",
+  "bonusBalance": "Points balance",
+  "bonusMax": "Max points for this cart",
+  "bonusAmount": "Points to use",
+  "bonusUseMax": "Use maximum",
+  "bonusOffline": "Points need a connection",
+  "bonusErrorDisabled": "Bonus points are turned off",
+  "bonusErrorNoCustomer": "Choose a customer to use points",
+  "bonusErrorExceedsBalance": "Not enough points",
+  "bonusErrorExceedsMax": "More than the allowed share of this sale",
+  "bonusErrorExceedsDue": "More than what is left to pay",
+  "bonusErrorOffline": "Points can only be used online"
 }

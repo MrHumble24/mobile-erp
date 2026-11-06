@@ -9,7 +9,7 @@ import type { DeviceDetailView } from "@/entities/device"
 import type { StockScanProduct } from "@/entities/stock"
 import type { CatalogEntry, CatalogUnit } from "@/entities/catalog"
 import { useCurrentShift } from "@/entities/shift"
-import { useCartStore, isLineBlocked, isPaymentBlocked, useCartTradeInPlan, useTradeInStore } from "@/features/checkout"
+import { useCartStore, isLineBlocked, isPaymentBlocked, useCartTenderPlan, useTradeInStore } from "@/features/checkout"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
@@ -68,7 +68,8 @@ export function usePosTerminal() {
   const removeLastLine = useCartStore((s) => s.removeLastLine)
   const clearCart = useCartStore((s) => s.clear)
   const clearTradeIns = useTradeInStore((s) => s.clear)
-  const tradeInPlan = useCartTradeInPlan()
+  const tenderPlan = useCartTenderPlan()
+  const tradeInPlan = tenderPlan.tradeIn
   const hasTradeIn = tradeInPlan.tradeInTotal > 0
   const consign = useConsignTarget()
 
@@ -81,7 +82,7 @@ export function usePosTerminal() {
     lines.length === 0 ||
     tradeInBlocked ||
     lines.some((line) => isLineBlocked(line, canViewCost, priceLevelCode)) ||
-    isPaymentBlocked(tradeInPlan.payableLines, paymentMethod, splitParts)
+    isPaymentBlocked(tenderPlan.payableLines, paymentMethod, splitParts)
 
   const onInStock = (device: DeviceDetailView) => {
     if (mode === "nasiya") return consign.openFor(device)

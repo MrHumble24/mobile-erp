@@ -31,7 +31,8 @@ The sale cart: a multi-line draft that turns scanned devices into `POST /sales` 
 
 ## Exposes (index.ts)
 `useCartStore`, `useCheckout`, `useTradeInStore`, `useCartTradeInPlan`,
-`isLineBlocked`, `isPaymentBlocked`, `toLinePrices`, `lineFinalPrice`,
+`useCartTenderPlan`, `isLineBlocked`, `isPaymentBlocked`, `checkoutErrorKey`,
+`toLinePrices`, `lineFinalPrice`,
 `lineListCents`, `lineHasList`, `cartTotals`, `toCreditLine`, `toCreditLines`,
 `CartLines`, `CompactCartLines`, `PriceLevelControl`, `CartDiscountControl`,
 `CustomerPanel`, `TotalsPanel`, `TradeInSection`, `CheckoutReceiptModal`, and
@@ -48,6 +49,15 @@ payment panel/totals and `use-checkout` all read the plan; each line's POST send
 `payments = price − its trade-ins` and carries those trade-ins. A sold line's
 trade-in drafts are dropped so a retry never resends them; a cart with a trade-in
 is online-only and cannot be sold on credit.
+
+## Points at the till (ADR 0043)
+Bonus points are the customer's own money, applied after trade-ins. `lib/bonus-redeem.ts`
+(tested) caps each line at `maxRedeemPercent` of its price and at what it still owes,
+shares the request in cart order, and returns each line's cash/card payable.
+`use-tender-plan.ts` layers that on the trade-in plan; the totals, payment panel and split
+check all read it, and `use-checkout` sends `bonusRedeem` per line. Points are online-only:
+a cart with points is never queued. `BonusRedeemControl` appears only when bonus is on for
+a named customer and this cart can take points.
 
 ## Pricing (ADR 0034)
 Each line shows its list price for the cart's level. When a list price exists the price

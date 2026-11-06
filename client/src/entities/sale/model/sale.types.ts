@@ -162,6 +162,12 @@ export interface CreateSaleDto {
    * (id or inline) is required. Online only — never queued for sync.
    */
   tradeIns?: SaleTradeInDto[]
+  /**
+   * Points spent on this sale (ADR 0043): the customer's own money, not a
+   * discount. `payments` must then sum to `salePrice` − Σ trade-in values −
+   * `bonusRedeem`. Requires a customer and is online only.
+   */
+  bonusRedeem?: number
 }
 
 /** One phone given in part payment; enters stock at `value`. */
