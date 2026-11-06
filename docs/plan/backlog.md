@@ -10,7 +10,6 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| One Uzbek pass: the 110 texts still in English, six keys the phones miss, a native read of backups, danger zone and setup | `docs/handoffs/gemini/031` | Written 2026-11-06, worktree `.worktrees/gemini-uzbek-pass`. Replaces 013 and the never-written 014. |
 | The till and every dialog at phone width with very large amounts (website) | `docs/handoffs/gemini/032` | Written 2026-11-06, not handed out. Needs a browser, so Gemini. |
 | Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Written 2026-11-06, not handed out, owner not assigned (a strong model only). Its "Decided" table is the user's to change first. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |

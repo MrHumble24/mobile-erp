@@ -1,6 +1,6 @@
 # 031 — One Uzbek pass: everything that is still English
 
-Status: done · Owner: Gemini (Antigravity) · Depends on: nothing (can run next to 030; different files)
+Status: merged · Owner: Gemini (Antigravity)
 
 ## Why
 Claude and OpenCode never write Uzbek, so each feature they built left English text in the `uz`
@@ -294,3 +294,9 @@ Fill the Result section of `docs/handoffs/gemini/031-uzbek-pass.md` in THIS work
   None.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Run by Claude: the untranslated script (110 before, 7 after,
+  each of the 7 rightly unchanged: IMEI, IMEI 2, Telegram twice, Nasiya, a bare `{count}`); every
+  key is in both languages; every placeholder is the same in `en` and `uz`; the only English
+  changes are the six added keys; website lint and build pass on `main`.
+- Not checked: whether the Uzbek reads well. Claude cannot judge that; a native read is the user's.
+
