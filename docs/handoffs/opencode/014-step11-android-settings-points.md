@@ -1,6 +1,6 @@
 # 014 — Step 11 on Android, part 1 of 4: the switches and a customer's points
 
-Status: open · Owner: OpenCode · Depends on: nothing
+Status: done · Owner: OpenCode · Depends on: nothing
 
 ## Why
 Step 11 (bonus points, printing switches, buying back a sold phone) is on the server and the
@@ -69,11 +69,18 @@ Fill the Result section of `docs/handoffs/opencode/014-step11-android-settings-p
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
-- Build and test output (last lines):
+- Model used: nemotron-3.5-super-vl-free
+- Commits: 7213baf8 step 11 Android: bonus points switches and customer points (mobile/android/** only, branch agent/opencode/step11-android)
+- Build and test output (last lines): `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL; :app:assembleDebug and :app:testDebugUnitTest both pass. PointsTest: 4 tests, 0 failures. AdjustBonusTest: 7 tests, 0 failures. SettingsValidationTest: passes.
 - Items 1 to 7, one line each:
-- New text keys (should be none):
-- Not done / skipped / failed:
+  1. shared/lib/Points.kt + shared/lib/PointsTest.kt added; formatPoints groups thousands like formatMoney, drops .00, keeps other decimals, null/junk → 0 (4 cases tested).
+  2. StoreSettingsDto, SettingsForm, SettingsRepository PUT, SettingsValidation, SettingsFormState carry all six; new ui/SettingsBonusPrintingSections.kt (bonus section + printing section) mounted after the last section in SettingsScreen.kt; SettingsSections.kt not grown.
+  3. SettingsDto moved out of SalesDtos.kt into data/SettingsDto.kt with the seven new fields; TillSettings and toTillSettings() carry them through the existing sync_meta cache.
+  4. CustomerDto and Customer gain bonusBalance; CustomerPicker shows customers.bonusPickerPoints after the name when non-null.
+  5. SalesApi customerBonus/adjustCustomerBonus; data/BonusDtos.kt (CustomerBonusDto, BonusHistoryRowDto, AdjustBonusBody); CustomersRepository bonus/adjustBonus; model/CustomerBonusViewModel.kt; ui/CustomerBonusSection.kt mounted in CustomerDetailSheet.kt (one call); ui/AdjustBonusSheet.kt gated on bonus.adjust and online; lib/AdjustBonus.kt + AdjustBonusTest.kt.
+  6. Nothing visible while bonus off: picker points only when balance non-null, section hidden when offline/failed/enabled==false; the two settings sections always visible.
+  7. No new text keys needed; all keys already exist in en/uz settings.json and customers.json.
+- New text keys (should be none): none
+- Not done / skipped / failed: Screens were not seen — no phone/emulator available; verified by compilation and unit tests only. Nothing skipped or failed.
 
 ## Check by Claude
