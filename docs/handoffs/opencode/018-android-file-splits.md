@@ -1,6 +1,6 @@
 # 018 — Android: split three files that sit at the size limit
 
-Status: done · Owner: OpenCode · Depends on: nothing
+Status: merged · Owner: OpenCode
 
 ## Why
 The project's rule is 300 lines per source file, and "approaching 250, split now". After step 11
@@ -76,3 +76,12 @@ Fill the Result section of `docs/handoffs/opencode/018-android-file-splits.md`, 
   - `graphify update .` ran in mobile/android/ and at repo root (both succeeded: "Code graph updated"). Nothing skipped. No push (per instructions).
 
 ## Check by Claude
+- 2026-11-07: checked and merged. Build and unit tests pass (run by Claude).
+- Proven a pure move: every removed line was compared with every added line (imports aside).
+  The only lines that differ are the 13 signatures (`private` to `internal`, and the
+  `PosViewModel.` receiver on the ten moved functions). No logic line changed.
+- Sizes now: `PosViewModel.kt` 204, `PosScreen.kt` 237, `DeviceSheet.kt` 233.
+  `DeviceSheetSections.kt` is 249, right at the "split now" mark: the next helper for the
+  device sheet goes in a new file. `SalesScreen.kt` (270) was not part of this task.
+- Not re-seen on a phone: nothing can look different after a pure move that compiles.
+
