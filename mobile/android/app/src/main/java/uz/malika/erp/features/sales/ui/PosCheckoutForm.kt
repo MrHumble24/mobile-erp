@@ -25,9 +25,12 @@ import uz.malika.erp.features.sales.model.PosState
 import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.features.sales.model.addTradeIn
 import uz.malika.erp.features.sales.lib.fromCents
+import uz.malika.erp.features.sales.model.applyCustomer
 import uz.malika.erp.features.sales.model.checkoutDirect
 import uz.malika.erp.features.sales.model.loadCustomerBonus
 import uz.malika.erp.features.sales.model.removeTradeIn
+import uz.malika.erp.features.sales.model.setCartDiscount
+import uz.malika.erp.features.sales.model.setLevel
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.formatPoints
