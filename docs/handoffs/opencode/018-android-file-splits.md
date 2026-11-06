@@ -1,6 +1,6 @@
 # 018 — Android: split three files that sit at the size limit
 
-Status: open · Owner: OpenCode · Depends on: nothing
+Status: done · Owner: OpenCode · Depends on: nothing
 
 ## Why
 The project's rule is 300 lines per source file, and "approaching 250, split now". After step 11
@@ -46,11 +46,33 @@ Fill the Result section of `docs/handoffs/opencode/018-android-file-splits.md`, 
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
+- Model used: Crouton Alpha Free
 - Commits:
+  - 2dd3b168 Android: move PosViewModel cart edits to PosCartEdits extensions
+  - 0a3b84e4 Android: move PosReceiptSheet to its own file
+  - 2cd539e3 Android: move DeviceSheet helpers to DeviceSheetSections
 - Build and test output (last lines):
+  ```
+  > Task :app:assembleDebug
+  > Task :app:createDebugApkListingFileRedirect
+
+  BUILD SUCCESSFUL in 18s
+  46 actionable tasks: 46 executed
+  Configuration cache entry stored.
+  ```
 - Line counts of the six files:
+  ```
+       204 app/src/main/java/uz/malika/erp/features/sales/model/PosViewModel.kt
+        75 app/src/main/java/uz/malika/erp/features/sales/model/PosCartEdits.kt
+       237 app/src/main/java/uz/malika/erp/features/sales/ui/PosScreen.kt
+        49 app/src/main/java/uz/malika/erp/features/sales/ui/PosReceiptSheet.kt
+       233 app/src/main/java/uz/malika/erp/features/inventory/ui/DeviceSheet.kt
+       249 app/src/main/java/uz/malika/erp/features/inventory/ui/DeviceSheetSections.kt
+      1047 total
+  ```
 - Anything that was not a pure move, and why:
+  - PosCartEdits.kt: member functions rewritten as extension functions (`fun PosViewModel.setLinePrice…`), private helper `mapLine` became `private fun PosViewModel.mapLine`, per the PosBonus.kt pattern; doc comments kept; `private` kept for mapLine, members public as before. Callers in sales/ui/ gained extension imports: ScanModePanel + CartSheet (setLinePrice, setLineWarranty, setLineQuantity, removeLine, setLineDiscount, toggleOverride), PosCheckoutForm (applyCustomer, setLevel, setCartDiscount). `private` → `internal` for PosReceiptSheet, SectionTitle, ImeiCopyRow per spec. Imports removed from PosViewModel (Discount, DiscountMode, PriceLevel, BigDecimal), PosScreen (Toast, Spacer, fillMaxWidth, height, LocalClipboardManager, LocalContext, AnnotatedString, ReceiptData, ButtonVariant, PillButton), DeviceSheet (Row, size, Icons, ContentCopy, Icon, IconButton, Alignment, ClipboardManager, AnnotatedString, Translate, MonoFamily). No duplicate helper existed in inventory/ui (grep only DeviceSheet.kt), so the moved SectionTitle/ImeiCopyRow were kept in DeviceSheetSections.kt. DeviceSheetSections grew 209 → 249 lines (under the 300 hard limit). No logic line changed.
 - Not done / skipped / failed:
+  - `graphify update .` ran in mobile/android/ and at repo root (both succeeded: "Code graph updated"). Nothing skipped. No push (per instructions).
 
 ## Check by Claude
