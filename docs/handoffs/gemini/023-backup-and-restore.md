@@ -1,6 +1,6 @@
 # 023 — Backup and restore, with storage providers (server and website)
 
-Status: building · Owner: Claude Opus 4.8 (`opus48` agent), orchestrated by Claude · Asked by the user on 2026-11-06; started the same day on the user's word. Parts 1 and 2 first; 3, 4 and 5 after Claude has checked them.
+Status: merged on 2026-11-06 (server and website) · Built by Claude Opus 4.8 (`opus48` agents), orchestrated and checked by Claude · Still to do by the user: one real try of Telegram, Google Drive and OneDrive (they were tested against fake servers only).
 
 ## Why
 The shop's whole business lives in one database and one folder of pictures. The PRD already asks
@@ -297,3 +297,25 @@ vite, exit 0). ADR `0052-client-backups.md`.
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
   database, and a look at one backup file to confirm it is unreadable without the key.
+- 2026-11-06, how it was run: one `opus48` agent built the secrets module, backup and restore;
+  Claude tested it live on a throwaway database and `security-auditor` read the diff (0 critical,
+  2 serious, 4 medium, 5 low); one fix round of 13 items; the same agent then built Telegram,
+  Google Drive and OneDrive; a second audit (1 serious: no network timeouts; 1 medium; 4 low) and
+  a second fix round; a second `opus48` agent built the website page from the route table.
+- Claude's own tests, on throwaway databases with their own data, backup and upload folders:
+  the backup file has no readable plaintext; a cashier gets 403 on every route; a restore brought
+  back a changed row, removed a row added later and put a changed picture back; a safety backup
+  was made; the old token was 401 after the restore and still 401 after a server restart; an
+  unreadable passphrase gives a clear 400 and the page asks for it again; after a restore the
+  list shows the restored-from backup and the safety backup. In a browser: the page in Uzbek at
+  500 wide with no sideways scroll, set the passphrase, "Back up now", the red restore dialog,
+  a wrong password refused with a clear message, and the session ended after a real restore.
+- Final gate on the joined branch: server 115 suites / 648 tests, lint 0 errors,
+  `pnpm test:restore` (4 scenarios) passes; website 85 tests, lint 0 errors, build passes.
+- Not seen by anyone: real Telegram, Google or Microsoft; the "restoring, please wait" screen
+  while a restore is still running (a restore takes about 150 ms on test data; its finished
+  phase was seen by the builder); the page at 390 wide (the browser window would not go below
+  500).
+- Limits written down in ADR 0051 and 0056: one server process only; DATA_DIR must be a volume
+  that survives a redeploy (it holds the master key; without it every stored secret, the backup
+  passphrase included, must be typed again); a backup above 32 GiB is refused.
