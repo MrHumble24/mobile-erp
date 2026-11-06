@@ -18,6 +18,10 @@ enum SettingsValidation {
         if !isInt(v.lowStockThreshold, max: 1000) { bad.insert("lowStockThreshold") }
         if !isInt(v.defaultNasiyaDueDays, max: 3650) { bad.insert("defaultNasiyaDueDays") }
         if !isInt(v.overdueReminderDays, max: 365) { bad.insert("overdueReminderDays") }
+        if v.bonusEnabled {
+            if !isPercent(v.bonusEarnPercent) { bad.insert("bonusEarnPercent") }
+            if !isPercent(v.bonusMaxRedeemPercent) { bad.insert("bonusMaxRedeemPercent") }
+        }
         return bad
     }
 
@@ -35,6 +39,16 @@ enum SettingsValidation {
     private static func isDecimal(_ s: String, max: Double) -> Bool {
         guard let n = Double(s) else { return false }
         return n >= 0 && n <= max
+    }
+
+    private static func isPercent(_ s: String) -> Bool {
+        guard let n = Double(s) else { return false }
+        if n < 0 || n > 100 { return false }
+        if let dotIndex = s.firstIndex(of: ".") {
+            let decimals = s[s.index(after: dotIndex)...]
+            if decimals.count > 2 { return false }
+        }
+        return true
     }
 }
 
@@ -66,5 +80,29 @@ func runSettingsSelfChecks() {
     bad = ok
     bad.overdueReminderDays = "x"      // not a number
     assert(SettingsValidation.invalidFields(bad).contains("overdueReminderDays"))
+
+    // Bonus validation self-checks (ADR 0043)
+    var bonusOk = ok
+    bonusOk.bonusEnabled = true
+    bonusOk.bonusEarnPercent = "5.5"
+    bonusOk.bonusMaxRedeemPercent = "50"
+    assert(SettingsValidation.isValid(bonusOk), "valid bonus settings rejected")
+
+    var bonusBad = bonusOk
+    bonusBad.bonusEarnPercent = "5.555"
+    assert(SettingsValidation.invalidFields(bonusBad).contains("bonusEarnPercent"), "bonusEarnPercent >2 decimals allowed")
+
+    bonusBad = bonusOk
+    bonusBad.bonusMaxRedeemPercent = "101"
+    assert(SettingsValidation.invalidFields(bonusBad).contains("bonusMaxRedeemPercent"), "bonusMaxRedeemPercent >100 allowed")
+
+    bonusBad = bonusOk
+    bonusBad.bonusEarnPercent = "-1"
+    assert(SettingsValidation.invalidFields(bonusBad).contains("bonusEarnPercent"), "negative bonusEarnPercent allowed")
+
+    bonusBad = bonusOk
+    bonusBad.bonusEnabled = false
+    bonusBad.bonusEarnPercent = "999"
+    assert(SettingsValidation.isValid(bonusBad), "invalid bonus checked when bonus disabled")
 }
 #endif

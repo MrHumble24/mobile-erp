@@ -66,6 +66,8 @@ struct SettingsView: View {
                 creditSection($model)
                 shiftsSection($model)
                 repairsSection($model)
+                SettingsBonusSection(model: model)
+                SettingsPrintingSection(model: model)
                 if model.saved { FormErrorLine(message: i18n.t("settings.settingsSaved"), color: Tokens.success) }
                 if let err = model.saveError { FormErrorLine(message: err) }
                 Button {
