@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui"
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui"
 import { useI18n } from "@/shared/i18n"
 import { useThemes, type CompanyProfile, type UpdateCompanyProfileDto } from "@/entities/company"
 
@@ -40,29 +40,25 @@ export function CompanyThemesCard({
           {(themes || FALLBACK_THEMES).map((th) => {
             const isSelected = activeTheme === th.code
             return (
-              <div
+              <Button
                 key={th.code}
-                role="button"
-                tabIndex={0}
-                className={`p-3 rounded-xl border-2 cursor-pointer transition-all space-y-2 ${
+                type="button"
+                variant="ghost"
+                aria-pressed={isSelected}
+                disabled={disabled}
+                onClick={() => handleSelectTheme(th.code)}
+                className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-xl border-2 border-solid bg-card p-3 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
                   isSelected ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
                 }`}
-                onClick={() => !disabled && handleSelectTheme(th.code)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    if (!disabled) handleSelectTheme(th.code)
-                  }
-                }}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex w-full items-center justify-between">
                   <span className="text-xs font-semibold">{th.name}</span>
                   {isSelected && <div className="h-2 w-2 rounded-full bg-primary" />}
                 </div>
-                <div className="h-7 rounded-md border border-border/40 flex items-center px-2 text-[10px] text-muted-foreground">
+                <div className="mt-2 h-7 w-full rounded-md border border-border/40 flex items-center px-2 text-[10px] text-muted-foreground">
                   Aa 123
                 </div>
-              </div>
+              </Button>
             )
           })}
         </div>

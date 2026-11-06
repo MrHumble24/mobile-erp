@@ -43,7 +43,7 @@ export function DashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title={t("dashboard.title")}
-        description="Do'konning bugungi savdo ko'rsatkichlari, tushumlar va ombor qoldig'i tahlili"
+        description={t("dashboard.subtitle")}
         actions={<DashboardActions />}
       />
 

@@ -15,6 +15,7 @@ import {
   type CompanyProfile,
   type UpdateCompanyProfileDto,
 } from "@/entities/company"
+import { AssetImage } from "@/shared/ui"
 
 interface CompanyIdentityCardProps {
   profile?: CompanyProfile
@@ -61,7 +62,7 @@ export function CompanyIdentityCard({
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-2xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted/20">
                 {profile?.logoUrl ? (
-                  <img src={profile.logoUrl} alt="Logo" className="h-full w-full object-contain" />
+                  <AssetImage path={profile.logoUrl} alt="Logo" className="h-full w-full object-contain" />
                 ) : (
                   <span className="text-[10px] text-muted-foreground text-center px-1">No Logo</span>
                 )}
