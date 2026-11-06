@@ -1,6 +1,6 @@
 # 009 — Step 11, part 7 of 7: buy-back and return messages, and the ADR for the step
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged). Do not start before Claude says 008 is merged.
+Status: open · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged)
 
 ## Why
 The last part of the step 11 website work. The server can now buy back a phone the shop sold
