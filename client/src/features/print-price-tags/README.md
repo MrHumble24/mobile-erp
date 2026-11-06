@@ -24,3 +24,8 @@ on the current page (ADR 0043).
 
 - Know about devices or stock — the page maps its rows into `PriceTagItem[]`.
 - Fetch data, import another feature, or call `window.print()` on render.
+
+The printed copy is rendered through a portal straight under `<body>` (hidden on
+screen); the grid inside the dialog is only a preview. Inside the dialog the
+sheet would be cut off at the dialog's height on paper. While the printed copy
+is mounted the print styles lay out nothing else, so labels flow over pages.

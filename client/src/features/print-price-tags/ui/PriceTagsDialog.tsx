@@ -1,4 +1,5 @@
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { useI18n } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Checkbox } from "@/shared/ui/checkbox"
@@ -99,6 +100,10 @@ function PriceTagsBody({ items }: { items: PriceTagItem[] }) {
       <div className="overflow-x-auto rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-2">
         <PriceTagSheet items={selectedItems} />
       </div>
+
+      {/* The printed copy lives on <body>, outside the dialog: inside it the sheet
+          would be cut off at the dialog's height on paper. */}
+      {createPortal(<PriceTagSheet items={selectedItems} printable />, document.body)}
 
       <DialogFooter>
         <Button

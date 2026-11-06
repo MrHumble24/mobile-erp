@@ -1,10 +1,15 @@
+import { cn } from "@/shared/lib/utils"
 import type { PriceTagItem } from "../model/price-tag.types"
 import { PriceTag } from "./PriceTag"
 
-/** The printable A4 sheet: three labels across, only the ticked items. */
-export function PriceTagSheet({ items }: { items: PriceTagItem[] }) {
+/**
+ * Three labels across. With `printable` it is the sheet the print styles pick up
+ * (class `printable-tags`): hidden on screen, the only thing on paper. Without it,
+ * the same grid is just the on-screen preview.
+ */
+export function PriceTagSheet({ items, printable }: { items: PriceTagItem[]; printable?: boolean }) {
   return (
-    <div className="printable-tags grid grid-cols-3 gap-3 bg-white p-3">
+    <div className={cn("grid-cols-3 gap-3 bg-white p-3", printable ? "printable-tags hidden" : "grid")}>
       {items.map((item) => (
         <PriceTag key={item.id} item={item} />
       ))}
