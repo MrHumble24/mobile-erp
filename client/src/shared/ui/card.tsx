@@ -14,10 +14,10 @@ function Card({
     white: "bg-white text-foreground border border-border",
     limestone: "bg-muted text-foreground border border-border",
     mist: "bg-muted text-foreground border border-border",
-    pumice: "bg-[#e9ebf0] text-foreground border border-[#d4d4d4]",
+    pumice: "bg-muted text-foreground border border-border",
     ember: "bg-white text-foreground border border-border",
-    plasma: "bg-[#6647f0]/5 text-foreground border border-[#6647f0]/20",
-    dark: "bg-[#111111] text-white border border-[#2a2a2a]",
+    plasma: "bg-primary/5 text-foreground border border-primary/20",
+    dark: "bg-card text-card-foreground border border-border",
   }[variant]
 
   return (

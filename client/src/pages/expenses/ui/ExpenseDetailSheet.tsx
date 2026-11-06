@@ -18,7 +18,7 @@ import { recordedByName } from "../lib/expenses-csv"
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-[#f0f0f0] py-2">
+    <div className="flex items-start justify-between gap-4 border-b border-border py-2">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>

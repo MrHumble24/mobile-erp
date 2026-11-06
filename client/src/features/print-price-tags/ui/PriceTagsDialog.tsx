@@ -52,19 +52,19 @@ function PriceTagPicker({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-[12px] border border-dashed border-[#e8e8e8] p-4 text-center text-xs text-muted-foreground">
+      <div className="rounded-[12px] border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
         {t("inventory.priceTagsEmpty")}
       </div>
     )
   }
 
   return (
-    <div className="max-h-56 divide-y divide-[#e8e8e8] overflow-y-auto rounded-[12px] border border-[#e8e8e8]">
+    <div className="max-h-56 divide-y divide-border overflow-y-auto rounded-[12px] border border-border">
       {items.map((item) => (
         <div key={item.id} className="flex items-center gap-3 px-3 py-2">
           <Checkbox checked={selected.has(item.id)} onCheckedChange={() => onToggle(item.id)} />
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium text-[#202020]">{item.title}</div>
+            <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
             <div className="truncate text-xs text-muted-foreground">
               {item.subtitle ?? item.code ?? ""}
             </div>
@@ -97,7 +97,7 @@ function PriceTagsBody({ items }: { items: PriceTagItem[] }) {
 
       <PriceTagPicker items={items} selected={selected} onToggle={toggle} />
 
-      <div className="overflow-x-auto rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-2">
+      <div className="overflow-x-auto rounded-[12px] border border-border bg-muted p-2">
         <PriceTagSheet items={selectedItems} />
       </div>
 

@@ -33,7 +33,7 @@ function CreditBar({ partner }: { partner: PartnerView }) {
         <span>{formatMoney(used)}</span>
         <span>{formatMoney(limit)}</span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-[#ececec]">
+      <div className="h-1.5 w-full rounded-full bg-muted">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -93,7 +93,7 @@ export function PartnersTable({ partners, actions }: { partners: PartnerView[]; 
 
   if (partners.length === 0) {
     return (
-      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#d4d4d4] rounded-[16px] bg-white">
+      <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-border rounded-[16px] bg-card">
         {t("partners.noPartnersFound")}
       </div>
     )

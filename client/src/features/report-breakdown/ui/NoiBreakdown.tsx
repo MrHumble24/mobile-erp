@@ -47,7 +47,7 @@ export function NoiBreakdown({ request, onOpen }: BreakdownProps) {
       <Term label={t("dashboard.revenue")} value={data.revenue} onClick={() => open("revenue")} />
       <Term label={t("dashboard.cogs")} value={data.cogs} onClick={() => open("cogs")} sign="−" />
       <Term label={t("dashboard.expenses")} value={data.expenses} onClick={() => open("expenses")} sign="−" />
-      <div className="flex items-center justify-between gap-3 rounded-[12px] bg-[#111111] px-4 py-3 text-white">
+      <div className="flex items-center justify-between gap-3 rounded-[12px] bg-card px-4 py-3 text-card-foreground border border-border">
         <span className="font-semibold">{t("dashboard.netOperatingIncome")}</span>
         <span className="font-mono font-bold">{formatMoney(data.netOperatingIncome)}</span>
       </div>

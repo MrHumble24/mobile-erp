@@ -50,8 +50,8 @@ function Bar({ label, count, max }: { label: string; count: number; max: number 
         <span className="font-medium">{label}</span>
         <span className="text-muted-foreground">{count}</span>
       </div>
-      <div className="h-2 rounded-full bg-[#eeeeee] overflow-hidden">
-        <div className="h-full bg-[#0091ff]" style={{ width: `${pct}%` }} />
+      <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
       </div>
     </div>
   )

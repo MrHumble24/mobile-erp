@@ -30,7 +30,7 @@ function SheetBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-[#090c1d]/35 backdrop-blur-xl backdrop-saturate-200 bottomsheet-backdrop",
+        "fixed inset-0 z-50 bg-background/80 backdrop-blur-xl backdrop-saturate-200 bottomsheet-backdrop",
         className
       )}
       {...props}
@@ -74,11 +74,11 @@ function SheetPopup({
               className="pt-3 pb-2 flex justify-center shrink-0 cursor-grab active:cursor-grabbing select-none touch-none"
               aria-label="Drag handle"
             >
-              <div className="w-12 h-1.5 rounded-full bg-[#d4d4d4] hover:bg-[#b0b0b0] transition-colors pointer-events-none" />
+              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors pointer-events-none" />
             </div>
           )}
           {showClose && (
-            <DrawerPrimitive.Close className="absolute top-3.5 right-4 size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-[#eeeeee] hover:text-foreground transition-colors outline-none cursor-pointer z-10">
+            <DrawerPrimitive.Close className="absolute top-3.5 right-4 size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-foreground transition-colors outline-none cursor-pointer z-10">
               <X className="size-4 stroke-[2.2]" />
               <span className="sr-only">Yopish</span>
             </DrawerPrimitive.Close>

@@ -39,7 +39,7 @@ function ModeToggle({ form }: { form: FormApi }) {
           className={cn(
             "h-9 flex-1 rounded-full border text-xs font-medium",
             mode === o.value
-              ? "bg-[#090c1d] text-white border-[#090c1d] hover:bg-[#090c1d] hover:text-white"
+              ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground"
               : "bg-white text-muted-foreground border-border hover:bg-muted"
           )}
         >

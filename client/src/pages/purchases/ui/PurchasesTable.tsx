@@ -42,7 +42,7 @@ export function PurchasesTable({
 
   if (purchases.length === 0) {
     return (
-      <div className="rounded-[16px] border border-dashed border-[#d4d4d4] bg-white p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-[16px] border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
         {t("purchases.empty")}
       </div>
     )

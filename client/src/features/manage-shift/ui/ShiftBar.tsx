@@ -29,16 +29,16 @@ function StatusBar({
   return (
     <div
       className={`flex flex-wrap items-center justify-between gap-3 rounded-[14px] border p-3 ${
-        isOpen ? "border-border bg-white" : "border-[#fec84b] bg-[#fffaeb]"
+        isOpen ? "border-border bg-card" : "border-amber-400/40 bg-amber-50 dark:bg-amber-950/30"
       }`}
     >
       <div className="flex items-center gap-2.5">
-        {isOpen ? <Clock className="size-5 text-primary" /> : <LockKeyhole className="size-5 text-[#b54708]" />}
+        {isOpen ? <Clock className="size-5 text-primary" /> : <LockKeyhole className="size-5 text-amber-600 dark:text-amber-400" />}
         <div className="leading-tight">
           <div className="text-sm font-semibold">
             {isOpen ? t("shifts.openSince", { time: formatTime(current.openedAt) }) : t("shifts.noOpenShift")}
           </div>
-          {!isOpen && <div className="text-xs text-[#b54708]">{t("shifts.shiftRequired")}</div>}
+          {!isOpen && <div className="text-xs text-amber-600 dark:text-amber-400">{t("shifts.shiftRequired")}</div>}
         </div>
       </div>
       {isOpen ? (

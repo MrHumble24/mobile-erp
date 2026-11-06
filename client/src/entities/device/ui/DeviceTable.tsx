@@ -50,7 +50,7 @@ function EmptyState({ onResetFilters }: { onResetFilters?: () => void }) {
   const { t } = useI18n()
   return (
     <div className="py-14 text-center border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
-      <PackageSearch className="mx-auto size-10 text-[#a0a0a0] stroke-[1.5]" />
+      <PackageSearch className="mx-auto size-10 text-muted-foreground stroke-[1.5]" />
       <div className="space-y-1">
         <p className="font-medium text-sm text-foreground">{t("inventory.empty")}</p>
         <p className="text-xs text-muted-foreground">{t("inventory.searchPlaceholder")}</p>

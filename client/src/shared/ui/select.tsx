@@ -44,7 +44,7 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm font-body text-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
+        "flex h-10 w-full items-center justify-between rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
         className
       )}
       {...props}
@@ -93,14 +93,14 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted data-[selected]:bg-[#0091ff]/10 data-[selected]:text-[#0091ff] data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
+        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted data-[selected]:bg-primary/10 data-[selected]:text-primary data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
         className
       )}
       {...props}
     >
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator>
-        <Check className="size-4 stroke-[2.5] text-[#0091ff]" />
+        <Check className="size-4 stroke-[2.5] text-primary" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -127,7 +127,7 @@ function SelectSeparator({
 }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
   return (
     <SelectPrimitive.Separator
-      className={cn("my-1 h-[1px] bg-[#e8e8e8]", className)}
+      className={cn("my-1 h-[1px] bg-border", className)}
       {...props}
     />
   )

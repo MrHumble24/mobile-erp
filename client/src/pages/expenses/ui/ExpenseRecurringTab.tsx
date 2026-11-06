@@ -86,7 +86,7 @@ export function ExpenseRecurringTab({ canManage }: { canManage: boolean }) {
     <div className="space-y-4">
       <Toolbar canManage={canManage} onNew={() => openDialog(null)} />
       {(data ?? []).length === 0 ? (
-        <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-[#d4d4d4] rounded-[16px] bg-white">
+        <div className="p-8 text-center text-sm text-muted-foreground border border-dashed border-border rounded-[16px] bg-card">
           {t("expenses.noRecurrences")}
         </div>
       ) : (

@@ -36,7 +36,7 @@ function DifferenceRow({ expected, counted }: { expected: string; counted: strin
   const diff = shiftDifference(counted, expected)
   const kind = differenceKind(diff)
   const tone =
-    kind === "short" ? "text-[#d92d20]" : kind === "over" ? "text-[#027a48]" : "text-muted-foreground"
+    kind === "short" ? "text-destructive" : kind === "over" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
   const label =
     kind === "short" ? t("shifts.shortage") : kind === "over" ? t("shifts.surplus") : t("shifts.noDifference")
   return <InfoRow label={label} value={formatMoney(diff)} tone={tone} />

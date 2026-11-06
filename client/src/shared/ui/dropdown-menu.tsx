@@ -43,7 +43,7 @@ function DropdownMenuItem({
       className={cn(
         "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors",
         variant === "destructive"
-          ? "text-[#e53935] hover:bg-rose-50 focus:bg-rose-50"
+          ? "text-destructive hover:bg-rose-50 focus:bg-rose-50"
           : "text-foreground hover:bg-muted focus:bg-muted",
         className
       )}
@@ -73,7 +73,7 @@ function DropdownMenuSeparator({
 }: React.ComponentProps<typeof MenuPrimitive.Separator>) {
   return (
     <MenuPrimitive.Separator
-      className={cn("my-1 h-[1px] bg-[#e8e8e8]", className)}
+      className={cn("my-1 h-[1px] bg-border", className)}
       {...props}
     />
   )

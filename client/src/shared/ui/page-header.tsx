@@ -23,7 +23,7 @@ function PageBreadcrumbs({ items }: { items: BreadcrumbItem[] }) {
         const isLast = index === items.length - 1
         return (
           <React.Fragment key={`${item.label}-${index}`}>
-            {index > 0 && <ChevronRight className="size-3 text-[#b3b3b3] shrink-0" />}
+            {index > 0 && <ChevronRight className="size-3 text-muted-foreground shrink-0" />}
             {item.href && !isLast ? (
               <Link
                 to={item.href}

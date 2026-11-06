@@ -27,7 +27,7 @@ function DeviceBarcode({ imei }: { imei: string }) {
     <div className="flex flex-col items-center py-2 px-3 bg-white rounded-[12px] border border-border shadow-[var(--shadow-xs)]">
       <div className="flex items-center gap-[2px] h-9">
         {bars.map((w, idx) => (
-          <div key={idx} className="bg-[#202020] h-full rounded-[0.5px]" style={{ width: `${w * 1.5}px` }} />
+          <div key={idx} className="bg-primary h-full rounded-[0.5px]" style={{ width: `${w * 1.5}px` }} />
         ))}
       </div>
       <span className="font-mono text-[11px] tracking-widest text-muted-foreground mt-1">{imei}</span>
@@ -50,7 +50,7 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
       </div>
       <div>
         <span className="text-muted-foreground">{t("inventory.margin")}: </span>
-        <span className={`font-bold ${isPositive ? "text-[#10b981]" : "text-[#e53935]"}`}>
+        <span className={`font-bold ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
           {isPositive ? "+" : ""}{formatMoney(margin)} ({marginPercent.toFixed(1)}%)
         </span>
       </div>
@@ -95,7 +95,7 @@ function HistoryList({ history }: { history: Array<{ id: string; fromStatusCode:
   return (
     <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
       {history.map((h) => (
-        <div key={h.id} className="text-xs border-l-2 border-[#090c1d]/30 pl-3 py-1 space-y-0.5">
+        <div key={h.id} className="text-xs border-l-2 border-foreground/30 pl-3 py-1 space-y-0.5">
           <div className="font-medium text-foreground">{h.fromStatusCode ? `${h.fromStatusCode} → ` : ""}{h.toStatusCode}</div>
           {h.reason && <div className="text-muted-foreground italic">"{h.reason}"</div>}
           <div className="text-[10px] text-muted-foreground">{formatDate(h.changedAt)}</div>
@@ -137,7 +137,7 @@ function DrawerActions({
       <DeviceStatusBadge status={device.statusCode} />
       <div className="flex items-center gap-2">
         {canSell && (
-          <Button size="sm" onClick={() => onSell?.(device)} className="gap-1.5 bg-[#10b981] hover:bg-[#059669] text-white">
+          <Button size="sm" onClick={() => onSell?.(device)} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
             <ShoppingCart className="size-4" />
             {t("inventory.sellInPos")}
           </Button>

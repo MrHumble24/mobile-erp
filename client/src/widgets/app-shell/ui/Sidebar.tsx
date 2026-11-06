@@ -20,7 +20,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-border flex items-center gap-2.5 shrink-0")}>
-      <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs overflow-hidden">
+      <div className="size-8 rounded-full bg-primary flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs overflow-hidden">
         {branding?.logoUrl ? (
           <img src={branding.logoUrl} alt={name} className="size-full object-cover" />
         ) : (
@@ -33,7 +33,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
             <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-foreground truncate">
               {name}
             </h1>
-            <span className="size-1.5 rounded-full bg-[#00c07a]" />
+            <span className="size-1.5 rounded-full bg-emerald-500" />
           </div>
           <p className="text-[10px] text-muted-foreground truncate font-medium">ERP</p>
         </div>
@@ -66,7 +66,7 @@ function SidebarLinkElement({
         "flex items-center gap-3 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline",
         collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
-          ? "bg-[#202020] text-white shadow-xs"
+          ? "bg-primary text-primary-foreground shadow-xs"
           : "text-muted-foreground hover:bg-black/[0.04] hover:text-foreground"
       )}
     >
@@ -165,7 +165,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="p-3 border-t border-border bg-muted shrink-0 text-[10px] text-muted-foreground flex items-center justify-between">
       <span>{branding?.name || "ERP"} v1.2</span>
-      <span className="font-mono bg-white border border-[#d4d4d4] px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
+      <span className="font-mono bg-muted border border-border px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
     </div>
   )
 }

@@ -46,7 +46,7 @@ function QueueRow({ entry, t }: { entry: OutboxEntry; t: T }) {
           {entry.status === "rejected" ? t("sync.statusRejected") : t("sync.statusPending")}
         </Badge>
       </TableCell>
-      <TableCell className="text-xs text-[#dc2626] max-w-[240px] truncate">{entry.error ?? ""}</TableCell>
+      <TableCell className="text-xs text-destructive max-w-[240px] truncate">{entry.error ?? ""}</TableCell>
       <TableCell className="text-right">
         {entry.status === "rejected" && (
           <div className="flex justify-end gap-2">

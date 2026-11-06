@@ -53,7 +53,7 @@ export function CustomerBonusHistory({ history }: { history: BonusHistoryRow[] }
           </div>
           <span
             className={`shrink-0 text-sm font-semibold tabular-nums ${
-              Number(row.amount) > 0 ? "text-[#00a86b]" : "text-[#e53935]"
+              Number(row.amount) > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
             }`}
           >
             {signedPoints(row.amount)}

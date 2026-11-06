@@ -23,7 +23,7 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#e53935] flex items-center gap-1.5">
+        <h3 className="text-sm font-semibold text-destructive flex items-center gap-1.5">
           <TriangleAlert className="size-4" />
           {t("inventory.lowStock")}
         </h3>
@@ -40,13 +40,13 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
               key={r.id}
               className={cn(
                 "flex items-center justify-between rounded-[12px] border p-3 text-sm transition-colors",
-                below ? "border-[#e53935]/40 bg-[#e53935]/5" : "border-border bg-white shadow-[var(--shadow-xs)]"
+                below ? "border-destructive/40 bg-destructive/5" : "border-border bg-card shadow-[var(--shadow-xs)]"
               )}
             >
               <span className="font-medium text-foreground">
                 {nameOf(r.modelId)} · {r.storage}
               </span>
-              <span className={`font-semibold flex items-center gap-1 ${below ? "text-[#e53935]" : ""}`}>
+              <span className={`font-semibold flex items-center gap-1 ${below ? "text-destructive" : ""}`}>
                 {below && <TriangleAlert className="size-3.5" />}
                 {r.currentCount} / {r.threshold}
               </span>

@@ -22,7 +22,7 @@ function UserTriggerContent({ name, email }: { name?: string; email?: string }) 
 
   return (
     <>
-      <div className="size-7 rounded-full bg-[#6647f0]/10 flex items-center justify-center text-[#6647f0] font-bold text-xs shrink-0">
+      <div className="size-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
         {avatarLetter}
       </div>
       <div className="text-left hidden md:block max-w-[130px] truncate leading-tight">
@@ -96,7 +96,7 @@ export function UserMenu() {
           <UserQuickNavItems onNavigate={navigate} />
           <DropdownMenuItem
             variant="destructive"
-            className="cursor-pointer text-[#e53935]"
+            className="cursor-pointer text-destructive"
             onClick={() => setLogoutOpen(true)}
           >
             <LogOut className="mr-2 h-4 w-4" />

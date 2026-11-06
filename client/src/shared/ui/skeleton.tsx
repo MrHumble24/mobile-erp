@@ -17,7 +17,7 @@ function Skeleton({ className, shape = "default", ...props }: SkeletonProps) {
     <div
       data-slot="skeleton"
       className={cn(
-        "animate-pulse bg-[#eeeeee]",
+        "animate-pulse bg-muted",
         shapeClass,
         className
       )}

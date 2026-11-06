@@ -62,7 +62,7 @@ export function SummaryStep({ state, update, onBack, onSuccess }: Props) {
     })
   }
 
-  const branchName = state.firstStore.name?.trim() || state.company.name
+  const branchName = state.firstStore?.name?.trim() || state.company.name
 
   return (
     <div className="space-y-6">

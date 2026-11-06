@@ -65,7 +65,7 @@ function ActionButtons({
         <Button
           variant="outline"
           size="sm"
-          className="h-7 text-xs px-2 gap-1 text-[#10b981] border-[#10b981]/30 hover:bg-[#10b981]/10 hover:text-[#10b981]"
+          className="h-7 text-xs px-2 gap-1 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
           onClick={(e) => {
             e.stopPropagation()
             onSell(device)

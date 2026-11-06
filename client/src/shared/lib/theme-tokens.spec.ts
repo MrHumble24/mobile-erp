@@ -52,14 +52,15 @@ test("themes: all 4 themes meet WCAG AA contrast (>= 4.5:1) for body text", () =
 })
 
 test("theme-tokens: arbitrary primary hex classes are not used in UI code", () => {
-  const forbiddenHex = [
-    "bg-[#f8f9fa]",
-    "border-[#e8e8e8]",
-    "text-[#202020]",
-    "text-[#838383]",
-    "text-[#646464]",
-    "text-[#090c1d]",
-  ]
+  const ALLOW_LIST: Record<string, string> = {
+    "ReceiptPaper.tsx": "Printed paper receipt stays black on white on purpose",
+    "RepairTicketPaper.tsx": "Printed paper repair ticket stays black on white on purpose",
+    "ContractPaper.tsx": "Printed paper credit contract stays black on white on purpose",
+    "PriceTag.tsx": "Printed price tags stay black on white on purpose",
+  }
+
+  const HEX_CLASS_REGEX =
+    /(?:bg|text|border|ring|from|to|fill|stroke)-\[#[0-9a-fA-F]{3,8}(?:\/[0-9]+)?\]/g
 
   function walk(dir: string, list: string[] = []): string[] {
     const entries = readdirSync(dir)
@@ -81,10 +82,15 @@ test("theme-tokens: arbitrary primary hex classes are not used in UI code", () =
   const violations: string[] = []
 
   for (const f of files) {
+    const basename = f.split("/").pop() || ""
+    if (ALLOW_LIST[basename]) {
+      continue
+    }
     const content = readFileSync(f, "utf8")
-    for (const hex of forbiddenHex) {
-      if (content.includes(hex)) {
-        violations.push(`${f}: contains ${hex}`)
+    const matches = content.match(HEX_CLASS_REGEX)
+    if (matches) {
+      for (const m of matches) {
+        violations.push(`${f}: contains ${m}`)
       }
     }
   }

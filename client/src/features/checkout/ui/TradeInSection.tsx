@@ -22,7 +22,7 @@ function TradeInRow({ label, code, value, onRemove }: { label: string; code: str
         {code && <p className="text-xs font-mono text-muted-foreground truncate">{code}</p>}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className="font-semibold text-[#e53935]">− {formatMoney(value)}</span>
+        <span className="font-semibold text-destructive">− {formatMoney(value)}</span>
         <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label={t("common.close")}>
           <X className="size-4" />
         </Button>

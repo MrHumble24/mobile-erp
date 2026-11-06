@@ -49,7 +49,7 @@ function SelectedChip({ value, onClear }: { value: CustomerSelection; onClear: (
 }
 
 const TRIGGER_CLASS =
-  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm text-muted-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] cursor-pointer"
+  "flex h-10 w-full items-center justify-between rounded-[9px] bg-background px-3.5 text-sm text-muted-foreground border border-input outline-none transition-all focus:border-ring cursor-pointer"
 
 function ExistingSearch({ onChange }: { onChange: (v: CustomerSelection) => void }) {
   const { t } = useI18n()

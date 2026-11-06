@@ -83,7 +83,7 @@ function StatusPills({
             className={cn(
               "h-8 px-3 text-xs font-medium rounded-full transition-all shrink-0 border cursor-pointer",
               isActive
-                ? "bg-[#090c1d] text-white border-[#090c1d] hover:bg-[#090c1d] hover:text-white shadow-[var(--shadow-xs)]"
+                ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground shadow-[var(--shadow-xs)]"
                 : "bg-white text-muted-foreground border-border hover:bg-muted hover:text-foreground"
             )}
           >

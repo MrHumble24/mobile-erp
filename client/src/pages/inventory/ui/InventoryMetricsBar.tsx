@@ -40,8 +40,8 @@ function MetricCard({
       className={cn(
         "h-auto w-full flex flex-col justify-between items-stretch p-3.5 rounded-[16px] border text-left transition-all duration-150 cursor-pointer outline-none whitespace-normal",
         isActive
-          ? "border-[#090c1d] bg-muted shadow-[var(--shadow-sm)] ring-1 ring-[#090c1d] hover:bg-muted"
-          : "border-border bg-white hover:bg-[#fafafa] shadow-[var(--shadow-xs)]"
+          ? "border-primary bg-muted shadow-[var(--shadow-sm)] ring-1 ring-primary hover:bg-muted"
+          : "border-border bg-card hover:bg-accent shadow-[var(--shadow-xs)]"
       )}
     >
       <div className="flex items-center justify-between w-full mb-2">
@@ -55,7 +55,7 @@ function MetricCard({
           {count ?? "—"}
         </span>
         {alertBadge && (count ?? 0) > 0 && (
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#e53935] bg-[#e53935]/10 px-1.5 py-0.5 rounded-full">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
             Diqqat
           </span>
         )}
@@ -95,11 +95,11 @@ export function InventoryMetricsBar({
   const toggle = (st: string) => onSelectStatus(selectedStatus === st ? undefined : st)
 
   const items: MetricCardProps[] = [
-    { label: t("inventory.metricsTotal"), count: total, icon: Smartphone, colorClass: "text-foreground", bgClass: "bg-[#f0f1f5]", isActive: !selectedStatus, onClick: () => onSelectStatus(undefined) },
-    { label: t("inventory.metricsInStock"), count: counts.inStock, icon: CheckCircle2, colorClass: "text-[#10b981]", bgClass: "bg-[#10b981]/10", isActive: selectedStatus === "IN_STOCK", onClick: () => toggle("IN_STOCK") },
-    { label: t("inventory.metricsDefective"), count: counts.defective, icon: AlertCircle, colorClass: "text-[#e53935]", bgClass: "bg-[#e53935]/10", isActive: selectedStatus === "DEFECTIVE", onClick: () => toggle("DEFECTIVE") },
-    { label: t("inventory.metricsConsigned"), count: counts.consigned, icon: ArrowUpRight, colorClass: "text-[#3b82f6]", bgClass: "bg-[#3b82f6]/10", isActive: selectedStatus === "CONSIGNED", onClick: () => toggle("CONSIGNED") },
-    { label: t("inventory.metricsLowStock"), count: counts.lowStock, icon: TriangleAlert, colorClass: "text-[#f59e0b]", bgClass: "bg-[#f59e0b]/10", alertBadge: true, onClick: () => onSelectTab("alerts") },
+    { label: t("inventory.metricsTotal"), count: total, icon: Smartphone, colorClass: "text-foreground", bgClass: "bg-muted", isActive: !selectedStatus, onClick: () => onSelectStatus(undefined) },
+    { label: t("inventory.metricsInStock"), count: counts.inStock, icon: CheckCircle2, colorClass: "text-emerald-600 dark:text-emerald-400", bgClass: "bg-emerald-500/10", isActive: selectedStatus === "IN_STOCK", onClick: () => toggle("IN_STOCK") },
+    { label: t("inventory.metricsDefective"), count: counts.defective, icon: AlertCircle, colorClass: "text-destructive", bgClass: "bg-destructive/10", isActive: selectedStatus === "DEFECTIVE", onClick: () => toggle("DEFECTIVE") },
+    { label: t("inventory.metricsConsigned"), count: counts.consigned, icon: ArrowUpRight, colorClass: "text-blue-600 dark:text-blue-400", bgClass: "bg-blue-500/10", isActive: selectedStatus === "CONSIGNED", onClick: () => toggle("CONSIGNED") },
+    { label: t("inventory.metricsLowStock"), count: counts.lowStock, icon: TriangleAlert, colorClass: "text-amber-600 dark:text-amber-400", bgClass: "bg-amber-500/10", alertBadge: true, onClick: () => onSelectTab("alerts") },
   ]
 
   return (

@@ -12,7 +12,7 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
     return (
       <RouterLink
         ref={ref}
-        className={cn("text-[#0091ff] hover:underline font-medium transition-colors", className)}
+        className={cn("text-primary hover:underline font-medium transition-colors", className)}
         {...props}
       >
         {children}

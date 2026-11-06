@@ -31,7 +31,7 @@ export interface ComboboxProps {
 }
 
 const TRIGGER_CLASS =
-  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm font-body text-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+  "flex h-10 w-full items-center justify-between rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
 
 function ComboboxItems({
   options,
@@ -48,7 +48,7 @@ function ComboboxItems({
         <CommandItem key={opt.value} value={opt.label} onSelect={() => onSelect(opt.value)}>
           <Check
             className={cn(
-              "size-4 stroke-[2.5] text-[#0091ff]",
+              "size-4 stroke-[2.5] text-primary",
               opt.value === value ? "opacity-100" : "opacity-0"
             )}
           />

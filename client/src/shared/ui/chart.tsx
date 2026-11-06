@@ -44,7 +44,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-[#838383] [&_.recharts-cartesian-grid_line]:stroke-[#e8e8e8] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#e8e8e8]",
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border",
           className
         )}
         {...props}

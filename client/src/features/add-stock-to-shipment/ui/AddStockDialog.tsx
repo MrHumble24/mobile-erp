@@ -15,7 +15,7 @@ import { StockLineForm } from "./StockLineForm"
 function StagedRow({ line, onRemove }: { line: StagedLine; onRemove: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-[#f0f0f0] py-2 last:border-0">
+    <div className="flex items-center justify-between gap-2 border-b border-border py-2 last:border-0">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{line.name}</p>
         <p className="text-xs text-muted-foreground">

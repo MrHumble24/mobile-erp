@@ -22,7 +22,7 @@ export function AssetImage({ path, alt, className, iconClassName }: AssetImagePr
     return (
       <div
         className={cn(
-          "flex items-center justify-center bg-[#f4f4f5] text-[#a1a1aa]",
+          "flex items-center justify-center bg-muted text-muted-foreground",
           className
         )}
         role="img"
