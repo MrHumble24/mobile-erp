@@ -86,6 +86,7 @@ data class OutboxEntity(
     val createdAt: String, // ISO-8601
     val status: String = "pending",
     val lastError: String? = null,
+    val storeId: String? = null,
 )
 
 /** Single-row-per-key scratchpad for sync bookkeeping (the changes cursor). */

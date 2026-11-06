@@ -11,6 +11,9 @@ import uz.malika.erp.app.FeatureNav
 import uz.malika.erp.core.AuthEvents
 import uz.malika.erp.core.DevConfigStore
 import uz.malika.erp.core.SecureStore
+import uz.malika.erp.core.StoreEvents
+import uz.malika.erp.core.StoreManager
+import uz.malika.erp.core.StoreSwitcher
 import uz.malika.erp.data.local.AppDatabase
 import uz.malika.erp.data.remote.ApiService
 import uz.malika.erp.data.remote.HttpClient
@@ -41,20 +44,32 @@ class AppContainer(context: Context) {
     val secure = SecureStore(context)
     val devConfig = DevConfigStore(secure)
     val authEvents = AuthEvents()
+    val storeEvents = StoreEvents()
+    val storeManager = StoreManager(secure)
 
     /** The one configured Retrofit; slices call `retrofit.create(FeatureApi::class.java)`. */
-    val retrofit = HttpClient.build(devConfig, secure, authEvents)
+    val retrofit = HttpClient.build(
+        devConfig = devConfig,
+        secure = secure,
+        authEvents = authEvents,
+        activeStoreId = { storeManager.get() },
+        storeEvents = storeEvents,
+    )
     val api = retrofit.create(ApiService::class.java)
     val db = AppDatabase.build(context)
 
     val terminalId = TerminalId(secure)
     val connectivity = Connectivity(context, appScope)
 
-    private val pull = PullService(api, db)
+    val pull = PullService(api, db)
     private val push = PushService(api, db, terminalId, json)
     val syncManager = SyncManager(appScope, connectivity, push, pull, secure)
 
-    val outbox = OutboxApi(db, trigger = { syncManager.syncNow() })
+    val outbox = OutboxApi(
+        db = db,
+        activeStoreProvider = { storeManager.get() },
+        trigger = { syncManager.syncNow() },
+    )
     val conflicts = ConflictStore(api)
 
     val authRepository = AuthRepository(api, secure, json)
@@ -66,8 +81,21 @@ class AppContainer(context: Context) {
     val featureNav = FeatureNav()
     val toaster = Toaster()
 
+    val storeSwitcher = StoreSwitcher(storeManager, db, pull, appScope)
+
     /** Builds app-scoped ViewModels. Feature ViewModels can follow this pattern. */
     val viewModelFactory: ViewModelProvider.Factory = viewModelFactory {
-        initializer { SessionViewModel(authRepository, authEvents, syncManager) }
+        initializer {
+            SessionViewModel(
+                repo = authRepository,
+                authEvents = authEvents,
+                syncManager = syncManager,
+                storeManager = storeManager,
+                storeEvents = storeEvents,
+                toaster = toaster,
+                i18n = i18n,
+                localeStore = localeStore,
+            )
+        }
     }
 }
