@@ -89,6 +89,10 @@ export interface PublicStorefrontOrderView {
   productName: string;
   priceSnapshot: string | null;
   deliveryFeeSnapshot: string;
+  /** ON_RECEIPT or ONLINE. */
+  paymentMethod: string;
+  /** True once a payment for this order is PAID. The only public word on it. */
+  paid: boolean;
 }
 
 export interface StorefrontOrderListItem {

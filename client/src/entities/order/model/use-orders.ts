@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { orderRepository } from "../api/order.repository"
 import { orderKeys } from "../api/order.keys"
-import type { ListOrdersQuery, UpdateOrderStatusDto } from "../api/order.types"
+import type {
+  ListOrdersQuery,
+  UpdateOrderStatusDto,
+  HandOverOrderDto,
+} from "../api/order.types"
 
 export function useStorefrontOrders(params?: ListOrdersQuery) {
   return useQuery({
@@ -38,6 +42,35 @@ export function useUpdateOrderStatus() {
         return { ...old, ...data }
       })
       queryClient.invalidateQueries({ queryKey: orderKeys.all })
+    },
+  })
+}
+
+export function useHoldOrder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto?: { deviceId?: string } }) =>
+      orderRepository.hold(id, dto),
+    onSuccess: (data) => {
+      queryClient.setQueryData(orderKeys.detail(data.id), data)
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: ["catalog"] })
+      queryClient.invalidateQueries({ queryKey: ["devices"] })
+    },
+  })
+}
+
+export function useHandOverOrder() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, dto }: { id: string; dto: HandOverOrderDto }) =>
+      orderRepository.handOver(id, dto),
+    onSuccess: (data) => {
+      queryClient.setQueryData(orderKeys.detail(data.id), data)
+      queryClient.invalidateQueries({ queryKey: orderKeys.all })
+      queryClient.invalidateQueries({ queryKey: ["sales"] })
+      queryClient.invalidateQueries({ queryKey: ["ledger"] })
+      queryClient.invalidateQueries({ queryKey: ["shifts"] })
     },
   })
 }

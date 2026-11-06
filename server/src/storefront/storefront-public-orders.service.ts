@@ -63,6 +63,8 @@ export class StorefrontPublicOrdersService {
         ? order.priceSnapshot.toFixed(2)
         : null,
       deliveryFeeSnapshot: order.deliveryFeeSnapshot.toFixed(2),
+      paymentMethod: order.paymentMethodCode,
+      paid: order.payments.some((p) => p.statusCode === 'PAID'),
     };
   }
 

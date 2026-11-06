@@ -35,6 +35,8 @@ import { BonusSection } from "./BonusSection"
 import { PrintingSection } from "./PrintingSection"
 import { CompanySection } from "./CompanySection"
 import { StorefrontSection } from "./StorefrontSection"
+import { StorefrontDeliverySection } from "./StorefrontDeliverySection"
+import { StorefrontPaymentSection } from "./StorefrontPaymentSection"
 
 function SettingsForm({
   settings,
@@ -128,6 +130,8 @@ export function SettingsPage() {
         <>
           <CompanySection disabled={!canManage} />
           <StorefrontSection disabled={!canManage} />
+          <StorefrontDeliverySection disabled={!canManage} />
+          <StorefrontPaymentSection disabled={!canManage} />
         </>
       ) : (
         <>

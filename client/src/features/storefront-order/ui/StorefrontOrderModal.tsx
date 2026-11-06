@@ -1,14 +1,22 @@
 import * as React from "react"
 import { useForm, useWatch } from "react-hook-form"
-import { CheckCircle2, PhoneCall } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useCreateStorefrontOrder } from "@/entities/storefront"
-import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/shared/ui/dialog"
-import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { Label } from "@/shared/ui/label"
-import { Textarea } from "@/shared/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
+import {
+  useCreateStorefrontOrder,
+  usePayStorefrontOrder,
+  useStorefrontConfig,
+} from "@/entities/storefront"
+import {
+  Dialog,
+  DialogPopup,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/shared/ui/dialog"
+import { calculateDeliveryFee } from "../lib/delivery-fee"
+import type { CheckoutFormValues } from "./FulfillmentPicker"
+import { OrderFormContent } from "./OrderFormContent"
+import { OrderSuccessView } from "./OrderSuccessView"
 
 export interface StorefrontOrderModalProps {
   open: boolean
@@ -18,73 +26,61 @@ export interface StorefrontOrderModalProps {
   variantSpecs?: Record<string, string>
   availableStores: Array<{ id: string; name: string }>
   shopPhone?: string | null
+  productPrice?: number | null
 }
 
-interface OrderFormValues {
-  name: string
-  phone: string
-  storeId: string
-  note: string
-  hp: string
-}
-
-export function StorefrontOrderModal({
-  open,
-  onOpenChange,
+function useOrderSubmit({
   modelId,
-  modelName,
   variantSpecs,
-  availableStores,
-  shopPhone,
-}: StorefrontOrderModalProps) {
+  defaultStoreId,
+  onOrderSuccess,
+}: {
+  modelId: string
+  variantSpecs?: Record<string, string>
+  defaultStoreId?: string
+  onOrderSuccess: (orderId: string) => void
+}) {
   const { t } = useI18n()
   const createOrder = useCreateStorefrontOrder()
-  const [success, setSuccess] = React.useState(false)
+  const payOrder = usePayStorefrontOrder()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
-  const defaultStoreId = availableStores[0]?.id ?? ""
-
-  const form = useForm<OrderFormValues>({
-    defaultValues: {
-      name: "",
-      phone: "+998",
-      storeId: defaultStoreId,
-      note: "",
-      hp: "",
-    },
-  })
-
-  const storeIdValue = useWatch({ control: form.control, name: "storeId" })
-
-  React.useEffect(() => {
-    if (open) {
-      setSuccess(false)
-      setErrorMessage(null)
-      form.reset({
-        name: "",
-        phone: "+998",
-        storeId: availableStores[0]?.id ?? "",
-        note: "",
-        hp: "",
-      })
-    }
-  }, [open, availableStores, form])
-
-  const onSubmit = (values: OrderFormValues) => {
+  const handleSubmit = (values: CheckoutFormValues) => {
     setErrorMessage(null)
+    const isDelivery = values.fulfillmentMethod === "DELIVERY"
+    const isOnline = values.paymentMethod === "ONLINE"
+
     createOrder.mutate(
       {
         modelId,
         name: values.name.trim(),
         phone: values.phone.trim(),
-        storeId: values.storeId,
+        fulfillmentMethod: values.fulfillmentMethod,
+        storeId: values.storeId || defaultStoreId,
+        address: isDelivery ? values.address.trim() : undefined,
+        deliveryZoneId: isDelivery && values.deliveryZoneId ? values.deliveryZoneId : undefined,
+        paymentMethod: isOnline ? "ONLINE" : "ON_RECEIPT",
         specs: variantSpecs && Object.keys(variantSpecs).length > 0 ? variantSpecs : undefined,
         note: values.note.trim() ? values.note.trim() : undefined,
         hp: values.hp,
       },
       {
-        onSuccess: () => {
-          setSuccess(true)
+        onSuccess: (res) => {
+          if (isOnline) {
+            payOrder.mutate(
+              { id: res.id, provider: values.onlineProvider || undefined },
+              {
+                onSuccess: (payRes) => {
+                  window.location.href = payRes.checkoutUrl
+                },
+                onError: (payErr: unknown) => {
+                  setErrorMessage((payErr as { message?: string })?.message || t("storefront.payRedirectFailed"))
+                },
+              },
+            )
+          } else {
+            onOrderSuccess(res.id)
+          }
         },
         onError: (err: unknown) => {
           const status = (err as { statusCode?: number })?.statusCode
@@ -97,19 +93,98 @@ export function StorefrontOrderModal({
             setErrorMessage(msg || t("storefront.orderFailed"))
           }
         },
-      }
+      },
     )
   }
 
-  const handleClose = () => {
-    onOpenChange(false)
-  }
+  return { handleSubmit, errorMessage, isSubmitting: createOrder.isPending || payOrder.isPending }
+}
+
+function useCheckoutForm(
+  open: boolean,
+  defaultMethod: "PICKUP" | "DELIVERY",
+  defaultStoreId: string,
+) {
+  const form = useForm<CheckoutFormValues>({
+    defaultValues: {
+      name: "",
+      phone: "+998",
+      fulfillmentMethod: defaultMethod,
+      storeId: defaultStoreId,
+      address: "",
+      deliveryZoneId: "",
+      paymentMethod: "ON_RECEIPT",
+      onlineProvider: "",
+      note: "",
+      hp: "",
+    },
+  })
+
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        name: "",
+        phone: "+998",
+        fulfillmentMethod: defaultMethod,
+        storeId: defaultStoreId,
+        address: "",
+        deliveryZoneId: "",
+        paymentMethod: "ON_RECEIPT",
+        onlineProvider: "",
+        note: "",
+        hp: "",
+      })
+    }
+  }, [open, defaultMethod, defaultStoreId, form])
+
+  return form
+}
+
+export function StorefrontOrderModal({
+  open,
+  onOpenChange,
+  modelId,
+  modelName,
+  variantSpecs,
+  availableStores,
+  shopPhone,
+  productPrice,
+}: StorefrontOrderModalProps) {
+  const { t } = useI18n()
+  const { data: config } = useStorefrontConfig()
+  const [createdOrderId, setCreatedOrderId] = React.useState<string | null>(null)
+
+  const pickupAvailable = config?.pickupEnabled ?? true
+  const deliveryAvailable = config?.deliveryEnabled ?? false
+  const defaultMethod = pickupAvailable ? "PICKUP" : "DELIVERY"
+  const form = useCheckoutForm(open, defaultMethod, availableStores[0]?.id ?? "")
+
+  const { handleSubmit, errorMessage, isSubmitting } = useOrderSubmit({
+    modelId,
+    variantSpecs,
+    defaultStoreId: availableStores[0]?.id,
+    onOrderSuccess: (id) => setCreatedOrderId(id),
+  })
+
+  const fulfillmentMethod = useWatch({ control: form.control, name: "fulfillmentMethod" })
+  const deliveryZoneId = useWatch({ control: form.control, name: "deliveryZoneId" })
+  const selectedZone = config?.deliveryZones?.find((z) => z.id === deliveryZoneId)
+  const deliveryFee = calculateDeliveryFee({
+    fulfillmentMethod,
+    pickupEnabled: pickupAvailable,
+    deliveryEnabled: deliveryAvailable,
+    pricingMode: config?.deliveryPricingMode ?? "FLAT",
+    flatFee: config?.deliveryFlatFee,
+    freeFrom: config?.deliveryFreeFrom,
+    zone: selectedZone,
+    orderPrice: productPrice ?? null,
+  })
 
   const specsText = variantSpecs ? Object.values(variantSpecs).filter(Boolean).join(" • ") : null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPopup className="sm:max-w-md">
+      <DialogPopup className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("storefront.orderTitle")}</DialogTitle>
           <DialogDescription>
@@ -118,110 +193,24 @@ export function StorefrontOrderModal({
           </DialogDescription>
         </DialogHeader>
 
-        {success ? (
-          <div className="py-6 text-center space-y-4">
-            <div className="size-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="size-6" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-semibold text-base">{t("storefront.orderSuccessTitle")}</h3>
-              <p className="text-xs text-muted-foreground">{t("storefront.orderSuccessMessage")}</p>
-            </div>
-            {shopPhone && (
-              <a
-                href={`tel:${shopPhone}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted font-mono font-semibold text-sm hover:bg-muted/80 transition-colors"
-              >
-                <PhoneCall className="size-4 text-emerald-600" />
-                <span>{shopPhone}</span>
-              </a>
-            )}
-            <DialogFooter className="pt-2">
-              <Button onClick={handleClose} className="w-full">
-                {t("storefront.close")}
-              </Button>
-            </DialogFooter>
-          </div>
+        {createdOrderId ? (
+          <OrderSuccessView
+            orderId={createdOrderId}
+            shopPhone={shopPhone}
+            onClose={() => onOpenChange(false)}
+          />
         ) : (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Honeypot field for bot protection */}
-            <Input
-              type="text"
-              {...form.register("hp")}
-              className="hidden"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-            />
-
-            <div className="space-y-1">
-              <Label htmlFor="order-name">{t("storefront.name")} *</Label>
-              <Input
-                id="order-name"
-                {...form.register("name", { required: true })}
-                placeholder={t("storefront.namePlaceholder")}
-                required
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="order-phone">{t("storefront.phone")} *</Label>
-              <Input
-                id="order-phone"
-                type="tel"
-                {...form.register("phone", { required: true })}
-                placeholder={t("storefront.phonePlaceholder")}
-                required
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="order-store">{t("storefront.branch")} *</Label>
-              <Select
-                value={storeIdValue}
-                onValueChange={(val) => {
-                  if (val) form.setValue("storeId", val, { shouldDirty: true })
-                }}
-              >
-                <SelectTrigger id="order-store">
-                  <SelectValue placeholder={t("storefront.selectBranch")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableStores.map((st) => (
-                    <SelectItem key={st.id} value={st.id}>
-                      {st.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="order-note">{t("storefront.note")}</Label>
-              <Textarea
-                id="order-note"
-                {...form.register("note")}
-                placeholder={t("storefront.notePlaceholder")}
-                rows={2}
-              />
-            </div>
-
-            {errorMessage && (
-              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 text-xs">
-                {errorMessage}
-              </div>
-            )}
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="submit"
-                disabled={createOrder.isPending || availableStores.length === 0}
-                className="w-full"
-              >
-                {createOrder.isPending ? t("storefront.submitting") : t("storefront.orderNow")}
-              </Button>
-            </DialogFooter>
-          </form>
+          <OrderFormContent
+            form={form}
+            config={config}
+            availableStores={availableStores}
+            productPrice={productPrice}
+            deliveryFee={deliveryFee}
+            hasChoice={pickupAvailable && deliveryAvailable}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            errorMessage={errorMessage}
+          />
         )}
       </DialogPopup>
     </Dialog>
