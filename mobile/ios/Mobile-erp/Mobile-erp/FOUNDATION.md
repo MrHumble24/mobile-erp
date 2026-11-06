@@ -29,8 +29,9 @@ Nothing else in `App/` changes. The shell hides entries the user can't `can()`
 see and wraps every root in `PermissionGate` (inline 403) as a safety net.
 The shell lands on `FeatureRegistry.all.first` — currently `DashboardModule`.
 Registered now (display order): Dashboard, Pos, Sales, Inventory, Shipments, Qc,
-Consignments, Partners, Customers, Expenses, Balance, Reports, Customs, Users,
-Settings, Sync.
+Consignments, Partners, Customers, Expenses, Balance, Reports, Customs, Orders, Users,
+Settings, Sync. `Orders` (handoff 029) is the online storefront orders screen,
+`order.read`, with a NEW-order badge on its More-tab row; online only.
 Slice READMEs are `README.md`; the app target excludes every `.md` from its bundle
 via a synchronized-group exception set in the pbxproj (so duplicate names are fine).
 

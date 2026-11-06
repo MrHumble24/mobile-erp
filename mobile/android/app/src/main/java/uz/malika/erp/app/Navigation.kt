@@ -197,6 +197,11 @@ private fun AuthedShell(
                             container.storeSwitcher.switchStore(newStoreId)
                         },
                         onSelect = select,
+                        onRefreshMore = {
+                            if (user.can("order.read")) {
+                                uz.malika.erp.features.orders.OrdersFeature.refreshBadge(container)
+                            }
+                        },
                     )
                 }
             }

@@ -12,6 +12,7 @@ struct MoreTab: View {
     @Environment(I18n.self) private var i18n
     let modules: [FeatureModule]
     @State private var showSwitchSheet = false
+    @State private var ordersBadge = OrdersBadge.shared
 
     private var path: Binding<[String]> {
         Binding(
@@ -84,6 +85,7 @@ struct MoreTab: View {
                 .padding(.vertical, Tokens.Space.md)
             }
             .background(Tokens.ground)
+            .task { ordersBadge.refresh(container) }
             .navigationTitle(i18n.t("nav.more"))
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: String.self) { id in
@@ -164,6 +166,15 @@ struct MoreTab: View {
                 .frame(width: 24)
             Text(module.label(i18n)).font(.ui(.body)).foregroundStyle(Tokens.text).lineLimit(1)
             Spacer(minLength: Tokens.Space.sm)
+            // The one badged row: NEW storefront orders (handoff 029).
+            if module.id == "orders", ordersBadge.count > 0 {
+                Text("\(ordersBadge.count)")
+                    .font(.mono(12, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(Tokens.action, in: Capsule())
+            }
             Image(systemName: "chevron.right").font(.system(size: 13, weight: .semibold)).foregroundStyle(Tokens.muted)
         }
         .frame(minHeight: 52)
