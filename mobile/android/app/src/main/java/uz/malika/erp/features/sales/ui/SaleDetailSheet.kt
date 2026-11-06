@@ -147,6 +147,7 @@ fun SaleDetailSheet(
                 }
             }
         }
+        SaleBonusRows(sale.bonusSpent, sale.bonusEarned)
 
         Spacer(Modifier.height(Tokens.Space.lg))
         // A quantity sale has no device to open.
@@ -207,7 +208,7 @@ private fun monoStyle() = valueStyle().copy(fontFamily = MonoFamily)
 
 /** The printable receipt (server copy) with copy + print actions. */
 @Composable
-fun ReceiptSheet(data: ReceiptData, onClose: () -> Unit) {
+fun ReceiptSheet(data: ReceiptData, onClose: () -> Unit, printEnabled: Boolean = false, paperWidthMm: Int = 80) {
     val t = LocalT.current
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
@@ -223,8 +224,10 @@ fun ReceiptSheet(data: ReceiptData, onClose: () -> Unit) {
             modifier = Modifier.fillMaxWidth(),
             variant = ButtonVariant.OUTLINE,
         )
-        Spacer(Modifier.height(8.dp))
-        PillButton(t("sales.printReceipt", null), { printReceiptData(context, t, data) }, Modifier.fillMaxWidth())
+        if (printEnabled) {
+            Spacer(Modifier.height(8.dp))
+            PillButton(t("sales.printReceipt", null), { printReceiptData(context, t, data, paperWidthMm) }, Modifier.fillMaxWidth())
+        }
         Spacer(Modifier.height(8.dp))
         PillButton(t("common.close", null), onClose, Modifier.fillMaxWidth(), variant = ButtonVariant.GHOST)
     }

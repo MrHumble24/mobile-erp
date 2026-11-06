@@ -4,14 +4,13 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones), written 2026-11-06: Android is with OpenCode in four parts (`docs/handoffs/opencode/014` to `017`, one worktree `.worktrees/opencode-step11-android`), iOS is with Gemini (`docs/handoffs/gemini/030`, worktree `.worktrees/gemini-step11-ios`). Claude checks both on a running phone before merging.
+- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones). Android: MERGED 2026-11-06 (OpenCode 014 to 017, fixed by Claude, tried on the emulator). iOS (`docs/handoffs/gemini/030`, worktree `.worktrees/gemini-step11-ios`): built and read by Claude, two fixes made, NOT merged: it waits for a live try on a simulator or a real iPhone.
+- With Gemini now: the till and every dialog at phone width (`docs/handoffs/gemini/032`, worktree `.worktrees/gemini-till-width`).
 - Merged on 2026-11-06: the online storefront, first-boot setup with company profile and themes, the danger zone, branches on the phone apps (027), dark themes switched on (028), online orders on the phone apps (029), OpenCode 010 to 013. Gemini and OpenCode ran out of their limits that day; 028 and 029 were finished by Claude builder agents.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| One Uzbek pass: the 110 texts still in English, six keys the phones miss, a native read of backups, danger zone and setup | `docs/handoffs/gemini/031` | Written 2026-11-06, worktree `.worktrees/gemini-uzbek-pass`. Replaces 013 and the never-written 014. |
-| The till and every dialog at phone width with very large amounts (website) | `docs/handoffs/gemini/032` | Written 2026-11-06, not handed out. Needs a browser, so Gemini. |
 | Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Written 2026-11-06, not handed out, owner not assigned (a strong model only). Its "Decided" table is the user's to change first. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 

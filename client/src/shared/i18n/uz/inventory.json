@@ -9,7 +9,7 @@
   "allStorages": "Barcha xotiralar",
   "quickLookup": "IMEI orqali tezkor ko'rish",
   "imeiDetails": "Qurilma ma'lumotlari",
-  "model": "Model",
+  "model": "Modeli",
   "brand": "Brend",
   "color": "Rang",
   "storage": "Xotira",
@@ -96,10 +96,11 @@
   "customsFeeSaved": "Bojxona to'lovi saqlandi",
   "customsCode": "Bojxona kodi",
   "customsCodeHint": "Bojxonada ushbu model qanday yozilishi",
-  "priceTags": "Price tags",
-  "priceTagsSelectAll": "Select all",
-  "priceTagsClear": "Clear",
-  "priceTagsSelected": "{count} selected",
-  "priceTagsPrint": "Print",
-  "priceTagsEmpty": "No items on this page"
+  "priceTags": "Narx yorliqlari",
+  "priceTagsSelectAll": "Barchasini tanlash",
+  "priceTagsClear": "Tozalash",
+  "priceTagsSelected": "{count} ta tanlandi",
+  "priceTagsPrint": "Chop etish",
+  "priceTagsEmpty": "Bu sahifada tovarlar yo'q",
+  "selectDevice": "Qurilmani tanlang"
 }

@@ -71,6 +71,14 @@ interface SalesApi {
     @GET("customers/{id}/sales")
     suspend fun customerSales(@Path("id") id: String): List<SaleDto>
 
+    /** The customer's bonus balance + history + the store's live config echo. */
+    @GET("customers/{id}/bonus")
+    suspend fun customerBonus(@Path("id") id: String): CustomerBonusDto
+
+    /** Owner manual bonus-point correction (permission `bonus.adjust`). */
+    @POST("customers/{id}/bonus/adjustments")
+    suspend fun adjustCustomerBonus(@Path("id") id: String, @Body body: AdjustBonusBody): CustomerBonusDto
+
     @POST("customers")
     suspend fun createCustomer(@Body body: CreateCustomerBody): CustomerDto
 

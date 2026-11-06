@@ -37,7 +37,7 @@
   "price": "Narx",
   "breakdownBy": "Kesimida tahlil",
   "group_channel": "Kanal",
-  "group_model": "Model",
+  "group_model": "Model bo'yicha",
   "group_cashier": "Kassir",
   "group_day": "Kun",
   "group_month": "Oy",
@@ -93,6 +93,6 @@
   "loss": "Zarar",
   "allMetrics": "Barchasi",
   "customsTab": "Bojxona to'lovlari",
-  "pointsEarned": "Points earned",
-  "pointsSpent": "Points spent"
+  "pointsEarned": "Yig'ilgan ballar",
+  "pointsSpent": "Ishlatilgan ballar"
 }

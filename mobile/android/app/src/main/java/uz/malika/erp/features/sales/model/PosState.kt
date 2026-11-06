@@ -4,11 +4,13 @@ import uz.malika.erp.features.sales.data.CartLine
 import uz.malika.erp.features.sales.data.CartProduct
 import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.data.ScannedDevice
+import uz.malika.erp.features.sales.lib.BonusRedeem
 import uz.malika.erp.features.sales.lib.CartPricing
 import uz.malika.erp.features.sales.lib.Discount
 import uz.malika.erp.features.sales.lib.DiscountSettings
 import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.lib.PricedCart
+import uz.malika.erp.features.sales.lib.toCents
 import java.math.BigDecimal
 
 /**
@@ -55,6 +57,18 @@ data class PosState(
     /** Trade-ins taken in part payment (ADR 0039); `canTradeIn` = has `purchase.create`. */
     val tradeIns: List<TradeInDraft> = emptyList(),
     val canTradeIn: Boolean = false,
+    // Bonus points (ADR 0043).
+    val bonusEnabled: Boolean = false,
+    val customerBonus: uz.malika.erp.features.sales.data.CustomerBonus? = null,
+    val bonusRequested: java.math.BigDecimal = java.math.BigDecimal.ZERO,
+    // Receipt printing + shop identity (ADR 0043), from till settings.
+    val tillSettingsLoaded: Boolean = false,
+    val receiptPrintingEnabled: Boolean = false,
+    val receiptPaperWidthMm: Int = 80,
+    val storeName: String? = null,
+    val storeAddress: String? = null,
+    val storePhone: String? = null,
+    val receiptFooter: String? = null,
 ) {
     /** The whole cart priced at the current level — the single brain the UI reads. */
     val priced: PricedCart
@@ -65,7 +79,55 @@ data class PosState(
     val tradeInPlan: uz.malika.erp.features.sales.lib.TradeInPlan.Plan
         get() = TradeInCheckout.plan(priced.lines, tradeIns)
 
-    /** What the customer still tenders after trade-ins (major units). */
-    val amountToPay: java.math.BigDecimal
-        get() = java.math.BigDecimal(tradeInPlan.amountToPayCents).movePointLeft(2)
+    /**
+     * How the chosen customer's points are spent across this cart (ADR 0043):
+     * each line's price and what is left after trade-ins, shared out in cart
+     * order. With no customer or bonus off, max is 0 and payable equals today's.
+     */
+    val bonusPlan: BonusRedeem.Plan
+        get() {
+            val bonus = customerBonus ?: return emptyPlan()
+            if (!bonusEnabled) return emptyPlan()
+            val dueByLine = tradeInPlan.payableLines.associate { it.lineId to it.priceCents }
+            val cartLines = priced.lines.map {
+                BonusRedeem.Line(
+                    it.line.key,
+                    it.finalPrice.toCents(),
+                    dueByLine[it.line.key] ?: it.finalPrice.toCents(),
+                )
+            }
+            return BonusRedeem.plan(cartLines, bonusRequested.toCents(), bonus.balance.toCents(), bonus.maxPercent)
+        }
+
+    private fun emptyPlan(): BonusRedeem.Plan =
+        BonusRedeem.Plan(maxCents = 0, totalCents = 0, byLine = emptyMap(), payableLines = tradeInPlan.payableLines)
+
+    /** What the customer still tenders after trade-ins and points (major units). */
+    val amountToPay: BigDecimal
+        get() = BigDecimal(bonusPlan.payableLines.sumOf { it.priceCents }).movePointLeft(2)
+
+    /**
+     * A fresh state for the next sale: the cart, trade-ins, points, customer's
+     * bonus, price level and discounts are dropped; every flag and setting stays.
+     * The ONE place that lists what survives a sale: a new till flag goes here.
+     */
+    fun cleared(completed: ReceiptData? = null): PosState = PosState(
+        completed = completed,
+        pendingSold = pendingSold,
+        defaultWarrantyDays = defaultWarrantyDays,
+        settings = settings,
+        canOverride = canOverride,
+        canUnlimited = canUnlimited,
+        creditEnabled = creditEnabled,
+        shiftsEnabled = shiftsEnabled,
+        canTradeIn = canTradeIn,
+        bonusEnabled = bonusEnabled,
+        tillSettingsLoaded = tillSettingsLoaded,
+        receiptPrintingEnabled = receiptPrintingEnabled,
+        receiptPaperWidthMm = receiptPaperWidthMm,
+        storeName = storeName,
+        storeAddress = storeAddress,
+        storePhone = storePhone,
+        receiptFooter = receiptFooter,
+    )
 }

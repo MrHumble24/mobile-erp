@@ -101,5 +101,6 @@
   "priceTagsClear": "Clear",
   "priceTagsSelected": "{count} selected",
   "priceTagsPrint": "Print",
-  "priceTagsEmpty": "No items on this page"
+  "priceTagsEmpty": "No items on this page",
+  "selectDevice": "Select a device"
 }

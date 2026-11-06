@@ -16,6 +16,7 @@ import uz.malika.erp.features.sales.data.ScannedDevice
 import uz.malika.erp.features.sales.lib.Discount
 import uz.malika.erp.features.sales.lib.DiscountMode
 import uz.malika.erp.features.sales.lib.PriceLevel
+import uz.malika.erp.features.sales.lib.fromCents
 import uz.malika.erp.shared.payments.AccountAmount
 import uz.malika.erp.shared.payments.PaymentSplit
 import java.math.BigDecimal
@@ -38,6 +39,9 @@ class PosViewModel(
     internal val _state = MutableStateFlow(PosState(canOverride = canOverride, canUnlimited = canUnlimited, canTradeIn = canTradeIn))
     val state: StateFlow<PosState> = _state.asStateFlow()
 
+    /** The running customer-bonus lookup (PosBonus.kt): a newer one cancels it. */
+    internal var bonusJob: kotlinx.coroutines.Job? = null
+
     init {
         viewModelScope.launch {
             repo.watchPendingSoldImeis().collect { imeis -> _state.value = _state.value.copy(pendingSold = imeis) }
@@ -53,7 +57,19 @@ class PosViewModel(
     fun loadDiscountSettings(online: Boolean) {
         viewModelScope.launch {
             val ts = repo.tillSettings(online)
-            _state.value = _state.value.copy(settings = ts.discount, creditEnabled = ts.creditEnabled, shiftsEnabled = ts.shiftsEnabled)
+            _state.value = _state.value.copy(
+                settings = ts.discount,
+                creditEnabled = ts.creditEnabled,
+                shiftsEnabled = ts.shiftsEnabled,
+                bonusEnabled = ts.bonusEnabled,
+                tillSettingsLoaded = true,
+                receiptPrintingEnabled = ts.receiptPrintingEnabled,
+                receiptPaperWidthMm = ts.receiptPaperWidthMm,
+                storeName = ts.storeName,
+                storeAddress = ts.storeAddress,
+                storePhone = ts.storePhone,
+                receiptFooter = ts.receiptFooter,
+            )
         }
     }
 
@@ -220,12 +236,7 @@ class PosViewModel(
 
     /** Empty the cart, keeping settings/flags — used after an "On credit" sale (ADR 0035). */
     fun resetCart() {
-        val s = _state.value
-        _state.value = PosState(
-            pendingSold = s.pendingSold, defaultWarrantyDays = s.defaultWarrantyDays,
-            settings = s.settings, canOverride = s.canOverride, canUnlimited = s.canUnlimited,
-            creditEnabled = s.creditEnabled, shiftsEnabled = s.shiftsEnabled, canTradeIn = s.canTradeIn,
-        )
+        _state.value = _state.value.cleared()
     }
 
     /**
@@ -251,16 +262,12 @@ class PosViewModel(
                 val allocation = if (parts.isEmpty()) emptyList() else PaymentSplit.allocate(finals, parts)
                 val ops = SaleCreate.ops(priced.lines, s.level, customerId, customerName, customerPhone, notes, allocation)
                 val ids = ops.map { repo.enqueueSale(it.payload, it.baseVersion) }
-                _state.value = PosState(
-                    pendingSold = s.pendingSold,
-                    defaultWarrantyDays = s.defaultWarrantyDays,
-                    settings = s.settings,
-                    canOverride = s.canOverride,
-                    canUnlimited = s.canUnlimited,
-                    creditEnabled = s.creditEnabled,
-                    shiftsEnabled = s.shiftsEnabled,
-                    completed = buildPosReceipt(ids.first(), cashierName, s.level, priced, online, customerName, parts),
-                )
+                val pointsSpent = s.bonusPlan.totalCents.fromCents().takeIf { it.signum() > 0 }?.toPlainString()
+                _state.value = s.cleared(completed = buildPosReceipt(
+                    ids.first(), cashierName, s.level, priced, online, customerName, parts,
+                    storeName = s.storeName, storeAddress = s.storeAddress, storePhone = s.storePhone,
+                    footer = s.receiptFooter, pointsSpent = pointsSpent,
+                ))
             } catch (_: Exception) {
                 _state.value = _state.value.copy(busy = false, errorKey = "common.error")
             }

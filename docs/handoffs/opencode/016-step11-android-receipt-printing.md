@@ -1,6 +1,6 @@
 # 016 — Step 11 on Android, part 3 of 4: points and printing on the receipt
 
-Status: open · Owner: OpenCode · Depends on: 015 (committed on the same branch)
+Status: merged · Owner: OpenCode · Depends on: 015 (committed on the same branch)
 
 ## Why
 After a sale the phone must show what the website shows: the points spent and earned, the real
@@ -69,11 +69,41 @@ Fill the Result section of `docs/handoffs/opencode/016-step11-android-receipt-pr
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Crouton Alpha Free
+- Commits: 16a1df6c (code); this doc commit follows
 - Build and test output (last lines):
+  ```
+  > Task :app:assembleDebug
+  > Task :app:testDebugUnitTest
+  BUILD SUCCESSFUL in 5s
+  46 actionable tasks: 12 executed, 34 up-to-date
+  ```
+  `graphify update .` ran in `mobile/android/` (555 files, 3162 nodes) and at the repo root (2870 files, 15341 nodes), both succeeded.
 - Items 1 to 8, one line each:
+  1. Data: `SaleBonusDto`/`ReceiptStoreDto` (new `data/ReceiptDtos.kt`), `bonus` on `SaleDto`/`ReceiptDto`, store/footer/payments on `ReceiptDto`; `Sale.bonusSpent/Earned`; `ReceiptData` shop fields, footer and points, with `toReceiptData()` nulling points at or below zero.
+  2. Till receipt builders (`PosReceiptBuilder`): shop fields and footer from `PosState` (filled from `TillSettings`); `pointsSpent` from the cart's bonus plan (null when none); `pointsEarned` left null.
+  3. `lib/ReceiptRows.kt` (pure) with `receiptHeaderLines` and `receiptBonusRows`, plus `ReceiptRowsTest` (header: three, name-only, empty; points: none, spent-only, earned-only, both in order).
+  4. `ReceiptContent.kt` (166 lines): `ReceiptPaper` header/points/footer, `buildReceiptText` shop-name first line plus points after total, `printReceiptData` shop title, address/phone header, trade-ins/amount-paid/payments rows then points, footer list; demo keys `pos.storeName`/`pos.storeLocation` removed from this file.
+  5. Printing follows settings: `printReceipt`/`printReceiptData` take `paperWidthMm` (non-80 → 58; `@page size` and body width `width-4` mm); Print buttons gated on `receiptPrintingEnabled`, hidden while settings unloaded.
+  6. New `ui/SaleBonusRows.kt` (points rows in the sheet's fact style, each only above zero), mounted once in `SaleDetailSheet` after payments.
+  7. Profit: `ProfitReport.bonusPointsEarned/Spent` (Double, default 0.0); `OverviewTab` shows both `reports.pointsEarned`/`reports.pointsSpent` tiles (plain numbers) only when at least one is non-zero.
+  8. No new text keys needed — `sales.paidWithPoints`, `sales.pointsEarned`, `reports.pointsEarned`, `reports.pointsSpent` already exist in both `en` and `uz` (`sales.json`, `reports.json` under `client/src/shared/i18n/`); no Uzbek written.
 - Every caller of `printReceiptData` and how each gets the two settings:
+  - `ui/PosScreen.kt` `PosReceiptSheet` (till receipt after a sale): `PosViewModel.loadDiscountSettings()` reads `PosRepository.tillSettings(online)` into `PosState` (`receiptPrintingEnabled`, `receiptPaperWidthMm`, `tillSettingsLoaded`); button shown only when loaded and enabled, passes `state.receiptPaperWidthMm`.
+  - `ui/SaleDetailSheet.kt` `ReceiptSheet` (server receipt from the Sales screen): `SalesScreen` loads `PosRepository(api, container.db, container.outbox, HttpClient.json).tillSettings(online)` (`null` while loading); button shown only when `tillSettings?.receiptPrintingEnabled == true`, passes `tillSettings?.receiptPaperWidthMm ?: 80`.
 - Not done / skipped / failed:
+  - Neither a phone screen nor a print preview was seen; Claude checks them.
+  - One compile attempt failed (trailing-lambda binding in `SalesScreen`); fixed with a named `onClose` and the rerun above succeeded. First build attempt is not pasted, only the successful run.
+  - Interpretation noted: `ReceiptDto` gained server `payments` (carried into `ReceiptData` so the printed receipt can list them); nothing built in `server/**`, `client/src/**` (outside `shared/i18n`), `mobile/ios/**`, `docs/PRD.md`, `docs/plan/*`, `.agent/rules/*`, `.claude/*`. Docs touched: this handoff only.
 
 ## Check by Claude
+- 2026-11-06: build and unit tests pass (run by Claude, as found and after the fixes). Code read;
+  not yet seen on a phone or in a print preview: the live try is done once for all four parts.
+- This part was done well (model: Crouton Alpha Free): the three receipt outputs, the print
+  gate, the paper width, `cleared()` carrying the new settings, the tests.
+- Fixed by Claude on the branch:
+  1. `SalesScreen.kt` had grown to 310 lines, over the 300 limit: the sale row is now its own
+     file `ui/SaleRow.kt` (the screen is 270 lines).
+  2. "Amount paid" on the till receipt of a sale with a trade-in AND points left the points
+     out, so it showed more than was tendered. It now subtracts both.
+- Watch in part 4's last look: `PosScreen.kt` 278 lines, `PosViewModel.kt` 276.
