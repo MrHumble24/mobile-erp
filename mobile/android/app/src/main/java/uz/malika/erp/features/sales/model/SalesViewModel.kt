@@ -146,9 +146,12 @@ class SalesViewModel(private val repo: SalesRepository) : ViewModel() {
                 clearWarranty()
                 refresh()
             } catch (e: Exception) {
+                // A known code first; any other 409 keeps its translated text (as before
+                // this change); only then the server's own sentence.
                 val key = returnErrorKey((e as? AppException)?.code)
+                    ?: "sales.returnConflict".takeIf { (e as? AppException)?.statusCode == 409 }
                     ?: e.message?.takeIf { it.isNotBlank() }
-                    ?: if ((e as? AppException)?.statusCode == 409) "sales.returnConflict" else "common.error"
+                    ?: "common.error"
                 _ret.value = ReturnUi(error = key)
             }
         }

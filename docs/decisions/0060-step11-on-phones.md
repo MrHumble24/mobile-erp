@@ -28,4 +28,5 @@ This ADR records the same decisions on the Android phone.
 
 ## Consequences
 - Offline printing uses the last known till settings (cached `GET /settings`).
-- A buyer of their own sold unit sees a translated refusal, not a silent act.
+- Buying back a phone the shop sold goes through (the server decides); only an
+  IMEI that belongs to a unit that is NOT sold gets the translated refusal.

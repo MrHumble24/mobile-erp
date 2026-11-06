@@ -29,6 +29,7 @@ import uz.malika.erp.features.sales.model.checkoutDirect
 import uz.malika.erp.features.sales.model.loadCustomerBonus
 import uz.malika.erp.features.sales.model.removeTradeIn
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.formatPoints
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.ui.theme.MonoFamily
@@ -133,6 +134,18 @@ fun PosCheckoutForm(
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
                     color = Tokens.success,
                 )
+            }
+            // What is left for cash or card. With trade-ins the trade-in section already shows it.
+            if (!hasTradeIns) {
+                Spacer(Modifier.height(4.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t("purchases.amountPaid", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+                    Text(
+                        formatMoney(state.amountToPay.toPlainString()),
+                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = MonoFamily),
+                        color = Tokens.text,
+                    )
+                }
             }
         }
         Spacer(Modifier.height(16.dp))

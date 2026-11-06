@@ -79,3 +79,27 @@ Fill the Result section of `docs/handoffs/opencode/017-step11-android-refusals-d
   - Docs written: `0060-step11-on-phones.md`, `FOUNDATION.md`, READMEs of sales/admin/purchases/finance, and this handoff. No edits outside `mobile/android/**`, `docs/decisions/`, and `docs/handoffs/opencode/`; no `server/**`, `client/src/**`, `mobile/ios/**`, `docs/PRD.md`, `docs/plan/*`, `.agent/rules/*`, `.claude/*`.
 
 ## Check by Claude
+- 2026-11-06: build and unit tests pass (run by Claude). Code read.
+- Fixed by Claude on the branch:
+  1. A return refused with an unknown 409 now keeps its translated "status conflict" text
+     (part 4 had made every such refusal show the server's English sentence).
+  2. ADR 0060's last line said buying back a sold phone is refused; it is the opposite.
+  3. Seen missing on the phone: with points the form showed the total and the points but not
+     what is left to pay. A row for it was added (shown when there is no trade-in; the
+     trade-in section already shows it).
+- LIVE TRY of all four parts, Android emulator (Pixel_10a) against the local test server,
+  signed in as the owner, bonus on (earn 5%, max 50%), receipt printing on, 58 mm:
+  - Settings: both new sections seen, with 5, 50, 58 / 80 mm.
+  - Customer "Outside Walkthrough": points section seen (balance 1,450, history).
+    "Correct points": the sheet stays open; empty amount shows "Enter an amount"; +50 with a
+    reason: balance 1,500 and the new row, seen.
+  - Till: the search row shows "1,500 pts"; after picking the customer the points box shows
+    balance 1,500 and max 1,500; "Use maximum" gives Points −1,500.
+  - Sale of a 30,000 cable for cash: receipt seen with "Main store", cash 28,500, "Paid with
+    points −1,500", and the Print button. On the server: SPEND −1,500, EARN +1,425 (5% of
+    28,500), balance 1,425, payments CASH 28,500.
+  - Sale details: "Paid with points −1,500" and "Points earned 1,425", seen.
+  - Next cart, same customer: balance 1,425 is loaded again; amount left to pay 28,575, seen.
+  - NOT seen: the print preview itself (Print was not pressed), a split payment with points,
+    a trade-in with points, the offline line, the three refusal messages (buy-back, return),
+    the profit report tiles. Those rest on the unit tests and the code reading.
