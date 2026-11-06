@@ -65,6 +65,7 @@ struct PosCustomerPanel: View {
             Button(i18n.t("common.clear", default: "Clear"), role: .destructive) {
                 cart.detachCustomer()
                 cart.setLevel(PriceLevels.defaultCode)
+                model.clearBonus()
                 addNew = false
             }
             .buttonStyle(.pillGhost)
@@ -74,7 +75,10 @@ struct PosCustomerPanel: View {
     @ViewBuilder private var newCustomerFields: some View {
         AppTextField(placeholder: i18n.t("pos.customerName"), text: Binding(
             get: { cart.customer?.name ?? "" },
-            set: { cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone) }))
+            set: {
+                model.clearBonus()
+                cart.customer = PosCartCustomer(id: nil, name: $0, phone: cart.customer?.phone)
+            }))
         AppTextField(placeholder: i18n.t("pos.customerPhone"), text: customerPhoneBinding, keyboard: .phonePad)
             .sanitizePhone(customerPhoneBinding)
     }
@@ -92,6 +96,7 @@ struct PosCustomerPanel: View {
 private struct PosCustomerSearchSheet: View {
     let model: PosViewModel
     let onSelect: (PosCustomerHit) -> Void
+    @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
@@ -106,6 +111,11 @@ private struct PosCustomerSearchSheet: View {
                     Button { onSelect(hit) } label: {
                         HStack {
                             Text(hit.name)
+                            if container.storeFlags.bonusEnabled, let bonus = hit.bonusBalance {
+                                Text(i18n.t("customers.bonusPickerPoints", ["points": BonusText.format(bonus)]))
+                                    .font(.ui(.caption))
+                                    .foregroundStyle(Tokens.muted)
+                            }
                             Spacer()
                             if let phone = hit.phone {
                                 Text(phone).font(.mono(12)).foregroundStyle(Tokens.muted)

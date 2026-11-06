@@ -31,6 +31,13 @@ struct StoreSettings: Decodable {
     let shiftsEnabled: Bool
     /// Repairs (ADR 0040), off by default. Hides the whole repairs feature.
     let repairsEnabled: Bool
+    // Bonus & Printing (ADR 0043)
+    let bonusEnabled: Bool
+    let bonusEarnPercent: String
+    let bonusMaxRedeemPercent: String
+    let receiptPrintingEnabled: Bool
+    let receiptPaperWidthMm: Int
+    let priceTagsEnabled: Bool
 
     enum CodingKeys: String, CodingKey {
         case storeName, storeAddress, storePhone, receiptFooter, telegramChatId
@@ -39,6 +46,8 @@ struct StoreSettings: Decodable {
         case discountsEnabled, discountPercentAllowed, discountAmountAllowed
         case discountPresetsPercent, discountPresetsAmount, maxDiscountPercent
         case customerCreditEnabled, defaultCreditLimit, shiftsEnabled, repairsEnabled
+        case bonusEnabled, bonusEarnPercent, bonusMaxRedeemPercent
+        case receiptPrintingEnabled, receiptPaperWidthMm, priceTagsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +74,12 @@ struct StoreSettings: Decodable {
         defaultCreditLimit = Self.optNumberString(c, .defaultCreditLimit)
         shiftsEnabled = (try? c.decode(Bool.self, forKey: .shiftsEnabled)) ?? false
         repairsEnabled = (try? c.decode(Bool.self, forKey: .repairsEnabled)) ?? false
+        bonusEnabled = (try? c.decode(Bool.self, forKey: .bonusEnabled)) ?? false
+        bonusEarnPercent = Self.numberString(c, .bonusEarnPercent)
+        bonusMaxRedeemPercent = Self.numberString(c, .bonusMaxRedeemPercent)
+        receiptPrintingEnabled = (try? c.decode(Bool.self, forKey: .receiptPrintingEnabled)) ?? false
+        receiptPaperWidthMm = (try? c.decode(Int.self, forKey: .receiptPaperWidthMm)) ?? 80
+        priceTagsEnabled = (try? c.decode(Bool.self, forKey: .priceTagsEnabled)) ?? false
     }
 
     /// A nullable money field → canonical string, or nil when null / missing.
@@ -127,6 +142,13 @@ struct SettingsValues: Equatable {
     var defaultCreditLimit = ""
     var shiftsEnabled = false
     var repairsEnabled = false
+    // Bonus & Printing (ADR 0043)
+    var bonusEnabled = false
+    var bonusEarnPercent = ""
+    var bonusMaxRedeemPercent = ""
+    var receiptPrintingEnabled = false
+    var receiptPaperWidthMm = 80
+    var priceTagsEnabled = false
 
     init() {}
 
@@ -152,6 +174,12 @@ struct SettingsValues: Equatable {
         defaultCreditLimit = s.defaultCreditLimit ?? ""
         shiftsEnabled = s.shiftsEnabled
         repairsEnabled = s.repairsEnabled
+        bonusEnabled = s.bonusEnabled
+        bonusEarnPercent = s.bonusEarnPercent
+        bonusMaxRedeemPercent = s.bonusMaxRedeemPercent
+        receiptPrintingEnabled = s.receiptPrintingEnabled
+        receiptPaperWidthMm = s.receiptPaperWidthMm
+        priceTagsEnabled = s.priceTagsEnabled
     }
 
     /// Parse a comma/space-separated preset field into up to five numbers.
@@ -188,6 +216,12 @@ struct SettingsValues: Equatable {
             "defaultCreditLimit": defaultCreditLimit.isEmpty ? NSNull() : (Double(defaultCreditLimit) ?? NSNull()),
             "shiftsEnabled": shiftsEnabled,
             "repairsEnabled": repairsEnabled,
+            "bonusEnabled": bonusEnabled,
+            "bonusEarnPercent": Double(bonusEarnPercent) ?? 0,
+            "bonusMaxRedeemPercent": Double(bonusMaxRedeemPercent) ?? 0,
+            "receiptPrintingEnabled": receiptPrintingEnabled,
+            "receiptPaperWidthMm": receiptPaperWidthMm,
+            "priceTagsEnabled": priceTagsEnabled,
         ]
     }
 }

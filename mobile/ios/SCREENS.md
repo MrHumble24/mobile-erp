@@ -114,7 +114,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **Balance Transfer Sheet** (`BalanceTransferSheet`) | `Features/Balance/UI/BalanceTransferSheet.swift` | Store Owner | Move money between two different accounts (`balance.manage`). |
 | **Balance Filter Sheet** (`BalanceFiltersSheet`) | `Features/Balance/UI/BalanceFiltersSheet.swift` | Store Owner | Bottom sheet with account, type and date-range filters for the ledger history. |
 | **Model Pricing Benchmarks** (`ModelPricingTab`) | `Features/Reports/UI/ModelPricingTab.swift` | Store Owner | Setting model benchmark prices, target margins, and minimum allowable selling prices. |
-| **Customer CRM** (`CustomersView`) | `Features/Customers/UI/CustomersView.swift` | Sales / Owner | Customer directory with purchase history filter and detail sheet ([`CustomerDetailSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Customers/UI/CustomerDetailSheet.swift)). |
+| **Customer CRM** (`CustomersView`) | `Features/Customers/UI/CustomersView.swift` | Sales / Owner | Customer directory with purchase history filter and detail sheet ([`CustomerDetailSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Customers/UI/CustomerDetailSheet.swift)), loyalty bonus points balance/history, and manual points correction. |
 | **Customer Filter Sheet** (`CustomerFilterSheet`) | `Features/Customers/UI/CustomerFilterSheet.swift` | Sales / Owner | Bottom sheet housing customer sort order (recent vs alphabetical) and purchase history toggle. |
 | **Catalog Models** (`DeviceModelsTab`) | `Features/Inventory/UI/DeviceModelsTab.swift` | Inventory Lead | Managing product (device-model) definitions: **kind** (IMEI / SERIAL / QUANTITY — ADR 0029, locked once the product has units, `catalog.kindLocked`), **category** (picker from `/product-categories`, with a category filter and kind+category shown on each row), **barcode** (unique), maker's **model code**, a `customsCode` (ADR 0027), and dynamic attribute schemas via [`AttributesEditor`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Inventory/UI/AttributesEditor.swift). The form is `ModelFormSheet` and (once the model exists) a **product picture** field (ADR 0031 — see below). |
 | **Categories** (`CategoriesSheet`) | `Features/Inventory/UI/CategoriesSheet.swift` | Inventory Lead | Manage product categories (`GET/POST/PATCH /product-categories`) — list, add, edit (name / sortOrder / isActive) in `CategoryEditSheet`. Opened from the `DeviceModelsTab` toolbar (folder, `nav.categories`). Duplicate name → 409 `catalog.errorCategoryExists`. |
@@ -135,7 +135,7 @@ The system supports the end-to-end retail and wholesale lifecycle of a mobile el
 | **User Profile & Overrides** (`UserDetailSheet`) | `Features/Users/UI/UserDetailSheet.swift` | Store Owner (Admin) | Activating/deactivating users, resetting passwords ([`ResetPasswordSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Users/UI/UserDetailSheet.swift#L137)), and setting explicit per-user permission overrides. |
 | **Role Definitions** (`RolesListView`) | `Features/Users/UI/RolesListView.swift` | Store Owner (Admin) | Managing system and custom store roles ([`CreateRoleSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Users/UI/RoleDialogs.swift#L4), [`EditRoleSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Users/UI/RoleDialogs.swift#L49)). |
 | **RBAC Permission Matrix** (`PermissionMatrixView`) | `Features/Users/UI/PermissionMatrixView.swift` | Store Owner (Admin) | Fine-grained grid assigning resource permissions (e.g., `device.cost.view`, `sale.create`, `report.finance`) to roles. |
-| **Store Settings** (`SettingsView`) | `Features/Settings/UI/SettingsView.swift` | Store Owner (Admin) | Store identity, receipt footers, default warranty duration, minimum margin %, Nasiya/installment policies, and Telegram bot notification credentials. |
+| **Store Settings** (`SettingsView`) | `Features/Settings/UI/SettingsView.swift` | Store Owner (Admin) | Store identity, receipt footers, default warranty duration, minimum margin %, Nasiya/installment policies, Telegram bot notification credentials, loyalty bonus points, and receipt/price-tag printing preferences. |
 | **Expense Categories** (`ExpenseCategoriesSheet`) | `Features/Expenses/UI/ExpenseCategoriesSheet.swift` | Store Owner (Admin) | Adding, editing, and deleting standardized expense categories. |
 | **QC Lookup Rules** (`QcLookupsView`) | `Features/Procurement/UI/QcLookupsView.swift` | QC Lead / Owner | Managing defect classifications and cosmetic grade levels ([`LookupFormSheet`](file:///Users/abdulboriymalikov/projects/mobile-erp/mobile/ios/Mobile-erp/Mobile-erp/Features/Procurement/UI/LookupFormSheet.swift)). |
 
@@ -574,6 +574,12 @@ the handoff's detail list; create + status + parts + money + report cover it.
 
 DEBUG args: `-open repairs`, `-openNewRepair 1` (new ticket), `-openRepair 1`
 (first ticket's detail), `-openRepairReport 1` (report).
+
+## Step 11: Bonus Points, Printing Settings & Buy-back Refusals
+
+Settings gains bonus points configuration (`bonusEnabled`, `bonusEarnPercent`, `bonusMaxRedeemPercent`) and printing settings (`receiptPrintingEnabled`, `receiptPaperWidth`, `priceTagsEnabled`). `StoreFlags` caches these along with store identity and receipt footer.
+
+Customer detail gains bonus points summary, transaction history and point adjustment (`CustomerBonusSection`, `CustomerBonusAdjustSheet`). At POS, `PosBonusRedeemControl` manages point redemptions via `BonusRedeemPlanner`. Receipts support 58mm/80mm widths and custom footer when enabled. Buy-back refusals map to specific error messages (`SALE_UNIT_BOUGHT_BACK`, `TRADE_IN_REFUND_FORBIDDEN`, `PURCHASE_UNIT_EXISTS`).
 
 ## i18n (Steps 9 & 10)
 

@@ -41,13 +41,16 @@ final class PosViewModel {
 
     // Customer typeahead.
     var customerHits: [PosCustomerHit] = []
+    /// Customer bonus state and requested points (ADR 0043, ADR 0047).
+    var customerBonus: BonusView?
+    var bonusRequested: Decimal = 0
 
     /// DEBUG only: a seeder has set `cart.config` by hand, so the async settings
     /// load must not overwrite it (used to show the cashier-limit error).
     @ObservationIgnored var debugLockConfig = false
 
     @ObservationIgnored private(set) var container: AppContainer?
-    private var repo: PosRepository {
+    var repo: PosRepository {
         PosRepository(context: container!.modelContext, api: container!.api)
     }
 
@@ -157,10 +160,11 @@ final class PosViewModel {
     }
 
     /// Attach an existing customer and follow their price level + standing
-    /// discount (ADR 0034).
+    /// discount (ADR 0034) and bonus points (ADR 0043).
     func attachCustomer(_ hit: PosCustomerHit) {
         cart.attach(PosCartCustomer(id: hit.id, name: hit.name, phone: hit.phone,
                                     level: hit.level, standing: hit.standing))
+        loadCustomerBonus()
     }
 
     /// Unit codes already in the cart — the catalog won't offer them again.
@@ -174,83 +178,4 @@ final class PosViewModel {
 
     func dismissResult() { completed = nil }
     func clearError() { errorKey = nil }
-
-    /// Check out every cart line (unit or quantity product). One request per line;
-    /// the cart's single Cash/Card/Split choice is allocated across each line's
-    /// **payable** amount — its price minus the trade-ins placed on it (ADR 0039)
-    /// — so each sale's payments sum to `salePrice − Σ trade-in values`. A sale
-    /// with a trade-in is online only and is never queued; a sold line's trade-ins
-    /// are dropped so a retry after a partial failure never resends them. Offline,
-    /// every (trade-in-free) line queues. Payload + result building live in
-    /// `PosCheckoutPayload`.
-    func checkout() {
-        guard let container, !cart.isEmpty, !busy else { return }
-        let online = container.connectivity.isOnline
-        // Trade-ins are online only — never queued (the server refuses them there).
-        if cart.hasTradeIns && !online { errorKey = "purchases.tradeInOffline"; return }
-        let plan = planCartTradeIns()
-        guard plan.ok else { errorKey = "purchases.tradeInExceedsLine"; return }
-        // Shifts (ADR 0036): online, selling needs an open shift; offline is let
-        // through (the server trusts replays). Keep the cart and prompt to open.
-        guard !shift.blocksSale(online: online) else { errorKey = "shifts.shiftRequired"; return }
-        busy = true
-        errorKey = nil
-        let cashier = container.session.user?.displayName ?? ""
-        let customer = cart.customer
-        let lines = cart.lines
-        let perLinePayments = allocateSalePayments(
-            breakdown: payment.breakdown(total: plan.amountToPay),
-            linePrices: lines.map { plan.payableByLine[$0.id] ?? cart.finalTotal($0) })
-
-        Task {
-            var results: [CompletedSale] = []
-            for (index, line) in lines.enumerated() {
-                let tradeIns = tradeInPosts(for: line.id, plan: plan)
-                let payload = payload(for: line, customer: customer,
-                                      payments: perLinePayments[index], tradeIns: tradeIns)
-                let now = Date()
-                var receiptId = line.clientMutationId
-                var pending = !online
-                if online {
-                    do {
-                        let id = try await repo.postSale(payload)
-                        if !id.isEmpty { receiptId = id }
-                        // Sold with its trade-ins — drop them so a retry never resends them.
-                        for t in plan.itemsByLine[line.id] ?? [] { cart.removeTradeIn(t) }
-                    } catch {
-                        let appError = error as? AppError
-                        if appError?.statusCode == nil {
-                            // A trade-in sale must never queue offline (server refuses it).
-                            if tradeIns == nil {
-                                try? repo.enqueueSale(payload, baseVersion: line.device?.version)
-                                pending = true
-                            } else {
-                                busy = false; errorKey = "purchases.tradeInOffline"; break
-                            }
-                        } else if appError?.statusCode == 409, appError?.code == "NO_OPEN_SHIFT" {
-                            busy = false; errorKey = "shifts.shiftRequired"
-                            await shift.refresh(); break   // keep the cart
-                        } else if appError?.statusCode == 403, appError?.code == "TRADE_IN_FORBIDDEN" {
-                            busy = false; errorKey = "common.error"; break
-                        } else {
-                            busy = false; errorKey = "common.error"; break
-                        }
-                    }
-                } else {
-                    try? repo.enqueueSale(payload, baseVersion: line.device?.version)
-                }
-                results.append(completedSale(line, receiptId: receiptId, cashier: cashier,
-                                             customer: customer, at: now, pending: pending))
-                cart.remove(line.id)
-            }
-            busy = false
-            if !results.isEmpty {
-                container.toasts.success(container.i18n.t("pos.saleSuccess", ["count": String(results.count)]))
-                showCart = false   // close the catalog cart sheet before the receipt
-                completed = results
-                payment.method = .cash
-                payment.splitAmounts = [:]
-            }
-        }
-    }
 }

@@ -9,6 +9,9 @@ enum KitSelfCheck {
     @MainActor static func run() {
         checkCSV()
         checkRouter()
+        checkBonusText()
+        runCustomerBonusSelfChecks()
+        runBonusRedeemPlannerSelfChecks()
     }
 
     private static func checkCSV() {
@@ -31,6 +34,14 @@ enum KitSelfCheck {
         assert(r.consume("pos") == nil)
         assert(r.consume("inventory") == .inventory(imei: "999"))
         assert(r.consume("inventory") == nil)
+    }
+
+    private static func checkBonusText() {
+        assert(BonusText.format("1450.00") == "1 450")
+        assert(BonusText.format("12.50") == "12.5")
+        assert(BonusText.format("-300.00") == "-300")
+        assert(BonusText.format(nil) == "0")
+        assert(BonusText.format("junk") == "0")
     }
 }
 #endif

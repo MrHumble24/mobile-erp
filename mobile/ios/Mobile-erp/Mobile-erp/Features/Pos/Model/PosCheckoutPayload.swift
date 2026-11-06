@@ -24,7 +24,8 @@ extension PosViewModel {
     /// quantity product (modelId + quantity, no warranty). `salePrice` is the full
     /// line total (revenue intact); the trade-in values are netted off `payments`.
     func payload(for line: PosCartLine, customer: PosCartCustomer?,
-                 payments: [SalePaymentPost], tradeIns: [SaleTradeInPost]?) -> SaleCreatePayload {
+                 payments: [SalePaymentPost], tradeIns: [SaleTradeInPost]?,
+                 bonusRedeem: Double? = nil) -> SaleCreatePayload {
         let total = NSDecimalNumber(decimal: cart.finalTotal(line)).doubleValue
         let list = cart.listPrice(line)
         let listDouble = list.map { NSDecimalNumber(decimal: $0).doubleValue }
@@ -45,7 +46,8 @@ extension PosViewModel {
                 customerPhone: customer?.id == nil ? customer?.phone : nil,
                 warrantyDays: nil, notes: line.notes, payments: payments,
                 priceLevelCode: cart.level, discount: discount, listPrice: listDouble,
-                tradeIns: tradeIns)
+                tradeIns: tradeIns,
+                bonusRedeem: bonusRedeem)
         }
         return buildSalePayload(
             imei: line.device?.imei, serialNumber: line.device?.serialNumber, salePrice: total,
@@ -56,11 +58,13 @@ extension PosViewModel {
             warrantyDays: Int(line.warrantyDays.trimmingCharacters(in: .whitespaces)),
             notes: line.notes, payments: payments,
             priceLevelCode: cart.level, discount: discount, listPrice: listDouble,
-            tradeIns: tradeIns)
+            tradeIns: tradeIns,
+            bonusRedeem: bonusRedeem)
     }
 
     func completedSale(_ line: PosCartLine, receiptId: String, cashier: String,
-                       customer: PosCartCustomer?, at now: Date, pending: Bool) -> CompletedSale {
+                       customer: PosCartCustomer?, at now: Date, pending: Bool,
+                       bonusSpent: Decimal = 0) -> CompletedSale {
         let days = line.isProduct ? nil : Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
         let final = cart.finalTotal(line)
         let list = cart.listPrice(line)
@@ -82,7 +86,8 @@ extension PosViewModel {
             pending: pending,
             listPrice: list.map { NSDecimalNumber(decimal: $0).stringValue },
             discountAmount: discount > 0 ? NSDecimalNumber(decimal: discount).stringValue : nil,
-            priceLevelCode: cart.level
+            priceLevelCode: cart.level,
+            bonusSpent: bonusSpent > 0 ? NSDecimalNumber(decimal: bonusSpent).stringValue : nil
         )
     }
 }

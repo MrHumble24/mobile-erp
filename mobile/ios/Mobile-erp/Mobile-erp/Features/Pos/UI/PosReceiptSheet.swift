@@ -7,6 +7,7 @@ struct PosReceiptSheet: View {
     let sale: CompletedSale
     var onNewSale: (() -> Void)? = nil
 
+    @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     @Environment(\.dismiss) private var dismiss
     @State private var copied = false
@@ -45,17 +46,22 @@ struct PosReceiptSheet: View {
             // Receipt Content
             VStack(spacing: 8) {
                 // Store Header
-                VStack(spacing: 2) {
-                    Text(i18n.t("pos.storeName"))
-                        .font(.mono(15, weight: .bold))
-                        .foregroundStyle(Tokens.ink)
-                    Text(i18n.t("pos.storeLocation"))
-                        .font(.mono(11))
-                        .foregroundStyle(Tokens.muted)
+                let headers = BonusReceiptLayout.headerLines(
+                    name: container.storeFlags.storeName,
+                    address: container.storeFlags.storeAddress,
+                    phone: container.storeFlags.storePhone
+                )
+                if !headers.isEmpty {
+                    VStack(spacing: 2) {
+                        ForEach(Array(headers.enumerated()), id: \.offset) { idx, line in
+                            Text(line)
+                                .font(.mono(idx == 0 ? 15 : 11, weight: idx == 0 ? .bold : .regular))
+                                .foregroundStyle(idx == 0 ? Tokens.ink : Tokens.muted)
+                        }
+                    }
+                    .padding(.bottom, 6)
+                    dashedDivider
                 }
-                .padding(.bottom, 6)
-
-                dashedDivider
 
                 // Metadata Rows
                 Group {
@@ -122,6 +128,10 @@ struct PosReceiptSheet: View {
                 }
                 .padding(.vertical, 4)
 
+                if let bonusSpent = sale.bonusSpent, (Decimal(string: bonusSpent) ?? 0) > 0 {
+                    row(i18n.t("sales.paidWithPoints"), "− \(BonusText.format(bonusSpent))")
+                }
+
                 if let endsAt = sale.warrantyEndsAt {
                     row(i18n.t("pos.warrantyUntil", default: "Warranty until"), Self.date(endsAt))
                 }
@@ -132,6 +142,13 @@ struct PosReceiptSheet: View {
                     .font(.mono(11))
                     .foregroundStyle(Tokens.muted)
                     .padding(.top, 4)
+
+                if let footer = container.storeFlags.receiptFooter?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
+                    Text(footer)
+                        .font(.mono(11))
+                        .foregroundStyle(Tokens.muted)
+                        .padding(.top, 4)
+                }
             }
             .padding(20)
             .background(Tokens.surface)
@@ -168,7 +185,8 @@ struct PosReceiptSheet: View {
 
             HStack(spacing: 12) {
                 Button {
-                    ReceiptPrinting.copy(receiptText)
+                    let width = BonusReceiptLayout.lineWidth(for: container.storeFlags.receiptPaperWidthMm)
+                    ReceiptPrinting.copy(receiptText(width: width))
                     Haptic.tick.play()
                     withAnimation(.snappy(duration: 0.2)) { copied = true }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -184,29 +202,56 @@ struct PosReceiptSheet: View {
                 }
                 .buttonStyle(.bordered)
 
-                Button {
-                    ReceiptPrinting.print(receiptText, jobName: i18n.t("pos.receiptTitle", default: "Receipt"))
-                    Haptic.tick.play()
-                } label: {
-                    Label(i18n.t("pos.printCheque", default: "Print 58mm"), systemImage: "printer")
-                        .font(.subheadline.weight(.medium))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 22)
+                if container.storeFlags.receiptPrintingEnabled {
+                    Button {
+                        let width = BonusReceiptLayout.lineWidth(for: container.storeFlags.receiptPaperWidthMm)
+                        ReceiptPrinting.print(receiptText(width: width), jobName: i18n.t("pos.receiptTitle", default: "Receipt"))
+                        Haptic.tick.play()
+                    } label: {
+                        Label(i18n.t("sales.printReceipt", default: "Print"), systemImage: "printer")
+                            .font(.subheadline.weight(.medium))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 22)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
         }
     }
 
-    private var receiptText: String {
-        [
-            i18n.t("pos.storeName"),
-            "\(i18n.t("pos.receiptNumber", default: "Receipt #")): \(sale.receiptId.prefix(8).uppercased())",
-            "\(sale.modelLabel) (\(sale.unitCode.isEmpty ? sale.quantityLabel : sale.unitCode))",
-            "\(i18n.t("pos.totalDue", default: "TOTAL")): \(MoneyText.format(sale.salePrice))",
-            sale.warrantyEndsAt.map { "\(i18n.t("pos.warrantyUntil", default: "Warranty")): \(Self.date($0))" } ?? "",
-            i18n.t("pos.thankYou", default: "Thank you!"),
-        ].filter { !$0.isEmpty }.joined(separator: "\n")
+    private func receiptText(width: Int) -> String {
+        var lines: [String] = []
+        let headers = BonusReceiptLayout.headerLines(
+            name: container.storeFlags.storeName,
+            address: container.storeFlags.storeAddress,
+            phone: container.storeFlags.storePhone
+        )
+        lines.append(contentsOf: headers)
+        if !headers.isEmpty {
+            lines.append(BonusReceiptLayout.rule(width: width))
+        }
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.receiptNumber", default: "Receipt #"), sale.receiptId.prefix(8).uppercased(), width: width))
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.soldAt", default: "Date/Time"), Self.dateTime(sale.soldAt), width: width))
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.cashier", default: "Cashier"), sale.cashier, width: width))
+        if let name = sale.customerName {
+            lines.append(BonusReceiptLayout.row(i18n.t("sales.customer", default: "Customer"), name, width: width))
+        }
+        lines.append(BonusReceiptLayout.rule(width: width))
+        lines.append("\(sale.modelLabel) (\(sale.unitCode.isEmpty ? sale.quantityLabel : sale.unitCode))")
+        lines.append(BonusReceiptLayout.rule(width: width))
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.totalDue", default: "TOTAL"), MoneyText.format(sale.salePrice), width: width))
+        if let bonusSpent = sale.bonusSpent, (Decimal(string: bonusSpent) ?? 0) > 0 {
+            lines.append(BonusReceiptLayout.row(i18n.t("sales.paidWithPoints"), "− \(BonusText.format(bonusSpent))", width: width))
+        }
+        if let endsAt = sale.warrantyEndsAt {
+            lines.append(BonusReceiptLayout.row(i18n.t("pos.warrantyUntil", default: "Warranty"), Self.date(endsAt), width: width))
+        }
+        lines.append(BonusReceiptLayout.rule(width: width))
+        lines.append(i18n.t("pos.thankYou", default: "Thank you!"))
+        if let footer = container.storeFlags.receiptFooter?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
+            lines.append(footer)
+        }
+        return lines.joined(separator: "\n")
     }
 
     private func row(_ label: String, _ value: String, bold: Bool = false) -> some View {

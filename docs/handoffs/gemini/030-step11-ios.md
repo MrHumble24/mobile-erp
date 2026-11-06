@@ -1,6 +1,6 @@
 # 030 — Step 11 on the iPhone app: bonus points, printing settings, buy-back refusals
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: nothing
+Status: merged · Owner: Gemini (Antigravity)
 
 ## Why
 Step 11 is on the server and the website (ADR 0043, 0044, 0047). The phone apps have none of
@@ -103,12 +103,67 @@ Fill the Result section of `docs/handoffs/gemini/030-step11-ios.md` in THIS work
 
 ## Result (Gemini fills)
 - Commits, one per item:
+  - Item 1: `a6a718b9` feat(ios): step 11.1 - bonus and printing settings switches and cached store flags
+  - Item 2: `b2d9ec60` feat(ios): step 11.2 - BonusText formatter and self-check
+  - Item 3: `a54e4490` feat(ios): step 11.3 - customer bonus points section, adjust sheet, and till picker
+  - Item 4: `19711c58` feat(ios): step 11.4 - paying with bonus points at POS terminal
+  - Item 5: `6bb7e551` feat(ios): step 11.5 - bonus points on sales, receipts with store identity/footer/widths, and reports
+  - Item 6: `8a85d3da` feat(ios): step 11.6 - buy-back and return refusal error handling
+  - Item 7: `95899a6a` feat(ios): step 11.7 - visibility gating when switches are disabled and foundation docs
 - Build output (last lines):
+  ```
+  Validate /Users/abdulboriymalikov/Library/Developer/Xcode/DerivedData/Mobile-erp-dfelctduldqknwgtkzpbpseclypf/Build/Products/Debug-iphonesimulator/Mobile-erp.app (in target 'Mobile-erp' from project 'Mobile-erp')
+      cd /Users/abdulboriymalikov/projects/mobile-erp/.worktrees/gemini-step11-ios/mobile/ios/Mobile-erp
+      builtin-validationUtility /Users/abdulboriymalikov/Library/Developer/Xcode/DerivedData/Mobile-erp-dfelctduldqknwgtkzpbpseclypf/Build/Products/Debug-iphonesimulator/Mobile-erp.app -shallow-bundle -infoplist-subpath Info.plist
+
+  PruneExplicitPrecompiledModules /Users/abdulboriymalikov/Library/Developer/Xcode/DerivedData/SwiftExplicitPrecompiledModules
+  PruneExplicitPrecompiledModules /Users/abdulboriymalikov/Library/Developer/Xcode/DerivedData/Intermediates.noindex/ExplicitPrecompiledModules
+  PruneExplicitPrecompiledModules /Users/abdulboriymalikov/Library/Developer/Xcode/DerivedData/SDKExplicitPrecompiledModules
+
+  ** BUILD SUCCEEDED **
+  ```
 - Items 1 to 7, one line each:
+  - Item 1: `StoreSettings`, `SettingsValues`, and `StoreFlags` carry the 6 bonus/printing fields with validations and fallback-preserving refresh; `SettingsBonusPrintingSections` provides Warm Card sections.
+  - Item 2: `BonusText` groups thousands with space, drops `.00`, formats nil/junk as "0", with DEBUG self-check in `KitSelfCheck`.
+  - Item 3: POS customer picker displays `customers.bonusPickerPoints`; customer detail sheet loads bonus view and offers points correction with pure `CustomerBonusValidation`.
+  - Item 4: Ported `BonusRedeemPlanner` with test cases (a)-(g); added `PosBonusRedeemControl` on checkout bar, splitting tenders after trade-ins and points, with code refusal mappings in `PosCheckoutError`.
+  - Item 5: Extended sales/receipts with `bonus`, `store` header, and `footer`; receipts format for 58mm/80mm via `BonusReceiptLayout`, with print button gated on `receiptPrintingEnabled`; profit report decodes bonus points.
+  - Item 6: `ReturnSheet` maps `SALE_UNIT_BOUGHT_BACK` and `TRADE_IN_REFUND_FORBIDDEN`; `PurchaseError` maps `PURCHASE_UNIT_EXISTS` to `purchases.buyNotSold`; confirmed no local sold IMEI check blocks intake.
+  - Item 7: Bonus points controls, badges, and sections are completely hidden when `bonusEnabled` is off; price tag toggle is settings-only.
 - Live try, steps a to g, "seen" or "not seen" with the numbers:
+  Simulator not booted in headless environment; Claude does the live try.
+  - a: not seen
+  - b: not seen
+  - c: not seen
+  - d: not seen
+  - e: not seen
+  - f: not seen
+  - g: not seen
 - Files over 250 lines after the change, with line counts:
+  - `Features/Procurement/UI/IntakeDeviceForm.swift`: 300 lines (existing)
+  - `Features/Pos/UI/PosReceiptSheet.swift`: 281 lines
 - Decisions taken that the ADRs do not cover:
+  - Extracted `PosPayload.swift` from `PosModels.swift` and `PosCheckoutExecution.swift` from `PosViewModel.swift` to keep file sizes well under the 300 line limit.
+  - Unified thermal print width columns (32 for 58mm, 48 for 80mm) in shared `BonusReceiptLayout`.
 - New text keys (should be none):
+  None.
 - Not done / skipped / failed:
+  None.
 
 ## Check by Claude
+- 2026-11-06: the build passes (run by Claude, as found and after two fixes). The money path was
+  read line by line: the planner, the checkout, the refusal maps, the receipts' print gate.
+  NOT yet seen on a simulator or a phone, and the DEBUG self-checks only run at launch, so
+  they have not run under Claude either. Not merged until a live try.
+- Eight files had one blank line added by the editor and not committed: discarded.
+- Fixed by Claude on the branch:
+  1. The points cap per line used `Double`; it is exact decimal maths now, half up to a cent
+     like the server, so "use maximum" can never be one cent over the server's limit.
+  2. A slow bonus answer for a customer who was changed meanwhile could land on the new
+     customer: the answer is dropped unless the customer is still the same.
+- Noted, not changed: `Shared/Kit/KitSelfCheck.swift` calls the till's planner self-check (a
+  shared file reaching up into a feature); `PosReceiptSheet.swift` is 281 lines, close to 300.
+- 2026-11-07: merged at the user's word ("merge i will test"). `main` was merged in first and
+  the build passes. Still NOT seen running by Claude: the user tests it on a phone. If a
+  step from the Android live try (handoff 017) behaves differently on iOS, that is a bug here.
+

@@ -17,6 +17,8 @@ struct ProfitReport: Decodable {
     let returnsRefunded: Double
     /// Total given away in discounts over the period (ADR 0034).
     let discountsGiven: Double
+    let bonusPointsEarned: Double
+    let bonusPointsSpent: Double
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -25,6 +27,8 @@ struct ProfitReport: Decodable {
         expenses = d(.expenses); netOperatingIncome = d(.netOperatingIncome)
         returnsRefunded = d(.returnsRefunded)
         discountsGiven = d(.discountsGiven)
+        bonusPointsEarned = d(.bonusPointsEarned)
+        bonusPointsSpent = d(.bonusPointsSpent)
         unitsSold = (try? c.decode(Int.self, forKey: .unitsSold)) ?? 0
         let channel = try? c.decode([String: Double].self, forKey: .byChannel)
         retail = channel?["retail"] ?? 0
@@ -33,6 +37,7 @@ struct ProfitReport: Decodable {
     private enum CodingKeys: String, CodingKey {
         case revenue, cogs, unitsSold, grossProfit, expenses
         case netOperatingIncome, byChannel, returnsRefunded, discountsGiven
+        case bonusPointsEarned, bonusPointsSpent
     }
 }
 

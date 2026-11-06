@@ -54,6 +54,7 @@ struct CustomerDetailSheet: View {
                     }
                 }
                 creditsSection
+                CustomerBonusSection(customerId: customer.id)
                 Text(i18n.t("customers.purchaseHistory")).font(.ui(.heading)).foregroundStyle(Tokens.text)
                 history
                 if model.canManage {

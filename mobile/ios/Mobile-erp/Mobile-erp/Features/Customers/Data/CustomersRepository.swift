@@ -24,6 +24,18 @@ struct CustomersRepository {
         try await api.get("/customers/\(id)/sales")
     }
 
+    func bonus(_ id: String) async throws -> BonusView {
+        try await api.get("/customers/\(id)/bonus")
+    }
+
+    func adjustBonus(customerId: String, amount: Double, reason: String) async throws -> BonusView {
+        struct AdjustBody: Encodable {
+            let amount: Double
+            let reason: String
+        }
+        return try await api.post("/customers/\(customerId)/bonus/adjustments", body: AdjustBody(amount: amount, reason: reason))
+    }
+
     /// `POST /customers`. A JSON body so a blank phone/notes/credit limit is sent
     /// as explicit null (the credit limit then uses the shop default, ADR 0035).
     func create(name: String, phone: String?, notes: String?,

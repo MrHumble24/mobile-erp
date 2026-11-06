@@ -54,7 +54,7 @@ struct FinOverviewTab: View {
     }
 
     private func rows(_ r: ProfitReport) -> [MetricRow] {
-        [
+        var list = [
             MetricRow(label: i18n.t("dashboard.netOperatingIncome"), value: reportMoney(r.netOperatingIncome),
                       emphasis: moneyTint(.profit, r.netOperatingIncome), onTap: { onBreakdown(.noi(from: from, to: to)) }),
             MetricRow(label: i18n.t("dashboard.revenue"), value: reportMoney(r.revenue),
@@ -67,6 +67,11 @@ struct FinOverviewTab: View {
             MetricRow(label: i18n.t("pricing.discountsGiven"), value: reportMoney(r.discountsGiven), emphasis: moneyTint(.expense, r.discountsGiven)),
             MetricRow(label: i18n.t("dashboard.unitsSold"), value: "\(r.unitsSold)", onTap: { onBreakdown(.model(from: from, to: to, measure: .units)) }),
         ]
+        if r.bonusPointsEarned > 0 || r.bonusPointsSpent > 0 {
+            list.append(MetricRow(label: i18n.t("reports.pointsEarned"), value: BonusText.format(String(format: "%.2f", r.bonusPointsEarned))))
+            list.append(MetricRow(label: i18n.t("reports.pointsSpent"), value: BonusText.format(String(format: "%.2f", r.bonusPointsSpent))))
+        }
+        return list
     }
 }
 

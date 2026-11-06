@@ -47,9 +47,13 @@ struct ReceiptSheet: View {
 
     private func paper(_ r: ReceiptView) -> some View {
         VStack(spacing: 6) {
-            Text(i18n.t("pos.storeName")).font(.mono(13, weight: .bold))
-            Text(i18n.t("pos.storeLocation")).font(.mono(11))
-            rule
+            let headers = BonusReceiptLayout.headerLines(name: r.store?.name, address: r.store?.address, phone: r.store?.phone)
+            if !headers.isEmpty {
+                ForEach(Array(headers.enumerated()), id: \.offset) { idx, line in
+                    Text(line).font(.mono(idx == 0 ? 13 : 11, weight: idx == 0 ? .bold : .regular))
+                }
+                rule
+            }
             row(i18n.t("pos.receiptNumber"), r.saleId)
             row(i18n.t("pos.soldAt"), SaleDate.dayTime(r.soldAt))
             row(i18n.t("pos.cashier"), r.cashier)
@@ -82,9 +86,20 @@ struct ReceiptSheet: View {
                 row(i18n.t("purchases.amountPaid", default: "Amount paid"),
                     MoneyText.format(NSDecimalNumber(decimal: paid).stringValue), bold: true)
             }
-            if !payments.isEmpty {
-                ForEach(payments) { p in
+            let activePayments = r.payments ?? payments
+            if !activePayments.isEmpty {
+                ForEach(activePayments) { p in
                     row(PaymentAccounts.label(p.accountCode, i18n), MoneyText.format(p.amount.string))
+                }
+            }
+            if let bonus = r.bonus {
+                let spent = Decimal(string: bonus.spent) ?? 0
+                if spent > 0 {
+                    row(i18n.t("sales.paidWithPoints"), "− \(BonusText.format(bonus.spent))")
+                }
+                let earned = Decimal(string: bonus.earned) ?? 0
+                if earned > 0 {
+                    row(i18n.t("sales.pointsEarned"), BonusText.format(bonus.earned))
                 }
             }
             if let w = r.warranty, let endsAt = w.endsAt {
@@ -92,6 +107,9 @@ struct ReceiptSheet: View {
             }
             Text(i18n.t("pos.thankYou")).font(.mono(11)).padding(.top, 6)
             Text(i18n.t("pos.warrantyNotice")).font(.mono(9)).foregroundStyle(Tokens.muted)
+            if let footer = r.footer?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
+                Text(footer).font(.mono(11)).foregroundStyle(Tokens.muted).padding(.top, 4)
+            }
         }
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
@@ -100,18 +118,22 @@ struct ReceiptSheet: View {
     private func actions(_ r: ReceiptView) -> some View {
         VStack(spacing: 10) {
             Button {
-                SalesReceiptPrinting.copy(text(r))
+                let width = BonusReceiptLayout.lineWidth(for: container.storeFlags.receiptPaperWidthMm)
+                SalesReceiptPrinting.copy(text(r, width: width))
             } label: {
                 Label(i18n.t("pos.copyCheque"), systemImage: "doc.on.doc").frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
-            Button {
-                SalesReceiptPrinting.print(text(r), jobName: i18n.t("sales.receipt"))
-            } label: {
-                Label(i18n.t("sales.printReceipt"), systemImage: "printer").frame(maxWidth: .infinity)
+            if container.storeFlags.receiptPrintingEnabled {
+                Button {
+                    let width = BonusReceiptLayout.lineWidth(for: container.storeFlags.receiptPaperWidthMm)
+                    SalesReceiptPrinting.print(text(r, width: width), jobName: i18n.t("sales.receipt"))
+                } label: {
+                    Label(i18n.t("sales.printReceipt"), systemImage: "printer").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .foregroundStyle(Tokens.onInk)
             }
-            .buttonStyle(.borderedProminent)
-            .foregroundStyle(Tokens.onInk)
         }
     }
 
@@ -119,18 +141,58 @@ struct ReceiptSheet: View {
         [item.storage, item.color].compactMap { $0 }.joined(separator: " · ")
     }
 
-    private func text(_ r: ReceiptView) -> String {
-        var lines = [
-            i18n.t("pos.storeName"),
-            i18n.t("pos.storeLocation"),
-            "\(i18n.t("pos.receiptNumber")): \(r.saleId)",
-            "\(i18n.t("pos.cashier")): \(r.cashier)",
-            String(repeating: "-", count: 30),
-        ]
-        lines += r.items.map { "\($0.model) (\($0.unitCode.isEmpty ? $0.quantityLabel : $0.unitCode))  \(MoneyText.format($0.price.string))" }
-        lines.append(String(repeating: "-", count: 30))
-        lines.append("\(i18n.t("pos.totalDue")): \(MoneyText.format(r.total.string))")
+    private func text(_ r: ReceiptView, width: Int) -> String {
+        var lines: [String] = []
+        let headers = BonusReceiptLayout.headerLines(name: r.store?.name, address: r.store?.address, phone: r.store?.phone)
+        lines.append(contentsOf: headers)
+        if !headers.isEmpty {
+            lines.append(BonusReceiptLayout.rule(width: width))
+        }
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.receiptNumber"), r.saleId, width: width))
+        if let soldAt = r.soldAt {
+            lines.append(BonusReceiptLayout.row(i18n.t("pos.soldAt"), SaleDate.dayTime(soldAt), width: width))
+        }
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.cashier"), r.cashier, width: width))
+        if let customer = r.customer {
+            lines.append(BonusReceiptLayout.row(i18n.t("sales.customer"), customer.name, width: width))
+        }
+        lines.append(BonusReceiptLayout.rule(width: width))
+        for item in r.items {
+            let desc = "\(item.model) (\(item.unitCode.isEmpty ? item.quantityLabel : item.unitCode))"
+            lines.append(desc)
+            lines.append(BonusReceiptLayout.row("", MoneyText.format(item.price.string), width: width))
+        }
+        lines.append(BonusReceiptLayout.rule(width: width))
+        lines.append(BonusReceiptLayout.row(i18n.t("pos.totalDue"), MoneyText.format(r.total.string), width: width))
+        if let tradeIns = r.tradeIns, !tradeIns.isEmpty {
+            for t in tradeIns {
+                lines.append(BonusReceiptLayout.row(i18n.t("purchases.tradeInLabel", default: "Trade-in"), "− \(MoneyText.format(t.value.string))", width: width))
+            }
+        }
+        let activePayments = r.payments ?? payments
+        if !activePayments.isEmpty {
+            for p in activePayments {
+                lines.append(BonusReceiptLayout.row(PaymentAccounts.label(p.accountCode, i18n), MoneyText.format(p.amount.string), width: width))
+            }
+        }
+        if let bonus = r.bonus {
+            let spent = Decimal(string: bonus.spent) ?? 0
+            if spent > 0 {
+                lines.append(BonusReceiptLayout.row(i18n.t("sales.paidWithPoints"), "− \(BonusText.format(bonus.spent))", width: width))
+            }
+            let earned = Decimal(string: bonus.earned) ?? 0
+            if earned > 0 {
+                lines.append(BonusReceiptLayout.row(i18n.t("sales.pointsEarned"), BonusText.format(bonus.earned), width: width))
+            }
+        }
+        if let w = r.warranty, let endsAt = w.endsAt {
+            lines.append(BonusReceiptLayout.row(i18n.t("pos.warrantyUntil"), SaleDate.day(endsAt), width: width))
+        }
+        lines.append(BonusReceiptLayout.rule(width: width))
         lines.append(i18n.t("pos.thankYou"))
+        if let footer = r.footer?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
+            lines.append(footer)
+        }
         return lines.joined(separator: "\n")
     }
 
