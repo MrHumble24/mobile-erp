@@ -166,12 +166,34 @@ row).
   already-done restore. (6) `restore-upload` takes the raw body (octet-stream) +
   `x-restore-*` headers, streamed to disk — no multer dependency. (7) `POST
   /backups` awaits the run (small shop DB; website polls the list).
-- Not done / skipped / failed: PART 3/4/5 (other builders). The safety backup's
-  DB row and the source run's status are captured in the dump but wiped/staled by
-  a successful restore (the file survives in `BACKUPS_DIR`; `markStaleRunsFailed`
-  tidies RUNNING rows on next boot) — a known, documented limit of "restore
-  replaces the DB". I did not run a destructive restore through the shared dev
-  API; the live restore I saw ran against a throwaway copy on my own port 3141.
+- Not done / skipped / failed: PART 3/4/5 (other builders). I did not run a
+  destructive restore through the shared dev API; live restores I saw ran against
+  throwaway copies on my own ports.
+
+## Fix round (2026-11-06, commits `a03a12f`, `4579b71`)
+Addressed all 13 review items (A1-A11, T1-T3). Gate green (`pnpm build` + `pnpm
+test` 606/606 + `pnpm lint` 0 errors) and `pnpm test:restore` passes all four
+scenarios (round-trip, fail-half-way, rollback-on-swap-fail, rollback-on-migrate-
+fail). Highlights seen live on my own ports / DBs:
+- A1 session cutoff moved to the DB (`session_gate`), fail-closed; survives
+  restart + redeploy. (unit-tested)
+- A2 restore is all-or-nothing after pg_restore: a later failure rolls the DB
+  **and** uploads back to the safety backup and leaves maintenance; manual
+  recovery only if the rollback also fails. (e2e scenarios 3 & 4)
+- T1 a sealed passphrase unreadable with a fresh DATA_DIR now gives **400
+  BACKUP_PASSPHRASE_UNREADABLE** (was 500); `settings.passphraseStatus:
+  set|missing|unreadable`; re-setting overwrites. (seen on port 3140)
+- T2 reconcile fixes the list after a restore (safety backup appears, the
+  restored-from run becomes SUCCESS). T3 status returns `{restoring,
+  needsManualRecovery, last}`. A7 upload is two steps (`POST /uploads` returns
+  `{uploadId, migrationName…}`; unknown id → 404). (seen on port 3140)
+- A3/A4 header validated + AAD-bound, payload capped; A6 pg stderr server-side
+  only; A8 staging under DATA_DIR; A9/A10 master.key exclusive-create + strict
+  base64; A11 schedule marks only after a real attempt; A5 persisted
+  restore/manual-recovery markers + `scripts/clear-recovery.ts`.
+The earlier "safety-row wiped by restore" gap is now handled by T2 reconcile.
+Still single-instance only (the maintenance switch + markers are in-process;
+documented in ADR 0051 and the README).
 
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
