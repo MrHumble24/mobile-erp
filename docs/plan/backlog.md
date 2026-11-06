@@ -4,7 +4,7 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones). Android: MERGED 2026-11-06 (OpenCode 014 to 017, fixed by Claude, tried on the emulator). iOS (`docs/handoffs/gemini/030`, worktree `.worktrees/gemini-step11-ios`): built and read by Claude, two fixes made, NOT merged: it waits for a live try on a simulator or a real iPhone.
+- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones). Android: MERGED 2026-11-06 (OpenCode 014 to 017, fixed by Claude, tried on the emulator). iOS: MERGED 2026-11-07 (Gemini 030; built and read by Claude, two fixes; the live test on a phone is the user's).
 - Merged 2026-11-06 as well: the Uzbek pass (031) and the till and dialogs at phone width (032).
 - Merged on 2026-11-06: the online storefront, first-boot setup with company profile and themes, the danger zone, branches on the phone apps (027), dark themes switched on (028), online orders on the phone apps (029), OpenCode 010 to 013. Gemini and OpenCode ran out of their limits that day; 028 and 029 were finished by Claude builder agents.
 
