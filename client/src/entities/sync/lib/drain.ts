@@ -1,5 +1,10 @@
 import type { MutationResult, OutboxEntry } from "../model/sync.types"
 
+/** Server reject reason for a mutation queued before the last erase/restore.
+ * It belongs to the old data, so we drop it instead of keeping it for retry.
+ * Contract shared with the server's `sync/types/sync.types.ts`. */
+const MUTATION_BEFORE_RESET = "MUTATION_BEFORE_RESET"
+
 export interface DrainPlan {
   /** Entry ids to delete from the outbox (applied, duplicate, or moved to a conflict row). */
   remove: string[]
@@ -31,7 +36,13 @@ export function planDrain(entries: OutboxEntry[], results: MutationResult[]): Dr
         if (result.conflictId) plan.conflictIds.push(result.conflictId)
         break
       case "rejected":
-        plan.reject.push({ id: entry.id, error: result.error ?? "rejected" })
+        // A mutation from before an erase/restore is dropped, not kept for the
+        // user to retry — the data it targeted is gone.
+        if (result.error === MUTATION_BEFORE_RESET) {
+          plan.remove.push(entry.id)
+        } else {
+          plan.reject.push({ id: entry.id, error: result.error ?? "rejected" })
+        }
         break
     }
   }

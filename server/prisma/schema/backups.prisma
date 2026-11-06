@@ -16,8 +16,9 @@ model BackupRunStatus {
   isActive   Boolean @default(true)
   isTerminal Boolean @default(false)
 
-  backupRuns  BackupRun[]
-  restoreRuns RestoreRun[]
+  backupRuns   BackupRun[]
+  restoreRuns  RestoreRun[]
+  dataWipeRuns DataWipeRun[]
 
   @@map("backup_run_statuses")
 }

@@ -6,6 +6,7 @@ export {
   idbPutMany,
   idbDelete,
   idbClear,
+  clearOfflineData,
   type StoreName,
 } from "./db"
 export { getTerminalId } from "./terminal-id"

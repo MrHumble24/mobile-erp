@@ -162,6 +162,26 @@ export function dailyDigest(p: {
   );
 }
 
+/** Danger zone: the shop's data was erased (ADR 0057). Who + when, no secrets. */
+export function dataWiped(p: {
+  by: string;
+  at: Date;
+  contacts: boolean;
+  catalog: boolean;
+}): string {
+  const extras: string[] = [];
+  if (p.contacts) extras.push('mijozlar, hamkorlar va yetkazib beruvchilar');
+  if (p.catalog) extras.push('mahsulotlar katalogi');
+  const extraLine = extras.length ? `\nShuningdek: ${extras.join(', ')}` : '';
+  return (
+    `🗑️ Do'kon ma'lumotlari o'chirildi\n` +
+    `Kim: ${p.by}\n` +
+    `Qachon: ${date(p.at)}` +
+    extraLine +
+    `\nXavfsizlik zaxirasi avval olindi — kerak bo'lsa tiklash mumkin.`
+  );
+}
+
 function money(n: number): string {
   return `$${n.toLocaleString('en-US')}`;
 }

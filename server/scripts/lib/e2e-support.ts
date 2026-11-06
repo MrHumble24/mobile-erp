@@ -95,11 +95,39 @@ export async function backupUploads(
   return out;
 }
 
-/** Copy the current database (schema + applied migrations) into a throwaway. */
+/**
+ * Only a throwaway test database may be the source of a copy: its name must
+ * start `mbk_`, or end `_wipe` / `_test`, or be named explicitly in
+ * `E2E_ALLOW_SOURCE`. This stops an e2e pointed at a real shop (DATABASE_URL set
+ * to production) from dumping customer data to a temp folder.
+ */
+export function assertTestSource(url: string): void {
+  const name = new URL(url).pathname.replace(/^\//, '');
+  const allowed =
+    /^mbk_/.test(name) ||
+    /_(wipe|test)$/.test(name) ||
+    name === process.env.E2E_ALLOW_SOURCE;
+  if (!allowed) {
+    throw new Error(
+      `Refusing to copy from "${name}": the e2e source must be a test database ` +
+        `(name starting "mbk_" or ending "_wipe"/"_test"), or set ` +
+        `E2E_ALLOW_SOURCE="${name}" to override.`,
+    );
+  }
+}
+
+/** Copy the current database (schema + applied migrations + data) into a
+ * throwaway. Refuses a non-test source; always removes the temp dump. */
 export async function copyFromSource(name: string, work: string): Promise<void> {
+  const sourceUrl = required('DATABASE_URL');
+  assertTestSource(sourceUrl);
   const dump = join(work, `${name}-src.dump`);
-  await runPgDump(required('DATABASE_URL'), dump);
-  await runPgRestore(dbUrl(name), dump, {});
+  try {
+    await runPgDump(sourceUrl, dump);
+    await runPgRestore(dbUrl(name), dump, {});
+  } finally {
+    await fsp.rm(dump, { force: true });
+  }
 }
 
 /** Minimal fakes so RestoreRunner can drive real pg tools without Nest DI. */
