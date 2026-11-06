@@ -138,6 +138,15 @@ Five pieces every feature slice shares. The two bus APIs live on `AppContainer`
   shareTextFile(context, "sales.csv", csv, chooserTitle = t("sales.exportCsv", null))
   ```
 
+## Step 11
+Bonus points and receipt printing (ADR 0043/0047/0060) follow the store
+switches: points are formatted with `shared/lib/Points.kt` (`formatPoints`, no
+currency), the till plan is `features/sales/lib/BonusRedeem.kt` on top of the
+trade-in plan, checkout refusals map by server `code` in `CheckoutError.kt`,
+the receipt uses the server shop name and prints only when the shop switched
+printing on (58 or 80 mm), and price tags stay off the phones. A new till
+flag goes into `PosState.cleared()` so it survives the next sale.
+
 ## Deliberate wave-0 stubs
 - Dev-panel / offline / forbidden i18n keys are not yet in the web JSON (Gemini
   handoff); the raw key shows until added. The loader reads the client JSON as-is.

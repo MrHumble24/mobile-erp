@@ -15,6 +15,7 @@ import uz.malika.erp.features.sales.data.SaleStats
 import uz.malika.erp.features.sales.data.SalesRepository
 import uz.malika.erp.features.sales.data.UserOption
 import uz.malika.erp.features.sales.data.Warranty
+import uz.malika.erp.features.sales.lib.returnErrorKey
 import uz.malika.erp.shared.lib.PageState
 
 data class SalesListUi(val state: PageState<Sale> = PageState(), val error: String? = null)
@@ -145,8 +146,9 @@ class SalesViewModel(private val repo: SalesRepository) : ViewModel() {
                 clearWarranty()
                 refresh()
             } catch (e: Exception) {
-                val key = if ((e as? AppException)?.statusCode == 409) "sales.returnConflict"
-                else e.message ?: "common.error"
+                val key = returnErrorKey((e as? AppException)?.code)
+                    ?: e.message?.takeIf { it.isNotBlank() }
+                    ?: if ((e as? AppException)?.statusCode == 409) "sales.returnConflict" else "common.error"
                 _ret.value = ReturnUi(error = key)
             }
         }
