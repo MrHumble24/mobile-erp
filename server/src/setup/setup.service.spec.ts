@@ -157,7 +157,7 @@ describe('SetupService', () => {
     expect(res.accessToken).toBe('mock-access-token-xyz');
     expect(res.user.email).toBe('owner@test.uz');
     expect(mockSecrets.set).toHaveBeenCalledWith(
-      'TELEGRAM_BOT_TOKEN',
+      'provider.telegram.bot_token',
       'bot12345:token',
     );
 

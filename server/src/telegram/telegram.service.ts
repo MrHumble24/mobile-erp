@@ -2,6 +2,8 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { SettingsService } from '../settings/settings.service.js';
 import { SecretsService } from '../secrets/secrets.service.js';
 
+const TELEGRAM_BOT_TOKEN_SECRET = 'provider.telegram.bot_token';
+
 /**
  * Posts plain-text messages to a Telegram chat. No-ops (never throws) when the
  * bot token or chat id is missing, so a misconfigured bot never breaks a sale.
@@ -17,15 +19,26 @@ export class TelegramService {
   ) {}
 
   async getToken(): Promise<string | null> {
-    const stored = await this.secrets.get('TELEGRAM_BOT_TOKEN');
-    if (stored?.trim()) return stored.trim();
+    const state = await this.secrets.state(TELEGRAM_BOT_TOKEN_SECRET);
+    if (state === 'set') {
+      const stored = await this.secrets.read(TELEGRAM_BOT_TOKEN_SECRET);
+      if (stored?.trim()) return stored.trim();
+    }
     const env = process.env.TELEGRAM_BOT_TOKEN?.trim();
-    return env || null;
+    if (env) return env;
+    if (state === 'unreadable') {
+      throw new BadRequestException(
+        'Telegram bot token cannot be decrypted with the current master key; please type it again',
+      );
+    }
+    return null;
   }
 
   async isTokenSet(): Promise<boolean> {
-    const token = await this.getToken();
-    return !!token;
+    const state = await this.secrets.state(TELEGRAM_BOT_TOKEN_SECRET);
+    if (state === 'set') return true;
+    if (process.env.TELEGRAM_BOT_TOKEN?.trim()) return true;
+    return false;
   }
 
   async sendTestMessage(): Promise<{ success: boolean }> {
@@ -52,21 +65,25 @@ export class TelegramService {
         },
       );
       if (!res.ok) {
-        const body = await res.text().catch(() => '');
         throw new BadRequestException(
-          `Telegram API error (${res.status}): ${body}`,
+          `Telegram API returned status ${res.status}`,
         );
       }
       return { success: true };
     } catch (err: unknown) {
       if (err instanceof BadRequestException) throw err;
-      const msg = err instanceof Error ? err.message : String(err);
-      throw new BadRequestException(`Failed to reach Telegram API: ${msg}`);
+      throw new BadRequestException('Failed to reach Telegram API');
     }
   }
 
   async send(text: string): Promise<void> {
-    const token = await this.getToken();
+    let token: string | null = null;
+    try {
+      token = await this.getToken();
+    } catch {
+      this.logger.warn('Telegram bot token is unreadable; skipping send');
+      return;
+    }
     const { telegramChatId } = await this.settings.get();
     if (!token || !telegramChatId) {
       if (!this.warnedMissing) {
@@ -87,10 +104,10 @@ export class TelegramService {
         },
       );
       if (!res.ok) {
-        this.logger.warn(`Telegram sendMessage failed: ${res.status}`);
+        this.logger.warn(`Telegram sendMessage failed with status ${res.status}`);
       }
-    } catch (error) {
-      this.logger.warn(`Telegram sendMessage error: ${String(error)}`);
+    } catch {
+      this.logger.warn('Telegram sendMessage request failed');
     }
   }
 }

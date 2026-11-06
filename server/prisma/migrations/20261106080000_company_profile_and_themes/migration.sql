@@ -42,16 +42,6 @@ CREATE TABLE "company_profiles" (
     CONSTRAINT "company_profiles_themeCode_fkey" FOREIGN KEY ("themeCode") REFERENCES "themes"("code") ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- CreateTable: app_secrets
-CREATE TABLE "app_secrets" (
-    "name" TEXT NOT NULL,
-    "value" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "app_secrets_pkey" PRIMARY KEY ("name")
-);
-
 -- Data migration: populate company_profile if stores exist
 DO $$
 DECLARE

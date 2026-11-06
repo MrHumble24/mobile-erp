@@ -115,20 +115,6 @@ INSERT INTO bonus_transaction_types (code, label, "sortOrder") VALUES
   ('CORRECTION', 'Manual correction',    40)
 ON CONFLICT (code) DO NOTHING;
 
--- Stores & Settings (ADR 0023, ADR 0045).
-INSERT INTO stores (id, name, "updatedAt")
-SELECT gen_random_uuid(), 'Main store', now()
-WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Main store');
-
-INSERT INTO stores (id, name, "updatedAt")
-SELECT gen_random_uuid(), 'Branch 2', now()
-WHERE NOT EXISTS (SELECT 1 FROM stores WHERE name = 'Branch 2');
-
-INSERT INTO store_settings ("storeId", "updatedAt")
-SELECT s.id, now()
-FROM stores s
-WHERE NOT EXISTS (SELECT 1 FROM store_settings ss WHERE ss."storeId" = s.id);
-
 -- Permissions: "<resource>.<action>" ----------------------------------------
 INSERT INTO permissions (code, resource, action, description) VALUES
   ('device.read',          'device',      'read',      'View inventory'),
@@ -246,20 +232,4 @@ INSERT INTO role_permissions ("roleCode", "permissionCode") VALUES
   ('QC', 'shipment.read'), ('QC', 'shipment.manage'),
   ('QC', 'qc.read'), ('QC', 'qc.create'),
   ('QC', 'transfer.read'), ('QC', 'transfer.create'), ('QC', 'transfer.receive')
-ON CONFLICT DO NOTHING;
-
--- Dev user store assignments (Change 9, ADR 0045)
--- Owner belongs to all stores; cashier belongs only to Main store.
-INSERT INTO user_stores ("userId", "storeId")
-SELECT u.id, s.id
-FROM users u
-CROSS JOIN stores s
-WHERE u.email = 'owner@malika.uz'
-ON CONFLICT DO NOTHING;
-
-INSERT INTO user_stores ("userId", "storeId")
-SELECT u.id, s.id
-FROM users u
-JOIN stores s ON s.name = 'Main store'
-WHERE u.email = 'cashier@malika.uz'
 ON CONFLICT DO NOTHING;

@@ -259,7 +259,7 @@ export class SetupService implements OnApplicationBootstrap {
 
     if (dto.telegram?.botToken?.trim()) {
       await this.secrets.set(
-        'TELEGRAM_BOT_TOKEN',
+        'provider.telegram.bot_token',
         dto.telegram.botToken.trim(),
       );
     }

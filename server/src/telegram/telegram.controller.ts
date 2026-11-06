@@ -33,7 +33,7 @@ export class TelegramController {
   @Put('telegram-token')
   @RequirePermissions('settings.manage')
   async updateToken(@Body() dto: UpdateTelegramTokenDto) {
-    await this.secrets.set('TELEGRAM_BOT_TOKEN', dto.token.trim());
+    await this.secrets.set('provider.telegram.bot_token', dto.token.trim());
     return { isTokenSet: true };
   }
 

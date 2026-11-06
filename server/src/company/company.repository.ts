@@ -22,6 +22,11 @@ export interface UpdateCompanyData {
 export class CompanyRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async hasUsers(): Promise<boolean> {
+    const count = await this.prisma.user.count();
+    return count > 0;
+  }
+
   async getProfile() {
     return this.prisma.companyProfile.upsert({
       where: { id: 'default' },

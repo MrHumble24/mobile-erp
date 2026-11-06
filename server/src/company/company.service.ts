@@ -13,9 +13,12 @@ export class CompanyService {
   constructor(private readonly repo: CompanyRepository) {}
 
   async getBranding() {
-    const profile = await this.repo.getProfile();
+    const [hasUsers, profile] = await Promise.all([
+      this.repo.hasUsers(),
+      this.repo.getProfile(),
+    ]);
     return {
-      name: profile.name,
+      name: hasUsers ? profile.name : null,
       logoUrl: profile.logoFile ? `/uploads/${profile.logoFile}` : null,
       themeCode: profile.themeCode,
       defaultLanguage: profile.defaultLanguage,

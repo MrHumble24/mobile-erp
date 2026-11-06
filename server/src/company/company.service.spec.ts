@@ -7,6 +7,7 @@ describe('CompanyService', () => {
 
   beforeEach(() => {
     mockRepo = {
+      hasUsers: jest.fn().mockResolvedValue(true),
       getProfile: jest.fn().mockResolvedValue({
         id: 'default',
         name: 'Test Shop',
@@ -53,6 +54,12 @@ describe('CompanyService', () => {
     expect((branding as any).password).toBeUndefined();
     expect((branding as any).token).toBeUndefined();
     expect((branding as any).secret).toBeUndefined();
+  });
+
+  it('returns null shop name before setup (when no users exist)', async () => {
+    mockRepo.hasUsers.mockResolvedValue(false);
+    const branding = await service.getBranding();
+    expect(branding.name).toBeNull();
   });
 
   it('rejects SVG and non-image files on logo upload', async () => {
