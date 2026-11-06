@@ -1,15 +1,30 @@
 # secrets
 
-Encrypted secret storage for third-party tokens and credentials (ADR 0054).
+A small, general encrypted store for named secrets (handoff 023). The backup
+passphrase lives here; provider OAuth tokens will (handoff 024).
 
-## What it owns
+## Owns
 
-- AES-256-GCM symmetric encryption of stored secrets in the `app_secrets` table.
-- Master key generation and storage in `<DATA_DIR>/master.key` (mode 0o600).
-- `MASTER_KEY` environment variable override.
-- Secret management API for server-side code: `get()`, `set()`, `isSet()`, `delete()`.
+- `secrets` table — one row per secret, value sealed as `iv ++ tag ++ ciphertext`
+  with AES-256-GCM (`lib/aes-gcm.ts`).
+- The **app master key** (`AppKeyService`) — 32 random bytes made once
+  (exclusive-create, so a boot race cannot fork two keys) and kept in
+  `DATA_DIR/master.key` (owner-only; a group/other-readable file is warned),
+  never in the database. Env `APP_MASTER_KEY` (hex, or base64 that round-trips,
+  32 bytes) overrides the file.
+
+## Exposes (server code only — no HTTP here)
+
+- `SecretsService.set(name, value)` — seal and upsert.
+- `SecretsService.isSet(name)` — boolean; the only thing a route may surface.
+- `SecretsService.state(name)` — `set | missing | unreadable`. Lets a feature
+  answer a clear 400 (not 500) when the master key no longer opens the secret.
+- `SecretsService.read(name)` — plaintext, or null; throws on `unreadable`.
+- `SecretsService.clear(name)`.
+
+Global module, so any feature can inject it.
 
 ## Must never
 
-- Return any secret plaintext over HTTP or in any client/audit response.
-- Log secrets or write unencrypted credentials to disk or the database.
+- Return a secret value from any route, log it, or put it in a URL.
+- Keep the master key in the database (a leaked dump stays unreadable).

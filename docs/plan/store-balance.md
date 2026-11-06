@@ -554,7 +554,7 @@ never shown; made by hand and every day at a chosen time; the last 14 are
 kept per place; owner only; a restore is all or nothing, makes a safety
 backup first, and asks for the shop's name and the owner's password.
 
-Status: being built (see Change 17's last paragraph). The handoff is
+Status: built and merged on 2026-11-06 (row 13 in the progress table). The handoff is
 `docs/handoffs/gemini/023-backup-and-restore.md`. Everything not started is
 listed in `docs/plan/backlog.md`.
 
@@ -584,6 +584,24 @@ Status: backlog. The handoff is
 Change 16 (backup and restore) was started on 2026-11-06 on the user's word,
 built by Opus 4.8 and checked by Claude; its backup passphrase and provider
 logins follow the same "in the app, encrypted" rule.
+
+### Change 18 — danger zone: erase the shop's data
+
+What the user said (2026-11-06): one feature, a danger zone. It should
+clean up everything inside the app, but it should warn us.
+
+Decided by Claude as defaults (the user can change any): it always erases
+what the shop did (sales, stock, money, repairs, orders, points); the owner
+may also tick "customers, partners, suppliers" and "the product catalog";
+it never erases users, branches, settings, saved logins, backups or the
+lists the system needs; a safety backup is always made first, so an erase
+can be undone by restoring it; the owner types the shop's name and their
+password and ticks "I understand"; owner only; everyone is signed out
+afterwards. Going back to the very first start (also erasing users and
+settings) waits for the setup wizard.
+
+Status: being built by Opus 4.8, run and checked by Claude. The handoff is
+`docs/handoffs/opus48/002-danger-zone.md`.
 
 ## Order of work (proposal, for discussion)
 
@@ -718,6 +736,7 @@ Progress (updated as each step lands):
 | 10 Repairs | merged (`86293fc`, 495 tests), walk-through matched its arithmetic (ticket 500,000, parts 60,000, profit 440,000; outside master 150,000 paid out) | merged (`1402f53`); in a browser on an outside-master ticket: marked ready, giving back while money was owed asked for a reason, 300,000 taken in cash, given back; profit showed 180,000 (300,000 − 120,000 paid to the master) | merged (`16759fc`) | merged (`c0d2a4b`) | ADR 0040. Change 13. A setting, off by default. Own or outside master, parts from stock, deposit and final payment, warranty typed on each ticket. No passcode or ID document is stored. |
 | 11 Bonus points, printing switches, buying back a phone we sold | merged (`f9b6307`, 520 tests) | in parts through OpenCode: settings switches and the customer's points merged; paying with points being built; then points on the receipt, printing, buy-back messages | not started | not started | Bonus points and printing are switches, off by default. Buying back closes the gap noted in step 9. |
 | 12 Branches (many stores, users per store, stock transfers) | merged (`7b430f1`, 567 tests). Built by Gemini (handoffs 018, 019, 021), checked by Claude: live attack tests (a cashier of one store cannot sell, return or push a sale into another), two security passes | merged with the server; seen in a browser: store switch, all-stores balance (the rows add up), a transfer sent from Main store and received in Branch 2 | not started: the apps do not send the store yet, so a user of two stores gets an error there | not started | ADR 0045, 0046. Change 9. The main test database is `mobile_erp_main`. PRD text for branches is still owed. |
+| 13 Backup and restore, with storage places | merged (`5fdd123`, 648 tests). Built by Opus 4.8 (handoff 023), run and checked by Claude: two live restores on throwaway databases, three security passes, two fix rounds | merged with the server; the Backups page seen in a browser | not started | not started | ADR 0051, 0052, 0056. Change 16. Telegram, Google Drive and OneDrive were tested against fake servers only: the user must try each once. The data folder must survive a redeploy. One server process only. |
 
 Security check of the balance ledger (2026-11-05, read-only): no
 critical problems. Two serious ones, both being fixed on the server

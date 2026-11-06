@@ -32,6 +32,8 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
     saleId: first.saleId,
     soldAt: first.soldAt,
     cashier: first.cashier,
+    store: first.store,
+    footer: first.footer,
     customer: first.customer,
     items,
     total: String(total),

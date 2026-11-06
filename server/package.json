@@ -24,9 +24,8 @@
     "prisma:migrate": "prisma migrate dev",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "ref:import": "tsx scripts/ref-import.ts",
-    "backup:db": "sh scripts/backup-db.sh",
-    "backup:verify": "sh scripts/verify-backup.sh",
-    "backup:restore": "sh scripts/restore-db.sh",
+    "backup:open": "tsx scripts/open-backup.ts",
+    "test:restore": "tsx scripts/restore.e2e.ts",
     "graphify": "graphify update ."
   },
   "dependencies": {
@@ -47,7 +46,8 @@
     "helmet": "^8.3.0",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "tar": "7.5.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

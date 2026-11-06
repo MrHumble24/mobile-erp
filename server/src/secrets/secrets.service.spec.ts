@@ -1,70 +1,58 @@
-import { rmSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { AppKeyService } from './app-key.service.js';
 import { SecretsService } from './secrets.service.js';
+import type { SecretsRepository } from './secrets.repository.js';
+
+/** In-memory stand-in for the Prisma repo. */
+function fakeRepo() {
+  const store = new Map<string, Buffer>();
+  return {
+    store,
+    upsert: jest.fn((name: string, sealed: Buffer) => {
+      store.set(name, sealed);
+      return Promise.resolve();
+    }),
+    getSealed: jest.fn((name: string) =>
+      Promise.resolve(store.get(name) ?? null),
+    ),
+    exists: jest.fn((name: string) => Promise.resolve(store.has(name))),
+    delete: jest.fn((name: string) => {
+      store.delete(name);
+      return Promise.resolve();
+    }),
+  } as unknown as SecretsRepository & { store: Map<string, Buffer> };
+}
 
 describe('SecretsService', () => {
-  let service: SecretsService;
-  const testDataDir = join(process.cwd(), 'test-data-secrets');
-  const mockSecrets = new Map<string, string>();
+  const key = randomBytes(32);
+  const appKey = { getKey: () => key } as AppKeyService;
 
-  const mockPrisma = {
-    appSecret: {
-      findUnique: jest.fn(({ where: { name } }) => {
-        const val = mockSecrets.get(name);
-        return Promise.resolve(val ? { name, value: val } : null);
-      }),
-      upsert: jest.fn(({ where: { name }, create, update }) => {
-        const val = create?.value || update?.value;
-        mockSecrets.set(name, val);
-        return Promise.resolve({ name, value: val });
-      }),
-      deleteMany: jest.fn(({ where: { name } }) => {
-        mockSecrets.delete(name);
-        return Promise.resolve({ count: 1 });
-      }),
-    },
-  } as any;
-
-  beforeEach(() => {
-    process.env.DATA_DIR = testDataDir;
-    delete process.env.MASTER_KEY;
-    mockSecrets.clear();
-    service = new SecretsService(mockPrisma);
+  it('seals on set and reads back the value', async () => {
+    const repo = fakeRepo();
+    const svc = new SecretsService(repo, appKey);
+    await svc.set('backup.passphrase', 'hunter2');
+    // Stored value is sealed, not the plaintext.
+    expect(repo.store.get('backup.passphrase')!.toString('utf8')).not.toContain(
+      'hunter2',
+    );
+    expect(await svc.read('backup.passphrase')).toBe('hunter2');
   });
 
-  afterAll(() => {
-    if (existsSync(testDataDir)) {
-      rmSync(testDataDir, { recursive: true, force: true });
-    }
-    delete process.env.DATA_DIR;
+  it('reports set / not set and returns null for a missing secret', async () => {
+    const svc = new SecretsService(fakeRepo(), appKey);
+    expect(await svc.isSet('nope')).toBe(false);
+    expect(await svc.read('nope')).toBeNull();
+    await svc.set('nope', 'x');
+    expect(await svc.isSet('nope')).toBe(true);
   });
 
-  it('generates master key file if missing and encrypts/decrypts symmetrically', () => {
-    const key = service.initMasterKey();
-    expect(key).toBeInstanceOf(Buffer);
-    expect(key.length).toBe(32);
-
-    const plaintext = 'super-secret-telegram-bot-token-12345';
-    const encrypted = service.encrypt(plaintext);
-    expect(encrypted).not.toBe(plaintext);
-    expect(encrypted.split(':')).toHaveLength(3);
-
-    const decrypted = service.decrypt(encrypted);
-    expect(decrypted).toBe(plaintext);
-  });
-
-  it('stores, tests and retrieves secret via mock database', async () => {
-    expect(await service.isSet('TEST_KEY')).toBe(false);
-    expect(await service.get('TEST_KEY')).toBeNull();
-
-    await service.set('TEST_KEY', 'my-secret-value');
-    expect(await service.isSet('TEST_KEY')).toBe(true);
-
-    const retrieved = await service.get('TEST_KEY');
-    expect(retrieved).toBe('my-secret-value');
-
-    await service.delete('TEST_KEY');
-    expect(await service.isSet('TEST_KEY')).toBe(false);
-    expect(await service.get('TEST_KEY')).toBeNull();
+  it('cannot read a value sealed under a different master key', async () => {
+    const repo = fakeRepo();
+    const svc = new SecretsService(repo, appKey);
+    await svc.set('k', 'v');
+    const other = new SecretsService(repo, {
+      getKey: () => randomBytes(32),
+    } as AppKeyService);
+    await expect(other.read('k')).rejects.toThrow();
   });
 });

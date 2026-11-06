@@ -1,0 +1,10 @@
+# Railway / Nixpacks build config.
+#
+# The backups module (handoff 023, ADR 0051) shells out to pg_dump and
+# pg_restore, which are not in the default Node image. "..." keeps Nixpacks'
+# auto-detected packages (Node, pnpm) and appends the Postgres 17 client, so the
+# binaries land on PATH. The client major must be >= the managed database's
+# major (a backup refuses an older client); bump this when Railway's Postgres is
+# upgraded, or point PG_BIN_DIR at a specific install.
+[phases.setup]
+nixPkgs = ["...", "postgresql_17"]

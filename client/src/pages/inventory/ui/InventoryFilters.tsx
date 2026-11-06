@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { RotateCcw } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { cn } from "@/shared/lib/utils"
@@ -98,6 +99,7 @@ export interface InventoryFiltersProps {
   filters: InventoryFilterState
   models: DeviceModelView[]
   onScan?: (imei: string) => void
+  actions?: ReactNode
 }
 
 function FiltersInputs({ filters, models, onScan }: InventoryFiltersProps) {
@@ -128,7 +130,7 @@ function FiltersInputs({ filters, models, onScan }: InventoryFiltersProps) {
   )
 }
 
-export function InventoryFilters({ filters, models, onScan }: InventoryFiltersProps) {
+export function InventoryFilters({ filters, models, onScan, actions }: InventoryFiltersProps) {
   const { t } = useI18n()
   const activeCount = [
     Boolean(filters.searchInput),
@@ -149,17 +151,20 @@ export function InventoryFilters({ filters, models, onScan }: InventoryFiltersPr
       <FiltersInputs filters={filters} models={models} onScan={onScan} />
       <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
         <StatusPills activeCode={filters.statusCode} onChange={filters.setStatusCode} />
-        {activeCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearAll}
-            className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5 gap-1.5"
-          >
-            <RotateCcw className="size-3.5" />
-            {t("inventory.clearFilters")} ({activeCount})
-          </Button>
-        )}
+        <div className="flex items-center gap-1.5">
+          {activeCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAll}
+              className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5 gap-1.5"
+            >
+              <RotateCcw className="size-3.5" />
+              {t("inventory.clearFilters")} ({activeCount})
+            </Button>
+          )}
+          {actions}
+        </div>
       </div>
     </div>
   )

@@ -1,142 +1,60 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { randomBytes, createCipheriv, createDecipheriv } from 'node:crypto';
-import {
-  existsSync,
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  chmodSync,
-} from 'node:fs';
-import { join } from 'node:path';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { Injectable } from '@nestjs/common';
+import { AppKeyService } from './app-key.service.js';
+import { open, seal } from './lib/aes-gcm.js';
+import { SecretsRepository } from './secrets.repository.js';
 
-const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12; // 96-bit recommended for GCM
+/**
+ * A secret's state: `set` (present and readable with the current master key),
+ * `missing` (never stored), `unreadable` (stored but sealed under a different
+ * master key — the DATA_DIR file was lost or replaced; T1).
+ */
+export type SecretState = 'set' | 'missing' | 'unreadable';
 
+/**
+ * Small, general secrets store: named values sealed with AES-256-GCM under the
+ * app master key. Only server code reads a value (`read`); no controller may.
+ * The HTTP surface this backs can say which {@link SecretState} it is in, never
+ * what the value is.
+ */
 @Injectable()
-export class SecretsService implements OnModuleInit {
-  private masterKey: Buffer | null = null;
-  private readonly dataDir = process.env.DATA_DIR?.trim() || './data';
+export class SecretsService {
+  constructor(
+    private readonly repo: SecretsRepository,
+    private readonly appKey: AppKeyService,
+  ) {}
 
-  constructor(private readonly prisma: PrismaService) {}
+  async set(name: string, value: string): Promise<void> {
+    const sealed = seal(this.appKey.getKey(), Buffer.from(value, 'utf8'));
+    await this.repo.upsert(name, sealed);
+  }
 
-  onModuleInit(): void {
-    this.initMasterKey();
+  isSet(name: string): Promise<boolean> {
+    return this.repo.exists(name);
+  }
+
+  /** Classify a secret without throwing — `unreadable` when the key is wrong. */
+  async state(name: string): Promise<SecretState> {
+    const sealed = await this.repo.getSealed(name);
+    if (!sealed) return 'missing';
+    try {
+      open(this.appKey.getKey(), sealed);
+      return 'set';
+    } catch {
+      return 'unreadable';
+    }
   }
 
   /**
-   * Initializes the 32-byte master key.
-   * Checks process.env.MASTER_KEY first; otherwise reads or creates
-   * <DATA_DIR>/master.key with mode 0o600 (owner-only permissions).
+   * Server-only. Returns null when the secret is not set; throws when it is
+   * present but cannot be decrypted (the caller maps this to a clear 400).
    */
-  initMasterKey(): Buffer {
-    if (this.masterKey) return this.masterKey;
-
-    const envKey = process.env.MASTER_KEY?.trim();
-    if (envKey) {
-      this.masterKey = Buffer.from(
-        envKey,
-        envKey.length === 64 ? 'hex' : 'utf8',
-      ).subarray(0, 32);
-      if (this.masterKey.length < 32) {
-        // Pad to 32 bytes deterministically if short
-        this.masterKey = Buffer.concat([
-          this.masterKey,
-          Buffer.alloc(32 - this.masterKey.length),
-        ]);
-      }
-      return this.masterKey;
-    }
-
-    mkdirSync(this.dataDir, { recursive: true });
-    const keyPath = join(this.dataDir, 'master.key');
-
-    if (existsSync(keyPath)) {
-      const hex = readFileSync(keyPath, 'utf8').trim();
-      this.masterKey = Buffer.from(hex, 'hex');
-    } else {
-      this.masterKey = randomBytes(32);
-      writeFileSync(keyPath, this.masterKey.toString('hex'), {
-        mode: 0o600,
-        encoding: 'utf8',
-      });
-      try {
-        chmodSync(keyPath, 0o600);
-      } catch {
-        // Ignore chmod errors on systems without POSIX permissions
-      }
-    }
-
-    return this.masterKey;
+  async read(name: string): Promise<string | null> {
+    const sealed = await this.repo.getSealed(name);
+    if (!sealed) return null;
+    return open(this.appKey.getKey(), sealed).toString('utf8');
   }
 
-  encrypt(plaintext: string): string {
-    const key = this.initMasterKey();
-    const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, key, iv);
-    const encrypted = Buffer.concat([
-      cipher.update(plaintext, 'utf8'),
-      cipher.final(),
-    ]);
-    const tag = cipher.getAuthTag();
-
-    // Format: iv:tag:ciphertext (all in hex)
-    return `${iv.toString('hex')}:${tag.toString('hex')}:${encrypted.toString('hex')}`;
-  }
-
-  decrypt(payload: string): string {
-    const key = this.initMasterKey();
-    const parts = payload.split(':');
-    if (parts.length !== 3) {
-      throw new Error('Invalid encrypted payload format');
-    }
-    const [ivHex, tagHex, encryptedHex] = parts;
-    const iv = Buffer.from(ivHex, 'hex');
-    const tag = Buffer.from(tagHex, 'hex');
-    const encrypted = Buffer.from(encryptedHex, 'hex');
-
-    const decipher = createDecipheriv(ALGORITHM, key, iv);
-    decipher.setAuthTag(tag);
-    const decrypted = Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final(),
-    ]);
-    return decrypted.toString('utf8');
-  }
-
-  async isSet(name: string): Promise<boolean> {
-    const row = await this.prisma.appSecret.findUnique({
-      where: { name },
-      select: { name: true },
-    });
-    return !!row;
-  }
-
-  async get(name: string): Promise<string | null> {
-    const row = await this.prisma.appSecret.findUnique({
-      where: { name },
-      select: { value: true },
-    });
-    if (!row) return null;
-    try {
-      return this.decrypt(row.value);
-    } catch {
-      return null;
-    }
-  }
-
-  async set(name: string, plaintext: string): Promise<void> {
-    const encrypted = this.encrypt(plaintext);
-    await this.prisma.appSecret.upsert({
-      where: { name },
-      create: { name, value: encrypted },
-      update: { value: encrypted },
-    });
-  }
-
-  async delete(name: string): Promise<void> {
-    await this.prisma.appSecret.deleteMany({
-      where: { name },
-    });
+  async clear(name: string): Promise<void> {
+    await this.repo.delete(name);
   }
 }

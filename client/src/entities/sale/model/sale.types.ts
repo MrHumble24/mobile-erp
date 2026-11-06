@@ -116,6 +116,10 @@ export interface ReceiptView {
   saleId: string
   soldAt: string
   cashier: string
+  /** Shop identity for the receipt header, from the store record (ADR 0043). */
+  store: { name: string | null; address: string | null; phone: string | null }
+  /** Free-text receipt footer (store_settings.receiptFooter); the server sends it as `footer`. */
+  footer: string | null
   items: ReceiptItem[]
   total: string
   /** Sum of list prices and total discount, when a discount was given (ADR 0034). */

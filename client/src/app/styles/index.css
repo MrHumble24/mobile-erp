@@ -257,8 +257,36 @@
     box-shadow: none !important;
     border: none !important;
   }
+  .printable-cheque[data-paper="80"] {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    page: receipt-80;
+  }
   @page {
     size: 58mm auto;
     margin: 0;
+  }
+  @page receipt-80 {
+    size: 80mm auto;
+    margin: 0;
+  }
+  .printable-tags,
+  .printable-tags * {
+    visibility: visible !important;
+  }
+  /* The sheet is a direct child of <body> (a portal). While it is there, nothing
+     else is laid out, so the labels flow over as many pages as they need. */
+  body:has(> .printable-tags) > :not(.printable-tags) {
+    display: none !important;
+  }
+  .printable-tags {
+    display: grid !important;
+    position: static !important;
+    width: 100% !important;
+    page: price-tags;
+  }
+  @page price-tags {
+    size: A4;
+    margin: 8mm;
   }
 }

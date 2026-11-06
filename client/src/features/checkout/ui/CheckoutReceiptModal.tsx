@@ -2,6 +2,7 @@ import * as React from "react"
 import { CheckCircle2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useSaleReceipts, ReceiptPrintView, type ReceiptView } from "@/entities/sale"
+import { usePrintSettings } from "@/entities/settings"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Label } from "@/shared/ui/label"
 import { Switch } from "@/shared/ui/switch"
@@ -31,7 +32,7 @@ export interface CheckoutReceiptModalProps {
   onNewSale?: () => void
 }
 
-function AutoPrintToggle({ open, receipt }: { open: boolean; receipt: ReceiptView | null }) {
+function AutoPrintToggle({ open, receipt, canPrint }: { open: boolean; receipt: ReceiptView | null; canPrint: boolean }) {
   const { t } = useI18n()
   const [autoPrint, setAutoPrint] = React.useState(readAutoPrint)
   const printedRef = React.useRef(false)
@@ -41,11 +42,11 @@ function AutoPrintToggle({ open, receipt }: { open: boolean; receipt: ReceiptVie
   }, [open])
 
   React.useEffect(() => {
-    if (open && autoPrint && receipt && !printedRef.current) {
+    if (canPrint && open && autoPrint && receipt && !printedRef.current) {
       printedRef.current = true
       window.print()
     }
-  }, [open, autoPrint, receipt])
+  }, [canPrint, open, autoPrint, receipt])
 
   return (
     <Label className="print:hidden flex items-center justify-center gap-2 text-xs text-muted-foreground pb-1">
@@ -65,10 +66,14 @@ function ReceiptBody({
   receipt,
   isLoading,
   onNewSale,
+  paperWidthMm,
+  canPrint,
 }: {
   receipt: ReceiptView | null
   isLoading: boolean
   onNewSale: () => void
+  paperWidthMm: 58 | 80
+  canPrint: boolean
 }) {
   const { t } = useI18n()
   return (
@@ -76,7 +81,7 @@ function ReceiptBody({
       {isLoading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
       ) : receipt ? (
-        <ReceiptPrintView receipt={receipt} onNewSale={onNewSale} />
+        <ReceiptPrintView receipt={receipt} onNewSale={onNewSale} paperWidthMm={paperWidthMm} canPrint={canPrint} />
       ) : (
         <div className="py-12 text-center text-sm text-muted-foreground">{t("common.notFound")}</div>
       )}
@@ -92,6 +97,7 @@ export function CheckoutReceiptModal({
 }: CheckoutReceiptModalProps) {
   const { t } = useI18n()
   const { receipt, isLoading } = useSaleReceipts(open ? saleIds : [])
+  const { receiptPrintingEnabled, receiptPaperWidthMm } = usePrintSettings()
 
   const handleNewSale = () => {
     onOpenChange(false)
@@ -110,8 +116,16 @@ export function CheckoutReceiptModal({
             {t("pos.chequeSubtitle")}
           </DialogDescription>
         </DialogHeader>
-        <AutoPrintToggle open={open} receipt={receipt} />
-        <ReceiptBody receipt={receipt} isLoading={isLoading} onNewSale={handleNewSale} />
+        {receiptPrintingEnabled && (
+          <AutoPrintToggle open={open} receipt={receipt} canPrint={receiptPrintingEnabled} />
+        )}
+        <ReceiptBody
+          receipt={receipt}
+          isLoading={isLoading}
+          onNewSale={handleNewSale}
+          paperWidthMm={receiptPaperWidthMm}
+          canPrint={receiptPrintingEnabled}
+        />
       </DialogPopup>
     </Dialog>
   )

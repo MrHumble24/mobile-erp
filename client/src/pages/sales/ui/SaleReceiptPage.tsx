@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router"
 import { ArrowLeft, Printer, Copy, Check } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useSaleReceipt, ReceiptPaper, formatReceiptText, type ReceiptView } from "@/entities/sale"
+import { usePrintSettings } from "@/entities/settings"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 
-function ReceiptActionBar({ receipt }: { receipt?: ReceiptView }) {
+function ReceiptActionBar({ receipt, canPrint }: { receipt?: ReceiptView; canPrint: boolean }) {
   const { t } = useI18n()
   const [copied, setCopied] = React.useState(false)
 
@@ -30,10 +31,12 @@ function ReceiptActionBar({ receipt }: { receipt?: ReceiptView }) {
         {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
         <span>{copied ? t("common.yes") : t("pos.copyCheque")}</span>
       </Button>
-      <Button size="sm" onClick={() => window.print()} className="gap-1.5 rounded-full text-xs shadow-xs">
-        <Printer className="size-3.5" />
-        <span>{t("pos.printCheque")}</span>
-      </Button>
+      {canPrint && (
+        <Button size="sm" onClick={() => window.print()} className="gap-1.5 rounded-full text-xs shadow-xs">
+          <Printer className="size-3.5" />
+          <span>{t("pos.printCheque")}</span>
+        </Button>
+      )}
     </div>
   )
 }
@@ -43,6 +46,7 @@ export function SaleReceiptPage() {
   const navigate = useNavigate()
   const { t } = useI18n()
   const { data: receipt, isLoading } = useSaleReceipt(id || null)
+  const { receiptPrintingEnabled, receiptPaperWidthMm } = usePrintSettings()
 
   return (
     <div className="space-y-6">
@@ -56,13 +60,19 @@ export function SaleReceiptPage() {
           <ArrowLeft className="size-4" />
           <span>{t("pos.backToSales")}</span>
         </Button>
-        <ReceiptActionBar receipt={receipt} />
+        <ReceiptActionBar receipt={receipt} canPrint={receiptPrintingEnabled} />
       </div>
 
       <div className="flex justify-center py-4">
         {isLoading && <div className="py-20 text-center text-sm text-muted-foreground">{t("common.loading")}</div>}
         {!isLoading && !receipt && <div className="py-20 text-center text-sm text-muted-foreground">{t("common.notFound")}</div>}
-        {receipt && <ReceiptPaper receipt={receipt} />}
+        {receipt && (
+          <ReceiptPaper
+            receipt={receipt}
+            paperWidthMm={receiptPaperWidthMm}
+            canPrint={receiptPrintingEnabled}
+          />
+        )}
       </div>
     </div>
   )
