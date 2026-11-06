@@ -50,7 +50,7 @@ object OrderTimeFormat {
     fun format(
         createdAtIso: String,
         nowEpochMs: Long,
-        translate: (String, Map<String, Any>?) -> String,
+        translate: (String, Map<String, Any?>?) -> String,
     ): String {
         val epoch = parseIsoToEpochMs(createdAtIso) ?: return createdAtIso
         val ago = computeTimeAgo(epoch, nowEpochMs)

@@ -8,6 +8,7 @@ import uz.malika.erp.features.devconsole.DevConsoleFeature
 import uz.malika.erp.features.finance.FinanceFeature
 import uz.malika.erp.features.inventory.InventoryFeature
 import uz.malika.erp.features.nasiya.NasiyaFeature
+import uz.malika.erp.features.orders.OrdersFeature
 import uz.malika.erp.features.procurement.ProcurementFeature
 import uz.malika.erp.features.purchases.PurchasesFeature
 import uz.malika.erp.features.repairs.RepairsFeature
@@ -34,6 +35,7 @@ object FeatureRegistry {
         CustomsFeature,
         PurchasesFeature,
         RepairsFeature,
+        OrdersFeature,
         SalesFeature,
         InventoryFeature,
         StockFeature,
@@ -51,7 +53,7 @@ object FeatureRegistry {
      */
     private val navOrder: List<String> = listOf(
         "dashboard", "pos", "sales", "inventory", "stock", "shipments", "qc",
-        "consignments", "partners", "customers", "expenses", "balance", "credits", "shifts", "purchases", "repairs", "customs", "reports",
+        "consignments", "partners", "customers", "expenses", "balance", "credits", "shifts", "purchases", "repairs", "orders", "customs", "reports",
         "users", "settings", "sync",
     )
 
