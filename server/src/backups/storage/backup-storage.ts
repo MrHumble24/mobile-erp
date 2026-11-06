@@ -11,6 +11,9 @@ export interface BackupFile {
 export interface Destination {
   config: unknown;
   secret: unknown;
+  /** Persist a rotated OAuth refresh token (Microsoft rotates on every refresh,
+   * so the adapter stores the new one in place of the old). */
+  onRefreshToken?: (token: string) => Promise<void>;
 }
 
 /** A provider's own handle for a stored backup (filename, message id, file id). */

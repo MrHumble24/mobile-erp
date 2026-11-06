@@ -29,11 +29,13 @@ describe('GoogleDriveStorage', () => {
   let uploads: Map<string, Buffer>;
   let tokenStatus: number;
   let failNextPut: boolean;
+  let badLocation: boolean;
 
   beforeEach(async () => {
     uploads = new Map();
     tokenStatus = 200;
     failNextPut = false;
+    badLocation = false;
     const session = new Map<string, Buffer[]>();
     server = await startFake((req, res, body) => {
       const url = req.url ?? '';
@@ -49,7 +51,8 @@ describe('GoogleDriveStorage', () => {
       if (url.startsWith('/upload/drive/v3/files?uploadType=resumable')) {
         const id = `up${session.size}`;
         session.set(id, []);
-        res.setHeader('location', `${server.url}/session/${id}`);
+        const host = badLocation ? 'http://evil.example.com' : server.url;
+        res.setHeader('location', `${host}/session/${id}`);
         return sendJson(res, 200, {});
       }
       if (url.startsWith('/session/') && req.method === 'PUT') {
@@ -126,6 +129,18 @@ describe('GoogleDriveStorage', () => {
         dest,
       ),
     ).rejects.toBeInstanceOf(ProviderAuthError);
+  });
+
+  it('refuses a resumable session URL on an unexpected host', async () => {
+    badLocation = true;
+    const path = join(dir, 'd.mbk');
+    writeFileSync(path, Buffer.from('x'));
+    await expect(
+      new GoogleDriveStorage().upload(
+        { path, name: 'd.mbk', sizeBytes: 1 },
+        dest,
+      ),
+    ).rejects.toThrow(/unexpected host/);
   });
 });
 

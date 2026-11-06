@@ -10,7 +10,11 @@ import type {
 import { putChunks } from './lib/chunked-upload.js';
 import { refreshAccessToken } from './lib/oauth-client.js';
 import { microsoftSpec } from './lib/oauth-providers.js';
-import { fetchJson, ProviderError } from './lib/provider-http.js';
+import {
+  fetchJson,
+  fetchWithTimeout,
+  ProviderError,
+} from './lib/provider-http.js';
 
 // OneDrive upload chunks must be a multiple of 320 KiB.
 const CHUNK_BYTES = 320 * 1024 * 20; // ~6.25 MB
@@ -32,8 +36,8 @@ function secretOf(dest: Destination): Required<MsSecret> {
 /**
  * Microsoft OneDrive via `Files.ReadWrite.AppFolder` (only the app's own
  * folder). Chunked upload session; the drive owner gives the account name.
- * Note: Microsoft rotates refresh tokens; this adapter does not persist the
- * rotated token, so a reconnect may be needed periodically (marked NEEDS_RECONNECT).
+ * Microsoft rotates the refresh token on every refresh, so the new one is
+ * sealed back via `dest.onRefreshToken` (item 6) — the place does not drift.
  */
 @Injectable()
 export class OneDriveStorage implements BackupStorage {
@@ -56,6 +60,15 @@ export class OneDriveStorage implements BackupStorage {
       clientSecret,
       refreshToken,
     });
+    // Microsoft rotates the refresh token; seal the new one so we do not drift
+    // into "needs reconnecting" (item 6).
+    if (
+      t.refreshToken &&
+      t.refreshToken !== refreshToken &&
+      dest.onRefreshToken
+    ) {
+      await dest.onRefreshToken(t.refreshToken);
+    }
     return t.accessToken;
   }
 
@@ -66,7 +79,7 @@ export class OneDriveStorage implements BackupStorage {
   async validate(config: unknown, secret: unknown): Promise<void> {
     const dest = { config, secret };
     const token = await this.token(dest);
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.api()}/v1.0/me/drive/special/approot:/malika-backup-test:/content`,
       {
         method: 'PUT',
@@ -128,7 +141,7 @@ export class OneDriveStorage implements BackupStorage {
 
   async download(ref: RemoteRef, dest: Destination): Promise<Readable> {
     const token = await this.token(dest);
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.api()}/v1.0/me/drive/items/${encodeURIComponent(ref.ref)}/content`,
       { headers: this.auth(token) },
     );
@@ -139,12 +152,9 @@ export class OneDriveStorage implements BackupStorage {
 
   async remove(ref: RemoteRef, dest: Destination): Promise<void> {
     const token = await this.token(dest);
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.api()}/v1.0/me/drive/items/${encodeURIComponent(ref.ref)}`,
-      {
-        method: 'DELETE',
-        headers: this.auth(token),
-      },
+      { method: 'DELETE', headers: this.auth(token) },
     );
     if (!res.ok && res.status !== 404)
       throw new ProviderError(`OneDrive delete failed (${res.status})`);

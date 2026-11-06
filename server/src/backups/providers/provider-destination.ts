@@ -22,6 +22,10 @@ export class ProviderDestination {
     for (const kind of this.secrets.kinds(code)) {
       secret[kind] = await this.secrets.read(code, kind);
     }
-    return { config, secret };
+    // Rotated refresh tokens are sealed back in place of the old one (item 6).
+    const onRefreshToken = this.secrets.kinds(code).includes('refreshToken')
+      ? (token: string) => this.secrets.set(code, 'refreshToken', token)
+      : undefined;
+    return { config, secret, onRefreshToken };
   }
 }

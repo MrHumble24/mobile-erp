@@ -17,6 +17,7 @@ import { BackupsRepository } from './backups.repository.js';
 import { BackupsService } from './backups.service.js';
 import { RestoreRepository } from './restore.repository.js';
 import { makeStaging, uploadsDir } from './lib/backup-config.js';
+import { byteCap, maxUploadBytes } from './lib/byte-cap.js';
 import { knownMigrations } from './lib/backup-manifest.js';
 import { openBackupFile } from './lib/mbk-format.js';
 import { UploadSwap } from './lib/uploads-swap.js';
@@ -248,7 +249,8 @@ export class RestoreService {
     }
     const { stream, name } = await this.backups.download(source.runId);
     const path = join(work, name);
-    await pipeline(stream, createWriteStream(path));
+    // Cap the bytes while staging, so a remote copy cannot fill the disk (item 3).
+    await pipeline(stream, byteCap(maxUploadBytes()), createWriteStream(path));
     return { path, label: name, sourceRunId: source.runId };
   }
 }

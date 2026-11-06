@@ -38,9 +38,12 @@ describe('OneDriveStorage', () => {
       if (url.endsWith('/token')) {
         if (tokenStatus !== 200)
           return sendJson(res, tokenStatus, { error: 'invalid_grant' });
+        // Rotate: the incoming refresh token becomes the next one (rt → rt2 → rt3).
+        const incoming =
+          new URLSearchParams(body.toString()).get('refresh_token') ?? 'rt';
         return sendJson(res, 200, {
           access_token: 'at',
-          refresh_token: 'rt2',
+          refresh_token: `${incoming}x`,
           expires_in: 3600,
         });
       }
@@ -106,6 +109,37 @@ describe('OneDriveStorage', () => {
     await expect(
       new OneDriveStorage().upload({ path, name: 'c.mbk', sizeBytes: 1 }, dest),
     ).rejects.toBeInstanceOf(ProviderAuthError);
+  });
+
+  it('persists the rotated refresh token on each refresh (item 6)', async () => {
+    const path = join(dir, 'r.mbk');
+    writeFileSync(path, Buffer.from('x'));
+    const stored: string[] = [];
+    const od = new OneDriveStorage();
+    // First upload: rt → rt x; the new token is persisted and read next time.
+    let refreshToken = 'rt';
+    const onRefreshToken = (t: string) => {
+      stored.push(t);
+      refreshToken = t;
+      return Promise.resolve();
+    };
+    await od.upload(
+      { path, name: 'r.mbk', sizeBytes: 1 },
+      {
+        config: {},
+        secret: { clientId: 'c', clientSecret: 's', refreshToken },
+        onRefreshToken,
+      },
+    );
+    await od.upload(
+      { path, name: 'r.mbk', sizeBytes: 1 },
+      {
+        config: {},
+        secret: { clientId: 'c', clientSecret: 's', refreshToken },
+        onRefreshToken,
+      },
+    );
+    expect(stored).toEqual(['rtx', 'rtxx']);
   });
 });
 

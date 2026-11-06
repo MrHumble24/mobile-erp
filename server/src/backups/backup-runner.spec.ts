@@ -112,6 +112,33 @@ describe('BackupRunner.sendEverywhere', () => {
       }),
     ).toBe(false);
   });
+
+  it('a stalled remote is bounded: FAILED within the deadline, LOCAL intact', async () => {
+    process.env.BACKUP_PLACE_TIMEOUT_MS = '150'; // short bound for the test
+    try {
+      const { runner, targets, recorded } = make({
+        LOCAL: { upload: () => Promise.resolve({ ref: 'local.mbk' }) },
+        TELEGRAM: { upload: () => new Promise(() => {}) }, // never resolves
+      });
+      const localOk = await runner.sendEverywhere(
+        'run1',
+        ['LOCAL', 'TELEGRAM'],
+        {
+          path: 'f',
+          name: 'n',
+          sizeBytes: 1,
+        },
+      );
+      expect(localOk).toBe(true); // the run can still finish and release the lock
+      expect(targets.find((t) => t.code === 'TELEGRAM')?.status).toBe('FAILED');
+      expect(targets.find((t) => t.code === 'TELEGRAM')?.error).toMatch(
+        /timed out/,
+      );
+      expect(recorded).toContainEqual({ code: 'TELEGRAM', ok: false });
+    } finally {
+      delete process.env.BACKUP_PLACE_TIMEOUT_MS;
+    }
+  });
 });
 
 describe('BackupRunner.applyRetention', () => {

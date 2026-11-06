@@ -77,19 +77,25 @@ export class TelegramStorage implements BackupStorage {
     return { ref: JSON.stringify(ref) };
   }
 
-  async download(ref: RemoteRef, dest: Destination): Promise<Readable> {
+  download(ref: RemoteRef, dest: Destination): Promise<Readable> {
     const { token } = creds(dest);
     const parsed = JSON.parse(ref.ref) as TgRef;
-    const chunks: Buffer[] = [];
-    for (const fileId of parsed.parts)
-      chunks.push(await getFileBytes(token, fileId));
-    const joined = Buffer.concat(chunks);
-    if (sha256(joined) !== parsed.sha256) {
-      throw new ProviderError(
-        'Telegram backup failed its checksum after joining the parts',
-      );
+    // Stream the parts one at a time (≤20 MB each in memory), hashing as we go.
+    // A wrong whole-file digest throws at the end, which surfaces as a stream
+    // 'error' — the caller pipes this to staging and verifies before acting, so
+    // a corrupt download fails the restore before anything is used (item 2).
+    async function* join(): AsyncGenerator<Buffer> {
+      const hash = createHash('sha256');
+      for (const fileId of parsed.parts) {
+        const part = await getFileBytes(token, fileId);
+        hash.update(part);
+        yield part;
+      }
+      if (hash.digest('hex') !== parsed.sha256) {
+        throw new ProviderError('Telegram backup failed its checksum');
+      }
     }
-    return Readable.from(joined);
+    return Promise.resolve(Readable.from(join()));
   }
 
   remove(): Promise<void> {

@@ -8,6 +8,7 @@ import { createBackupFile } from './lib/mbk-format.js';
 import { assertPgTools } from './lib/pg-tools.js';
 import { BackupsRepository } from './backups.repository.js';
 import { makeStaging, uploadsDir } from './lib/backup-config.js';
+import { placeTimeoutMs, withDeadline } from './storage/lib/provider-http.js';
 import { ProviderDestination } from './providers/provider-destination.js';
 import { ProvidersService } from './providers/providers.service.js';
 import { StorageRegistry } from './storage/storage.registry.js';
@@ -155,9 +156,12 @@ export class BackupRunner {
       );
       try {
         const adapter = this.registry.get(code);
-        const ref = await adapter.upload(
-          file,
-          await this.destination.resolve(code),
+        // Bound the whole place's upload so a stalled remote cannot hold the
+        // run (and the one-at-a-time lock) open forever (fix 1).
+        const ref = await withDeadline(
+          adapter.upload(file, await this.destination.resolve(code)),
+          placeTimeoutMs(),
+          `${code} upload`,
         );
         await this.repo.updateTarget(target.id, {
           statusCode: TARGET_STATUS.UPLOADED,

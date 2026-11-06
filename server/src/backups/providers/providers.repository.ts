@@ -70,24 +70,23 @@ export class ProvidersRepository {
   }
 
   /** Consume a state: it must exist, be unused, unexpired and this provider's.
-   * Returns the row (and marks it used) or null. */
+   * The claim is a single conditional `updateMany` so two callbacks cannot both
+   * succeed; a count other than 1 means it was already used (item 4). */
   async consumeOauthState(state: string, providerCode: string) {
     const row = await this.prisma.backupOauthState.findUnique({
       where: { state },
     });
-    if (
-      !row ||
-      row.usedAt !== null ||
-      row.providerCode !== providerCode ||
-      row.expiresAt.getTime() < Date.now()
-    ) {
-      return null;
-    }
-    await this.prisma.backupOauthState.update({
-      where: { state },
+    if (!row) return null;
+    const { count } = await this.prisma.backupOauthState.updateMany({
+      where: {
+        state,
+        providerCode,
+        usedAt: null,
+        expiresAt: { gt: new Date() },
+      },
       data: { usedAt: new Date() },
     });
-    return row;
+    return count === 1 ? row : null;
   }
 
   deleteExpiredOauthStates() {
