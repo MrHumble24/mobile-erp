@@ -20,7 +20,7 @@ function Checkbox({ className, onClick, ...props }: CheckboxProps) {
       }}
       {...props}
     >
-      <CheckboxPrimitive.Indicator className="flex items-center justify-center text-white">
+      <CheckboxPrimitive.Indicator className="flex items-center justify-center text-primary-foreground">
         <Check className="size-3 stroke-[3]" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>

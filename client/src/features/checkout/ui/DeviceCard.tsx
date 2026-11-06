@@ -12,7 +12,7 @@ export function DeviceCard({ device }: { device: DeviceDetailView }) {
   const qc = device.latestInspection
 
   return (
-    <Card className="border border-border bg-white shadow-[var(--shadow-xs)]">
+    <Card className="border border-border bg-card shadow-[var(--shadow-xs)]">
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">

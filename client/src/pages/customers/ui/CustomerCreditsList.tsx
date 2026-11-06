@@ -25,7 +25,7 @@ export function CustomerCreditsList({ customerId }: { customerId: string }) {
           type="button"
           variant="outline"
           onClick={() => navigate("/credits")}
-          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-white p-2.5 text-left text-sm font-normal"
+          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal"
         >
           <span>
             <span className="block font-mono font-semibold">{formatMoney(credit.outstanding)}</span>

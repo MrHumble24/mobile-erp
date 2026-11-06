@@ -11,12 +11,12 @@ export function BarcodeVisual({ value }: { value: string }) {
           return (
             <div
               key={i}
-              className={`h-full bg-black ${isHidden ? "opacity-0" : "opacity-100"} ${widthClass}`}
+              className={`h-full bg-primary ${isHidden ? "opacity-0" : "opacity-100"} ${widthClass}`}
             />
           )
         })}
       </div>
-      <span className="font-mono text-[9px] tracking-[0.2em] font-semibold text-black/80">{value}</span>
+      <span className="font-mono text-[9px] tracking-[0.2em] font-semibold text-foreground/80">{value}</span>
     </div>
   )
 }

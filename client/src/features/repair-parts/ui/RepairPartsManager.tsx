@@ -25,7 +25,7 @@ function PartRow({
   const { t } = useI18n()
   const remove = useRemoveRepairPart(repairId)
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm">
+    <div className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-card p-2.5 text-sm">
       <div className="min-w-0">
         <div className="font-semibold truncate">
           {part.name} <span className="font-mono text-muted-foreground">×{part.quantity}</span>

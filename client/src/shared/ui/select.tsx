@@ -72,7 +72,7 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           className={cn(
-            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-white text-foreground p-1 border border-border outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-card text-foreground p-1 border border-border outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
             className
           )}
         >

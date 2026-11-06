@@ -104,7 +104,7 @@ export function ConsignmentsTable({
   }
 
   return (
-    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

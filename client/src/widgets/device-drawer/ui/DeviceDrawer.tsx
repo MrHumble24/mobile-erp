@@ -24,7 +24,7 @@ const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
 function DeviceBarcode({ imei }: { imei: string }) {
   const bars = Array.from({ length: 44 }, (_, i) => ((i * 7 + imei.charCodeAt(i % imei.length)) % 3) + 1)
   return (
-    <div className="flex flex-col items-center py-2 px-3 bg-white rounded-[12px] border border-border shadow-[var(--shadow-xs)]">
+    <div className="flex flex-col items-center py-2 px-3 bg-card rounded-[12px] border border-border shadow-[var(--shadow-xs)]">
       <div className="flex items-center gap-[2px] h-9">
         {bars.map((w, idx) => (
           <div key={idx} className="bg-primary h-full rounded-[0.5px]" style={{ width: `${w * 1.5}px` }} />
@@ -43,7 +43,7 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
   const marginPercent = cost > 0 ? (margin / cost) * 100 : 0
   const isPositive = margin >= 0
   return (
-    <div className="flex items-center justify-between p-3 rounded-[12px] bg-white border border-border shadow-[var(--shadow-xs)] text-xs">
+    <div className="flex items-center justify-between p-3 rounded-[12px] bg-card border border-border shadow-[var(--shadow-xs)] text-xs">
       <div>
         <span className="text-muted-foreground">{t("inventory.landedCost")}: </span>
         <span className="font-semibold text-foreground">{formatMoney(landedCost)}</span>

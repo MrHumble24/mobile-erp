@@ -29,7 +29,7 @@ export function CustomerTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-border bg-white shadow-[var(--shadow-xs)]">
+    <div className="overflow-hidden rounded-[16px] border border-border bg-card shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

@@ -19,7 +19,7 @@ function ModelSelect({ value, onChange, models }: { value?: string; onChange: On
   const { t } = useI18n()
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(toValue(v))}>
-      <SelectTrigger className="h-10 bg-white border-border shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-10 bg-card border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("inventory.filterModel")} />
       </SelectTrigger>
       <SelectContent>
@@ -38,7 +38,7 @@ function StorageSelect({ value, onChange, options }: { value?: string; onChange:
   const { t } = useI18n()
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(toValue(v))}>
-      <SelectTrigger className="h-10 bg-white border-border shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-10 bg-card border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("inventory.filterStorage")} />
       </SelectTrigger>
       <SelectContent>
@@ -84,7 +84,7 @@ function StatusPills({
               "h-8 px-3 text-xs font-medium rounded-full transition-all shrink-0 border cursor-pointer",
               isActive
                 ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground shadow-[var(--shadow-xs)]"
-                : "bg-white text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
             )}
           >
             {t(item.labelKey)}
@@ -113,7 +113,7 @@ function FiltersInputs({ filters, models, onScan }: InventoryFiltersProps) {
           onScan={onScan}
           onClear={() => filters.setSearchInput("")}
           placeholder={t("inventory.scanOrSearch")}
-          className="h-10 bg-white border-border shadow-[var(--shadow-xs)]"
+          className="h-10 bg-card border-border shadow-[var(--shadow-xs)]"
         />
       </div>
       <div className="lg:col-span-3">

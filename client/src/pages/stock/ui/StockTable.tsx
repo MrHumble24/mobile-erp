@@ -73,7 +73,7 @@ function StockRow({ product, canViewCost, canAdjust, onMovements, onAdjust }: {
 export function StockTable({ items, canViewCost, canAdjust, onMovements, onAdjust }: StockTableProps) {
   const { t } = useI18n()
   return (
-    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

@@ -126,7 +126,7 @@ export function AppShellHeader({
     <header
       className={cn(
         SHELL_BAR_HEIGHT,
-        "border-b border-border bg-white px-3 sm:px-4 flex items-center justify-between sticky top-0 z-20 gap-3"
+        "border-b border-border bg-card px-3 sm:px-4 flex items-center justify-between sticky top-0 z-20 gap-3"
       )}
     >
       <div className="flex items-center gap-2.5 min-w-0">

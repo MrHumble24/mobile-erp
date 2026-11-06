@@ -99,7 +99,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-[var(--shadow-lg)] border border-border bg-white rounded-[20px]">
+    <Card className="w-full max-w-md shadow-[var(--shadow-lg)] border border-border bg-card rounded-[20px]">
       <CardHeader className="text-center space-y-2">
         {branding?.logoUrl && (
           <div className="flex justify-center mb-1">

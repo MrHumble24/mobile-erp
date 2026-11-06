@@ -25,7 +25,7 @@ export function CustomerRepairsList({ customerId }: { customerId: string }) {
           type="button"
           variant="outline"
           onClick={() => navigate("/repairs")}
-          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-white p-2.5 text-left text-sm font-normal"
+          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal"
         >
           <span className="min-w-0">
             <span className="block font-semibold truncate">

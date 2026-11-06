@@ -66,7 +66,7 @@ function PickProduct({
   }
 
   return (
-    <div className="space-y-2 rounded-[10px] border border-border bg-white p-2.5">
+    <div className="space-y-2 rounded-[10px] border border-border bg-card p-2.5">
       <p className="text-xs font-medium">{t("catalog.lookupPickProduct")}</p>
       <p className="text-xs text-muted-foreground">{reference}</p>
       <Combobox

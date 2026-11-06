@@ -36,7 +36,7 @@ function ModelsTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -89,7 +89,7 @@ function CategoryFilter({ value, onChange }: { value: string; onChange: (v: stri
   const { data: categories } = useProductCategories()
   return (
     <Select value={value} onValueChange={(v) => onChange(v ?? ALL_CATEGORIES)}>
-      <SelectTrigger className="h-9 w-full sm:w-52 bg-white border-border shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-9 w-full sm:w-52 bg-card border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("catalog.allCategories")} />
       </SelectTrigger>
       <SelectContent>
@@ -135,7 +135,7 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`${t("inventory.brand")} / ${t("inventory.model")}...`}
-              className="pl-9 h-9 bg-white border-border shadow-[var(--shadow-xs)]"
+              className="pl-9 h-9 bg-card border-border shadow-[var(--shadow-xs)]"
             />
           </div>
           <CategoryFilter value={categoryId} onChange={setCategoryId} />
@@ -149,7 +149,7 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
       {isLoading ? (
         <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-card shadow-[var(--shadow-xs)]">
           {t("inventory.empty")}
         </div>
       ) : (

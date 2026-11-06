@@ -6,7 +6,7 @@ import type { PurchasesFiltersState } from "../model/use-purchases-filters"
 export function PurchasesFilters({ filters }: { filters: PurchasesFiltersState }) {
   const { t } = useI18n()
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="flex flex-wrap items-end gap-3 rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
       <div className="space-y-1">
         <Label>{t("common.from")}</Label>
         <Input type="date" value={filters.from} onChange={(e) => filters.setFrom(e.target.value)} className="h-10" />

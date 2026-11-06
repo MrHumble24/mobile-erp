@@ -93,7 +93,7 @@ export function RolesTab() {
       {isLoading && <Skeleton className="h-64 rounded-[16px]" />}
 
       {roles && (
-        <div className="overflow-hidden rounded-[16px] border border-border bg-white shadow-[var(--shadow-xs)]">
+        <div className="overflow-hidden rounded-[16px] border border-border bg-card shadow-[var(--shadow-xs)]">
           <Table>
             <TableHeader>
               <TableRow>

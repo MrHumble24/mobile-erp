@@ -26,7 +26,7 @@ export function CatalogCard({ entry, level, onTap }: { entry: CatalogEntry; leve
       type="button"
       variant="ghost"
       onClick={onTap}
-      className="h-auto w-full flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[16px] border border-border bg-white p-0 text-left shadow-[var(--shadow-xs)] hover:bg-muted"
+      className="h-auto w-full flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[16px] border border-border bg-card p-0 text-left shadow-[var(--shadow-xs)] hover:bg-muted"
     >
       <AssetImage path={entry.imageUrl} alt={entry.name} className="aspect-square w-full" />
       <span className="flex flex-1 flex-col gap-1 p-3">

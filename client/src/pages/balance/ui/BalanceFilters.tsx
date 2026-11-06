@@ -68,7 +68,7 @@ export function BalanceFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
       <FilterSelect
         label={t("balance.filterAccount")}
         value={filters.accountCode ?? "all"}

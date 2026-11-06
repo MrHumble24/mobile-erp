@@ -15,7 +15,7 @@ export function ShipmentStockSection({ lines }: { lines: ShipmentStockLine[] }) 
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-semibold">{t("catalog.stock")}</h4>
-      <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
         <Table>
           <TableHeader>
             <TableRow>

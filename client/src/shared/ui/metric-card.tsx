@@ -91,7 +91,7 @@ function MetricCard({
         "rounded-[16px] p-6 flex flex-col justify-between min-h-[140px] shadow-[var(--shadow-xs)] transition-all",
         isDark
           ? "bg-card text-card-foreground border border-border"
-          : "bg-white text-foreground border border-border",
+          : "bg-card text-foreground border border-border",
         className
       )}
       {...props}

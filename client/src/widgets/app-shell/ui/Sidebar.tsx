@@ -21,7 +21,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-border flex items-center gap-2.5 shrink-0")}>
-      <div className="size-8 rounded-full bg-primary flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs overflow-hidden">
+      <div className="size-8 rounded-full bg-primary flex items-center justify-center font-display font-bold text-sm text-primary-foreground shrink-0 shadow-xs overflow-hidden">
         {branding?.logoUrl ? (
           <img src={branding.logoUrl} alt={name} className="size-full object-cover" />
         ) : (
@@ -80,7 +80,7 @@ function SidebarLinkElement({
           className={cn(
             "font-mono font-bold text-white bg-blue-600 rounded-full flex items-center justify-center",
             collapsed
-              ? "absolute top-1 right-1 size-2 ring-2 ring-white"
+              ? "absolute top-1 right-1 size-2 ring-2 ring-card"
               : "ml-auto px-1.5 h-4 min-w-4 text-[10px]"
           )}
         >
@@ -215,7 +215,7 @@ export function Sidebar({ collapsed, onItemClick, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-white text-foreground border-r border-border flex flex-col h-full shrink-0 transition-[width] duration-200 z-30 select-none",
+        "bg-card text-foreground border-r border-border flex flex-col h-full shrink-0 transition-[width] duration-200 z-30 select-none",
         collapsed ? "w-[68px]" : "w-60",
         className
       )}

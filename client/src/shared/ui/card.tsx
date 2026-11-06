@@ -11,11 +11,11 @@ function Card({
   ...props
 }: CardProps) {
   const variantStyles = {
-    white: "bg-white text-foreground border border-border",
+    white: "bg-card text-foreground border border-border",
     limestone: "bg-muted text-foreground border border-border",
     mist: "bg-muted text-foreground border border-border",
     pumice: "bg-muted text-foreground border border-border",
-    ember: "bg-white text-foreground border border-border",
+    ember: "bg-card text-foreground border border-border",
     plasma: "bg-primary/5 text-foreground border border-primary/20",
     dark: "bg-card text-card-foreground border border-border",
   }[variant]

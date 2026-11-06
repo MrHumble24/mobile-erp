@@ -40,7 +40,7 @@ function ModeToggle({ form }: { form: FormApi }) {
             "h-9 flex-1 rounded-full border text-xs font-medium",
             mode === o.value
               ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground"
-              : "bg-white text-muted-foreground border-border hover:bg-muted"
+              : "bg-card text-muted-foreground border-border hover:bg-muted"
           )}
         >
           {o.label}

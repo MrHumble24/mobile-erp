@@ -83,7 +83,7 @@ export function QuantityCartLine({
   const overStock = line.quantity > line.onHand
 
   return (
-    <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)] space-y-3">
+    <div className="rounded-[16px] border border-border bg-card p-3 shadow-[var(--shadow-xs)] space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">

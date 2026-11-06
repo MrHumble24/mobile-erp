@@ -32,7 +32,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
   const withWarranty = lines.filter((line) => line.kind === "unit" && line.warrantyDays > 0).length
 
   return (
-    <div className="rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
+    <div className="rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
       <div className="space-y-2 text-sm">
         <SummaryRow label={t("pos.lineCount", { count: lines.length })} value="" />
         <SummaryRow label={t("pricing.listPrice")} value={formatMoney(totals.listTotal)} />
@@ -73,7 +73,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
       >
         <ShoppingCart className="size-5" />
         {isPending ? t("pos.completingSale") : t("pos.checkoutButton")}
-        <kbd className="ml-1 rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-mono">F9</kbd>
+        <kbd className="ml-1 rounded bg-card/20 px-1.5 py-0.5 text-[10px] font-mono">F9</kbd>
       </Button>
     </div>
   )

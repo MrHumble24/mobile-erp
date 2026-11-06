@@ -17,7 +17,7 @@ function Line({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-black/70">{label}</span>
+      <span className="text-foreground/70">{label}</span>
       <span className={`font-mono ${strong ? "font-bold" : ""} ${className ?? ""}`}>{value}</span>
     </div>
   )
@@ -27,7 +27,7 @@ function differenceClass(difference: string): string {
   const kind = differenceKind(difference)
   if (kind === "short") return "text-destructive"
   if (kind === "over") return "text-emerald-600 dark:text-emerald-400"
-  return "text-black/70"
+  return "text-foreground/70"
 }
 
 function CashSummary({ report }: { report: Report }) {
@@ -56,11 +56,11 @@ function CashSummary({ report }: { report: Report }) {
 function TypeGroups({ report }: { report: Report }) {
   const { t } = useI18n()
   if (report.byType.length === 0) {
-    return <p className="py-1 text-center text-[11px] text-black/50">{t("shifts.noMovements")}</p>
+    return <p className="py-1 text-center text-[11px] text-foreground/50">{t("shifts.noMovements")}</p>
   }
   return (
     <div className="space-y-2 border-b-2 border-dashed border-black/30 pb-2.5 text-[12px]">
-      <p className="font-semibold uppercase tracking-wide text-[11px] text-black/60">
+      <p className="font-semibold uppercase tracking-wide text-[11px] text-foreground/60">
         {t("shifts.movements")}
       </p>
       {report.byType.map((group) => (
@@ -73,7 +73,7 @@ function TypeGroups({ report }: { report: Report }) {
           {group.byAccount.map((a) => (
             <div
               key={a.accountCode}
-              className="flex items-baseline justify-between gap-3 pl-3 text-[11px] text-black/55"
+              className="flex items-baseline justify-between gap-3 pl-3 text-[11px] text-foreground/55"
             >
               <span>{shiftAccountLabel(a.accountCode, t)}</span>
               <span className="font-mono">{formatMoney(a.total)}</span>
@@ -90,12 +90,12 @@ function AccountGroups({ report }: { report: Report }) {
   if (report.byAccount.length === 0) return null
   return (
     <div className="space-y-1 text-[12px]">
-      <p className="font-semibold uppercase tracking-wide text-[11px] text-black/60">
+      <p className="font-semibold uppercase tracking-wide text-[11px] text-foreground/60">
         {t("shifts.byAccount")}
       </p>
       {report.byAccount.map((a) => (
         <div key={a.accountCode} className="flex items-baseline justify-between gap-2">
-          <span className="text-black/70">{shiftAccountLabel(a.accountCode, t)}</span>
+          <span className="text-foreground/70">{shiftAccountLabel(a.accountCode, t)}</span>
           <span className="font-mono text-[11px]">
             <span className="text-emerald-600 dark:text-emerald-400">+{formatMoney(a.in)}</span>
             {" / "}
@@ -115,7 +115,7 @@ export function ShiftReportView({ report }: { report: Report }) {
   const { t } = useI18n()
   const open = report.closedAt === null
   return (
-    <div className="printable-cheque w-full max-w-[340px] rounded-[8px] border border-neutral-300 bg-white p-4 font-sans text-[12px] leading-snug text-black shadow-[var(--shadow-md)] print:border-none print:p-0 print:shadow-none">
+    <div className="printable-cheque w-full max-w-[340px] rounded-[8px] border border-neutral-300 bg-card p-4 font-sans text-[12px] leading-snug text-foreground shadow-[var(--shadow-md)] print:border-none print:p-0 print:shadow-none">
       <div className="space-y-0.5 border-b-2 border-dashed border-black/30 pb-2.5 text-center">
         <p className="text-sm font-black uppercase tracking-wider">{t("shifts.report")}</p>
         <p className="text-[12px] font-semibold">{report.cashier.name}</p>
@@ -140,7 +140,7 @@ export function ShiftReportView({ report }: { report: Report }) {
       </div>
 
       {report.note && (
-        <p className="mt-2.5 border-t-2 border-dashed border-black/30 pt-2 text-[11px] text-black/70">
+        <p className="mt-2.5 border-t-2 border-dashed border-black/30 pt-2 text-[11px] text-foreground/70">
           {t("shifts.note")}: {report.note}
         </p>
       )}

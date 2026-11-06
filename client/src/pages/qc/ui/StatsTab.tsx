@@ -61,7 +61,7 @@ function Breakdown({ title, rows }: { title: string; rows: { key: string; label:
   const { t } = useI18n()
   const max = Math.max(1, ...rows.map((r) => r.count))
   return (
-    <div className="rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)] space-y-3">
+    <div className="rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)] space-y-3">
       <h3 className="text-sm font-semibold">{title}</h3>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("common.notFound")}</p>

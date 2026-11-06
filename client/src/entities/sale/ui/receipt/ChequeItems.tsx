@@ -15,12 +15,12 @@ export function ChequeItems({ items, total }: { items: ReceiptItem[]; total: str
               <span className="line-clamp-1">{item.model}</span>
               <span className="shrink-0 font-mono">{formatMoney(item.price)}</span>
             </div>
-            <div className="text-[9px] text-black/75 flex justify-between">
+            <div className="text-[9px] text-foreground/75 flex justify-between">
               <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
             </div>
             <ItemIdentity item={item} />
             {item.warranty && (
-              <div className="text-[9px] text-black/75">
+              <div className="text-[9px] text-foreground/75">
                 {t("pos.officialWarranty")}: {item.warranty.days} {t("pos.daysShort")} ·{" "}
                 {new Date(item.warranty.endsAt).toLocaleDateString()}
               </div>

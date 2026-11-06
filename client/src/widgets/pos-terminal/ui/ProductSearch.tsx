@@ -64,7 +64,7 @@ export function ProductSearch() {
         className="h-11"
       />
       {results.length > 0 && (
-        <div className="max-h-56 space-y-0.5 overflow-y-auto rounded-[12px] border border-border bg-white p-1 shadow-[var(--shadow-xs)]">
+        <div className="max-h-56 space-y-0.5 overflow-y-auto rounded-[12px] border border-border bg-card p-1 shadow-[var(--shadow-xs)]">
           {results.map((p) => (
             <ResultRow key={p.modelId} product={p} onAdd={() => handleAdd(p)} />
           ))}

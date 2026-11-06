@@ -42,7 +42,7 @@ function ResourceGroup({
   const codes = perms.map((p) => p.code)
   const allOn = codes.every((c) => selected.has(c))
   return (
-    <div className="space-y-3 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="space-y-3 rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
       <label className="flex cursor-pointer items-center gap-2">
         <Checkbox
           checked={allOn}
@@ -120,7 +120,7 @@ function RoleEditor({ role, permissions }: { role: RoleView; permissions: Permis
         <p className="text-xs text-muted-foreground">{t("users.systemRoleMatrixLocked")}</p>
       )}
       {dirty && !role.isSystem && (
-        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-border bg-card p-3 shadow-[var(--shadow-xs)]">
           <span className="text-xs text-muted-foreground">{t("users.unsavedChanges")}</span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setSelected(initial)}>
