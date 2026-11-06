@@ -38,6 +38,7 @@ const SyncPage = lazy(() => import("@/pages/sync"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
 const ShopPage = lazy(() => import("@/pages/shop"))
 const ShopDetailPage = lazy(() => import("@/pages/shop-detail"))
+const ShopOrderPage = lazy(() => import("@/pages/shop-order"))
 const OrdersPage = lazy(() => import("@/pages/orders"))
 const BackupsPage = lazy(() => import("@/pages/backups"))
 
@@ -149,6 +150,7 @@ export function AppRoutes() {
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/shop/order/:id" element={<ShopOrderPage />} />
         <Route path="/shop/:modelId" element={<ShopDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         {ProtectedRoutes()}

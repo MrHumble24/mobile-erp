@@ -38,10 +38,10 @@ export function useStorefrontProduct(modelId: string) {
   })
 }
 
-export function usePublicOrder(id: string) {
+export function usePublicOrder(id?: string) {
   return useQuery({
-    queryKey: storefrontKeys.publicOrder(id),
-    queryFn: () => storefrontRepository.getPublicOrder(id),
+    queryKey: storefrontKeys.publicOrder(id ?? ""),
+    queryFn: () => storefrontRepository.getPublicOrder(id!),
     enabled: Boolean(id),
     staleTime: 5_000,
   })

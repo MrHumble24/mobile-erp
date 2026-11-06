@@ -223,6 +223,7 @@ export function ShopDetailPage() {
         variantSpecs={selectedVariant?.specs}
         availableStores={availableStores}
         shopPhone={config.contactPhone}
+        productPrice={selectedVariant?.price ? Number(selectedVariant.price) : (product.priceFrom ? Number(product.priceFrom) : null)}
       />
     </div>
   )

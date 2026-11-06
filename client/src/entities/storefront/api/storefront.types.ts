@@ -75,11 +75,11 @@ export interface CreateStorefrontOrderDto {
   phone: string
   modelId: string
   specs?: Record<string, string>
-  storeId: string
+  storeId?: string
   note?: string
   hp?: string
   fulfillmentMethod?: "PICKUP" | "DELIVERY"
-  paymentMethod?: "CASH" | "ONLINE"
+  paymentMethod?: "ON_RECEIPT" | "ONLINE"
   address?: string
   deliveryZoneId?: string
 }
