@@ -32,10 +32,12 @@ export interface StorefrontOrderModalProps {
 function useOrderSubmit({
   modelId,
   variantSpecs,
+  defaultStoreId,
   onOrderSuccess,
 }: {
   modelId: string
   variantSpecs?: Record<string, string>
+  defaultStoreId?: string
   onOrderSuccess: (orderId: string) => void
 }) {
   const { t } = useI18n()
@@ -54,7 +56,7 @@ function useOrderSubmit({
         name: values.name.trim(),
         phone: values.phone.trim(),
         fulfillmentMethod: values.fulfillmentMethod,
-        storeId: values.storeId || availableStores[0]?.id,
+        storeId: values.storeId || defaultStoreId,
         address: isDelivery ? values.address.trim() : undefined,
         deliveryZoneId: isDelivery && values.deliveryZoneId ? values.deliveryZoneId : undefined,
         paymentMethod: isOnline ? "ONLINE" : "ON_RECEIPT",
@@ -160,6 +162,7 @@ export function StorefrontOrderModal({
   const { handleSubmit, errorMessage, isSubmitting } = useOrderSubmit({
     modelId,
     variantSpecs,
+    defaultStoreId: availableStores[0]?.id,
     onOrderSuccess: (id) => setCreatedOrderId(id),
   })
 
