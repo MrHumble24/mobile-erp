@@ -1,6 +1,6 @@
 # 015 — Step 11 on Android, part 2 of 4: paying with points at the till
 
-Status: open · Owner: OpenCode · Depends on: 014 (committed on the same branch)
+Status: done · Owner: OpenCode · Depends on: 014 (committed on the same branch)
 
 ## Why
 The server accepts `bonusRedeem` on `POST /sales` (ADR 0043). The till sends one sale per cart
@@ -86,11 +86,23 @@ Fill the Result section of `docs/handoffs/opencode/015-step11-android-pay-with-p
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
-- Build and test output (last lines):
+- Model used: nemotron-3.5-super-vl-free
+- Commits: 52a45f90 step 11 Android part 2: pay with bonus points at the till (mobile/android/** only, branch agent/opencode/step11-android, depends on 014's 7213baf8)
+- Build and test output (last lines): `./gradlew assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL; :app:assembleDebug and :app:testDebugUnitTest both pass. 167 tests completed, 0 failures: BonusRedeemTest 7 tests, SalesLogicTest 11 tests (incl. the new bonusRedeem case), all pre-existing tests pass.
 - Items 1 to 11, one line each:
-- Line counts of `PosViewModel.kt`, `PosCheckoutForm.kt`, `SaleCreate.kt` after the change:
-- Not done / skipped / failed:
+  1. PosState.cleared(completed) added; used in checkout, resetCart, finishTradeIn; keeps pendingSold/defaultWarrantyDays/settings/canOverride/canUnlimited/creditEnabled/shiftsEnabled/canTradeIn/bonusEnabled and drops cart/trade-ins/points/customer bonus. PosViewModel.shrank from 269 to 260 lines.
+  2. lib/BonusRedeem.kt added: pure cent-exact plan(lines, requestedCents, balanceCents, maxPercent) mirroring the web bonus-redeem.ts; line cap = min(price×maxPercent/100 half-up, due); max = min(balance, sum caps); total = clamp(request); shared in cart order.
+  3. BonusRedeemTest.kt added with the 7 spec cases, all passing (100000/5000/50→5000; 100000/200000/50/80000→50000; two lines→50000+10000; due-cap→30000/payable 0; zero balance/percent→0; 333.33→166.67; negative→0).
+  4. PosState gained bonusEnabled, customerBonus (CustomerBonus(customerId, balance, maxPercent)), bonusRequested and computed bonusPlan; amountToPay = sum of bonusPlan.payableLines. No customerBonus → max 0, amountToPay unchanged.
+  5. model/PosBonus.kt added: loadCustomerBonus(customerId, online) via PosRepository.customerBonus(id) (calls part-1 SalesApi.customerBonus), setBonusRequested (clamps to plan max), checkoutDirect (replaces checkoutWithTradeIns; online, points require a customer; partial-failure lowers bonusRequested by committed lines' points).
+  6. TradeInCheckout.run takes bonusByLine; tender split over price−trade-ins−points; each line's payload carries its points; failure error = checkoutErrorKey(e.code) ?: server message.
+  7. SaleCreate.payload/quantityPayload take bonusRedeem: BigDecimal? = null, put as a number only when above zero; queued ops path never sends it. Tested (present at 5000, absent at null/zero).
+  8. lib/CheckoutError.kt added with the exact code→i18n map (BONUS_*/TRADE_IN_*/PURCHASE_UNIT_EXISTS; else null).
+  9. ui/BonusRedeemControl.kt added and mounted in PosCheckoutForm above the payment fields: shows balance/max/amount field/use-max when plan max > 0 (formatPoints); offline with cached balance > 0 shows one pos.bonusOffline line; total = amountToPay with trade-ins or points; totals show a pos.bonusPoints row with minus when points used; pay button calls checkoutDirect with trade-ins or points, checkout otherwise. PosCheckoutForm 184 lines (< 250). Points never touch the On credit path.
+  10. Nothing new visible while bonus off/no customer; queued offline sale unchanged.
+  11. No new text keys needed (pos.bonus… and pos.tradeIn… already exist in en/uz pos.json).
+- Line counts of `PosViewModel.kt`, `PosCheckoutForm.kt`, `SaleCreate.kt` after the change: 260 / 184 / 232
+- New text keys: none
+- Not done / skipped / failed: Screens were not seen — no phone/emulator available; verified by compilation and unit tests only. Nothing skipped or failed.
 
 ## Check by Claude
