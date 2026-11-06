@@ -70,8 +70,9 @@ class SessionViewModel(
             }
         }
         _state.value.user?.let { user ->
-            storeManager?.syncWithUser(user)
-            syncManager.syncNow() // hydrate on restored session
+            // No sync before a store is chosen: the server would refuse it (STORE_REQUIRED).
+            val store = storeManager?.syncWithUser(user)
+            if (storeManager == null || store != null) syncManager.syncNow() // hydrate on restored session
             if (user.stores.isEmpty()) {
                 refreshPermissions()
             }
@@ -91,9 +92,9 @@ class SessionViewModel(
             try {
                 val user = repo.login(email, password)
                 AppLog.i("auth", "login ok: $email")
-                storeManager?.syncWithUser(user)
+                val store = storeManager?.syncWithUser(user)
                 _state.value = SessionState(user = user)
-                syncManager.syncNow()
+                if (storeManager == null || store != null) syncManager.syncNow()
             } catch (e: AppException) {
                 AppLog.w("auth", "login failed ($email): ${e.statusCode} ${e.message}")
                 _state.value = _state.value.copy(loading = false, error = e)

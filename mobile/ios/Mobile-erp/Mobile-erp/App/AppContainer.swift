@@ -86,7 +86,8 @@ final class AppContainer {
         session.onLogin = { [weak self] in
             guard let self else { return }
             self.storeManager.sync(with: self.session.user)
-            self.sync.syncNow()
+            // No sync before a store is chosen: the server would refuse it (STORE_REQUIRED).
+            if self.storeManager.activeStoreID != nil { self.sync.syncNow() }
             Task { await flags.refresh(api: self.api) }
         }
         connectivity.onReconnect = { sync.syncNow() } // regain network → sync

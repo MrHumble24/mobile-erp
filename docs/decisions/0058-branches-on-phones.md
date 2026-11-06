@@ -25,3 +25,4 @@ users and queuing offline sales with unassigned store context.
 ## Consequences
 - Multi-store phone operators work seamlessly across branches without data cross-contamination.
 - Refusals (`STORE_REQUIRED`, `STORE_FORBIDDEN`) prompt store selection with translated messages.
+

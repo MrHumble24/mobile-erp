@@ -1,6 +1,6 @@
 # 027 — Branches on the phone apps (Android and iOS)
 
-Status: done · Owner: Gemini (Antigravity) · Depends on: nothing (branches are merged on the server and the website)
+Status: merged · Owner: Gemini (Antigravity) · Depends on: nothing (branches are merged on the server and the website)
 
 ## Why
 The server and the website work with many stores since handoffs 018 to 021 (ADR 0045, 0046).
@@ -132,3 +132,19 @@ Fill the Result section of `docs/handoffs/gemini/027-mobile-branches.md` in THIS
   - None. All items 1-7, unit tests, Room migration, ADR 0058, documentation updates, and builds succeeded on both Android and iOS.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was honest: nothing had been seen on a screen.
+  Gates run by Claude: Android builds, 141 unit tests pass; iOS builds.
+- Seen by Claude on an Android emulator against a copy of the working data (admin, two stores):
+  sign-in opens "Choose a store" with both stores and a sign-out; "Main store" loads 36 phones
+  and its dashboard numbers; the More tab shows the active store and a switch sheet; "Branch 2"
+  shows a dashboard of zeros and an empty stock; after closing and opening the app it is still
+  in "Branch 2".
+- A server bug found by this try, fixed by Claude on `main`: `GET /sync/changes` returned every
+  store's phones whatever the store (only products were per store), so the phone showed Main
+  store's 36 phones inside Branch 2, and one branch could read another's stock and prices. The
+  feed is now per store, with a test. The "Why" of this handoff said it already was: my mistake.
+- One change by Claude on the branch, both platforms: no sync right after sign-in while no store
+  is chosen (it was refused with STORE_REQUIRED and showed an error for nothing).
+- Not seen: anything on iOS (the simulator on this computer did not answer; build only, the
+  code mirrors Android); a sale queued offline in one store and sent from another (unit test
+  only); the STORE_FORBIDDEN path; a real phone. A real-phone try of both apps is owed.
