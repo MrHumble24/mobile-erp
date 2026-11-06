@@ -1,6 +1,6 @@
 # 006 — Step 11, part 4 of 6: points shown after the sale
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: 005 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 005 (merged)
 
 ## Why
 Part 4 of the step 11 website work (see 003 for the list of parts). A sale can now be paid partly
@@ -76,3 +76,12 @@ Fill the Result section of `docs/handoffs/opencode/006-step11-points-shown.md`, 
   failed. No server, mobile, PRD, plan, rules or Claude files were touched.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed this time, report accurate. Tests 84 pass, lint 0
+  errors, build passes. One source for the receipt's points lines (`receipt-bonus.ts`), used by
+  the printed receipt and the Telegram text.
+- Seen in a browser on the sale from part 3 (30,000, 1,000 points spent, 1,450 earned): the
+  receipt shows "Paid with points − 1,000" between the total and "Cash 29,000", and "Points
+  earned 1,450"; the sale detail shows both rows; the report overview shows Points earned 1,450
+  and Points spent 1,000; the till's customer search shows "Outside Walkthrough | 1,450 pts".
+- Not seen: the narrow till's bottom bar with points in the cart (read in code only); a receipt
+  that combines several lines.
