@@ -2,8 +2,10 @@ import { lazy, Suspense } from "react"
 import { Routes, Route, Navigate } from "react-router"
 import { AppShell } from "@/widgets/app-shell"
 import { RequirePermission } from "./require-permission"
+import { useSetupStatus } from "@/entities/company"
 
 const LoginPage = lazy(() => import("@/pages/login"))
+const SetupWizardPage = lazy(() => import("@/pages/setup"))
 const DashboardPage = lazy(() => import("@/pages/dashboard"))
 const PosPage = lazy(() => import("@/pages/pos"))
 const InventoryPage = lazy(() => import("@/pages/inventory"))
@@ -117,6 +119,22 @@ function ProtectedRoutes() {
 }
 
 export function AppRoutes() {
+  const { data: setupStatus, isLoading } = useSetupStatus()
+
+  if (isLoading) {
+    return <SuspenseFallback />
+  }
+
+  if (setupStatus?.needsSetup) {
+    return (
+      <Suspense fallback={<SuspenseFallback />}>
+        <Routes>
+          <Route path="*" element={<SetupWizardPage />} />
+        </Routes>
+      </Suspense>
+    )
+  }
+
   return (
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>

@@ -1,26 +1,55 @@
-const integerFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-})
+export interface MoneyFormatOptions {
+  code: string
+  sign: string
+  signPosition: "before" | "after"
+  decimals: number
+}
 
-const decimalFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})
+let activeCurrency: MoneyFormatOptions = {
+  code: "USD",
+  sign: "$",
+  signPosition: "before",
+  decimals: 2,
+}
+
+export function setCurrencyConfig(config: Partial<MoneyFormatOptions>): void {
+  activeCurrency = {
+    ...activeCurrency,
+    ...config,
+  }
+}
+
+export function getCurrencyConfig(): MoneyFormatOptions {
+  return activeCurrency
+}
 
 const countFormatter = new Intl.NumberFormat("en-US")
 
-/** Formats a USD amount: `$1,250` or `$1,250.50`. Accepts string or number; nullish → "-". */
+/**
+ * Formats a money amount using dynamic company currency:
+ * `$1,250` or `$1,250.50` or `1,250 so'm`. One line, tabular, never shortened (ADR 0048).
+ * Accepts string or number; nullish → "-".
+ */
 export function formatMoney(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "-"
   const num = typeof value === "string" ? Number(value) : value
   if (Number.isNaN(num)) return "-"
-  const hasCents = Math.abs(num % 1) >= 0.005
-  return (hasCents ? decimalFormatter : integerFormatter).format(num)
+
+  const decimals = activeCurrency.decimals
+  const hasCents = decimals > 0 && Math.abs(num % 1) >= 0.005
+  const isNegative = num < 0
+
+  const formattedAbs = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: hasCents ? decimals : 0,
+    maximumFractionDigits: decimals,
+  }).format(Math.abs(num))
+
+  const signPrefix = isNegative ? "-" : ""
+
+  if (activeCurrency.signPosition === "after") {
+    return `${signPrefix}${formattedAbs} ${activeCurrency.sign}`
+  }
+  return `${signPrefix}${activeCurrency.sign}${formattedAbs}`
 }
 
 /** Formats a plain number with thousand separators: `1,250`. Accepts string or number; nullish → "-". */

@@ -8,6 +8,7 @@ import { DashboardMetrics } from "./DashboardMetrics"
 import { DashboardLowStockTable } from "./DashboardLowStockTable"
 import { DashboardOverdueConsignmentsTable } from "./DashboardOverdueConsignmentsTable"
 import { DashboardModelPricingTable } from "./DashboardModelPricingTable"
+import { SetupChecklist } from "@/widgets/setup-checklist"
 
 function DashboardActions() {
   const { t } = useI18n()
@@ -45,6 +46,8 @@ export function DashboardPage() {
         description="Do'konning bugungi savdo ko'rsatkichlari, tushumlar va ombor qoldig'i tahlili"
         actions={<DashboardActions />}
       />
+
+      <SetupChecklist />
 
       <DashboardMetrics />
 
