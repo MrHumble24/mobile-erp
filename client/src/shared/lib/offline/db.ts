@@ -74,3 +74,19 @@ export async function idbDelete(store: StoreName, key: IDBValidKey): Promise<voi
 export async function idbClear(store: StoreName): Promise<void> {
   await (await db()).clear(store)
 }
+
+/**
+ * Wipe everything this device keeps for the shop: the offline device/product/
+ * partner caches and the sync queue (outbox + its cursor in `meta`). Used on
+ * sign-out after a data wipe or restore, so the next session starts clean. Each
+ * clear is independent, so one failure does not block the rest.
+ */
+export async function clearOfflineData(): Promise<void> {
+  await Promise.allSettled([
+    idbClear(STORES.outbox),
+    idbClear(STORES.devices),
+    idbClear(STORES.products),
+    idbClear(STORES.partners),
+    idbClear(STORES.meta),
+  ])
+}

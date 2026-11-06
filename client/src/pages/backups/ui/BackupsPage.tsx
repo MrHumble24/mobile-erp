@@ -7,6 +7,7 @@ import { useBackupSettings, backupKeys } from "@/entities/backup"
 import { PassphraseCard } from "@/features/set-backup-passphrase"
 import { ScheduleCard } from "@/features/edit-backup-schedule"
 import { UploadRestoreCard } from "@/features/restore-backup"
+import { DangerZoneCard } from "@/features/wipe-shop-data"
 import { BackupPlaces } from "@/widgets/backup-places"
 import { BackupRunsTable } from "@/widgets/backup-runs"
 import { PageHeader } from "@/shared/ui/page-header"
@@ -38,6 +39,7 @@ export function BackupsPage() {
   const { t } = useI18n()
   const canManage = useAuthStore((s) => s.hasPermission("backup.manage"))
   const canRestore = useAuthStore((s) => s.hasPermission("backup.restore"))
+  const canWipe = useAuthStore((s) => s.hasPermission("data.wipe"))
   const { data: settings, isLoading } = useBackupSettings()
   useOauthReturn()
 
@@ -59,6 +61,8 @@ export function BackupsPage() {
           <BackupRunsTable canManage={canManage} canRestore={canRestore} />
 
           {canRestore && <UploadRestoreCard />}
+
+          {canWipe && <DangerZoneCard />}
         </>
       )}
     </div>
