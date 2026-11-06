@@ -66,7 +66,7 @@ function DateRange({ filters }: { filters: ConsignmentFiltersState }) {
 export function ConsignmentsFilters({ filters }: { filters: ConsignmentFiltersState }) {
   const { t } = useI18n()
   return (
-    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
       <div className="space-y-1">
         <Label>{t("common.search")}</Label>
         <Input

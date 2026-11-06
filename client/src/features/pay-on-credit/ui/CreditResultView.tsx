@@ -15,7 +15,7 @@ export function CreditResultView({ credit, onDone }: { credit: CreditView; onDon
         <CheckCircle2 className="size-10 text-emerald-600" />
         <p className="text-base font-semibold">{t("credit.created")}</p>
       </div>
-      <div className="space-y-1 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3 text-sm">
+      <div className="space-y-1 rounded-[12px] border border-border bg-muted p-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t("credit.agreedTotal")}</span>
           <span className="font-mono font-semibold">{formatMoney(credit.agreedTotal)}</span>

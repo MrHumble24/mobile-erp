@@ -85,7 +85,7 @@ export function PriceGuidance({
   const belowCost = cost != null && salePrice < cost
 
   return (
-    <div className="space-y-2 rounded-[10px] bg-[#f8f9fa] border border-[#e8e8e8] p-2.5">
+    <div className="space-y-2 rounded-[10px] bg-muted border border-border p-2.5">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{t("pos.targetPrice")}</span>
         <span className="font-semibold">{formatMoney(targetPrice)}</span>

@@ -40,7 +40,7 @@ export function UserRolesSection({
       {isSelf && (
         <p className="text-xs text-muted-foreground">{t("users.selfRolesLocked")}</p>
       )}
-      <div className="grid grid-cols-2 gap-2 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+      <div className="grid grid-cols-2 gap-2 rounded-[12px] border border-border bg-muted p-3">
         {roles?.map((r) => (
           <label
             key={r.code}

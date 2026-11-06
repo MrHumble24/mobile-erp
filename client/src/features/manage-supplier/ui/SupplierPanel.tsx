@@ -56,7 +56,7 @@ function SupplierTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -103,7 +103,7 @@ export function SupplierPanel({
       {isLoading ? (
         <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
       ) : (suppliers?.length ?? 0) === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">{t("common.notFound")}</div>
+        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">{t("common.notFound")}</div>
       ) : (
         <SupplierTable
           suppliers={suppliers ?? []}

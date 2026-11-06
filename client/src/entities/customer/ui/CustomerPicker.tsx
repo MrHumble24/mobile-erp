@@ -33,7 +33,7 @@ function selectionName(value: CustomerSelection): string {
 function SelectedChip({ value, onClear }: { value: CustomerSelection; onClear: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between rounded-[10px] bg-[#f8f9fa] border border-[#e8e8e8] p-2.5">
+    <div className="flex items-center justify-between rounded-[10px] bg-muted border border-border p-2.5">
       <div className="flex items-center gap-2 min-w-0">
         <User className="size-4 text-primary shrink-0" />
         <div className="min-w-0">
@@ -49,7 +49,7 @@ function SelectedChip({ value, onClear }: { value: CustomerSelection; onClear: (
 }
 
 const TRIGGER_CLASS =
-  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm text-[#838383] border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] cursor-pointer"
+  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm text-muted-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] cursor-pointer"
 
 function ExistingSearch({ onChange }: { onChange: (v: CustomerSelection) => void }) {
   const { t } = useI18n()

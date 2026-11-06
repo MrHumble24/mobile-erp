@@ -49,11 +49,11 @@ function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
 function EmptyState({ onResetFilters }: { onResetFilters?: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="py-14 text-center border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
+    <div className="py-14 text-center border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
       <PackageSearch className="mx-auto size-10 text-[#a0a0a0] stroke-[1.5]" />
       <div className="space-y-1">
-        <p className="font-medium text-sm text-[#202020]">{t("inventory.empty")}</p>
-        <p className="text-xs text-[#838383]">{t("inventory.searchPlaceholder")}</p>
+        <p className="font-medium text-sm text-foreground">{t("inventory.empty")}</p>
+        <p className="text-xs text-muted-foreground">{t("inventory.searchPlaceholder")}</p>
       </div>
       {onResetFilters && (
         <Button variant="outline" size="sm" onClick={onResetFilters} className="text-xs gap-1.5 mt-1">
@@ -80,7 +80,7 @@ export function DeviceTable({
   }
 
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <DeviceTableHead canViewCost={canViewCost} />
         <TableBody>

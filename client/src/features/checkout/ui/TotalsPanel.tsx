@@ -32,7 +32,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
   const withWarranty = lines.filter((line) => line.kind === "unit" && line.warrantyDays > 0).length
 
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
+    <div className="rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)] space-y-3 sticky top-4">
       <div className="space-y-2 text-sm">
         <SummaryRow label={t("pos.lineCount", { count: lines.length })} value="" />
         <SummaryRow label={t("pricing.listPrice")} value={formatMoney(totals.listTotal)} />
@@ -58,7 +58,7 @@ export function TotalsPanel({ isPending, disabled, onCheckout }: TotalsPanelProp
             value={`− ${formatNumber(plan.redeem.total)}`}
           />
         )}
-        <div className="border-t border-[#e8e8e8] pt-2">
+        <div className="border-t border-border pt-2">
           <SummaryRow label={t("pos.totalDue")} value={formatMoney(plan.amountToPay)} strong />
         </div>
       </div>

@@ -27,7 +27,7 @@ export function SyncStatusIndicator() {
       to="/sync"
       title={summary}
       aria-label={t("sync.openSync")}
-      className="hidden sm:inline-flex items-center gap-1.5 px-3 h-8 rounded-full border text-[11px] font-medium no-underline shrink-0 transition-colors border-[#e8e8e8] text-[#202020] hover:border-[#b3b3b3]"
+      className="hidden sm:inline-flex items-center gap-1.5 px-3 h-8 rounded-full border text-[11px] font-medium no-underline shrink-0 transition-colors border-border text-foreground hover:border-[#b3b3b3]"
     >
       <span
         className={cn("size-1.5 rounded-full shrink-0", online ? "bg-[#00c07a] animate-pulse" : "bg-[#f59e0b]")}

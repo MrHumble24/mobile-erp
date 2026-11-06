@@ -54,7 +54,7 @@ export function RepairsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]">
+    <div className="overflow-hidden rounded-[16px] border border-border bg-white shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

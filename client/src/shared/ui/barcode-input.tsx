@@ -30,7 +30,7 @@ function BarcodeInput({
 
   return (
     <div className="relative flex items-center w-full">
-      <ScanBarcode className="absolute left-3.5 size-4 stroke-[2] text-[#838383] pointer-events-none" />
+      <ScanBarcode className="absolute left-3.5 size-4 stroke-[2] text-muted-foreground pointer-events-none" />
       <Input
         value={value}
         onChange={onChange}
@@ -43,7 +43,7 @@ function BarcodeInput({
         <button
           type="button"
           onClick={onClear}
-          className="absolute right-2.5 size-6 rounded-full bg-[#f8f9fa] hover:bg-[#eeeeee] text-[#646464] hover:text-[#202020] flex items-center justify-center transition-colors cursor-pointer outline-none"
+          className="absolute right-2.5 size-6 rounded-full bg-muted hover:bg-[#eeeeee] text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer outline-none"
         >
           <X className="size-3.5 stroke-[2]" />
           <span className="sr-only">Tozalash</span>

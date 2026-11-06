@@ -19,7 +19,7 @@ function DashboardActions() {
       {hasPermission("expense.read") && (
         <Link to="/expenses" className="no-underline">
           <Button variant="outline" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold gap-1.5">
-            <DollarSign className="w-3.5 h-3.5 text-[#646464]" />
+            <DollarSign className="w-3.5 h-3.5 text-muted-foreground" />
             <span>{t("nav.expenses")}</span>
           </Button>
         </Link>

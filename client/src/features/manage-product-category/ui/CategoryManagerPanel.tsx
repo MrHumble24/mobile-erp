@@ -27,11 +27,11 @@ export function CategoryManagerPanel() {
       {isLoading ? (
         <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
       ) : (categories ?? []).length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
           {t("inventory.empty")}
         </div>
       ) : (
-        <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+        <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
           <Table>
             <TableHeader>
               <TableRow>
@@ -43,9 +43,9 @@ export function CategoryManagerPanel() {
             </TableHeader>
             <TableBody>
               {(categories ?? []).map((c) => (
-                <TableRow key={c.id} className="hover:bg-[#f8f9fa] transition-colors">
-                  <TableCell className="font-medium text-[#202020]">{c.name}</TableCell>
-                  <TableCell className="text-xs text-[#646464]">{c.sortOrder}</TableCell>
+                <TableRow key={c.id} className="hover:bg-muted transition-colors">
+                  <TableCell className="font-medium text-foreground">{c.name}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{c.sortOrder}</TableCell>
                   <TableCell>
                     <Badge variant={c.isActive ? "mint" : "outline"} size="sm">
                       {c.isActive ? t("common.yes") : t("common.no")}

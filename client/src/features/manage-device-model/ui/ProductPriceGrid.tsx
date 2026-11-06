@@ -85,7 +85,7 @@ export function ProductPriceGrid({ model }: { model: DeviceModelView }) {
   }
 
   return (
-    <div className="space-y-3 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-3 rounded-[12px] border border-border bg-muted p-3">
       <div>
         <Label className="text-sm font-semibold">{t("pricing.productPrices")}</Label>
         <p className="text-xs text-muted-foreground">{t("pricing.productPricesHint")}</p>

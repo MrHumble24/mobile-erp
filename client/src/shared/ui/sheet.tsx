@@ -61,7 +61,7 @@ function SheetPopup({
       <DrawerPrimitive.Viewport className="fixed inset-0 z-50 flex items-end justify-center sm:p-4">
         <DrawerPrimitive.Popup
           className={cn(
-            "relative z-50 flex flex-col bg-white text-[#202020] shadow-[var(--shadow-xl)] border border-[#e8e8e8] outline-none overscroll-contain",
+            "relative z-50 flex flex-col bg-white text-foreground shadow-[var(--shadow-xl)] border border-border outline-none overscroll-contain",
             "w-full rounded-t-[24px] max-h-[92vh]",
             "sm:max-w-3xl sm:rounded-[24px]",
             "bottomsheet-popup",
@@ -78,7 +78,7 @@ function SheetPopup({
             </div>
           )}
           {showClose && (
-            <DrawerPrimitive.Close className="absolute top-3.5 right-4 size-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#646464] hover:bg-[#eeeeee] hover:text-[#202020] transition-colors outline-none cursor-pointer z-10">
+            <DrawerPrimitive.Close className="absolute top-3.5 right-4 size-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-[#eeeeee] hover:text-foreground transition-colors outline-none cursor-pointer z-10">
               <X className="size-4 stroke-[2.2]" />
               <span className="sr-only">Yopish</span>
             </DrawerPrimitive.Close>
@@ -100,7 +100,7 @@ function SheetPopup({
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col gap-1 pb-4 border-b border-[#e8e8e8]", className)}
+      className={cn("flex flex-col gap-1 pb-4 border-b border-border", className)}
       {...props}
     />
   )
@@ -109,7 +109,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      className={cn("flex flex-col sm:flex-row justify-end gap-2.5 pt-4 border-t border-[#e8e8e8] mt-6", className)}
+      className={cn("flex flex-col sm:flex-row justify-end gap-2.5 pt-4 border-t border-border mt-6", className)}
       {...props}
     />
   )
@@ -122,7 +122,7 @@ function SheetTitle({
   return (
     <DrawerPrimitive.Title
       className={cn(
-        "font-display text-lg sm:text-xl font-bold text-[#090c1d] tracking-tight leading-snug",
+        "font-display text-lg sm:text-xl font-bold text-foreground tracking-tight leading-snug",
         className
       )}
       {...props}
@@ -137,7 +137,7 @@ function SheetDescription({
   return (
     <DrawerPrimitive.Description
       className={cn(
-        "font-body text-sm font-normal text-[#646464] leading-normal",
+        "font-body text-sm font-normal text-muted-foreground leading-normal",
         className
       )}
       {...props}

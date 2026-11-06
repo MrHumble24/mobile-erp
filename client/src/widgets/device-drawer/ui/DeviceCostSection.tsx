@@ -21,8 +21,8 @@ function CostRow({
   return (
     <div className="flex items-start justify-between gap-2">
       <div>
-        <span className="text-[#838383] text-xs">{label}:</span>
-        <p className="font-medium text-[#202020]">{value}</p>
+        <span className="text-muted-foreground text-xs">{label}:</span>
+        <p className="font-medium text-foreground">{value}</p>
         {note && <p className="text-xs text-muted-foreground italic">{note}</p>}
       </div>
       {onEdit && (
@@ -49,7 +49,7 @@ export function DeviceCostSection({
   const [editField, setEditField] = React.useState<CostField | null>(null)
 
   return (
-    <div className="space-y-3 rounded-[16px] border border-[#e8e8e8] bg-[#f8f9fa] p-4 text-sm shadow-[var(--shadow-xs)]">
+    <div className="space-y-3 rounded-[16px] border border-border bg-muted p-4 text-sm shadow-[var(--shadow-xs)]">
       <CostRow
         label={t("inventory.unitExpense")}
         value={formatMoney(device.unitExpense ?? 0)}

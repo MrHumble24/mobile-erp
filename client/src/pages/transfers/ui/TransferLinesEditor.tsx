@@ -37,11 +37,11 @@ export function TransferLinesEditor({
           {t("transfers.noLinesAdded")}
         </p>
       ) : (
-        <div className="max-h-48 overflow-y-auto space-y-1 border border-[#e8e8e8] rounded-[10px] p-2 bg-white">
+        <div className="max-h-48 overflow-y-auto space-y-1 border border-border rounded-[10px] p-2 bg-white">
           {lines.map((line, idx) => (
             <div
               key={line.deviceId || line.modelId || idx}
-              className="flex items-center justify-between p-2 rounded-[8px] hover:bg-[#f8f9fa] text-xs"
+              className="flex items-center justify-between p-2 rounded-[8px] hover:bg-muted text-xs"
             >
               <div className="flex flex-col">
                 <span className="font-medium">{line.label}</span>

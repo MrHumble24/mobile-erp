@@ -19,7 +19,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   const initial = name.charAt(0).toUpperCase() || "E"
 
   return (
-    <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-[#e8e8e8] flex items-center gap-2.5 shrink-0")}>
+    <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-border flex items-center gap-2.5 shrink-0")}>
       <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs overflow-hidden">
         {branding?.logoUrl ? (
           <img src={branding.logoUrl} alt={name} className="size-full object-cover" />
@@ -30,12 +30,12 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
       {!collapsed && (
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-[#090c1d] truncate">
+            <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-foreground truncate">
               {name}
             </h1>
             <span className="size-1.5 rounded-full bg-[#00c07a]" />
           </div>
-          <p className="text-[10px] text-[#838383] truncate font-medium">ERP</p>
+          <p className="text-[10px] text-muted-foreground truncate font-medium">ERP</p>
         </div>
       )}
     </div>
@@ -67,7 +67,7 @@ function SidebarLinkElement({
         collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
           ? "bg-[#202020] text-white shadow-xs"
-          : "text-[#646464] hover:bg-black/[0.04] hover:text-[#202020]"
+          : "text-muted-foreground hover:bg-black/[0.04] hover:text-foreground"
       )}
     >
       <Icon className="size-4 shrink-0 stroke-[2.2]" />
@@ -137,11 +137,11 @@ function SidebarSectionGroup({
   return (
     <div className="space-y-0.5">
       {!collapsed ? (
-        <div className="text-[10px] tracking-wider text-[#838383] font-mono font-bold uppercase px-3 pt-3 pb-1">
+        <div className="text-[10px] tracking-wider text-muted-foreground font-mono font-bold uppercase px-3 pt-3 pb-1">
           {t(section.groupKey)}
         </div>
       ) : (
-        <div className="my-2 border-t border-[#e8e8e8] mx-2" />
+        <div className="my-2 border-t border-border mx-2" />
       )}
       {visibleItems.map((item) => {
         const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))
@@ -163,7 +163,7 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   const { data: branding } = useBranding()
   if (collapsed) return null
   return (
-    <div className="p-3 border-t border-[#e8e8e8] bg-[#f8f9fa] shrink-0 text-[10px] text-[#838383] flex items-center justify-between">
+    <div className="p-3 border-t border-border bg-muted shrink-0 text-[10px] text-muted-foreground flex items-center justify-between">
       <span>{branding?.name || "ERP"} v1.2</span>
       <span className="font-mono bg-white border border-[#d4d4d4] px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
     </div>
@@ -180,7 +180,7 @@ export function Sidebar({ collapsed, onItemClick, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "bg-white text-[#202020] border-r border-[#e8e8e8] flex flex-col h-full shrink-0 transition-[width] duration-200 z-30 select-none",
+        "bg-white text-foreground border-r border-border flex flex-col h-full shrink-0 transition-[width] duration-200 z-30 select-none",
         collapsed ? "w-[68px]" : "w-60",
         className
       )}

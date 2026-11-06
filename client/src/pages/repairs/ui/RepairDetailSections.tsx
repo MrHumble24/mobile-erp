@@ -18,7 +18,7 @@ export function RepairMoneySummary({ repair }: { repair: RepairView }) {
   const { t } = useI18n()
   const outstanding = Number(repair.outstanding)
   return (
-    <div className="rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="rounded-[12px] border border-border bg-muted p-3">
       <h3 className="text-sm font-semibold tracking-tight mb-1">{t("repairs.moneyTitle")}</h3>
       <Line label={t("repairs.agreedPrice")} value={formatMoney(repair.agreedPrice)} strong />
       <Line label={t("repairs.paid")} value={formatMoney(repair.paid)} />
@@ -57,7 +57,7 @@ export function RepairMeta({ repair }: { repair: RepairView }) {
         <p className="mt-0.5 whitespace-pre-wrap text-sm">{repair.problem}</p>
       </div>
       {repair.notes && (
-        <div className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground whitespace-pre-wrap">
+        <div className="rounded-[10px] border border-border bg-muted p-2.5 text-xs text-muted-foreground whitespace-pre-wrap">
           {repair.notes}
         </div>
       )}

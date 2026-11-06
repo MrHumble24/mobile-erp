@@ -33,7 +33,7 @@ export function CustomerBonusPanel({
         )}
       </div>
 
-      <div className="rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+      <div className="rounded-[12px] border border-border bg-muted p-3">
         <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
           {t("customers.bonusBalance")}
         </div>

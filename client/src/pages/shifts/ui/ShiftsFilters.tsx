@@ -57,7 +57,7 @@ export function ShiftsFilters({
 }) {
   const { t } = useI18n()
   return (
-    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
       {cashiers && (
         <CashierFilter cashiers={cashiers} value={filters.cashierId} onChange={filters.setCashierId} />
       )}

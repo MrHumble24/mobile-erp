@@ -42,7 +42,7 @@ export function ModelMeasureBreakdown({ request }: BreakdownProps) {
                 </span>
               </span>
             </div>
-            <div className="h-2 rounded-full bg-[#f8f9fa]">
+            <div className="h-2 rounded-full bg-muted">
               <div
                 className="h-2 rounded-full bg-[var(--chart-1)]"
                 style={{ width: `${(v / max) * 100}%` }}

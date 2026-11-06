@@ -26,8 +26,8 @@ function UserTriggerContent({ name, email }: { name?: string; email?: string }) 
         {avatarLetter}
       </div>
       <div className="text-left hidden md:block max-w-[130px] truncate leading-tight">
-        <p className="text-xs font-semibold text-[#202020] truncate">{displayName}</p>
-        <p className="text-[10px] text-[#838383] truncate mt-0.5">{safeEmail}</p>
+        <p className="text-xs font-semibold text-foreground truncate">{displayName}</p>
+        <p className="text-[10px] text-muted-foreground truncate mt-0.5">{safeEmail}</p>
       </div>
     </>
   )
@@ -53,13 +53,13 @@ function UserQuickNavItems({ onNavigate }: { onNavigate: (to: string) => void })
     <>
       {hasPermission("settings.manage") && (
         <DropdownMenuItem className="cursor-pointer" onClick={() => onNavigate("/settings")}>
-          <Settings className="mr-2 h-4 w-4 text-[#838383]" />
+          <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
           <span>{t("nav.settings")}</span>
         </DropdownMenuItem>
       )}
       {hasPermission("user.manage") && (
         <DropdownMenuItem className="cursor-pointer" onClick={() => onNavigate("/users")}>
-          <ShieldCheck className="mr-2 h-4 w-4 text-[#838383]" />
+          <ShieldCheck className="mr-2 h-4 w-4 text-muted-foreground" />
           <span>{t("nav.users")}</span>
         </DropdownMenuItem>
       )}
@@ -85,10 +85,10 @@ export function UserMenu() {
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-xs font-bold leading-none text-[#090c1d]">
+              <p className="text-xs font-bold leading-none text-foreground">
                 {user.profile?.fullName || user.email || "User"}
               </p>
-              <p className="text-[11px] text-[#838383] truncate">{user.email || ""}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{user.email || ""}</p>
               <UserRoleBadges roles={user.roles ?? []} />
             </div>
           </DropdownMenuLabel>

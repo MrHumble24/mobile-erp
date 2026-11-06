@@ -266,7 +266,7 @@ function ChequeActions({
         <Button
           variant="secondary"
           onClick={onNewSale}
-          className="w-full h-9 text-xs font-semibold rounded-full mt-1 bg-[#f8f9fa] border border-[#e8e8e8] hover:bg-[#eeeeee]"
+          className="w-full h-9 text-xs font-semibold rounded-full mt-1 bg-muted border border-border hover:bg-[#eeeeee]"
         >
           {t("pos.newSale")}
         </Button>

@@ -20,7 +20,7 @@ function DropdownMenuContent({
       <MenuPrimitive.Positioner sideOffset={sideOffset} className="z-[100] outline-none" {...props}>
         <MenuPrimitive.Popup
           className={cn(
-            "z-[100] min-w-52 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 shadow-[var(--shadow-subtle-2)] border border-[#e8e8e8] outline-none flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-52 overflow-hidden rounded-[12px] bg-white text-foreground p-1 shadow-[var(--shadow-subtle-2)] border border-border outline-none flex flex-col gap-0.5 transition-all",
             className
           )}
         >
@@ -44,7 +44,7 @@ function DropdownMenuItem({
         "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors",
         variant === "destructive"
           ? "text-[#e53935] hover:bg-rose-50 focus:bg-rose-50"
-          : "text-[#202020] hover:bg-[#f8f9fa] focus:bg-[#f8f9fa]",
+          : "text-foreground hover:bg-muted focus:bg-muted",
         className
       )}
       {...props}
@@ -59,7 +59,7 @@ function DropdownMenuLabel({
   return (
     <div
       className={cn(
-        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-[#838383]",
+        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-muted-foreground",
         className
       )}
       {...props}

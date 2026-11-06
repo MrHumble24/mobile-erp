@@ -90,7 +90,7 @@ export function CartLine({
   const removeLine = useCartStore((s) => s.removeLine)
 
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)] space-y-3">
+    <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)] space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <DeviceCard device={line.device} />

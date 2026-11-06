@@ -80,7 +80,7 @@ function MobileSidebarDrawer({
         <Sidebar
           collapsed={false}
           onItemClick={onClose}
-          className="w-full h-full border-r border-[#e8e8e8]"
+          className="w-full h-full border-r border-border"
         />
       </div>
     </div>
@@ -106,7 +106,7 @@ export function AppShell() {
   }, [locale, setLocale])
 
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa] text-[#202020] antialiased">
+    <div className="flex min-h-screen bg-muted text-foreground antialiased">
       <Sidebar
         collapsed={collapsed}
         className="hidden md:flex h-screen sticky top-0"

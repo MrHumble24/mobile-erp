@@ -15,7 +15,7 @@ type Lookup = ReturnType<typeof useIntakeLookup>
 export function IntakeLookupPanel({ lookup, models }: { lookup: Lookup; models: DeviceModelView[] }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-2 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-2 rounded-[12px] border border-border bg-muted p-3">
       <Label>{t("catalog.boxCode")}</Label>
       <BarcodeInput
         value={lookup.boxCode}
@@ -66,7 +66,7 @@ function PickProduct({
   }
 
   return (
-    <div className="space-y-2 rounded-[10px] border border-[#e8e8e8] bg-white p-2.5">
+    <div className="space-y-2 rounded-[10px] border border-border bg-white p-2.5">
       <p className="text-xs font-medium">{t("catalog.lookupPickProduct")}</p>
       <p className="text-xs text-muted-foreground">{reference}</p>
       <Combobox

@@ -79,7 +79,7 @@ function CommandNavGroup({
             key={item.to}
             value={label}
             onSelect={() => onSelect(item.to)}
-            className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-[#f8f9fa] data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
+            className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
           >
             <Icon className="w-4 h-4 shrink-0" />
             <span className="font-medium">{label}</span>
@@ -98,7 +98,7 @@ function CommandPosItem({ onSelect }: { onSelect: () => void }) {
     <CommandItem
       value="Yangi savdo Kassa POS Terminal"
       onSelect={onSelect}
-      className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-[#f8f9fa] data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
+      className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
     >
       <ShoppingCart className="w-4 h-4 text-[#6647f0] shrink-0" />
       <span className="font-medium">Kassa savdosini ochish (POS)</span>
@@ -114,7 +114,7 @@ function CommandExpenseItem({ onSelect }: { onSelect: () => void }) {
     <CommandItem
       value="Xarajat qo'shish kiritish"
       onSelect={onSelect}
-      className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-[#f8f9fa] data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
+      className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
     >
       <PlusCircle className="w-4 h-4 text-[#00c07a] shrink-0" />
       <span className="font-medium">Yangi xarajat kiritish</span>
@@ -142,7 +142,7 @@ function CommandQuickActionsGroup({
       <CommandItem
         value="Tilni o'zgartirish Switch Language UZ EN"
         onSelect={onToggleLocale}
-        className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-[#f8f9fa] data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
+        className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-[#202020] data-[selected=true]:text-white"
       >
         <Languages className="w-4 h-4 text-[#0091ff] shrink-0" />
         <span className="font-medium">
@@ -152,7 +152,7 @@ function CommandQuickActionsGroup({
       <CommandItem
         value="Tizimdan chiqish Chiqish Log out Logout"
         onSelect={onOpenLogout}
-        className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-[#f8f9fa] data-[selected=true]:bg-[#e53935] data-[selected=true]:text-white text-[#e53935]"
+        className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-[#e53935] data-[selected=true]:text-white text-[#e53935]"
       >
         <LogOut className="w-4 h-4 text-[#e53935] shrink-0" />
         <span className="font-medium">{t("auth.logout")}</span>
@@ -188,7 +188,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
         <CommandList>
           <CommandEmpty>{t("nav.searchNoResults")}</CommandEmpty>
           <CommandNavGroup onSelect={handleSelect} />
-          <CommandSeparator className="my-1 border-[#e8e8e8]" />
+          <CommandSeparator className="my-1 border-border" />
           <CommandQuickActionsGroup
             onNavigate={handleSelect}
             onToggleLocale={handleToggleLocale}
@@ -196,7 +196,7 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
             currentLocale={locale}
           />
         </CommandList>
-        <div className="flex items-center justify-between px-3 py-2 border-t border-[#e8e8e8] bg-[#f8f9fa] text-[10px] text-[#838383]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-muted text-[10px] text-muted-foreground">
           <div className="flex items-center gap-2">
             <span><kbd className="px-1.5 py-0.5 rounded bg-white border border-[#d4d4d4] font-mono">↑↓</kbd> Harakat</span>
             <span><kbd className="px-1.5 py-0.5 rounded bg-white border border-[#d4d4d4] font-mono">↵</kbd> Tanlash</span>

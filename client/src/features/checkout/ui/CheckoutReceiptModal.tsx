@@ -106,7 +106,7 @@ export function CheckoutReceiptModal({
             <CheckCircle2 className="size-6 stroke-[2.2]" />
           </div>
           <DialogTitle className="text-lg font-bold">{t("pos.saleSuccess")}</DialogTitle>
-          <DialogDescription className="text-xs text-[#646464]">
+          <DialogDescription className="text-xs text-muted-foreground">
             {t("pos.chequeSubtitle")}
           </DialogDescription>
         </DialogHeader>

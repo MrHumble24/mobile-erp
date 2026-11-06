@@ -76,7 +76,7 @@ function SaleBody({
       {sale.creditId && (
         <Link
           to="/credits"
-          className="flex items-center justify-between gap-2 rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-sm"
+          className="flex items-center justify-between gap-2 rounded-[10px] border border-border bg-muted p-2.5 text-sm"
         >
           <span className="font-medium">{t("credit.payOnCredit")}</span>
           <span className="text-xs font-semibold text-primary">{t("credit.viewCredit")}</span>

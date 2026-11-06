@@ -20,7 +20,7 @@ export interface CustomerSearchProps {
 }
 
 const TRIGGER_CLASS =
-  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm text-[#838383] border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 cursor-pointer"
+  "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm text-muted-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 cursor-pointer"
 
 export function CustomerSearch({ open, onOpenChange, onSelect }: CustomerSearchProps) {
   const { t } = useI18n()

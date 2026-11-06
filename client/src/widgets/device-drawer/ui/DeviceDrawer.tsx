@@ -24,13 +24,13 @@ const INSPECTABLE = new Set(["IN_STOCK", "DEFECTIVE"])
 function DeviceBarcode({ imei }: { imei: string }) {
   const bars = Array.from({ length: 44 }, (_, i) => ((i * 7 + imei.charCodeAt(i % imei.length)) % 3) + 1)
   return (
-    <div className="flex flex-col items-center py-2 px-3 bg-white rounded-[12px] border border-[#e8e8e8] shadow-[var(--shadow-xs)]">
+    <div className="flex flex-col items-center py-2 px-3 bg-white rounded-[12px] border border-border shadow-[var(--shadow-xs)]">
       <div className="flex items-center gap-[2px] h-9">
         {bars.map((w, idx) => (
           <div key={idx} className="bg-[#202020] h-full rounded-[0.5px]" style={{ width: `${w * 1.5}px` }} />
         ))}
       </div>
-      <span className="font-mono text-[11px] tracking-widest text-[#646464] mt-1">{imei}</span>
+      <span className="font-mono text-[11px] tracking-widest text-muted-foreground mt-1">{imei}</span>
     </div>
   )
 }
@@ -43,13 +43,13 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
   const marginPercent = cost > 0 ? (margin / cost) * 100 : 0
   const isPositive = margin >= 0
   return (
-    <div className="flex items-center justify-between p-3 rounded-[12px] bg-white border border-[#e8e8e8] shadow-[var(--shadow-xs)] text-xs">
+    <div className="flex items-center justify-between p-3 rounded-[12px] bg-white border border-border shadow-[var(--shadow-xs)] text-xs">
       <div>
-        <span className="text-[#838383]">{t("inventory.landedCost")}: </span>
-        <span className="font-semibold text-[#202020]">{formatMoney(landedCost)}</span>
+        <span className="text-muted-foreground">{t("inventory.landedCost")}: </span>
+        <span className="font-semibold text-foreground">{formatMoney(landedCost)}</span>
       </div>
       <div>
-        <span className="text-[#838383]">{t("inventory.margin")}: </span>
+        <span className="text-muted-foreground">{t("inventory.margin")}: </span>
         <span className={`font-bold ${isPositive ? "text-[#10b981]" : "text-[#e53935]"}`}>
           {isPositive ? "+" : ""}{formatMoney(margin)} ({marginPercent.toFixed(1)}%)
         </span>
@@ -61,8 +61,8 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
 function SpecCell({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="text-[#838383] text-xs">{label}:</span>
-      <p className="font-medium text-[#202020]">{value}</p>
+      <span className="text-muted-foreground text-xs">{label}:</span>
+      <p className="font-medium text-foreground">{value}</p>
     </div>
   )
 }
@@ -71,19 +71,19 @@ function DeviceSpecsGrid({ device, canViewCost }: { device: DeviceDetailView; ca
   const { t } = useI18n()
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border border-[#e8e8e8] rounded-[16px] p-4 bg-[#f8f9fa] shadow-[var(--shadow-xs)]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm border border-border rounded-[16px] p-4 bg-muted shadow-[var(--shadow-xs)]">
         <SpecCell label={t("inventory.storage")} value={String(device.specs?.storage || "—")} />
         <SpecCell label={t("inventory.color")} value={String(device.specs?.color || "—")} />
         <SpecCell label={t("inventory.condition")} value={String(device.specs?.condition || "—")} />
         <SpecCell label={t("inventory.ram")} value={String(device.specs?.ram || "—")} />
         <div>
-          <span className="text-[#838383] text-xs">{t("inventory.targetPrice")}:</span>
-          <p className="font-bold text-[#090c1d]">{formatMoney(device.targetPrice)}</p>
+          <span className="text-muted-foreground text-xs">{t("inventory.targetPrice")}:</span>
+          <p className="font-bold text-foreground">{formatMoney(device.targetPrice)}</p>
         </div>
         <SpecCell label={t("inventory.intakeDate")} value={formatDate(device.intakeDate)} />
       </div>
       {device.shipmentId === null && (
-        <p className="text-xs font-medium text-[#646464]">{t("purchases.boughtFromCustomer")}</p>
+        <p className="text-xs font-medium text-muted-foreground">{t("purchases.boughtFromCustomer")}</p>
       )}
       {canViewCost && <MarginCard targetPrice={device.targetPrice} landedCost={device.landedCost} />}
     </div>
@@ -96,7 +96,7 @@ function HistoryList({ history }: { history: Array<{ id: string; fromStatusCode:
     <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
       {history.map((h) => (
         <div key={h.id} className="text-xs border-l-2 border-[#090c1d]/30 pl-3 py-1 space-y-0.5">
-          <div className="font-medium text-[#202020]">{h.fromStatusCode ? `${h.fromStatusCode} → ` : ""}{h.toStatusCode}</div>
+          <div className="font-medium text-foreground">{h.fromStatusCode ? `${h.fromStatusCode} → ` : ""}{h.toStatusCode}</div>
           {h.reason && <div className="text-muted-foreground italic">"{h.reason}"</div>}
           <div className="text-[10px] text-muted-foreground">{formatDate(h.changedAt)}</div>
         </div>
@@ -184,7 +184,7 @@ function DrawerBody({
       <DrawerActions device={device} canEdit={canEdit} onEdit={onEdit} onInspect={onInspect} onSell={onSell} />
       <DeviceBarcode imei={unitCode(device)} />
       {device.imei2 && (
-        <p className="text-center font-mono text-xs text-[#646464]">IMEI 2: {device.imei2}</p>
+        <p className="text-center font-mono text-xs text-muted-foreground">IMEI 2: {device.imei2}</p>
       )}
       <DeviceSpecsGrid device={device} canViewCost={canViewCost} />
       {canViewCost && (
@@ -212,8 +212,8 @@ function DrawerHeaderMeta({ title, imei, onCopy }: { title: string; imei?: strin
   const { t } = useI18n()
   return (
     <SheetHeader>
-      <SheetTitle className="text-xl font-bold text-[#090c1d]">{title}</SheetTitle>
-      <SheetDescription className="flex items-center gap-1.5 font-mono text-xs text-[#646464]">
+      <SheetTitle className="text-xl font-bold text-foreground">{title}</SheetTitle>
+      <SheetDescription className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
         <span>{t("catalog.unitCode")}: {imei}</span>
         <Button
           variant="ghost"
@@ -221,7 +221,7 @@ function DrawerHeaderMeta({ title, imei, onCopy }: { title: string; imei?: strin
           type="button"
           onClick={onCopy}
           title={t("inventory.copyImei")}
-          className="size-6 p-0.5 text-[#838383] hover:text-[#090c1d] cursor-pointer"
+          className="size-6 p-0.5 text-muted-foreground hover:text-foreground cursor-pointer"
         >
           <Copy className="size-3" />
         </Button>

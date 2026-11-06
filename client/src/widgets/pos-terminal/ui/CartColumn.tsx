@@ -73,7 +73,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
     return (
       <div id="pos-cart" className="space-y-4">
         <CartLines {...linePerms} />
-        <div className="space-y-3 rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]">
+        <div className="space-y-3 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
           <PriceLevelControl />
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
         </div>
@@ -89,7 +89,7 @@ export function CartColumn({ pos, pinned = false }: { pos: Pos; pinned?: boolean
     <div id="pos-cart" className="flex min-h-0 flex-col gap-3 lg:h-full">
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-0.5">
         <CompactCartLines {...linePerms} />
-        <div className="space-y-3 rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
+        <div className="space-y-3 rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
           <PriceLevelControl />
           <CustomerPanel searchOpen={pos.customerOpen} onSearchOpenChange={pos.setCustomerOpen} />
           <CartDiscountControl canDiscountUnlimited={pos.canDiscountUnlimited} />

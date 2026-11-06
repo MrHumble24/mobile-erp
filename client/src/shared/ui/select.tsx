@@ -44,14 +44,14 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm font-body text-[#202020] border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
+        "flex h-10 w-full items-center justify-between rounded-[9px] bg-white px-3.5 text-sm font-body text-foreground border border-[#d4d4d4] outline-none transition-all focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
         className
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon>
-        <ChevronDown className="size-4 stroke-[2] text-[#838383]" />
+        <ChevronDown className="size-4 stroke-[2] text-muted-foreground" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -72,7 +72,7 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           className={cn(
-            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-white text-[#202020] p-1 border border-[#e8e8e8] outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-white text-foreground p-1 border border-border outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
             className
           )}
         >
@@ -93,7 +93,7 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-[#202020] outline-none transition-colors hover:bg-[#f8f9fa] focus:bg-[#f8f9fa] data-[selected]:bg-[#0091ff]/10 data-[selected]:text-[#0091ff] data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
+        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted data-[selected]:bg-[#0091ff]/10 data-[selected]:text-[#0091ff] data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
         className
       )}
       {...props}
@@ -113,7 +113,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.GroupLabel
       className={cn(
-        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-[#838383]",
+        "px-3 py-1.5 text-[11px] font-body font-semibold uppercase tracking-wider text-muted-foreground",
         className
       )}
       {...props}

@@ -19,7 +19,7 @@ function SelectedCustomer({ customer, onClear }: { customer: CartCustomer; onCle
   const { t } = useI18n()
   const { data: sales } = useCustomerSales(customer.id || "")
   return (
-    <div className="flex items-center justify-between rounded-[10px] bg-[#f8f9fa] border border-[#e8e8e8] p-2.5">
+    <div className="flex items-center justify-between rounded-[10px] bg-muted border border-border p-2.5">
       <div className="flex items-center gap-2 min-w-0">
         <User className="size-4 text-primary shrink-0" />
         <div className="min-w-0">

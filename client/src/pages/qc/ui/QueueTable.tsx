@@ -49,13 +49,13 @@ export function QueueTable({
   const { t } = useI18n()
   if (devices.length === 0) {
     return (
-      <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+      <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
         {t("qc.queueEmpty")}
       </div>
     )
   }
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <QueueHead />
         <TableBody>

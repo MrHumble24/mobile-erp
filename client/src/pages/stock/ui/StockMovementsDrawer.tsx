@@ -69,7 +69,7 @@ export function StockMovementsDrawer({
           )}
           {data && data.items.length > 0 && (
             <>
-              <div className="rounded-[14px] border border-[#e8e8e8] bg-white px-3 shadow-[var(--shadow-xs)]">
+              <div className="rounded-[14px] border border-border bg-white px-3 shadow-[var(--shadow-xs)]">
                 {data.items.map((m) => (
                   <MovementRow key={m.id} m={m} canViewCost={canViewCost} />
                 ))}

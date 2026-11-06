@@ -39,7 +39,7 @@ function ExpenseBody({
   const { t } = useI18n()
   return (
     <div className="my-4 space-y-4">
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-[#f8f9fa] p-4 text-center">
+      <div className="rounded-[16px] border border-border bg-muted p-4 text-center">
         <p className="font-mono text-3xl font-bold text-destructive">
           {formatMoney(expense.amount)}
         </p>

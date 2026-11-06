@@ -29,7 +29,7 @@ function StatusBar({
   return (
     <div
       className={`flex flex-wrap items-center justify-between gap-3 rounded-[14px] border p-3 ${
-        isOpen ? "border-[#e8e8e8] bg-white" : "border-[#fec84b] bg-[#fffaeb]"
+        isOpen ? "border-border bg-white" : "border-[#fec84b] bg-[#fffaeb]"
       }`}
     >
       <div className="flex items-center gap-2.5">

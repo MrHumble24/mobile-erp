@@ -50,7 +50,7 @@ function DualSimToggle<T extends UsedUnitValues>({ form }: { form: UseFormReturn
         name={name<T>("dualSim")}
         render={({ field }) => (
           <div className="flex items-center gap-2">
-            <Label className="text-[#646464]">{t("inventory.dualSim")}</Label>
+            <Label className="text-muted-foreground">{t("inventory.dualSim")}</Label>
             <Switch
               checked={field.value as boolean}
               onCheckedChange={(checked) => {

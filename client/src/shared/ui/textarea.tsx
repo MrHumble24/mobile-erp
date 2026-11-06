@@ -12,9 +12,9 @@ function Textarea({
 }: TextareaProps) {
   const variantStyles = {
     light:
-      "bg-white text-[#202020] border border-[#d4d4d4] placeholder:text-[#838383] focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20",
+      "bg-white text-foreground border border-[#d4d4d4] placeholder:text-muted-foreground focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/20",
     dark:
-      "bg-[#111111] text-white border border-[#2a2a2a] placeholder:text-[#838383] focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/30",
+      "bg-[#111111] text-white border border-[#2a2a2a] placeholder:text-muted-foreground focus:border-[#0091ff] focus:ring-2 focus:ring-[#0091ff]/30",
   }[variant]
 
   return (

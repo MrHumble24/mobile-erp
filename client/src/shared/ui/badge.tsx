@@ -8,11 +8,11 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#eeeeee] text-[#202020] border-none shadow-none",
+          "bg-[#eeeeee] text-foreground border-none shadow-none",
         mercury:
-          "bg-[#eeeeee] text-[#646464] border-none shadow-none",
+          "bg-[#eeeeee] text-muted-foreground border-none shadow-none",
         mint:
-          "bg-[#6ee7b7] text-[#090c1d] border-none shadow-none",
+          "bg-[#6ee7b7] text-foreground border-none shadow-none",
         blue:
           "bg-[#0091ff] text-white border-none shadow-none",
         amber:
@@ -26,18 +26,18 @@ const badgeVariants = cva(
         dark:
           "bg-[#202020] text-white border-none shadow-none",
         outline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] shadow-none",
+          "bg-transparent text-foreground border border-border shadow-none",
         destructive:
           "bg-rose-500/15 text-rose-600 border border-rose-500/20 shadow-none",
         // Legacy aliases
         sulfur:
-          "bg-[#6ee7b7] text-[#090c1d] border-none shadow-none",
+          "bg-[#6ee7b7] text-foreground border-none shadow-none",
         ember:
           "bg-rose-500/15 text-rose-600 border border-rose-500/20 shadow-none",
         plasma:
           "bg-[#6647f0]/10 text-[#6647f0] border border-[#6647f0]/20 shadow-none",
         limestone:
-          "bg-[#eeeeee] text-[#202020] border-none shadow-none",
+          "bg-[#eeeeee] text-foreground border-none shadow-none",
       },
       size: {
         default: "px-3 py-1 text-xs",

@@ -75,7 +75,7 @@ function SplitRows({
   }
 
   return (
-    <div className="space-y-2 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-2 rounded-[12px] border border-border bg-muted p-3">
       {accounts.map((a) => (
         <div key={a.accountCode} className="flex items-center justify-between gap-3">
           <Label className="mb-0">{accountLabel(a.accountCode, a.label, t)}</Label>

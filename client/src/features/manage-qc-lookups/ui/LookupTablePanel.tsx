@@ -27,8 +27,8 @@ export function LookupTablePanel({
   const openEdit = (row: LookupView) => { setEditing(row); setOpen(true) }
 
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#e8e8e8]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h3 className="text-sm font-semibold">{title}</h3>
         <Button size="sm" variant="secondary" onClick={openCreate}>
           <Plus className="size-4" />

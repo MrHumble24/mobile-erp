@@ -56,7 +56,7 @@ export function ModelPictureField({ model }: { model: DeviceModelView }) {
         <AssetImage
           path={model.imageUrl}
           alt={model.name}
-          className="size-20 shrink-0 rounded-[12px] border border-[#e8e8e8]"
+          className="size-20 shrink-0 rounded-[12px] border border-border"
         />
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">

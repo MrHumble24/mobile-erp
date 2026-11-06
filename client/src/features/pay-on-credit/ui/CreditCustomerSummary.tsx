@@ -22,12 +22,12 @@ export function CreditCustomerSummary({
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5">
+        <div className="rounded-[10px] border border-border bg-muted p-2.5">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("credit.currentDebt")}</p>
           <p className="mt-0.5 text-sm font-semibold">{formatMoney(outstanding)}</p>
           <p className="truncate text-[11px] text-muted-foreground">{name} · {phone}</p>
         </div>
-        <div className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5">
+        <div className="rounded-[10px] border border-border bg-muted p-2.5">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{t("credit.effectiveLimit")}</p>
           <p className="mt-0.5 text-sm font-semibold">
             {effectiveLimit === null ? t("credit.noLimit") : formatMoney(effectiveLimit)}

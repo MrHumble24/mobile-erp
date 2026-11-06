@@ -18,7 +18,7 @@ function ModelSelect({ value, onChange, models }: { value?: string; onChange: On
   const { t } = useI18n()
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(toValue(v))}>
-      <SelectTrigger className="h-10 bg-white border-[#e8e8e8] shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-10 bg-white border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("inventory.filterModel")} />
       </SelectTrigger>
       <SelectContent>
@@ -37,7 +37,7 @@ function StorageSelect({ value, onChange, options }: { value?: string; onChange:
   const { t } = useI18n()
   return (
     <Select value={value || "all"} onValueChange={(v) => onChange(toValue(v))}>
-      <SelectTrigger className="h-10 bg-white border-[#e8e8e8] shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-10 bg-white border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("inventory.filterStorage")} />
       </SelectTrigger>
       <SelectContent>
@@ -83,7 +83,7 @@ function StatusPills({
               "h-8 px-3 text-xs font-medium rounded-full transition-all shrink-0 border cursor-pointer",
               isActive
                 ? "bg-[#090c1d] text-white border-[#090c1d] hover:bg-[#090c1d] hover:text-white shadow-[var(--shadow-xs)]"
-                : "bg-white text-[#646464] border-[#e8e8e8] hover:bg-[#f8f9fa] hover:text-[#202020]"
+                : "bg-white text-muted-foreground border-border hover:bg-muted hover:text-foreground"
             )}
           >
             {t(item.labelKey)}
@@ -111,7 +111,7 @@ function FiltersInputs({ filters, models, onScan }: InventoryFiltersProps) {
           onScan={onScan}
           onClear={() => filters.setSearchInput("")}
           placeholder={t("inventory.scanOrSearch")}
-          className="h-10 bg-white border-[#e8e8e8] shadow-[var(--shadow-xs)]"
+          className="h-10 bg-white border-border shadow-[var(--shadow-xs)]"
         />
       </div>
       <div className="lg:col-span-3">
@@ -154,7 +154,7 @@ export function InventoryFilters({ filters, models, onScan }: InventoryFiltersPr
             variant="ghost"
             size="sm"
             onClick={handleClearAll}
-            className="text-xs text-[#838383] hover:text-[#202020] h-8 px-2.5 gap-1.5"
+            className="text-xs text-muted-foreground hover:text-foreground h-8 px-2.5 gap-1.5"
           >
             <RotateCcw className="size-3.5" />
             {t("inventory.clearFilters")} ({activeCount})

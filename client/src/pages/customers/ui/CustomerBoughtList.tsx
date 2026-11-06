@@ -17,7 +17,7 @@ export function CustomerBoughtList({ customerId }: { customerId: string }) {
       {items.map((p) => (
         <div
           key={p.id}
-          className="flex items-center justify-between rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5"
+          className="flex items-center justify-between rounded-[12px] border border-border bg-muted p-2.5"
         >
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">{p.unit.model.brand} {p.unit.model.name}</p>

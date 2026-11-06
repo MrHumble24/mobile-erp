@@ -11,12 +11,12 @@ function Card({
   ...props
 }: CardProps) {
   const variantStyles = {
-    white: "bg-white text-[#202020] border border-[#e8e8e8]",
-    limestone: "bg-[#f8f9fa] text-[#202020] border border-[#e8e8e8]",
-    mist: "bg-[#f8f9fa] text-[#202020] border border-[#e8e8e8]",
-    pumice: "bg-[#e9ebf0] text-[#202020] border border-[#d4d4d4]",
-    ember: "bg-white text-[#202020] border border-[#e8e8e8]",
-    plasma: "bg-[#6647f0]/5 text-[#090c1d] border border-[#6647f0]/20",
+    white: "bg-white text-foreground border border-border",
+    limestone: "bg-muted text-foreground border border-border",
+    mist: "bg-muted text-foreground border border-border",
+    pumice: "bg-[#e9ebf0] text-foreground border border-[#d4d4d4]",
+    ember: "bg-white text-foreground border border-border",
+    plasma: "bg-[#6647f0]/5 text-foreground border border-[#6647f0]/20",
     dark: "bg-[#111111] text-white border border-[#2a2a2a]",
   }[variant]
 
@@ -48,7 +48,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
     <h3
       data-slot="card-title"
       className={cn(
-        "font-display text-lg sm:text-xl font-bold tracking-tight text-[#090c1d]",
+        "font-display text-lg sm:text-xl font-bold tracking-tight text-foreground",
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="card-description"
       className={cn(
-        "font-body text-sm font-normal text-[#646464] leading-normal",
+        "font-body text-sm font-normal text-muted-foreground leading-normal",
         className
       )}
       {...props}
@@ -84,7 +84,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center pt-4 font-body text-xs font-medium text-[#838383]",
+        "flex items-center pt-4 font-body text-xs font-medium text-muted-foreground",
         className
       )}
       {...props}

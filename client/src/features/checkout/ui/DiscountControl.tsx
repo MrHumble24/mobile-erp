@@ -41,7 +41,7 @@ export function DiscountControl({ line, level, canDiscountUnlimited }: DiscountC
   const setMode = (m: DiscountMode) => setLineDiscount(line.lineId, value > 0 ? { mode: m, value } : null)
 
   return (
-    <div className="space-y-2 border-t border-dashed border-[#e8e8e8] pt-2">
+    <div className="space-y-2 border-t border-dashed border-border pt-2">
       <div className="flex items-center justify-between">
         <Label>{t("pricing.discountOnLine")}</Label>
         {value > 0 && (
@@ -52,7 +52,7 @@ export function DiscountControl({ line, level, canDiscountUnlimited }: DiscountC
       </div>
       <div className="flex items-center gap-2">
         {rules.percentAllowed && rules.amountAllowed && (
-          <div className="flex rounded-[10px] border border-[#e8e8e8] p-0.5">
+          <div className="flex rounded-[10px] border border-border p-0.5">
             {(["PERCENT", "AMOUNT"] as DiscountMode[]).map((m) => (
               <Button
                 key={m}

@@ -41,7 +41,7 @@ export function PermissionOverrideRow({
   const source = sourceLabel(state, roleCodes, t)
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[8px] p-2 hover:bg-[#f8f9fa]">
+    <div className="flex items-center justify-between gap-3 rounded-[8px] p-2 hover:bg-muted">
       <div className="min-w-0">
         <div className="font-mono text-xs font-medium">{permission.code}</div>
         <Badge variant={source.tone} className="mt-0.5 text-[10px]">

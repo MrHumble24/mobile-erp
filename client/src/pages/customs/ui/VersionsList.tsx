@@ -11,7 +11,7 @@ export function VersionsList({ versions }: { versions: PriceListSummary[] }) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold">{t("customs.versions")}</h3>
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
         <Table>
           <TableHeader>
             <TableRow>

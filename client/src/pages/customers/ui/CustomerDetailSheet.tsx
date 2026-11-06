@@ -27,7 +27,7 @@ function levelLabel(code: string, t: (k: string) => string): string {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="rounded-[12px] border border-border bg-muted p-3">
       <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="text-sm font-semibold mt-0.5">{value}</div>
     </div>
@@ -85,7 +85,7 @@ function DetailBody({
       </div>
 
       {customer.notes && (
-        <div className="text-xs text-muted-foreground bg-[#f8f9fa] border border-[#e8e8e8] p-2.5 rounded-[12px]">
+        <div className="text-xs text-muted-foreground bg-muted border border-border p-2.5 rounded-[12px]">
           {customer.notes}
         </div>
       )}

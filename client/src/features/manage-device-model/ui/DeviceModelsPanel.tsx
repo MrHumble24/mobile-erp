@@ -36,7 +36,7 @@ function ModelsTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -51,21 +51,21 @@ function ModelsTable({
         </TableHeader>
         <TableBody>
           {models.map((m) => (
-            <TableRow key={m.id} className="hover:bg-[#f8f9fa] transition-colors">
+            <TableRow key={m.id} className="hover:bg-muted transition-colors">
               <TableCell>
                 <AssetImage
                   path={m.imageUrl}
                   alt={m.name}
-                  className="size-10 rounded-[8px] border border-[#e8e8e8]"
+                  className="size-10 rounded-[8px] border border-border"
                   iconClassName="size-4"
                 />
               </TableCell>
-              <TableCell className="font-semibold text-[#090c1d]">{m.brand}</TableCell>
-              <TableCell className="font-medium text-[#202020]">{m.name}</TableCell>
+              <TableCell className="font-semibold text-foreground">{m.brand}</TableCell>
+              <TableCell className="font-medium text-foreground">{m.name}</TableCell>
               <TableCell>
                 <Badge variant="outline" size="sm">{t(productKindLabelKey(m.kindCode))}</Badge>
               </TableCell>
-              <TableCell className="text-xs text-[#646464]">{categoryName(m.categoryId)}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">{categoryName(m.categoryId)}</TableCell>
               <TableCell>
                 <Badge variant={m.isActive ? "mint" : "outline"} size="sm">
                   {m.isActive ? t("common.yes") : t("common.no")}
@@ -89,7 +89,7 @@ function CategoryFilter({ value, onChange }: { value: string; onChange: (v: stri
   const { data: categories } = useProductCategories()
   return (
     <Select value={value} onValueChange={(v) => onChange(v ?? ALL_CATEGORIES)}>
-      <SelectTrigger className="h-9 w-full sm:w-52 bg-white border-[#e8e8e8] shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-9 w-full sm:w-52 bg-white border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("catalog.allCategories")} />
       </SelectTrigger>
       <SelectContent>
@@ -130,12 +130,12 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#838383]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`${t("inventory.brand")} / ${t("inventory.model")}...`}
-              className="pl-9 h-9 bg-white border-[#e8e8e8] shadow-[var(--shadow-xs)]"
+              className="pl-9 h-9 bg-white border-border shadow-[var(--shadow-xs)]"
             />
           </div>
           <CategoryFilter value={categoryId} onChange={setCategoryId} />
@@ -149,7 +149,7 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
       {isLoading ? (
         <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
           {t("inventory.empty")}
         </div>
       ) : (

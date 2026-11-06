@@ -27,7 +27,7 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
           <TriangleAlert className="size-4" />
           {t("inventory.lowStock")}
         </h3>
-        <Link to="/shipments" className="text-xs text-[#646464] hover:text-[#090c1d] flex items-center gap-1">
+        <Link to="/shipments" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
           <Truck className="size-3.5" />
           {t("nav.shipments")}
         </Link>
@@ -40,10 +40,10 @@ function LowStockSection({ rows, nameOf }: { rows: LowStockView[]; nameOf: NameO
               key={r.id}
               className={cn(
                 "flex items-center justify-between rounded-[12px] border p-3 text-sm transition-colors",
-                below ? "border-[#e53935]/40 bg-[#e53935]/5" : "border-[#e8e8e8] bg-white shadow-[var(--shadow-xs)]"
+                below ? "border-[#e53935]/40 bg-[#e53935]/5" : "border-border bg-white shadow-[var(--shadow-xs)]"
               )}
             >
-              <span className="font-medium text-[#202020]">
+              <span className="font-medium text-foreground">
                 {nameOf(r.modelId)} · {r.storage}
               </span>
               <span className={`font-semibold flex items-center gap-1 ${below ? "text-[#e53935]" : ""}`}>
@@ -71,7 +71,7 @@ function RulesTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>
@@ -83,9 +83,9 @@ function RulesTable({
         </TableHeader>
         <TableBody>
           {rules.map((r) => (
-            <TableRow key={r.id} className="hover:bg-[#f8f9fa] transition-colors">
-              <TableCell className="font-medium text-[#202020]">{nameOf(r.modelId)}</TableCell>
-              <TableCell className="text-xs text-[#646464]">{r.storage}</TableCell>
+            <TableRow key={r.id} className="hover:bg-muted transition-colors">
+              <TableCell className="font-medium text-foreground">{nameOf(r.modelId)}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">{r.storage}</TableCell>
               <TableCell className="font-mono text-xs font-semibold">{r.threshold}</TableCell>
               {canManage && (
                 <TableCell className="text-right">

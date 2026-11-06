@@ -83,7 +83,7 @@ export function UserPermissionMatrix({
         <p className="text-xs text-muted-foreground">{t("users.selfPermsLocked")}</p>
       )}
       {dirty && !isSelf && (
-        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between rounded-[12px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
           <span className="text-xs text-muted-foreground">{t("users.unsavedChanges")}</span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" onClick={() => setState(initial)}>
@@ -98,7 +98,7 @@ export function UserPermissionMatrix({
       {Object.entries(groups).map(([resource, perms]) => (
         <div
           key={resource}
-          className="space-y-1 rounded-[16px] border border-[#e8e8e8] bg-white p-4 shadow-[var(--shadow-xs)]"
+          className="space-y-1 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]"
         >
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {resource}

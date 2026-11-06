@@ -12,7 +12,7 @@ type Draft = ReturnType<typeof useCreditDraft>
 function EvenSplitControls({ draft }: { draft: Draft }) {
   const { t } = useI18n()
   return (
-    <div className="space-y-2 rounded-[12px] border border-[#e8e8e8] bg-[#f8f9fa] p-3">
+    <div className="space-y-2 rounded-[12px] border border-border bg-muted p-3">
       <Label className="text-xs font-semibold">{t("credit.evenSplit")}</Label>
       <div className="flex flex-wrap items-end gap-2">
         <div className="space-y-1">
@@ -78,7 +78,7 @@ export function PlanBuilder({ draft }: { draft: Draft }) {
       <div
         className={`flex items-center justify-between rounded-[10px] border p-2.5 text-sm ${
           draft.remainingCents === 0
-            ? "border-[#e8e8e8] text-muted-foreground"
+            ? "border-border text-muted-foreground"
             : "border-destructive/40 text-destructive font-semibold"
         }`}
       >

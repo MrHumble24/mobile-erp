@@ -10,11 +10,11 @@ const buttonVariants = cva(
         default:
           "bg-[#202020] text-white rounded-full hover:bg-[#2a2a2a] active:scale-[0.99] border-none shadow-none",
         secondary:
-          "bg-[#f8f9fa] text-[#202020] rounded-full border border-[#e8e8e8] hover:bg-[#eeeeee] active:scale-[0.99] shadow-none",
+          "bg-muted text-foreground rounded-full border border-border hover:bg-[#eeeeee] active:scale-[0.99] shadow-none",
         outline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] hover:border-[#b3b3b3] active:scale-[0.99] shadow-none",
+          "bg-transparent text-foreground border border-border rounded-full hover:bg-muted hover:border-[#b3b3b3] active:scale-[0.99] shadow-none",
         pillOutline:
-          "bg-transparent text-[#202020] border border-[#e8e8e8] rounded-full hover:bg-[#f8f9fa] active:scale-[0.99] shadow-none",
+          "bg-transparent text-foreground border border-border rounded-full hover:bg-muted active:scale-[0.99] shadow-none",
         ghost:
           "bg-transparent text-[#2a2a2a] rounded-full font-medium hover:bg-black/[0.04] active:scale-[0.99] border-none shadow-none",
         destructive:

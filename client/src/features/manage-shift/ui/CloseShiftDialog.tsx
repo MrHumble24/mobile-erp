@@ -24,7 +24,7 @@ export interface CloseShiftDialogProps {
 
 function InfoRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-sm">
+    <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5 text-sm">
       <span className="text-muted-foreground">{label}</span>
       <span className={`font-mono font-bold ${tone ?? ""}`}>{value}</span>
     </div>

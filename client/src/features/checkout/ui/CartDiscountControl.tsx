@@ -41,11 +41,11 @@ export function CartDiscountControl({ canDiscountUnlimited }: CartDiscountContro
   }
 
   return (
-    <div className="rounded-[16px] border border-[#e8e8e8] bg-white p-3 shadow-[var(--shadow-xs)] space-y-2">
+    <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)] space-y-2">
       <Label>{t("pricing.discountOnCart")}</Label>
       <div className="flex items-center gap-2">
         {rules.percentAllowed && rules.amountAllowed && (
-          <div className="flex rounded-[10px] border border-[#e8e8e8] p-0.5">
+          <div className="flex rounded-[10px] border border-border p-0.5">
             {(["PERCENT", "AMOUNT"] as DiscountMode[]).map((m) => (
               <Button
                 key={m}

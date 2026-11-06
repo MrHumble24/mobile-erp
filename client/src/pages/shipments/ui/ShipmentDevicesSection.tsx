@@ -74,7 +74,7 @@ export function ShipmentDevicesSection({
   if (isLoading) return <div className="py-8 text-center text-muted-foreground">{t("common.loading")}</div>
   if (!data || data.total === 0) {
     return (
-      <div className="py-8 text-center text-muted-foreground border border-[#e8e8e8] rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+      <div className="py-8 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
         {t("shipments.noDevices")}
       </div>
     )
@@ -82,7 +82,7 @@ export function ShipmentDevicesSection({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-[16px] border border-[#e8e8e8] bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+      <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
         <Table>
           <DevicesHead canViewCost={canViewCost} />
           <TableBody>

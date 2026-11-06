@@ -27,7 +27,7 @@ function UnitCodeCell({ code, imei2 }: { code: string; imei2: string | null }) {
   }
 
   return (
-    <div className="font-mono text-xs font-semibold text-[#090c1d]">
+    <div className="font-mono text-xs font-semibold text-foreground">
       <div className="flex items-center gap-1.5">
         <span>{code}</span>
         <Button
@@ -36,12 +36,12 @@ function UnitCodeCell({ code, imei2 }: { code: string; imei2: string | null }) {
           type="button"
           onClick={handleCopy}
           title={t("inventory.copyImei")}
-          className="size-5 p-0.5 opacity-50 hover:opacity-100 hover:text-[#090c1d] cursor-pointer"
+          className="size-5 p-0.5 opacity-50 hover:opacity-100 hover:text-foreground cursor-pointer"
         >
           <Copy className="size-3" />
         </Button>
       </div>
-      {imei2 && <div className="text-[10px] font-normal text-[#838383]">IMEI 2: {imei2}</div>}
+      {imei2 && <div className="text-[10px] font-normal text-muted-foreground">IMEI 2: {imei2}</div>}
     </div>
   )
 }
@@ -107,24 +107,24 @@ export function DeviceTableRow({
   const color = device.specs?.color ? String(device.specs.color) : "-"
 
   return (
-    <TableRow className="hover:bg-[#f8f9fa] cursor-pointer transition-colors" onClick={() => onSelect?.(device)}>
+    <TableRow className="hover:bg-muted cursor-pointer transition-colors" onClick={() => onSelect?.(device)}>
       <TableCell>
         <UnitCodeCell code={unitCode(device)} imei2={device.imei2} />
       </TableCell>
-      <TableCell className="font-medium text-[#202020]">{modelName || device.modelId}</TableCell>
-      <TableCell className="text-xs text-[#646464]">{storage}</TableCell>
-      <TableCell className="text-xs text-[#646464]">{color}</TableCell>
+      <TableCell className="font-medium text-foreground">{modelName || device.modelId}</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{storage}</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{color}</TableCell>
       <TableCell>
         <DeviceStatusBadge status={device.statusCode} />
       </TableCell>
-      <TableCell className="font-semibold text-[#090c1d]">{formatMoney(device.targetPrice)}</TableCell>
+      <TableCell className="font-semibold text-foreground">{formatMoney(device.targetPrice)}</TableCell>
       {canViewCost && (
         <>
-          <TableCell className="text-xs text-[#646464]">{formatMoney(device.acquisitionCost)}</TableCell>
-          <TableCell className="text-xs font-medium text-[#090c1d]">{formatMoney(device.landedCost)}</TableCell>
+          <TableCell className="text-xs text-muted-foreground">{formatMoney(device.acquisitionCost)}</TableCell>
+          <TableCell className="text-xs font-medium text-foreground">{formatMoney(device.landedCost)}</TableCell>
         </>
       )}
-      <TableCell className="text-xs text-[#838383]">{formatDate(device.intakeDate)}</TableCell>
+      <TableCell className="text-xs text-muted-foreground">{formatDate(device.intakeDate)}</TableCell>
       <TableCell className="text-right">
         <ActionButtons device={device} canEdit={canEdit} onEdit={onEdit} onSell={onSell} />
       </TableCell>

@@ -35,7 +35,7 @@ function ReturnFields({
   return (
     <>
       {onCredit ? (
-        <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+        <p className="rounded-[10px] border border-border bg-muted p-2.5 text-xs text-muted-foreground">
           {t("credit.returnNote")}
         </p>
       ) : (
@@ -105,7 +105,7 @@ function RefundNote({ payments }: { payments: PaymentLine[] }) {
     .map((p) => accountLabel(p.accountCode, undefined, t))
     .join(", ")
   return (
-    <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+    <p className="rounded-[10px] border border-border bg-muted p-2.5 text-xs text-muted-foreground">
       {t("sales.refundGoesBack", { accounts })}
     </p>
   )
@@ -115,7 +115,7 @@ function TradeInNote({ tradeInValue }: { tradeInValue: number }) {
   const { t } = useI18n()
   if (tradeInValue <= 0) return null
   return (
-    <p className="rounded-[10px] border border-[#e8e8e8] bg-[#f8f9fa] p-2.5 text-xs text-muted-foreground">
+    <p className="rounded-[10px] border border-border bg-muted p-2.5 text-xs text-muted-foreground">
       {t("purchases.returnTradeInNote")}
     </p>
   )
