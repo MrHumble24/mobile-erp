@@ -81,7 +81,8 @@ extension PosViewModel {
                     try? repo.enqueueSale(payload, baseVersion: line.device?.version)
                 }
                 results.append(completedSale(line, receiptId: receiptId, cashier: cashier,
-                                             customer: customer, at: now, pending: pending))
+                                             customer: customer, at: now, pending: pending,
+                                             bonusSpent: lineBonus))
                 cart.remove(line.id)
             }
             busy = false

@@ -101,6 +101,7 @@ struct CompletedSale: Identifiable {
     var listPrice: String? = nil
     var discountAmount: String? = nil
     var priceLevelCode: String? = nil
+    var bonusSpent: String? = nil
 
     /// Whether to surface the pricing block: a discount was given or the level
     /// was not walk-in.

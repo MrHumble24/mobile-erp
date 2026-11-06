@@ -157,6 +157,24 @@ struct SaleDetailSheet: View {
                         .foregroundStyle(Tokens.text)
                 }
             }
+            if let bonus = sale.bonus {
+                let spent = Decimal(string: bonus.spent) ?? 0
+                if spent > 0 {
+                    fact(i18n.t("sales.paidWithPoints")) {
+                        Text("− \(BonusText.format(bonus.spent))")
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.text)
+                    }
+                }
+                let earned = Decimal(string: bonus.earned) ?? 0
+                if earned > 0 {
+                    fact(i18n.t("sales.pointsEarned")) {
+                        Text(BonusText.format(bonus.earned))
+                            .font(.data(.regular))
+                            .foregroundStyle(Tokens.text)
+                    }
+                }
+            }
             if let net = sale.netProfit {
                 fact(i18n.t("sales.netProfit")) {
                     MoneyText(value: net.string, size: 15)

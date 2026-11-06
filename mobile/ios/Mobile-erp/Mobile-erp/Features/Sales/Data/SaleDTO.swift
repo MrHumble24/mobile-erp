@@ -57,6 +57,11 @@ struct SalePaymentLine: Decodable, Identifiable {
     var id: String { accountCode }
 }
 
+struct SaleBonus: Decodable {
+    let earned: String
+    let spent: String
+}
+
 /// One phone taken in part payment on a sale (`tradeIns[]`, ADR 0039). `value`
 /// is customer-facing (never cost-redacted). Model is a brand+name ref.
 struct SaleTradeInView: Decodable, Identifiable {
@@ -100,6 +105,8 @@ struct SaleView: Decodable, Identifiable {
     let creditId: String?
     /// Phones taken in part payment (ADR 0039); nil/[] for an ordinary sale.
     let tradeIns: [SaleTradeInView]?
+    /// Loyalty points earned and spent on this sale (ADR 0043).
+    let bonus: SaleBonus?
 
     var isB2B: Bool { consignmentId != nil }
     /// Σ of the trade-in values on this sale (money the customer did not tender).

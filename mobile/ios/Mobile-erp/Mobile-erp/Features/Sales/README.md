@@ -3,57 +3,21 @@
 Completed sales, receipts, returns, and warranty lookup.
 
 ## Owns
-- Sales list (`GET /sales`) with channel / status / warranty / cashier / search
-  filters + a `KitDateRangeField` range, paginated via `KitPaginator` (load
-  more) with CSV export (`KitCSVShareButton`).
-- Summary (`GET /sales/stats`) collapsed by default behind one header row
-  ("Umumiy sharh" + revenue + chevron) at the top of the list; tapping expands
-  the shared `MetricList` (count, revenue, avg price, returns + refunded, net
-  profit tinted by sign, shown only when the server includes it). Collapsed so
-  the first sale is above the fold.
-- Sale detail as a Warm Card sheet (`appSheet`): model title, `CopyableIMEI`
-  lines, channel / returned pills, keyed facts (price, profit by sign, customer,
-  phone link, cashier, time, warranty days, returned at), then ghost links to the
-  device / consignment, a secondary Receipt pill and a destructive Return pill
-  (hidden once `returnedAt` is set). Receipt: `GET /sales/:id/receipt`; return:
-  `POST /sales/:id/return`, gated on `sale.return`, toasts on success.
-- Screen title is `nav.sales` (the tab label) so it matches the tab and the
-  Android top bar; `sales.title` is the web page heading.
-- Warranty lookup by IMEI: online `GET /sales/warranty/:imei`, else rebuilt
-  offline from the cached `DeviceEntity` + its latest sale.
-- Cashier options for the sold-by filter via `GET /users` (gated on `user.read`).
+- Sales list (`GET /sales`) with filters, paginator, CSV export.
+- Summary (`GET /sales/stats`) collapsed overview.
+- Sale detail (`SaleDetailSheet`): model, IMEIs, facts, `sales.paidWithPoints` and `sales.pointsEarned` when > 0, receipt, return.
+- Printable receipt (`ReceiptSheet`): store header from server response, items, payments, points spent/earned, footer. 58mm/80mm formatting via `BonusReceiptLayout`. Print button gated on `receiptPrintingEnabled`.
+- Warranty lookup by IMEI.
 
 ## Public API
-- `SalesModule.feature` — the one registry line. Permission: `sale.read`.
+- `SalesModule.feature` — permission: `sale.read`.
 
 ## Must never
-- Write offline: sales reads and returns are online-only (returns block with a
-  needs-connection message when offline).
-- Show cost/profit the server omitted (fields are optional; render only if present).
-- Import another feature slice (`SalesReceiptPrinting` is duplicated from Pos).
+- Write offline (sales reads and returns are online-only).
+- Show cost/profit omitted by server.
+- Import another slice directly.
 
-## Notes
-- No warranty expired/active column exists offline beyond the latest-sale window;
-  `alreadyReturned` is inferred from device status when offline (approximation).
-
-## Note
-- Named `Sales.README.md` (not `README.md`): the file-system synchronized
-  group copies loose `.md` as bundle resources and flattens them by basename,
-  so three `README.md` files would collide. Renamed to keep the gate green
-  without editing `project.pbxproj`.
-
-## Notes
-- `SaleDate` is a typealias onto the kit's `KitDate` (day / dayTime / parse),
-  shared with inventory; `parseDate` forwards to `KitDate.parse`.
-
-## Dual-SIM (second IMEI)
-- `SaleDevice.imei2` / `ReceiptView.Item.imei2` (optional) render under the IMEI
-  in the sale detail sheet and the printable receipt when present. The offline
-  warranty cache lookup matches either IMEI.
-
-## Trade-ins (Step 9, ADR 0039)
-- `SaleView.tradeIns` / `ReceiptView.tradeIns` (optional) list the phones taken
-  in part payment; the sale detail and the receipt show each as a minus line plus
-  the amount actually paid. The return refund caps at money paid + Σ trade-in
-  values with `purchase.create`, else money paid only (`ReturnSheet` shows the
-  note); a 403 `TRADE_IN_REFUND_FORBIDDEN` maps to the refund-too-high message.
+## Step 11 (Bonus Points & Printing)
+- `SaleView` and `ReceiptView` carry `bonus: SaleBonus?`.
+- `ReceiptView` carries `store: SaleStoreRef?` and `footer: String?`.
+- `ReturnSheet` maps `SALE_UNIT_BOUGHT_BACK` and `TRADE_IN_REFUND_FORBIDDEN`.

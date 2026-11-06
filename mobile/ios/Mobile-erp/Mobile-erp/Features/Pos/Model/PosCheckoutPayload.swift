@@ -63,7 +63,8 @@ extension PosViewModel {
     }
 
     func completedSale(_ line: PosCartLine, receiptId: String, cashier: String,
-                       customer: PosCartCustomer?, at now: Date, pending: Bool) -> CompletedSale {
+                       customer: PosCartCustomer?, at now: Date, pending: Bool,
+                       bonusSpent: Decimal = 0) -> CompletedSale {
         let days = line.isProduct ? nil : Int(line.warrantyDays.trimmingCharacters(in: .whitespaces))
         let final = cart.finalTotal(line)
         let list = cart.listPrice(line)
@@ -85,7 +86,8 @@ extension PosViewModel {
             pending: pending,
             listPrice: list.map { NSDecimalNumber(decimal: $0).stringValue },
             discountAmount: discount > 0 ? NSDecimalNumber(decimal: discount).stringValue : nil,
-            priceLevelCode: cart.level
+            priceLevelCode: cart.level,
+            bonusSpent: bonusSpent > 0 ? NSDecimalNumber(decimal: bonusSpent).stringValue : nil
         )
     }
 }

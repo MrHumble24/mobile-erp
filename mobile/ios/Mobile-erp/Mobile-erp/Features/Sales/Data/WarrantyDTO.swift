@@ -31,15 +31,25 @@ struct WarrantyLookup: Decodable {
     }
 }
 
+struct SaleStoreRef: Decodable {
+    let name: String?
+    let address: String?
+    let phone: String?
+}
+
 /// `GET /sales/:id/receipt` — carries no cost/profit, ever.
 struct ReceiptView: Decodable {
     let saleId: String
     let soldAt: String?
     let cashier: String
+    let store: SaleStoreRef?
+    let footer: String?
     let items: [Item]
     let total: MoneyValue
     let warranty: Window?
     let customer: Customer?
+    let payments: [SalePaymentLine]?
+    let bonus: SaleBonus?
     /// Pricing (ADR 0034) — present only when the server adds them to the receipt
     /// endpoint; shown when a discount was given or the level is not retail.
     let listPrice: MoneyValue?
