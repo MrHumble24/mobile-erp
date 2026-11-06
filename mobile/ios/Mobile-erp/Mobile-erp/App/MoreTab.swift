@@ -11,6 +11,7 @@ struct MoreTab: View {
     @Environment(AppContainer.self) private var container
     @Environment(I18n.self) private var i18n
     let modules: [FeatureModule]
+    @State private var showSwitchSheet = false
 
     private var path: Binding<[String]> {
         Binding(
@@ -25,6 +26,49 @@ struct MoreTab: View {
     var body: some View {
         NavigationStack(path: path) {
             ScrollView {
+                let stores = container.session.user?.stores ?? []
+                let activeStore = stores.first { $0.id == container.storeManager.activeStoreID }
+                let canSwitch = stores.count > 1
+
+                AppCard(padding: 0) {
+                    HStack(spacing: Tokens.Space.md) {
+                        Image(systemName: "storefront")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(Tokens.action)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(i18n.t("stores.activeStore"))
+                                .font(.ui(.caption))
+                                .foregroundStyle(Tokens.muted)
+                            Text(activeStore?.name ?? "...")
+                                .font(.ui(.bodyStrong))
+                                .foregroundStyle(Tokens.text)
+                                .lineLimit(1)
+                        }
+                        Spacer(minLength: Tokens.Space.sm)
+                        if canSwitch {
+                            Button {
+                                showSwitchSheet = true
+                            } label: {
+                                HStack(spacing: Tokens.Space.xs) {
+                                    Text(i18n.t("stores.switchStore"))
+                                        .font(.ui(.caption))
+                                        .foregroundStyle(Tokens.action)
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(Tokens.action)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .frame(minHeight: 56)
+                    .padding(.horizontal, Tokens.Space.lg)
+                    .padding(.vertical, Tokens.Space.md)
+                }
+                .padding(.horizontal, Tokens.Space.gutter)
+                .padding(.top, Tokens.Space.md)
+
                 AppCard(padding: 0) {
                     VStack(spacing: 0) {
                         ForEach(Array(modules.enumerated()), id: \.element.id) { i, module in
@@ -48,6 +92,62 @@ struct MoreTab: View {
                         .navigationTitle(module.label(i18n))
                         .navigationBarTitleDisplayMode(.inline)
                 }
+            }
+            .sheet(isPresented: $showSwitchSheet) {
+                let stores = container.session.user?.stores ?? []
+                let activeID = container.storeManager.activeStoreID
+                NavigationStack {
+                    ScrollView {
+                        AppCard(padding: 0) {
+                            VStack(spacing: 0) {
+                                ForEach(Array(stores.enumerated()), id: \.element.id) { i, store in
+                                    let isCurrent = store.id == activeID
+                                    Button {
+                                        showSwitchSheet = false
+                                        if !isCurrent {
+                                            Task { await container.switchStore(store.id) }
+                                        }
+                                    } label: {
+                                        HStack(spacing: Tokens.Space.md) {
+                                            Image(systemName: "storefront")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundStyle(isCurrent ? Tokens.action : Tokens.text)
+                                                .frame(width: 24)
+                                            Text(store.name)
+                                                .font(isCurrent ? .ui(.bodyStrong) : .ui(.body))
+                                                .foregroundStyle(Tokens.text)
+                                            Spacer(minLength: Tokens.Space.sm)
+                                            if isCurrent {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundStyle(Tokens.success)
+                                            }
+                                        }
+                                        .frame(minHeight: 52)
+                                        .padding(.horizontal, Tokens.Space.lg)
+                                        .padding(.vertical, Tokens.Space.sm)
+                                        .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    if i < stores.count - 1 {
+                                        Divider().overlay(Tokens.border).padding(.leading, Tokens.Space.lg)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, Tokens.Space.gutter)
+                        .padding(.vertical, Tokens.Space.md)
+                    }
+                    .background(Tokens.ground)
+                    .navigationTitle(i18n.t("stores.switchStore"))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(i18n.t("common.close")) { showSwitchSheet = false }
+                        }
+                    }
+                }
+                .presentationDetents([.medium, .large])
             }
         }
         // Toolbar icons on More-pushed screens read as `text`, not the orange app

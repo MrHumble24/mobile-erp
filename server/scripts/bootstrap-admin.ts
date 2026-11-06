@@ -1,19 +1,18 @@
 import 'dotenv/config';
-import { NestFactory } from '@nestjs/core';
 import * as argon2 from 'argon2';
-import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 /**
  * Creates the first admin from BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_PASSWORD
  * and assigns the seeded ADMIN role. Idempotent: does nothing once any user
  * exists. Run after migrate + seed (see server/README.md).
+ *
+ * Talks to the database only. It used to boot the whole app, which fails under
+ * tsx (no decorator metadata, so injected services are undefined).
  */
 async function main(): Promise<void> {
-  const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['error', 'warn'],
-  });
-  const prisma = app.get(PrismaService);
+  const prisma = new PrismaService();
+  await prisma.$connect();
   try {
     if ((await prisma.user.count()) > 0) {
       console.log('Users already exist — skipping bootstrap.');
@@ -41,7 +40,7 @@ async function main(): Promise<void> {
     });
     console.log(`Created admin ${user.email} (${user.id}).`);
   } finally {
-    await app.close();
+    await prisma.onModuleDestroy();
   }
 }
 

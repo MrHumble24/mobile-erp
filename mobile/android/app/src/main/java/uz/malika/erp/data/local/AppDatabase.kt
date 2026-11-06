@@ -21,7 +21,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         OutboxEntity::class,
         SyncMetaEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -119,9 +119,20 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Offline queue store column (ADR 0058): adds `storeId` to `outbox`
+         * so a queued change carries the active store from when it was queued.
+         * Existing rows have null storeId.
+         */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE outbox ADD COLUMN storeId TEXT")
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "malika.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
     }
 }

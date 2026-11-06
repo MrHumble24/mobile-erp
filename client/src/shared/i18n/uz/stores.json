@@ -15,5 +15,11 @@
   "confirmDeactivate": "Haqiqatan ham {name} do'konini nofaol qilmoqchimisiz?",
   "deactivated": "Do'kon nofaol qilindi",
   "saved": "Do'kon muvaffaqiyatli saqlandi",
-  "noStores": "Do'konlar topilmadi"
+  "noStores": "Do'konlar topilmadi",
+  "chooseStore": "Do'konni tanlang",
+  "chooseStoreSubtitle": "Davom etish uchun filialni tanlang",
+  "activeStore": "Faol do'kon",
+  "switchStore": "Do'konni almashtirish",
+  "storeRequired": "Iltimos, do'konni tanlang",
+  "storeForbidden": "Sizda ushbu do'konga kirish huquqi yo'q"
 }

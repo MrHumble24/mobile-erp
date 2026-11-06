@@ -8,10 +8,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import uz.malika.erp.core.AppException
 import uz.malika.erp.core.AuthEvents
+import uz.malika.erp.core.StoreEvents
+import uz.malika.erp.core.StoreManager
 import uz.malika.erp.core.logging.AppLog
 import uz.malika.erp.data.sync.SyncManager
 import uz.malika.erp.features.auth.data.AuthRepository
 import uz.malika.erp.features.auth.data.AuthUser
+import uz.malika.erp.i18n.I18n
+import uz.malika.erp.i18n.LocaleStore
+import uz.malika.erp.shared.ui.Toaster
 
 data class SessionState(
     val user: AuthUser? = null,
@@ -29,6 +34,11 @@ class SessionViewModel(
     private val repo: AuthRepository,
     authEvents: AuthEvents,
     private val syncManager: SyncManager,
+    private val storeManager: StoreManager? = null,
+    private val storeEvents: StoreEvents? = null,
+    private val toaster: Toaster? = null,
+    private val i18n: I18n? = null,
+    private val localeStore: LocaleStore? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SessionState(user = repo.cachedUser()))
@@ -38,10 +48,41 @@ class SessionViewModel(
         viewModelScope.launch {
             authEvents.unauthorized.collect {
                 AppLog.i("auth", "session cleared (401 auto-logout)")
+                storeManager?.clear()
                 _state.value = SessionState(user = null)
             }
         }
-        if (_state.value.user != null) syncManager.syncNow() // hydrate on restored session
+        storeEvents?.let { events ->
+            viewModelScope.launch {
+                events.storeRequired.collect {
+                    AppLog.w("store", "refusal STORE_REQUIRED")
+                    showStoreMessage("stores.storeRequired")
+                    storeManager?.clear()
+                }
+            }
+            viewModelScope.launch {
+                events.storeForbidden.collect {
+                    AppLog.w("store", "refusal STORE_FORBIDDEN")
+                    showStoreMessage("stores.storeForbidden")
+                    storeManager?.clear()
+                    refreshPermissions()
+                }
+            }
+        }
+        _state.value.user?.let { user ->
+            // No sync before a store is chosen: the server would refuse it (STORE_REQUIRED).
+            val store = storeManager?.syncWithUser(user)
+            if (storeManager == null || store != null) syncManager.syncNow() // hydrate on restored session
+            if (user.stores.isEmpty()) {
+                refreshPermissions()
+            }
+        }
+    }
+
+    private fun showStoreMessage(key: String) {
+        val loc = localeStore?.locale?.value ?: "uz"
+        val msg = i18n?.t(loc, key, null) ?: key
+        toaster?.error(msg)
     }
 
     fun login(email: String, password: String) {
@@ -51,8 +92,9 @@ class SessionViewModel(
             try {
                 val user = repo.login(email, password)
                 AppLog.i("auth", "login ok: $email")
+                val store = storeManager?.syncWithUser(user)
                 _state.value = SessionState(user = user)
-                syncManager.syncNow()
+                if (storeManager == null || store != null) syncManager.syncNow()
             } catch (e: AppException) {
                 AppLog.w("auth", "login failed ($email): ${e.statusCode} ${e.message}")
                 _state.value = _state.value.copy(loading = false, error = e)
@@ -62,21 +104,23 @@ class SessionViewModel(
 
     /**
      * Re-read the signed-in user from the server so newly granted/revoked
-     * permissions apply without signing out. Called on app start and whenever the
-     * app returns to the foreground while online. A failure (offline, transient) is
-     * ignored — the cached session stays; a 401 clears it via [AuthEvents] as usual.
+     * permissions and store assignments apply without signing out.
      */
     fun refreshPermissions() {
         if (_state.value.user == null) return
         viewModelScope.launch {
             runCatching { repo.me() }.getOrNull()?.let { fresh ->
-                if (_state.value.user != null) _state.value = _state.value.copy(user = fresh)
+                if (_state.value.user != null) {
+                    _state.value = _state.value.copy(user = fresh)
+                    storeManager?.syncWithUser(fresh)
+                }
             }
         }
     }
 
     fun logout() {
         AppLog.i("auth", "logout")
+        storeManager?.clear()
         repo.logout()
         _state.value = SessionState(user = null)
     }

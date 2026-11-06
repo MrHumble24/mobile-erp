@@ -87,6 +87,7 @@ final class Session {
     func clear() {
         keychain.delete(.token)
         keychain.delete(.user)
+        keychain.delete(.activeStoreID)
         user = nil
         // Drop cached GET responses so the next user can't read them offline.
         URLCache.shared.removeAllCachedResponses()

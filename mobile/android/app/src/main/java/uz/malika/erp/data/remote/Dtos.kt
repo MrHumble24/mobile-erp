@@ -13,12 +13,16 @@ data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val accessToken: String, val user: AuthUserDto)
 
 @Serializable
+data class UserStoreDto(val id: String, val name: String)
+
+@Serializable
 data class AuthUserDto(
     val id: String,
     val email: String,
     val profile: AuthProfileDto? = null,
     val roles: List<String> = emptyList(),
     val permissions: List<String> = emptyList(),
+    val stores: List<UserStoreDto> = emptyList(),
 )
 
 @Serializable
@@ -108,6 +112,7 @@ data class PushMutation(
     val type: String,
     val payload: JsonElement,
     val baseVersion: Int? = null,
+    val storeId: String? = null,
     val occurredAt: String,
 )
 

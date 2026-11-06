@@ -18,8 +18,9 @@ On boot when `needsSetup` is true, prints the generated setup code once to STDOU
 
 ## Locked-Out Recovery
 
-If the owner loses credentials after setup, use `pnpm bootstrap:admin` from the
-server host to restore administrative access via environment variables.
+If the owner forgets the password after setup, run `pnpm reset-password` from the
+server host with `RESET_EMAIL` and `RESET_PASSWORD`; it reactivates the account
+and ends all sessions. `pnpm bootstrap:admin` only creates the FIRST admin.
 Setup opens again if the users table is ever emptied, and a new code is made then.
 
 ## Must never

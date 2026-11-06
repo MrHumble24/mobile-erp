@@ -13,6 +13,7 @@ import {
   type NavItemDef,
   type NavSection,
 } from "../model/navigation"
+import { AssetImage } from "@/shared/ui"
 
 function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   const { data: branding } = useBranding()
@@ -23,7 +24,7 @@ function SidebarBrand({ collapsed }: { collapsed: boolean }) {
     <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-border flex items-center gap-2.5 shrink-0")}>
       <div className="size-8 rounded-full bg-primary flex items-center justify-center font-display font-bold text-sm text-primary-foreground shrink-0 shadow-xs overflow-hidden">
         {branding?.logoUrl ? (
-          <img src={branding.logoUrl} alt={name} className="size-full object-cover" />
+          <AssetImage path={branding.logoUrl} alt={name} className="size-full" />
         ) : (
           initial
         )}

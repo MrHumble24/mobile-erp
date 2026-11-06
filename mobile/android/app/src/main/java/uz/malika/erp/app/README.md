@@ -11,6 +11,7 @@ feature modules.
 - **BottomNav.kt**: `OneUiBottomBar` (plain `Tokens.surface`, 1dp hairline, no pill, 5 equal `weight(1f)` columns = first 4 destinations + `More`, single-line ellipsized 11sp labels, nav-bar inset) and `bottomBarSplit` / `MORE_ROUTE`.
 - **MoreScreen.kt**: the overflow destinations as one grouped `Tokens.surface` card of icon + label + chevron rows; the More tab stays selected on any overflow route.
 - **PermissionGate.kt**: wraps a route; renders a 403 panel when the user lacks the permission.
+- **Branch / store switching**: `MoreScreen` displays active store banner at the top; users with >1 store can switch branches with cache clear and repull (ADR 0058).
 
 ## Never
 - Put business logic or feature-specific code here.
