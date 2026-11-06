@@ -37,6 +37,7 @@ interface RequestOptions {
   body?: unknown
   headers?: Record<string, string>
   params?: Record<string, string | number | boolean | undefined | null>
+  public?: boolean
 }
 
 let tokenGetter: () => string | null = () => null
@@ -68,7 +69,7 @@ export function apiAssetUrl(path: string | null | undefined): string | null {
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
+async function handleResponse<T>(response: Response, isPublic = false): Promise<T> {
   if (!response.ok) {
     let errorBody: { statusCode?: number; message?: string | string[]; error?: string; [key: string]: unknown } = {}
     try {
@@ -81,7 +82,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
       ? errorBody.message.join(", ")
       : errorBody.message || `Request failed with status ${response.status}`
 
-    if (response.status === 401) {
+    if (response.status === 401 && !isPublic) {
       unauthorizedHandler()
     }
 
@@ -119,12 +120,13 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     ...options.headers,
   }
 
-  const token = tokenGetter()
+  const isPublic = Boolean(options.public)
+  const token = isPublic ? null : tokenGetter()
   if (token) {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const storeId = headers["X-Store-Id"] ?? storeIdGetter()
+  const storeId = isPublic ? null : (headers["X-Store-Id"] ?? storeIdGetter())
   if (storeId) {
     headers["X-Store-Id"] = storeId
   }
@@ -141,7 +143,7 @@ export async function http<T>(path: string, options: RequestOptions = {}): Promi
     throw new NetworkError(err)
   }
 
-  return handleResponse<T>(response)
+  return handleResponse<T>(response, isPublic)
 }
 
 /**

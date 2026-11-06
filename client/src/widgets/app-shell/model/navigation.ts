@@ -22,6 +22,7 @@ import {
   Repeat2,
   Wrench,
   Store,
+  ShoppingBag,
 } from "lucide-react"
 
 export const SHELL_BAR_HEIGHT = "h-14"
@@ -46,6 +47,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: "/", labelKey: "nav.dashboard", permission: "report.finance", icon: LayoutDashboard },
       { to: "/pos", labelKey: "nav.pos", permission: "sale.create", icon: ShoppingCart },
+      { to: "/orders", labelKey: "nav.orders", permission: "order.read", icon: ShoppingBag },
       { to: "/inventory", labelKey: "nav.inventory", permission: "device.read", icon: Smartphone },
       { to: "/stock", labelKey: "nav.stock", permission: "device.read", icon: Package },
       { to: "/shipments", labelKey: "nav.shipments", permission: "shipment.read", icon: Truck },

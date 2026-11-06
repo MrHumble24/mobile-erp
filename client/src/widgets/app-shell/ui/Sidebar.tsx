@@ -1,6 +1,7 @@
 import { useLocation } from "react-router"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
+import { useStorefrontOrderStats } from "@/entities/order"
 import { useI18n } from "@/shared/i18n"
 import { Link } from "@/shared/ui/link"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/ui/tooltip"
@@ -38,11 +39,13 @@ function SidebarLinkElement({
   collapsed,
   isActive,
   onItemClick,
+  badgeCount,
 }: {
   item: NavItemDef
   collapsed: boolean
   isActive: boolean
   onItemClick?: () => void
+  badgeCount?: number
 }) {
   const { t } = useI18n()
   const Icon = item.icon
@@ -54,7 +57,7 @@ function SidebarLinkElement({
       onClick={onItemClick}
       aria-label={label}
       className={cn(
-        "flex items-center gap-3 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline",
+        "flex items-center gap-3 h-9 rounded-full text-xs font-display font-semibold transition-all no-underline hover:no-underline relative",
         collapsed ? "justify-center px-0 size-9 mx-auto" : "px-3.5 w-full",
         isActive
           ? "bg-[#202020] text-white shadow-xs"
@@ -63,6 +66,18 @@ function SidebarLinkElement({
     >
       <Icon className="size-4 shrink-0 stroke-[2.2]" />
       {!collapsed && <span className="truncate">{label}</span>}
+      {Boolean(badgeCount && badgeCount > 0) && (
+        <span
+          className={cn(
+            "font-mono font-bold text-white bg-blue-600 rounded-full flex items-center justify-center",
+            collapsed
+              ? "absolute top-1 right-1 size-2 ring-2 ring-white"
+              : "ml-auto px-1.5 h-4 min-w-4 text-[10px]"
+          )}
+        >
+          {!collapsed && badgeCount}
+        </span>
+      )}
     </Link>
   )
 }
@@ -72,11 +87,13 @@ function SidebarLinkItem({
   collapsed,
   isActive,
   onItemClick,
+  badgeCount,
 }: {
   item: NavItemDef
   collapsed: boolean
   isActive: boolean
   onItemClick?: () => void
+  badgeCount?: number
 }) {
   const { t } = useI18n()
   const label = t(item.labelKey)
@@ -85,7 +102,15 @@ function SidebarLinkItem({
     return (
       <Tooltip>
         <TooltipTrigger
-          render={<SidebarLinkElement item={item} collapsed={collapsed} isActive={isActive} onItemClick={onItemClick} />}
+          render={
+            <SidebarLinkElement
+              item={item}
+              collapsed={collapsed}
+              isActive={isActive}
+              onItemClick={onItemClick}
+              badgeCount={badgeCount}
+            />
+          }
         />
         <TooltipContent side="right" sideOffset={8}>
           {label}
@@ -100,6 +125,7 @@ function SidebarLinkItem({
       collapsed={collapsed}
       isActive={isActive}
       onItemClick={onItemClick}
+      badgeCount={badgeCount}
     />
   )
 }
@@ -108,10 +134,12 @@ function SidebarSectionGroup({
   section,
   collapsed,
   onItemClick,
+  newOrdersCount,
 }: {
   section: NavSection
   collapsed: boolean
   onItemClick?: () => void
+  newOrdersCount?: number
 }) {
   const { t } = useI18n()
   const location = useLocation()
@@ -136,6 +164,7 @@ function SidebarSectionGroup({
       )}
       {visibleItems.map((item) => {
         const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to))
+        const badgeCount = item.to === "/orders" ? newOrdersCount : undefined
         return (
           <SidebarLinkItem
             key={item.to}
@@ -143,6 +172,7 @@ function SidebarSectionGroup({
             collapsed={collapsed}
             isActive={isActive}
             onItemClick={onItemClick}
+            badgeCount={badgeCount}
           />
         )
       })}
@@ -167,6 +197,11 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onItemClick, className }: SidebarProps) {
+  const hasPermission = useAuthStore((s) => s.hasPermission)
+  const canReadOrders = hasPermission("order.read")
+  const { data: orderStats } = useStorefrontOrderStats()
+  const newOrdersCount = canReadOrders ? (orderStats?.new ?? 0) : 0
+
   return (
     <aside
       className={cn(
@@ -183,6 +218,7 @@ export function Sidebar({ collapsed, onItemClick, className }: SidebarProps) {
             section={section}
             collapsed={collapsed}
             onItemClick={onItemClick}
+            newOrdersCount={newOrdersCount}
           />
         ))}
       </nav>

@@ -34,5 +34,6 @@
   "purchases": "Customer purchases",
   "repairs": "Repairs",
   "transfers": "Transfers",
-  "stores": "Stores"
+  "stores": "Stores",
+  "orders": "Orders"
 }

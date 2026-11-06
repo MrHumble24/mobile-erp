@@ -34,6 +34,9 @@ const TransfersPage = lazy(() => import("@/pages/transfers"))
 const UsersPage = lazy(() => import("@/pages/users"))
 const SyncPage = lazy(() => import("@/pages/sync"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
+const ShopPage = lazy(() => import("@/pages/shop"))
+const ShopDetailPage = lazy(() => import("@/pages/shop-detail"))
+const OrdersPage = lazy(() => import("@/pages/orders"))
 
 function SuspenseFallback() {
   return (
@@ -108,6 +111,9 @@ function ProtectedRoutes() {
         <Route element={<RequirePermission permission="sync.resolve" />}>
           <Route path="/sync" element={<SyncPage />} />
         </Route>
+        <Route element={<RequirePermission permission="order.read" />}>
+          <Route path="/orders" element={<OrdersPage />} />
+        </Route>
         <Route element={<RequirePermission permission="settings.manage" />}>
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
@@ -120,6 +126,8 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<SuspenseFallback />}>
       <Routes>
+        <Route path="/shop" element={<ShopPage />} />
+        <Route path="/shop/:modelId" element={<ShopDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         {ProtectedRoutes()}
         <Route path="*" element={<Navigate to="/" replace />} />

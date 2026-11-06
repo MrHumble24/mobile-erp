@@ -32,6 +32,7 @@ import {
 } from "./SettingsSections"
 import { BonusSection } from "./BonusSection"
 import { PrintingSection } from "./PrintingSection"
+import { StorefrontSection } from "./StorefrontSection"
 
 function SettingsForm({
   settings,
@@ -100,6 +101,7 @@ export function SettingsPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader title={t("settings.title")} description={t("settings.subtitle")} />
+      <StorefrontSection disabled={!canManage} />
       {isLoading && <Skeleton className="h-96 rounded-[16px]" />}
       {settings && <SettingsForm settings={settings} canManage={canManage} />}
     </div>
