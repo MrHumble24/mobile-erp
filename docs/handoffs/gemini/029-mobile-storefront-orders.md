@@ -1,6 +1,6 @@
 # 029 — Online orders on the phone apps (Android and iOS)
 
-Status: done · Owner: Gemini (Antigravity), finished by Claude's builder · Depends on: 027 (merged)
+Status: merged · Owner: Gemini (Antigravity), finished by Claude's builder · Depends on: 027 (merged)
 
 ## Why
 The public shop page takes orders since handoff 022 (ADR 0049, 0050). Staff see them on the
@@ -94,3 +94,19 @@ whole iOS slice, tests, docs).
   in ADR 0059.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Gemini ran out of its limit with only a start on Android; a
+  Claude builder agent finished both platforms. Gates run by Claude: Android builds, 148 unit
+  tests pass; iOS builds.
+- Seen by Claude on an Android emulator, against a copy of the working data with two test
+  orders placed through the public shop route: the More tab shows "Orders" with a badge of 2;
+  the list shows both orders, newest first, with status chips; an order opens with the phone
+  number, product, store, the customer's note, the buttons and the history; "mark contacted"
+  asks once, then the status, "handled by" and the history change (checked in the database
+  too); after closing, the list shows the new status.
+- One change by Claude, both platforms: the confirmation's dismiss button said "Cancel", the
+  same word as the "Cancel order" action, so that dialog had two identical buttons. It says
+  "Back" now.
+- Differences from the handoff, accepted: no note on cancelling (the server takes none).
+- Not seen: anything on iOS (build only); "mark done", "cancel order", the 404 path, offline,
+  paging, the dialer; the Back key did not close the sheet on the emulator (a tap outside did).
+  The Uzbek is Gemini's and wants a native look.

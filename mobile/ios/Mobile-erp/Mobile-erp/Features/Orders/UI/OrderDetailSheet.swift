@@ -40,7 +40,7 @@ struct OrderDetailSheet: View {
             Button(i18n.t(OrderStatusStyle.actionLabelKey(action)), role: action == .cancel ? .destructive : nil) {
                 apply(action)
             }
-            Button(i18n.t("common.cancel"), role: .cancel) {}
+            Button(i18n.t("common.back"), role: .cancel) {} // not "cancel": the action itself is "Cancel order"
         }
         .task { if order == nil { load() } }
     }

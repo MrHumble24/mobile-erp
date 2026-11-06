@@ -105,7 +105,7 @@ fun OrderDetailSheet(container: AppContainer, repo: OrdersRepository, id: String
             title = t(actionLabelKey(action), null),
             message = t(actionConfirmKey(action), null),
             confirmLabel = t(actionLabelKey(action), null),
-            cancelLabel = t("common.cancel", null),
+            cancelLabel = t("common.back", null), // not "cancel": the action itself is "Cancel order"
             destructive = action == OrderStatusAction.CANCEL,
             onConfirm = {
                 val target = OrderRules.targetStatus(action)
