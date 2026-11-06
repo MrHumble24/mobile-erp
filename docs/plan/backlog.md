@@ -6,6 +6,7 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## In progress now (not backlog, listed so nothing is counted twice)
 - Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones). Android: MERGED 2026-11-06 (OpenCode 014 to 017, fixed by Claude, tried on the emulator). iOS: MERGED 2026-11-07 (Gemini 030; built and read by Claude, two fixes; the live test on a phone is the user's).
 - Merged 2026-11-06 as well: the Uzbek pass (031) and the till and dialogs at phone width (032).
+- Online shop part 2 MERGED 2026-11-07, all three steps (033 delivery and held phone, 034 Payme and Click, 035 website), on passing tests only: see "Owed checks" above. Not switched on anywhere; a real payment needs the shop's merchant accounts.
 - Merged on 2026-11-06: the online storefront, first-boot setup with company profile and themes, the danger zone, branches on the phone apps (027), dark themes switched on (028), online orders on the phone apps (029), OpenCode 010 to 013. Gemini and OpenCode ran out of their limits that day; 028 and 029 were finished by Claude builder agents.
 
 ## Owed checks (skipped to save tokens; do them when the Claude limit resets)
@@ -22,7 +23,6 @@ part 2 is used with real customers or real money.
 | What | Handoff | Notes |
 |---|---|---|
 | Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Given to Gemini on 2026-11-07 (worktree `.worktrees/factory-reset`), with Claude's defaults in its "Decided" table. Own reset test and a security audit before merging. |
-| Online shop part 2: website screens | `docs/handoffs/gemini/035` | Can start: 033 and 034 are merged (2026-11-07). Worktree `.worktrees/shop2-web`. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
