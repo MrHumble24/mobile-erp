@@ -2,34 +2,74 @@ import { existsSync, promises as fsp } from 'node:fs';
 import { extractSafe } from './archive.js';
 
 /**
- * Replace the uploads folder with the one from a backup, atomically. The new
- * tree is extracted (safely — no `..`, absolute paths or links) into a sibling
- * directory so the final swap is a same-filesystem rename. On any failure the
- * original folder is put back, so uploads are either fully swapped or untouched.
+ * Replaces the uploads folder with the one from a backup, as renames only, so
+ * the live folder is never half-written and a failure can be undone (A2).
+ *
+ *   prepare()  — extract the backup's uploads into `<dir>.incoming` (safe
+ *                extraction: no `..`, absolute paths or links). Done before the
+ *                database is touched, so most failures happen here.
+ *   commit()   — rename live → `<dir>.old`, incoming → live.
+ *   rollback() — put the original back (from `.old`), or just drop incoming.
+ *   finalize() — drop the kept `.old`/`.failed` folders after full success.
  */
-export async function swapUploadsFromTar(
-  uploadsTar: string,
-  uploadsDir: string,
-): Promise<void> {
-  const newDir = `${uploadsDir}.restoring-new`;
-  const oldDir = `${uploadsDir}.restoring-old`;
+export class UploadSwap {
+  private committed = false;
 
-  await fsp.rm(newDir, { recursive: true, force: true });
-  await fsp.rm(oldDir, { recursive: true, force: true });
-  await fsp.mkdir(newDir, { recursive: true });
-  await extractSafe(uploadsTar, newDir);
+  private constructor(
+    private readonly live: string,
+    private readonly incoming: string,
+    private readonly old: string,
+    private readonly failed: string,
+  ) {}
 
-  let movedOld = false;
-  if (existsSync(uploadsDir)) {
-    await fsp.rename(uploadsDir, oldDir);
-    movedOld = true;
+  static async prepare(
+    uploadsTar: string,
+    uploadsDir: string,
+  ): Promise<UploadSwap> {
+    const swap = new UploadSwap(
+      uploadsDir,
+      `${uploadsDir}.incoming`,
+      `${uploadsDir}.old`,
+      `${uploadsDir}.failed`,
+    );
+    await fsp.rm(swap.incoming, { recursive: true, force: true });
+    await fsp.rm(swap.old, { recursive: true, force: true });
+    await fsp.rm(swap.failed, { recursive: true, force: true });
+    await fsp.mkdir(swap.incoming, { recursive: true });
+    await extractSafe(uploadsTar, swap.incoming);
+    return swap;
   }
-  try {
-    await fsp.rename(newDir, uploadsDir);
-  } catch (err) {
-    if (movedOld) await fsp.rename(oldDir, uploadsDir);
-    await fsp.rm(newDir, { recursive: true, force: true });
-    throw err;
+
+  async commit(): Promise<void> {
+    const hadLive = existsSync(this.live);
+    if (hadLive) await fsp.rename(this.live, this.old);
+    try {
+      await fsp.rename(this.incoming, this.live);
+    } catch (err) {
+      // Second rename failed: put the original back so nothing is lost.
+      if (hadLive && !existsSync(this.live))
+        await fsp.rename(this.old, this.live);
+      throw err;
+    }
+    this.committed = true;
   }
-  await fsp.rm(oldDir, { recursive: true, force: true });
+
+  async rollback(): Promise<void> {
+    if (!this.committed) {
+      await fsp.rm(this.incoming, { recursive: true, force: true });
+      return;
+    }
+    // Move the failed restore's uploads aside and restore the original.
+    await fsp.rm(this.failed, { recursive: true, force: true });
+    if (existsSync(this.live)) await fsp.rename(this.live, this.failed);
+    if (existsSync(this.old)) await fsp.rename(this.old, this.live);
+    await fsp.rm(this.failed, { recursive: true, force: true });
+    this.committed = false;
+  }
+
+  async finalize(): Promise<void> {
+    await fsp.rm(this.old, { recursive: true, force: true });
+    await fsp.rm(this.incoming, { recursive: true, force: true });
+    await fsp.rm(this.failed, { recursive: true, force: true });
+  }
 }

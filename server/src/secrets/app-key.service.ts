@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 const KEY_BYTES = 32;
@@ -31,9 +37,17 @@ export class AppKeyService {
   private fromEnv(): Buffer | undefined {
     const raw = process.env.APP_MASTER_KEY?.trim();
     if (!raw) return undefined;
-    const buf = /^[0-9a-fA-F]{64}$/.test(raw)
-      ? Buffer.from(raw, 'hex')
-      : Buffer.from(raw, 'base64');
+    let buf: Buffer;
+    if (/^[0-9a-fA-F]{64}$/.test(raw)) {
+      buf = Buffer.from(raw, 'hex');
+    } else {
+      buf = Buffer.from(raw, 'base64');
+      // Accept base64 only when it is exactly what the bytes re-encode to, so a
+      // typo cannot silently become a different (shorter) key (A10).
+      if (buf.toString('base64') !== raw) {
+        throw new Error('APP_MASTER_KEY is not valid base64 or hex');
+      }
+    }
     if (buf.length !== KEY_BYTES) {
       throw new Error('APP_MASTER_KEY must decode to exactly 32 bytes');
     }
@@ -48,12 +62,26 @@ export class AppKeyService {
       if (buf.length !== KEY_BYTES) {
         throw new Error(`${file} is corrupt (expected 32 bytes)`);
       }
+      const mode = statSync(file).mode & 0o777;
+      if (mode & 0o077) {
+        this.logger.warn(
+          `${file} is readable by group/other (mode ${mode.toString(8)}); run chmod 600`,
+        );
+      }
       return buf;
     }
     mkdirSync(dir, { recursive: true, mode: 0o700 });
     const key = randomBytes(KEY_BYTES);
-    writeFileSync(file, key, { mode: 0o600 });
-    this.logger.warn(`Generated a new app master key at ${file}`);
-    return key;
+    try {
+      // Exclusive create: if two boots race, only one writes the key (A9).
+      writeFileSync(file, key, { flag: 'wx', mode: 0o600 });
+      this.logger.warn(`Generated a new app master key at ${file}`);
+      return key;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
+        return readFileSync(file);
+      }
+      throw err;
+    }
   }
 }

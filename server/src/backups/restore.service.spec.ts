@@ -5,15 +5,22 @@ import { RESTORE_CONFIRM_FAILED } from './types/backup.types.js';
 function make(over: {
   storeName?: string;
   passwordOk?: boolean;
-  maintenanceActive?: boolean;
+  manualRecovery?: boolean;
 }) {
   const repo = {
     createRestoreRun: jest.fn().mockResolvedValue({ id: 'r1' }),
-    finishRestoreRun: jest.fn().mockResolvedValue(undefined),
-    listRuns: jest.fn().mockResolvedValue([{ id: 'safety' }]),
+    upsertRestoreOutcome: jest.fn().mockResolvedValue(undefined),
+    listRuns: jest
+      .fn()
+      .mockResolvedValue([{ id: 'safety', fileName: 's.mbk' }]),
+    latestRestoreRun: jest.fn().mockResolvedValue(null),
   };
   const backups = { startBackup: jest.fn(), download: jest.fn() };
-  const runner = { passphrase: jest.fn().mockResolvedValue('pw') };
+  const runner = {
+    passphrase: jest.fn().mockResolvedValue('pw'),
+    passphraseStatus: jest.fn(),
+  };
+  const restoreRunner = { perform: jest.fn() };
   const stores = {
     list: jest
       .fn()
@@ -22,25 +29,20 @@ function make(over: {
   const auth = {
     verifyPassword: jest.fn().mockResolvedValue(over.passwordOk ?? true),
   };
-  const maintenance = {
-    active: over.maintenanceActive ?? false,
-    isActive() {
-      return this.active;
-    },
-    begin: jest.fn(),
-    end: jest.fn(),
+  const recovery = {
+    needsManualRecovery: () => over.manualRecovery ?? false,
+    restoreInProgress: () => false,
   };
-  const sessions = { endAllSessions: jest.fn() };
   const svc = new RestoreService(
     repo as never,
     backups as never,
     runner as never,
+    restoreRunner as never,
     stores as never,
     auth as never,
-    maintenance as never,
-    sessions as never,
+    recovery as never,
   );
-  return { svc, repo, backups, maintenance };
+  return { svc, repo, backups };
 }
 
 const req = (shopName: string): RestoreRequest => ({
@@ -68,8 +70,8 @@ describe('RestoreService confirmation', () => {
     );
   });
 
-  it('does not start a restore while maintenance is already active', async () => {
-    const { svc, repo } = make({ maintenanceActive: true });
+  it('refuses to start while manual recovery is pending (RESTORE_RUNNING)', async () => {
+    const { svc, repo } = make({ manualRecovery: true });
     await expect(svc.restore(req('Malika Bazaar'))).rejects.toMatchObject({
       response: { code: 'RESTORE_RUNNING' },
     });

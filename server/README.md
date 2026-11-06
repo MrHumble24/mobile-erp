@@ -21,10 +21,12 @@ pnpm prisma generate
 | `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
 | `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
 | `UPLOADS_DIR`             | Where product pictures are stored (default `./uploads`, git-ignored, created on start). **On Railway point this at a mounted volume** — a plain directory is wiped on every deploy and the pictures vanish (ADR 0031). |
-| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key** and the session cutoff file (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** — else the key is regenerated each deploy and every secret becomes unreadable (ADR 0051). |
-| `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: base64 or hex, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
+| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key**, restore staging and the restore **recovery markers** (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** — else the key is regenerated each deploy and every secret becomes unreadable; a persistent volume also keeps the recovery markers across a redeploy (ADR 0051). The session cutoff now lives in the database, not here. |
+| `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: hex, or base64 that round-trips, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
 | `BACKUPS_DIR`             | Where encrypted `*.mbk` backups are written (default `./backups`, git-ignored, never served over HTTP). On Railway use a mounted volume for an on-server copy. |
-| `BACKUP_PASSPHRASE`       | Fallback backup passphrase. Prefer setting it in-app (Settings → Backups, stored encrypted); env is used only when no in-app passphrase is set. Lose it = every backup unrecoverable. |
+| `BACKUP_PASSPHRASE`       | Fallback backup passphrase. Prefer setting it in-app (Settings → Backups, stored encrypted); env is used only when no readable in-app passphrase is set. Lose it = every backup unrecoverable. |
+| `BACKUP_MAX_PAYLOAD_BYTES`| Largest backup payload (dump + uploads) before encryption (default 32 GiB, well under the AES-GCM limit); a bigger payload is refused with `BACKUP_TOO_LARGE`. |
+| `BACKUP_MAX_UPLOAD_BYTES` | Largest restore upload accepted (default 2 GiB). |
 | `PG_BIN_DIR`              | Optional directory holding `pg_dump`/`pg_restore` when they are not on `PATH`. |
 
 ## First-run sequence (order matters)
@@ -60,6 +62,15 @@ Managed in-app (Settings → Backups): scheduled or manual, encrypted `*.mbk`
 files holding the whole database **and** the uploads, sent to storage providers
 (server disk now; Telegram / Drive / OneDrive follow). Permissions `backup.read`
 / `backup.manage` / `backup.restore` (owner only by default).
+
+**Run one instance only.** The maintenance switch and the restore recovery
+markers are per-process; a restore assumes it is the single writer (ADR 0051).
+
+**If a restore needs manual recovery.** A restore rolls itself back on failure;
+only if that rollback also fails does the server stay in maintenance with a
+marker in `DATA_DIR`. Restore the latest safety `.mbk` by hand (open it, then
+`pg_restore` the dump and swap the uploads), then run
+`pnpm tsx scripts/clear-recovery.ts` and restart.
 
 - **Deploy needs.** `pg_dump` and `pg_restore` must be on the server, a major
   version **≥** the managed Postgres (a backup refuses an older client). Railway

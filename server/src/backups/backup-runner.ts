@@ -1,18 +1,23 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { promises as fsp } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SecretsService } from '../secrets/secrets.service.js';
 import { TelegramService } from '../telegram/telegram.service.js';
-import { sha256File } from './lib/backup-manifest.js';
+import { FORMAT_VERSION, sha256File } from './lib/backup-manifest.js';
 import { createBackupFile } from './lib/mbk-format.js';
 import { assertPgTools } from './lib/pg-tools.js';
 import { BackupsRepository } from './backups.repository.js';
-import { backupDestination, uploadsDir } from './lib/backup-config.js';
+import {
+  backupDestination,
+  makeStaging,
+  uploadsDir,
+} from './lib/backup-config.js';
 import { StorageRegistry } from './storage/storage.registry.js';
 import {
   BACKUP_NO_PASSPHRASE,
   BACKUP_PASSPHRASE_SECRET,
+  BACKUP_PASSPHRASE_UNREADABLE,
+  type PassphraseStatus,
   TARGET_STATUS,
 } from './types/backup.types.js';
 
@@ -29,10 +34,21 @@ export class BackupRunner {
     private readonly telegram: TelegramService,
   ) {}
 
-  /** Resolve the passphrase: the secret first, then the env fallback. */
+  /** Resolve the passphrase: the readable secret first, then the env fallback.
+   * Never throws (an unreadable secret falls through to the env value). */
   async passphrase(): Promise<string | null> {
-    const fromSecret = await this.secrets.read(BACKUP_PASSPHRASE_SECRET);
-    return fromSecret ?? process.env.BACKUP_PASSPHRASE?.trim() ?? null;
+    if ((await this.secrets.state(BACKUP_PASSPHRASE_SECRET)) === 'set') {
+      return this.secrets.read(BACKUP_PASSPHRASE_SECRET);
+    }
+    return process.env.BACKUP_PASSPHRASE?.trim() ?? null;
+  }
+
+  /** `set` when a usable passphrase exists (readable secret or env fallback). */
+  async passphraseStatus(): Promise<PassphraseStatus> {
+    const st = await this.secrets.state(BACKUP_PASSPHRASE_SECRET);
+    if (st === 'set') return 'set';
+    if (process.env.BACKUP_PASSPHRASE?.trim()) return 'set';
+    return st; // 'missing' or 'unreadable'
   }
 
   async run(triggeredById: string | null, keepLast: number): Promise<void> {
@@ -41,16 +57,19 @@ export class BackupRunner {
 
     const pass = await this.passphrase();
     if (!pass) {
+      const unreadable = (await this.passphraseStatus()) === 'unreadable';
       throw new BadRequestException({
-        code: BACKUP_NO_PASSPHRASE,
-        message: 'Set the backup passphrase before making a backup',
+        code: unreadable ? BACKUP_PASSPHRASE_UNREADABLE : BACKUP_NO_PASSPHRASE,
+        message: unreadable
+          ? 'The stored backup passphrase cannot be read on this server; type it again'
+          : 'Set the backup passphrase before making a backup',
       });
     }
     await assertPgTools(await this.repo.serverMajor());
 
     const migrationName = await this.repo.lastAppliedMigration();
     const run = await this.repo.createRun(triggeredById, migrationName);
-    const work = await fsp.mkdtemp(join(tmpdir(), 'mbk-run-'));
+    const work = await makeStaging('run');
     try {
       await this.produce(
         run.id,
@@ -92,6 +111,12 @@ export class BackupRunner {
       passphrase,
       migrationName,
       workDir: work,
+      meta: {
+        runId,
+        createdAt: new Date().toISOString(),
+        formatVersion: FORMAT_VERSION,
+        migrationName,
+      },
     });
     const { size } = await fsp.stat(tempFile);
     const checksum = await sha256File(tempFile);

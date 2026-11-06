@@ -55,9 +55,13 @@ describe('BackupsService', () => {
   });
 
   it('getSettings reports whether the passphrase is set, never its value', async () => {
-    const svc = make({ passphrase: jest.fn().mockResolvedValue('the-secret') });
+    const svc = make({
+      passphrase: jest.fn().mockResolvedValue('the-secret'),
+      passphraseStatus: jest.fn().mockResolvedValue('set'),
+    });
     const view = await svc.getSettings();
     expect(view.passphraseSet).toBe(true);
+    expect(view.passphraseStatus).toBe('set');
     expect(JSON.stringify(view)).not.toContain('the-secret');
     expect(Object.keys(view)).not.toContain('passphrase');
   });

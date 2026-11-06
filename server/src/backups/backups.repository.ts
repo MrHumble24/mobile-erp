@@ -101,6 +101,79 @@ export class BackupsRepository {
     });
   }
 
+  // --- reconcile (T2) -------------------------------------------------------
+  /** A backup file on disk with no row: create a SUCCESS run + LOCAL target. */
+  insertReconciledRun(d: {
+    id: string;
+    createdAt: Date;
+    fileName: string;
+    sizeBytes: bigint;
+  }) {
+    return this.prisma.backupRun.create({
+      data: {
+        id: d.id,
+        statusCode: RUN_STATUS.SUCCESS,
+        startedAt: d.createdAt,
+        finishedAt: new Date(),
+        fileName: d.fileName,
+        sizeBytes: d.sizeBytes,
+        targets: {
+          create: {
+            providerCode: 'LOCAL',
+            statusCode: 'UPLOADED',
+            remoteRef: d.fileName,
+          },
+        },
+      },
+    });
+  }
+
+  /** A RUNNING row whose file exists becomes SUCCESS with a LOCAL target. */
+  async reconcileToSuccess(
+    id: string,
+    data: { fileName: string; sizeBytes: bigint },
+  ): Promise<void> {
+    await this.prisma.backupRun.update({
+      where: { id },
+      data: {
+        ...data,
+        statusCode: RUN_STATUS.SUCCESS,
+        finishedAt: new Date(),
+        error: null,
+      },
+    });
+    const existing = await this.prisma.backupTarget.findFirst({
+      where: { runId: id, providerCode: 'LOCAL' },
+    });
+    if (existing) {
+      await this.prisma.backupTarget.update({
+        where: { id: existing.id },
+        data: { statusCode: 'UPLOADED', remoteRef: data.fileName, error: null },
+      });
+    } else {
+      await this.prisma.backupTarget.create({
+        data: {
+          runId: id,
+          providerCode: 'LOCAL',
+          statusCode: 'UPLOADED',
+          remoteRef: data.fileName,
+        },
+      });
+    }
+  }
+
+  /** A LOCAL target whose file is gone is marked FAILED. */
+  markLocalTargetMissing(targetId: string) {
+    return this.prisma.backupTarget.update({
+      where: { id: targetId },
+      data: { statusCode: 'FAILED', error: 'file missing on the server' },
+    });
+  }
+
+  latestRestoreRun() {
+    return this.prisma.restoreRun.findFirst({ orderBy: { startedAt: 'desc' } });
+  }
+
   // --- targets --------------------------------------------------------------
   createTarget(runId: string, providerCode: string, statusCode: string) {
     return this.prisma.backupTarget.create({

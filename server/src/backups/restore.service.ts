@@ -7,26 +7,27 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { createWriteStream, promises as fsp } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { AuthService } from '../auth/auth.service.js';
-import { MaintenanceService } from '../common/runtime/maintenance.service.js';
-import { SessionGateService } from '../common/runtime/session-gate.service.js';
+import { RecoveryService } from '../common/runtime/recovery.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsRepository } from './backups.repository.js';
 import { BackupsService } from './backups.service.js';
-import { uploadsDir } from './lib/backup-config.js';
+import { makeStaging, uploadsDir } from './lib/backup-config.js';
 import { knownMigrations } from './lib/backup-manifest.js';
 import { openBackupFile } from './lib/mbk-format.js';
-import { runMigrateDeploy, runPgRestore } from './lib/pg-tools.js';
-import { swapUploadsFromTar } from './lib/uploads-swap.js';
+import { UploadSwap } from './lib/uploads-swap.js';
+import { RestoreRunner } from './restore-runner.js';
+import { backupsDir } from './storage/local.storage.js';
 import {
   BACKUP_FROM_NEWER_VERSION,
   BACKUP_NO_PASSPHRASE,
+  BACKUP_PASSPHRASE_UNREADABLE,
   RESTORE_CONFIRM_FAILED,
   RESTORE_RUNNING,
+  RestoreStatusView,
 } from './types/backup.types.js';
 
 export interface RestoreRequest {
@@ -38,6 +39,12 @@ export interface RestoreRequest {
   source: { runId: string } | { uploadPath: string; label: string };
 }
 
+type RestoreBase = {
+  performedById: string;
+  sourceRunId: string | null;
+  sourceLabel: string;
+};
+
 /** Orchestrates an all-or-nothing restore. See ADR 0051 for the step order. */
 @Injectable()
 export class RestoreService {
@@ -48,26 +55,46 @@ export class RestoreService {
     private readonly repo: BackupsRepository,
     private readonly backups: BackupsService,
     private readonly runner: BackupRunner,
+    private readonly restoreRunner: RestoreRunner,
     private readonly stores: StoresService,
     private readonly auth: AuthService,
-    private readonly maintenance: MaintenanceService,
-    private readonly sessions: SessionGateService,
+    private readonly recovery: RecoveryService,
   ) {}
 
   isRestoring(): boolean {
     return this.restoring;
   }
 
+  async status(): Promise<RestoreStatusView> {
+    const last = await this.repo.latestRestoreRun();
+    return {
+      restoring: this.restoring,
+      needsManualRecovery: this.recovery.needsManualRecovery(),
+      last: last
+        ? {
+            status: last.statusCode,
+            startedAt: last.startedAt,
+            finishedAt: last.finishedAt,
+            error: last.error,
+          }
+        : null,
+    };
+  }
+
   async restore(req: RestoreRequest): Promise<void> {
     await this.confirm(req.shopName, req.email, req.password);
-    if (this.restoring || this.maintenance.isActive()) {
+    if (
+      this.restoring ||
+      this.recovery.needsManualRecovery() ||
+      this.recovery.restoreInProgress()
+    ) {
       throw new ConflictException({
         code: RESTORE_RUNNING,
-        message: 'A restore is already running',
+        message: 'A restore is already running or awaiting recovery',
       });
     }
     this.restoring = true;
-    const work = await fsp.mkdtemp(join(tmpdir(), 'mbk-restore-'));
+    const work = await makeStaging('restore');
     try {
       const failure = await this.run(req, work);
       if (failure) throw failure;
@@ -86,9 +113,13 @@ export class RestoreService {
     if (!databaseUrl) throw new Error('DATABASE_URL is not set');
     const pass = await this.runner.passphrase();
     if (!pass) {
+      const unreadable =
+        (await this.runner.passphraseStatus()) === 'unreadable';
       throw new BadRequestException({
-        code: BACKUP_NO_PASSPHRASE,
-        message: 'Set the backup passphrase first',
+        code: unreadable ? BACKUP_PASSPHRASE_UNREADABLE : BACKUP_NO_PASSPHRASE,
+        message: unreadable
+          ? 'The stored backup passphrase cannot be read on this server; type it again'
+          : 'Set the backup passphrase first',
       });
     }
 
@@ -103,53 +134,56 @@ export class RestoreService {
     };
     const record = await this.repo.createRestoreRun(base);
 
-    let safetyRunId: string | undefined;
+    const outcome = { safetyRunId: undefined as string | undefined };
     let failure: Error | undefined;
     try {
-      const opened = await openBackupFile(path, pass, work);
-      await this.assertKnownVersion(opened.manifest.migrationName);
-      // Safety backup first; stop if it fails (before any destructive step).
-      await this.backups.startBackup(req.performedById);
-      safetyRunId = (await this.repo.listRuns(1))[0]?.id;
-      await this.applyBackup(databaseUrl, opened);
+      await this.execute(req, work, pass, databaseUrl, path, outcome);
     } catch (err) {
       failure = err instanceof Error ? err : new Error(String(err));
       this.logger.error(`Restore failed: ${failure.message}`);
     }
-    await this.recordOutcome(record.id, base, safetyRunId, failure);
+    await this.recordOutcome(record.id, base, outcome.safetyRunId, failure);
     return failure;
   }
 
-  /** The destructive, all-or-nothing steps, bracketed by maintenance. */
-  private async applyBackup(
+  /** Prepare everything that can fail, make the safety backup, then perform the
+   * destructive steps with rollback (the runner owns maintenance + markers). */
+  private async execute(
+    req: RestoreRequest,
+    work: string,
+    pass: string,
     databaseUrl: string,
-    opened: { databaseDump: string; uploadsTar: string },
+    path: string,
+    outcome: { safetyRunId?: string },
   ): Promise<void> {
-    this.maintenance.begin('restore');
-    try {
-      await runPgRestore(databaseUrl, opened.databaseDump, {
-        singleTransaction: true,
-      });
-      await runMigrateDeploy(databaseUrl);
-      await swapUploadsFromTar(opened.uploadsTar, uploadsDir());
-      this.sessions.endAllSessions();
-    } finally {
-      this.maintenance.end();
-    }
+    const opened = await openBackupFile(path, pass, work);
+    await this.assertKnownVersion(opened.manifest.migrationName);
+    const swap = await UploadSwap.prepare(opened.uploadsTar, uploadsDir());
+
+    // Safety backup, then pre-decrypt its dump so a rollback cannot fail on it.
+    await this.backups.startBackup(req.performedById);
+    const safety = (await this.repo.listRuns(1))[0];
+    outcome.safetyRunId = safety?.id;
+    if (!safety?.fileName) throw new Error('Safety backup produced no file');
+    const safetyOpened = await openBackupFile(
+      join(backupsDir(), safety.fileName),
+      pass,
+      work,
+    );
+
+    await this.restoreRunner.perform({
+      databaseUrl,
+      databaseDump: opened.databaseDump,
+      swap,
+      safetyDump: safetyOpened.databaseDump,
+      safetyRunId: safety.id,
+    });
   }
 
-  /**
-   * Best-effort audit. A successful restore wiped the RUNNING row written above,
-   * so this upsert re-inserts it; a failure here must not fail an already-done
-   * restore (the data is already in place).
-   */
+  /** Best-effort audit (a successful restore wipes the RUNNING row; upsert it). */
   private async recordOutcome(
     id: string,
-    base: {
-      performedById: string;
-      sourceRunId: string | null;
-      sourceLabel: string;
-    },
+    base: RestoreBase,
     safetyRunId: string | undefined,
     failure: Error | undefined,
   ): Promise<void> {
@@ -158,7 +192,10 @@ export class RestoreService {
         id,
         base,
         failure ? 'FAILED' : 'SUCCESS',
-        { safetyRunId, error: failure?.message },
+        {
+          safetyRunId,
+          error: failure?.message,
+        },
       );
     } catch (auditErr) {
       this.logger.warn(`Restore audit write failed: ${String(auditErr)}`);

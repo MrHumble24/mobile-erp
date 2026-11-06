@@ -1,5 +1,8 @@
+import { Logger } from '@nestjs/common';
 import { spawn } from 'node:child_process';
 import { join } from 'node:path';
+
+const logger = new Logger('pg-tools');
 
 /**
  * Safe wrappers around pg_dump / pg_restore and `prisma migrate deploy`. Every
@@ -47,15 +50,20 @@ function run(cmd: string, args: string[], env: PgEnv): Promise<RunResult> {
     let stderr = '';
     child.stdout.on('data', (d: Buffer) => (stdout += d.toString()));
     child.stderr.on('data', (d: Buffer) => (stderr += d.toString()));
-    child.on('error', (e) =>
-      reject(new Error(`${cmd} could not be started: ${e.message}`)),
+    const tool = cmd.split('/').pop() ?? cmd;
+    child.on('error', () =>
+      // Keep the OS error off the HTTP body / audit columns.
+      reject(new Error(`${tool} could not be started`)),
     );
     child.on('close', (code) => {
-      if (code === 0) resolve({ stdout, stderr });
-      else
-        reject(
-          new Error(`${cmd} exited ${code}: ${stderr.trim() || stdout.trim()}`),
-        );
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        // Full stderr is logged on the server only; the thrown message is generic.
+        const detail = (stderr.trim() || stdout.trim()).slice(0, 2000);
+        if (detail) logger.error(`${tool} exited ${code}: ${detail}`);
+        reject(new Error(`${tool} failed (exit ${code ?? 'unknown'})`));
+      }
     });
   });
 }

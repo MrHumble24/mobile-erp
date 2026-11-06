@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpCode,
   Param,
   Post,
@@ -15,23 +14,29 @@ import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { ConfirmRestoreDto } from './dto/confirm-restore.dto.js';
-import { streamToTempFile } from './lib/upload-intake.js';
 import { RestoreService } from './restore.service.js';
+import {
+  UploadStagingService,
+  type StagedUpload,
+} from './upload-staging.service.js';
 
 /**
- * Restore the whole system (`backup.restore`). Both routes re-check the shop
+ * Restore the whole system (`backup.restore`). Every path re-checks the shop
  * name and the caller's password. Rate limited: a restore is heavy and
  * destructive. ADR 0045: company-wide, no store scope.
  */
 @Controller('backups')
 export class RestoreController {
-  constructor(private readonly restore: RestoreService) {}
+  constructor(
+    private readonly restore: RestoreService,
+    private readonly uploads: UploadStagingService,
+  ) {}
 
   @Get('restore/status')
   @AllowDuringMaintenance()
   @RequirePermissions('backup.read')
   status() {
-    return { restoring: this.restore.isRestoring() };
+    return this.restore.status();
   }
 
   @Post(':id/restore')
@@ -54,33 +59,39 @@ export class RestoreController {
   }
 
   /**
-   * Restore from an uploaded `.mbk`. The body is the raw encrypted file
-   * (`application/octet-stream`), streamed to disk (never buffered in memory);
-   * the shop name and password come in headers so they are not parsed from the
-   * body. Headers over HTTPS, never logged.
+   * Step 1 of an upload restore (A7): stream the raw `.mbk` body
+   * (`application/octet-stream`) to owner-only staging, verify it, and return a
+   * handle. Credentials come in step 2's JSON body, not in headers.
    */
-  @Post('restore-upload')
+  @Post('uploads')
+  @RequirePermissions('backup.restore')
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  stageUpload(@Req() req: Request): Promise<StagedUpload> {
+    return this.uploads.stage(req);
+  }
+
+  /** Step 2: restore from a staged upload with the usual confirmation body. */
+  @Post('uploads/:uploadId/restore')
   @HttpCode(202)
   @RequirePermissions('backup.restore')
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   async fromUpload(
-    @Req() req: Request,
-    @Headers('x-restore-shop-name') shopName: string,
-    @Headers('x-restore-password') password: string,
+    @Param('uploadId') uploadId: string,
+    @Body() dto: ConfirmRestoreDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ ok: true }> {
-    const intake = await streamToTempFile(req);
+    const uploadPath = this.uploads.pathOf(uploadId);
     try {
       await this.restore.restore({
         performedById: user.id,
         email: user.email,
-        shopName: shopName ?? '',
-        password: password ?? '',
-        source: { uploadPath: intake.path, label: 'uploaded.mbk' },
+        shopName: dto.shopName,
+        password: dto.password,
+        source: { uploadPath, label: `upload:${uploadId}` },
       });
       return { ok: true };
     } finally {
-      await intake.cleanup();
+      await this.uploads.remove(uploadId);
     }
   }
 }

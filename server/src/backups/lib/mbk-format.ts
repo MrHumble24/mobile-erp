@@ -7,7 +7,12 @@ import {
   packDir,
   packFiles,
 } from './archive.js';
-import { decryptToStream, encryptToFile } from './backup-crypto.js';
+import { BackupTooLargeError, maxPayloadBytes } from './backup-config.js';
+import {
+  decryptToStream,
+  encryptToFile,
+  type MbkMeta,
+} from './backup-crypto.js';
 import {
   BackupManifest,
   DATABASE_PART,
@@ -38,9 +43,10 @@ export interface CreateArgs {
   passphrase: string;
   migrationName: string | null;
   workDir: string;
+  meta: MbkMeta;
 }
 
-/** Build an encrypted backup at `outFile`. */
+/** Build an encrypted backup at `outFile`. Refuses a payload over the ceiling. */
 export async function createBackupFile(args: CreateArgs): Promise<void> {
   const dir = await stage(args.workDir, 'pack');
   try {
@@ -56,10 +62,16 @@ export async function createBackupFile(args: CreateArgs): Promise<void> {
 
     const payload = join(dir, 'payload.tar');
     await packFiles(dir, [MANIFEST_NAME, DATABASE_PART, UPLOADS_PART], payload);
+
+    const { size } = await fsp.stat(payload);
+    const limit = maxPayloadBytes();
+    if (size > limit) throw new BackupTooLargeError(size, limit);
+
     await encryptToFile(
       createReadStream(payload),
       args.outFile,
       args.passphrase,
+      args.meta,
     );
   } finally {
     await fsp.rm(dir, { recursive: true, force: true });
@@ -83,26 +95,32 @@ export async function openBackupFile(
   workDir: string,
 ): Promise<OpenedBackup> {
   const dir = await stage(workDir, 'open');
-  const payload = join(dir, 'payload.tar');
-  // Decrypt to disk; the stream errors (wrong key / tampering) reject here.
-  await pipeline(
-    await decryptToStream(inFile, passphrase),
-    createWriteStream(payload),
-  );
+  try {
+    const payload = join(dir, 'payload.tar');
+    // Decrypt to disk; the stream errors (wrong key / tampering) reject here.
+    await pipeline(
+      await decryptToStream(inFile, passphrase),
+      createWriteStream(payload),
+    );
 
-  await assertSafeEntries(payload, PART_NAMES);
-  await extractSafe(payload, dir, PART_NAMES);
-  await fsp.rm(payload, { force: true });
+    await assertSafeEntries(payload, PART_NAMES);
+    await extractSafe(payload, dir, PART_NAMES);
+    await fsp.rm(payload, { force: true });
 
-  const manifest = JSON.parse(
-    await fsp.readFile(join(dir, MANIFEST_NAME), 'utf8'),
-  ) as BackupManifest;
-  await verifyParts(manifest, dir);
+    const manifest = JSON.parse(
+      await fsp.readFile(join(dir, MANIFEST_NAME), 'utf8'),
+    ) as BackupManifest;
+    await verifyParts(manifest, dir);
 
-  return {
-    manifest,
-    dir,
-    databaseDump: join(dir, DATABASE_PART),
-    uploadsTar: join(dir, UPLOADS_PART),
-  };
+    return {
+      manifest,
+      dir,
+      databaseDump: join(dir, DATABASE_PART),
+      uploadsTar: join(dir, UPLOADS_PART),
+    };
+  } catch (err) {
+    // Never leak a half-decrypted plaintext folder on failure.
+    await fsp.rm(dir, { recursive: true, force: true });
+    throw err;
+  }
 }

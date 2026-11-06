@@ -5,10 +5,13 @@ import { TelegramModule } from '../telegram/telegram.module.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsController } from './backups.controller.js';
 import { BackupsCron } from './backups.cron.js';
+import { BackupsReconciler } from './backups-reconcile.service.js';
 import { BackupsRepository } from './backups.repository.js';
 import { BackupsService } from './backups.service.js';
 import { RestoreController } from './restore.controller.js';
+import { RestoreRunner } from './restore-runner.js';
 import { RestoreService } from './restore.service.js';
+import { UploadStagingService } from './upload-staging.service.js';
 import type { BackupStorage } from './storage/backup-storage.js';
 import { LocalStorage } from './storage/local.storage.js';
 import { StorageRegistry } from './storage/storage.registry.js';
@@ -27,9 +30,12 @@ const STORAGE_ADAPTERS = [LocalStorage];
   providers: [
     BackupsService,
     RestoreService,
+    RestoreRunner,
     BackupRunner,
+    BackupsReconciler,
     BackupsRepository,
     BackupsCron,
+    UploadStagingService,
     ...STORAGE_ADAPTERS,
     {
       provide: StorageRegistry,

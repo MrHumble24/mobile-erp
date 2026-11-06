@@ -1,14 +1,19 @@
 /** Error codes returned to the client (stable, matched by the website). */
 export const BACKUP_RUNNING = 'BACKUP_RUNNING';
 export const BACKUP_NO_PASSPHRASE = 'BACKUP_NO_PASSPHRASE';
+export const BACKUP_PASSPHRASE_UNREADABLE = 'BACKUP_PASSPHRASE_UNREADABLE';
+export const BACKUP_TOO_LARGE = 'BACKUP_TOO_LARGE';
 export const BACKUP_NOT_FOUND = 'BACKUP_NOT_FOUND';
 export const BACKUP_FILE_MISSING = 'BACKUP_FILE_MISSING';
+export const BACKUP_UPLOAD_NOT_FOUND = 'BACKUP_UPLOAD_NOT_FOUND';
 export const RESTORE_CONFIRM_FAILED = 'RESTORE_CONFIRM_FAILED';
 export const BACKUP_FROM_NEWER_VERSION = 'BACKUP_FROM_NEWER_VERSION';
 export const RESTORE_RUNNING = 'RESTORE_RUNNING';
 export const MAINTENANCE = 'MAINTENANCE';
 
 export const BACKUP_PASSPHRASE_SECRET = 'backup.passphrase';
+
+export type PassphraseStatus = 'set' | 'missing' | 'unreadable';
 
 export const RUN_STATUS = {
   RUNNING: 'RUNNING',
@@ -47,7 +52,20 @@ export interface BackupSettingsView {
   scheduleEnabled: boolean;
   scheduleTime: string;
   keepLast: number;
+  /** Kept for compatibility; true only when `passphraseStatus === 'set'`. */
   passphraseSet: boolean;
+  passphraseStatus: PassphraseStatus;
+}
+
+export interface RestoreStatusView {
+  restoring: boolean;
+  needsManualRecovery: boolean;
+  last: {
+    status: string;
+    startedAt: Date;
+    finishedAt: Date | null;
+    error: string | null;
+  } | null;
 }
 
 export interface ProviderView {

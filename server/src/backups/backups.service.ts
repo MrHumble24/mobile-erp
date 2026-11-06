@@ -1,15 +1,15 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
   NotFoundException,
-  OnModuleInit,
 } from '@nestjs/common';
 import type { Readable } from 'node:stream';
 import { SecretsService } from '../secrets/secrets.service.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsRepository } from './backups.repository.js';
-import { backupDestination } from './lib/backup-config.js';
+import { BackupTooLargeError, backupDestination } from './lib/backup-config.js';
 import { UpdateBackupSettingsDto } from './dto/update-backup-settings.dto.js';
 import { StorageRegistry } from './storage/storage.registry.js';
 import {
@@ -17,6 +17,7 @@ import {
   BACKUP_NOT_FOUND,
   BACKUP_PASSPHRASE_SECRET,
   BACKUP_RUNNING,
+  BACKUP_TOO_LARGE,
   BackupRunView,
   BackupSettingsView,
   ProviderView,
@@ -26,7 +27,7 @@ type RunWithTargets = Awaited<ReturnType<BackupsRepository['getRun']>>;
 
 /** The controller's single door to backups. Owns the one-at-a-time lock. */
 @Injectable()
-export class BackupsService implements OnModuleInit {
+export class BackupsService {
   private readonly logger = new Logger(BackupsService.name);
   private running = false;
 
@@ -36,12 +37,6 @@ export class BackupsService implements OnModuleInit {
     private readonly registry: StorageRegistry,
     private readonly secrets: SecretsService,
   ) {}
-
-  async onModuleInit(): Promise<void> {
-    const { count } = await this.repo.markStaleRunsFailed();
-    if (count > 0)
-      this.logger.warn(`Marked ${count} interrupted backup run(s) failed`);
-  }
 
   isRunning(): boolean {
     return this.running;
@@ -59,6 +54,14 @@ export class BackupsService implements OnModuleInit {
     try {
       const { keepLast } = await this.repo.getSettings();
       await this.runner.run(triggeredById, keepLast);
+    } catch (err) {
+      if (err instanceof BackupTooLargeError) {
+        throw new BadRequestException({
+          code: BACKUP_TOO_LARGE,
+          message: err.message,
+        });
+      }
+      throw err;
     } finally {
       this.running = false;
     }
@@ -71,11 +74,13 @@ export class BackupsService implements OnModuleInit {
 
   async getSettings(): Promise<BackupSettingsView> {
     const s = await this.repo.getSettings();
+    const passphraseStatus = await this.runner.passphraseStatus();
     return {
       scheduleEnabled: s.scheduleEnabled,
       scheduleTime: s.scheduleTime,
       keepLast: s.keepLast,
-      passphraseSet: (await this.runner.passphrase()) !== null,
+      passphraseSet: passphraseStatus === 'set',
+      passphraseStatus,
     };
   }
 
