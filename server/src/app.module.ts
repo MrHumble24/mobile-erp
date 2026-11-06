@@ -41,7 +41,11 @@ import { ShiftsModule } from './shifts/shifts.module.js';
 import { CustomerPurchasesModule } from './customer-purchases/customer-purchases.module.js';
 import { RepairsModule } from './repairs/repairs.module.js';
 import { BonusModule } from './bonus/bonus.module.js';
+import { SecretsModule } from './secrets/secrets.module.js';
+import { BackupsModule } from './backups/backups.module.js';
+import { RuntimeModule } from './common/runtime/runtime.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
+import { MaintenanceGuard } from './common/guards/maintenance.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { CostRedactionInterceptor } from './common/interceptors/cost-redaction.interceptor.js';
 import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
@@ -87,11 +91,15 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     CustomerPurchasesModule,
     RepairsModule,
     BonusModule,
+    RuntimeModule,
+    SecretsModule,
+    BackupsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: MaintenanceGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
     { provide: APP_INTERCEPTOR, useClass: StoreInterceptor },

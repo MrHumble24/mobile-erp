@@ -21,6 +21,17 @@ pnpm prisma generate
 | `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
 | `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
 | `UPLOADS_DIR`             | Where product pictures are stored (default `./uploads`, git-ignored, created on start). **On Railway point this at a mounted volume** — a plain directory is wiped on every deploy and the pictures vanish (ADR 0031). |
+| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key**, restore staging and the restore **recovery markers** (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** — else the key is regenerated each deploy and every secret becomes unreadable; a persistent volume also keeps the recovery markers across a redeploy (ADR 0051). The session cutoff now lives in the database, not here. |
+| `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: hex, or base64 that round-trips, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
+| `BACKUPS_DIR`             | Where encrypted `*.mbk` backups are written (default `./backups`, git-ignored, never served over HTTP). On Railway use a mounted volume for an on-server copy. |
+| `BACKUP_PASSPHRASE`       | Fallback backup passphrase. Prefer setting it in-app (Settings → Backups, stored encrypted); env is used only when no readable in-app passphrase is set. Lose it = every backup unrecoverable. |
+| `BACKUP_MAX_PAYLOAD_BYTES`| Largest backup payload (dump + uploads) before encryption (default 32 GiB, well under the AES-GCM limit); a bigger payload is refused with `BACKUP_TOO_LARGE`. |
+| `BACKUP_MAX_UPLOAD_BYTES` | Largest restore upload accepted (default 2 GiB). |
+| `PG_BIN_DIR`              | Optional directory holding `pg_dump`/`pg_restore` when they are not on `PATH`. |
+| `PUBLIC_URL`              | The server's own public origin, used for the OAuth callback address (ADR 0056). On Railway set it to the app's URL; in dev it defaults to `http://localhost:<PORT>`. |
+| `TELEGRAM_BOT_TOKEN`      | Fallback Telegram bot token for backups (also set in-app). Missing → the place is "not set up". |
+| `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Google OAuth client for the Drive place (also set in-app). |
+| `MICROSOFT_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Microsoft OAuth client for the OneDrive place (also set in-app). |
 
 ## First-run sequence (order matters)
 
@@ -48,6 +59,70 @@ ADR 0031 are read; the Samsung colour/memory and picture files are skipped.
 (`theapplewiki.com`) under **CC BY-SA**; it must be credited. The lookup answer
 carries this in `source` ({ name, license }). The IMEI TAC list is from
 `github.com/MoazEb/tac-database` (MIT).
+
+## Backups & restore (ADR 0051)
+
+Managed in-app (Settings → Backups): scheduled or manual, encrypted `*.mbk`
+files holding the whole database **and** the uploads, sent to storage providers
+(server disk now; Telegram / Drive / OneDrive follow). Permissions `backup.read`
+/ `backup.manage` / `backup.restore` (owner only by default).
+
+**Run one instance only.** The maintenance switch and the restore recovery
+markers are per-process; a restore assumes it is the single writer (ADR 0051).
+
+**If a restore needs manual recovery.** A restore rolls itself back on failure;
+only if that rollback also fails does the server stay in maintenance with a
+marker in `DATA_DIR`. Restore the latest safety `.mbk` by hand (open it, then
+`pg_restore` the dump and swap the uploads), then run
+`pnpm tsx scripts/clear-recovery.ts` and restart.
+
+- **Deploy needs.** `pg_dump` and `pg_restore` must be on the server, a major
+  version **≥** the managed Postgres (a backup refuses an older client). Railway
+  gets them from `server/nixpacks.toml` (`postgresql_17`); elsewhere install the
+  Postgres client or set `PG_BIN_DIR`.
+- **Keep safe forever:** the backup passphrase **and** the master key
+  (`DATA_DIR/master.key` or `APP_MASTER_KEY`). Both are needed to open a backup
+  on a new server. The app never shows either again.
+- **Open a backup by hand** (no app, no database — the escape hatch):
+
+  ```bash
+  BACKUP_PASSPHRASE=... pnpm tsx scripts/open-backup.ts path/to/backup.mbk ./out
+  # → ./out/database.dump  (pg_restore --clean --if-exists -d <db> ./out/database.dump)
+  # → ./out/uploads.tar    (tar -xf into UPLOADS_DIR)
+  ```
+
+  The passphrase is the one set in-app (or `BACKUP_PASSPHRASE`); the master key is
+  not needed here (the file carries its own salt). Restoring onto a brand-new
+  server is: create the database, run the two commands above, then
+  `pnpm prisma migrate deploy`.
+
+### Storage places (Telegram, Google Drive, OneDrive — ADR 0056)
+
+Off-machine copies, set up in-app (Settings → Backups → Places). LOCAL is always
+on; the others are off until set up and tested. Secrets are set through
+write-only routes (env fallback: `TELEGRAM_BOT_TOKEN`, `GOOGLE_OAUTH_CLIENT_ID`/
+`_SECRET`, `MICROSOFT_OAUTH_CLIENT_ID`/`_SECRET`). OAuth needs `PUBLIC_URL` set to
+the server's own public origin (the callback host); in dev it is `http://localhost:<PORT>`.
+
+- **Telegram.** In Telegram, create a **new private channel or chat** for backups
+  (not the staff alert group — the app refuses a chat that equals a shop alert
+  chat). Add your bot to it and make it an admin. Find the chat id (e.g. forward a
+  message to `@userinfobot`, or `getUpdates`). In the app set the bot token and the
+  chat id, then **Test**. Parts stay in the chat (no delete).
+- **Google Drive.** Google Cloud Console → **APIs & Services**. Enable the
+  **Google Drive API**. **OAuth consent screen** → External, add yourself as a
+  test user. **Credentials → Create OAuth client ID → Web application**. Under
+  *Authorized redirect URIs* paste the address shown by
+  `GET /backups/oauth/GOOGLE_DRIVE/redirect-uri` (it is `PUBLIC_URL` +
+  `/backups/oauth/GOOGLE_DRIVE/callback`). Scope is `drive.file` (app-made files
+  only). Put the client id + secret in the app, then **Connect**.
+- **OneDrive.** Azure Portal → **App registrations → New registration**
+  (accounts of your type). **Authentication → Add a platform → Web**, redirect URI
+  = the address from `GET /backups/oauth/ONEDRIVE/redirect-uri`. **Certificates &
+  secrets** → new client secret. **API permissions** → Microsoft Graph delegated
+  `Files.ReadWrite.AppFolder` + `offline_access`. Put the client id + secret in
+  the app, then **Connect**. (Microsoft rotates the refresh token on each refresh;
+  the app seals the new one automatically, so OneDrive stays connected.)
 
 ## Run & test
 

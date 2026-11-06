@@ -1,6 +1,6 @@
 # 023 — Backup and restore, with storage providers (server and website)
 
-Status: building · Owner: Claude Opus 4.8 (`opus48` agent), orchestrated by Claude · Asked by the user on 2026-11-06; started the same day on the user's word. Parts 1 and 2 first; 3, 4 and 5 after Claude has checked them.
+Status: merged on 2026-11-06 (server and website) · Built by Claude Opus 4.8 (`opus48` agents), orchestrated and checked by Claude · Still to do by the user: one real try of Telegram, Google Drive and OneDrive (they were tested against fake servers only).
 
 ## Why
 The shop's whole business lives in one database and one folder of pictures. The PRD already asks
@@ -117,15 +117,205 @@ Fill the Result section below and set Status to done. Report only what you ran a
 === END ===
 
 ## Result (builder fills)
-- Branch / commits, per part:
-- Deploy changes (how `pg_dump` and `pg_restore` get onto the server):
-- New environment variables:
-- Server build, tests (suites / tests, before → after), lint; website tests, lint, build:
-- Walk-through, each step: seen / not seen:
-- Google Drive and OneDrive: tested with real apps or only with the fake server:
-- Decisions taken:
-- Not done / skipped / failed:
+Scope done by `opus48`: step 0 (secrets), PART 1, PART 2, SAFETY. PART 3
+(Telegram), PART 4 (Drive/OneDrive) and PART 5 (website) are left for later
+builders — the adapter interface and routes are built so each needs no change to
+this code (one new file + one line in `STORAGE_ADAPTERS` + one `backup_providers`
+row).
+
+- Branch / commits, per part: branch `agent/opus48/backup` (worktree, not pushed).
+  - secrets module: `0c02f62`
+  - PART 1 (backups): `945f9cf`
+  - PART 2 (restore): `9f27946`
+- Deploy changes: `server/nixpacks.toml` adds `postgresql_17` (keeps Nixpacks'
+  auto packages via `"..."`) so `pg_dump`/`pg_restore` land on PATH on Railway.
+  Client major must be ≥ the managed Postgres major (a backup refuses an older
+  client); `PG_BIN_DIR` overrides the location.
+- New environment variables: `DATA_DIR` (server-only state: master key + session
+  cutoff; default `./data`), `APP_MASTER_KEY` (override the master key file, 32
+  bytes base64/hex), `BACKUPS_DIR` (where `.mbk` files go, default `./backups`),
+  `PG_BIN_DIR` (optional pg tools dir), `BACKUP_MAX_UPLOAD_BYTES` (restore-upload
+  cap, default 2 GiB). `BACKUP_PASSPHRASE` kept as a fallback (now in-app too).
+  Removed the old script-only `BACKUP_DIR` / `BACKUP_RETENTION_DAYS`.
+- Server build/tests/lint: `pnpm build` clean; `pnpm test` 97 suites/567 tests →
+  **106 suites / 598 tests**, ~1.4 s, no DB; `pnpm lint` 0 errors (3 pre-existing
+  warnings, files I did not touch). Real-DB restore test `pnpm test:restore`
+  (own throwaway DBs): both cases PASS. Website: not in my scope (PART 5).
+- Walk-through (ran on my own API, ports 3140/3141, own DBs — all **seen**):
+  make a backup (SUCCESS, 370 KB encrypted, LOCAL target); file header is `MBK1`
+  + no plaintext table names; `scripts/open-backup.ts` decrypts + unpacks, dump
+  is a valid custom archive (71 tables), **wrong passphrase fails cleanly**;
+  download returns the exact encrypted bytes; passphrase route is write-only
+  (204, empty body), settings expose only `passphraseSet`; secret-leak scan over
+  every response = none; **cashier gets 403 on all 8 routes**. Restore: wrong
+  shop name / wrong password → 403 (nothing touched); a real restore reverted
+  drifted data, made a safety backup, cycled maintenance, **ended every session**
+  (pre-restore token → 401), wrote a SUCCESS audit row; login resumes after the
+  1-second cutoff. Restore round-trip + fail-half-way atomicity: seen via
+  `pnpm test:restore`.
+- Google Drive and OneDrive: not in my scope (PART 4) — not built, not tested.
+- Decisions taken: (1) added `tar` (Node has no archive format; used once, with a
+  safe-extract entry filter). (2) `.mbk` = encrypted tar of manifest + pg_dump
+  (custom) + `uploads.tar`; AES-256-GCM + scrypt, streamed. (3) Secrets store is a
+  general module reused by the passphrase; master key in `DATA_DIR`, never in the
+  DB. (4) Sessions end via a DATA_DIR cutoff file (survives the restore) checked
+  in the JWT guard — one int compare/request; cutoff is `now+1s`, so a login in
+  the same second as a restore is rejected (<1 s window, errs safe). (5) A restore
+  replaces the DB including its own RUNNING audit row, so the outcome is
+  re-recorded by upsert, best-effort — a bookkeeping failure never fails an
+  already-done restore. (6) `restore-upload` takes the raw body (octet-stream) +
+  `x-restore-*` headers, streamed to disk — no multer dependency. (7) `POST
+  /backups` awaits the run (small shop DB; website polls the list).
+- Not done / skipped / failed: PART 3/4/5 (other builders). I did not run a
+  destructive restore through the shared dev API; live restores I saw ran against
+  throwaway copies on my own ports.
+
+## Fix round (2026-11-06, commits `a03a12f`, `4579b71`)
+Addressed all 13 review items (A1-A11, T1-T3). Gate green (`pnpm build` + `pnpm
+test` 606/606 + `pnpm lint` 0 errors) and `pnpm test:restore` passes all four
+scenarios (round-trip, fail-half-way, rollback-on-swap-fail, rollback-on-migrate-
+fail). Highlights seen live on my own ports / DBs:
+- A1 session cutoff moved to the DB (`session_gate`), fail-closed; survives
+  restart + redeploy. (unit-tested)
+- A2 restore is all-or-nothing after pg_restore: a later failure rolls the DB
+  **and** uploads back to the safety backup and leaves maintenance; manual
+  recovery only if the rollback also fails. (e2e scenarios 3 & 4)
+- T1 a sealed passphrase unreadable with a fresh DATA_DIR now gives **400
+  BACKUP_PASSPHRASE_UNREADABLE** (was 500); `settings.passphraseStatus:
+  set|missing|unreadable`; re-setting overwrites. (seen on port 3140)
+- T2 reconcile fixes the list after a restore (safety backup appears, the
+  restored-from run becomes SUCCESS). T3 status returns `{restoring,
+  needsManualRecovery, last}`. A7 upload is two steps (`POST /uploads` returns
+  `{uploadId, migrationName…}`; unknown id → 404). (seen on port 3140)
+- A3/A4 header validated + AAD-bound, payload capped; A6 pg stderr server-side
+  only; A8 staging under DATA_DIR; A9/A10 master.key exclusive-create + strict
+  base64; A11 schedule marks only after a real attempt; A5 persisted
+  restore/manual-recovery markers + `scripts/clear-recovery.ts`.
+The earlier "safety-row wiped by restore" gap is now handled by T2 reconcile.
+Still single-instance only (the maintenance switch + markers are in-process;
+documented in ADR 0051 and the README).
+
+## PART 3 + PART 4 (2026-11-06, commit `b0fd859`)
+Storage providers (ADR 0056). Gate green (`pnpm build` + `pnpm test` 638/638 +
+`pnpm lint` 0 errors) and `pnpm test:restore` still passes all four scenarios.
+Two fold-ins done: run view gains `downloadable` + `partlyFailed` (a LOCAL target
+whose file is gone reads FAILED "file missing"); `backups.repository.ts` split
+(restore audit → `restore.repository.ts`).
+- PART 3 **Telegram**: file sent in ≤19 MB parts, joined + checksum-verified on
+  download; `delete:false`; backup chat ≠ a shop alert chat.
+- PART 4 **Drive** (`drive.file`) + **OneDrive** (`Files.ReadWrite.AppFolder`):
+  OAuth 2 + PKCE, resumable/session chunked upload with chunk retry, revoked
+  login → NEEDS_RECONNECT.
+- Routes: `GET /backups/places`; `PUT /places/:code/enabled|settings|secret`
+  (write-only); `POST /places/:code/test|disconnect`; OAuth `GET
+  /backups/oauth/:code/start|callback|redirect-uri`.
+- Seen live on my own server/DB: places list (LOCAL locked+on; the rest off,
+  not-configured, with capabilities incl Telegram's 19 MB part cap); redirect-uri
+  is the **server** origin; an untrusted `returnTo` → 400 `OAUTH_RETURN_URL_
+  INVALID`; LOCAL off → 403; enable a not-connected place → 409; set bot token →
+  204; set a chat → `connected:true`; **no secret in any answer**.
+- Tests (fast, no network, fake HTTP servers): Telegram 45 MB split/join byte-
+  for-byte, dropped chunk retried, revoked login, OAuth state + open-redirect
+  rules, partly-failed run with LOCAL intact, retention per place, restore from a
+  remote-only backup.
+- **Not seen with the real Telegram / Google / Microsoft services** — no outbound
+  access from here; adapters were built to the documented API shapes and tested
+  against faithful fake servers. README has the Google/Microsoft app + Telegram
+  chat setup steps. Microsoft refresh-token rotation is not persisted (occasional
+  reconnect; documented). `secrets` public API (stable, small): `set(name,value)`,
+  `isSet(name)`, `state(name)` → set|missing|unreadable, `read(name)` (server-only;
+  throws on unreadable), `clear(name)`, plus `AppKeyService.getKey()`/`dataDir()`.
+
+## Provider fix round (2026-11-06, commits `fda45c5`, `183707d`)
+Six audit items; no route path/shape/field changed (website branch safe). Gate
+green (638 → **648 tests**, 0 lint errors) and `pnpm test:restore` passes.
+- (serious) **Timeouts**: every provider request has an AbortController timeout,
+  each chunk its own, and each place's whole upload is bounded (withDeadline), so
+  a stalled remote is recorded FAILED within the bound instead of holding the
+  run + the one-at-a-time lock. Tunable via `BACKUP_HTTP/CHUNK/PLACE_TIMEOUT_MS`.
+  Test: fake server holds the connection open → fails fast; the run ends
+  partly-failed with LOCAL intact and the next backup can start.
+- **Telegram download** streams the parts one at a time (hash while streaming,
+  digest failure → stream error before the restore uses the file).
+- **Restore staging** from a remote is byte-capped (can't fill the disk).
+- **OAuth state** is claimed with one conditional `updateMany` (count ≠ 1 = used).
+- **Drive** refuses a resumable-session URL whose origin isn't the Google host
+  before sending the token.
+- **OneDrive** seals the rotated refresh token each refresh (new
+  `Destination.onRefreshToken`), so it no longer drifts to "needs reconnecting";
+  the caveat is removed from ADR 0056 + README.
+Still **not seen with the real Telegram/Google/Microsoft services** (no outbound
+access); all six proven against the fake servers.
+## PART 5 — the website (2026-11-06, builder `opus48`, branch `agent/opus48/backup-web` on top of `agent/opus48/backup`)
+Settings-group page `/backups` (`backup.read`), company-wide, not store-scoped.
+Gate green: `cd client && pnpm test` (85 tests, +1 `formatBytes`), `pnpm lint`
+(exit 0; only pre-existing `max-lines-per-function` warnings), `pnpm build` (tsc +
+vite, exit 0). ADR `0052-client-backups.md`.
+- **FSD built:** entity `backup` (server-mirroring types, `backupKeys`, one
+  repository, hooks split runs/settings/places/restore/oauth, error helpers);
+  features `set-backup-passphrase`, `edit-backup-schedule`, `run-backup`,
+  `manage-backup-place` (PlaceCard + Telegram/OAuth config + write-only
+  `SecretField`), `restore-backup` (red `RestoreDialog` + `UploadRestoreCard`);
+  widgets `backup-places`, `backup-runs`, `restore-overlay`; page `pages/backups`;
+  nav item under Admin. `shared/api/http.ts` gained `uploadRaw` (raw `.mbk` body),
+  `downloadBlob` (authed binary), `onMaintenance`; new `shared/lib/
+  maintenance.store.ts`, `save-blob.ts`, `formatBytes`. i18n namespace `backups`
+  (en + uz, Uzbek written to the glossary) + `nav.backups`.
+- **Walk-through — all SEEN in Chrome (my server :3143 / client :5197, throwaway
+  DB `mobile_erp_backup_web`)** except where noted: unreadable-passphrase state;
+  set passphrase (→ "set"); back up now (run "Done", green LOCAL mark,
+  download/restore/delete appear; old file-missing runs show only Delete);
+  download via page fetch → file is `MBK1` + a small plaintext header then
+  AES-GCM, no `CREATE TABLE`/`INSERT`/`PGDMP` (not readable text); delete
+  (confirm dialog); change a customer name in `psql` then **restore from the
+  list** → reverted to the backup's value; the wait overlay (reached its "sign in
+  again" phase — the restore is ~150 ms so the spinner phase was too brief to
+  screenshot, but the overlay covered the whole screen); signed out → clean
+  /login; sign in via the form; name is back (verified in DB); **upload** the
+  downloaded `.mbk` and restore → staged card shows the manifest date+size, the
+  restore replaced the DB with the uploaded file's contents (verified in DB);
+  **Telegram** card (bot token write-only, chat id, the private-chat/no-delete
+  note; chat id = a store alert chat → refusal `BACKUP_CHAT_IS_STAFF_CHAT`); the
+  cashier is blocked (403 page, nav item hidden). **NOT seen:** real Telegram
+  (no bot/chat); real Drive/OneDrive (no OAuth apps — redirect URI shown + copy,
+  Connect disabled with "set the client id and secret first", i.e. the "no client
+  id" case is pre-empted, not an after-click toast); the 390-px layout
+  **in-browser** (the Chrome extension viewport is locked at 1728 and
+  `resize_window` did not reflow it) — verified responsive in code instead (cards
+  `md:grid-cols-2`, places `sm:grid-cols-2`, runs table `overflow-x-auto`, dialogs
+  full-width bottom sheets below 640).
+- **Server gap:** none blocking. `GET /backups/:id/download` doesn't CORS-expose
+  `Content-Disposition`, so the client names the saved file from the run's
+  `fileName` (handled; no server change).
+- **Decisions:** own page (too big for a Settings section); secrets never read
+  back (UI shows presence/status only); the restore overlay is app-mounted and
+  the 401 auto-redirect is suppressed during maintenance so the "sign in again"
+  message survives; the upload path was driven by injecting the fetched bytes as a
+  `File` into the hidden input (the native file picker is a blocking dialog) — the
+  real stage + restore endpoints ran.
 
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
   database, and a look at one backup file to confirm it is unreadable without the key.
+- 2026-11-06, how it was run: one `opus48` agent built the secrets module, backup and restore;
+  Claude tested it live on a throwaway database and `security-auditor` read the diff (0 critical,
+  2 serious, 4 medium, 5 low); one fix round of 13 items; the same agent then built Telegram,
+  Google Drive and OneDrive; a second audit (1 serious: no network timeouts; 1 medium; 4 low) and
+  a second fix round; a second `opus48` agent built the website page from the route table.
+- Claude's own tests, on throwaway databases with their own data, backup and upload folders:
+  the backup file has no readable plaintext; a cashier gets 403 on every route; a restore brought
+  back a changed row, removed a row added later and put a changed picture back; a safety backup
+  was made; the old token was 401 after the restore and still 401 after a server restart; an
+  unreadable passphrase gives a clear 400 and the page asks for it again; after a restore the
+  list shows the restored-from backup and the safety backup. In a browser: the page in Uzbek at
+  500 wide with no sideways scroll, set the passphrase, "Back up now", the red restore dialog,
+  a wrong password refused with a clear message, and the session ended after a real restore.
+- Final gate on the joined branch: server 115 suites / 648 tests, lint 0 errors,
+  `pnpm test:restore` (4 scenarios) passes; website 85 tests, lint 0 errors, build passes.
+- Not seen by anyone: real Telegram, Google or Microsoft; the "restoring, please wait" screen
+  while a restore is still running (a restore takes about 150 ms on test data; its finished
+  phase was seen by the builder); the page at 390 wide (the browser window would not go below
+  500).
+- Limits written down in ADR 0051 and 0056: one server process only; DATA_DIR must be a volume
+  that survives a redeploy (it holds the master key; without it every stored secret, the backup
+  passphrase included, must be typed again); a backup above 32 GiB is refused.

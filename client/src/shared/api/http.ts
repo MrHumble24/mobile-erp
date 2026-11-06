@@ -48,14 +48,21 @@ let unauthorizedHandler: () => void = () => {
   }
 }
 
+/** Called once per response whose body is 503 `{ code: "MAINTENANCE" }`: the
+ * server is restoring a backup, so the UI shows the global "please wait" screen
+ * instead of error toasts. Wired in `shared/lib/maintenance.store`. */
+let maintenanceHandler: () => void = () => {}
+
 export function configureHttp(options: {
   getToken?: () => string | null
   getStoreId?: () => string | null
   onUnauthorized?: () => void
+  onMaintenance?: () => void
 }) {
   if (options.getToken) tokenGetter = options.getToken
   if (options.getStoreId) storeIdGetter = options.getStoreId
   if (options.onUnauthorized) unauthorizedHandler = options.onUnauthorized
+  if (options.onMaintenance) maintenanceHandler = options.onMaintenance
 }
 
 /** The API origin. Exported so an `<img>` can load a `/uploads/...` asset path. */
@@ -83,6 +90,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
     if (response.status === 401) {
       unauthorizedHandler()
+    }
+
+    if (response.status === 503 && (errorBody as { code?: string }).code === "MAINTENANCE") {
+      maintenanceHandler()
     }
 
     throw new HttpError(response.status, message, errorBody.error, errorBody)
@@ -173,4 +184,61 @@ export async function uploadFile<T>(
   }
 
   return handleResponse<T>(response)
+}
+
+/**
+ * POST a file as the raw request body (`application/octet-stream`), as the
+ * backup upload-restore endpoint expects — not multipart. Auth and error
+ * normalization match `http`.
+ */
+export async function uploadRaw<T>(path: string, file: Blob): Promise<T> {
+  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
+  const headers: Record<string, string> = { "Content-Type": "application/octet-stream" }
+  const token = tokenGetter()
+  if (token) headers.Authorization = `Bearer ${token}`
+  const storeId = storeIdGetter()
+  if (storeId) headers["X-Store-Id"] = storeId
+
+  let response: Response
+  try {
+    response = await fetch(url, { method: "POST", headers, body: file })
+  } catch (err) {
+    throw new NetworkError(err)
+  }
+  return handleResponse<T>(response)
+}
+
+/**
+ * GET a binary file (e.g. a backup download) with the auth header, returning
+ * the blob. A plain `<a href>` cannot carry the bearer token, so the caller
+ * saves this blob itself.
+ */
+export async function downloadBlob(path: string): Promise<Blob> {
+  const url = `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`
+  const headers: Record<string, string> = {}
+  const token = tokenGetter()
+  if (token) headers.Authorization = `Bearer ${token}`
+  const storeId = storeIdGetter()
+  if (storeId) headers["X-Store-Id"] = storeId
+
+  let response: Response
+  try {
+    response = await fetch(url, { method: "GET", headers })
+  } catch (err) {
+    throw new NetworkError(err)
+  }
+  if (!response.ok) {
+    if (response.status === 401) unauthorizedHandler()
+    let errorBody: { message?: string | string[]; error?: string } = {}
+    try {
+      errorBody = await response.json()
+    } catch {
+      errorBody = { message: response.statusText }
+    }
+    const message = Array.isArray(errorBody.message)
+      ? errorBody.message.join(", ")
+      : errorBody.message || `Request failed with status ${response.status}`
+    throw new HttpError(response.status, message, errorBody.error, errorBody)
+  }
+  return response.blob()
 }
