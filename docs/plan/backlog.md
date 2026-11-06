@@ -7,7 +7,6 @@ Updated by Claude when something is added, started or finished. Last update: 202
 - Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
 - Online storefront, server and website: `docs/handoffs/gemini/022`. Gemini reports it done (branch `agent/gemini/storefront`); waiting for Claude's check.
 - First-boot setup, in-app configuration, branding and themes: `docs/handoffs/gemini/024`. Given to Gemini by the user; Gemini reports it done (branch `agent/gemini/setup`); waiting for Claude's check. It built its own secrets store at the same time as the backup work did; the two must be joined into one before both are merged.
-- Backup and restore: `docs/handoffs/gemini/023-backup-and-restore.md`. Started 2026-11-06 with Opus 4.8, Claude orchestrating. Parts 1 and 2 (backup on the server, restore) are built and tested by Claude on a throwaway database; a security check is running and one round of fixes follows. Then Telegram, Google Drive and OneDrive, then the website screen.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
@@ -29,6 +28,8 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Waiting on someone else
 | What | Waiting on |
 |---|---|
+| Backup places: one real try of Telegram, Google Drive and OneDrive (built and merged 2026-11-06, tested against fake servers only) | The user: make a Telegram backup chat, register the Google and Microsoft apps (steps in `server/README.md`, "Storage places"), connect each on the Backups page and press Test. |
+| A lasting data folder on the server (`DATA_DIR`) and `pg_dump` on Railway | The user, at the next deploy: without a volume the backup passphrase and every stored login must be typed again after each deploy. |
 | Customs fee Excel upload | The client's real Excel file (asked 2026-11-04). |
 | PRD text for the 15 changes, branches and backup providers | The user pastes it into `docs/PRD.md`; Claude writes the text on request. |
 | Pushing to Railway (198+ commits are local only) | The user. After a push: run the seed, `pnpm ref:import`, and give uploads a volume. |
