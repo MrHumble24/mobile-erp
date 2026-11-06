@@ -34,7 +34,7 @@ describe('StorefrontService createOrder & validation', () => {
       send: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<TelegramService>;
 
-    service = new StorefrontService(repo, pricing, telegram);
+    service = new StorefrontService(repo, {} as never, pricing, telegram);
   });
 
   it('silently drops order and returns 201 when honeypot is filled', async () => {

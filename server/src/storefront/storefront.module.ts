@@ -6,6 +6,7 @@ import { TelegramModule } from '../telegram/telegram.module.js';
 import { StorefrontOrdersController } from './storefront-orders.controller.js';
 import { StorefrontOrdersRepository } from './storefront-orders.repository.js';
 import { StorefrontOrdersService } from './storefront-orders.service.js';
+import { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
 import { StorefrontController } from './storefront.controller.js';
 import { StorefrontRepository } from './storefront.repository.js';
 import { StorefrontService } from './storefront.service.js';
@@ -17,6 +18,7 @@ import { StorefrontService } from './storefront.service.js';
     StorefrontService,
     StorefrontOrdersService,
     StorefrontRepository,
+    StorefrontCatalogRepository,
     StorefrontOrdersRepository,
   ],
   exports: [StorefrontService, StorefrontOrdersService],

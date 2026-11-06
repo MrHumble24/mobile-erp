@@ -2,12 +2,14 @@ import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import type { PricingService } from '../pricing/pricing.service.js';
 import type { TelegramService } from '../telegram/telegram.service.js';
+import type { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
 import type { StorefrontRepository } from './storefront.repository.js';
 import { StorefrontService } from './storefront.service.js';
 
 describe('StorefrontService', () => {
   let service: StorefrontService;
   let repo: jest.Mocked<StorefrontRepository>;
+  let catalog: jest.Mocked<StorefrontCatalogRepository>;
   let pricing: jest.Mocked<PricingService>;
   let telegram: jest.Mocked<TelegramService>;
 
@@ -17,13 +19,16 @@ describe('StorefrontService', () => {
       updateSettings: jest.fn(),
       activeStores: jest.fn(),
       activeCategories: jest.fn(),
-      findActiveModels: jest.fn(),
       inStockUnitsForModels: jest.fn(),
       quantityStockForModels: jest.fn(),
       findModelById: jest.fn(),
       countModelInStockForStore: jest.fn(),
       createOrder: jest.fn(),
     } as unknown as jest.Mocked<StorefrontRepository>;
+
+    catalog = {
+      findInStockModels: jest.fn(),
+    } as unknown as jest.Mocked<StorefrontCatalogRepository>;
 
     pricing = {
       listPriceForUnit: jest.fn(),
@@ -47,7 +52,7 @@ describe('StorefrontService', () => {
     telegram = {
       send: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<TelegramService>;
-    service = new StorefrontService(repo, pricing, telegram);
+    service = new StorefrontService(repo, catalog, pricing, telegram);
   });
 
   describe('getConfig', () => {
@@ -136,7 +141,7 @@ describe('StorefrontService', () => {
     });
 
     it('shows both stores when a product has units in two stores', async () => {
-      repo.findActiveModels.mockResolvedValue([
+      catalog.findInStockModels.mockResolvedValue([
         {
           id: 'm1',
           brand: 'Apple',
@@ -180,7 +185,7 @@ describe('StorefrontService', () => {
     });
 
     it('only IN_STOCK units are passed from the repository', async () => {
-      repo.findActiveModels.mockResolvedValue([
+      catalog.findInStockModels.mockResolvedValue([
         {
           id: 'm1',
           brand: 'Apple',
@@ -210,13 +215,10 @@ describe('StorefrontService', () => {
         salePrice: null,
       }));
 
-      repo.findActiveModels.mockImplementation(
-        (_catIds, _catId, _search, pagination) => {
-          if (pagination?.page === 1 && pagination?.pageSize === 10) {
-            return Promise.resolve(pageModels);
-          }
-          return Promise.resolve([]);
-        },
+      catalog.findInStockModels.mockImplementation((_storeIds, filter) =>
+        Promise.resolve(
+          filter.page === 1 && filter.pageSize === 10 ? pageModels : [],
+        ),
       );
 
       const pageUnits = pageModels.map((m, i) => ({
@@ -242,11 +244,9 @@ describe('StorefrontService', () => {
 
       const cards = await service.getProducts({ page: 1, pageSize: 10 });
       expect(cards).toHaveLength(10);
-      expect(repo.findActiveModels).toHaveBeenCalledWith(
-        expect.any(Array),
-        undefined,
-        undefined,
-        { page: 1, pageSize: 10 },
+      expect(catalog.findInStockModels).toHaveBeenCalledWith(
+        ['s1', 's2'],
+        expect.objectContaining({ page: 1, pageSize: 10 }),
       );
 
       expect(repo.inStockUnitsForModels).toHaveBeenCalledWith(

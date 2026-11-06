@@ -9,6 +9,8 @@ and `storefront_order_status_history`.
 - Public REST (`/storefront`, 120/min rate limit):
   - `GET /config` — enabled state, shop name, contacts, active stores, shown categories.
   - `GET /products` — in-stock products across active stores with `priceFrom` / "ask".
+    Paged (`page`, `pageSize`); the stock filter runs before paging
+    (`storefront-catalog.repository.ts`), so pages are full and never skip a product.
   - `GET /products/:modelId` — card details and variants grouped by storage and color.
   - `POST /orders` — places customer pickup order (5/min rate limit, honeypot protected).
 - Staff REST (`/storefront/settings`):

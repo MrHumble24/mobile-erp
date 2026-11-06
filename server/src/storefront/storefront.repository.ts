@@ -123,52 +123,6 @@ export class StorefrontRepository {
     });
   }
 
-  findActiveModels(
-    allowedCategoryIds?: string[],
-    categoryId?: string,
-    search?: string,
-    pagination?: { page?: number; pageSize?: number },
-  ): Promise<PublicModelRow[]> {
-    const where: Prisma.DeviceModelWhereInput = { isActive: true };
-
-    if (allowedCategoryIds && allowedCategoryIds.length > 0) {
-      where.categoryId = { in: allowedCategoryIds };
-    }
-    if (categoryId) {
-      where.categoryId = categoryId;
-    }
-    const term = search?.trim();
-    if (term) {
-      where.OR = [
-        { name: { contains: term, mode: 'insensitive' } },
-        { brand: { contains: term, mode: 'insensitive' } },
-        { modelCode: { contains: term, mode: 'insensitive' } },
-      ];
-    }
-
-    const page = pagination?.page ?? 1;
-    const pageSize = pagination?.pageSize;
-    const skip = pageSize ? (page - 1) * pageSize : undefined;
-    const take = pageSize;
-
-    return this.prisma.deviceModel.findMany({
-      where,
-      select: {
-        id: true,
-        brand: true,
-        name: true,
-        kindCode: true,
-        categoryId: true,
-        category: { select: { id: true, name: true } },
-        imageFileName: true,
-        salePrice: true,
-      },
-      orderBy: [{ brand: 'asc' }, { name: 'asc' }],
-      skip,
-      take,
-    });
-  }
-
   inStockUnitsForModels(
     modelIds: string[],
     storeIds: string[],

@@ -24,6 +24,7 @@ import {
   type PublicModelRow,
   type PublicUnitRow,
 } from './storefront.repository.js';
+import { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
 import type {
   StorefrontConfigView,
   StorefrontProductCard,
@@ -44,6 +45,7 @@ function assertStorefrontEnabled(settings: StorefrontSettingsView): void {
 export class StorefrontService {
   constructor(
     private readonly repo: StorefrontRepository,
+    private readonly catalog: StorefrontCatalogRepository,
     private readonly pricing: PricingService,
     private readonly telegram: TelegramService,
   ) {}
@@ -79,12 +81,13 @@ export class StorefrontService {
     const storeIds = activeStores.map((s) => s.id);
     const storeMap = new Map(activeStores.map((s) => [s.id, s.name]));
 
-    const models = await this.repo.findActiveModels(
-      settings.categoryIds,
-      query.categoryId,
-      query.search,
-      { page: query.page ?? 1, pageSize: query.pageSize ?? 50 },
-    );
+    const models = await this.catalog.findInStockModels(storeIds, {
+      allowedCategoryIds: settings.categoryIds,
+      categoryId: query.categoryId,
+      search: query.search,
+      page: query.page ?? 1,
+      pageSize: query.pageSize ?? 50,
+    });
     if (models.length === 0) return [];
 
     const unitModels = models.filter((m) => m.kindCode !== 'QUANTITY');
