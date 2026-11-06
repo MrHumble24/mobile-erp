@@ -18,6 +18,8 @@ a per-ticket warranty.
   money, + stock for parts).
 - State machine + math: `allowedMoves`, `isLegalMove`, `isTerminal`,
   `leftToPay`, `isOwed`, `isOverpaid` (pure, unit-tested).
+- `repairErrorKey(err)` — maps server conflict/shift codes to `repairs.*` keys
+  through the shared `httpErrorCode`.
 - Base UI: `RepairStatusBadge`, `RepairTicketPaper` (printable customer copy).
 
 ## Must never

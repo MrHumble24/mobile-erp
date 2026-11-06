@@ -54,6 +54,8 @@
   "returnToDefective": "Return as Defective (DEFECTIVE)",
   "returnSuccess": "Return processed successfully",
   "returnConflict": "This sale was already modified. Reload and try again.",
+  "returnBoughtBack": "This phone was bought back, so this sale can no longer be returned.",
+  "returnTradeInForbidden": "Returning the trade-in part of this sale needs the purchase permission.",
   "alreadyReturned": "This sale has already been returned",
   "noSalesFound": "No sales found",
   "customersTitle": "Customers",

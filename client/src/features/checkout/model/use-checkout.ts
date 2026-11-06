@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { HttpError, isNetworkError } from "@/shared/api/http"
+import { HttpError, httpErrorCode, isNetworkError } from "@/shared/api/http"
 import { isOnline } from "@/shared/lib/offline"
 import { saleRepository, saleKeys, type SaleTradeInDto } from "@/entities/sale"
 import { deviceKeys } from "@/entities/device"
@@ -40,7 +40,7 @@ export class CheckoutLineError extends Error {
     this.name = "CheckoutLineError"
     this.imei = imei
     this.statusCode = http?.statusCode
-    this.code = (http?.data as { code?: string } | undefined)?.code
+    this.code = httpErrorCode(http)
     this.saleIds = saleIds
   }
 }

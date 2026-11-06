@@ -10,7 +10,8 @@ read hooks, the printable report view, and the selling-gate helper.
 - `shiftRepository` — HTTP: `current`, `list`, `report`, `open`, `close`, `forceClose`.
 - `shiftKeys` — query-key factory; mutations in `features/manage-shift` invalidate it.
 - `useCurrentShift(enabled)`, `useShifts(filters)`, `useShiftReport(id)` — reads only.
-- `useShiftGate()` — turns the server's `NO_OPEN_SHIFT` 409 into a till prompt.
+- `useShiftGate()` — turns the server's `NO_OPEN_SHIFT` 409 into a till prompt
+  (the code is read through the shared `httpErrorCode`).
 - `shiftDifference` / `differenceKind` — pure close arithmetic (counted − expected).
 - `shiftTypeLabel` / `shiftAccountLabel` — movement code → `balance.*` i18n label.
 - `ShiftReportView` — the one reusable report component (printable).
