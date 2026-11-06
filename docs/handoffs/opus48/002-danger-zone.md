@@ -1,6 +1,6 @@
 # 002 — Danger zone: erase the shop's data (server and website)
 
-Status: building · Owner: Claude Opus 4.8 (`opus48` agent), run and checked by Claude · Asked by the user on 2026-11-06 ("clean up everything inside the app, but it should warn us")
+Status: built (branch `agent/opus48/danger-zone`, awaiting review/merge) · Owner: Claude Opus 4.8 (`opus48` agent), run and checked by Claude · Asked by the user on 2026-11-06 ("clean up everything inside the app, but it should warn us")
 
 ## Why
 A shop tries the system with test sales, test stock and test customers, and then wants to start
@@ -60,14 +60,97 @@ Fill the Result section below. Report only what you ran and saw yourself; if you
 === END ===
 
 ## Result (builder fills)
-- Branch / commits:
-- The four groups (every table, one line per group):
-- Kept rows that pointed at erased rows, and what was done:
-- Routes with request and response shapes and error codes:
-- Server build, tests, lint, `test:restore`, `test:wipe`; website tests, lint, build:
-- Fresh-database check of the migration:
-- Browser walk-through, each step: seen / not seen:
-- Decisions taken:
-- Not done / skipped / failed:
+- **Branch / commits:** `agent/opus48/danger-zone`. `c03a3b2` server,
+  `b03eca3` client, `f84deee` server fix (best-effort Telegram notice), plus a
+  docs commit for ADR 0057 + this Result. Cut from `0029098` after `ff-only`.
+- **The four groups (every table):**
+  - ALWAYS (28, erased every time): cash_transactions, bonus_transactions,
+    qc_defects, qc_inspections, warranties, sale_returns, customer_purchases,
+    credit_payments, credit_instalments, repair_parts, repair_payments,
+    repair_status_history, repairs, device_status_history, sync_conflicts,
+    unit_prices, stock_movements, stock_transfer_lines, stock_transfers,
+    partner_payments, sales, consignments, customer_credits, expenses,
+    expense_recurrences, shifts, devices, shipments. (Listed in delete order.)
+  - CONTACTS (3, opt-in): customers, partners, suppliers.
+  - CATALOG (7, opt-in): stock_alert_rules, ref_model_links, product_prices,
+    customs_price_list_items, customs_price_lists, device_models,
+    product_categories. (Delete order.)
+  - KEPT (37, never): users, user_profiles, roles, permissions, role_permissions,
+    user_roles, user_permissions, session_gate, user_stores, stores,
+    store_settings, backup_run_statuses, backup_target_statuses, backup_providers,
+    backup_settings, backup_runs, backup_targets, restore_runs,
+    backup_provider_configs, backup_provider_statuses, backup_oauth_states,
+    secrets, ref_apple_box_codes, ref_imei_tacs, device_statuses, defect_types,
+    cosmetic_grades, consignment_statuses, stock_movement_types, cash_accounts,
+    cash_transaction_types, repair_statuses, bonus_transaction_types,
+    product_kinds, price_levels, expense_categories, data_wipe_runs.
+- **Kept rows that pointed at erased rows, and what was done:** none. Every
+  cross-group FK runs erased→kept (device→status/store/user, customer→price
+  level, sale→…→user, etc.); no KEPT table has an FK column into an erased
+  table, so deleting erased rows never orphans a kept row. Nothing to null out.
+  `test:wipe` counts every KEPT table before/after and asserts it is unchanged.
+- **Routes** (`/data-wipe`, `data.wipe`, no store scope; POST rate-limited
+  3/min):
+  - `GET /preview` → 200 `{always,contacts,catalog}` (current counts; the client
+    sums by the ticks — no refetch, flags not needed). 403 without `data.wipe`.
+  - `GET /status` (`@AllowDuringMaintenance`) → 200 `{wiping,needsManualRecovery,
+    last}`. 403 without perm.
+  - `GET /runs` → 200 `WipeRunView[]`. 403 without perm.
+  - `POST /` → 202 `{ok:true}`; body `{shopName,password,understood:true,
+    contacts,catalog}`. 400 (DTO/`DATA_WIPE_NO_PASSPHRASE`/
+    `DATA_WIPE_PASSPHRASE_UNREADABLE`), 403 `DATA_WIPE_CONFIRM_FAILED`, 409
+    `DATA_WIPE_RUNNING`, 429 (throttle), 503 MAINTENANCE.
+- **Gates (all run):** server `pnpm build` ✓, `pnpm test` 117 suites / 659 tests
+  ✓, `pnpm lint` 0 errors (3 pre-existing warnings in reports.service.spec.ts),
+  `pnpm test:restore` PASS, `pnpm test:wipe` PASS (4/4: no-extras, both-extras,
+  failure-mid-erase leaves all tables, erase→restore brings data back). Website
+  `pnpm test` 85 ✓, `pnpm lint` 0 errors (2 max-lines-per-function warnings in my
+  files, tolerated across the codebase), `pnpm build` ✓.
+- **Fresh-database check of the migration:** `createdb` empty → `prisma migrate
+  deploy` ✓ → `prisma db execute seed.sql` ✓ → `data.wipe` present, granted to
+  ADMIN, `data_wipe_runs` exists (0 rows). (Caught + fixed a real ordering bug:
+  the generated migration timestamp sorted before the backups migration that
+  creates `backup_run_statuses`; renamed to `20261106160000_data_wipe`. The
+  role grant JOINs on `roles` so it is a no-op on an empty DB.)
+- **Browser walk-through (own server :3150 + website :5210, DB mobile_erp_wipe):**
+  - Danger-zone card ("Xavfli hudud", destructive red, button): **seen**.
+  - Dialog with real counts 487 / 20 / 70: **seen**.
+  - Counts update when both extras ticked → total 577: **seen**.
+  - Button disabled until shop name + password + "I understand": **seen** (greyed
+    → red once all three given).
+  - Wrong password → refusal toast "Do'kon nomi yoki parol mos kelmadi": **seen**.
+  - No-passphrase refusal, real erase, wait screen, signed out, catalog kept,
+    balance zero, safety backup listed, restore-brings-back, erase-with-both-
+    extras: **not seen in the browser** (would mean typing the owner password
+    into the page and re-driving sign-in); instead **proven over HTTP** against
+    the same running server + DB: no-passphrase → 400 `DATA_WIPE_NO_PASSPHRASE`;
+    wrong password → 403; real erase (no extras) → 202, old token 401 (sessions
+    ended), preview always 487→0 with contacts 20 / catalog 70 kept, run recorded
+    SUCCESS (487 rows, safety backup id), safety backup in `GET /backups`;
+    restore the safety backup → 487/20/70 back; erase with both extras → 202,
+    always/contacts/catalog → 0 (577 rows = 487+20+70), restore → all back.
+  - Cashier 403: the dev DB has only the owner user, so I proved the route guard
+    by revoking `data.wipe` from the owner (per-user override — the exact
+    effective-permission path) → all four `/data-wipe` routes returned 403; then
+    removed the override. (The card is also client-gated on `data.wipe`.)
+- **Decisions taken:** (1) `unit_prices` is ALWAYS, not CATALOG (per-device
+  price). (2) `product_kinds`/`price_levels`/`expense_categories` → KEPT (system
+  lookups / a configured list seeded in seed.sql); `ref_model_links` → CATALOG;
+  `ref_apple_box_codes`/`ref_imei_tacs` → KEPT. (3) The screen polls a **new**
+  `GET /data-wipe/status` (same shape as restore status), chosen over extending
+  the backups module; the shared restore overlay branches on a maintenance
+  `mode` ("wipe"/"restore"). (4) `GET /preview` returns all three group counts
+  and the client sums by the ticks (no refetch). (5) The confirm reuses the
+  public `StoresService.list` + `AuthService.verifyPassword` (not a copy of
+  restore's private confirm). (6) The wipe reuses the restore recovery markers,
+  so a crash mid-wipe comes up locked for a manual check (data is intact —
+  Postgres rolled the transaction back). (7) Telegram notice is best-effort and
+  in Uzbek (centralised in `telegram/messages.ts` per that file's contract) —
+  the Uzbek string should get a Gemini review.
+- **Not done / skipped / failed:** real-erase + wait-screen/sign-out screens not
+  driven in the browser (proven over HTTP + code; see above). Back-to-first-boot
+  (users/branches/settings) is explicitly out of scope (needs the setup wizard,
+  handoff 024/026). No `graphify-out` committed (gitignored); graph updated in
+  server/, client/, root.
 
 ## Check by Claude
