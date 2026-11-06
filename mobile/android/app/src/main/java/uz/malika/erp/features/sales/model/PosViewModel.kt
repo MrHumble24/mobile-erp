@@ -38,6 +38,9 @@ class PosViewModel(
     internal val _state = MutableStateFlow(PosState(canOverride = canOverride, canUnlimited = canUnlimited, canTradeIn = canTradeIn))
     val state: StateFlow<PosState> = _state.asStateFlow()
 
+    /** The running customer-bonus lookup (PosBonus.kt): a newer one cancels it. */
+    internal var bonusJob: kotlinx.coroutines.Job? = null
+
     init {
         viewModelScope.launch {
             repo.watchPendingSoldImeis().collect { imeis -> _state.value = _state.value.copy(pendingSold = imeis) }

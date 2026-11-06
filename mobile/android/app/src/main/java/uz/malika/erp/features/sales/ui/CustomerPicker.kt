@@ -36,6 +36,8 @@ data class CustomerSelection(
     /** The picked customer's price level + standing discount (ADR 0034); null when none. */
     val priceLevelCode: String? = null,
     val standingDiscountPercent: String? = null,
+    /** The picked customer's points from the lookup; null when bonus is off or none was picked. */
+    val bonusBalance: String? = null,
 )
 
 /**
@@ -66,6 +68,7 @@ fun CustomerPicker(
                     customerId = picked!!.id,
                     priceLevelCode = picked!!.priceLevelCode,
                     standingDiscountPercent = picked!!.standingDiscountPercent,
+                    bonusBalance = picked!!.bonusBalance,
                 )
                 addNew -> CustomerSelection(newName = name, newPhone = phone)
                 else -> CustomerSelection()

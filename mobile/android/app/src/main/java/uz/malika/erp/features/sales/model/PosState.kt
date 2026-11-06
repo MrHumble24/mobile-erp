@@ -98,17 +98,21 @@ data class PosState(
     val amountToPay: BigDecimal
         get() = BigDecimal(bonusPlan.payableLines.sumOf { it.priceCents }).movePointLeft(2)
 
-    /** A fresh state keeping every flag and setting (incl. bonusEnabled) and
-     * dropping the cart, the trade-ins, the points and the customer's bonus. */
-    fun cleared(completed: ReceiptData? = null): PosState = copy(
-        lines = emptyList(),
-        errorKey = null,
-        busy = false,
+    /**
+     * A fresh state for the next sale: the cart, trade-ins, points, customer's
+     * bonus, price level and discounts are dropped; every flag and setting stays.
+     * The ONE place that lists what survives a sale: a new till flag goes here.
+     */
+    fun cleared(completed: ReceiptData? = null): PosState = PosState(
         completed = completed,
-        prompt = null,
-        productMatches = null,
-        tradeIns = emptyList(),
-        customerBonus = null,
-        bonusRequested = BigDecimal.ZERO,
+        pendingSold = pendingSold,
+        defaultWarrantyDays = defaultWarrantyDays,
+        settings = settings,
+        canOverride = canOverride,
+        canUnlimited = canUnlimited,
+        creditEnabled = creditEnabled,
+        shiftsEnabled = shiftsEnabled,
+        canTradeIn = canTradeIn,
+        bonusEnabled = bonusEnabled,
     )
 }

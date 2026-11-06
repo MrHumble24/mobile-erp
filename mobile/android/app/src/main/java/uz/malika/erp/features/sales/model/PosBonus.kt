@@ -19,27 +19,24 @@ import java.math.BigDecimal
  * points twice.
  */
 
-/** Load the chosen customer's balance and max redeem share; clears them when there is no customer, no connection, or bonus is off. */
+/**
+ * Load the chosen customer's balance and max redeem share; clears them when there
+ * is no customer, no connection, or bonus is off. A newer call cancels an older
+ * one, so a slow answer for the previous customer can never land on this one.
+ * Writes only the two bonus fields onto the CURRENT state (the cart may have
+ * changed while the answer was on its way) and never blocks the till.
+ */
 fun PosViewModel.loadCustomerBonus(customerId: String?, online: Boolean) {
-    val s = _state.value
-    if (customerId.isNullOrBlank() || !online || !s.bonusEnabled) {
-        _state.value = s.copy(customerBonus = null, bonusRequested = BigDecimal.ZERO)
-        return
-    }
-    _state.value = s.copy(busy = true, errorKey = null)
-    viewModelScope.launch {
-        try {
-            val dto = repo.customerBonus(customerId)
-            _state.value = when {
-                dto.enabled -> s.copy(
-                    busy = false,
-                    customerBonus = CustomerBonus(customerId, parseMoney(dto.balance), parseMoney(dto.maxRedeemPercent)),
-                )
-                else -> s.copy(busy = false, customerBonus = null, bonusRequested = BigDecimal.ZERO)
-            }
-        } catch (_: Exception) {
-            _state.value = s.copy(busy = false, customerBonus = null, bonusRequested = BigDecimal.ZERO)
-        }
+    bonusJob?.cancel()
+    fun clear() { _state.value = _state.value.copy(customerBonus = null, bonusRequested = BigDecimal.ZERO) }
+    if (customerId.isNullOrBlank() || !online || !_state.value.bonusEnabled) { clear(); return }
+    if (_state.value.customerBonus?.customerId != customerId) clear()
+    bonusJob = viewModelScope.launch {
+        val dto = try { repo.customerBonus(customerId) } catch (e: kotlinx.coroutines.CancellationException) { throw e } catch (_: Exception) { null }
+        if (dto == null || !dto.enabled) { clear(); return@launch }
+        _state.value = _state.value.copy(
+            customerBonus = CustomerBonus(customerId, parseMoney(dto.balance), parseMoney(dto.maxRedeemPercent)),
+        )
     }
 }
 
@@ -58,15 +55,16 @@ fun PosViewModel.checkoutDirect(
     customerPhone: String?,
     notes: String?,
     parts: List<AccountAmount>,
-    bonusByLine: Map<String, Long> = emptyMap(),
 ) {
     val s = _state.value
     val priced = s.priced
-    val hasPoints = s.customerBonus != null && s.bonusRequested.signum() > 0
+    val bonusByLine = s.bonusPlan.byLine
+    val hasPoints = bonusByLine.isNotEmpty()
     if (priced.lines.isEmpty()) return
     priced.rejection?.let { _state.value = s.copy(errorKey = it.key); return }
     if (!online || (s.tradeIns.isEmpty() && !hasPoints)) return
-    if (hasPoints && customerId.isNullOrBlank()) return
+    // Points belong to the customer they were looked up for, and to nobody else.
+    if (hasPoints && s.customerBonus?.customerId != customerId) { _state.value = s.copy(errorKey = "pos.bonusErrorNoCustomer"); return }
     if (!s.tradeInPlan.ok) { _state.value = s.copy(errorKey = "purchases.tradeInExceedsLine"); return }
     _state.value = s.copy(busy = true, errorKey = null)
     viewModelScope.launch {
@@ -95,6 +93,8 @@ private fun PosViewModel.finishCheckoutDirect(
             lines = s.lines.filterNot { it.key in result.committedLineKeys },
             tradeIns = s.tradeIns.filterNot { it.id in result.committedTradeInIds },
             bonusRequested = remaining.fromCents(),
+            // The committed lines already spent these points on the server.
+            customerBonus = s.customerBonus?.let { it.copy(balance = (it.balance - committedPoints.fromCents()).max(BigDecimal.ZERO)) },
         )
         return
     }

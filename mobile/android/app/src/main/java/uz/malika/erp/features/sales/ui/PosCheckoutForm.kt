@@ -24,7 +24,9 @@ import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.model.PosState
 import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.features.sales.model.addTradeIn
+import uz.malika.erp.features.sales.lib.fromCents
 import uz.malika.erp.features.sales.model.checkoutDirect
+import uz.malika.erp.features.sales.model.loadCustomerBonus
 import uz.malika.erp.features.sales.model.removeTradeIn
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatPoints
@@ -73,9 +75,16 @@ fun PosCheckoutForm(
         vm.applyCustomer(customer.priceLevelCode, parseMoney(customer.standingDiscountPercent))
     }
 
+    // Points (ADR 0043): looked up for the picked customer, online, while bonus is on.
+    // Keyed on the cart being empty too, so the sale after this one looks them up again.
+    LaunchedEffect(customer.customerId, online, state.bonusEnabled, state.lines.isEmpty()) {
+        vm.loadCustomerBonus(customer.customerId, online)
+    }
+
     val priced = state.priced
     val hasTradeIns = state.tradeIns.isNotEmpty()
-    val hasPoints = state.customerBonus != null && state.bonusRequested.signum() > 0
+    val pointsUsed = state.bonusPlan.totalCents
+    val hasPoints = pointsUsed > 0
     val customerChosen = !customer.customerId.isNullOrBlank() || !customer.newName.isNullOrBlank()
     // With trade-ins or points the customer pays the reduced amount; otherwise the full payable.
     val total = if (hasTradeIns || hasPoints) state.amountToPay else priced.totals.payable
@@ -110,7 +119,7 @@ fun PosCheckoutForm(
         Spacer(Modifier.height(12.dp))
         AppFormField(label = t("pos.notes", null), value = notes, onValueChange = { notes = it }, enabled = !busy)
         Spacer(Modifier.height(16.dp))
-        BonusRedeemControl(state = state, vm = vm, online = online)
+        BonusRedeemControl(state = state, vm = vm, online = online, lookedUpBalance = customer.bonusBalance)
         Spacer(Modifier.height(16.dp))
         PaymentMethodField(selection = payment, onSelection = { payment = it }, accounts = accounts, total = total, enabled = !busy)
         Spacer(Modifier.height(16.dp))
@@ -120,7 +129,7 @@ fun PosCheckoutForm(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(t("pos.bonusPoints", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
                 Text(
-                    "-${formatPoints(state.bonusRequested.toPlainString())}",
+                    "-${formatPoints(pointsUsed.fromCents().toPlainString())}",
                     style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
                     color = Tokens.success,
                 )
@@ -140,7 +149,6 @@ fun PosCheckoutForm(
                 if (hasTradeIns || hasPoints) {
                     vm.checkoutDirect(
                         online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts,
-                        state.bonusPlan.byLine,
                     )
                 } else {
                     vm.checkout(online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts)

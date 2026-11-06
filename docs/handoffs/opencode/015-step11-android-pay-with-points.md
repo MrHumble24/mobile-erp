@@ -106,3 +106,24 @@ Fill the Result section of `docs/handoffs/opencode/015-step11-android-pay-with-p
 - Not done / skipped / failed: Screens were not seen — no phone/emulator available; verified by compilation and unit tests only. Nothing skipped or failed.
 
 ## Check by Claude
+- 2026-11-06: build and unit tests pass (run by Claude, as found and after the fixes). Code
+  read line by line; not yet seen on a phone: the live try is done once for all four parts.
+- The planner (`BonusRedeem.kt`) and its seven cases follow the handoff exactly.
+- Found by reading and fixed by Claude on the branch:
+  1. `loadCustomerBonus` was never called, so the points control could never appear: the whole
+     part was dead on screen. The checkout form now calls it when the customer, the connection,
+     the bonus switch or an emptied cart changes.
+  2. The loader copied an old snapshot of the till back after the network answer (anything the
+     cashier did meanwhile was lost) and set the till to busy. It now writes only the bonus
+     fields onto the current state, and a newer lookup cancels an older one.
+  3. `cleared()` kept the last sale's price level, cart discount and price overrides for the
+     next customer. It builds a fresh state again and keeps only the flags (test added:
+     `PosStateTest`). It also now keeps `canTradeIn`, which the old code dropped after a sale.
+  4. The checkout took the points per line from the screen; it now reads the plan from the
+     state, refuses when the points were looked up for another customer, and after a partial
+     failure lowers the known balance by what the committed lines spent.
+  5. The offline line could never show (nothing is loaded offline, so the max was 0 and the
+     control returned early). It now uses the balance from the customer search.
+  6. The points row and the direct path follow what the plan will spend, not what was typed.
+     The amount field is empty at zero and no longer rewrites what is being typed.
+  7. Dead code removed: `checkoutWithTradeIns` (replaced by `checkoutDirect`).

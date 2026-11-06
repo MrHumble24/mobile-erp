@@ -34,38 +34,44 @@ fun BonusRedeemControl(
     state: PosState,
     vm: PosViewModel,
     online: Boolean,
+    /** The picked customer's points as the lookup last gave them; null when none. */
+    lookedUpBalance: String? = null,
 ) {
     val t = LocalT.current
+    // Offline nothing is loaded, so the plan's max is 0: say why instead of showing nothing.
+    if (!online) {
+        if (state.bonusEnabled && parseMoney(lookedUpBalance).signum() > 0) {
+            Text(t("pos.bonusOffline", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.warning)
+        }
+        return
+    }
     val max = state.bonusPlan.maxCents.fromCents()
     if (max.signum() <= 0) return
 
     val balance = state.customerBonus?.balance
     Column(Modifier.fillMaxWidth()) {
-        if (!online && balance != null && balance.signum() > 0) {
-            Text(t("pos.bonusOffline", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.warning)
-        } else {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(t("pos.bonusBalance", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
-                Text(formatPoints(balance?.toPlainString()), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
-            }
-            Spacer(Modifier.height(4.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(t("pos.bonusMax", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
-                Text(formatPoints(max.toPlainString()), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
-            }
-            Spacer(Modifier.height(8.dp))
-            AppFormField(
-                label = t("pos.bonusAmount", null),
-                value = state.bonusRequested.toPlainString(),
-                onValueChange = { vm.setBonusRequested(parseMoney(it)) },
-                keyboardType = KeyboardType.Number,
-            )
-            Spacer(Modifier.height(8.dp))
-            PillButton(
-                text = t("pos.bonusUseMax", null),
-                onClick = { vm.setBonusRequested(max) },
-                modifier = Modifier.fillMaxWidth(),
-            )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(t("pos.bonusBalance", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
+            Text(formatPoints(balance?.toPlainString()), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
         }
+        Spacer(Modifier.height(4.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(t("pos.bonusMax", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
+            Text(formatPoints(max.toPlainString()), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
+        }
+        Spacer(Modifier.height(8.dp))
+        AppFormField(
+            label = t("pos.bonusAmount", null),
+            // Empty at zero and no trailing zeros, so typing is not fought by the formatter.
+            value = state.bonusRequested.takeIf { it.signum() > 0 }?.stripTrailingZeros()?.toPlainString().orEmpty(),
+            onValueChange = { vm.setBonusRequested(parseMoney(it)) },
+            keyboardType = KeyboardType.Number,
+        )
+        Spacer(Modifier.height(8.dp))
+        PillButton(
+            text = t("pos.bonusUseMax", null),
+            onClick = { vm.setBonusRequested(max) },
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
