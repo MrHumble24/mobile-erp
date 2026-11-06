@@ -49,7 +49,6 @@ import uz.malika.erp.core.nowIso
 import uz.malika.erp.data.remote.HttpClient
 import uz.malika.erp.features.sales.data.PosRepository
 import uz.malika.erp.features.sales.data.Sale
-import uz.malika.erp.features.sales.data.SaleChannel
 import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.data.SalesRepository
 import uz.malika.erp.features.sales.data.TillSettings
@@ -68,9 +67,7 @@ import uz.malika.erp.shared.ui.ErrorView
 import uz.malika.erp.shared.ui.LoadMoreFooter
 import uz.malika.erp.shared.ui.listBottomPadding
 import uz.malika.erp.shared.ui.Loading
-import uz.malika.erp.shared.ui.MoneyText
 import uz.malika.erp.shared.ui.SearchFilterRow
-import uz.malika.erp.shared.ui.StatusChip
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
@@ -269,42 +266,5 @@ fun SalesScreen(container: AppContainer, api: SalesApi) {
             onReset = { search = ""; range = DateRange(); vm.clearFilters() },
             onDismiss = { showFilters = false },
         )
-    }
-}
-
-/** One sale card: model, mono IMEI(s), customer · day left; mono price and the
- *  channel / returned pills right — the same anatomy as the iOS `SaleRow`. */
-@Composable
-private fun SaleRow(sale: Sale, t: uz.malika.erp.i18n.Translate, onClick: () -> Unit) {
-    val retail = sale.channel == SaleChannel.RETAIL
-    AppCard(Modifier.fillMaxWidth().padding(vertical = Tokens.Space.gap), onClick = onClick) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-            Column(Modifier.weight(1f)) {
-                Text(sale.modelLabel, style = MaterialTheme.typography.titleSmall, color = Tokens.text)
-                if (sale.isQuantity) {
-                    // Quantity sale (ADR 0030): piece count, no unit code.
-                    Text("× ${sale.quantity}", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
-                } else {
-                    Text(sale.code, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.text)
-                    sale.imei2?.takeIf { it.isNotBlank() }?.let {
-                        Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily), color = Tokens.muted)
-                    }
-                }
-                Text(
-                    "${sale.customerName ?: t("pos.walkIn", null)} · ${formatDate(sale.soldAt)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Tokens.muted,
-                )
-            }
-            Spacer(Modifier.width(Tokens.Space.gap))
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(Tokens.Space.xs)) {
-                MoneyText(sale.salePrice, style = MaterialTheme.typography.titleSmall.copy(color = Tokens.text))
-                StatusChip(
-                    if (retail) t("sales.channelRetail", null) else t("sales.channelB2B", null),
-                    color = if (retail) Tokens.info else Tokens.warning,
-                )
-                if (sale.returnedAt != null) StatusChip(t("sales.returned", null), color = Tokens.danger)
-            }
-        }
     }
 }

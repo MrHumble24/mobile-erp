@@ -71,7 +71,9 @@ fun buildTradeInReceipt(
     val tradeInTotal = tradeIns.fold(BigDecimal.ZERO) { acc, t -> acc + t.value }
     return buildPosReceipt(id, cashierName, level, priced, online, customerName, parts, storeName, storeAddress, storePhone, footer, pointsSpent).copy(
         tradeIns = tradeIns.map { ReceiptTradeIn(it.modelLabel, it.code, it.value.toPlainString()) },
-        amountPaid = priced.totals.payable.subtract(tradeInTotal).toPlainString(),
+        // What was really tendered: the total minus the trade-ins and minus the points.
+        amountPaid = priced.totals.payable.subtract(tradeInTotal)
+            .subtract(pointsSpent?.toBigDecimalOrNull() ?: BigDecimal.ZERO).toPlainString(),
     )
 }
 

@@ -97,3 +97,13 @@ Fill the Result section of `docs/handoffs/opencode/016-step11-android-receipt-pr
   - Interpretation noted: `ReceiptDto` gained server `payments` (carried into `ReceiptData` so the printed receipt can list them); nothing built in `server/**`, `client/src/**` (outside `shared/i18n`), `mobile/ios/**`, `docs/PRD.md`, `docs/plan/*`, `.agent/rules/*`, `.claude/*`. Docs touched: this handoff only.
 
 ## Check by Claude
+- 2026-11-06: build and unit tests pass (run by Claude, as found and after the fixes). Code read;
+  not yet seen on a phone or in a print preview: the live try is done once for all four parts.
+- This part was done well (model: Crouton Alpha Free): the three receipt outputs, the print
+  gate, the paper width, `cleared()` carrying the new settings, the tests.
+- Fixed by Claude on the branch:
+  1. `SalesScreen.kt` had grown to 310 lines, over the 300 limit: the sale row is now its own
+     file `ui/SaleRow.kt` (the screen is 270 lines).
+  2. "Amount paid" on the till receipt of a sale with a trade-in AND points left the points
+     out, so it showed more than was tendered. It now subtracts both.
+- Watch in part 4's last look: `PosScreen.kt` 278 lines, `PosViewModel.kt` 276.
