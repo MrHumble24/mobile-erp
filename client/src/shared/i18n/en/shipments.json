@@ -51,5 +51,6 @@
   "supplierContact": "Contact / Phone",
   "unitExpenseTotal": "Phone expenses",
   "customsFeeTotal": "Customs fees",
-  "devicesWithoutCustomsFee": "{count} phones have no customs fee"
+  "devicesWithoutCustomsFee": "{count} phones have no customs fee",
+  "selectShipment": "Select a shipment"
 }

@@ -21,6 +21,8 @@ import uz.malika.erp.features.sales.data.ReceiptData
 import uz.malika.erp.features.sales.lib.PriceLevel
 import uz.malika.erp.features.sales.lib.PrintRow
 import uz.malika.erp.features.sales.lib.printReceipt
+import uz.malika.erp.features.sales.lib.receiptBonusRows
+import uz.malika.erp.features.sales.lib.receiptHeaderLines
 import uz.malika.erp.i18n.Translate
 import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
@@ -35,8 +37,16 @@ private val mono = TextStyle(fontFamily = MonoFamily, fontSize = 13.sp)
 @Composable
 fun ReceiptPaper(data: ReceiptData, t: Translate) {
     AppCard(Modifier.fillMaxWidth()) {
-        Text(t("pos.storeName", null), style = mono.copy(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
-        Text(t("pos.storeLocation", null), style = mono.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+        receiptHeaderLines(data).forEachIndexed { index, line ->
+            Text(
+                line,
+                style = mono.copy(
+                    fontWeight = if (index == 0) FontWeight.Bold else FontWeight.Normal,
+                    textAlign = TextAlign.Center,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         Rule()
         KvRow(t("pos.receiptNumber", null), data.receiptId)
         data.soldAt?.let { KvRow(t("pos.soldAt", null), it) }
@@ -73,10 +83,16 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
                 KvRow(accountLabel(p.accountCode, emptyList(), t), formatMoney(p.amount.toPlainString()))
             }
         }
+        receiptBonusRows(data.pointsSpent, data.pointsEarned, t).forEach { row ->
+            KvRow(row.left, row.right ?: "")
+        }
         data.warrantyUntil?.let { KvRow(t("pos.warrantyUntil", null), it) }
         Spacer(Modifier.height(8.dp))
         Text(t("pos.thankYou", null), style = mono.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
         Text(t("pos.warrantyNotice", null), style = mono.copy(fontSize = 11.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+        data.footer?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = mono.copy(fontSize = 11.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 
@@ -95,25 +111,27 @@ private fun Rule() {
 
 /** The receipt as plain text, for the "copy to Telegram" action. */
 fun buildReceiptText(t: Translate, data: ReceiptData): String = buildList {
-    add(t("pos.storeName", null))
+    data.storeName?.takeIf { it.isNotBlank() }?.let { add(it) }
     add("${t("pos.receiptNumber", null)}: ${data.receiptId}")
     data.items.forEach {
         val tag = it.quantity?.let { q -> "× $q" } ?: it.code
         add("${it.model} ($tag)  ${formatMoney(it.price)}")
     }
     add("${t("pos.totalDue", null)}: ${formatMoney(data.total)}")
+    receiptBonusRows(data.pointsSpent, data.pointsEarned, t).forEach { add("${it.left}: ${it.right}") }
     data.warrantyUntil?.let { add("${t("pos.warrantyUntil", null)}: $it") }
     add(t("pos.thankYou", null))
 }.joinToString("\n")
 
-/** Send the receipt to the Android print framework (58mm). */
-fun printReceiptData(context: Context, t: Translate, data: ReceiptData) {
+/** Send the receipt to the Android print framework at the shop's paper width. */
+fun printReceiptData(context: Context, t: Translate, data: ReceiptData, paperWidthMm: Int) {
     printReceipt(
         context = context,
         jobName = "${t("pos.receiptTitle", null)} ${data.receiptId}",
-        title = t("pos.storeName", null),
+        title = data.storeName?.takeIf { it.isNotBlank() } ?: "",
         header = buildList {
-            add(t("pos.storeLocation", null))
+            data.storeAddress?.takeIf { it.isNotBlank() }?.let { add(it) }
+            data.storePhone?.takeIf { it.isNotBlank() }?.let { add(it) }
             add("${t("pos.receiptNumber", null)}: ${data.receiptId}")
             data.soldAt?.let { add("${t("pos.soldAt", null)}: $it") }
             add("${t("pos.cashier", null)}: ${data.cashier}")
@@ -125,8 +143,24 @@ fun printReceiptData(context: Context, t: Translate, data: ReceiptData) {
                 add(PrintRow(it.quantity?.let { q -> "× $q" } ?: it.code, formatMoney(it.price)))
             }
             add(PrintRow("${t("pos.totalDue", null)}:", formatMoney(data.total), bold = true))
+            data.tradeIns.forEach { ti ->
+                add(PrintRow("${t("purchases.tradeInLabel", null)}: ${ti.model}", "-" + formatMoney(ti.value)))
+            }
+            data.amountPaid?.let { add(PrintRow("${t("purchases.amountPaid", null)}:", formatMoney(it), bold = true)) }
+            if (data.payments.isNotEmpty()) {
+                add(PrintRow("${t("balance.paidWith", null)}:"))
+                data.payments.forEach { p ->
+                    add(PrintRow(accountLabel(p.accountCode, emptyList(), t), formatMoney(p.amount.toPlainString())))
+                }
+            }
+            addAll(receiptBonusRows(data.pointsSpent, data.pointsEarned, t))
             data.warrantyUntil?.let { add(PrintRow("${t("pos.warrantyUntil", null)}:", it)) }
         },
-        footer = listOf(t("pos.thankYou", null), t("pos.warrantyNotice", null)),
+        footer = buildList {
+            add(t("pos.thankYou", null))
+            add(t("pos.warrantyNotice", null))
+            data.footer?.takeIf { it.isNotBlank() }?.let { add(it) }
+        },
+        paperWidthMm = paperWidthMm,
     )
 }

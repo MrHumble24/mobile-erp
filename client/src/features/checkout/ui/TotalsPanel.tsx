@@ -1,5 +1,6 @@
 import { ShoppingCart } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { cn } from "@/shared/lib/utils"
 import { formatMoney, formatNumber } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
 import { useCartStore } from "../model/cart.store"
@@ -16,9 +17,9 @@ export interface TotalsPanelProps {
 
 function SummaryRow({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className={strong ? "font-semibold" : "text-muted-foreground"}>{label}</span>
-      <span className={strong ? "text-lg font-bold" : "font-medium"}>{value}</span>
+    <div className="flex items-center justify-between gap-2 min-w-0">
+      <span className={cn("min-w-0 truncate", strong ? "font-semibold" : "text-muted-foreground")}>{label}</span>
+      <span className={cn("shrink-0 whitespace-nowrap tabular-nums", strong ? "text-lg font-bold" : "font-medium")}>{value}</span>
     </div>
   )
 }

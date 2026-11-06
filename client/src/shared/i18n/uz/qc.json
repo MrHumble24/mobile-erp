@@ -54,5 +54,6 @@
   "sortOrder": "Tartib raqami",
   "active": "Faol",
   "codeFormat": "Kod KATTA_HARFLAR_BILAN (UPPER_SNAKE_CASE) bo'lishi kerak",
-  "codeDuplicate": "Ushbu kod allaqachon mavjud"
+  "codeDuplicate": "Ushbu kod allaqachon mavjud",
+  "dateRange": "Sana oralig'i"
 }

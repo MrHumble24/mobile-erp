@@ -54,5 +54,6 @@
   "sortOrder": "Sort order",
   "active": "Active",
   "codeFormat": "Code must be UPPER_SNAKE_CASE",
-  "codeDuplicate": "This code already exists"
+  "codeDuplicate": "This code already exists",
+  "dateRange": "Date range"
 }

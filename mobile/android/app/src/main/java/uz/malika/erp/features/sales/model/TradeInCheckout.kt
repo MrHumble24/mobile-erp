@@ -4,6 +4,7 @@ import kotlinx.serialization.json.JsonObject
 import uz.malika.erp.core.AppException
 import uz.malika.erp.features.sales.data.CartLine
 import uz.malika.erp.features.sales.data.SaleCreate
+import uz.malika.erp.features.sales.lib.checkoutErrorKey
 import uz.malika.erp.features.sales.lib.PricedLine
 import uz.malika.erp.features.sales.lib.TradeInPlan
 import uz.malika.erp.shared.payments.AccountAmount
@@ -55,12 +56,15 @@ object TradeInCheckout {
         notes: String?,
         tradeIns: List<TradeInDraft>,
         parts: List<AccountAmount>,
+        bonusByLine: Map<String, Long> = emptyMap(),
         post: suspend (JsonObject) -> String,
     ): TradeInCheckoutResult {
         val plan = plan(lines, tradeIns)
         val byId = tradeIns.associateBy { it.id }
-        // Per-line payable (price − its trade-ins), in cart order, to split the tender over.
-        val payable = plan.payableLines.map { it.priceCents.fromCents() }
+        // Per-line payable (price − its trade-ins − its points), in cart order, to split the tender over.
+        val payable = plan.payableLines.map { line ->
+            (line.priceCents - (bonusByLine[line.lineId] ?: 0L)).coerceAtLeast(0).fromCents()
+        }
         val allocation = if (parts.isEmpty()) lines.map { emptyList() } else PaymentSplit.allocate(payable, parts)
 
         val saleIds = ArrayList<String>()
@@ -70,7 +74,11 @@ object TradeInCheckout {
         lines.forEachIndexed { i, priced ->
             val key = priced.line.key
             val lineTradeIns = (plan.itemsByLine[key] ?: emptyList()).mapNotNull { byId[it] }
-            val payload = payloadFor(priced, level, customerId, customerName, customerPhone, notes, allocation.getOrElse(i) { emptyList() }, lineTradeIns)
+            val payload = payloadFor(
+                priced, level, customerId, customerName, customerPhone, notes,
+                allocation.getOrElse(i) { emptyList() }, lineTradeIns,
+                points = bonusByLine[key] ?: 0L,
+            )
             try {
                 saleIds.add(post(payload))
                 committedLines.add(key)
@@ -80,7 +88,7 @@ object TradeInCheckout {
                     saleIds = saleIds,
                     committedLineKeys = committedLines,
                     committedTradeInIds = committedTradeIns,
-                    error = e.message?.takeIf { it.isNotBlank() } ?: "common.error",
+                    error = checkoutErrorKey(e.code) ?: (e.message?.takeIf { it.isNotBlank() } ?: "common.error"),
                 )
             }
         }
@@ -96,6 +104,7 @@ object TradeInCheckout {
         notes: String?,
         payments: List<AccountAmount>,
         tradeIns: List<TradeInDraft>,
+        points: Long = 0,
     ): JsonObject = when (val line = priced.line) {
         is CartLine.Unit -> SaleCreate.payload(
             imei = line.device.imei,
@@ -111,6 +120,7 @@ object TradeInCheckout {
             discount = priced.effectiveDiscount,
             listPrice = priced.listTotal,
             tradeIns = tradeIns,
+            bonusRedeem = points.fromCents().takeIf { it.signum() > 0 },
         )
         is CartLine.Quantity -> SaleCreate.quantityPayload(
             modelId = line.product.modelId,
@@ -125,6 +135,7 @@ object TradeInCheckout {
             discount = priced.effectiveDiscount,
             listPrice = priced.listTotal,
             tradeIns = tradeIns,
+            bonusRedeem = points.fromCents().takeIf { it.signum() > 0 },
         )
     }
 }

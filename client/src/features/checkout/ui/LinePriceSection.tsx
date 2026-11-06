@@ -38,9 +38,9 @@ export function LinePriceSection({
   return (
     <div className="space-y-2">
       {hasList && (
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t("pricing.listPrice")}</span>
-          <span className="font-semibold">{formatMoney(fromCents(listCents))}</span>
+        <div className="flex items-center justify-between gap-2 min-w-0 text-sm">
+          <span className="text-muted-foreground truncate">{t("pricing.listPrice")}</span>
+          <span className="font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(fromCents(listCents))}</span>
         </div>
       )}
       {showTyped && children}

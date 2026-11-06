@@ -24,12 +24,12 @@ export function ReceiptPaper(props: ReceiptPaperProps) {
   const bonus = receiptBonusLines(receipt.bonus, t)
   const firstItem = receipt.items[0]
   const primaryImei = (firstItem && unitCode(firstItem)) || receipt.saleId.slice(0, 15)
-  const widthClass = paperWidthMm === 58 ? "sm:w-[58mm]" : "sm:w-[80mm]"
+  const widthClass = paperWidthMm === 58 ? "w-[58mm] max-w-full" : "w-[80mm] max-w-full"
 
   return (
     <div
       data-paper={paperWidthMm}
-      className={`printable-cheque w-full max-w-[320px] ${widthClass} bg-white text-black p-4 font-mono text-[11px] leading-snug rounded-[8px] border border-[#d4d4d4] shadow-[var(--shadow-md)] print:shadow-none print:border-none print:p-0`}
+      className={`printable-cheque ${widthClass} bg-white text-black p-4 font-mono text-[11px] leading-snug rounded-[8px] border border-[#d4d4d4] shadow-[var(--shadow-md)] print:shadow-none print:border-none print:p-0`}
     >
       <ChequeHeader receipt={receipt} />
       <ChequeMeta receipt={receipt} />

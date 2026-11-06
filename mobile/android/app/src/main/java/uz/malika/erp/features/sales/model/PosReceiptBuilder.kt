@@ -23,6 +23,11 @@ fun buildPosReceipt(
     online: Boolean,
     customerName: String?,
     parts: List<AccountAmount>,
+    storeName: String? = null,
+    storeAddress: String? = null,
+    storePhone: String? = null,
+    footer: String? = null,
+    pointsSpent: String? = null,
 ): ReceiptData = ReceiptData(
     receiptId = id,
     soldAt = formatDateTime(System.currentTimeMillis()),
@@ -36,6 +41,11 @@ fun buildPosReceipt(
     priceLevelCode = level,
     listTotal = priced.totals.listSum.toPlainString(),
     discountTotal = priced.totals.discountSum.toPlainString(),
+    storeName = storeName,
+    storeAddress = storeAddress,
+    storePhone = storePhone,
+    footer = footer,
+    pointsSpent = pointsSpent,
 )
 
 /**
@@ -52,11 +62,18 @@ fun buildTradeInReceipt(
     customerName: String?,
     parts: List<AccountAmount>,
     tradeIns: List<TradeInDraft>,
+    storeName: String? = null,
+    storeAddress: String? = null,
+    storePhone: String? = null,
+    footer: String? = null,
+    pointsSpent: String? = null,
 ): ReceiptData {
     val tradeInTotal = tradeIns.fold(BigDecimal.ZERO) { acc, t -> acc + t.value }
-    return buildPosReceipt(id, cashierName, level, priced, online, customerName, parts).copy(
+    return buildPosReceipt(id, cashierName, level, priced, online, customerName, parts, storeName, storeAddress, storePhone, footer, pointsSpent).copy(
         tradeIns = tradeIns.map { ReceiptTradeIn(it.modelLabel, it.code, it.value.toPlainString()) },
-        amountPaid = priced.totals.payable.subtract(tradeInTotal).toPlainString(),
+        // What was really tendered: the total minus the trade-ins and minus the points.
+        amountPaid = priced.totals.payable.subtract(tradeInTotal)
+            .subtract(pointsSpent?.toBigDecimalOrNull() ?: BigDecimal.ZERO).toPlainString(),
     )
 }
 

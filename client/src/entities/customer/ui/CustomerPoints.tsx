@@ -6,7 +6,7 @@ export function CustomerPoints({ points }: { points: string | null }) {
   const { t } = useI18n()
   if (points === null) return null
   return (
-    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+    <span className="shrink-0 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
       {t("customers.bonusPickerPoints", { points: formatNumber(points) })}
     </span>
   )

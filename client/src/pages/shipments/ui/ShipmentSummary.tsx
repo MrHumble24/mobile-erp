@@ -7,9 +7,9 @@ import { accountLabel } from "@/entities/ledger"
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <span className="text-muted-foreground text-xs">{label}:</span>
-      <p className="font-medium">{value}</p>
+      <p className="font-medium whitespace-nowrap tabular-nums">{value}</p>
     </div>
   )
 }

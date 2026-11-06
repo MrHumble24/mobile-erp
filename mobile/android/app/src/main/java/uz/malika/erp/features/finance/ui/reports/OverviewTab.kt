@@ -19,6 +19,7 @@ import uz.malika.erp.features.finance.ui.components.TrendLineChart
 import uz.malika.erp.features.finance.ui.components.rememberAsync
 import uz.malika.erp.i18n.LocalT
 import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.formatPoints
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.ui.MetricGrid
 import uz.malika.erp.shared.ui.MetricTile
@@ -80,6 +81,12 @@ private fun Headline(r: ProfitReport, onDrill: (ReportDrill) -> Unit, onReturns:
     ): @Composable (Modifier) -> Unit = { m ->
         MetricTile(label, value, m.clickable(onClick = onTap), subtext = subtext, emphasis = emphasis, money = money)
     }
+    val pointsTiles = if (r.bonusPointsEarned != 0.0 || r.bonusPointsSpent != 0.0) {
+        listOf(
+            tile(t("reports.pointsEarned", null), formatPoints(r.bonusPointsEarned.toString()), money = false),
+            tile(t("reports.pointsSpent", null), formatPoints(r.bonusPointsSpent.toString()), money = false),
+        )
+    } else emptyList()
     MetricGrid(
         tiles = listOf(
             tile(t("dashboard.netOperatingIncome", null), r.netOperatingIncome, emphasis = signTint(r.netOperatingIncome), onTap = onNoi),
@@ -93,7 +100,7 @@ private fun Headline(r: ProfitReport, onDrill: (ReportDrill) -> Unit, onReturns:
             tile(t("dashboard.returnsRefunded", null), r.returnsRefunded, onTap = onReturns),
             tile(t("pricing.discountsGiven", null), r.discountsGiven, emphasis = Tokens.danger),
             tile(t("dashboard.unitsSold", null), r.unitsSold.toString(), money = false),
-        ),
+        ) + pointsTiles,
     )
 }
 

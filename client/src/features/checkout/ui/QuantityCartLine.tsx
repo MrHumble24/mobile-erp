@@ -128,9 +128,9 @@ export function QuantityCartLine({
         </div>
       )}
 
-      <div className="flex items-center justify-between border-t border-border pt-2 text-sm">
-        <span className="text-muted-foreground">{t("catalog.lineTotal")}</span>
-        <span className="text-lg font-bold text-primary">{formatMoney(lineFinalPrice(line, level))}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 border-t border-border pt-2 text-sm">
+        <span className="text-muted-foreground truncate">{t("catalog.lineTotal")}</span>
+        <span className="text-lg font-bold text-primary shrink-0 whitespace-nowrap tabular-nums">{formatMoney(lineFinalPrice(line, level))}</span>
       </div>
     </div>
   )

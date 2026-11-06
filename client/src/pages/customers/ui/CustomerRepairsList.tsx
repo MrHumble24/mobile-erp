@@ -25,14 +25,14 @@ export function CustomerRepairsList({ customerId }: { customerId: string }) {
           type="button"
           variant="outline"
           onClick={() => navigate("/repairs")}
-          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal"
+          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal min-w-0"
         >
           <span className="min-w-0">
             <span className="block font-semibold truncate">
               #{r.ticketNumber} · {r.deviceName}
             </span>
-            <span className="block text-xs text-muted-foreground">
-              {formatMoney(r.agreedPrice)} · {formatDate(r.receivedAt)}
+            <span className="block text-xs text-muted-foreground truncate">
+              <span className="whitespace-nowrap tabular-nums">{formatMoney(r.agreedPrice)}</span> · {formatDate(r.receivedAt)}
             </span>
           </span>
           <RepairStatusBadge statusCode={r.statusCode} statusLabel={r.statusLabel} />

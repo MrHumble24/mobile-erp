@@ -37,5 +37,8 @@
   "to": "To",
   "previous": "Previous",
   "next": "Next",
-  "created": "Created"
+  "created": "Created",
+  "loadMore": "Load more",
+  "clear": "Clear",
+  "offline": "Offline"
 }

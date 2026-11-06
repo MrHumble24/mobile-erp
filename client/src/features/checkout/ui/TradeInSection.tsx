@@ -16,13 +16,13 @@ export interface TradeInSectionProps {
 function TradeInRow({ label, code, value, onRemove }: { label: string; code: string | null; value: number; onRemove: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5">
+    <div className="flex items-center justify-between gap-2 min-w-0 rounded-[10px] border border-border bg-muted p-2.5">
       <div className="min-w-0">
         <p className="text-sm font-semibold truncate">{label}</p>
         {code && <p className="text-xs font-mono text-muted-foreground truncate">{code}</p>}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <span className="font-semibold text-destructive">− {formatMoney(value)}</span>
+        <span className="font-semibold text-destructive whitespace-nowrap tabular-nums">− {formatMoney(value)}</span>
         <Button type="button" variant="ghost" size="icon" onClick={onRemove} aria-label={t("common.close")}>
           <X className="size-4" />
         </Button>

@@ -16,17 +16,17 @@ export function CreditResultView({ credit, onDone }: { credit: CreditView; onDon
         <p className="text-base font-semibold">{t("credit.created")}</p>
       </div>
       <div className="space-y-1 rounded-[12px] border border-border bg-muted p-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t("credit.agreedTotal")}</span>
-          <span className="font-mono font-semibold">{formatMoney(credit.agreedTotal)}</span>
+        <div className="flex justify-between items-center gap-2 min-w-0">
+          <span className="text-muted-foreground truncate">{t("credit.agreedTotal")}</span>
+          <span className="font-mono font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(credit.agreedTotal)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t("credit.paid")}</span>
-          <span className="font-mono">{formatMoney(credit.paid)}</span>
+        <div className="flex justify-between items-center gap-2 min-w-0">
+          <span className="text-muted-foreground truncate">{t("credit.paid")}</span>
+          <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">{formatMoney(credit.paid)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t("credit.outstanding")}</span>
-          <span className="font-mono font-semibold">{formatMoney(credit.outstanding)}</span>
+        <div className="flex justify-between items-center gap-2 min-w-0">
+          <span className="text-muted-foreground truncate">{t("credit.outstanding")}</span>
+          <span className="font-mono font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(credit.outstanding)}</span>
         </div>
       </div>
       <div className="flex flex-col gap-2">

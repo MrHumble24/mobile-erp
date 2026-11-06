@@ -4,23 +4,20 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones), written 2026-11-06: Android is with OpenCode in four parts (`docs/handoffs/opencode/014` to `017`, one worktree `.worktrees/opencode-step11-android`), iOS is with Gemini (`docs/handoffs/gemini/030`, worktree `.worktrees/gemini-step11-ios`). Claude checks both on a running phone before merging.
+- Step 11 on the phone apps (bonus points, printing settings, buy-back refusals; no price tags on phones). Android: MERGED 2026-11-06 (OpenCode 014 to 017, fixed by Claude, tried on the emulator). iOS (`docs/handoffs/gemini/030`, worktree `.worktrees/gemini-step11-ios`): built and read by Claude, two fixes made, NOT merged: it waits for a live try on a simulator or a real iPhone.
+- Merged 2026-11-06 as well: the Uzbek pass (031) and the till and dialogs at phone width (032).
 - Merged on 2026-11-06: the online storefront, first-boot setup with company profile and themes, the danger zone, branches on the phone apps (027), dark themes switched on (028), online orders on the phone apps (029), OpenCode 010 to 013. Gemini and OpenCode ran out of their limits that day; 028 and 029 were finished by Claude builder agents.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
+| Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Given to Gemini on 2026-11-07 (worktree `.worktrees/factory-reset`), with Claude's defaults in its "Decided" table. Own reset test and a security audit before merging. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
-| "Factory reset" in the danger zone (back to the setup wizard) | nothing: the wizard is merged | Not asked for yet. |
-| Uzbek for all the English text added by step 11 on the website (handoffs 003 to 009), and a native check of the Uzbek written by Opus 4.8 for backups and the danger zone | nothing: step 11 on the website is merged | For Gemini, one pass. |
 | A real-phone try of branches on both apps; iOS was never seen on a screen (simulator did not answer on 2026-11-06) | nothing | Claude or the user. |
-| Mobile Uzbek strings | nothing | Gemini 014, reserved, never written. |
-| The till at phone width with very large amounts; every dialog | nothing | Left unchecked after the money overflow fix (`docs/handoffs/opus48/001`). |
 
 ## Waiting on someone else
 | What | Waiting on |

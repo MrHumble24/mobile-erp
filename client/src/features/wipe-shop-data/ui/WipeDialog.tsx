@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { useForm, useWatch, type Control } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AlertTriangle } from "lucide-react"
+import { useSettings } from "@/entities/settings"
 import { useI18n } from "@/shared/i18n"
 import {
   Dialog,
@@ -27,11 +28,17 @@ export interface WipeDialogProps {
 
 /** The clearly-dangerous erase confirmation: what goes, what stays, the two
  * extra boxes with live counts, the shop name, the password, and "I understand".
+ * The shop name works like a repository name on GitHub: the dialog shows the
+ * exact name to type, and "Erase now" stays off until what is typed matches it.
  * A safety backup is made server-side first; restoring it is the only undo. */
 export function WipeDialog({ open, onOpenChange }: WipeDialogProps) {
   const { t } = useI18n()
   const erase = useWipeShopData()
   const { data: preview } = useWipePreview(open)
+  const { data: settings } = useSettings()
+  // The name to type. While it is not loaded, any typed name is let through and
+  // the server decides, exactly as before.
+  const expectedName = settings?.storeName?.trim() ?? ""
   const schema = useMemo(() => makeWipeSchema(t), [t])
   const form = useForm<WipeValues>({
     resolver: zodResolver(schema),
@@ -41,7 +48,8 @@ export function WipeDialog({ open, onOpenChange }: WipeDialogProps) {
   const values = useWatch({ control: form.control })
   const contacts = values.contacts ?? false
   const catalog = values.catalog ?? false
-  const ready = Boolean(values.shopName && values.password && values.understood)
+  const nameMatches = expectedName ? values.shopName === expectedName : Boolean(values.shopName)
+  const ready = Boolean(nameMatches && values.password && values.understood)
 
   const total =
     (preview?.always ?? 0) +
@@ -98,8 +106,16 @@ export function WipeDialog({ open, onOpenChange }: WipeDialogProps) {
             <FormField control={form.control} name="shopName" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-semibold">{t("backups.restoreShopNameLabel")}</FormLabel>
+                {expectedName && (
+                  <p>
+                    <code className="select-all rounded-[6px] bg-muted px-1.5 py-0.5 font-mono text-sm font-semibold text-foreground">
+                      {expectedName}
+                    </code>
+                  </p>
+                )}
                 <FormControl>
-                  <Input {...field} autoComplete="off" placeholder={t("backups.restoreShopNamePlaceholder")} />
+                  <Input {...field} autoComplete="off" spellCheck={false}
+                    placeholder={expectedName || t("backups.restoreShopNamePlaceholder")} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

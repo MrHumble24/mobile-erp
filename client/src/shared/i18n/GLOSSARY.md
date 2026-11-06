@@ -62,3 +62,8 @@
 | Vendor / Payee | Yetkazib beruvchi / Oluvchi | Xarajat to'langan shaxs yoki tashkilot |
 | Override (Permission) | Istisno ruxsat | Xodimga alohida berilgan yoki bekor qilingan shaxsiy ruxsat |
 | Inherit | Roldan olinadi | Ruxsat xodimga biriktirilgan roldan avtomatik olinadi |
+| Point / Bonus Point | Ball / Bonus ball | Sodiqlik dasturida xarid uchun beriladigan va to'lovda ishlatiladigan shartli birlik (1 ball = 1 valyuta birligi, lekin naqd pul emas) |
+| Price Tag | Narx yorlig'i | Tovar narxi va parametrlari aks etuvchi chop etiladigan yorliq |
+| Trade-in | Trade-in | Yangi tovar xaridi hisobiga mijozdan eski qurilmani qabul qilish xizmati |
+| Load More | Yana yuklash | Ro'yxatdagi keyingi ma'lumotlarni yuklab ko'rsatish amali |
+| Date Range | Sana oralig'i | Boshlanish va yakunlanish sanalari oralig'i filtri |

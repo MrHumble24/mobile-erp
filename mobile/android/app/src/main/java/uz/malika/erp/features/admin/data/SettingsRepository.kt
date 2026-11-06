@@ -33,6 +33,14 @@ data class SettingsForm(
     val defaultCreditLimit: String = "",
     // Cashier shifts (ADR 0036).
     val shiftsEnabled: Boolean = false,
+    // Bonus points (ADR 0043): percents are numbers, 0-100, at most 2 decimals.
+    val bonusEnabled: Boolean = false,
+    val bonusEarnPercent: String = "0",
+    val bonusMaxRedeemPercent: String = "0",
+    // Receipt / price-tag printing (ADR 0043).
+    val receiptPrintingEnabled: Boolean = false,
+    val receiptPaperWidthMm: String = "80",
+    val priceTagsEnabled: Boolean = false,
     // Repairs (ADR 0040).
     val repairsEnabled: Boolean = false,
 )
@@ -73,6 +81,14 @@ class SettingsRepository(private val api: AdminApi) {
             put("defaultCreditLimit", form.defaultCreditLimit.trim().toDoubleOrNull()?.let { JsonPrimitive(it) } ?: JsonNull)
             put("shiftsEnabled", JsonPrimitive(form.shiftsEnabled))
             put("repairsEnabled", JsonPrimitive(form.repairsEnabled))
+            // Bonus points (ADR 0043): percents sent as numbers.
+            put("bonusEnabled", JsonPrimitive(form.bonusEnabled))
+            put("bonusEarnPercent", JsonPrimitive(form.bonusEarnPercent.trim().toDoubleOrNull() ?: 0.0))
+            put("bonusMaxRedeemPercent", JsonPrimitive(form.bonusMaxRedeemPercent.trim().toDoubleOrNull() ?: 0.0))
+            // Printing (ADR 0043): width sent as the number 58 or 80.
+            put("receiptPrintingEnabled", JsonPrimitive(form.receiptPrintingEnabled))
+            put("receiptPaperWidthMm", JsonPrimitive(form.receiptPaperWidthMm.trim().toIntOrNull() ?: 80))
+            put("priceTagsEnabled", JsonPrimitive(form.priceTagsEnabled))
         }
         api.updateSettings(body)
     }

@@ -132,7 +132,7 @@ export function RecordPaymentDialog({
         <DialogHeader>
           <DialogTitle>{t("partners.recordPayment")}</DialogTitle>
           <DialogDescription>
-            {partner.shopName} · {t("partners.outstanding")}: {formatMoney(partner.outstanding)}
+            {partner.shopName} · {t("partners.outstanding")}: <span className="whitespace-nowrap tabular-nums">{formatMoney(partner.outstanding)}</span>
           </DialogDescription>
         </DialogHeader>
         {open && (

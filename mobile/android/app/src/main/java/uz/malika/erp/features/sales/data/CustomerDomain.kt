@@ -15,12 +15,15 @@ data class Customer(
     val standingDiscountPercent: String = "0",
     /** The customer's own credit ceiling (2-dp string); null = use the shop default (ADR 0035). */
     val creditLimit: String? = null,
+    /** Bonus-points balance (a Decimal string); null when bonus is off or unknown. */
+    val bonusBalance: String? = null,
 )
 
 fun CustomerDto.toDomain() = Customer(
     id = id, name = name, phone = phone, notes = notes,
     priceLevelCode = priceLevelCode, standingDiscountPercent = standingDiscountPercent,
     creditLimit = creditLimit,
+    bonusBalance = bonusBalance,
 )
 
 /** A customer plus purchase aggregates derived server-side (not stored). */

@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { Pencil } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate, formatDateTime } from "@/shared/lib/format"
+import { useFitText } from "@/shared/lib/hooks/use-fit-text"
 import { useExpense, type ExpenseView } from "@/entities/expense"
 import { accountLabel } from "@/entities/ledger"
 import { Badge } from "@/shared/ui/badge"
@@ -27,6 +28,24 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
+function BigExpenseAmount({ amount }: { amount: string | number }) {
+  const content = formatMoney(amount)
+  const { containerRef, textRef, scale } = useFitText(content, 0.4)
+  return (
+    <div className="rounded-[16px] border border-border bg-muted p-4 text-center overflow-hidden">
+      <span ref={containerRef} className="block overflow-hidden">
+        <span
+          ref={textRef}
+          className="font-mono text-3xl font-bold text-destructive inline-block origin-center whitespace-nowrap tabular-nums"
+          style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}
+        >
+          {content}
+        </span>
+      </span>
+    </div>
+  )
+}
+
 function ExpenseBody({
   expense,
   canManage,
@@ -39,11 +58,7 @@ function ExpenseBody({
   const { t } = useI18n()
   return (
     <div className="my-4 space-y-4">
-      <div className="rounded-[16px] border border-border bg-muted p-4 text-center">
-        <p className="font-mono text-3xl font-bold text-destructive">
-          {formatMoney(expense.amount)}
-        </p>
-      </div>
+      <BigExpenseAmount amount={expense.amount} />
       <div>
         <Row label={t("expenses.category")} value={expense.category?.name ?? "—"} />
         <Row label={t("expenses.incurredAt")} value={formatDate(expense.incurredAt)} />

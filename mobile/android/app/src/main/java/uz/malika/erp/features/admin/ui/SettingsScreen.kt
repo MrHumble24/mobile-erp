@@ -57,6 +57,12 @@ class SettingsFormState(s: StoreSettingsDto) {
     var customerCreditEnabled by mutableStateOf(s.customerCreditEnabled)
     var defaultCreditLimit by mutableStateOf(s.defaultCreditLimitStr)
     var shiftsEnabled by mutableStateOf(s.shiftsEnabled)
+    var bonusEnabled by mutableStateOf(s.bonusEnabled)
+    var bonusEarnPercent by mutableStateOf(s.bonusEarnPercentStr)
+    var bonusMaxRedeemPercent by mutableStateOf(s.bonusMaxRedeemPercentStr)
+    var receiptPrintingEnabled by mutableStateOf(s.receiptPrintingEnabled)
+    var receiptPaperWidthMm by mutableStateOf(s.receiptPaperWidthMm.toString())
+    var priceTagsEnabled by mutableStateOf(s.priceTagsEnabled)
     var repairsEnabled by mutableStateOf(s.repairsEnabled)
 
     fun toForm() = SettingsForm(
@@ -65,7 +71,10 @@ class SettingsFormState(s: StoreSettingsDto) {
         defaultNasiyaDueDays, overdueReminderDays,
         discountsEnabled, discountPercentAllowed, discountAmountAllowed,
         discountPresetsPercent, discountPresetsAmount, maxDiscountPercent,
-        customerCreditEnabled, defaultCreditLimit, shiftsEnabled, repairsEnabled,
+        customerCreditEnabled, defaultCreditLimit, shiftsEnabled,
+        bonusEnabled, bonusEarnPercent, bonusMaxRedeemPercent,
+        receiptPrintingEnabled, receiptPaperWidthMm, priceTagsEnabled,
+        repairsEnabled,
     )
 }
 
@@ -110,6 +119,8 @@ private fun SettingsForm(vm: SettingsViewModel, settings: StoreSettingsDto, onli
             RepairsSettingsSection(form)
             NasiyaSection(form, errors)
             TelegramSection(form, errors)
+            BonusSettingsSection(form, errors)
+            PrintingSettingsSection(form)
             if (message != null) {
                 Text(message!!, style = MaterialTheme.typography.bodySmall, color = if (isError) Tokens.danger else Tokens.success)
             }

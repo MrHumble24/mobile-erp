@@ -10,9 +10,9 @@ import { SaleWarrantyBadge } from "./SaleWarrantyBadge"
 
 export function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 text-sm">
-      <span className="text-muted-foreground">{label}:</span>
-      <span className="text-right font-medium">{value}</span>
+    <div className="flex justify-between items-baseline gap-2 min-w-0 text-sm">
+      <span className="text-muted-foreground min-w-0 truncate">{label}:</span>
+      <span className="text-right font-medium shrink-0 whitespace-nowrap tabular-nums">{value}</span>
     </div>
   )
 }

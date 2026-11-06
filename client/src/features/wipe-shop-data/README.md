@@ -20,6 +20,9 @@ cannot replay into the clean shop (the server also refuses older mutations).
   erase mutation flips maintenance to `wipe` mode on its 202.
 - `ui/WipeDialog.tsx` — what is erased (live counts), the two extra boxes, what
   is kept, the safety-backup/undo note, shop name + password + "I understand".
+  The shop name works like a repository name on GitHub: the dialog shows the
+  exact name to type (the active store, from settings) and "Erase now" stays off
+  until it matches letter for letter. The server still checks it again.
   Form values are read with `useWatch` (React Compiler is on).
 
 ## Must never

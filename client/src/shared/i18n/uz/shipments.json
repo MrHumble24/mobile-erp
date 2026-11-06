@@ -51,5 +51,6 @@
   "supplierContact": "Aloqa / Telefon",
   "unitExpenseTotal": "Qurilma xarajatlari",
   "customsFeeTotal": "Bojxona to'lovlari",
-  "devicesWithoutCustomsFee": "{count} ta qurilmaning bojxona to'lovi yo'q"
+  "devicesWithoutCustomsFee": "{count} ta qurilmaning bojxona to'lovi yo'q",
+  "selectShipment": "Partiyani tanlang"
 }

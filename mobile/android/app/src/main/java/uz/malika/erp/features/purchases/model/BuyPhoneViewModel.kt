@@ -11,6 +11,7 @@ import uz.malika.erp.features.inventory.data.CatalogRepository
 import uz.malika.erp.features.inventory.data.DeviceModelView
 import uz.malika.erp.features.purchases.data.CustomerPurchaseDto
 import uz.malika.erp.features.purchases.data.PurchaseRepository
+import uz.malika.erp.features.purchases.lib.buyErrorKey
 
 data class BuyPhoneState(
     val models: List<DeviceModelView> = emptyList(),
@@ -50,9 +51,10 @@ class BuyPhoneViewModel(
             try {
                 _state.value = _state.value.copy(submitting = false, result = repo.create(body))
             } catch (e: AppException) {
+                val key = buyErrorKey(e.statusCode, e.code)
                 _state.value = when {
                     e.code == "NO_OPEN_SHIFT" -> _state.value.copy(submitting = false, needsShift = true)
-                    e.statusCode == 409 -> _state.value.copy(submitting = false, errorKey = "purchases.buyConflict")
+                    key != null -> _state.value.copy(submitting = false, errorKey = key)
                     else -> _state.value.copy(submitting = false, errorText = e.message)
                 }
             }

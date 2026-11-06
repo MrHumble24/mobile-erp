@@ -27,9 +27,9 @@ function levelLabel(code: string, t: (k: string) => string): string {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[12px] border border-border bg-muted p-3">
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="text-sm font-semibold mt-0.5">{value}</div>
+    <div className="rounded-[12px] border border-border bg-muted p-3 min-w-0">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground truncate">{label}</div>
+      <div className="text-sm font-semibold mt-0.5 whitespace-nowrap tabular-nums">{value}</div>
     </div>
   )
 }
@@ -110,7 +110,7 @@ function CustomerRelations({
   const showRepairs = Boolean(settings?.repairsEnabled) && canReadRepairs
   return (
     <>
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         <Stat label={t("credit.outstanding")} value={formatMoney(customer.creditOutstanding)} />
         <Stat label={t("credit.overdueAmount")} value={formatMoney(customer.creditOverdue)} />
         <Stat

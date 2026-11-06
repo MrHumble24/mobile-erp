@@ -1,6 +1,8 @@
 package uz.malika.erp.features.sales.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,10 +24,18 @@ import uz.malika.erp.features.sales.data.SalesApi
 import uz.malika.erp.features.sales.model.PosState
 import uz.malika.erp.features.sales.model.PosViewModel
 import uz.malika.erp.features.sales.model.addTradeIn
-import uz.malika.erp.features.sales.model.checkoutWithTradeIns
+import uz.malika.erp.features.sales.lib.fromCents
+import uz.malika.erp.features.sales.model.applyCustomer
+import uz.malika.erp.features.sales.model.checkoutDirect
+import uz.malika.erp.features.sales.model.loadCustomerBonus
 import uz.malika.erp.features.sales.model.removeTradeIn
+import uz.malika.erp.features.sales.model.setCartDiscount
+import uz.malika.erp.features.sales.model.setLevel
 import uz.malika.erp.i18n.LocalT
+import uz.malika.erp.shared.lib.formatMoney
+import uz.malika.erp.shared.lib.formatPoints
 import uz.malika.erp.shared.lib.parseMoney
+import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.shared.payments.ui.PaymentMethodField
 import uz.malika.erp.shared.payments.ui.PaymentSelection
 import uz.malika.erp.shared.payments.ui.rememberAccountOptions
@@ -69,11 +79,19 @@ fun PosCheckoutForm(
         vm.applyCustomer(customer.priceLevelCode, parseMoney(customer.standingDiscountPercent))
     }
 
+    // Points (ADR 0043): looked up for the picked customer, online, while bonus is on.
+    // Keyed on the cart being empty too, so the sale after this one looks them up again.
+    LaunchedEffect(customer.customerId, online, state.bonusEnabled, state.lines.isEmpty()) {
+        vm.loadCustomerBonus(customer.customerId, online)
+    }
+
     val priced = state.priced
     val hasTradeIns = state.tradeIns.isNotEmpty()
+    val pointsUsed = state.bonusPlan.totalCents
+    val hasPoints = pointsUsed > 0
     val customerChosen = !customer.customerId.isNullOrBlank() || !customer.newName.isNullOrBlank()
-    // With trade-ins the customer pays the reduced amount; otherwise the full payable.
-    val total = if (hasTradeIns) state.amountToPay else priced.totals.payable
+    // With trade-ins or points the customer pays the reduced amount; otherwise the full payable.
+    val total = if (hasTradeIns || hasPoints) state.amountToPay else priced.totals.payable
     val pricesValid = priced.lines.isNotEmpty() && !priced.hasRejection && priced.lines.all { it.finalPrice > BigDecimal.ZERO }
     val payValid = payment.valid(total, accounts)
     val tradeInOk = !hasTradeIns || (customerChosen && state.tradeInPlan.ok)
@@ -105,9 +123,34 @@ fun PosCheckoutForm(
         Spacer(Modifier.height(12.dp))
         AppFormField(label = t("pos.notes", null), value = notes, onValueChange = { notes = it }, enabled = !busy)
         Spacer(Modifier.height(16.dp))
+        BonusRedeemControl(state = state, vm = vm, online = online, lookedUpBalance = customer.bonusBalance)
+        Spacer(Modifier.height(16.dp))
         PaymentMethodField(selection = payment, onSelection = { payment = it }, accounts = accounts, total = total, enabled = !busy)
         Spacer(Modifier.height(16.dp))
         CartTotalsView(priced.totals)
+        if (hasPoints) {
+            Spacer(Modifier.height(4.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(t("pos.bonusPoints", null), style = MaterialTheme.typography.bodyMedium, color = Tokens.muted)
+                Text(
+                    "-${formatPoints(pointsUsed.fromCents().toPlainString())}",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFamily),
+                    color = Tokens.success,
+                )
+            }
+            // What is left for cash or card. With trade-ins the trade-in section already shows it.
+            if (!hasTradeIns) {
+                Spacer(Modifier.height(4.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t("purchases.amountPaid", null), style = MaterialTheme.typography.titleMedium, color = Tokens.text)
+                    Text(
+                        formatMoney(state.amountToPay.toPlainString()),
+                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = MonoFamily),
+                        color = Tokens.text,
+                    )
+                }
+            }
+        }
         Spacer(Modifier.height(16.dp))
         if (shiftBlocked) {
             Text(t("shifts.shiftRequired", null), style = MaterialTheme.typography.bodySmall, color = Tokens.warning)
@@ -119,8 +162,10 @@ fun PosCheckoutForm(
             text = if (busy) t("pos.completingSale", null) else t("pos.checkoutButton", null),
             onClick = {
                 val parts = payment.parts(total, accounts)
-                if (hasTradeIns) {
-                    vm.checkoutWithTradeIns(online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts)
+                if (hasTradeIns || hasPoints) {
+                    vm.checkoutDirect(
+                        online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts,
+                    )
                 } else {
                     vm.checkout(online, customer.customerId, customer.newName, customer.newPhone, notes.trim(), parts)
                 }

@@ -86,9 +86,9 @@ export function PriceGuidance({
 
   return (
     <div className="space-y-2 rounded-[10px] bg-muted border border-border p-2.5">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{t("pos.targetPrice")}</span>
-        <span className="font-semibold">{formatMoney(targetPrice)}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+        <span className="text-muted-foreground truncate">{t("pos.targetPrice")}</span>
+        <span className="font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(targetPrice)}</span>
       </div>
       {belowTarget && (
         <Badge variant="outline" size="sm" className="bg-amber-500/15 text-amber-600 border-amber-500/30">

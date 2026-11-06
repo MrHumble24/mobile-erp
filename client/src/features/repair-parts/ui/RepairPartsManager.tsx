@@ -31,7 +31,7 @@ function PartRow({
           {part.name} <span className="font-mono text-muted-foreground">×{part.quantity}</span>
         </div>
         {part.partLineCost != null && (
-          <div className="text-xs text-muted-foreground font-mono">
+          <div className="text-xs text-muted-foreground font-mono whitespace-nowrap tabular-nums">
             {formatMoney(part.partLineCost)}
           </div>
         )}
