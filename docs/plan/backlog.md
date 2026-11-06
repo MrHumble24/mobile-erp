@@ -5,8 +5,8 @@ Updated by Claude when something is added, started or finished. Last update: 202
 
 ## In progress now (not backlog, listed so nothing is counted twice)
 - Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
-- Online storefront, server and website: `docs/handoffs/gemini/022`. Gemini reports it done (branch `agent/gemini/storefront`); waiting for Claude's check.
-- First-boot setup, in-app configuration, branding and themes: `docs/handoffs/gemini/024`. Given to Gemini by the user; Gemini reports it done (branch `agent/gemini/setup`); waiting for Claude's check. It built its own secrets store at the same time as the backup work did; the two must be joined into one before both are merged.
+- Online storefront, server and website (`docs/handoffs/gemini/022`): checked by Claude on 2026-11-06, no critical or serious security problem; a fix list is with Gemini (`docs/handoffs/gemini/025-storefront-fixes.md`). Merged when that is done.
+- First-boot setup, branding and themes (`docs/handoffs/gemini/024`): checked by Claude on 2026-11-06 and not mergeable yet: the wizard cannot finish from the screen, there are two secrets stores, themes are half done, one serious security item. Fix list: `docs/handoffs/gemini/026-setup-fixes.md`.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
