@@ -54,8 +54,8 @@
   "returnToDefective": "Nuqsonli qismga o'tkazish",
   "returnSuccess": "Qurilma qaytarildi",
   "returnConflict": "Ushbu savdo boshqa terminalda o'zgartirildi. Sahifani yangilab, qayta urinib ko'ring.",
-  "returnBoughtBack": "This phone was bought back, so this sale can no longer be returned.",
-  "returnTradeInForbidden": "Returning the trade-in part of this sale needs the purchase permission.",
+  "returnBoughtBack": "Bu telefon qaytarib sotib olingan, shuning uchun bu savdoni endi qaytarib bo'lmaydi.",
+  "returnTradeInForbidden": "Ushbu savdoning trade-in qismini qaytarish uchun xarid qilish ruxsati talab etiladi.",
   "alreadyReturned": "Ushbu savdo allaqachon qaytarilgan",
   "noSalesFound": "Savdolar topilmadi",
   "customersTitle": "Mijozlar",
@@ -70,6 +70,6 @@
   "printReceipt": "Chekni chop etish",
   "refundGoesBack": "Qaytarish to'langan usulda amalga oshiriladi: {accounts}",
   "refundTooHigh": "Qaytarish summasi to'langan summadan ko'p bo'lishi mumkin emas",
-  "paidWithPoints": "Paid with points",
-  "pointsEarned": "Points earned"
+  "paidWithPoints": "Ballar bilan to'langan",
+  "pointsEarned": "Yig'ilgan ballar"
 }
