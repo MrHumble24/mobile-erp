@@ -3,6 +3,7 @@ package uz.malika.erp.app
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import kotlinx.coroutines.flow.StateFlow
 import uz.malika.erp.AppContainer
 
 /**
@@ -17,6 +18,8 @@ data class NavItem(
     val icon: ImageVector,
     /** Permission code required to see/enter this section; null = always. */
     val permission: String? = null,
+    /** Optional badge count flow (e.g. unhandled orders); null = no badge. */
+    val badge: StateFlow<Int>? = null,
 )
 
 /**
