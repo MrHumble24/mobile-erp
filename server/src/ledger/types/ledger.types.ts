@@ -89,7 +89,8 @@ export type LedgerSourceField =
   | 'shipmentId'
   | 'customerPurchaseId'
   | 'repairPaymentId'
-  | 'repairId';
+  | 'repairId'
+  | 'orderId';
 
 /**
  * One signed row ready to append. The sole write shape: manual entries and
@@ -122,6 +123,8 @@ export interface LedgerPost {
   repairPaymentId?: string;
   /** Ties a REPAIR_OUTSIDE row to the ticket it paid an outside master for (ADR 0040). */
   repairId?: string;
+  /** Ties a DELIVERY_FEE row to the storefront order (033). */
+  orderId?: string;
   createdById: string;
 }
 

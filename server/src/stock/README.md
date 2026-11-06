@@ -39,6 +39,7 @@ module read back its quantity purchases without touching stock tables (ADR 0034)
 `QuantityProductView` (scan + sync) also carries `categoryId` + `imageUrl` for
 the POS/offline grid (ADR 0031) and `prices{RETAIL,WHOLESALE,PARTNER}` + the
 stock list carries `prices` too (resolved via `PricingService`, ADR 0034).
+Online storefront subtracts open orders (NEW, CONTACTED, SHIPPED) from available quantity counts (ADR 0062).
 
 ## Must never
 

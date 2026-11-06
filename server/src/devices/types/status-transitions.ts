@@ -13,6 +13,9 @@ export const DEVICE_STATUS_TRANSITIONS: ReadonlyArray<
   ['CONSIGNED', 'SOLD'],
   ['SOLD', 'IN_STOCK'],
   ['SOLD', 'DEFECTIVE'],
+  ['IN_STOCK', 'RESERVED'],
+  ['RESERVED', 'IN_STOCK'],
+  ['RESERVED', 'SOLD'],
 ];
 
 const ALLOWED = new Set(

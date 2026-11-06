@@ -14,7 +14,12 @@ export function buildUnitCheckoutInput(args: {
   storeId: string;
   caller: AuthenticatedUser;
   dto: CreateSaleDto;
-  device: { id: string; version: number; landedCost: Prisma.Decimal };
+  device: {
+    id: string;
+    version: number;
+    landedCost: Prisma.Decimal;
+    statusCode?: string;
+  };
   pricing: PricingOutcome;
   payments: SalePayment[];
   soldAt: Date;
@@ -24,6 +29,7 @@ export function buildUnitCheckoutInput(args: {
   return {
     storeId: args.storeId,
     deviceId: device.id,
+    fromStatusCode: device.statusCode,
     expectedVersion: dto.expectedVersion ?? device.version,
     salePrice: pricing.salePrice,
     landedCostSnapshot: device.landedCost,

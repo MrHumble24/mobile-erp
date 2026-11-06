@@ -18,6 +18,7 @@ import { ListStorefrontProductsQueryDto } from './dto/list-products.query.dto.js
 import { UpdateStorefrontSettingsDto } from './dto/storefront-settings.dto.js';
 import { StorefrontService } from './storefront.service.js';
 import type {
+  PublicStorefrontOrderView,
   StorefrontConfigView,
   StorefrontProductCard,
   StorefrontProductDetail,
@@ -49,6 +50,14 @@ export class StorefrontController {
     @Param('modelId', ParseUUIDPipe) modelId: string,
   ): Promise<StorefrontProductDetail> {
     return this.storefront.getProduct(modelId);
+  }
+
+  @Public()
+  @Get('orders/:id')
+  getOrder(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<PublicStorefrontOrderView> {
+    return this.storefront.getPublicOrder(id);
   }
 
   @Public()

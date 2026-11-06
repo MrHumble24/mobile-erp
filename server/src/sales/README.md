@@ -12,7 +12,8 @@ Retail checkout, warranty, returns, receipts (PRD Module 3). Owns `sales`,
   `serialNumber`, or (`modelId` + `quantity`) for a quantity product (400
   otherwise). A **unit** sale resolves the code against imei/imei2/serialNumber
   (ADR 0029); the device must exist (404) and be IN_STOCK (409 — DEFECTIVE is
-  not sellable, ADR 0007). A **quantity** sale (ADR 0030): the model must be a
+  not sellable, ADR 0007; RESERVED is allowed only when `options.storefrontOrderId`
+  is provided and device is held by that order, ADR 0062). A **quantity** sale (ADR 0030): the model must be a
   `QUANTITY` product (400 otherwise), `salePrice` is the **line total**,
   `landedCostSnapshot = quantity × moving-average cost` computed in the checkout
   tx, a `SALE` stock movement posts there, and there is **no warranty**. A DB

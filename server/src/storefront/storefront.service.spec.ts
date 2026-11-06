@@ -1,8 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import type { PricingService } from '../pricing/pricing.service.js';
-import type { TelegramService } from '../telegram/telegram.service.js';
 import type { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
+import type { StorefrontDeliveryZonesRepository } from './storefront-delivery-zones.repository.js';
+import type { StorefrontPublicOrdersService } from './storefront-public-orders.service.js';
 import type { StorefrontRepository } from './storefront.repository.js';
 import { StorefrontService } from './storefront.service.js';
 
@@ -10,8 +11,9 @@ describe('StorefrontService', () => {
   let service: StorefrontService;
   let repo: jest.Mocked<StorefrontRepository>;
   let catalog: jest.Mocked<StorefrontCatalogRepository>;
+  let zonesRepo: jest.Mocked<StorefrontDeliveryZonesRepository>;
   let pricing: jest.Mocked<PricingService>;
-  let telegram: jest.Mocked<TelegramService>;
+  let ordersService: jest.Mocked<StorefrontPublicOrdersService>;
 
   beforeEach(() => {
     repo = {
@@ -23,12 +25,20 @@ describe('StorefrontService', () => {
       quantityStockForModels: jest.fn(),
       findModelById: jest.fn(),
       countModelInStockForStore: jest.fn(),
-      createOrder: jest.fn(),
     } as unknown as jest.Mocked<StorefrontRepository>;
 
     catalog = {
       findInStockModels: jest.fn(),
     } as unknown as jest.Mocked<StorefrontCatalogRepository>;
+
+    zonesRepo = {
+      findActive: jest.fn().mockResolvedValue([]),
+    } as unknown as jest.Mocked<StorefrontDeliveryZonesRepository>;
+
+    ordersService = {
+      createOrder: jest.fn(),
+      getPublicOrder: jest.fn(),
+    } as unknown as jest.Mocked<StorefrontPublicOrdersService>;
 
     pricing = {
       listPriceForUnit: jest.fn(),
@@ -49,28 +59,39 @@ describe('StorefrontService', () => {
       }),
     } as unknown as jest.Mocked<PricingService>;
 
-    telegram = {
-      send: jest.fn().mockResolvedValue(undefined),
-    } as unknown as jest.Mocked<TelegramService>;
-    service = new StorefrontService(repo, catalog, pricing, telegram);
+    service = new StorefrontService(
+      repo,
+      catalog,
+      zonesRepo,
+      pricing,
+      ordersService,
+    );
   });
+
+  const baseSettings = {
+    enabled: false,
+    showPrices: true,
+    contactPhone: null,
+    contactTelegram: null,
+    categoryIds: [],
+    pickupEnabled: true,
+    deliveryEnabled: false,
+    deliveryPricingModeCode: 'FREE',
+    deliveryFlatFee: null,
+    deliveryFreeFrom: null,
+    deliveryNote: null,
+  };
 
   describe('getConfig', () => {
     it('returns { enabled: false } when storefront is disabled', async () => {
-      repo.getSettings.mockResolvedValue({
-        enabled: false,
-        showPrices: true,
-        contactPhone: null,
-        contactTelegram: null,
-        categoryIds: [],
-      });
+      repo.getSettings.mockResolvedValue(baseSettings);
       expect(await service.getConfig()).toEqual({ enabled: false });
     });
 
     it('returns full config when storefront is enabled', async () => {
       repo.getSettings.mockResolvedValue({
+        ...baseSettings,
         enabled: true,
-        showPrices: true,
         contactPhone: '+998901234567',
         contactTelegram: '@shop',
         categoryIds: ['c1'],
@@ -88,19 +109,26 @@ describe('StorefrontService', () => {
         showPrices: true,
         stores: [{ id: 's1', name: 'Main', address: 'Tashkent', phone: '123' }],
         categories: [{ id: 'c1', name: 'Phones' }],
+        pickupEnabled: true,
+        deliveryEnabled: false,
+        deliveryPricingMode: 'FREE',
+        deliveryFlatFee: null,
+        deliveryFreeFrom: null,
+        deliveryNote: null,
+        deliveryZones: [],
       });
     });
   });
 
   describe('storefront disabled checks', () => {
     beforeEach(() => {
-      repo.getSettings.mockResolvedValue({
-        enabled: false,
-        showPrices: true,
-        contactPhone: null,
-        contactTelegram: null,
-        categoryIds: [],
-      });
+      repo.getSettings.mockResolvedValue(baseSettings);
+      ordersService.createOrder.mockRejectedValue(
+        new NotFoundException({
+          code: 'STOREFRONT_DISABLED',
+          message: 'Storefront is currently disabled',
+        }),
+      );
     });
 
     it('getProducts throws 404 when disabled', async () => {

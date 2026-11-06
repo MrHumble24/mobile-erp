@@ -20,6 +20,7 @@ payments / purchases / overhead post rows automatically.
   (hidden in history without `device.cost.view`). Repairs (ADR 0040) add
   `REPAIR_PAYMENT` (customer money in / refund out, signed; `repairPaymentId`)
   and `REPAIR_OUTSIDE` (money out to an outside master, a cost type; `repairId`).
+  Online store delivery adds `DELIVERY_FEE` (delivery fee income, signed; links via `orderId`; ADR 0062).
 - The sign convention (`lib/signed-amount.ts`), the one-opening-per-account and
   transfer rules, proportional refund splitting (`lib/proportional-split.ts`),
   and deriving a source's current account from its rows (`lib/source-nets.ts`).

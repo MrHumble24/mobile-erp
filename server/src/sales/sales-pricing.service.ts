@@ -17,6 +17,8 @@ export interface CustomerPricing {
   standingDiscountPercent: Decimal;
 }
 
+import type { PrismaTx } from '../common/types/prisma-tx.js';
+
 /** The outcome handed to the checkout repository. */
 export interface PricingOutcome {
   salePrice: Decimal;
@@ -29,6 +31,10 @@ export interface CheckoutOptions {
   trustClientPrice?: boolean;
   /** Offline replay: the sale already happened, so the shift gate is skipped (ADR 0036). */
   fromSync?: boolean;
+  /** Storefront order ID when handing over a storefront order (033). */
+  storefrontOrderId?: string;
+  /** Outer transaction to commit atomically with the order transition and delivery fee. */
+  tx?: PrismaTx;
 }
 
 /** One home for the checkout list-price + discount money rules (ADR 0034). */
@@ -115,7 +121,8 @@ export class SalesPricingService {
       customerStandingPercent: standing,
       canOverridePrice: caller.permissions.has('sale.price.override'),
       canDiscountUnlimited: caller.permissions.has('sale.discount.unlimited'),
-      trustClientPrice: options?.trustClientPrice,
+      trustClientPrice:
+        options?.trustClientPrice || Boolean(options?.storefrontOrderId),
       claimedListPrice:
         dto.listPrice === undefined
           ? undefined

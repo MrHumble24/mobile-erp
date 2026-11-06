@@ -1,20 +1,66 @@
-// ---------------------------------------------------------------------------
-// Online storefront (Change 10, ADR 0049).
-// Public catalog & customer order capture.
-// ---------------------------------------------------------------------------
-
 /// Company-wide storefront settings singleton (row id = 1).
 model StorefrontSettings {
-  id              Int      @id @default(1)
-  enabled         Boolean  @default(false)
-  showPrices      Boolean  @default(true)
-  contactPhone    String?
-  contactTelegram String?
+  id                      Int                 @id @default(1)
+  enabled                 Boolean             @default(false)
+  showPrices              Boolean             @default(true)
+  contactPhone            String?
+  contactTelegram         String?
+  pickupEnabled           Boolean             @default(true)
+  deliveryEnabled         Boolean             @default(false)
+  deliveryPricingModeCode String              @default("FREE")
+  deliveryPricingMode     DeliveryPricingMode @relation(fields: [deliveryPricingModeCode], references: [code])
+  deliveryFlatFee         Decimal?            @db.Decimal(14, 2)
+  deliveryFreeFrom        Decimal?            @db.Decimal(14, 2)
+  deliveryNote            String?             @db.VarChar(300)
   /// Array of category UUID strings to display on the storefront.
-  categoryIds     Json     @default("[]") @db.JsonB
-  updatedAt       DateTime @updatedAt
+  categoryIds             Json                @default("[]") @db.JsonB
+  updatedAt               DateTime            @updatedAt
 
   @@map("storefront_settings")
+}
+
+/// Delivery pricing mode lookup: FREE, FLAT, BY_ZONE.
+model DeliveryPricingMode {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  settings StorefrontSettings[]
+  @@map("delivery_pricing_modes")
+}
+
+/// User-managed delivery zones with price and sort order.
+model DeliveryZone {
+  id        String   @id @default(uuid())
+  name      String   @unique @db.VarChar(100)
+  fee       Decimal  @db.Decimal(14, 2)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    StorefrontOrder[]
+  @@map("delivery_zones")
+}
+
+/// How a storefront order is received: PICKUP, DELIVERY.
+model StorefrontFulfillmentMethod {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  orders    StorefrontOrder[]
+  @@map("storefront_fulfillment_methods")
+}
+
+/// How a storefront order will be paid: ON_RECEIPT, ONLINE.
+model StorefrontPaymentMethod {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+  orders    StorefrontOrder[]
+  @@map("storefront_payment_methods")
 }
 
 /// Order lifecycle states (NEW, CONTACTED, DONE, CANCELLED).
@@ -34,32 +80,48 @@ model StorefrontOrderStatus {
 
 /// Customer pickup order left on the public website.
 model StorefrontOrder {
-  id            String   @id @default(uuid())
-  storeId       String
-  store         Store    @relation(fields: [storeId], references: [id])
-  modelId       String
-  model         DeviceModel @relation(fields: [modelId], references: [id])
+  id                    String                      @id @default(uuid())
+  storeId               String
+  store                 Store                       @relation(fields: [storeId], references: [id])
+  modelId               String
+  model                 DeviceModel                 @relation(fields: [modelId], references: [id])
   /// Chosen variant specs: { storage?: string, color?: string }
-  specs         Json     @default("{}") @db.JsonB
-  customerName  String   @db.VarChar(100)
-  customerPhone String   @db.VarChar(30)
-  note          String?  @db.VarChar(1000)
-  statusCode    String   @default("NEW")
-  status        StorefrontOrderStatus @relation(fields: [statusCode], references: [code])
-  handledById   String?
-  handledBy     User?    @relation("OrderHandledBy", fields: [handledById], references: [id])
-  handledAt     DateTime?
-  saleId        String?
-  sale          Sale?    @relation(fields: [saleId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  specs                 Json                        @default("{}") @db.JsonB
+  customerName          String                      @db.VarChar(100)
+  customerPhone         String                      @db.VarChar(30)
+  note                  String?                     @db.VarChar(1000)
+  fulfillmentMethodCode String                      @default("PICKUP")
+  fulfillmentMethod     StorefrontFulfillmentMethod @relation(fields: [fulfillmentMethodCode], references: [code])
+  address               String?                     @db.VarChar(500)
+  deliveryZoneId        String?
+  deliveryZone          DeliveryZone?               @relation(fields: [deliveryZoneId], references: [id])
+  paymentMethodCode     String                      @default("ON_RECEIPT")
+  paymentMethod         StorefrontPaymentMethod     @relation(fields: [paymentMethodCode], references: [code])
+  priceSnapshot         Decimal?                    @db.Decimal(14, 2)
+  deliveryFeeSnapshot   Decimal                     @default(0) @db.Decimal(14, 2)
+  deviceId              String?
+  device                Device?                     @relation(fields: [deviceId], references: [id])
+  statusCode            String                      @default("NEW")
+  status                StorefrontOrderStatus       @relation(fields: [statusCode], references: [code])
+  handledById           String?
+  handledBy             User?                       @relation("OrderHandledBy", fields: [handledById], references: [id])
+  handledAt             DateTime?
+  saleId                String?
+  sale                  Sale?                       @relation(fields: [saleId], references: [id])
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
 
-  statusHistory StorefrontOrderStatusHistory[]
+  statusHistory    StorefrontOrderStatusHistory[]
+  cashTransactions CashTransaction[]
 
   @@index([storeId])
   @@index([modelId])
   @@index([statusCode])
   @@index([createdAt])
+  @@index([fulfillmentMethodCode])
+  @@index([paymentMethodCode])
+  @@index([deliveryZoneId])
+  @@index([deviceId])
   @@map("storefront_orders")
 }
 

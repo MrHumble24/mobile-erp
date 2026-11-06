@@ -47,7 +47,7 @@ export class SalesCheckoutRepository {
       tx,
       input.deviceId,
       input.expectedVersion,
-      'IN_STOCK',
+      input.fromStatusCode ?? 'IN_STOCK',
       'SOLD',
       input.soldById,
       'sale',

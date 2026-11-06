@@ -115,7 +115,31 @@ export class SalesTradeInService {
     storeId: string,
     checkout: (tx?: PrismaTx) => Promise<string>,
     afterSale?: (tx: PrismaTx, saleId: string) => Promise<void>,
+    outerTx?: PrismaTx,
   ): Promise<string> {
+    if (outerTx) {
+      const saleId = await checkout(outerTx);
+      if (prepared) {
+        const occurredAt = new Date();
+        for (const t of prepared.tradeIns) {
+          await this.writes.create(
+            {
+              storeId,
+              customerId: prepared.customerId,
+              pricePaid: t.value,
+              unit: t.unit,
+              createdById: caller.id,
+              occurredAt,
+              saleId,
+            },
+            outerTx,
+          );
+        }
+      }
+      if (afterSale) await afterSale(outerTx, saleId);
+      return saleId;
+    }
+
     if (!prepared && !afterSale) return checkout();
     return this.prisma.$transaction(async (tx) => {
       const saleId = await checkout(tx);

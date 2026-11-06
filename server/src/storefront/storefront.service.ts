@@ -3,14 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { PricingService } from '../pricing/pricing.service.js';
-import { storefrontOrderPlaced } from '../telegram/messages.js';
-import { TelegramService } from '../telegram/telegram.service.js';
 import type { CreateStorefrontOrderDto } from './dto/create-order.dto.js';
 import type { ListStorefrontProductsQueryDto } from './dto/list-products.query.dto.js';
 import type { UpdateStorefrontSettingsDto } from './dto/storefront-settings.dto.js';
-import { isPlausiblePhone } from './lib/phone.js';
 import {
   buildQuantityProductCards,
   buildQuantityProductDetail,
@@ -19,13 +15,16 @@ import {
   groupUnitsByModel,
 } from './lib/product-shaping.js';
 import { resolveCatalogPrices } from './lib/product-pricing.js';
-import {
-  StorefrontRepository,
-  type PublicModelRow,
-  type PublicUnitRow,
-} from './storefront.repository.js';
 import { StorefrontCatalogRepository } from './storefront-catalog.repository.js';
+import { StorefrontDeliveryZonesRepository } from './storefront-delivery-zones.repository.js';
+import { StorefrontPublicOrdersService } from './storefront-public-orders.service.js';
+import {
+  PublicModelRow,
+  PublicUnitRow,
+  StorefrontRepository,
+} from './storefront.repository.js';
 import type {
+  PublicStorefrontOrderView,
   StorefrontConfigView,
   StorefrontProductCard,
   StorefrontProductDetail,
@@ -36,7 +35,7 @@ function assertStorefrontEnabled(settings: StorefrontSettingsView): void {
   if (!settings.enabled) {
     throw new NotFoundException({
       code: 'STOREFRONT_DISABLED',
-      message: 'The storefront is currently disabled',
+      message: 'Storefront is currently disabled',
     });
   }
 }
@@ -46,17 +45,19 @@ export class StorefrontService {
   constructor(
     private readonly repo: StorefrontRepository,
     private readonly catalog: StorefrontCatalogRepository,
+    private readonly zonesRepo: StorefrontDeliveryZonesRepository,
     private readonly pricing: PricingService,
-    private readonly telegram: TelegramService,
+    private readonly ordersService: StorefrontPublicOrdersService,
   ) {}
 
   async getConfig(): Promise<StorefrontConfigView> {
     const settings = await this.repo.getSettings();
     if (!settings.enabled) return { enabled: false };
 
-    const [stores, categories] = await Promise.all([
+    const [stores, categories, zones] = await Promise.all([
       this.repo.activeStores(),
       this.repo.activeCategories(settings.categoryIds),
+      this.zonesRepo.findActive(),
     ]);
 
     return {
@@ -67,6 +68,18 @@ export class StorefrontService {
       showPrices: settings.showPrices,
       stores,
       categories,
+      pickupEnabled: settings.pickupEnabled,
+      deliveryEnabled: settings.deliveryEnabled,
+      deliveryPricingMode: settings.deliveryPricingModeCode,
+      deliveryFlatFee: settings.deliveryFlatFee,
+      deliveryFreeFrom: settings.deliveryFreeFrom,
+      deliveryNote: settings.deliveryNote,
+      deliveryZones: zones.map((z) => ({
+        id: z.id,
+        name: z.name,
+        fee: z.fee.toFixed(2),
+        sortOrder: z.sortOrder,
+      })),
     };
   }
 
@@ -199,102 +212,54 @@ export class StorefrontService {
     );
   }
 
-  async createOrder(dto: CreateStorefrontOrderDto): Promise<{ id: string }> {
-    const settings = await this.repo.getSettings();
-    assertStorefrontEnabled(settings);
-
-    if (dto.hp?.trim() || dto.honeypot?.trim()) return { id: randomUUID() };
-    if (!isPlausiblePhone(dto.phone)) {
-      throw new BadRequestException({
-        code: 'INVALID_PHONE',
-        message: 'The phone number is not a plausible number',
-      });
-    }
-
-    const { targetStore, model } = await this.validateOrderTarget(
-      dto,
-      settings,
-    );
-
-    const name = dto.name.trim();
-    const phone = dto.phone.trim();
-    const note = dto.note?.trim();
-    const specs = dto.specs ? { ...dto.specs } : {};
-
-    const order = await this.repo.createOrder({
-      storeId: dto.storeId,
-      modelId: dto.modelId,
-      specs,
-      customerName: name,
-      customerPhone: phone,
-      note,
-    });
-
-    await this.telegram.send(
-      storefrontOrderPlaced({
-        storeName: targetStore.name,
-        customerName: name,
-        customerPhone: phone,
-        productName: `${model.brand} ${model.name}`,
-        specs,
-        note,
-      }),
-      dto.storeId,
-    );
-
-    return order;
+  createOrder(dto: CreateStorefrontOrderDto): Promise<{ id: string }> {
+    return this.ordersService.createOrder(dto);
   }
 
-  private async validateOrderTarget(
-    dto: CreateStorefrontOrderDto,
-    settings: StorefrontSettingsView,
-  ): Promise<{
-    targetStore: { id: string; name: string };
-    model: PublicModelRow;
-  }> {
-    const activeStores = await this.repo.activeStores();
-    const targetStore = activeStores.find((s) => s.id === dto.storeId);
-    if (!targetStore) {
-      throw new BadRequestException({
-        code: 'STORE_NOT_ACTIVE',
-        message: 'Store not active',
-      });
-    }
-
-    const model = await this.repo.findModelById(dto.modelId);
-    const isHidden =
-      settings.categoryIds.length > 0 &&
-      (!model?.categoryId || !settings.categoryIds.includes(model.categoryId));
-    if (!model || isHidden) {
-      throw new NotFoundException({
-        code: 'MODEL_NOT_FOUND',
-        message: 'Product not found',
-      });
-    }
-
-    const inStock = await this.repo.countModelInStockForStore(
-      dto.modelId,
-      dto.storeId,
-      model.kindCode,
-      dto.specs ? { ...dto.specs } : undefined,
-    );
-    if (inStock <= 0) {
-      throw new BadRequestException({
-        code: 'OUT_OF_STOCK',
-        message: 'Out of stock',
-      });
-    }
-
-    return { targetStore, model };
+  getPublicOrder(id: string): Promise<PublicStorefrontOrderView> {
+    return this.ordersService.getPublicOrder(id);
   }
 
   getSettings(): Promise<StorefrontSettingsView> {
     return this.repo.getSettings();
   }
 
-  updateSettings(
+  async updateSettings(
     dto: UpdateStorefrontSettingsDto,
   ): Promise<StorefrontSettingsView> {
-    return this.repo.updateSettings(dto);
+    const current = await this.repo.getSettings();
+    const nextPickup = dto.pickupEnabled ?? current.pickupEnabled;
+    const nextDelivery = dto.deliveryEnabled ?? current.deliveryEnabled;
+
+    if (!nextPickup && !nextDelivery) {
+      throw new BadRequestException({
+        code: 'NEITHER_PICKUP_NOR_DELIVERY',
+        message: 'Storefront cannot have both pickup and delivery disabled',
+      });
+    }
+
+    return this.repo.updateSettings({
+      enabled: dto.enabled,
+      showPrices: dto.showPrices,
+      contactPhone: dto.contactPhone,
+      contactTelegram: dto.contactTelegram,
+      categoryIds: dto.categoryIds,
+      pickupEnabled: dto.pickupEnabled,
+      deliveryEnabled: dto.deliveryEnabled,
+      deliveryPricingModeCode: dto.deliveryPricingModeCode,
+      deliveryFlatFee:
+        dto.deliveryFlatFee !== undefined
+          ? dto.deliveryFlatFee !== null
+            ? dto.deliveryFlatFee.toString()
+            : null
+          : undefined,
+      deliveryFreeFrom:
+        dto.deliveryFreeFrom !== undefined
+          ? dto.deliveryFreeFrom !== null
+            ? dto.deliveryFreeFrom.toString()
+            : null
+          : undefined,
+      deliveryNote: dto.deliveryNote,
+    });
   }
 }

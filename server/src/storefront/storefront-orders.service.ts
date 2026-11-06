@@ -1,97 +1,34 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import type { HandOverStorefrontOrderDto } from './dto/hand-over-order.dto.js';
+import type { HoldStorefrontOrderDto } from './dto/hold-order.dto.js';
 import type { ListStorefrontOrdersQueryDto } from './dto/list-orders.query.dto.js';
 import type { UpdateStorefrontOrderStatusDto } from './dto/update-order-status.dto.js';
+import {
+  toStorefrontOrderDetail,
+  toStorefrontOrderListItem,
+} from './lib/order-shaping.js';
+import { assertValidTransition } from './lib/order-status.js';
+import { StorefrontOrdersFulfillService } from './storefront-orders-fulfill.service.js';
 import { StorefrontOrdersRepository } from './storefront-orders.repository.js';
 import type {
   StorefrontOrderDetail,
   StorefrontOrderListItem,
 } from './types/storefront.types.js';
 
-interface ProfileHolder {
-  profile?: { firstName: string | null; lastName: string | null } | null;
-}
-
-type OrderDetailRecord = NonNullable<
-  Awaited<ReturnType<StorefrontOrdersRepository['findOrderById']>>
->;
-
-function fullName(user?: ProfileHolder | null): string | null {
-  if (!user?.profile) return null;
-  const parts = [user.profile.firstName, user.profile.lastName].filter(Boolean);
-  return parts.length > 0 ? parts.join(' ') : null;
-}
-
-function toStorefrontOrderDetail(
-  order: OrderDetailRecord,
-): StorefrontOrderDetail {
-  return {
-    id: order.id,
-    storeId: order.storeId,
-    storeName: order.store.name,
-    modelId: order.modelId,
-    brand: order.model.brand,
-    productName: order.model.name,
-    modelName: order.model.name,
-    specs:
-      order.specs &&
-      typeof order.specs === 'object' &&
-      !Array.isArray(order.specs)
-        ? order.specs
-        : {},
-    customerName: order.customerName,
-    customerPhone: order.customerPhone,
-    note: order.note,
-    statusCode: order.statusCode,
-    statusLabel: order.status.label,
-    handledAt: order.handledAt,
-    handledByName: fullName(order.handledBy),
-    saleId: order.saleId,
-    createdAt: order.createdAt,
-    updatedAt: order.updatedAt,
-    history: order.statusHistory.map((h) => ({
-      id: h.id,
-      fromStatusCode: h.fromStatusCode,
-      toStatusCode: h.toStatusCode,
-      toStatusLabel: h.toStatus.label,
-      changedAt: h.changedAt,
-      changedByName: fullName(h.changedBy),
-      note: h.note,
-    })),
-  };
-}
-
-function assertValidTransition(
-  currentStatus: string,
-  nextStatus: string,
-): void {
-  if (currentStatus === 'DONE' || currentStatus === 'CANCELLED') {
-    throw new BadRequestException({
-      code: 'ORDER_TERMINAL',
-      message: 'A terminal order cannot be changed',
-    });
-  }
-
-  const validNextStates: Record<string, string[]> = {
-    NEW: ['CONTACTED', 'CANCELLED'],
-    CONTACTED: ['DONE', 'CANCELLED'],
-  };
-
-  const allowed = validNextStates[currentStatus] ?? [];
-  if (!allowed.includes(nextStatus)) {
-    throw new BadRequestException({
-      code: 'INVALID_STATUS_TRANSITION',
-      message: `Cannot transition order from ${currentStatus} to ${nextStatus}`,
-    });
-  }
-}
-
 @Injectable()
 export class StorefrontOrdersService {
-  constructor(private readonly repo: StorefrontOrdersRepository) {}
+  constructor(
+    private readonly repo: StorefrontOrdersRepository,
+    private readonly prisma: PrismaService,
+    private readonly fulfill: StorefrontOrdersFulfillService,
+  ) {}
 
   async list(storeId: string, query: ListStorefrontOrdersQueryDto) {
     const page = query.page ?? 1;
@@ -105,29 +42,9 @@ export class StorefrontOrdersService {
       pageSize,
     });
 
-    const mapped: StorefrontOrderListItem[] = items.map((row) => ({
-      id: row.id,
-      storeId: row.storeId,
-      storeName: row.store.name,
-      modelId: row.modelId,
-      brand: row.model.brand,
-      productName: row.model.name,
-      modelName: row.model.name,
-      specs:
-        row.specs && typeof row.specs === 'object' && !Array.isArray(row.specs)
-          ? (row.specs as Record<string, unknown>)
-          : {},
-      customerName: row.customerName,
-      customerPhone: row.customerPhone,
-      note: row.note,
-      statusCode: row.statusCode,
-      statusLabel: row.status.label,
-      handledAt: row.handledAt,
-      handledByName: fullName(row.handledBy),
-      saleId: row.saleId,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    }));
+    const mapped: StorefrontOrderListItem[] = items.map((row) =>
+      toStorefrontOrderListItem(row as never),
+    );
 
     return { items: mapped, total, page, pageSize };
   }
@@ -157,7 +74,11 @@ export class StorefrontOrdersService {
       throw new NotFoundException(`Order ${id} not found in this store`);
     }
 
-    assertValidTransition(order.statusCode, dto.statusCode);
+    assertValidTransition(
+      order.statusCode,
+      dto.statusCode,
+      order.fulfillmentMethodCode,
+    );
 
     if (dto.saleId) {
       const sale = await this.repo.findSaleInStore(storeId, dto.saleId);
@@ -169,15 +90,65 @@ export class StorefrontOrdersService {
       }
     }
 
-    const updated = await this.repo.updateOrderStatus(
-      storeId,
-      id,
-      order.statusCode,
-      dto.statusCode,
-      userId,
-      dto.saleId,
-    );
+    return this.prisma.$transaction(async (tx) => {
+      if (
+        dto.statusCode === 'CONTACTED' &&
+        order.paymentMethodCode === 'ON_RECEIPT' &&
+        !order.deviceId &&
+        order.model.kindCode !== 'QUANTITY'
+      ) {
+        const specs =
+          order.specs && typeof order.specs === 'object'
+            ? (order.specs as Record<string, unknown>)
+            : undefined;
+        const unit = await this.repo.findOldestInStockUnit(
+          order.modelId,
+          storeId,
+          specs,
+          tx,
+        );
+        if (!unit) {
+          throw new ConflictException({
+            code: 'NO_STOCK_AVAILABLE',
+            message: 'No in-stock unit available to hold for this order',
+          });
+        }
+        await this.repo.holdDevice(order.id, unit.id, userId, tx);
+      }
 
-    return toStorefrontOrderDetail(updated);
+      if (dto.statusCode === 'CANCELLED' && order.deviceId) {
+        await this.repo.releaseDevice(order.id, order.deviceId, userId, tx);
+      }
+
+      const updated = await this.repo.updateOrderStatus(
+        storeId,
+        id,
+        order.statusCode,
+        dto.statusCode,
+        userId,
+        dto.saleId,
+        tx,
+      );
+
+      return toStorefrontOrderDetail(updated);
+    });
+  }
+
+  hold(
+    storeId: string,
+    id: string,
+    userId: string,
+    dto?: HoldStorefrontOrderDto,
+  ) {
+    return this.fulfill.hold(storeId, id, userId, dto);
+  }
+
+  handOver(
+    storeId: string,
+    id: string,
+    caller: AuthenticatedUser,
+    dto: HandOverStorefrontOrderDto,
+  ) {
+    return this.fulfill.handOver(storeId, id, caller, dto);
   }
 }
