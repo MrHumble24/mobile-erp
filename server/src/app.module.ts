@@ -45,6 +45,7 @@ import { SecretsModule } from './secrets/secrets.module.js';
 import { CompanyModule } from './company/company.module.js';
 import { SetupModule } from './setup/setup.module.js';
 import { BackupsModule } from './backups/backups.module.js';
+import { DataWipeModule } from './data-wipe/data-wipe.module.js';
 import { RuntimeModule } from './common/runtime/runtime.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { MaintenanceGuard } from './common/guards/maintenance.guard.js';
@@ -98,6 +99,7 @@ import { StoreInterceptor } from './common/interceptors/store.interceptor.js';
     BackupsModule,
     CompanyModule,
     SetupModule,
+    DataWipeModule,
   ],
   controllers: [AppController],
   providers: [

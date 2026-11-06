@@ -10,6 +10,7 @@ import { createWriteStream, promises as fsp } from 'node:fs';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { AuthService } from '../auth/auth.service.js';
+import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import { RecoveryService } from '../common/runtime/recovery.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { BackupRunner } from './backup-runner.js';
@@ -62,6 +63,7 @@ export class RestoreService {
     private readonly stores: StoresService,
     private readonly auth: AuthService,
     private readonly recovery: RecoveryService,
+    private readonly lock: DestructiveLockService,
   ) {}
 
   isRestoring(): boolean {
@@ -85,25 +87,39 @@ export class RestoreService {
   }
 
   async restore(req: RestoreRequest): Promise<void> {
-    await this.confirm(req.shopName, req.email, req.password);
+    // Busy checks + latch are taken synchronously, before any await, so a
+    // restore and an erase (which shares the latch) can never both get past
+    // here and run on the same database — the real bug was the old marker being
+    // set only after the seconds-long safety backup.
     if (
-      this.restoring ||
+      this.backups.isRunning() ||
       this.recovery.needsManualRecovery() ||
       this.recovery.restoreInProgress()
     ) {
       throw new ConflictException({
         code: RESTORE_RUNNING,
-        message: 'A restore is already running or awaiting recovery',
+        message: 'A backup, restore or erase is already running',
+      });
+    }
+    if (!this.lock.tryAcquire('restore')) {
+      throw new ConflictException({
+        code: RESTORE_RUNNING,
+        message: 'A restore or erase is already running',
       });
     }
     this.restoring = true;
-    const work = await makeStaging('restore');
     try {
-      const failure = await this.run(req, work);
-      if (failure) throw failure;
+      await this.confirm(req.shopName, req.email, req.password);
+      const work = await makeStaging('restore');
+      try {
+        const failure = await this.run(req, work);
+        if (failure) throw failure;
+      } finally {
+        await fsp.rm(work, { recursive: true, force: true });
+      }
     } finally {
       this.restoring = false;
-      await fsp.rm(work, { recursive: true, force: true });
+      this.lock.release();
     }
   }
 
@@ -164,7 +180,8 @@ export class RestoreService {
     const swap = await UploadSwap.prepare(opened.uploadsTar, uploadsDir());
 
     // Safety backup, then pre-decrypt its dump so a rollback cannot fail on it.
-    await this.backups.startBackup(req.performedById);
+    // bypassLock: this restore already holds the destructive latch.
+    await this.backups.startBackup(req.performedById, { bypassLock: true });
     const safety = (await this.repo.listRuns(1))[0];
     outcome.safetyRunId = safety?.id;
     if (!safety?.fileName) throw new Error('Safety backup produced no file');

@@ -4,17 +4,24 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
+import { promises as fsp } from 'node:fs';
+import { join } from 'node:path';
 import type { Readable } from 'node:stream';
+import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import { SecretsService } from '../secrets/secrets.service.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsRepository } from './backups.repository.js';
-import { BackupTooLargeError } from './lib/backup-config.js';
+import { BackupTooLargeError, makeStaging } from './lib/backup-config.js';
+import { openBackupFile } from './lib/mbk-format.js';
 import { UpdateBackupSettingsDto } from './dto/update-backup-settings.dto.js';
 import { ProviderDestination } from './providers/provider-destination.js';
+import { backupsDir } from './storage/local.storage.js';
 import { StorageRegistry } from './storage/storage.registry.js';
 import {
   BACKUP_FILE_MISSING,
+  BACKUP_NO_PASSPHRASE,
   BACKUP_NOT_FOUND,
   BACKUP_PASSPHRASE_SECRET,
   BACKUP_RUNNING,
@@ -38,14 +45,29 @@ export class BackupsService {
     private readonly registry: StorageRegistry,
     private readonly secrets: SecretsService,
     private readonly destination: ProviderDestination,
+    private readonly lock: DestructiveLockService,
   ) {}
 
   isRunning(): boolean {
     return this.running;
   }
 
-  /** Make a backup now. Refuses a second concurrent run with BACKUP_RUNNING. */
-  async startBackup(triggeredById: string | null): Promise<void> {
+  /**
+   * Make a backup now and return its run id. Refuses a second concurrent run
+   * with BACKUP_RUNNING, and stands down while a restore or erase holds the
+   * destructive latch — unless `bypassLock` (the safety backup made inside one
+   * of those operations, which already holds the latch).
+   */
+  async startBackup(
+    triggeredById: string | null,
+    opts: { bypassLock?: boolean } = {},
+  ): Promise<string> {
+    if (!opts.bypassLock && this.lock.isHeld()) {
+      throw new ConflictException({
+        code: BACKUP_RUNNING,
+        message: 'A restore or erase is running; back up after it finishes',
+      });
+    }
     if (this.running) {
       throw new ConflictException({
         code: BACKUP_RUNNING,
@@ -55,7 +77,7 @@ export class BackupsService {
     this.running = true;
     try {
       const { keepLast } = await this.repo.getSettings();
-      await this.runner.run(triggeredById, keepLast);
+      return await this.runner.run(triggeredById, keepLast);
     } catch (err) {
       if (err instanceof BackupTooLargeError) {
         throw new BadRequestException({
@@ -66,6 +88,40 @@ export class BackupsService {
       throw err;
     } finally {
       this.running = false;
+    }
+  }
+
+  /**
+   * Prove a run's file can actually be opened (header, passphrase, tag, manifest
+   * checksums) before something irreversible relies on it — the data wipe uses
+   * this on the safety backup before erasing. Throws a clear code if the file is
+   * missing, empty or does not open. Reuses the restore path's `openBackupFile`.
+   */
+  async verifyBackup(runId: string): Promise<void> {
+    const run = await this.requireRun(runId);
+    if (!run.fileName) {
+      throw new UnprocessableEntityException({
+        code: BACKUP_FILE_MISSING,
+        message: 'The backup produced no file to verify',
+      });
+    }
+    const pass = await this.runner.passphrase();
+    if (!pass) {
+      throw new BadRequestException({
+        code: BACKUP_NO_PASSPHRASE,
+        message: 'No passphrase is available to open the backup',
+      });
+    }
+    const work = await makeStaging('verify');
+    try {
+      const opened = await openBackupFile(
+        join(backupsDir(), run.fileName),
+        pass,
+        work,
+      );
+      await fsp.rm(opened.dir, { recursive: true, force: true });
+    } finally {
+      await fsp.rm(work, { recursive: true, force: true });
     }
   }
 

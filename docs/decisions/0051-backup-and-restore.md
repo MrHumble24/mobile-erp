@@ -32,6 +32,11 @@ manual, encrypted, sent to several places, restorable.
   only if that rollback also fails does it stay in maintenance for manual
   recovery (persisted marker, `scripts/clear-recovery.ts`). Confirmed with the
   shop name + caller's password; `backup.restore` only. **Single instance only.**
+- **Destructive-op latch (ADR 0057).** Restore now takes a process-wide latch
+  (`DestructiveLockService`) synchronously before any `await`, and refuses if a
+  backup, restore or erase is already running; a plain backup refuses while it
+  is held. This replaces the old restore-only in-memory flag, which left a
+  window during the safety backup for a restore and an erase to both start.
 
 ## Consequences
 - Lose the passphrase **or** the master key = backups are unrecoverable.

@@ -1,4 +1,4 @@
-import { HttpError } from "@/shared/api/http"
+import { HttpError, httpErrorCode } from "@/shared/api/http"
 
 /** The server's 409 code when a sale/credit is attempted with no open shift. */
 export const NO_OPEN_SHIFT = "NO_OPEN_SHIFT"
@@ -9,9 +9,7 @@ export const NO_OPEN_SHIFT = "NO_OPEN_SHIFT"
  * (checkout's CheckoutLineError).
  */
 export function isNoOpenShiftError(err: unknown): boolean {
-  if (err instanceof HttpError) {
-    return err.statusCode === 409 && (err.data as { code?: string } | undefined)?.code === NO_OPEN_SHIFT
-  }
-  const e = err as { statusCode?: number; code?: string } | null
-  return e?.statusCode === 409 && e?.code === NO_OPEN_SHIFT
+  const statusCode =
+    err instanceof HttpError ? err.statusCode : (err as { statusCode?: number } | null)?.statusCode
+  return statusCode === 409 && httpErrorCode(err) === NO_OPEN_SHIFT
 }

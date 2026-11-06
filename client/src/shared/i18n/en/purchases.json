@@ -20,6 +20,7 @@
   "buyHint": "Buy a used phone from a customer",
   "buySuccess": "Phone bought and added to stock",
   "buyConflict": "This IMEI or serial number already exists",
+  "buyNotSold": "This phone is not a sold unit, so it cannot be bought back.",
   "boughtFromCustomer": "Bought from a customer",
   "boughtFromTitle": "Bought from this customer",
   "tradeInAction": "Trade-in",

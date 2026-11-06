@@ -2,6 +2,7 @@ import { ConflictException } from '@nestjs/common';
 import { BackupsService } from './backups.service.js';
 import type { BackupRunner } from './backup-runner.js';
 import type { BackupsRepository } from './backups.repository.js';
+import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import type { SecretsService } from './../secrets/secrets.service.js';
 import type { StorageRegistry } from './storage/storage.registry.js';
 import { BACKUP_RUNNING } from './types/backup.types.js';
@@ -13,7 +14,10 @@ function deferred() {
 }
 
 describe('BackupsService', () => {
-  function make(runner: Partial<BackupRunner>) {
+  function make(
+    runner: Partial<BackupRunner>,
+    lock: DestructiveLockService = new DestructiveLockService(),
+  ) {
     const repo = {
       getSettings: jest.fn().mockResolvedValue({
         keepLast: 14,
@@ -37,6 +41,7 @@ describe('BackupsService', () => {
       registry,
       secrets,
       destination,
+      lock,
     );
   }
 
@@ -59,6 +64,21 @@ describe('BackupsService', () => {
     gate.resolve();
     await first;
     expect(svc.isRunning()).toBe(false);
+  });
+
+  it('stands down while a restore or erase holds the latch, but the inner safety backup bypasses it', async () => {
+    const lock = new DestructiveLockService();
+    lock.tryAcquire('restore');
+    const svc = make(
+      { run: jest.fn().mockResolvedValue('run-1'), passphrase: jest.fn() },
+      lock,
+    );
+    await expect(svc.startBackup('u1')).rejects.toMatchObject({
+      response: { code: BACKUP_RUNNING },
+    });
+    await expect(svc.startBackup('u1', { bypassLock: true })).resolves.toBe(
+      'run-1',
+    );
   });
 
   it('getSettings reports whether the passphrase is set, never its value', async () => {
@@ -112,6 +132,7 @@ describe('BackupsService', () => {
       registry,
       {} as SecretsService,
       destination,
+      new DestructiveLockService(),
     );
 
     const out = await svc.download('id');

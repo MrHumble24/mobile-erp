@@ -1,8 +1,10 @@
 import * as React from "react"
 import { AlertTriangle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
+import { httpErrorCode } from "@/shared/api/http"
 import { useReturnSale } from "@/entities/sale"
 import { accountLabel } from "@/entities/ledger"
+import { returnErrorKey } from "../lib/return-error"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -159,6 +161,11 @@ function ReturnSaleForm({
           onSuccess?.()
         },
         onError: (err: unknown) => {
+          const key = returnErrorKey(httpErrorCode(err))
+          if (key) {
+            toast.error(t(key))
+            return
+          }
           const e = err as { statusCode?: number; message?: string }
           if (e?.statusCode === 409) {
             toast.error(e.message || t("sales.returnConflict"))

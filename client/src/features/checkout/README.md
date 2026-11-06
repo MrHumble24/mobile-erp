@@ -57,7 +57,8 @@ shares the request in cart order, and returns each line's cash/card payable.
 `use-tender-plan.ts` layers that on the trade-in plan; the totals, payment panel and split
 check all read it, and `use-checkout` sends `bonusRedeem` per line. Points are online-only:
 a cart with points is never queued. `BonusRedeemControl` appears only when bonus is on for
-a named customer and this cart can take points.
+a named customer and this cart can take points. Server refusals are shown by `code`
+(`checkoutErrorKey`): the six `BONUS_*` and four `TRADE_IN_*` codes get `pos.*` messages.
 
 ## Pricing (ADR 0034)
 Each line shows its list price for the cart's level. When a list price exists the price

@@ -94,5 +94,9 @@
   "bonusErrorExceedsBalance": "Not enough points",
   "bonusErrorExceedsMax": "More than the allowed share of this sale",
   "bonusErrorExceedsDue": "More than what is left to pay",
-  "bonusErrorOffline": "Points can only be used online"
+  "bonusErrorOffline": "Points can only be used online",
+  "tradeInErrorForbidden": "You do not have permission to take a trade-in",
+  "tradeInErrorNoCustomer": "Choose a customer to take a trade-in",
+  "tradeInErrorOffline": "A trade-in can only be taken online",
+  "tradeInErrorExceedsSale": "The trade-in is worth more than the sale"
 }

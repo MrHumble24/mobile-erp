@@ -7,10 +7,10 @@ function specText(value: unknown): string | null {
 
 /** The storage / color line the device row shows, or null when neither is set. */
 function subtitleOf(device: DeviceView): string | null {
-  const storage = specText(device.specs?.storage)
-  const color = specText(device.specs?.color)
-  if (!storage && !color) return null
-  return `${storage ?? "-"} · ${color ?? "-"}`
+  const parts = [specText(device.specs?.storage), specText(device.specs?.color)].filter(
+    (part): part is string => part !== null
+  )
+  return parts.length > 0 ? parts.join(" · ") : null
 }
 
 /** Map the device rows now on screen into shelf labels. */
@@ -24,5 +24,6 @@ export function devicesToPriceTags(
     subtitle: subtitleOf(device),
     price: device.targetPrice,
     code: device.imei ?? device.serialNumber ?? null,
+    preselected: device.statusCode === "IN_STOCK",
   }))
 }
