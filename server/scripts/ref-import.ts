@@ -1,8 +1,6 @@
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { boxCodeKey } from '../src/lookup/lib/code-normalize.js';
 
@@ -137,10 +135,10 @@ async function main(): Promise<void> {
   const box = collectBoxCodes();
   const tac = collectTacs();
 
-  const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['error', 'warn'],
-  });
-  const prisma = app.get(PrismaService);
+  // Only the database is needed. Booting the whole app here ran every module's
+  // start-up hook under tsx, which has no injection metadata, and crashed.
+  const prisma = new PrismaService();
+  await prisma.$connect();
   try {
     await prisma.referenceAppleBoxCode.deleteMany();
     await createManyChunked(box.rows, (data) =>
@@ -159,7 +157,7 @@ async function main(): Promise<void> {
     console.log(`  imei-tac.csv: ${tac.count} rows read`);
     console.log(`  → ref_imei_tacs: ${tac.rows.length} distinct TACs`);
   } finally {
-    await app.close();
+    await prisma.$disconnect();
   }
 }
 
