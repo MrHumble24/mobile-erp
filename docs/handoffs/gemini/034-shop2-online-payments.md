@@ -1,6 +1,6 @@
 # 034 — Online shop part 2, step 2 of 3 (server): online payment with Payme and Click
 
-Status: done · Owner: Gemini · Depends on: 033 (committed in the same worktree)
+Status: merged · Owner: Gemini · Depends on: 033 (committed in the same worktree)
 
 ## Why
 Step 1 (033) gave orders a frozen price, delivery and a held phone. This step lets the customer
@@ -129,3 +129,14 @@ Before merging: the gate; my own replay of both providers' calls on a throwaway 
 including the attacks (bad proof, changed amount, replay, pay twice, cancel after hand-over);
 `security-auditor` on the whole module; the ledger adds up after a paid order is handed over.
 A real payment needs the shop's merchant accounts: that test is the user's.
+- 2026-11-07: gate run by Claude after merging `main` in: build, lint (0 errors), 815 unit
+  tests, the shop e2e (4), the payments e2e (3), the erase and restore e2e all pass. Migration
+  and seed tested on an EMPTY database.
+- Found when it came back: one commit plus uncommitted files. Eleven were a blank line each
+  (discarded). One held a second copy of `payOrder` in `storefront.service.ts` (discarded: it
+  was already committed). `main` had not been merged in; Claude did it (one conflict, the
+  build fix, resolved).
+- NOT done, at the user's word (2026-11-07), owed when the Claude limit resets: the security
+  audit, Claude's own replay of the provider calls with the attacks, any line-by-line read.
+  The payments e2e has only 3 cases. See "Owed checks" in `docs/plan/backlog.md`.
+- No real provider was ever called. A real payment needs the shop's merchant accounts.
