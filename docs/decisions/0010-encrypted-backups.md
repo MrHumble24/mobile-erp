@@ -1,7 +1,12 @@
 # 0010 — Encrypted database backups
 
 Date: 2026-11-01
-Status: Accepted
+Status: Superseded by ADR 0051 (2026-11-06)
+
+> The shell scripts described here are removed. Backups now live in the app
+> (module `server/src/backups`, ADR 0051): encrypted `.mbk` files covering the
+> database **and** the uploads, scheduled or manual, with restore and storage
+> providers. Kept for history.
 
 ## Context
 PRD §5 requires daily automated encrypted database backups so inventory and the

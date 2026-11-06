@@ -34,6 +34,7 @@ const TransfersPage = lazy(() => import("@/pages/transfers"))
 const UsersPage = lazy(() => import("@/pages/users"))
 const SyncPage = lazy(() => import("@/pages/sync"))
 const SettingsPage = lazy(() => import("@/pages/settings"))
+const BackupsPage = lazy(() => import("@/pages/backups"))
 
 function SuspenseFallback() {
   return (
@@ -110,6 +111,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="settings.manage" />}>
           <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+        <Route element={<RequirePermission permission="backup.read" />}>
+          <Route path="/backups" element={<BackupsPage />} />
         </Route>
       </Route>
     </Route>

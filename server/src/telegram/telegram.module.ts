@@ -23,5 +23,6 @@ import { TelegramService } from './telegram.service.js';
     StoresModule,
   ],
   providers: [TelegramService, TelegramListener, TelegramCron],
+  exports: [TelegramService],
 })
 export class TelegramModule {}

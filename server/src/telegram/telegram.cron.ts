@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { MaintenanceService } from '../common/runtime/maintenance.service.js';
 import { ConsignmentsService } from '../consignments/consignments.service.js';
 import { CreditsReadService } from '../credits/credits-read.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
@@ -26,6 +27,7 @@ export class TelegramCron {
     private readonly ledger: LedgerService,
     private readonly credits: CreditsReadService,
     private readonly stores: StoresService,
+    private readonly maintenance: MaintenanceService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
@@ -110,6 +112,8 @@ export class TelegramCron {
   }
 
   private async run(fn: () => Promise<void>): Promise<void> {
+    // Scheduled jobs stand down while a restore holds maintenance.
+    if (this.maintenance.isActive()) return;
     try {
       await fn();
     } catch (error) {

@@ -1,0 +1,133 @@
+// ---------------------------------------------------------------------------
+// Backup & restore (handoff 023, ADR 0051). Company-wide: one backup covers
+// every branch, so nothing here carries a storeId. The backup *file* lives
+// outside the database; these rows are the log of what ran and where it went.
+// Statuses and providers are lookup tables (no enums). `triggeredById` /
+// `performedById` are audit userId strings, not FKs, to keep this schema file
+// self-contained (no back-relation on User).
+// ---------------------------------------------------------------------------
+
+/// Backup run lifecycle. Lookup: RUNNING, SUCCESS, FAILED (both terminal).
+/// Reused by restore runs. Seeded in the migration + seed.sql.
+model BackupRunStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  isActive   Boolean @default(true)
+  isTerminal Boolean @default(false)
+
+  backupRuns  BackupRun[]
+  restoreRuns RestoreRun[]
+
+  @@map("backup_run_statuses")
+}
+
+/// Per-place delivery status: PENDING, UPLOADED, FAILED.
+model BackupTargetStatus {
+  code       String  @id
+  label      String
+  sortOrder  Int     @default(0)
+  isActive   Boolean @default(true)
+  isTerminal Boolean @default(false)
+
+  targets BackupTarget[]
+
+  @@map("backup_target_statuses")
+}
+
+/// Where a backup can be sent. Adding a provider = one new adapter file, one
+/// line in the module, and one row here: LOCAL, TELEGRAM, GOOGLE_DRIVE, ONEDRIVE.
+model BackupProvider {
+  code      String  @id
+  label     String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  targets BackupTarget[]
+  config  BackupProviderConfig?
+
+  @@map("backup_providers")
+}
+
+/// Company-wide backup settings. Single row (`id = "default"`). The schedule
+/// fires once a day at `scheduleTime` (HH:mm, server local) when enabled;
+/// `lastRunOn` makes the minute-cron fire once. `keepLast` is retained per place.
+model BackupSettings {
+  id             String    @id @default("default")
+  scheduleEnabled Boolean  @default(false)
+  scheduleTime   String    @default("03:00")
+  keepLast       Int       @default(14)
+  lastRunOn      DateTime? @db.Date
+  updatedAt      DateTime  @updatedAt
+
+  @@map("backup_settings")
+}
+
+/// One backup run (button or schedule). The file's bytes are not stored here;
+/// `fileName`, `sizeBytes` and `checksum` (SHA-256 of the .mbk) describe it.
+model BackupRun {
+  id            String    @id @default(uuid())
+  /// userId who pressed the button, or null for the schedule.
+  triggeredById String?
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+  fileName      String?
+  sizeBytes     BigInt?
+  checksum      String?
+  /// Last applied migration at backup time (manifest cross-check on restore).
+  migrationName String?
+  appVersion    String?
+  statusCode    String
+  status        BackupRunStatus @relation(fields: [statusCode], references: [code])
+  error         String?
+  createdAt     DateTime  @default(now())
+
+  targets      BackupTarget[]
+  restoredFrom RestoreRun[]
+
+  @@index([startedAt])
+  @@index([statusCode])
+  @@map("backup_runs")
+}
+
+/// One row per place a run was sent to. `remoteRef` is the place's own handle
+/// for the file (a filename for LOCAL, a message id for Telegram, etc.).
+model BackupTarget {
+  id           String   @id @default(uuid())
+  runId        String
+  run          BackupRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  providerCode String
+  provider     BackupProvider @relation(fields: [providerCode], references: [code])
+  statusCode   String
+  status       BackupTargetStatus @relation(fields: [statusCode], references: [code])
+  remoteRef    String?
+  error        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([runId])
+  @@index([providerCode, statusCode])
+  @@map("backup_targets")
+}
+
+/// Audit of every restore (who, when, source, result). `performedById` is a
+/// userId string (not an FK: the users it points at may be replaced by the very
+/// restore it records). `safetyRunId` is the pre-restore safety backup.
+model RestoreRun {
+  id            String    @id @default(uuid())
+  performedById String
+  /// A run in the list, or null when restoring an uploaded file.
+  sourceRunId   String?
+  sourceRun     BackupRun? @relation(fields: [sourceRunId], references: [id])
+  sourceLabel   String
+  safetyRunId   String?
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+  statusCode    String
+  status        BackupRunStatus @relation(fields: [statusCode], references: [code])
+  error         String?
+  createdAt     DateTime  @default(now())
+
+  @@index([startedAt])
+  @@map("restore_runs")
+}

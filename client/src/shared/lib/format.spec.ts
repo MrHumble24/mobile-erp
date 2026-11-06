@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { formatMoney } from "./format.ts"
+import { formatMoney, formatBytes } from "./format.ts"
 
 test("formatMoney: exact figure, cents only when present, nullish → -", () => {
   assert.equal(formatMoney(1250), "$1,250")
@@ -11,4 +11,15 @@ test("formatMoney: exact figure, cents only when present, nullish → -", () => 
   assert.equal(formatMoney(null), "-")
   assert.equal(formatMoney(""), "-")
   assert.equal(formatMoney("nope"), "-")
+})
+
+test("formatBytes: scales to KB/MB/GB, nullish → -", () => {
+  assert.equal(formatBytes(0), "0 B")
+  assert.equal(formatBytes(512), "512 B")
+  assert.equal(formatBytes(1024), "1 KB")
+  assert.equal(formatBytes(372018), "363 KB")
+  assert.equal(formatBytes(5 * 1024 * 1024), "5.0 MB")
+  assert.equal(formatBytes(2 * 1024 * 1024 * 1024), "2.0 GB")
+  assert.equal(formatBytes(null), "-")
+  assert.equal(formatBytes(undefined), "-")
 })
