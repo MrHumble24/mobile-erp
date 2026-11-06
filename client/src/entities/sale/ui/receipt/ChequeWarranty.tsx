@@ -7,10 +7,10 @@ export function ChequeWarranty({ warranty }: { warranty: ReceiptView["warranty"]
   return (
     <div className="my-2 p-2 border border-black/40 rounded bg-black/[0.02] text-center space-y-0.5">
       <p className="font-bold text-[10px] uppercase tracking-wider">{t("pos.officialWarranty")}</p>
-      <p className="font-semibold text-[10px] text-foreground/90">
+      <p className="font-semibold text-[10px] text-black/90">
         {warranty.days} kun ({new Date(warranty.endsAt).toLocaleDateString()} gacha)
       </p>
-      <p className="text-[8px] text-foreground/60 italic">{t("pos.warrantyNotice")}</p>
+      <p className="text-[8px] text-black/60 italic">{t("pos.warrantyNotice")}</p>
     </div>
   )
 }

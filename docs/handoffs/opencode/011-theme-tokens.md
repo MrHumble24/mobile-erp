@@ -1,6 +1,6 @@
 # 011 — Fixed colors out of the website, so dark themes can work
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 The shop can choose a theme (ADR 0055). Two of the four are dark, and they are switched off,
@@ -63,3 +63,16 @@ Fill the Result section of `docs/handoffs/opencode/011-theme-tokens.md`, set Sta
 - Not done / skipped / failed: no browser was opened and no screen was seen — Claude still needs to check the screens in the two light themes. Dark themes were not enabled (out of scope / Gemini 028). `graphify update .` ran in `client/` and at the repo root; the root run skipped `graph.html` because the graph exceeded graphify's 5000-node HTML limit. No failures otherwise.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was accurate. The diff changes class names only
+  (checked by turning the new classes back and comparing: no other change outside the guard
+  test). After merging `main`: 113 website tests, lint 0 errors, build pass.
+- My handoff missed some printed paper: the parts of the receipt (`ChequeHeader`, `ChequeItems`,
+  `ChequeWarranty`, `ItemIdentity`) and `PriceTagSheet`. OpenCode recolored them as told. Claude
+  put them back to black on white and added them to the guard's allow list.
+- Seen in a browser, default theme, real data: dashboard, inventory, till (catalog), sales.
+  Nothing looks different from before.
+- Found while looking, not from this handoff: the highlighted summary card (expenses on the
+  dashboard, net profit on sales) showed no number in the light themes since handoff 026 (white
+  number on a white card). Fixed by Claude in `shared/ui/metric-card.tsx`: it is dark again,
+  from the theme's primary color.
+- Not seen: Warm Sand after this change; any dialog.

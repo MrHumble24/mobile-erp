@@ -34,6 +34,11 @@ const ALLOW_LIST: Record<string, string> = {
   "RepairTicketPaper.tsx": "Printed paper repair ticket stays black on white on purpose",
   "ContractPaper.tsx": "Printed paper credit contract stays black on white on purpose",
   "PriceTag.tsx": "Printed price tags stay black on white on purpose",
+  "PriceTagSheet.tsx": "The printed sheet of price tags is paper too",
+  "ChequeHeader.tsx": "Part of the printed receipt",
+  "ChequeItems.tsx": "Part of the printed receipt",
+  "ChequeWarranty.tsx": "Part of the printed receipt",
+  "ItemIdentity.tsx": "Part of the printed receipt",
 }
 
 function walk(dir: string, list: string[] = []): string[] {
