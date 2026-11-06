@@ -12,16 +12,23 @@ import Foundation
 final class APIClient {
     private let baseURL: () -> URL
     private let token: () -> String?
+    private let storeID: () -> String?
     private let session: URLSession
 
     /// Set by the container once the Session exists. Fired on a non-login 401.
     var onUnauthorized: (() -> Void)?
+    /// Fired when an API call returns 400 with STORE_REQUIRED (Item 6).
+    var onStoreRequired: (() -> Void)?
+    /// Fired when an API call returns 403 with STORE_FORBIDDEN (Item 6).
+    var onStoreForbidden: (() -> Void)?
 
     init(baseURL: @escaping () -> URL,
          token: @escaping () -> String?,
+         storeID: @escaping () -> String? = { nil },
          session: URLSession = .shared) {
         self.baseURL = baseURL
         self.token = token
+        self.storeID = storeID
         self.session = session
     }
 
@@ -149,6 +156,10 @@ final class APIClient {
         if let token = token(), !token.isEmpty {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
+        let isLogin = path.hasSuffix("/auth/login")
+        if !isLogin, let sid = storeID(), !sid.isEmpty {
+            req.setValue(sid, forHTTPHeaderField: "X-Store-Id")
+        }
         req.httpBody = bodyData
 
         let logId = NetLogStore.shared.begin(
@@ -186,7 +197,17 @@ final class APIClient {
                 AppLog.warn("auth", "401 on \(path) — clearing session")
                 onUnauthorized?()
             }
-            throw AppError(statusCode: status, body: data)
+            let err = AppError(statusCode: status, body: data)
+            if !path.hasSuffix("/auth/login") {
+                if err.code == "STORE_REQUIRED" {
+                    AppLog.warn("store", "STORE_REQUIRED on \(path)")
+                    onStoreRequired?()
+                } else if err.code == "STORE_FORBIDDEN" {
+                    AppLog.warn("store", "STORE_FORBIDDEN on \(path)")
+                    onStoreForbidden?()
+                }
+            }
+            throw err
         }
         // Cache successful reads for the offline fallback above. Cleared on
         // logout/401 (Session.clear) so one user never sees another's data.

@@ -15,5 +15,11 @@
   "confirmDeactivate": "Are you sure you want to deactivate {name}?",
   "deactivated": "Store deactivated",
   "saved": "Store saved successfully",
-  "noStores": "No stores found"
+  "noStores": "No stores found",
+  "chooseStore": "Choose a store",
+  "chooseStoreSubtitle": "Select a branch to continue",
+  "activeStore": "Active store",
+  "switchStore": "Switch store",
+  "storeRequired": "Please choose a store",
+  "storeForbidden": "You do not have access to this store"
 }

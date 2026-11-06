@@ -35,6 +35,7 @@ class PushService(
                         type = it.type,
                         payload = json.parseToJsonElement(it.payload),
                         baseVersion = it.baseVersion,
+                        storeId = it.storeId,
                         occurredAt = it.createdAt,
                     )
                 },

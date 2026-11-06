@@ -8,6 +8,7 @@ struct Keychain {
     enum Key: String {
         case token = "auth_token"
         case user = "auth_user"
+        case activeStoreID = "active_store_id"
         case terminalID = "terminal_id"
     }
 

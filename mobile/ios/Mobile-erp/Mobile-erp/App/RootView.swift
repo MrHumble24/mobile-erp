@@ -10,8 +10,22 @@ struct RootView: View {
         Group {
             if container.session.isRestoring {
                 LoadingView()
-            } else if container.session.isAuthenticated {
-                AppShell()
+            } else if let user = container.session.user {
+                let resolved = StoreManager.resolveActiveStore(
+                    stores: user.stores,
+                    savedStoreID: container.storeManager.activeStoreID
+                )
+                if let resolved {
+                    AppShell()
+                        .id(resolved)
+                        .onAppear {
+                            if container.storeManager.activeStoreID != resolved {
+                                container.storeManager.setActiveStoreID(resolved)
+                            }
+                        }
+                } else {
+                    ChooseStoreView()
+                }
             } else {
                 LoginView()
             }

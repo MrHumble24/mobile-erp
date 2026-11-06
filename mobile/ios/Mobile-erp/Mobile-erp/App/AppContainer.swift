@@ -22,18 +22,23 @@ final class AppContainer {
     let toasts = KitToastCenter()
     /// Store-setting flags that gate navigation (repairs hidden while off, ADR 0040).
     let storeFlags = StoreFlags()
+    let storeManager: StoreManager
 
     var modelContext: ModelContext { modelContainer.mainContext }
-    var outbox: Outbox { Outbox(context: modelContext) }
+    var outbox: Outbox {
+        Outbox(context: modelContext, storeIDProvider: { [weak self] in self?.storeManager.activeStoreID })
+    }
     func conflicts() -> ConflictStore { ConflictStore(api: api) }
 
     init() {
         let keychain = Keychain()
         let devConfig = DevConfig.load()
+        let storeManager = StoreManager(keychain: keychain)
         self.devConfig = devConfig
         self.i18n = I18n()
         self.connectivity = Connectivity()
         self.terminalID = TerminalID.load(keychain)
+        self.storeManager = storeManager
 
         // SwiftData store; fall back to in-memory if the on-disk store can't open
         // (e.g. an incompatible older schema on a dev device) so the app still runs.
@@ -45,7 +50,8 @@ final class AppContainer {
 
         let api = APIClient(
             baseURL: { devConfig.baseURL },
-            token: { keychain.string(.token) }
+            token: { keychain.string(.token) },
+            storeID: { storeManager.activeStoreID }
         )
         self.api = api
 
@@ -60,11 +66,46 @@ final class AppContainer {
         )
         self.sync = sync
 
-        // Cross-wire the three runtime edges now that every part exists.
+        // Cross-wire the runtime edges now that every part exists.
         let flags = storeFlags
-        api.onUnauthorized = { session.clear() }   // 401 → force re-login
-        session.onLogin = { sync.syncNow(); Task { await flags.refresh(api: api) } } // login → hydrate
+        api.onUnauthorized = { [weak session, weak storeManager] in
+            storeManager?.clear()
+            session?.clear()
+        }
+        api.onStoreRequired = { [weak self] in
+            guard let self else { return }
+            self.storeManager.clear()
+            self.toasts.error(self.i18n.t("stores.storeRequired"))
+        }
+        api.onStoreForbidden = { [weak self] in
+            guard let self else { return }
+            self.storeManager.clear()
+            self.toasts.error(self.i18n.t("stores.storeForbidden"))
+            Task { await self.session.refreshUser() }
+        }
+        session.onLogin = { [weak self] in
+            guard let self else { return }
+            self.storeManager.sync(with: self.session.user)
+            // No sync before a store is chosen: the server would refuse it (STORE_REQUIRED).
+            if self.storeManager.activeStoreID != nil { self.sync.syncNow() }
+            Task { await flags.refresh(api: self.api) }
+        }
         connectivity.onReconnect = { sync.syncNow() } // regain network → sync
+    }
+
+    /// Handles store switching according to Item 4.
+    func switchStore(_ newStoreID: String) async {
+        // 1. save the new store
+        storeManager.setActiveStoreID(newStoreID)
+        // 2. clear every list the app keeps in memory
+        URLCache.shared.removeAllCachedResponses()
+        // 3. delete the offline copies of devices and products
+        // 4. reset the sync position
+        let pull = PullService(api: api, context: modelContext)
+        pull.clearOfflineCopies()
+        pull.resetCursor()
+        // 5. pull again
+        try? await pull.pull()
     }
 
     /// Called once from the root view on appear: sync if already online + signed in.
@@ -73,6 +114,10 @@ final class AppContainer {
         runDebugSelfChecks()
         KitSelfCheck.run()
         #endif
+        storeManager.sync(with: session.user)
+        if let user = session.user, user.stores.isEmpty {
+            Task { await session.refreshUser() }
+        }
         if connectivity.isOnline {
             sync.syncNow()
             Task { await storeFlags.refresh(api: api) }
