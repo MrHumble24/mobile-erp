@@ -104,9 +104,19 @@ export class DataWipeRepository {
       orderBy: { startedAt: 'desc' },
       take,
     });
+    // Resolve the performer's email for display (performedById is a plain string,
+    // not an FK — the users it points at survive the erase, but may be deleted
+    // later, so a missing one is fine).
+    const ids = [...new Set(runs.map((r) => r.performedById))];
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, email: true },
+    });
+    const emailById = new Map(users.map((u) => [u.id, u.email]));
     return runs.map((r) => ({
       id: r.id,
       performedById: r.performedById,
+      performedByEmail: emailById.get(r.performedById) ?? null,
       contacts: r.contacts,
       catalog: r.catalog,
       safetyRunId: r.safetyRunId,

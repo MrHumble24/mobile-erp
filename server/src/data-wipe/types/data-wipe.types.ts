@@ -29,6 +29,8 @@ export interface WipeStatusView {
 export interface WipeRunView {
   id: string;
   performedById: string;
+  /** The performer's email, resolved for display (null if the user is gone). */
+  performedByEmail: string | null;
   contacts: boolean;
   catalog: boolean;
   safetyRunId: string | null;

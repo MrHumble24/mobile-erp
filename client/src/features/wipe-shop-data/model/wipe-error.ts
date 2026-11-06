@@ -9,6 +9,7 @@ const CODE_KEY: Record<string, string> = {
   DATA_WIPE_RUNNING: "backups.wipeErrRunning",
   DATA_WIPE_NO_PASSPHRASE: "backups.wipeErrNoPassphrase",
   DATA_WIPE_PASSPHRASE_UNREADABLE: "backups.errPassphraseUnreadable",
+  DATA_WIPE_SAFETY_BACKUP_FAILED: "backups.wipeErrSafetyBackup",
 }
 
 /** A human message for a failed erase. */

@@ -36,7 +36,7 @@ export function WipeRunsTable({ enabled }: { enabled: boolean }) {
             {runs.map((r) => (
               <TableRow key={r.id}>
                 <TableCell>{formatDateTime(r.startedAt)}</TableCell>
-                <TableCell className="font-mono text-xs">{r.performedById.slice(0, 8)}</TableCell>
+                <TableCell className="text-xs">{r.performedByEmail ?? r.performedById.slice(0, 8)}</TableCell>
                 <TableCell>{what(r)}</TableCell>
                 <TableCell className="text-right">{rowCount(r.rowsErased).toLocaleString()}</TableCell>
                 <TableCell>

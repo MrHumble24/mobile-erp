@@ -21,6 +21,7 @@ export interface WipeStatusView {
 export interface WipeRunView {
   id: string
   performedById: string
+  performedByEmail: string | null
   contacts: boolean
   catalog: boolean
   safetyRunId: string | null

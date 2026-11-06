@@ -150,6 +150,7 @@
   "wipeWhatCatalog": "catalog",
   "wipeErrRunning": "A backup, restore or erase is already running. Try again when it finishes.",
   "wipeErrNoPassphrase": "Set the backup passphrase first (see Encryption passphrase above) so a safety backup can be made.",
+  "wipeErrSafetyBackup": "The safety backup could not be made or opened, so nothing was erased. Check the Backups above and try again.",
 
   "errRunning": "A backup is already running. Try again when it finishes.",
   "errNoPassphrase": "Set the backup passphrase first.",

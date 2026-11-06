@@ -150,6 +150,7 @@
   "wipeWhatCatalog": "katalog",
   "wipeErrRunning": "Zaxiralash, tiklash yoki o'chirish allaqachon bajarilmoqda. Tugagach qayta urinib ko'ring.",
   "wipeErrNoPassphrase": "Avval zaxiralash parolini o'rnating (yuqoridagi 'Shifrlash paroli' bo'limiga qarang), shunda xavfsizlik zaxirasi olinishi mumkin.",
+  "wipeErrSafetyBackup": "Xavfsizlik zaxirasini olib yoki ochib bo'lmadi, shuning uchun hech narsa o'chirilmadi. Yuqoridagi zaxira nusxalarni tekshirib, qayta urinib ko'ring.",
 
   "errRunning": "Zaxiralash allaqachon bajarilmoqda. Tugagach qayta urinib ko'ring.",
   "errNoPassphrase": "Avval zaxiralash parolini o'rnating.",

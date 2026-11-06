@@ -43,14 +43,17 @@ export function RestoreOverlay() {
   const needsManual = (isWipe ? wipe.data : restore.data)?.needsManualRecovery === true
 
   const signIn = () => {
-    if (isWipe) {
-      try {
-        clearCart()
-      } catch {
-        // a missing cart store is fine
-      }
-      void clearOfflineData()
+    // Both an erase and a restore replace the shop's data, so whatever this
+    // device still holds for the old shop is stale: clear the cart, the offline
+    // caches and the sync queue before signing in again. (The server also
+    // refuses queued mutations older than the reset, so a till that only saw a
+    // 503 cannot replay into the clean shop either — M1.)
+    try {
+      clearCart()
+    } catch {
+      // a missing cart store is fine
     }
+    void clearOfflineData()
     clearSession()
     window.location.assign("/login")
   }
