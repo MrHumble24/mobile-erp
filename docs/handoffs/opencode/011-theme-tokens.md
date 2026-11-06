@@ -1,6 +1,6 @@
 # 011 — Fixed colors out of the website, so dark themes can work
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 The shop can choose a theme (ADR 0055). Two of the four are dark, and they are switched off,
@@ -47,12 +47,32 @@ Fill the Result section of `docs/handoffs/opencode/011-theme-tokens.md`, set Sta
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
-- Counts before and after (each of the four classes):
-- The new guard test: failing count before, passing after:
+- Model used: Big Pickle (`opencode/big-pickle`)
+- Commits: `c8597d5` — `fix(client): replace fixed black/white classes with theme tokens`; this handoff update is committed separately on the same branch.
+- Counts before and after (each of the four classes): `bg-white` 108 → 0; `text-black` 20 → 0; `bg-black` 8 → 7; `text-white` 8 → 6.
+- The new guard test: failing count before, passing after: before it failed with **128 findings in 90 files** (108 × `bg-white`, 20 × `text-black`); after the replacements it passes with 0.
 - Files where a `text-white` or `bg-black` was left on purpose, and why:
+  - `text-white` kept on fixed colored backgrounds (rule 5): `features/manage-storefront-order/ui/OrderStatusActions.tsx` (2, `bg-emerald-600`), `pages/transfers/ui/TransferDetailSheet.tsx` (1, `bg-emerald-600`), `widgets/device-drawer/ui/DeviceDrawer.tsx` (1, `bg-emerald-600`), `widgets/app-shell/ui/Sidebar.tsx` (1, `bg-blue-600` avatar).
+  - `text-white` kept in `shared/ui/metric-card.tsx`: the element's background is `bg-card` (not `bg-primary` and not a fixed color), so rule 5 does not apply.
+  - `bg-black` with an opacity kept in 7 places (rule 3): `shared/ui/scroll-area.tsx` (2, `hover:bg-black/5`), `shared/ui/button.tsx` (1, `hover:bg-black/[0.04]`), `widgets/app-shell/ui/AppShellHeader.tsx` (1), `widgets/app-shell/ui/UserMenu.tsx` (1), `widgets/app-shell/ui/Sidebar.tsx` (1), all `hover:bg-black/[0.04]`, and `entities/sale/ui/receipt/ChequeWarranty.tsx` (1, `bg-black/[0.02]`).
 - `pnpm test`, `pnpm lint`, `pnpm build`, the grep (last lines):
-- Not done / skipped / failed:
+  - `pnpm test`: `ℹ tests 113`, `ℹ pass 113`, `ℹ fail 0`.
+  - `pnpm lint`: completed with warnings only (existing `max-lines-per-function` and React compiler warnings), no errors.
+  - `pnpm build`: `✓ 4312 modules transformed`, `✓ built in 6.80s`, `PWA v2.0.0 … precache 178 entries`.
+  - grep: `0`.
+- Not done / skipped / failed: no browser was opened and no screen was seen — Claude still needs to check the screens in the two light themes. Dark themes were not enabled (out of scope / Gemini 028). `graphify update .` ran in `client/` and at the repo root; the root run skipped `graph.html` because the graph exceeded graphify's 5000-node HTML limit. No failures otherwise.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was accurate. The diff changes class names only
+  (checked by turning the new classes back and comparing: no other change outside the guard
+  test). After merging `main`: 113 website tests, lint 0 errors, build pass.
+- My handoff missed some printed paper: the parts of the receipt (`ChequeHeader`, `ChequeItems`,
+  `ChequeWarranty`, `ItemIdentity`) and `PriceTagSheet`. OpenCode recolored them as told. Claude
+  put them back to black on white and added them to the guard's allow list.
+- Seen in a browser, default theme, real data: dashboard, inventory, till (catalog), sales.
+  Nothing looks different from before.
+- Found while looking, not from this handoff: the highlighted summary card (expenses on the
+  dashboard, net profit on sales) showed no number in the light themes since handoff 026 (white
+  number on a white card). Fixed by Claude in `shared/ui/metric-card.tsx`: it is dark again,
+  from the theme's primary color.
+- Not seen: Warm Sand after this change; any dialog.

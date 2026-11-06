@@ -38,7 +38,7 @@ export function CreditGoods({ credit }: { credit: CreditView }) {
         return (
           <div
             key={sale.saleId}
-            className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
+            className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-card p-2.5 text-sm"
           >
             <div className="min-w-0">
               <p className="truncate font-medium">
@@ -66,7 +66,7 @@ export function CreditPlan({ credit }: { credit: CreditView }) {
       {credit.instalments.map((inst, i) => (
         <div
           key={inst.id}
-          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
+          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-card p-2.5 text-sm"
         >
           <div>
             <p className="font-medium">{t("credit.instalment", { n: i + 1 })}</p>
@@ -96,7 +96,7 @@ export function CreditPayments({ credit }: { credit: CreditView }) {
       {credit.payments.map((p) => (
         <div
           key={p.id}
-          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm"
+          className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-card p-2.5 text-sm"
         >
           <div>
             <p className="font-medium">{accountLabel(p.accountCode, undefined, t)}</p>

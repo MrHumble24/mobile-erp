@@ -37,7 +37,7 @@ export function TransferLinesEditor({
           {t("transfers.noLinesAdded")}
         </p>
       ) : (
-        <div className="max-h-48 overflow-y-auto space-y-1 border border-border rounded-[10px] p-2 bg-white">
+        <div className="max-h-48 overflow-y-auto space-y-1 border border-border rounded-[10px] p-2 bg-card">
           {lines.map((line, idx) => (
             <div
               key={line.deviceId || line.modelId || idx}

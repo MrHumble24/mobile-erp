@@ -19,7 +19,7 @@ export function StockFilters({ browser }: { browser: StockBrowser }) {
           onScan={(code) => browser.setSearchInput(code)}
           onClear={() => browser.setSearchInput("")}
           placeholder={t("catalog.scanCode")}
-          className="h-10 bg-white border-border shadow-[var(--shadow-xs)]"
+          className="h-10 bg-card border-border shadow-[var(--shadow-xs)]"
         />
       </div>
       <div className="sm:col-span-4">
@@ -27,7 +27,7 @@ export function StockFilters({ browser }: { browser: StockBrowser }) {
           value={browser.categoryId ?? ALL}
           onValueChange={(v) => browser.setCategoryId(!v || v === ALL ? undefined : v)}
         >
-          <SelectTrigger className="h-10 bg-white border-border shadow-[var(--shadow-xs)]">
+          <SelectTrigger className="h-10 bg-card border-border shadow-[var(--shadow-xs)]">
             <SelectValue placeholder={t("catalog.allCategories")} />
           </SelectTrigger>
           <SelectContent>

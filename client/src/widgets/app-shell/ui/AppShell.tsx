@@ -76,7 +76,7 @@ function MobileSidebarDrawer({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-white shadow-xl z-50 animate-in slide-in-from-left duration-200 flex flex-col">
+      <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card shadow-xl z-50 animate-in slide-in-from-left duration-200 flex flex-col">
         <Sidebar
           collapsed={false}
           onItemClick={onClose}

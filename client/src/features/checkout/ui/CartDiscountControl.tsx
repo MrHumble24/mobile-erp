@@ -41,7 +41,7 @@ export function CartDiscountControl({ canDiscountUnlimited }: CartDiscountContro
   }
 
   return (
-    <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)] space-y-2">
+    <div className="rounded-[16px] border border-border bg-card p-3 shadow-[var(--shadow-xs)] space-y-2">
       <Label>{t("pricing.discountOnCart")}</Label>
       <div className="flex items-center gap-2">
         {rules.percentAllowed && rules.amountAllowed && (

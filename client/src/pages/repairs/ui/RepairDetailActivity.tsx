@@ -16,7 +16,7 @@ export function RepairPaymentsList({ repair }: { repair: RepairView }) {
           {repair.payments.map((p) => {
             const amount = Number(p.amount)
             return (
-              <div key={p.id} className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-white p-2.5 text-sm">
+              <div key={p.id} className="flex items-center justify-between gap-3 rounded-[10px] border border-border bg-card p-2.5 text-sm">
                 <div>
                   <div className={`font-mono font-semibold ${amount < 0 ? "text-destructive" : ""}`}>
                     {formatMoney(amount)}
@@ -45,7 +45,7 @@ export function RepairHistory({ repair }: { repair: RepairView }) {
       <h3 className="text-sm font-semibold tracking-tight">{t("repairs.historyTitle")}</h3>
       <div className="space-y-1.5">
         {rows.map((h, i) => (
-          <div key={`${h.changedAt}-${i}`} className="rounded-[10px] border border-border bg-white p-2.5 text-sm">
+          <div key={`${h.changedAt}-${i}`} className="rounded-[10px] border border-border bg-card p-2.5 text-sm">
             <div className="flex items-center justify-between gap-2">
               <RepairStatusBadge statusCode={h.toStatusCode} />
               <span className="text-xs text-muted-foreground">{formatDateTime(h.changedAt)}</span>

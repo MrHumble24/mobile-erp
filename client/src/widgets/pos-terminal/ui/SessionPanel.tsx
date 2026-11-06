@@ -51,7 +51,7 @@ export function SessionPanel({ soldById, onOpenReceipt }: SessionPanelProps) {
         <MetricCard label={t("pos.todaySales")} value={data?.total ?? 0} />
         <MetricCard label={t("pos.todayRevenue")} value={formatMoney(revenue)} />
       </div>
-      <div className="rounded-[16px] border border-border bg-white p-3 shadow-[var(--shadow-xs)]">
+      <div className="rounded-[16px] border border-border bg-card p-3 shadow-[var(--shadow-xs)]">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
           {t("pos.recentSales")}
         </p>

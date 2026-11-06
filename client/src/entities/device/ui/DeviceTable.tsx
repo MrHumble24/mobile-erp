@@ -49,7 +49,7 @@ function DeviceTableHead({ canViewCost }: { canViewCost?: boolean }) {
 function EmptyState({ onResetFilters }: { onResetFilters?: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="py-14 text-center border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)] space-y-3">
+    <div className="py-14 text-center border border-border rounded-[16px] bg-card shadow-[var(--shadow-xs)] space-y-3">
       <PackageSearch className="mx-auto size-10 text-muted-foreground stroke-[1.5]" />
       <div className="space-y-1">
         <p className="font-medium text-sm text-foreground">{t("inventory.empty")}</p>
@@ -80,7 +80,7 @@ export function DeviceTable({
   }
 
   return (
-    <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+    <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
       <Table>
         <DeviceTableHead canViewCost={canViewCost} />
         <TableBody>

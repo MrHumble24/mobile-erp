@@ -63,7 +63,7 @@ function BatchTable({
 }) {
   const { t } = useI18n()
   return (
-    <div className="border border-border rounded-[14px] bg-white max-h-48 overflow-y-auto shadow-[var(--shadow-xs)]">
+    <div className="border border-border rounded-[14px] bg-card max-h-48 overflow-y-auto shadow-[var(--shadow-xs)]">
       <Table>
         <TableHeader>
           <TableRow>

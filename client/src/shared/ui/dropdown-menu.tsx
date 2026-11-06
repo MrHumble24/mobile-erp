@@ -20,7 +20,7 @@ function DropdownMenuContent({
       <MenuPrimitive.Positioner sideOffset={sideOffset} className="z-[100] outline-none" {...props}>
         <MenuPrimitive.Popup
           className={cn(
-            "z-[100] min-w-52 overflow-hidden rounded-[12px] bg-white text-foreground p-1 shadow-[var(--shadow-subtle-2)] border border-border outline-none flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-52 overflow-hidden rounded-[12px] bg-card text-foreground p-1 shadow-[var(--shadow-subtle-2)] border border-border outline-none flex flex-col gap-0.5 transition-all",
             className
           )}
         >

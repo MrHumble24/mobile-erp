@@ -27,11 +27,11 @@ export function CategoryManagerPanel() {
       {isLoading ? (
         <div className="py-12 text-center text-muted-foreground">{t("common.loading")}</div>
       ) : (categories ?? []).length === 0 ? (
-        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-white shadow-[var(--shadow-xs)]">
+        <div className="py-12 text-center text-muted-foreground border border-border rounded-[16px] bg-card shadow-[var(--shadow-xs)]">
           {t("inventory.empty")}
         </div>
       ) : (
-        <div className="rounded-[16px] border border-border bg-white overflow-hidden shadow-[var(--shadow-xs)]">
+        <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
           <Table>
             <TableHeader>
               <TableRow>

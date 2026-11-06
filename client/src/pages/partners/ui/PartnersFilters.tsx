@@ -18,7 +18,7 @@ const ACTIVE_OPTIONS: ActiveFilter[] = ["all", "active", "inactive"]
 export function PartnersFilters({ filters }: { filters: PartnerFiltersState }) {
   const { t } = useI18n()
   return (
-    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-white p-4 shadow-[var(--shadow-xs)]">
+    <div className="flex flex-wrap items-end gap-4 rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
       <div className="space-y-1">
         <Label>{t("common.search")}</Label>
         <Input

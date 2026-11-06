@@ -52,7 +52,7 @@ export function CatalogBrowser({ level, excludeUnitIds, onPickUnit, onPickQuanti
           ))}
         </div>
       ) : !data || data.length === 0 ? (
-        <p className="rounded-[16px] border border-border bg-white py-12 text-center text-sm text-muted-foreground shadow-[var(--shadow-xs)]">
+        <p className="rounded-[16px] border border-border bg-card py-12 text-center text-sm text-muted-foreground shadow-[var(--shadow-xs)]">
           {t("catalog.noUnits")}
         </p>
       ) : (
