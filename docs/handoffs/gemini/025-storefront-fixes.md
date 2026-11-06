@@ -49,7 +49,7 @@ Fill the Result section below, set Status to done, commit it. Report only what y
 === END ===
 
 ## Result (Gemini fills)
-- Commits: pending commit on branch `agent/gemini/storefront`
+- Commits: a574e92 ("fix(storefront): address audit findings F1-F8, W1-W2")
 - F1 to F8, one line each (fixed how, test name):
   - F1: Moved DB leak test to `server/test/storefront.leak.e2e-spec.ts` (`pnpm test:storefront-leak`) with `afterAll` order cleanup and stock assertion; added in-memory leak test in `server/src/storefront/lib/product-shaping.leak.spec.ts` for fast `pnpm test`; reverted `server/package.json` test script to plain `jest` (`test/stubs/event-emitter.ts` retained for EventEmitter unit tests). Tests: `test/storefront.leak.e2e-spec.ts`, `src/storefront/lib/product-shaping.leak.spec.ts`.
   - F2: Added `TRUST_PROXY_HOPS` env parsing (default 0, Railway: 1) and `app.set('trust proxy', trustHops)` in `main.ts` so Express populates `req.ip` from trusted hops for `ThrottlerGuard`. Test: `server/src/storefront/storefront.proxy.spec.ts`.
