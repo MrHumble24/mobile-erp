@@ -66,5 +66,8 @@ graphify.db
 graphify-cache/
 
 
-# Database backups (scripts/backup-db.sh)
+# Database backups (scripts/backup-db.sh, backups module)
 backups/
+
+# Server-only state outside the DB: master key, session gate (DATA_DIR)
+data/
