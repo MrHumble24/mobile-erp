@@ -2,7 +2,7 @@ import { ShoppingCart } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { Button } from "@/shared/ui/button"
-import { useCartStore, cartTotals } from "@/features/checkout"
+import { useCartStore, useCartTenderPlan } from "@/features/checkout"
 import type { usePosTerminal } from "../model/use-pos-terminal"
 
 /**
@@ -13,9 +13,8 @@ import type { usePosTerminal } from "../model/use-pos-terminal"
 export function CartBar({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
   const { t } = useI18n()
   const lines = useCartStore((s) => s.lines)
-  const level = useCartStore((s) => s.priceLevelCode)
+  const plan = useCartTenderPlan()
   if (lines.length === 0) return null
-  const totals = cartTotals(lines, level)
 
   const jump = () =>
     document.getElementById("pos-cart")?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -35,7 +34,7 @@ export function CartBar({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
             <span className="text-xs text-muted-foreground">
               {t("pos.lineCount", { count: lines.length })}
             </span>
-            <span className="block text-base font-bold">{formatMoney(totals.dueTotal)}</span>
+            <span className="block text-base font-bold">{formatMoney(plan.amountToPay)}</span>
           </span>
         </Button>
         <Button

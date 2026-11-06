@@ -31,6 +31,12 @@ export interface SalePaymentLine {
   amount: string
 }
 
+/** Loyalty points a sale earned and spent (ADR 0043), as 2-dp decimal strings. */
+export interface SaleBonus {
+  earned: string
+  spent: string
+}
+
 /** The product sold on a quantity sale (ADR 0030); set when `device` is null. */
 export interface SaleModelRef {
   brand: string
@@ -77,6 +83,8 @@ export interface SaleView {
   payments: SalePaymentLine[]
   /** Phones taken in part payment (ADR 0039); [] when none. */
   tradeIns: TradeInView[]
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus
 }
 
 export interface SaleStats {
@@ -120,6 +128,8 @@ export interface ReceiptView {
   payments?: SalePaymentLine[]
   /** Phones taken in part payment (ADR 0039); [] when none. */
   tradeIns?: TradeInView[]
+  /** Loyalty points earned and spent on this sale (ADR 0043). */
+  bonus: SaleBonus
 }
 
 export interface WarrantyLookupView {

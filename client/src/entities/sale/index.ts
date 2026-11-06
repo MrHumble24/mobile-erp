@@ -4,6 +4,7 @@ export type {
   TradeInView,
   SaleTradeInDto,
   SalePaymentLine,
+  SaleBonus,
   SaleReturnRef,
   SaleStats,
   ReceiptView,

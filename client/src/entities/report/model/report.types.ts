@@ -9,6 +9,10 @@ export interface ProfitReport {
   returnsRefunded: number
   /** Σ (listPriceSnapshot − salePrice) over snapshotted sales (ADR 0034). */
   discountsGiven: number
+  /** Loyalty points given (EARN) in range (ADR 0043). */
+  bonusPointsEarned: number
+  /** Loyalty points spent (SPEND, as a positive magnitude) in range (ADR 0043). */
+  bonusPointsSpent: number
 }
 
 export type TrendBucket = "day" | "week" | "month"

@@ -9,6 +9,7 @@ export type {
   UpdateCustomerDto,
 } from "./model/customer.types"
 export { CustomerPicker, type CustomerSelection } from "./ui/CustomerPicker"
+export { CustomerPoints } from "./ui/CustomerPoints"
 export { customerRepository } from "./api/customer.repository"
 export { customerKeys } from "./api/customer.keys"
 export {

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { useI18n } from "@/shared/i18n"
-import { formatDateTime, formatMoney } from "@/shared/lib/format"
+import { formatDateTime, formatMoney, formatNumber } from "@/shared/lib/format"
 import { saleModelName, saleUnitCode } from "@/shared/lib/sale-subject"
 import type { SaleView } from "@/entities/sale"
 import { PaymentSummary } from "@/entities/ledger"
@@ -98,6 +98,8 @@ export function MoneySection({
   const showProfit = canViewProfit && sale.netProfit !== undefined
   const discount = Number(sale.discountAmount ?? 0)
   const levelLabel = saleLevelLabel(sale.priceLevelCode, t)
+  const pointsSpent = Number(sale.bonus.spent)
+  const pointsEarned = Number(sale.bonus.earned)
   return (
     <Section title={t("sales.moneySection")}>
       {levelLabel && <Row label={t("pricing.priceLevel")} value={levelLabel} />}
@@ -110,6 +112,15 @@ export function MoneySection({
       <Row label={t("sales.salePrice")} value={formatMoney(sale.salePrice)} />
       {sale.payments.length > 0 && (
         <Row label={t("balance.paidWith")} value={<PaymentSummary payments={sale.payments} />} />
+      )}
+      {pointsSpent > 0 && (
+        <Row
+          label={t("sales.paidWithPoints")}
+          value={`− ${formatNumber(sale.bonus.spent)}`}
+        />
+      )}
+      {pointsEarned > 0 && (
+        <Row label={t("sales.pointsEarned")} value={formatNumber(sale.bonus.earned)} />
       )}
       {showProfit && (
         <>

@@ -8,6 +8,7 @@ import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 import type { ReceiptView, ReceiptItem } from "../model/sale.types"
 import { formatReceiptText } from "../lib/format-receipt"
+import { receiptBonusLines, type ReceiptBonusLine } from "../lib/receipt-bonus"
 
 function BarcodeVisual({ value }: { value: string }) {
   return (
@@ -155,6 +156,18 @@ function ChequeTradeIns({ tradeIns }: { tradeIns: ReceiptView["tradeIns"] }) {
   )
 }
 
+function ChequeBonusLine({ line }: { line: ReceiptBonusLine | null }) {
+  if (!line) return null
+  return (
+    <div className="py-2 border-b border-dashed border-black/30 text-[10px]">
+      <div className="flex justify-between">
+        <span>{line.label}</span>
+        <span className="font-mono">{line.negative ? `− ${line.amount}` : line.amount}</span>
+      </div>
+    </div>
+  )
+}
+
 function ChequePayments({ payments }: { payments: ReceiptView["payments"] }) {
   const { t } = useI18n()
   if (!payments || payments.length === 0) return null
@@ -187,6 +200,7 @@ function ChequeWarranty({ warranty }: { warranty: ReceiptView["warranty"] }) {
 
 export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
   const { t } = useI18n()
+  const bonus = receiptBonusLines(receipt.bonus, t)
   const firstItem = receipt.items[0]
   const primaryImei = (firstItem && unitCode(firstItem)) || receipt.saleId.slice(0, 15)
 
@@ -197,8 +211,10 @@ export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
       <ChequeDiscount receipt={receipt} />
       <ChequeItems items={receipt.items} total={receipt.total} />
       <ChequeTradeIns tradeIns={receipt.tradeIns} />
+      <ChequeBonusLine line={bonus.paidWithPoints} />
       <ChequePayments payments={receipt.payments} />
       <ChequeWarranty warranty={receipt.warranty} />
+      <ChequeBonusLine line={bonus.pointsEarned} />
       <BarcodeVisual value={primaryImei} />
       <div className="pt-1 text-center text-[9px] text-black/70 space-y-0.5">
         <p className="font-medium">{t("pos.thankYou")}</p>

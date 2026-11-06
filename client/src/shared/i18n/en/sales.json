@@ -67,5 +67,7 @@
   "receipt": "Receipt",
   "printReceipt": "Print Receipt",
   "refundGoesBack": "Refund returns the same way it was paid: {accounts}",
-  "refundTooHigh": "The refund cannot be more than what was paid"
+  "refundTooHigh": "The refund cannot be more than what was paid",
+  "paidWithPoints": "Paid with points",
+  "pointsEarned": "Points earned"
 }

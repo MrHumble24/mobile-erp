@@ -20,6 +20,13 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
   // Sum the list prices + discounts so the combined receipt shows "given away" (ADR 0034).
   const discountAmount = receipts.reduce((sum, r) => sum + Number(r.discountAmount ?? 0), 0)
   const listPrice = receipts.reduce((sum, r) => sum + Number(r.listPrice ?? r.total), 0)
+  const bonus = receipts.reduce(
+    (sum, r) => ({
+      earned: sum.earned + Number(r.bonus.earned),
+      spent: sum.spent + Number(r.bonus.spent),
+    }),
+    { earned: 0, spent: 0 }
+  )
 
   return {
     saleId: first.saleId,
@@ -34,6 +41,7 @@ export function combineReceipts(receipts: ReceiptView[]): ReceiptView | null {
     warranty: null,
     payments,
     tradeIns,
+    bonus: { earned: String(bonus.earned), spent: String(bonus.spent) },
   }
 }
 

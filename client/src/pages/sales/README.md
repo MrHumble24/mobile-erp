@@ -36,6 +36,10 @@ How a sale was paid (`sale.payments`) shows via `entities/ledger`'s `PaymentSumm
 in the detail sheet and under the price in the list; an empty array renders nothing.
 The return dialog notes the refund goes back to those accounts (no new input).
 
+Bonus points (ADR 0043) come from `sale.bonus`: "Paid with points" (spent > 0,
+with a minus) and "Points earned" (earned > 0) appear in the detail's money
+section and on the receipt, each only when its figure is above zero.
+
 ## Never
 
 Import another page. Call `useQuery` here (entity hooks only). Render native
