@@ -12,6 +12,9 @@ Updated by Claude when something is added, started or finished. Last update: 202
 | What | Handoff | Notes |
 |---|---|---|
 | Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Given to Gemini on 2026-11-07 (worktree `.worktrees/factory-reset`), with Claude's defaults in its "Decided" table. Own reset test and a security audit before merging. |
+| Online shop part 2: delivery, a held phone, hand-over (server) | `docs/handoffs/gemini/033` | Written 2026-11-07, not handed out. The user chose: Payme and Click as adapters, delivery configurable, pay on receipt allowed. The rest of its "Decided" table is Claude's defaults. |
+| Online shop part 2: Payme and Click (server) | `docs/handoffs/gemini/034` | After 033, same worktree. Security audit before merging. A real payment needs the shop's merchant accounts. |
+| Online shop part 2: website screens | `docs/handoffs/gemini/035` | After 033 and 034 are merged. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
@@ -31,6 +34,6 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Later, only when asked
 - Tax receipts (Change 15).
 - Price tags printed from the phone apps (left out of step 11 on phones on purpose: tags are printed at the computer).
-- Storefront second version: online payment, reservation, delivery, customer login.
+- Storefront, still later: a cart with several products, customer login, outside courier services, the phone apps showing delivery and payment, delivery income in the profit report.
 - S3-style storage as one more backup provider.
 - Deleting the dead worktree and branch `agent/opencode/branches-server`.
