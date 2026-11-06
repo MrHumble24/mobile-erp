@@ -1,11 +1,24 @@
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
-  IsObject,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+
+export class StorefrontOrderSpecsDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  storage?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  color?: string;
+}
 
 export class CreateStorefrontOrderDto {
   @IsString()
@@ -23,8 +36,9 @@ export class CreateStorefrontOrderDto {
   modelId!: string;
 
   @IsOptional()
-  @IsObject()
-  specs?: Record<string, unknown>;
+  @ValidateNested()
+  @Type(() => StorefrontOrderSpecsDto)
+  specs?: StorefrontOrderSpecsDto;
 
   @IsUUID()
   @IsNotEmpty()

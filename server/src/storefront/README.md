@@ -6,11 +6,11 @@ and `storefront_order_status_history`.
 
 ## Exposes
 
-- Public REST (`/storefront`):
+- Public REST (`/storefront`, 120/min rate limit):
   - `GET /config` — enabled state, shop name, contacts, active stores, shown categories.
   - `GET /products` — in-stock products across active stores with `priceFrom` / "ask".
   - `GET /products/:modelId` — card details and variants grouped by storage and color.
-  - `POST /orders` — places customer pickup order (rate-limited, honeypot protected).
+  - `POST /orders` — places customer pickup order (5/min rate limit, honeypot protected).
 - Staff REST (`/storefront/settings`):
   - `GET`, `PUT` (`settings.manage`) — toggle storefront, showPrices, contacts, shown categories.
 - Staff REST (`/storefront-orders`):

@@ -16,7 +16,9 @@ import {
   buildQuantityProductDetail,
   buildUnitProductCards,
   buildUnitProductDetail,
+  groupUnitsByModel,
 } from './lib/product-shaping.js';
+import { resolveCatalogPrices } from './lib/product-pricing.js';
 import {
   StorefrontRepository,
   type PublicModelRow,
@@ -36,17 +38,6 @@ function assertStorefrontEnabled(settings: StorefrontSettingsView): void {
       message: 'The storefront is currently disabled',
     });
   }
-}
-
-function groupUnitsByModel(
-  units: PublicUnitRow[],
-): Map<string, PublicUnitRow[]> {
-  const map = new Map<string, PublicUnitRow[]>();
-  for (const u of units) {
-    if (!map.has(u.modelId)) map.set(u.modelId, []);
-    map.get(u.modelId)!.push(u);
-  }
-  return map;
 }
 
 @Injectable()
@@ -92,6 +83,7 @@ export class StorefrontService {
       settings.categoryIds,
       query.categoryId,
       query.search,
+      { page: query.page ?? 1, pageSize: query.pageSize ?? 50 },
     );
     if (models.length === 0) return [];
 
@@ -109,33 +101,52 @@ export class StorefrontService {
       ),
     ]);
 
+    return this.buildCatalogCards(
+      unitModels,
+      quantityModels,
+      units,
+      quantityMap,
+      storeMap,
+      settings.showPrices,
+    );
+  }
+
+  private async buildCatalogCards(
+    unitModels: PublicModelRow[],
+    qtyModels: PublicModelRow[],
+    units: PublicUnitRow[],
+    qtyMap: Map<string, Map<string, number>>,
+    storeMap: Map<string, string>,
+    showPrices: boolean,
+  ): Promise<StorefrontProductCard[]> {
     const unitsByModel = groupUnitsByModel(units);
+    const { unitPrices, productPrices } = await resolveCatalogPrices(
+      this.pricing,
+      showPrices,
+      units,
+      qtyModels,
+    );
 
     const [unitCards, quantityCards] = await Promise.all([
       buildUnitProductCards(
         unitModels,
         unitsByModel,
         storeMap,
-        settings.showPrices,
-        this.pricing,
+        showPrices,
+        unitPrices,
       ),
       buildQuantityProductCards(
-        quantityModels,
-        quantityMap,
+        qtyModels,
+        qtyMap,
         storeMap,
-        settings.showPrices,
-        this.pricing,
+        showPrices,
+        productPrices,
       ),
     ]);
 
-    const cards = [...unitCards, ...quantityCards];
-    cards.sort(
+    return [...unitCards, ...quantityCards].sort(
       (a, b) => a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name),
     );
-
-    const page = query.page ?? 1;
-    const pageSize = query.pageSize ?? 50;
-    return cards.slice((page - 1) * pageSize, page * pageSize);
   }
 
   async getProduct(modelId: string): Promise<StorefrontProductDetail> {
@@ -197,31 +208,44 @@ export class StorefrontService {
       });
     }
 
-    const { targetStore, model } = await this.validateOrderTarget(dto);
+    const { targetStore, model } = await this.validateOrderTarget(
+      dto,
+      settings,
+    );
+
+    const name = dto.name.trim();
+    const phone = dto.phone.trim();
+    const note = dto.note?.trim();
+    const specs = dto.specs ? { ...dto.specs } : {};
 
     const order = await this.repo.createOrder({
       storeId: dto.storeId,
       modelId: dto.modelId,
-      specs: dto.specs ?? {},
-      customerName: dto.name.trim(),
-      customerPhone: dto.phone.trim(),
-      note: dto.note?.trim(),
+      specs,
+      customerName: name,
+      customerPhone: phone,
+      note,
     });
 
-    const alertText = storefrontOrderPlaced({
-      storeName: targetStore.name,
-      customerName: dto.name.trim(),
-      customerPhone: dto.phone.trim(),
-      productName: `${model.brand} ${model.name}`,
-      specs: dto.specs,
-      note: dto.note?.trim(),
-    });
-    await this.telegram.send(alertText, dto.storeId);
+    await this.telegram.send(
+      storefrontOrderPlaced({
+        storeName: targetStore.name,
+        customerName: name,
+        customerPhone: phone,
+        productName: `${model.brand} ${model.name}`,
+        specs,
+        note,
+      }),
+      dto.storeId,
+    );
 
     return order;
   }
 
-  private async validateOrderTarget(dto: CreateStorefrontOrderDto): Promise<{
+  private async validateOrderTarget(
+    dto: CreateStorefrontOrderDto,
+    settings: StorefrontSettingsView,
+  ): Promise<{
     targetStore: { id: string; name: string };
     model: PublicModelRow;
   }> {
@@ -230,12 +254,15 @@ export class StorefrontService {
     if (!targetStore) {
       throw new BadRequestException({
         code: 'STORE_NOT_ACTIVE',
-        message: 'The selected store is not active or does not exist',
+        message: 'Store not active',
       });
     }
 
     const model = await this.repo.findModelById(dto.modelId);
-    if (!model) {
+    const isHidden =
+      settings.categoryIds.length > 0 &&
+      (!model?.categoryId || !settings.categoryIds.includes(model.categoryId));
+    if (!model || isHidden) {
       throw new NotFoundException({
         code: 'MODEL_NOT_FOUND',
         message: 'Product not found',
@@ -246,12 +273,12 @@ export class StorefrontService {
       dto.modelId,
       dto.storeId,
       model.kindCode,
-      dto.specs,
+      dto.specs ? { ...dto.specs } : undefined,
     );
     if (inStock <= 0) {
       throw new BadRequestException({
         code: 'OUT_OF_STOCK',
-        message: 'This product is not in stock in the selected store',
+        message: 'Out of stock',
       });
     }
 

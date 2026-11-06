@@ -10,13 +10,33 @@ import type {
   StorefrontVariant,
   StorefrontVariantStore,
 } from '../types/storefront.types.js';
+import {
+  resolveMinUnitPrice,
+  resolveProductPrice,
+  type PricesBatchMap,
+} from './product-pricing.js';
+
+export type UnitPricesBatchMap = PricesBatchMap;
+export type ProductPricesBatchMap = PricesBatchMap;
+
+export function groupUnitsByModel(
+  units: PublicUnitRow[],
+): Map<string, PublicUnitRow[]> {
+  const map = new Map<string, PublicUnitRow[]>();
+  for (const u of units) {
+    const list = map.get(u.modelId);
+    if (list) list.push(u);
+    else map.set(u.modelId, [u]);
+  }
+  return map;
+}
 
 export async function buildUnitProductCards(
   models: PublicModelRow[],
   unitsByModel: Map<string, PublicUnitRow[]>,
   storeMap: Map<string, string>,
   showPrices: boolean,
-  pricing: PricingService,
+  pricing: PricingService | UnitPricesBatchMap,
 ): Promise<StorefrontProductCard[]> {
   const cards: StorefrontProductCard[] = [];
 
@@ -25,10 +45,8 @@ export async function buildUnitProductCards(
     if (mUnits.length === 0) continue;
 
     const storeCounts = new Map<string, number>();
-    for (const u of mUnits) {
+    for (const u of mUnits)
       storeCounts.set(u.storeId, (storeCounts.get(u.storeId) ?? 0) + 1);
-    }
-
     const availableStores = Array.from(storeCounts.entries())
       .filter(([, count]) => count > 0)
       .map(([id]) => ({ id, name: storeMap.get(id) ?? id }));
@@ -59,7 +77,7 @@ export async function buildQuantityProductCards(
   quantityMap: Map<string, Map<string, number>>,
   storeMap: Map<string, string>,
   showPrices: boolean,
-  pricing: PricingService,
+  pricing: PricingService | ProductPricesBatchMap,
 ): Promise<StorefrontProductCard[]> {
   const cards: StorefrontProductCard[] = [];
 
@@ -70,21 +88,15 @@ export async function buildQuantityProductCards(
     let totalStock = 0;
     const availableStores: { id: string; name: string }[] = [];
     for (const [sId, qty] of mStock.entries()) {
-      if (qty > 0) {
-        totalStock += qty;
-        availableStores.push({ id: sId, name: storeMap.get(sId) ?? sId });
-      }
+      if (qty <= 0) continue;
+      totalStock += qty;
+      availableStores.push({ id: sId, name: storeMap.get(sId) ?? sId });
     }
     if (totalStock <= 0) continue;
 
     let priceFrom: string | null = null;
     if (showPrices) {
-      const resolved = await pricing.listPriceForProduct('RETAIL', {
-        modelId: m.id,
-        storage: '',
-        salePrice: m.salePrice,
-      });
-      priceFrom = resolved ? resolved.toFixed(2) : null;
+      priceFrom = await resolveProductPrice(m, pricing);
     }
 
     cards.push({
@@ -115,24 +127,19 @@ function groupUnitsByVariant(
   const groups = new Map<string, VariantGroup>();
 
   for (const u of units) {
-    const specsObj =
+    const s =
       u.specs && typeof u.specs === 'object' && !Array.isArray(u.specs)
         ? (u.specs as Record<string, unknown>)
         : {};
-    const storage =
-      typeof specsObj.storage === 'string' ? specsObj.storage : '';
-    const color = typeof specsObj.color === 'string' ? specsObj.color : '';
+    const storage = typeof s.storage === 'string' ? s.storage : '';
+    const color = typeof s.color === 'string' ? s.color : '';
     const key = `${storage}|${color}`;
 
     if (!groups.has(key)) {
-      const cleanSpecs: Record<string, unknown> = {};
+      const cleanSpecs: Record<string, string> = {};
       if (storage) cleanSpecs.storage = storage;
       if (color) cleanSpecs.color = color;
-      groups.set(key, {
-        specs: cleanSpecs,
-        units: [],
-        storeCounts: new Map(),
-      });
+      groups.set(key, { specs: cleanSpecs, units: [], storeCounts: new Map() });
     }
     const grp = groups.get(key)!;
     grp.units.push(u);
@@ -147,7 +154,7 @@ export async function buildUnitProductDetail(
   units: PublicUnitRow[],
   storeMap: Map<string, string>,
   showPrices: boolean,
-  pricing: PricingService,
+  pricing: PricingService | UnitPricesBatchMap,
 ): Promise<StorefrontProductDetail> {
   const variantGroups = groupUnitsByVariant(units);
   const variants: StorefrontVariant[] = [];
@@ -157,10 +164,9 @@ export async function buildUnitProductDetail(
   for (const grp of variantGroups.values()) {
     const vStores: StorefrontVariantStore[] = [];
     for (const [sId, cnt] of grp.storeCounts.entries()) {
-      if (cnt > 0) {
-        vStores.push({ id: sId, name: storeMap.get(sId) ?? sId, count: cnt });
-        allStoreCounts.set(sId, (allStoreCounts.get(sId) ?? 0) + cnt);
-      }
+      if (cnt <= 0) continue;
+      vStores.push({ id: sId, name: storeMap.get(sId) ?? sId, count: cnt });
+      allStoreCounts.set(sId, (allStoreCounts.get(sId) ?? 0) + cnt);
     }
 
     let price: string | null = null;
@@ -203,7 +209,7 @@ export async function buildQuantityProductDetail(
   mStock: Map<string, number> | undefined,
   storeMap: Map<string, string>,
   showPrices: boolean,
-  pricing: PricingService,
+  pricing: PricingService | ProductPricesBatchMap,
 ): Promise<StorefrontProductDetail> {
   let totalStock = 0;
   const vStores: StorefrontVariantStore[] = [];
@@ -211,23 +217,17 @@ export async function buildQuantityProductDetail(
 
   if (mStock) {
     for (const [sId, qty] of mStock.entries()) {
-      if (qty > 0) {
-        totalStock += qty;
-        const name = storeMap.get(sId) ?? sId;
-        vStores.push({ id: sId, name, count: qty });
-        cardStores.push({ id: sId, name });
-      }
+      if (qty <= 0) continue;
+      totalStock += qty;
+      const name = storeMap.get(sId) ?? sId;
+      vStores.push({ id: sId, name, count: qty });
+      cardStores.push({ id: sId, name });
     }
   }
 
   let price: string | null = null;
   if (showPrices) {
-    const resolved = await pricing.listPriceForProduct('RETAIL', {
-      modelId: model.id,
-      storage: '',
-      salePrice: model.salePrice,
-    });
-    price = resolved ? resolved.toFixed(2) : null;
+    price = await resolveProductPrice(model, pricing);
   }
 
   const variant: StorefrontVariant = {
@@ -249,33 +249,4 @@ export async function buildQuantityProductDetail(
     stores: cardStores,
     variants: [variant],
   };
-}
-
-async function resolveMinUnitPrice(
-  model: PublicModelRow,
-  units: PublicUnitRow[],
-  pricing: PricingService,
-): Promise<string | null> {
-  let min: number | null = null;
-  for (const u of units) {
-    const rawStorage =
-      u.specs && typeof u.specs === 'object' && !Array.isArray(u.specs)
-        ? (u.specs as Record<string, unknown>).storage
-        : undefined;
-    const storage = typeof rawStorage === 'string' ? rawStorage : '';
-
-    const price = await pricing.listPriceForUnit('RETAIL', {
-      deviceId: u.id,
-      modelId: model.id,
-      storage,
-      targetPrice: u.targetPrice,
-      salePrice: null,
-    });
-
-    if (price !== null) {
-      const val = Number(price);
-      if (min === null || val < min) min = val;
-    }
-  }
-  return min !== null ? min.toFixed(2) : null;
 }

@@ -127,6 +127,7 @@ export class StorefrontRepository {
     allowedCategoryIds?: string[],
     categoryId?: string,
     search?: string,
+    pagination?: { page?: number; pageSize?: number },
   ): Promise<PublicModelRow[]> {
     const where: Prisma.DeviceModelWhereInput = { isActive: true };
 
@@ -145,6 +146,11 @@ export class StorefrontRepository {
       ];
     }
 
+    const page = pagination?.page ?? 1;
+    const pageSize = pagination?.pageSize;
+    const skip = pageSize ? (page - 1) * pageSize : undefined;
+    const take = pageSize;
+
     return this.prisma.deviceModel.findMany({
       where,
       select: {
@@ -158,6 +164,8 @@ export class StorefrontRepository {
         salePrice: true,
       },
       orderBy: [{ brand: 'asc' }, { name: 'asc' }],
+      skip,
+      take,
     });
   }
 
@@ -239,18 +247,28 @@ export class StorefrontRepository {
       return agg._sum.quantity ?? 0;
     }
 
-    const where: Prisma.DeviceWhereInput = {
-      modelId,
-      storeId,
-      statusCode: 'IN_STOCK',
-    };
+    const conditions: Prisma.DeviceWhereInput[] = [
+      { modelId, storeId, statusCode: 'IN_STOCK' },
+    ];
     if (specs?.storage) {
-      where.specs = {
-        path: ['storage'],
-        equals: specs.storage,
-      };
+      conditions.push({
+        specs: {
+          path: ['storage'],
+          equals: specs.storage,
+        },
+      });
     }
-    return this.prisma.device.count({ where });
+    if (specs?.color) {
+      conditions.push({
+        specs: {
+          path: ['color'],
+          equals: specs.color,
+        },
+      });
+    }
+    return this.prisma.device.count({
+      where: conditions.length === 1 ? conditions[0] : { AND: conditions },
+    });
   }
 
   async createOrder(input: CreateOrderInput): Promise<{ id: string }> {

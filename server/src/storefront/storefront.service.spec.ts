@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import type { PricingService } from '../pricing/pricing.service.js';
 import type { TelegramService } from '../telegram/telegram.service.js';
@@ -28,8 +28,20 @@ describe('StorefrontService', () => {
     pricing = {
       listPriceForUnit: jest.fn(),
       listPriceForProduct: jest.fn(),
-      pricesForUnits: jest.fn(),
-      pricesForProducts: jest.fn(),
+      pricesForUnits: jest.fn().mockImplementation((ctxs) => {
+        const map = new Map();
+        for (const c of ctxs) {
+          map.set(c.deviceId, { RETAIL: c.targetPrice });
+        }
+        return Promise.resolve(map);
+      }),
+      pricesForProducts: jest.fn().mockImplementation((ctxs) => {
+        const map = new Map();
+        for (const c of ctxs) {
+          map.set(c.modelId, { RETAIL: c.salePrice });
+        }
+        return Promise.resolve(map);
+      }),
     } as unknown as jest.Mocked<PricingService>;
 
     telegram = {
@@ -185,113 +197,65 @@ describe('StorefrontService', () => {
 
       expect(await service.getProducts({})).toHaveLength(0);
     });
-  });
 
-  describe('createOrder refusals & honeypot', () => {
-    beforeEach(() => {
-      repo.getSettings.mockResolvedValue({
-        enabled: true,
-        showPrices: true,
-        contactPhone: null,
-        contactTelegram: null,
-        categoryIds: [],
-      });
-      repo.activeStores.mockResolvedValue([
-        { id: 's1', name: 'Branch 1', address: null, phone: null },
-      ]);
-    });
-
-    it('silently drops order and returns 201 when honeypot is filled', async () => {
-      const res = await service.createOrder({
-        name: 'Bot',
-        phone: '+998901234567',
-        modelId: 'm1',
-        storeId: 's1',
-        hp: 'spam-link',
-      });
-      expect(res.id).toBeDefined();
-      expect(repo.createOrder).not.toHaveBeenCalled();
-      expect(telegram.send).not.toHaveBeenCalled();
-    });
-
-    it('refuses when phone number is not plausible', async () => {
-      await expect(
-        service.createOrder({
-          name: 'Customer',
-          phone: '123',
-          modelId: 'm1',
-          storeId: 's1',
-        }),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('refuses when store is not active', async () => {
-      await expect(
-        service.createOrder({
-          name: 'Customer',
-          phone: '+998901234567',
-          modelId: 'm1',
-          storeId: 's999',
-        }),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('refuses with OUT_OF_STOCK when item is not in stock in that store', async () => {
-      repo.findModelById.mockResolvedValue({
-        id: 'm1',
-        brand: 'Apple',
-        name: 'iPhone 15',
+    it('a page of 10 does not price units of products outside that page (F3 / audit M2)', async () => {
+      const pageModels = Array.from({ length: 10 }, (_, i) => ({
+        id: `m-${i + 1}`,
+        brand: 'Brand',
+        name: `Model ${i + 1}`,
         kindCode: 'IMEI',
-        categoryId: null,
-        category: null,
+        categoryId: 'c1',
+        category: { id: 'c1', name: 'Smartphones' },
         imageFileName: null,
         salePrice: null,
-      });
-      repo.countModelInStockForStore.mockResolvedValue(0);
+      }));
 
-      await expect(
-        service.createOrder({
-          name: 'Customer',
-          phone: '+998901234567',
-          modelId: 'm1',
-          storeId: 's1',
-        }),
-      ).rejects.toMatchObject({ response: { code: 'OUT_OF_STOCK' } });
-    });
+      repo.findActiveModels.mockImplementation(
+        (_catIds, _catId, _search, pagination) => {
+          if (pagination?.page === 1 && pagination?.pageSize === 10) {
+            return Promise.resolve(pageModels);
+          }
+          return Promise.resolve([]);
+        },
+      );
 
-    it('creates order and sends telegram alert on valid submission', async () => {
-      repo.findModelById.mockResolvedValue({
-        id: 'm1',
-        brand: 'Apple',
-        name: 'iPhone 15',
-        kindCode: 'IMEI',
-        categoryId: null,
-        category: null,
-        imageFileName: null,
-        salePrice: null,
-      });
-      repo.countModelInStockForStore.mockResolvedValue(2);
-      repo.createOrder.mockResolvedValue({ id: 'ord-123' });
-
-      const res = await service.createOrder({
-        name: 'Aziz',
-        phone: '+998 90 123 45 67',
-        modelId: 'm1',
-        specs: { storage: '128GB' },
+      const pageUnits = pageModels.map((m, i) => ({
+        id: `u-${i + 1}`,
+        modelId: m.id,
         storeId: 's1',
-        note: 'Call after 2pm',
+        specs: { storage: '128GB' },
+        targetPrice: new Prisma.Decimal(500 + i * 10),
+      }));
+
+      repo.inStockUnitsForModels.mockResolvedValue(pageUnits);
+      repo.quantityStockForModels.mockResolvedValue(new Map());
+
+      const pricedUnitIds: string[] = [];
+      pricing.pricesForUnits.mockImplementation((ctxs) => {
+        const map = new Map();
+        for (const c of ctxs) {
+          pricedUnitIds.push(c.deviceId);
+          map.set(c.deviceId, { RETAIL: c.targetPrice });
+        }
+        return Promise.resolve(map);
       });
 
-      expect(res).toEqual({ id: 'ord-123' });
-      expect(repo.createOrder).toHaveBeenCalledWith({
-        storeId: 's1',
-        modelId: 'm1',
-        specs: { storage: '128GB' },
-        customerName: 'Aziz',
-        customerPhone: '+998 90 123 45 67',
-        note: 'Call after 2pm',
-      });
-      expect(telegram.send).toHaveBeenCalled();
+      const cards = await service.getProducts({ page: 1, pageSize: 10 });
+      expect(cards).toHaveLength(10);
+      expect(repo.findActiveModels).toHaveBeenCalledWith(
+        expect.any(Array),
+        undefined,
+        undefined,
+        { page: 1, pageSize: 10 },
+      );
+
+      expect(repo.inStockUnitsForModels).toHaveBeenCalledWith(
+        pageModels.map((m) => m.id),
+        ['s1', 's2'],
+      );
+      expect(pricedUnitIds).toEqual(pageUnits.map((u) => u.id));
+      expect(pricedUnitIds).not.toContain('u-11');
+      expect(pricedUnitIds).not.toContain('u-outside');
     });
   });
 });

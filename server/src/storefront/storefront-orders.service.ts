@@ -15,10 +15,53 @@ interface ProfileHolder {
   profile?: { firstName: string | null; lastName: string | null } | null;
 }
 
+type OrderDetailRecord = NonNullable<
+  Awaited<ReturnType<StorefrontOrdersRepository['findOrderById']>>
+>;
+
 function fullName(user?: ProfileHolder | null): string | null {
   if (!user?.profile) return null;
   const parts = [user.profile.firstName, user.profile.lastName].filter(Boolean);
   return parts.length > 0 ? parts.join(' ') : null;
+}
+
+function toStorefrontOrderDetail(
+  order: OrderDetailRecord,
+): StorefrontOrderDetail {
+  return {
+    id: order.id,
+    storeId: order.storeId,
+    storeName: order.store.name,
+    modelId: order.modelId,
+    brand: order.model.brand,
+    productName: order.model.name,
+    modelName: order.model.name,
+    specs:
+      order.specs &&
+      typeof order.specs === 'object' &&
+      !Array.isArray(order.specs)
+        ? order.specs
+        : {},
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    note: order.note,
+    statusCode: order.statusCode,
+    statusLabel: order.status.label,
+    handledAt: order.handledAt,
+    handledByName: fullName(order.handledBy),
+    saleId: order.saleId,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+    history: order.statusHistory.map((h) => ({
+      id: h.id,
+      fromStatusCode: h.fromStatusCode,
+      toStatusCode: h.toStatusCode,
+      toStatusLabel: h.toStatus.label,
+      changedAt: h.changedAt,
+      changedByName: fullName(h.changedBy),
+      note: h.note,
+    })),
+  };
 }
 
 function assertValidTransition(
@@ -69,6 +112,7 @@ export class StorefrontOrdersService {
       modelId: row.modelId,
       brand: row.model.brand,
       productName: row.model.name,
+      modelName: row.model.name,
       specs:
         row.specs && typeof row.specs === 'object' && !Array.isArray(row.specs)
           ? (row.specs as Record<string, unknown>)
@@ -99,39 +143,7 @@ export class StorefrontOrdersService {
       throw new NotFoundException(`Order ${id} not found in this store`);
     }
 
-    return {
-      id: order.id,
-      storeId: order.storeId,
-      storeName: order.store.name,
-      modelId: order.modelId,
-      brand: order.model.brand,
-      productName: order.model.name,
-      specs:
-        order.specs &&
-        typeof order.specs === 'object' &&
-        !Array.isArray(order.specs)
-          ? order.specs
-          : {},
-      customerName: order.customerName,
-      customerPhone: order.customerPhone,
-      note: order.note,
-      statusCode: order.statusCode,
-      statusLabel: order.status.label,
-      handledAt: order.handledAt,
-      handledByName: fullName(order.handledBy),
-      saleId: order.saleId,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      history: order.statusHistory.map((h) => ({
-        id: h.id,
-        fromStatusCode: h.fromStatusCode,
-        toStatusCode: h.toStatusCode,
-        toStatusLabel: h.toStatus.label,
-        changedAt: h.changedAt,
-        changedByName: fullName(h.changedBy),
-        note: h.note,
-      })),
-    };
+    return toStorefrontOrderDetail(order);
   }
 
   async updateStatus(
@@ -166,38 +178,6 @@ export class StorefrontOrdersService {
       dto.saleId,
     );
 
-    return {
-      id: updated.id,
-      storeId: updated.storeId,
-      storeName: updated.store.name,
-      modelId: updated.modelId,
-      brand: updated.model.brand,
-      productName: updated.model.name,
-      specs:
-        updated.specs &&
-        typeof updated.specs === 'object' &&
-        !Array.isArray(updated.specs)
-          ? updated.specs
-          : {},
-      customerName: updated.customerName,
-      customerPhone: updated.customerPhone,
-      note: updated.note,
-      statusCode: updated.statusCode,
-      statusLabel: updated.status.label,
-      handledAt: updated.handledAt,
-      handledByName: fullName(updated.handledBy),
-      saleId: updated.saleId,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
-      history: updated.statusHistory.map((h) => ({
-        id: h.id,
-        fromStatusCode: h.fromStatusCode,
-        toStatusCode: h.toStatusCode,
-        toStatusLabel: h.toStatus.label,
-        changedAt: h.changedAt,
-        changedByName: fullName(h.changedBy),
-        note: h.note,
-      })),
-    };
+    return toStorefrontOrderDetail(updated);
   }
 }

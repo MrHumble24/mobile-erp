@@ -3,8 +3,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types';
-import { AppModule } from '../app.module.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { AppModule } from '../src/app.module.js';
+import { PrismaService } from '../src/prisma/prisma.service.js';
 
 const FORBIDDEN_KEY_REGEX =
   /imei|serial|cost|supplier|grade|landed|acquisition|password|email|permission/i;
@@ -44,9 +44,10 @@ function assertNoLeaks(value: unknown, path = '$') {
   }
 }
 
-describe('Storefront Public Routes Leak Test', () => {
+describe('Storefront Public Routes Leak Test (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
+  const createdOrderIds: string[] = [];
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -65,7 +66,6 @@ describe('Storefront Public Routes Leak Test', () => {
 
     prisma = app.get(PrismaService);
 
-    // Turn storefront on for testing
     await prisma.storefrontSettings.upsert({
       where: { id: 1 },
       create: { id: 1, enabled: true, showPrices: true },
@@ -74,7 +74,18 @@ describe('Storefront Public Routes Leak Test', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    try {
+      if (createdOrderIds.length > 0) {
+        await prisma.storefrontOrder.deleteMany({
+          where: { id: { in: createdOrderIds } },
+        });
+      }
+      await prisma.storefrontOrder.deleteMany({
+        where: { customerName: 'Leak Test Customer' },
+      });
+    } finally {
+      await app.close();
+    }
   });
 
   it('GET /storefront/config contains no sensitive fields or 15-digit numbers', async () => {
@@ -94,42 +105,39 @@ describe('Storefront Public Routes Leak Test', () => {
   });
 
   it('GET /storefront/products/:modelId and POST /storefront/orders contain no sensitive data', async () => {
-    // Check if there is an in-stock product from /storefront/products
     const prodRes = await request(app.getHttpServer()).get(
       '/storefront/products',
     );
     const products = prodRes.body;
 
-    if (Array.isArray(products) && products.length > 0) {
-      const first = products[0];
-      const detailRes = await request(app.getHttpServer())
-        .get(`/storefront/products/${first.modelId}`)
-        .expect(200);
+    expect(Array.isArray(products)).toBe(true);
+    expect(products.length).toBeGreaterThan(0);
 
-      assertNoLeaks(detailRes.body, 'productDetail');
+    const first = products[0];
+    const detailRes = await request(app.getHttpServer())
+      .get(`/storefront/products/${first.modelId}`)
+      .expect(200);
 
-      const storeId = first.stores?.[0]?.id;
-      if (storeId) {
-        const orderRes = await request(app.getHttpServer())
-          .post('/storefront/orders')
-          .send({
-            name: 'Leak Test Customer',
-            phone: '+998901234567',
-            modelId: first.modelId,
-            storeId,
-            note: 'Testing security leak invariants',
-          });
+    assertNoLeaks(detailRes.body, 'productDetail');
 
-        if (orderRes.status !== 201) {
-          console.error(
-            'Order creation failed:',
-            orderRes.status,
-            orderRes.body,
-          );
-        }
-        expect(orderRes.status).toBe(201);
-        assertNoLeaks(orderRes.body, 'orderResult');
-      }
+    const storeId = first.stores?.[0]?.id;
+    expect(storeId).toBeDefined();
+
+    const orderRes = await request(app.getHttpServer())
+      .post('/storefront/orders')
+      .send({
+        name: 'Leak Test Customer',
+        phone: '+998901234567',
+        modelId: first.modelId,
+        storeId,
+        note: 'Testing security leak invariants',
+      })
+      .expect(201);
+
+    const body = orderRes.body as { id?: string };
+    if (typeof body?.id === 'string') {
+      createdOrderIds.push(body.id);
     }
+    assertNoLeaks(orderRes.body, 'orderResult');
   });
 });

@@ -66,6 +66,7 @@ export interface StorefrontOrderListItem {
   modelId: string;
   brand: string;
   productName: string;
+  modelName: string;
   specs: Record<string, unknown>;
   customerName: string;
   customerPhone: string;

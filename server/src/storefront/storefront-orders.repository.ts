@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -93,14 +93,31 @@ export class StorefrontOrdersRepository {
     saleId?: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
-      const order = await tx.storefrontOrder.update({
-        where: { id },
+      const updateRes = await tx.storefrontOrder.updateMany({
+        where: { id, storeId },
         data: {
           statusCode: toStatusCode,
           handledById: userId,
           handledAt: new Date(),
           ...(saleId ? { saleId } : {}),
         },
+      });
+
+      if (updateRes.count === 0) {
+        throw new NotFoundException(`Order ${id} not found in this store`);
+      }
+
+      await tx.storefrontOrderStatusHistory.create({
+        data: {
+          orderId: id,
+          fromStatusCode,
+          toStatusCode,
+          changedById: userId,
+        },
+      });
+
+      return tx.storefrontOrder.findFirstOrThrow({
+        where: { id, storeId },
         include: {
           store: { select: { name: true } },
           model: { select: { brand: true, name: true } },
@@ -115,17 +132,6 @@ export class StorefrontOrdersRepository {
           },
         },
       });
-
-      await tx.storefrontOrderStatusHistory.create({
-        data: {
-          orderId: id,
-          fromStatusCode,
-          toStatusCode,
-          changedById: userId,
-        },
-      });
-
-      return order;
     });
   }
 }

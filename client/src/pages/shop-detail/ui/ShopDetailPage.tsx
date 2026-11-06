@@ -148,7 +148,11 @@ export function ShopDetailPage() {
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {variants.map((v, idx) => {
-                      const specSummary = Object.values(v.specs).filter(Boolean).join(" • ") || `Variant ${idx + 1}`
+                      const specValues = Object.values(v.specs).filter(Boolean)
+                      const specSummary =
+                        specValues.length > 0
+                          ? specValues.join(" • ")
+                          : product.name || t("storefront.standardVariant") || "Standard"
                       const isSelected = idx === selectedVariantIndex
                       return (
                         <Button

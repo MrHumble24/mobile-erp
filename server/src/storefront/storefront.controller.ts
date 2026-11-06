@@ -25,6 +25,7 @@ import type {
 } from './types/storefront.types.js';
 
 @Controller('storefront')
+@Throttle({ default: { limit: 120, ttl: 60000 } })
 export class StorefrontController {
   constructor(private readonly storefront: StorefrontService) {}
 

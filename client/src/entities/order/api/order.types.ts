@@ -16,6 +16,7 @@ export interface StorefrontOrderView {
   storeName: string
   modelId: string
   modelName: string
+  productName?: string
   brand: string
   specs: Record<string, string> | null
   customerName: string

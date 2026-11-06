@@ -31,5 +31,6 @@
   "contactPhone": "Phone",
   "storage": "Storage",
   "color": "Color",
-  "submitting": "Submitting..."
+  "submitting": "Submitting...",
+  "standardVariant": "Standard"
 }

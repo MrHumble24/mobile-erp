@@ -69,7 +69,7 @@ export function OrdersTable({
                       <span className="font-semibold text-muted-foreground uppercase text-[10px] mr-1">
                         {order.brand}
                       </span>
-                      {order.modelName}
+                      {order.modelName || order.productName}
                     </div>
                     {specsSummary && (
                       <div className="text-[11px] text-muted-foreground">

@@ -76,7 +76,7 @@ export function OrderDetailSheet({
                   {order.brand}
                 </span>
                 <div className="font-display font-bold text-lg text-foreground">
-                  {order.modelName}
+                  {order.modelName || order.productName}
                 </div>
               </div>
               {order.specs && Object.keys(order.specs).length > 0 && (
