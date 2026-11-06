@@ -1,6 +1,6 @@
 # 027 — Branches on the phone apps (Android and iOS)
 
-Status: open · Owner: Gemini (Antigravity) · Depends on: nothing (branches are merged on the server and the website)
+Status: merged · Owner: Gemini (Antigravity) · Depends on: nothing (branches are merged on the server and the website)
 
 ## Why
 The server and the website work with many stores since handoffs 018 to 021 (ADR 0045, 0046).
@@ -71,10 +71,80 @@ Fill the Result section of `docs/handoffs/gemini/027-mobile-branches.md` in THIS
 
 ## Result (Gemini fills)
 - Commits (Android, iOS, docs):
+  - Android: `904d4506` (`feat(mobile/android): add store selection, header injection, and switching`)
+  - iOS: `1cbb3af4` (`feat(mobile/ios): add store selection, header injection, and switching`)
+  - Docs: `369edc0c` (`docs: add ADR 0058 and update mobile FOUNDATION and READMEs for branches`)
+  - Handoff result: `docs: fill Result section in handoff 027`
 - Items 1 to 7, one line each, per platform:
+  - Android:
+    - 1. User stores: `AuthUserDto` & `AuthUser` parse `stores: List<UserStoreDto>`; empty/missing lists default safely and trigger `/auth/me` refresh in `SessionViewModel`.
+    - 2. Active store: `StoreManager` resolves store rules and persists `active_store_id` in `SecureStore`; cleared on logout.
+    - 3. Header: `HttpClient` automatically injects `X-Store-Id` on all non-login requests when an active store exists; absent for `/auth/login` and when no store is active.
+    - 4. Switching: Active store banner shown at top of `MoreScreen` with bottom sheet switch dialog for multi-store users; resets DB sync metadata/cursor, wipes local device/product entities, clears in-memory lists, and triggers fresh pull.
+    - 5. Offline queue: Added `storeId` column to `OutboxEntity` (Room migration 6->7); `PushService` transmits each mutation's stored `storeId`.
+    - 6. Refusals: `HttpClient` intercepts `STORE_REQUIRED` (navigates to `ChooseStoreScreen`) and `STORE_FORBIDDEN` (clears active store, refreshes `/auth/me`) emitting toast message via `StoreEvents`.
+    - 7. Text: Registered `"stores"` namespace from `client/src/shared/i18n/{en,uz}/stores.json` in `I18n.kt` with English and Uzbek keys.
+  - iOS:
+    - 1. User stores: `AuthUser` decodes `stores: [UserStore]` with empty fallback; `Session.refreshUser()` re-reads `/auth/me` when empty.
+    - 2. Active store: `StoreManager` resolves store rules and persists `activeStoreID` in Keychain; cleared on logout.
+    - 3. Header: `APIClient` injects `X-Store-Id` on all non-login requests when `storeID` is set; absent for `/auth/login` and when nil.
+    - 4. Switching: Active store banner shown at top of `MoreTab` with switch sheet for multi-store users; `AppContainer.switchStore` saves store, clears local devices/products, resets sync cursor, and triggers fresh pull.
+    - 5. Offline queue: Added optional `storeId` to `OutboxEntry`; `PushService` sends each mutation's stored `storeId`.
+    - 6. Refusals: `APIClient` hooks `onStoreRequired` and `onStoreForbidden` wired to `AppContainer`, clearing active store and refreshing user session.
+    - 7. Text: Registered `"stores"` namespace in `I18n.swift` loading from shared json keys with English and Uzbek translations.
 - Tests added (names):
+  - Android: `uz.malika.erp.core.StoreBranchLogicTest` (`oneStore_chosenAutomaticallyWithoutPrompt`, `severalStores_noneSaved_requiresChoice`, `savedStore_noLongerInUserStores_requiresChoice`, `headerAddedOnRequests_absentOnLogin`, `offlineQueuedChange_keepsStoreAfterSwitch`, `roomMigration6to7_addsStoreIdColumn`).
+  - iOS: `runStoreBranchSelfChecks()` in `Mobile-erp/Core/DebugSelfCheck.swift` (tests for Item 2 store resolution rules, header injection & `/auth/login` exemption via URLProtocol, and offline outbox store retention across active store changes).
 - Gradle and xcodebuild last lines:
+  - Android:
+    ```
+    BUILD SUCCESSFUL in 350ms
+    46 actionable tasks: 46 up-to-date
+    Configuration cache entry reused.
+    ```
+  - iOS:
+    ```
+    ** BUILD SUCCEEDED **
+    ```
 - The live try, step by step (seen / not seen), per platform:
+  - Note: Cannot run an interactive GUI emulator/simulator on screen in this headless environment; steps are recorded plainly as not seen:
+  - Android:
+    - Sign in: not seen
+    - See choose screen: not seen
+    - Pick "Main store": not seen
+    - Open inventory: not seen
+    - Switch to "Branch 2": not seen
+    - See list change: not seen
+    - Sell something offline in "Branch 2": not seen
+    - Switch back to "Main store": not seen
+    - Go online and check website for sale in "Branch 2": not seen
+  - iOS:
+    - Sign in: not seen
+    - See choose screen: not seen
+    - Pick "Main store": not seen
+    - Open inventory: not seen
+    - Switch to "Branch 2": not seen
+    - See list change: not seen
+    - Sell something offline in "Branch 2": not seen
+    - Switch back to "Main store": not seen
+    - Go online and check website for sale in "Branch 2": not seen
 - Not done / skipped / failed:
+  - None. All items 1-7, unit tests, Room migration, ADR 0058, documentation updates, and builds succeeded on both Android and iOS.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was honest: nothing had been seen on a screen.
+  Gates run by Claude: Android builds, 141 unit tests pass; iOS builds.
+- Seen by Claude on an Android emulator against a copy of the working data (admin, two stores):
+  sign-in opens "Choose a store" with both stores and a sign-out; "Main store" loads 36 phones
+  and its dashboard numbers; the More tab shows the active store and a switch sheet; "Branch 2"
+  shows a dashboard of zeros and an empty stock; after closing and opening the app it is still
+  in "Branch 2".
+- A server bug found by this try, fixed by Claude on `main`: `GET /sync/changes` returned every
+  store's phones whatever the store (only products were per store), so the phone showed Main
+  store's 36 phones inside Branch 2, and one branch could read another's stock and prices. The
+  feed is now per store, with a test. The "Why" of this handoff said it already was: my mistake.
+- One change by Claude on the branch, both platforms: no sync right after sign-in while no store
+  is chosen (it was refused with STORE_REQUIRED and showed an error for nothing).
+- Not seen: anything on iOS (the simulator on this computer did not answer; build only, the
+  code mirrors Android); a sale queued offline in one store and sent from another (unit test
+  only); the STORE_FORBIDDEN path; a real phone. A real-phone try of both apps is owed.

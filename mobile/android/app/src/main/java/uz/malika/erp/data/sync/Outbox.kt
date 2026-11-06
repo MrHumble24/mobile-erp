@@ -23,10 +23,16 @@ object OutboxType {
  */
 class OutboxApi(
     private val db: AppDatabase,
+    private val activeStoreProvider: () -> String? = { null },
     private val trigger: suspend () -> Unit = {},
 ) {
     /** Queue an offline write. Returns the mutation id (also the client UUID). */
-    suspend fun enqueue(type: String, payload: JsonElement, baseVersion: Int? = null): String {
+    suspend fun enqueue(
+        type: String,
+        payload: JsonElement,
+        baseVersion: Int? = null,
+        storeId: String? = activeStoreProvider(),
+    ): String {
         require(type in OutboxType.allowed) { "Outbox type not allowed offline: $type" }
         val id = newUuidV4()
         db.outboxDao().insert(
@@ -36,9 +42,10 @@ class OutboxApi(
                 payload = payload.toString(),
                 baseVersion = baseVersion,
                 createdAt = nowIso(),
+                storeId = storeId,
             ),
         )
-        AppLog.i("outbox", "enqueued $type ($id)")
+        AppLog.i("outbox", "enqueued $type ($id) in store $storeId")
         trigger()
         return id
     }

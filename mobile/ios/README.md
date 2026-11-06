@@ -118,6 +118,7 @@ tokens and kit, never raw hex, `.secondary`/`.primary`, or stock control styles.
 Adopted so far on the **Kassa (POS)** and **Dashboard** screens; the other
 feature screens inherit the tokens automatically and get the full kit in a
 later pass.
+- **Branches & store switching**: `MoreTab` displays the active store banner at the top; multi-store users can switch branches with cache reset and repull (ADR 0058).
 
 ## Screenshots
 DEBUG builds accept `-open <tab>` to land directly on a tab for captures

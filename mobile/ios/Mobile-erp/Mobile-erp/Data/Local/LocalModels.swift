@@ -135,10 +135,12 @@ final class OutboxEntry {
     var status: String
     var lastError: String?
     var createdAt: Date
+    var storeId: String?
 
     init(id: String, type: String, payloadJSON: String, baseVersion: Int?,
          occurredAt: String, status: String = "pending",
-         lastError: String? = nil, createdAt: Date = Date()) {
+         lastError: String? = nil, createdAt: Date = Date(),
+         storeId: String? = nil) {
         self.id = id
         self.type = type
         self.payloadJSON = payloadJSON
@@ -147,6 +149,7 @@ final class OutboxEntry {
         self.status = status
         self.lastError = lastError
         self.createdAt = createdAt
+        self.storeId = storeId
     }
 }
 

@@ -40,10 +40,17 @@ function build(callerPerms: string[]) {
     caller,
     list,
     productsForFeed,
+    repo,
   };
 }
 
 describe('SyncChangesService partner exposure', () => {
+  it("reads only the active store's units", async () => {
+    const { service, caller, repo } = build([]);
+    await service.changes(caller, {});
+    expect(repo.devicesSince).toHaveBeenCalledWith(expect.any(Date), 'store-1');
+  });
+
   it('omits partners for a caller lacking partner.read', async () => {
     const { service, caller, list } = build(['device.read']);
     const out = await service.changes(caller, {});

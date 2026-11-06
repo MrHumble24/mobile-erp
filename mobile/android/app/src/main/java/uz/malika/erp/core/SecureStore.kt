@@ -34,6 +34,7 @@ class SecureStore(context: Context) {
     object Keys {
         const val TOKEN = "auth_token"
         const val USER = "auth_user"
+        const val ACTIVE_STORE_ID = "active_store_id"
         const val TERMINAL_ID = "terminal_id"
         const val DEV_ENV = "dev_env"
         const val DEV_OVERRIDE_PROD = "dev_override_prod"

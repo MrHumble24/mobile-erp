@@ -29,6 +29,7 @@ struct PushService {
                 "occurredAt": m.occurredAt,
             ]
             if let base = m.baseVersion { row["baseVersion"] = base }
+            if let storeId = m.storeId { row["storeId"] = storeId }
             return row
         }
 

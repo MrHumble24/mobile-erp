@@ -25,12 +25,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import uz.malika.erp.shared.ui.rememberReduceMotion
 import uz.malika.erp.AppContainer
+import uz.malika.erp.core.StoreManager
 import uz.malika.erp.features.auth.model.SessionViewModel
 import uz.malika.erp.features.auth.ui.LoginScreen
 import uz.malika.erp.features.devconsole.DEV_CONSOLE_ROUTE
 import uz.malika.erp.features.devconsole.DevAccess
 import uz.malika.erp.features.devconsole.devConsoleNavItem
 import uz.malika.erp.features.devconsole.ui.DevConsoleScreen
+import uz.malika.erp.features.stores.ui.ChooseStoreScreen
 
 /**
  * Top-level navigation. Signed out → login (+ the public dev panel). Signed in
@@ -42,11 +44,31 @@ import uz.malika.erp.features.devconsole.ui.DevConsoleScreen
 fun AppNavHost(container: AppContainer, session: SessionViewModel, openRoute: String? = null) {
     val state by session.state.collectAsState()
     val online by container.connectivity.online.collectAsState()
+    val activeStoreId by container.storeManager.activeStoreId.collectAsState()
 
-    if (state.user == null) {
+    val user = state.user
+    if (user == null) {
         UnauthedNav(container, session, online)
     } else {
-        AuthedShell(container, session, online, openRoute)
+        val resolved = StoreManager.resolveActiveStore(user.stores, activeStoreId)
+        if (resolved == null) {
+            ChooseStoreScreen(
+                stores = user.stores,
+                onChoose = { store ->
+                    container.storeSwitcher.switchStore(store.id)
+                },
+                onLogout = session::logout,
+            )
+        } else {
+            if (activeStoreId != resolved) {
+                LaunchedEffect(resolved) {
+                    container.storeManager.setActiveStoreId(resolved)
+                }
+            }
+            androidx.compose.runtime.key(resolved) {
+                AuthedShell(container, session, online, openRoute, resolved)
+            }
+        }
     }
 }
 
@@ -101,11 +123,15 @@ private fun AuthedShell(
     session: SessionViewModel,
     online: Boolean,
     openRoute: String? = null,
+    activeStoreId: String,
 ) {
     val user = session.state.value.user ?: return
     val nav = rememberNavController()
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
+
+    val activeStore = user.stores.find { it.id == activeStoreId }
+    val activeStoreName = activeStore?.name ?: ""
 
     // Debug launch extra `open`: navigate to the requested feature route once, after
     // sign-in puts us in the shell. A bad/forbidden route is ignored (PermissionGate
@@ -162,7 +188,17 @@ private fun AuthedShell(
                 popExitTransition = { navExit(shift, reduce) },
             ) {
                 FeatureRegistry.features.forEach { it.register(this, nav, container) }
-                composable(MORE_ROUTE) { MoreScreen(items = overflow, onSelect = select) }
+                composable(MORE_ROUTE) {
+                    MoreScreen(
+                        items = overflow,
+                        activeStoreName = activeStoreName,
+                        stores = user.stores,
+                        onSwitchStore = { newStoreId ->
+                            container.storeSwitcher.switchStore(newStoreId)
+                        },
+                        onSelect = select,
+                    )
+                }
             }
         }
     }
