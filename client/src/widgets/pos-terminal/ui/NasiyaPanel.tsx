@@ -19,7 +19,7 @@ export interface NasiyaPanelProps {
 function LastConsignmentSummary({ consignment }: { consignment: ConsignmentView }) {
   const { t } = useI18n()
   return (
-    <Card className="border-emerald-300 bg-emerald-50/60">
+    <Card className="border-emerald-300 bg-emerald-500/10">
       <CardContent className="p-4 space-y-1 text-sm">
         <p className="font-semibold text-emerald-700">{t("consignments.consignSuccess")}</p>
         <p className="font-mono text-xs text-muted-foreground">{unitCode(consignment)}</p>

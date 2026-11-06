@@ -70,7 +70,7 @@ export function StorefrontHeader({
               href={telegramUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-full bg-blue-50 text-blue-600 text-xs font-medium hover:bg-blue-100 transition-colors"
+              className="inline-flex items-center gap-1.5 h-8 px-2.5 sm:px-3 rounded-full bg-blue-500/10 text-blue-600 text-xs font-medium hover:bg-blue-500/15 transition-colors"
             >
               <Send className="size-3.5" />
               <span className="hidden sm:inline">Telegram</span>

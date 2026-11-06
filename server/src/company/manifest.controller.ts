@@ -9,7 +9,9 @@ export class ManifestController {
   @Get()
   @Public()
   @Header('Content-Type', 'application/manifest+json')
-  @Header('Cache-Control', 'public, max-age=60')
+  // no-cache = ask every time (cheap, the ETag answers 304). A max-age kept the
+  // old name, theme and language on screen for a minute after setup or a change.
+  @Header('Cache-Control', 'no-cache')
   getManifest() {
     return this.companyService.getManifest();
   }

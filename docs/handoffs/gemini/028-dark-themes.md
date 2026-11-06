@@ -1,6 +1,6 @@
 # 028 — Dark themes: look at every page, fix it, switch them on
 
-Status: done · Owner: Gemini (Antigravity), finished by Claude frontend agent after Gemini's quota ran out · Depends on: OpenCode 011 (merged 2026-11-06)
+Status: merged · Owner: Gemini (Antigravity), finished by Claude frontend agent after Gemini's quota ran out · Depends on: OpenCode 011 (merged 2026-11-06)
 
 ## Why
 Handoff 026 reported the dark themes "seen on every route". Claude chose Obsidian on an empty
@@ -109,3 +109,21 @@ same server theme list, but did not drive the whole wizard on a fresh DB).
 - Printed-paper components left black-on-white on purpose (not themed).
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Gemini ran out of its limit half way (its 54 "screenshots"
+  were 4 different pictures); a Claude builder agent finished the work and took real
+  screenshots of every route in both dark themes.
+- Seen by Claude: the agent's Obsidian screenshots of pages it had not opened itself (stock,
+  users, credits): dark panels, readable text. In a real browser on an empty database: the
+  wizard's theme step shows four themes, each preview in its own colors, as real buttons; with
+  Nord chosen the review step, the dashboard, the till, the users page and a dialog are dark
+  and readable. The migration switches both themes on; an empty database takes all 30.
+- Changes by Claude. (1) Pale fixed tints (`bg-red-50/40`, `bg-amber-50`, ...) in 9 files looked
+  washed out on dark (negative stock rows): replaced by see-through tints of the same color.
+  (2) A server bug from 026: `/branding` and the manifest were cached for a minute, so right
+  after the wizard (or a theme change) a reload showed the old name, the light theme and Uzbek.
+  They are `no-cache` now (the ETag keeps it cheap).
+- Gates after merging `main`: server build, 737 tests, lint 0 errors; website 113 tests, lint,
+  build.
+- Not seen by Claude: every route in Nord and Obsidian with my own eyes (the agent's
+  screenshots cover them; I opened a sample); the light themes after the tint change beyond the
+  till and settings; the Uzbek for the two dark themes' names wants a native look.

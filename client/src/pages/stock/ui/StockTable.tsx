@@ -39,7 +39,7 @@ function StockRow({ product, canViewCost, canAdjust, onMovements, onAdjust }: {
 }) {
   const { t } = useI18n()
   return (
-    <TableRow className={cn(product.quantity < 0 && "bg-red-50/40")}>
+    <TableRow className={cn(product.quantity < 0 && "bg-destructive/10")}>
       <TableCell>
         <div className="text-sm font-semibold">{product.brand} {product.name}</div>
         <div className="font-mono text-xs text-muted-foreground">

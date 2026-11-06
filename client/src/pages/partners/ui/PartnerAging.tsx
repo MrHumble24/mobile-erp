@@ -8,7 +8,7 @@ function BucketCell({ bucket }: { bucket: AgingBucket }) {
   return (
     <div
       className={`rounded-[12px] border p-2.5 text-center ${
-        isOverdue ? "border-amber-300 bg-amber-50/60" : "border-border bg-muted"
+        isOverdue ? "border-amber-300 bg-amber-500/10" : "border-border bg-muted"
       }`}
     >
       <div className="text-[11px] text-muted-foreground">{t(`partners.aging_${bucket.bucket}`)}</div>
