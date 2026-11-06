@@ -5,9 +5,9 @@ on the current page (ADR 0043).
 
 ## Owns
 
-- `PriceTagsDialog` — tick the rows to print (all ticked at first), select all /
-  clear, a live count, an on-screen preview and a **Print** button that calls
-  `window.print()`.
+- `PriceTagsDialog` — tick the rows to print (the page's `preselected` rows at
+  first), select all / clear, a live count, an on-screen preview and a **Print**
+  button that calls `window.print()`.
 - `PriceTagSheet` — what is actually printed: only the ticked items, three tags
   across, in the `.printable-tags` container (A4, named page `price-tags`).
 - `PriceTag` — one label: title, optional subtitle, price via `formatMoney`,
@@ -15,7 +15,7 @@ on the current page (ADR 0043).
 
 ## Public API (`index.ts`)
 
-- Type `PriceTagItem` — `{ id, title, subtitle, price, code }`.
+- Type `PriceTagItem` — `{ id, title, subtitle, price, code, preselected }`.
 - `PriceTagsAction` — `{ items }`; renders the button and dialog only while
   `priceTagsEnabled`.
 - `PriceTagsDialog` — `{ items, open, onOpenChange }`.

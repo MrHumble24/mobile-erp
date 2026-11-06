@@ -30,8 +30,21 @@ test("a product with a barcode and a sale price becomes a tag with no subtitle",
       subtitle: null,
       price: "999",
       code: "4780000000001",
+      preselected: true,
     },
   ])
+})
+
+test("a product with stock is preselected", () => {
+  const tags = productsToPriceTags([product({ quantity: 3 })])
+
+  assert.equal(tags[0].preselected, true)
+})
+
+test("a product with zero stock is not preselected", () => {
+  const tags = productsToPriceTags([product({ quantity: 0 })])
+
+  assert.equal(tags[0].preselected, false)
 })
 
 test("a product without a barcode gets no code", () => {

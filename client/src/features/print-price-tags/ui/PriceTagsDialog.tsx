@@ -21,7 +21,7 @@ interface PriceTagsDialogProps {
 
 function useTagSelection(items: PriceTagItem[]) {
   const [selected, setSelected] = React.useState<ReadonlySet<string>>(
-    () => new Set(items.map((item) => item.id))
+    () => new Set(items.filter((item) => item.preselected).map((item) => item.id))
   )
 
   const toggle = (id: string) => {
