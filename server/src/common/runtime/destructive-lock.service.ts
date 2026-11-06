@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-export type DestructiveOp = 'wipe' | 'restore';
+export type DestructiveOp = 'wipe' | 'restore' | 'reset';
 
 /**
  * One process-wide latch for "a destructive whole-database operation is

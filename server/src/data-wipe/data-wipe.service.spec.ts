@@ -1,6 +1,10 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
-import { DataWipeService, type WipeRequest } from './data-wipe.service.js';
+import {
+  DataWipeService,
+  type ResetRequest,
+  type WipeRequest,
+} from './data-wipe.service.js';
 import {
   DATA_WIPE_CONFIRM_FAILED,
   DATA_WIPE_NO_PASSPHRASE,
@@ -40,6 +44,13 @@ function make(
           })
         : Promise.resolve({ sales: 1 }),
     ),
+    performReset: jest.fn().mockImplementation(() =>
+      over.performHangs
+        ? new Promise<Record<string, number>>((r) => {
+            releasePerform = () => r({});
+          })
+        : Promise.resolve({ users: 1 }),
+    ),
   };
   const backups = {
     isRunning: jest.fn().mockReturnValue(over.backupRunning ?? false),
@@ -68,6 +79,7 @@ function make(
   const images = { remove: jest.fn().mockResolvedValue(undefined) };
   const telegram = { send: jest.fn().mockResolvedValue(undefined) };
   const lock = over.lock ?? new DestructiveLockService();
+  const setup = { prepareSetupAfterReset: jest.fn().mockReturnValue('CODE') };
   const svc = new DataWipeService(
     repo as never,
     runner as never,
@@ -78,6 +90,7 @@ function make(
     images as never,
     telegram as never,
     lock,
+    setup as never,
   );
   return {
     svc,
@@ -87,6 +100,7 @@ function make(
     images,
     telegram,
     lock,
+    setup,
     release: () => releasePerform?.(),
   };
 }
@@ -98,6 +112,15 @@ const req = (over: Partial<WipeRequest> = {}): WipeRequest => ({
   password: 'pw',
   contacts: false,
   catalog: false,
+  ...over,
+});
+
+const resetReq = (over: Partial<ResetRequest> = {}): ResetRequest => ({
+  performedById: 'u1',
+  email: 'owner@x',
+  shopName: 'Malika Bazaar',
+  password: 'pw',
+  sentence: 'erase everything',
   ...over,
 });
 
@@ -164,7 +187,7 @@ describe('DataWipeService order of work', () => {
       response: { code: DATA_WIPE_RUNNING },
     });
     expect(backups.startBackup).not.toHaveBeenCalled();
-    expect(lock.heldBy()).toBe('restore'); // the refused erase did not release it
+    expect(lock.heldBy()).toBe('restore');
   });
 
   it('refuses a second erase while one is running (409)', async () => {
@@ -184,7 +207,74 @@ describe('DataWipeService order of work', () => {
       catalog: true,
     } as never);
     await expect(svc.wipe(req({ catalog: true }))).resolves.toBeUndefined();
-    expect(images.remove).toHaveBeenCalledWith('pic.jpg'); // cleanup still ran
-    expect(telegram.send).toHaveBeenCalled(); // notice still sent
+    expect(images.remove).toHaveBeenCalledWith('pic.jpg');
+    expect(telegram.send).toHaveBeenCalled();
+  });
+});
+
+describe('DataWipeService factory reset refusals and execution', () => {
+  it('refuses factory reset with wrong shop name (403)', async () => {
+    const { svc } = make({ storeName: 'Malika Bazaar' });
+    await expect(
+      svc.reset(resetReq({ shopName: 'Other' })),
+    ).rejects.toMatchObject({
+      response: { code: DATA_WIPE_CONFIRM_FAILED },
+    });
+  });
+
+  it('refuses factory reset with wrong password (403)', async () => {
+    const { svc } = make({ passwordOk: false });
+    await expect(svc.reset(resetReq())).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+  });
+
+  it('refuses factory reset with missing or wrong sentence (400)', async () => {
+    const { svc } = make();
+    await expect(
+      svc.reset(resetReq({ sentence: 'not the right phrase' })),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('refuses factory reset when no backup passphrase is set (400)', async () => {
+    const { svc } = make({ passphraseStatus: 'missing' });
+    await expect(svc.reset(resetReq())).rejects.toMatchObject({
+      response: { code: DATA_WIPE_NO_PASSPHRASE },
+    });
+  });
+
+  it('refuses factory reset while a backup is running (409)', async () => {
+    const { svc } = make({ backupRunning: true });
+    await expect(svc.reset(resetReq())).rejects.toMatchObject({
+      response: { code: DATA_WIPE_RUNNING },
+    });
+  });
+
+  it('refuses factory reset while an erase holds the latch (409)', async () => {
+    const lock = new DestructiveLockService();
+    lock.tryAcquire('wipe');
+    const { svc } = make({ lock });
+    await expect(svc.reset(resetReq())).rejects.toMatchObject({
+      response: { code: DATA_WIPE_RUNNING },
+    });
+    expect(lock.heldBy()).toBe('wipe');
+  });
+
+  it('refuses two resets at once: one wins, one 409', async () => {
+    const { svc, release } = make({ performHangs: true });
+    const first = svc.reset(resetReq());
+    await new Promise((r) => setImmediate(r));
+    await expect(svc.reset(resetReq())).rejects.toMatchObject({
+      response: { code: DATA_WIPE_RUNNING },
+    });
+    release();
+    await first;
+  });
+
+  it('successful reset executes performReset and prepares setup code', async () => {
+    const { svc, runner, setup } = make();
+    await expect(svc.reset(resetReq())).resolves.toBeUndefined();
+    expect(runner.performReset).toHaveBeenCalled();
+    expect(setup.prepareSetupAfterReset).toHaveBeenCalled();
   });
 });

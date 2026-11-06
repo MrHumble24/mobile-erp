@@ -40,3 +40,20 @@ export interface WipeRunView {
   status: string;
   error: string | null;
 }
+
+export interface WipeRequest {
+  performedById: string;
+  email: string;
+  shopName: string;
+  password: string;
+  contacts: boolean;
+  catalog: boolean;
+}
+
+export interface ResetRequest {
+  performedById: string;
+  email: string;
+  shopName: string;
+  password: string;
+  sentence: string;
+}

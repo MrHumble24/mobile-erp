@@ -8,13 +8,16 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AccessService } from '../../access/access.service.js';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator.js';
-import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator.js';
+import {
+  PERMISSIONS_ANY_KEY,
+  PERMISSIONS_KEY,
+} from '../decorators/require-permissions.decorator.js';
 import { AuthenticatedUser } from '../types/authenticated-user.js';
 
 /**
  * Loads the user's effective permission set fresh on every request (so revokes
  * take effect immediately), attaches it to the request, and enforces any
- * `@RequirePermissions(...)` codes. Never checks a role name.
+ * `@RequirePermissions(...)` or `@RequireAnyPermissions(...)` codes. Never checks a role name.
  */
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -45,11 +48,25 @@ export class PermissionsGuard implements CanActivate {
         ctx.getHandler(),
         ctx.getClass(),
       ]) ?? [];
-    if (required.length === 0) return true;
-
-    if (!required.every((code) => user.permissions.has(code))) {
+    if (
+      required.length > 0 &&
+      !required.every((c) => user.permissions.has(c))
+    ) {
       throw new ForbiddenException('Insufficient permissions');
     }
+
+    const requiredAny =
+      this.reflector.getAllAndOverride<string[]>(PERMISSIONS_ANY_KEY, [
+        ctx.getHandler(),
+        ctx.getClass(),
+      ]) ?? [];
+    if (
+      requiredAny.length > 0 &&
+      !requiredAny.some((c) => user.permissions.has(c))
+    ) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
     return true;
   }
 }

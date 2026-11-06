@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Loader2, AlertTriangle, LogIn } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useMaintenanceStore } from "@/shared/lib/maintenance.store"
@@ -9,11 +10,11 @@ import { useCartStore } from "@/features/checkout"
 import { Button } from "@/shared/ui/button"
 
 /**
- * While the server restores a backup OR erases the shop's data, the whole site
- * shows this one screen instead of error toasts (any 503 `MAINTENANCE` turns it
- * on). It polls the matching status and, when the operation is over, sends the
- * user to sign in again — both operations end every session. After an erase it
- * also clears what this device keeps for the shop (cart, offline caches, queue).
+ * While the server restores a backup, erases shop data, OR performs a factory reset,
+ * the whole site shows this one screen instead of error toasts (any 503 `MAINTENANCE`
+ * turns it on). It polls the matching status and, when the operation is over:
+ * - for restore or wipe: sends the user to /login
+ * - for reset: lands on the first-boot setup wizard /setup
  */
 export function RestoreOverlay() {
   const { t } = useI18n()
@@ -22,32 +23,27 @@ export function RestoreOverlay() {
   const clearSession = useAuthStore((s) => s.clearSession)
   const clearCart = useCartStore((s) => s.clear)
   const isWipe = mode === "wipe"
+  const isReset = mode === "reset"
+  const isWipeOrReset = isWipe || isReset
 
   const restore = useRestoreStatus({
-    enabled: active && !isWipe,
-    refetchInterval: active && !isWipe ? 2500 : undefined,
+    enabled: active && !isWipeOrReset,
+    refetchInterval: active && !isWipeOrReset ? 2500 : undefined,
   })
   const wipe = useWipeStatus({
-    enabled: active && isWipe,
-    refetchInterval: active && isWipe ? 2500 : undefined,
+    enabled: active && isWipeOrReset,
+    refetchInterval: active && isWipeOrReset ? 2500 : undefined,
   })
 
-  if (!active) return null
-
-  const isError = isWipe ? wipe.isError : restore.isError
-  const inProgress = isWipe
+  const isError = isWipeOrReset ? wipe.isError : restore.isError
+  const inProgress = isWipeOrReset
     ? wipe.data?.wiping
     : restore.data?.restoring
   // The status route 401s once sessions end — that too means "it is over".
   const finished = isError || inProgress === false
-  const needsManual = (isWipe ? wipe.data : restore.data)?.needsManualRecovery === true
+  const needsManual = (isWipeOrReset ? wipe.data : restore.data)?.needsManualRecovery === true
 
-  const signIn = () => {
-    // Both an erase and a restore replace the shop's data, so whatever this
-    // device still holds for the old shop is stale: clear the cart, the offline
-    // caches and the sync queue before signing in again. (The server also
-    // refuses queued mutations older than the reset, so a till that only saw a
-    // 503 cannot replay into the clean shop either — M1.)
+  const cleanupLocalData = () => {
     try {
       clearCart()
     } catch {
@@ -55,13 +51,49 @@ export function RestoreOverlay() {
     }
     void clearOfflineData()
     clearSession()
+  }
+
+  const signIn = () => {
+    cleanupLocalData()
     window.location.assign("/login")
   }
 
-  const busyTitle = isWipe ? "backups.overlayWipingTitle" : "backups.overlayRestoringTitle"
-  const busyBody = isWipe ? "backups.overlayWipingBody" : "backups.overlayRestoringBody"
-  const doneTitle = isWipe ? "backups.overlayWipeDoneTitle" : "backups.overlayDoneTitle"
-  const doneBody = isWipe ? "backups.overlayWipeDoneBody" : "backups.overlayDoneBody"
+  const goToSetup = () => {
+    cleanupLocalData()
+    window.location.assign("/setup")
+  }
+
+  useEffect(() => {
+    if (active && isReset && finished && !needsManual) {
+      const timer = setTimeout(() => {
+        goToSetup()
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [active, isReset, finished, needsManual])
+
+  if (!active) return null
+
+  const busyTitle = isReset
+    ? "backups.overlayResettingTitle"
+    : isWipe
+      ? "backups.overlayWipingTitle"
+      : "backups.overlayRestoringTitle"
+  const busyBody = isReset
+    ? "backups.overlayResettingBody"
+    : isWipe
+      ? "backups.overlayWipingBody"
+      : "backups.overlayRestoringBody"
+  const doneTitle = isReset
+    ? "backups.overlayResetDoneTitle"
+    : isWipe
+      ? "backups.overlayWipeDoneTitle"
+      : "backups.overlayDoneTitle"
+  const doneBody = isReset
+    ? "backups.overlayResetDoneBody"
+    : isWipe
+      ? "backups.overlayWipeDoneBody"
+      : "backups.overlayDoneBody"
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/95 backdrop-blur-sm p-6">
@@ -87,9 +119,15 @@ export function RestoreOverlay() {
             <LogIn className="size-10 mx-auto text-emerald-600" />
             <h2 className="text-lg font-bold">{t(doneTitle)}</h2>
             <p className="text-sm text-muted-foreground">{t(doneBody)}</p>
-            <Button type="button" onClick={signIn} className="h-9 rounded-full px-5 text-xs font-semibold">
-              {t("backups.overlaySignIn")}
-            </Button>
+            {isReset ? (
+              <Button type="button" onClick={goToSetup} className="h-9 rounded-full px-5 text-xs font-semibold">
+                {t("backups.overlayGoToSetup")}
+              </Button>
+            ) : (
+              <Button type="button" onClick={signIn} className="h-9 rounded-full px-5 text-xs font-semibold">
+                {t("backups.overlaySignIn")}
+              </Button>
+            )}
           </>
         )}
       </div>

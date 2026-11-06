@@ -47,6 +47,15 @@ export class LocalStorage implements BackupStorage {
     return Promise.resolve(createReadStream(refPath(ref.ref)));
   }
 
+  async exists(ref: RemoteRef): Promise<boolean> {
+    try {
+      await fsp.access(refPath(ref.ref));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async remove(ref: RemoteRef): Promise<void> {
     await fsp.rm(refPath(ref.ref), { force: true });
   }

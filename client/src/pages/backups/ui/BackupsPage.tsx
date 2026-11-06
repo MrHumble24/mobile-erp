@@ -40,6 +40,7 @@ export function BackupsPage() {
   const canManage = useAuthStore((s) => s.hasPermission("backup.manage"))
   const canRestore = useAuthStore((s) => s.hasPermission("backup.restore"))
   const canWipe = useAuthStore((s) => s.hasPermission("data.wipe"))
+  const canReset = useAuthStore((s) => s.hasPermission("data.reset"))
   const { data: settings, isLoading } = useBackupSettings()
   useOauthReturn()
 
@@ -62,7 +63,7 @@ export function BackupsPage() {
 
           {canRestore && <UploadRestoreCard />}
 
-          {canWipe && <DangerZoneCard />}
+          {(canWipe || canReset) && <DangerZoneCard />}
         </>
       )}
     </div>

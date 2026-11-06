@@ -139,9 +139,10 @@ export class BackupsService {
   }
 
   private toRunView(run: NonNullable<RunWithTargets>): BackupRunView {
-    const downloadable = run.targets.some(
-      (t) => t.statusCode === 'UPLOADED' && this.canDownload(t.providerCode),
-    );
+    const downloadable =
+      run.targets.some(
+        (t) => t.statusCode === 'UPLOADED' && this.canDownload(t.providerCode),
+      ) || Boolean(run.fileName && this.canDownload('LOCAL'));
     const partlyFailed =
       run.statusCode === 'SUCCESS' &&
       run.targets.some((t) => t.statusCode === 'FAILED');
@@ -201,7 +202,19 @@ export class BackupsService {
         this.registry.has(t.providerCode) &&
         this.registry.get(t.providerCode).capabilities.download,
     );
-    const target = usable.find((t) => t.providerCode === 'LOCAL') ?? usable[0];
+    let target: { providerCode: string; remoteRef: string | null } | undefined =
+      usable.find((t) => t.providerCode === 'LOCAL') ?? usable[0];
+    if (!target && run.fileName && this.registry.has('LOCAL')) {
+      const localAdapter = this.registry.get('LOCAL') as {
+        exists?: (ref: { ref: string }) => Promise<boolean>;
+      };
+      if (
+        typeof localAdapter.exists === 'function' &&
+        (await localAdapter.exists({ ref: run.fileName }))
+      ) {
+        target = { providerCode: 'LOCAL', remoteRef: run.fileName };
+      }
+    }
     if (!target?.remoteRef || !run.fileName) {
       throw new NotFoundException({
         code: BACKUP_FILE_MISSING,

@@ -10,13 +10,11 @@ export interface WipePlan extends WipeOptions {
 }
 
 /**
- * The destructive section of a wipe. The erase is one transaction (all-or-
- * nothing: a failure rolls it back, nothing erased), so there is no rollback to
- * a safety backup here — unlike restore. It reuses the restore recovery marker
- * for the maintenance switch: a crash mid-wipe leaves the marker, so the server
- * comes back up locked for a manual check (the data itself is intact, Postgres
- * rolled the transaction back). `finally` guarantees maintenance never stays on
- * within a running process.
+ * The destructive section of a wipe or factory reset. The erase is one
+ * transaction (all-or-nothing: a failure rolls it back, nothing erased).
+ * It reuses the restore recovery marker for the maintenance switch: a crash
+ * leaves the marker so the server comes back up locked for a manual check.
+ * `finally` guarantees maintenance never stays on within a running process.
  */
 @Injectable()
 export class DataWipeRunner {
@@ -40,13 +38,32 @@ export class DataWipeRunner {
         contacts: plan.contacts,
         catalog: plan.catalog,
       });
-      // The data is gone; end every session so each till restarts clean. A
-      // failure here cannot un-erase, so it is logged, never thrown — otherwise
-      // the committed erase would be reported as a failure.
       try {
         await this.sessions.endAllSessions();
       } catch (err) {
         this.logger.error(`endAllSessions after wipe failed: ${String(err)}`);
+      }
+      return counts;
+    } finally {
+      this.recovery.clearRestoreInProgress();
+      this.maintenance.end();
+    }
+  }
+
+  /** Factory reset, then end every session. Returns rows deleted per table. */
+  async performReset(plan: {
+    safetyRunId: string | null;
+  }): Promise<Record<string, number>> {
+    this.recovery.markRestoreInProgress({
+      safetyRunId: plan.safetyRunId ?? undefined,
+    });
+    this.maintenance.begin('data-reset');
+    try {
+      const counts = await this.repo.reset(plan.safetyRunId);
+      try {
+        await this.sessions.endAllSessions();
+      } catch (err) {
+        this.logger.error(`endAllSessions after reset failed: ${String(err)}`);
       }
       return counts;
     } finally {

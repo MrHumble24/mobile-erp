@@ -10,7 +10,7 @@ import { configureHttp } from "@/shared/api/http"
 /** Which destructive operation holds maintenance, so the overlay shows the
  * right wording and polls the matching status. A bystander who only sees a 503
  * keeps the default (restore) — sessions end within seconds either way. */
-export type MaintenanceMode = "restore" | "wipe"
+export type MaintenanceMode = "restore" | "wipe" | "reset"
 
 interface MaintenanceState {
   active: boolean

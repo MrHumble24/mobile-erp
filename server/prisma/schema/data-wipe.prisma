@@ -8,8 +8,9 @@
 // ---------------------------------------------------------------------------
 
 model DataWipeRun {
-  id            String          @id @default(uuid())
-  performedById String
+  id              String          @id @default(uuid())
+  performedById   String
+  performedByName String?
   /// Whether the optional extra groups were included in this erase.
   contacts      Boolean         @default(false)
   catalog       Boolean         @default(false)

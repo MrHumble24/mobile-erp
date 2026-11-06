@@ -41,21 +41,21 @@ export class SetupService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     const userCount = await this.prisma.user.count();
-    if (userCount === 0) {
-      const filePath = this.getSetupCodePath();
-      if (!existsSync(filePath)) {
-        const code = this.generateAndSaveSetupCode();
-        this.logger.warn(
-          `========================================================`,
-        );
-        this.logger.warn(`INITIAL SETUP REQUIRED`);
-        this.logger.warn(`One-time setup code: ${code}`);
-        this.logger.warn(`Open the web console to complete first-boot setup.`);
-        this.logger.warn(
-          `========================================================`,
-        );
-      }
+    if (userCount === 0 && !existsSync(this.getSetupCodePath())) {
+      this.prepareSetupAfterReset();
     }
+  }
+
+  logSetupCode(code: string): void {
+    this.logger.warn(
+      `\n========================================================\nINITIAL SETUP REQUIRED\nOne-time setup code: ${code}\nOpen the web console to complete first-boot setup.\n========================================================`,
+    );
+  }
+
+  prepareSetupAfterReset(): string {
+    const code = this.generateAndSaveSetupCode();
+    this.logSetupCode(code);
+    return code;
   }
 
   getSetupCodePath(): string {
@@ -91,7 +91,11 @@ export class SetupService implements OnApplicationBootstrap {
 
   async getStatus(): Promise<{ needsSetup: boolean }> {
     const count = await this.prisma.user.count();
-    return { needsSetup: count === 0 };
+    const needsSetup = count === 0;
+    if (needsSetup && !existsSync(this.getSetupCodePath())) {
+      this.prepareSetupAfterReset();
+    }
+    return { needsSetup };
   }
 
   private checkRateLimit(): void {
@@ -132,36 +136,29 @@ export class SetupService implements OnApplicationBootstrap {
   }
 
   private async upsertCompanyInTx(tx: PrismaTx, company: CompanySetupDto) {
+    const fields = {
+      name: company.name.trim(),
+      legalName: company.legalName?.trim(),
+      address: company.address?.trim(),
+      phone: company.phone?.trim(),
+      country: company.country || 'UZ',
+      timeZone: company.timeZone || 'Asia/Tashkent',
+      defaultLanguage: company.defaultLanguage || 'uz',
+      currencyCode: company.currencyCode || 'USD',
+      currencySign: company.currencySign || '$',
+      currencySignPosition: company.currencySignPosition || 'before',
+      currencyDecimals: company.currencyDecimals ?? 2,
+    };
     return tx.companyProfile.upsert({
       where: { id: 'default' },
       create: {
+        ...fields,
         id: 'default',
-        name: company.name.trim(),
-        legalName: company.legalName?.trim(),
-        address: company.address?.trim(),
-        phone: company.phone?.trim(),
-        country: company.country || 'UZ',
-        timeZone: company.timeZone || 'Asia/Tashkent',
-        defaultLanguage: company.defaultLanguage || 'uz',
-        currencyCode: company.currencyCode || 'USD',
-        currencySign: company.currencySign || '$',
-        currencySignPosition: company.currencySignPosition || 'before',
-        currencyDecimals: company.currencyDecimals ?? 2,
-        theme: { connect: { code: company.themeCode || 'caldera' } },
         sessionDuration: '12h',
+        theme: { connect: { code: company.themeCode || 'caldera' } },
       },
       update: {
-        name: company.name.trim(),
-        legalName: company.legalName?.trim(),
-        address: company.address?.trim(),
-        phone: company.phone?.trim(),
-        country: company.country || 'UZ',
-        timeZone: company.timeZone || 'Asia/Tashkent',
-        defaultLanguage: company.defaultLanguage || 'uz',
-        currencyCode: company.currencyCode || 'USD',
-        currencySign: company.currencySign || '$',
-        currencySignPosition: company.currencySignPosition || 'before',
-        currencyDecimals: company.currencyDecimals ?? 2,
+        ...fields,
         ...(company.themeCode
           ? { theme: { connect: { code: company.themeCode } } }
           : {}),
@@ -208,25 +205,23 @@ export class SetupService implements OnApplicationBootstrap {
     dto: SetupDto,
   ) {
     const sw = dto.switches || {};
+    const settingsData = {
+      discountsEnabled: sw.discountsEnabled ?? false,
+      customerCreditEnabled: sw.customerCreditEnabled ?? false,
+      shiftsEnabled: sw.shiftsEnabled ?? false,
+      repairsEnabled: sw.repairsEnabled ?? false,
+      bonusEnabled: sw.bonusEnabled ?? false,
+      receiptPrintingEnabled: sw.receiptPrintingEnabled ?? false,
+    };
     await tx.storeSettings.upsert({
       where: { storeId },
       create: {
+        ...settingsData,
         storeId,
-        discountsEnabled: sw.discountsEnabled ?? false,
-        customerCreditEnabled: sw.customerCreditEnabled ?? false,
-        shiftsEnabled: sw.shiftsEnabled ?? false,
-        repairsEnabled: sw.repairsEnabled ?? false,
-        bonusEnabled: sw.bonusEnabled ?? false,
-        receiptPrintingEnabled: sw.receiptPrintingEnabled ?? false,
         telegramChatId: dto.telegram?.chatId?.trim() || null,
       },
       update: {
-        discountsEnabled: sw.discountsEnabled ?? false,
-        customerCreditEnabled: sw.customerCreditEnabled ?? false,
-        shiftsEnabled: sw.shiftsEnabled ?? false,
-        repairsEnabled: sw.repairsEnabled ?? false,
-        bonusEnabled: sw.bonusEnabled ?? false,
-        receiptPrintingEnabled: sw.receiptPrintingEnabled ?? false,
+        ...settingsData,
         ...(dto.telegram?.chatId
           ? { telegramChatId: dto.telegram.chatId.trim() }
           : {}),

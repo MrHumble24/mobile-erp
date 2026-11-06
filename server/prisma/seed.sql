@@ -187,7 +187,8 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('backup.read',          'backup',      'read',      'View backups, places and settings'),
   ('backup.manage',        'backup',      'manage',    'Make, download, delete backups and change settings'),
   ('backup.restore',       'backup',      'restore',   'Restore the whole system from a backup'),
-  ('data.wipe',            'data',        'wipe',      'Erase the shop''s data (danger zone)')
+  ('data.wipe',            'data',        'wipe',      'Erase the shop''s data (danger zone)'),
+  ('data.reset',           'data',        'reset',     'Factory reset: erase everything and return to setup (danger zone)')
 ON CONFLICT (code) DO UPDATE SET description = EXCLUDED.description;
 
 -- Backup lookups (handoff 023). Mirrored in the backups migration.

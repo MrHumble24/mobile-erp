@@ -1,7 +1,6 @@
 # 003 — Factory reset: back to the setup wizard
 
-Status: ready, not started · Owner: not assigned. A strong model only (the `opus48` agent or
-Claude's `fullstack`); not a free model: this erases everything. · Depends on: nothing
+Status: done · Owner: opus48 · Depends on: nothing
 
 Start: `git worktree add .worktrees/factory-reset -b agent/<owner>/factory-reset main`, own
 database (`mobile_erp_reset`), own ports (API 3160, website 5215).
@@ -62,12 +61,31 @@ Commit by path (never `git add -A`, never `.env`). Do not edit `docs/PRD.md`, `d
 === END ===
 
 ## Result (the builder fills)
-- Branch / commits:
-- The table labels: how many erased by a reset, how many never, and any choice not in the Decided table:
+- Branch / commits: `agent/opus48/factory-reset` · commit `714d2efc`
+- The table labels: 56 tables erased by a reset (30 ALWAYS + 3 CONTACTS + 7 CATALOG + 16 RESET_ERASED_KEPT), 25 tables never erased (NEVER_ERASED_TABLES). Total: 81 tables in schema partitioned exhaustively. Singletons (`stores`, `company_profiles`, `storefront_settings`) reset to initial clean first-boot defaults to match empty DB post-migration baseline.
 - Lint, tests, e2e (last lines):
+  - `server pnpm lint`: `✖ 16 problems (0 errors, 16 warnings)`
+  - `server pnpm test`: `Test Suites: 133 passed, 133 total | Tests: 751 passed, 751 total`
+  - `server pnpm test:wipe`: `All data-wipe e2e checks passed.`
+  - `server pnpm test:reset`: `All factory reset e2e checks passed successfully.`
+  - `client pnpm test`: `tests 113 | pass 113 | fail 0`
+  - `client pnpm lint`: `Found 150 warnings and 0 errors.`
+  - `client pnpm build`: `✓ built in 6.33s`
 - Refusals, one line each:
+  - Missing `data.reset` permission: returns 403 Forbidden (tested for regular user and admin without permission).
+  - Wrong shop name: returns 403 Forbidden (`DATA_WIPE_CONFIRM_FAILED`).
+  - Wrong password: returns 403 Forbidden (`DATA_WIPE_CONFIRM_FAILED`).
+  - Missing sentence: returns 400 Bad Request (`DATA_WIPE_CONFIRM_FAILED`, sentence must equal "erase everything").
+  - No backup passphrase set: returns 400 Bad Request (`DATA_WIPE_NO_PASSPHRASE`).
+  - Backup, restore or wipe running: returns 409 Conflict (`DATA_WIPE_RUNNING`).
+  - Two resets at once: first wins (202), second gets 409 Conflict via `DestructiveLockService`.
 - Browser walk-through, "seen" or "not seen" per step:
-- Not done / skipped / failed:
+  - 1. do a factory reset as the owner: seen
+  - 2. read the new setup code from your server's log: seen
+  - 3. finish the wizard: seen
+  - 4. restore the safety backup: seen
+  - 5. sign in as the old owner: seen
+- Not done / skipped / failed: none
 
 ## Check by Claude
 Before merging: the gate; my own reset on a throwaway database with row counts; fail half-way;

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useMaintenanceStore } from "@/shared/lib/maintenance.store"
 import { wipeRepository } from "../api/wipe.repository"
 import { wipeKeys } from "../api/wipe.keys"
-import type { WipeRequestDto } from "./wipe.types"
+import type { ResetRequestDto, WipeRequestDto } from "./wipe.types"
 
 /** Current row counts per group, fetched when the dialog opens. */
 export function useWipePreview(enabled: boolean) {
@@ -46,6 +46,19 @@ export function useWipeShopData() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: wipeKeys.runs() })
       setActive(true, "wipe")
+    },
+  })
+}
+
+/** A started factory reset (202) puts the whole app into the "please wait" screen in "reset" mode. */
+export function useFactoryReset() {
+  const setActive = useMaintenanceStore((s) => s.setActive)
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (dto: ResetRequestDto) => wipeRepository.reset(dto),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: wipeKeys.runs() })
+      setActive(true, "reset")
     },
   })
 }

@@ -39,3 +39,10 @@ export interface WipeRequestDto {
   contacts: boolean
   catalog: boolean
 }
+
+export interface ResetRequestDto {
+  shopName: string
+  password: string
+  sentence: string
+  understood: true
+}
