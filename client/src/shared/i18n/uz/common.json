@@ -37,5 +37,8 @@
   "to": "Gacha",
   "previous": "Oldingi",
   "next": "Keyingi",
-  "created": "Yaratilgan"
+  "created": "Yaratilgan",
+  "loadMore": "Yana yuklash",
+  "clear": "Tozalash",
+  "offline": "Oflayn"
 }
