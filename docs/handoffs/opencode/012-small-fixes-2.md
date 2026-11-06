@@ -1,6 +1,6 @@
 # 012 — Small fixes: the shop's own name everywhere, wizard theme cards, dashboard text
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 Found by Claude while checking the setup wizard and the shop page on 2026-11-06. The app is
@@ -69,3 +69,15 @@ Fill the Result section of `docs/handoffs/opencode/012-small-fixes-2.md`, set St
 - Not done / skipped / failed: no browser was opened, so no screen was seen and visual layout was not verified. The grep found only the three original "Malika Store" occurrences, all removed; no other file needed fixing. New i18n keys are flat (`themePreviewText`, `themeCalderaName`, …) because `translate()` resolves only the first `namespace.key` segment, so the nested example would not resolve. `graphify update .` ran in `client/` and at the repo root.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. The report was accurate. After merging `main`: 113 website
+  tests, lint 0 errors, build pass.
+- Seen in a browser on a copy of the working data, with a test logo uploaded: the public shop
+  page shows the company's name and logo; the sidebar and the settings show the logo; the
+  theme cards in the settings are real buttons (Tab reaches them, Enter chooses, `aria-pressed`
+  follows); the dashboard subtitle comes from the text files.
+- Two changes by Claude. (1) The theme cards had lost their border (the ghost button's
+  `border-none` won): `border-solid` added in both files. (2) An older bug from handoff 026: the
+  logo was shown with a plain `<img src="/uploads/...">`, which points at the website's address,
+  not the server's, so it was a broken picture wherever the two differ (here and on Railway).
+  All four places (sidebar, sign-in, settings, shop header) now use `AssetImage`.
+- Not seen: the wizard's theme step (needs an empty database; same button as the settings).

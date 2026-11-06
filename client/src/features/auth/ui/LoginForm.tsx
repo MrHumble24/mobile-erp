@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
 import { loginSchema, type LoginFormValues } from "../model/login.schema"
 import { useLogin } from "../model/use-login"
+import { AssetImage } from "@/shared/ui"
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -103,7 +104,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <CardHeader className="text-center space-y-2">
         {branding?.logoUrl && (
           <div className="flex justify-center mb-1">
-            <img src={branding.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
+            <AssetImage path={branding.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
           </div>
         )}
         <CardTitle className="text-2xl font-bold tracking-tight">{t("auth.loginTitle")}</CardTitle>

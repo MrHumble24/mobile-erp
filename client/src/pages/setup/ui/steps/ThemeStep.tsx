@@ -41,7 +41,7 @@ export function ThemeStep({ state, update, onNext, onBack }: Props) {
               variant="ghost"
               aria-pressed={isSelected}
               onClick={() => selectTheme(th.code)}
-              className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-[16px] border-2 bg-card p-6 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
+              className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-[16px] border-2 border-solid bg-card p-6 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
                 isSelected ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
               }`}
             >

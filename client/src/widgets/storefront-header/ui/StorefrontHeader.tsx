@@ -3,6 +3,7 @@ import { useBranding } from "@/entities/company"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
+import { AssetImage } from "@/shared/ui"
 
 export interface StorefrontHeaderProps {
   contactPhone?: string | null
@@ -35,7 +36,7 @@ export function StorefrontHeader({
           {(shopName || branding?.logoUrl) && (
             <div className="size-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-display font-bold text-sm shrink-0 shadow-xs overflow-hidden">
               {branding?.logoUrl ? (
-                <img src={branding.logoUrl} alt={shopName} className="size-full object-cover" />
+                <AssetImage path={branding.logoUrl} alt={shopName} className="size-full" />
               ) : (
                 shopName.charAt(0).toUpperCase()
               )}

@@ -47,7 +47,7 @@ export function CompanyThemesCard({
                 aria-pressed={isSelected}
                 disabled={disabled}
                 onClick={() => handleSelectTheme(th.code)}
-                className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-xl border-2 bg-card p-3 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-xl border-2 border-solid bg-card p-3 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
                   isSelected ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
                 }`}
               >
