@@ -11,7 +11,12 @@ import type {
 import { putChunks } from './lib/chunked-upload.js';
 import { refreshAccessToken } from './lib/oauth-client.js';
 import { googleSpec } from './lib/oauth-providers.js';
-import { fetchJson, ProviderError, withRetry } from './lib/provider-http.js';
+import {
+  fetchJson,
+  fetchWithTimeout,
+  ProviderError,
+  withRetry,
+} from './lib/provider-http.js';
 
 const FOLDER_NAME = 'Malika Bazaar Backups';
 const FOLDER_MIME = 'application/vnd.google-apps.folder';
@@ -108,7 +113,7 @@ export class GoogleDriveStorage implements BackupStorage {
 
   async download(ref: RemoteRef, dest: Destination): Promise<Readable> {
     const token = await this.token(dest);
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.api()}/drive/v3/files/${encodeURIComponent(ref.ref)}?alt=media`,
       { headers: this.auth(token) },
     );
@@ -119,12 +124,9 @@ export class GoogleDriveStorage implements BackupStorage {
 
   async remove(ref: RemoteRef, dest: Destination): Promise<void> {
     const token = await this.token(dest);
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${this.api()}/drive/v3/files/${encodeURIComponent(ref.ref)}`,
-      {
-        method: 'DELETE',
-        headers: this.auth(token),
-      },
+      { method: 'DELETE', headers: this.auth(token) },
     );
     if (!res.ok && res.status !== 404)
       throw new ProviderError(`Google Drive delete failed (${res.status})`);
@@ -156,7 +158,7 @@ export class GoogleDriveStorage implements BackupStorage {
     folderId: string,
   ): Promise<string> {
     return withRetry(async () => {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `${this.api()}/upload/drive/v3/files?uploadType=resumable`,
         {
           method: 'POST',
@@ -169,6 +171,13 @@ export class GoogleDriveStorage implements BackupStorage {
         throw new ProviderError(
           `Google Drive upload init failed (${res.status})`,
         );
+      // The session URL comes from Google's Location header and then receives
+      // the bearer token — only send to the configured Google host (fix 5).
+      if (new URL(loc).origin !== new URL(this.api()).origin) {
+        throw new ProviderError(
+          'Google Drive returned an upload URL on an unexpected host',
+        );
+      }
       return loc;
     });
   }

@@ -121,8 +121,8 @@ the server's own public origin (the callback host); in dev it is `http://localho
   = the address from `GET /backups/oauth/ONEDRIVE/redirect-uri`. **Certificates &
   secrets** → new client secret. **API permissions** → Microsoft Graph delegated
   `Files.ReadWrite.AppFolder` + `offline_access`. Put the client id + secret in
-  the app, then **Connect**. (Microsoft rotates refresh tokens; an occasional
-  reconnect may be needed.)
+  the app, then **Connect**. (Microsoft rotates the refresh token on each refresh;
+  the app seals the new one automatically, so OneDrive stays connected.)
 
 ## Run & test
 

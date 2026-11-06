@@ -1,15 +1,30 @@
 import { ProvidersRepository } from './providers.repository.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 
-function repoWith(row: Record<string, unknown> | null) {
-  const update = jest.fn().mockResolvedValue({});
+interface Row {
+  providerCode: string;
+  usedAt: Date | null;
+  expiresAt: Date;
+}
+
+function repoWith(row: (Row & Record<string, unknown>) | null) {
+  // Emulate the conditional updateMany: it claims the row only if it is still
+  // unused, unexpired and this provider's.
+  const updateMany = jest.fn((args: { where: { providerCode: string } }) => {
+    const ok =
+      row !== null &&
+      row.usedAt === null &&
+      row.providerCode === args.where.providerCode &&
+      row.expiresAt.getTime() > Date.now();
+    return Promise.resolve({ count: ok ? 1 : 0 });
+  });
   const prisma = {
     backupOauthState: {
       findUnique: jest.fn().mockResolvedValue(row),
-      update,
+      updateMany,
     },
   } as unknown as PrismaService;
-  return { repo: new ProvidersRepository(prisma), update };
+  return { repo: new ProvidersRepository(prisma), updateMany };
 }
 
 const future = () => new Date(Date.now() + 60_000);
@@ -51,18 +66,22 @@ describe('ProvidersRepository.consumeOauthState', () => {
     expect(await repo.consumeOauthState('s', 'GOOGLE_DRIVE')).toBeNull();
   });
 
-  it('accepts a valid state and marks it used', async () => {
-    const { repo, update } = repoWith({
+  it('accepts a valid state and marks it used atomically', async () => {
+    const { repo, updateMany } = repoWith({
       state: 's',
       providerCode: 'GOOGLE_DRIVE',
       userId: 'u1',
       usedAt: null,
       expiresAt: future(),
     });
-    const row = await repo.consumeOauthState('s', 'GOOGLE_DRIVE');
+    const row = (await repo.consumeOauthState('s', 'GOOGLE_DRIVE')) as {
+      userId: string;
+    } | null;
     expect(row?.userId).toBe('u1');
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { state: 's' } }),
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ state: 's', usedAt: null }),
+      }),
     );
   });
 });
