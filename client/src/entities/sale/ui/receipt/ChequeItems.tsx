@@ -11,9 +11,9 @@ export function ChequeItems({ items, total }: { items: ReceiptItem[]; total: str
       <div className="py-2.5 border-b-2 border-dashed border-black/30 space-y-2">
         {items.map((item, i) => (
           <div key={unitCode(item) || `${item.model}-${i}`} className="space-y-0.5">
-            <div className="flex justify-between font-bold text-[11px]">
-              <span className="line-clamp-1">{item.model}</span>
-              <span className="shrink-0 font-mono">{formatMoney(item.price)}</span>
+            <div className="flex justify-between items-baseline gap-2 min-w-0 font-bold text-[11px]">
+              <span className="line-clamp-1 min-w-0">{item.model}</span>
+              <span className="shrink-0 font-mono whitespace-nowrap tabular-nums">{formatMoney(item.price)}</span>
             </div>
             <div className="text-[9px] text-black/75 flex justify-between">
               <span>{[item.storage, item.color].filter(Boolean).join(" · ")}</span>
@@ -28,9 +28,9 @@ export function ChequeItems({ items, total }: { items: ReceiptItem[]; total: str
           </div>
         ))}
       </div>
-      <div className="py-2.5 border-b-2 border-dashed border-black/30 flex justify-between items-center text-xs font-black">
-        <span className="uppercase tracking-wider">{t("pos.totalDue")}:</span>
-        <span className="font-mono text-base font-bold">{formatMoney(total)}</span>
+      <div className="py-2.5 border-b-2 border-dashed border-black/30 flex justify-between items-baseline gap-2 min-w-0 text-xs font-black">
+        <span className="uppercase tracking-wider shrink-0">{t("pos.totalDue")}:</span>
+        <span className="font-mono text-base font-bold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(total)}</span>
       </div>
     </>
   )

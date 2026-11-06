@@ -16,9 +16,9 @@ function Line({
   className?: string
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-foreground/70">{label}</span>
-      <span className={`font-mono ${strong ? "font-bold" : ""} ${className ?? ""}`}>{value}</span>
+    <div className="flex items-baseline justify-between gap-3 min-w-0">
+      <span className="text-foreground/70 min-w-0 truncate">{label}</span>
+      <span className={`font-mono shrink-0 whitespace-nowrap tabular-nums ${strong ? "font-bold" : ""} ${className ?? ""}`}>{value}</span>
     </div>
   )
 }
@@ -73,10 +73,10 @@ function TypeGroups({ report }: { report: Report }) {
           {group.byAccount.map((a) => (
             <div
               key={a.accountCode}
-              className="flex items-baseline justify-between gap-3 pl-3 text-[11px] text-foreground/55"
+              className="flex items-baseline justify-between gap-3 pl-3 text-[11px] text-foreground/55 min-w-0"
             >
-              <span>{shiftAccountLabel(a.accountCode, t)}</span>
-              <span className="font-mono">{formatMoney(a.total)}</span>
+              <span className="min-w-0 truncate">{shiftAccountLabel(a.accountCode, t)}</span>
+              <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">{formatMoney(a.total)}</span>
             </div>
           ))}
         </div>
@@ -94,9 +94,9 @@ function AccountGroups({ report }: { report: Report }) {
         {t("shifts.byAccount")}
       </p>
       {report.byAccount.map((a) => (
-        <div key={a.accountCode} className="flex items-baseline justify-between gap-2">
-          <span className="text-foreground/70">{shiftAccountLabel(a.accountCode, t)}</span>
-          <span className="font-mono text-[11px]">
+        <div key={a.accountCode} className="flex items-baseline justify-between gap-2 min-w-0">
+          <span className="text-foreground/70 min-w-0 truncate">{shiftAccountLabel(a.accountCode, t)}</span>
+          <span className="font-mono text-[11px] shrink-0 whitespace-nowrap tabular-nums">
             <span className="text-emerald-600 dark:text-emerald-400">+{formatMoney(a.in)}</span>
             {" / "}
             <span className="text-destructive">-{formatMoney(a.out)}</span>

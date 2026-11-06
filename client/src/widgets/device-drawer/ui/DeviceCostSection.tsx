@@ -19,11 +19,11 @@ function CostRow({
 }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-start justify-between gap-2">
-      <div>
+    <div className="flex items-start justify-between gap-2 min-w-0">
+      <div className="min-w-0">
         <span className="text-muted-foreground text-xs">{label}:</span>
-        <p className="font-medium text-foreground">{value}</p>
-        {note && <p className="text-xs text-muted-foreground italic">{note}</p>}
+        <p className="font-medium text-foreground whitespace-nowrap tabular-nums">{value}</p>
+        {note && <p className="text-xs text-muted-foreground italic break-words">{note}</p>}
       </div>
       {onEdit && (
         <Button variant="ghost" size="icon" className="size-7 shrink-0" onClick={onEdit} title={t("common.edit")}>

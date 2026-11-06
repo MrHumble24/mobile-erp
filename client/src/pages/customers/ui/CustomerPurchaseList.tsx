@@ -21,9 +21,9 @@ function PurchaseItem({
   const code = saleUnitCode(sale)
   return (
     <div className="p-3.5 border border-border rounded-[14px] bg-muted space-y-2 text-sm shadow-[var(--shadow-xs)]">
-      <div className="flex justify-between items-start gap-2">
-        <div className="font-semibold">{saleModelName(sale)}</div>
-        <div className="font-mono font-bold">{formatMoney(sale.salePrice)}</div>
+      <div className="flex justify-between items-start gap-2 min-w-0">
+        <div className="font-semibold min-w-0 truncate">{saleModelName(sale)}</div>
+        <div className="font-mono font-bold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(sale.salePrice)}</div>
       </div>
       <div className="flex justify-between items-center text-xs text-muted-foreground font-mono">
         <span>{code ?? t("catalog.pieces", { count: sale.quantity ?? 0 })}</span>

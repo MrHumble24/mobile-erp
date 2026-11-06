@@ -30,17 +30,19 @@ export function CartBar({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
           aria-label={t("pos.cart")}
         >
           <ShoppingCart className="size-5 shrink-0 text-primary" />
-          <span className="truncate">
-            <span className="text-xs text-muted-foreground">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs text-muted-foreground">
               {t("pos.lineCount", { count: lines.length })}
             </span>
-            <span className="block text-base font-bold">{formatMoney(plan.amountToPay)}</span>
+            <span className="block text-sm sm:text-base font-bold whitespace-nowrap tabular-nums">
+              {formatMoney(plan.amountToPay)}
+            </span>
           </span>
         </Button>
         <Button
           type="button"
           size="lg"
-          className="h-12 gap-2 font-bold"
+          className="h-12 shrink-0 gap-2 font-bold"
           disabled={pos.blocked || pos.isPending}
           onClick={pos.handleCheckout}
         >

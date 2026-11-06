@@ -15,16 +15,16 @@ import { StockLineForm } from "./StockLineForm"
 function StagedRow({ line, onRemove }: { line: StagedLine; onRemove: () => void }) {
   const { t } = useI18n()
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-border py-2 last:border-0">
+    <div className="flex items-center justify-between gap-2 border-b border-border py-2 last:border-0 min-w-0">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{line.name}</p>
-        <p className="text-xs text-muted-foreground">
-          {t("catalog.pieces", { count: line.quantity })} × {formatMoney(line.unitCost)}
+        <p className="text-xs text-muted-foreground truncate">
+          {t("catalog.pieces", { count: line.quantity })} × <span className="whitespace-nowrap tabular-nums">{formatMoney(line.unitCost)}</span>
         </p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <span className="text-sm font-semibold">{formatMoney(line.quantity * line.unitCost)}</span>
-        <Button type="button" variant="ghost" size="icon" className="size-8" aria-label={t("common.delete")} onClick={onRemove}>
+        <span className="text-sm font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(line.quantity * line.unitCost)}</span>
+        <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" aria-label={t("common.delete")} onClick={onRemove}>
           <Trash2 className="size-4" />
         </Button>
       </div>
@@ -93,9 +93,9 @@ export function AddStockDialog({
               ))}
             </div>
           )}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{t("catalog.lineTotal")}</span>
-            <span className="text-lg font-bold">{formatMoney(total)}</span>
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <span className="text-sm text-muted-foreground truncate">{t("catalog.lineTotal")}</span>
+            <span className="text-lg font-bold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(total)}</span>
           </div>
           <Button type="button" className="w-full" disabled={staged.length === 0 || addItems.isPending} onClick={handleSave}>
             {addItems.isPending ? t("common.loading") : t("common.save")}

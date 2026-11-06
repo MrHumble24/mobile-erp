@@ -14,9 +14,9 @@ import { daysOverdue } from "../lib/overdue"
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+    <div className="flex items-center justify-between gap-2 min-w-0 py-1.5 text-sm">
+      <span className="text-muted-foreground min-w-0 truncate">{label}</span>
+      <span className="font-medium shrink-0 whitespace-nowrap tabular-nums">{value}</span>
     </div>
   )
 }

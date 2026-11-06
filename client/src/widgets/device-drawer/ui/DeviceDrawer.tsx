@@ -43,14 +43,14 @@ function MarginCard({ targetPrice, landedCost }: { targetPrice: string | null | 
   const marginPercent = cost > 0 ? (margin / cost) * 100 : 0
   const isPositive = margin >= 0
   return (
-    <div className="flex items-center justify-between p-3 rounded-[12px] bg-card border border-border shadow-[var(--shadow-xs)] text-xs">
-      <div>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 p-3 rounded-[12px] bg-card border border-border shadow-[var(--shadow-xs)] text-xs">
+      <div className="min-w-0">
         <span className="text-muted-foreground">{t("inventory.landedCost")}: </span>
-        <span className="font-semibold text-foreground">{formatMoney(landedCost)}</span>
+        <span className="font-semibold text-foreground whitespace-nowrap tabular-nums">{formatMoney(landedCost)}</span>
       </div>
-      <div>
+      <div className="min-w-0">
         <span className="text-muted-foreground">{t("inventory.margin")}: </span>
-        <span className={`font-bold ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+        <span className={`font-bold whitespace-nowrap tabular-nums ${isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
           {isPositive ? "+" : ""}{formatMoney(margin)} ({marginPercent.toFixed(1)}%)
         </span>
       </div>
@@ -76,9 +76,9 @@ function DeviceSpecsGrid({ device, canViewCost }: { device: DeviceDetailView; ca
         <SpecCell label={t("inventory.color")} value={String(device.specs?.color || "—")} />
         <SpecCell label={t("inventory.condition")} value={String(device.specs?.condition || "—")} />
         <SpecCell label={t("inventory.ram")} value={String(device.specs?.ram || "—")} />
-        <div>
+        <div className="min-w-0">
           <span className="text-muted-foreground text-xs">{t("inventory.targetPrice")}:</span>
-          <p className="font-bold text-foreground">{formatMoney(device.targetPrice)}</p>
+          <p className="font-bold text-foreground whitespace-nowrap tabular-nums">{formatMoney(device.targetPrice)}</p>
         </div>
         <SpecCell label={t("inventory.intakeDate")} value={formatDate(device.intakeDate)} />
       </div>

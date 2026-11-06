@@ -25,20 +25,20 @@ export function CustomerCreditsList({ customerId }: { customerId: string }) {
           type="button"
           variant="outline"
           onClick={() => navigate("/credits")}
-          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal"
+          className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal min-w-0"
         >
-          <span>
-            <span className="block font-mono font-semibold">{formatMoney(credit.outstanding)}</span>
-            <span className="block text-xs text-muted-foreground">
-              {t("credit.agreedTotal")}: {formatMoney(credit.agreedTotal)} · {formatDate(credit.createdAt)}
+          <span className="min-w-0">
+            <span className="block font-mono font-semibold whitespace-nowrap tabular-nums">{formatMoney(credit.outstanding)}</span>
+            <span className="block text-xs text-muted-foreground truncate">
+              {t("credit.agreedTotal")}: <span className="whitespace-nowrap tabular-nums">{formatMoney(credit.agreedTotal)}</span> · {formatDate(credit.createdAt)}
             </span>
           </span>
           {credit.settled ? (
-            <Badge variant="outline">{t("credit.settled")}</Badge>
+            <Badge variant="outline" className="shrink-0">{t("credit.settled")}</Badge>
           ) : Number(credit.overdueAmount) > 0 ? (
-            <Badge variant="destructive">{t("credit.overdue")}</Badge>
+            <Badge variant="destructive" className="shrink-0">{t("credit.overdue")}</Badge>
           ) : (
-            <Badge variant="violet">{t("credit.open")}</Badge>
+            <Badge variant="violet" className="shrink-0">{t("credit.open")}</Badge>
           )}
         </Button>
       ))}

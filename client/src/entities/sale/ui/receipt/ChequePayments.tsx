@@ -10,9 +10,9 @@ export function ChequePayments({ payments }: { payments: ReceiptView["payments"]
     <div className="py-2 border-b border-dashed border-black/30 space-y-0.5 text-[10px]">
       <p className="font-semibold">{t("balance.paidWith")}:</p>
       {payments.map((p) => (
-        <div key={p.accountCode} className="flex justify-between">
-          <span>{accountLabel(p.accountCode, undefined, t)}</span>
-          <span className="font-mono">{formatMoney(p.amount)}</span>
+        <div key={p.accountCode} className="flex justify-between items-center gap-2 min-w-0">
+          <span className="min-w-0 truncate">{accountLabel(p.accountCode, undefined, t)}</span>
+          <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">{formatMoney(p.amount)}</span>
         </div>
       ))}
     </div>

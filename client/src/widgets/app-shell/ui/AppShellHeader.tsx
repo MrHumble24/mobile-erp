@@ -50,11 +50,11 @@ function HeaderCenterActions({ onOpenSearch }: { onOpenSearch: () => void }) {
     <Button
       variant="outline"
       onClick={onOpenSearch}
-      className="hidden lg:flex items-center justify-start gap-2.5 h-9 px-3.5 rounded-full bg-muted border border-border text-xs font-normal text-muted-foreground hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer w-48 lg:w-72 shadow-none"
+      className="hidden xl:flex items-center justify-start gap-2.5 h-9 px-3.5 rounded-full bg-muted border border-border text-xs font-normal text-muted-foreground hover:border-foreground/40 hover:text-foreground transition-colors cursor-pointer w-48 xl:w-72 shadow-none"
     >
       <Search className="size-4 text-muted-foreground shrink-0" />
       <span className="truncate flex-1 text-left">{t("nav.searchPlaceholder")}</span>
-      <kbd className="hidden lg:inline-flex px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground shrink-0">
+      <kbd className="hidden xl:inline-flex px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground shrink-0">
         ⌘K
       </kbd>
     </Button>
@@ -78,7 +78,7 @@ function HeaderRightActions({
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden size-9 rounded-full text-muted-foreground"
+        className="xl:hidden size-9 rounded-full text-muted-foreground"
         onClick={onOpenSearch}
         aria-label={t("nav.searchPlaceholder")}
       >
@@ -88,7 +88,7 @@ function HeaderRightActions({
       {hasPermission("sale.create") && (
         <Link
           to="/pos"
-          className="hidden sm:inline-flex items-center gap-2 h-9 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold no-underline shadow-xs transition-colors shrink-0"
+          className="hidden xl:inline-flex items-center gap-2 h-9 px-4 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold no-underline shadow-xs transition-colors shrink-0"
         >
           <ShoppingCart className="size-4 shrink-0" />
           <span>{t("nav.quickPos")}</span>

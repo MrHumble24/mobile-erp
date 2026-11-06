@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
+import { cn } from "@/shared/lib/utils"
 import { formatMoney } from "@/shared/lib/format"
 import { toast } from "@/shared/ui/sonner"
 import { Button } from "@/shared/ui/button"
@@ -24,9 +25,9 @@ export interface CloseShiftDialogProps {
 
 function InfoRow({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="flex items-center justify-between rounded-[10px] border border-border bg-muted p-2.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`font-mono font-bold ${tone ?? ""}`}>{value}</span>
+    <div className="flex items-center justify-between gap-2 min-w-0 rounded-[10px] border border-border bg-muted p-2.5 text-sm">
+      <span className="text-muted-foreground min-w-0 truncate">{label}</span>
+      <span className={cn("font-mono font-bold shrink-0 whitespace-nowrap tabular-nums", tone)}>{value}</span>
     </div>
   )
 }

@@ -107,9 +107,9 @@ function CreditForm({
           overLimit={overLimit}
         />
       )}
-      <div className="flex items-center justify-between rounded-[10px] bg-muted border border-border p-2.5 text-sm">
-        <span className="font-semibold">{t("pos.totalDue")}</span>
-        <span className="font-mono text-base font-bold">{formatMoney(dueTotal)}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 rounded-[10px] bg-muted border border-border p-2.5 text-sm">
+        <span className="font-semibold truncate">{t("pos.totalDue")}</span>
+        <span className="font-mono text-base font-bold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(dueTotal)}</span>
       </div>
       <DownPaymentField
         downPayment={draft.downPayment}

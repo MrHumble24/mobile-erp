@@ -30,7 +30,7 @@ function MovementRow({ m, canViewCost }: { m: StockMovement; canViewCost: boolea
           {m.quantity > 0 ? "+" : ""}{m.quantity}
         </p>
         {canViewCost && m.unitCostSnapshot && (
-          <p className="text-xs text-muted-foreground">{formatMoney(m.unitCostSnapshot)}</p>
+          <p className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">{formatMoney(m.unitCostSnapshot)}</p>
         )}
       </div>
     </div>

@@ -84,7 +84,7 @@ export function DiscountControl({ line, level, canDiscountUnlimited }: DiscountC
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 text-xs"
+              className="h-7 text-xs whitespace-nowrap tabular-nums"
               onClick={() => apply(p)}
             >
               {mode === "PERCENT" ? `${p}%` : formatMoney(p)}
@@ -93,9 +93,9 @@ export function DiscountControl({ line, level, canDiscountUnlimited }: DiscountC
         </div>
       )}
       {errorMsg && <p className="text-xs text-red-600">{errorMsg}</p>}
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">{t("pricing.finalPrice")}</span>
-        <span className="text-base font-bold text-primary">{formatMoney(lineFinalPrice(line, level))}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 text-sm">
+        <span className="text-muted-foreground truncate">{t("pricing.finalPrice")}</span>
+        <span className="text-base font-bold text-primary shrink-0 whitespace-nowrap tabular-nums">{formatMoney(lineFinalPrice(line, level))}</span>
       </div>
     </div>
   )
