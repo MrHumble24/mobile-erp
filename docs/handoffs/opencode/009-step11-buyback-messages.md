@@ -1,6 +1,6 @@
 # 009 — Step 11, part 7 of 7: buy-back and return messages, and the ADR for the step
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged)
+Status: done · Owner: OpenCode (Big Pickle) · Depends on: 008 (merged)
 
 ## Why
 The last part of the step 11 website work. The server can now buy back a phone the shop sold
@@ -43,12 +43,55 @@ Fill the Result section of `docs/handoffs/opencode/009-step11-buyback-messages.m
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
+- Model used: Big Pickle (`opencode/big-pickle`).
+- Commits: `59ce34c` — `feat(client): show buy-back, return and trade-in refusals by code`
+  (code, tests, READMEs, ADR 0047). This handoff is committed separately.
 - Files changed:
+  - `shared/api/http.ts` — `httpErrorCode(err)` reads a server `code` once; the
+    `API_BASE_URL` read was made safe for the node tests.
+  - `features/checkout/lib/checkout-error.ts` — `checkoutErrorKey` now reads the
+    code itself and maps the four `TRADE_IN_*` codes; spec added.
+  - `features/checkout/model/use-checkout.ts`, `widgets/pos-terminal/model/use-pos-checkout.ts`
+    — use the shared code reader / the updated helper.
+  - `entities/backup/lib/backup-error.ts`, `entities/repair/lib/repair-error.ts`,
+    `entities/shift/lib/no-open-shift.ts` — the copied `data.code` reads removed.
+  - `features/warranty-lookup/lib/return-error.ts` + spec, `ui/ReturnSaleDialog.tsx`
+    — `SALE_UNIT_BOUGHT_BACK` and `TRADE_IN_REFUND_FORBIDDEN` messages.
+  - `features/buy-phone/lib/buy-error.ts`, `ui/BuyPhoneDialog.tsx` — not-sold refusal
+    message; normal success text kept.
+  - `shared/i18n/{en,uz}/{sales,purchases,pos}.json` — new keys, same English text.
+  - READMEs: `features/buy-phone`, `features/checkout`, new `features/warranty-lookup`,
+    `entities/backup`, `entities/repair`, `entities/shift`.
+  - `docs/decisions/0047-client-bonus-printing-buyback.md` — 40 lines.
 - How a buy-back is told from a first purchase in the server's answer (item 3):
-- What was found for item 5:
+  **It is not.** `CustomerPurchaseView` is only `{ id, customer, unit, pricePaid,
+  accountCode, saleId, soldBy, occurredAt }`; `CustomerPurchaseResult` is
+  `{ purchaseId, deviceId }`. There is no bought-back flag, and `saleId` stays null
+  for a plain buy-back, so the normal success toast is kept.
+  `customer-purchases` sends **no `code`** for the not-sold refusal: it is a 409
+  `ConflictException` with `message: "A unit with this IMEI or serial number already
+  exists"`. `buy-error.ts` matches that exact text; any other 409 keeps today's text.
+- What was found for item 5: no website check blocks an IMEI because the shop sold
+  it before — in `features/buy-phone`, `features/checkout` (trade-in) or
+  `features/scan-code`. Nothing was removed; the server decides buy-back.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
+  - `pnpm install`: `Lockfile is up to date` · `Packages: +642` ·
+    `Done in 1.7s using pnpm v12.16.1`.
+  - `pnpm test`: `ℹ tests 97` · `ℹ pass 97` · `ℹ fail 0` · `ℹ skipped 0` ·
+    `ℹ duration_ms 229.937958` (includes the new checkout-error and return-error tests).
+  - `pnpm lint`: `$ oxlint`; 0 errors, warnings only (all pre-existing long-function
+    / react-compiler warnings, including the existing `ReturnSaleDialog` ones).
+  - `pnpm build`: `✓ 4243 modules transformed` · `✓ built in 6.33s`; PWA
+    `precache 159 entries (3268.20 KiB)`; `files generated`.
+  - `graphify update .`: ran in `client/` (3629 nodes, 11217 edges) and at the repo
+    root (14281 nodes, 28402 edges); the root run skipped `graph.html` because the
+    graph exceeds the 5000-node visualisation limit.
 - Not done / skipped / failed:
+  - **Screens were not seen**: no browser is available here, so the return dialog,
+    buy-phone dialog and till trade-in messages were only read in code; Claude checks
+    them.
+  - New Uzbek entries intentionally carry the same English text for the translator.
+  - No failures otherwise. No `server/**`, `mobile/**`, PRD, plan, rules or `.claude`
+    file was touched.
 
 ## Check by Claude
