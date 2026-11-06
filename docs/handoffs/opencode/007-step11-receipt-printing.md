@@ -1,6 +1,6 @@
 # 007 — Step 11, part 5 of 7: receipt printing follows the settings
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: 006 (merged)
+Status: done · Owner: OpenCode (Big Pickle) · Depends on: 006 (merged)
 
 ## Why
 Part 5 of the step 11 website work. The Settings page (part 1) has "Print receipts" and a paper
@@ -46,11 +46,68 @@ Fill the Result section of `docs/handoffs/opencode/007-step11-receipt-printing.m
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
+- Model used: OpenCode — Big Pickle.
 - Commits:
+  - `f221cba` refactor(sale): split receipt UI into one component per file
+  - `dbc3eed` feat(sale): receipt follows print settings and prints the real shop
 - Files changed:
+  - Split: `entities/sale/ui/receipt/` (`ChequeActions`, `ChequeBonusLine`,
+    `ChequeDiscount`, `ChequeHeader`, `ChequeItems`, `ChequeMeta`, `ChequePayments`,
+    `ChequeTradeIns`, `ChequeWarranty`, `ItemIdentity`, `ReceiptPaper`,
+    `ReceiptPrintView`), old `ui/ReceiptPrintView.tsx` removed; `BarcodeVisual`
+    moved to `shared/ui/barcode-visual.tsx` and re-exported from `shared/ui/index.ts`.
+  - Receipt data: `entities/sale/model/sale.types.ts` (`store`, `footer`),
+    `entities/sale/ui/receipt/ChequeHeader.tsx`, `ReceiptPaper.tsx`,
+    `entities/sale/lib/format-receipt.ts`, `entities/sale/lib/combine-receipts.ts`.
+  - Print settings: new `entities/settings/model/use-print-settings.ts`, exported
+    from `entities/settings/index.ts`; callers `CheckoutReceiptModal`,
+    `SaleReceiptPage`, `SaleReceiptDialog` pass `paperWidthMm` + `canPrint`.
+  - Paper width: `ReceiptPaper` sets `data-paper` and the matching screen width;
+    `app/styles/index.css` keeps all existing print rules and adds only the 80 mm
+    rule plus `@page receipt-80`.
+  - Docs: `entities/sale/README.md`, `shared/ui/README.md`, and a new
+    `entities/settings/README.md` (the file did not exist before).
 - Repair ticket, credit contract, shift report: how each is sized, and that it is untouched:
+  - Repair ticket: `RepairTicketPaper` uses `.printable-cheque w-full max-w-[520px]`
+    with a `print:hidden` toolbar. Untouched.
+  - Credit contract: `ContractPaper` uses `.printable-cheque w-full max-w-[520px]`
+    with a `print:hidden` toolbar. Untouched.
+  - Shift report: `ShiftReportView` uses `.printable-cheque w-full max-w-[340px]`
+    inside the dialog with `print:hidden` header/button. Untouched.
+  - None of them sets `data-paper`, so the new 80 mm rule does not apply; all keep
+    the existing 58 mm print default.
 - `pnpm test`, `pnpm lint`, `pnpm build` output (last lines):
+  ```
+  ℹ tests 84
+  ℹ suites 0
+  ℹ pass 84
+  ℹ fail 0
+  ℹ cancelled 0
+  ℹ skipped 0
+  ℹ todo 0
+  ℹ duration_ms 156.048
+  $ oxlint
+  ... existing max-lines-per-function / set-state-in-effect warnings across the repo ...
+  $ tsc -b && vite build
+  ✓ built in 5.98s
+
+  PWA v2.0.0
+  mode      generateSW
+  precache  151 entries (3194.33 KiB)
+  files generated
+    dist/sw.js
+    dist/workbox-9c191d2f.js
+  ```
+  `pnpm lint` exited 0 (warnings only, none in the changed receipt files).
+- Graph: `graphify update .` ran in `client/` (3426 nodes, 10633 edges) and at
+  the repo root (13419 nodes, 26452 edges); the root run skipped `graph.html`
+  because the graph exceeds its 5000-node visualisation limit.
 - Not done / skipped / failed:
+  - Neither a browser nor a print preview was opened/seen (not available here);
+    Claude must check the rendered receipt and the 58/80 mm print result.
+  - The server receipt field is `footer`, not `receiptFooter` (see
+    `server/src/sales/types/sale.types.ts` and `sales-read.service.ts`). The client
+    type and UI use `footer` so the real value renders; no server file was edited.
+  - No new i18n keys were needed; no raw key was added to the screen.
 
 ## Check by Claude
