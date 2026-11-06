@@ -167,12 +167,16 @@ struct ReturnSheet: View {
                 dismiss()
             } catch let e as AppError {
                 busy = false
-                switch e.statusCode {
-                case 409: error = i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.")
-                case 400: error = i18n.t("sales.refundTooHigh")
-                case 403 where e.code == "TRADE_IN_REFUND_FORBIDDEN":
-                    error = i18n.t("sales.refundTooHigh")
-                default: error = e.message
+                if e.code == "SALE_UNIT_BOUGHT_BACK" {
+                    error = i18n.t("sales.returnBoughtBack")
+                } else if e.code == "TRADE_IN_REFUND_FORBIDDEN" {
+                    error = i18n.t("sales.returnTradeInForbidden")
+                } else {
+                    switch e.statusCode {
+                    case 409: error = i18n.t("sales.returnConflict", default: "Device status conflict. Please reload.")
+                    case 400: error = i18n.t("sales.refundTooHigh")
+                    default: error = e.message
+                    }
                 }
             } catch {
                 busy = false

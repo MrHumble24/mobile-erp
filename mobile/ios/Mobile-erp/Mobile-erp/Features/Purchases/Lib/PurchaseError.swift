@@ -5,6 +5,7 @@ import Foundation
 /// caller shows the raw server message.
 enum PurchaseError {
     static func key(_ error: AppError) -> String? {
+        if error.code == "PURCHASE_UNIT_EXISTS" { return "purchases.buyNotSold" }
         if error.statusCode == 409 { return "purchases.buyConflict" }
         return nil
     }

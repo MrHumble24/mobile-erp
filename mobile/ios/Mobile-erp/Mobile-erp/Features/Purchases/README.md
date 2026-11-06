@@ -15,7 +15,7 @@ exists anywhere here, by design**; the seller is a `Customer` (name + phone).
 - `PurchasesListModel` (`Model/`): date range + IMEI/serial search, one page.
 - `BuyPhoneDraft` (`Model/`): seller + model + identifier + specs + price +
   account, with all validation so the sheet blocks before the server.
-- `PurchaseError` (`Lib/`): maps a `POST` 409 to `purchases.buyConflict`.
+- `PurchaseError` (`Lib/`): maps `PURCHASE_UNIT_EXISTS` to `purchases.buyNotSold`, other 409 to `purchases.buyConflict`.
 - `PurchasesModule`: the More-tab screen (`purchase.read`).
 - UI (`UI/`): `PurchasesView` (list + filter + buy), `PurchaseDetailSheet`,
   `BuyPhoneSheet`, `PurchaseSellerField`, `PurchaseSpecField`.
