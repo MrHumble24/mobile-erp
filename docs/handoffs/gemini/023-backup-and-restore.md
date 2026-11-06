@@ -226,6 +226,54 @@ whose file is gone reads FAILED "file missing"); `backups.repository.ts` split
   `isSet(name)`, `state(name)` → set|missing|unreadable, `read(name)` (server-only;
   throws on unreadable), `clear(name)`, plus `AppKeyService.getKey()`/`dataDir()`.
 
+## PART 5 — the website (2026-11-06, builder `opus48`, branch `agent/opus48/backup-web` on top of `agent/opus48/backup`)
+Settings-group page `/backups` (`backup.read`), company-wide, not store-scoped.
+Gate green: `cd client && pnpm test` (85 tests, +1 `formatBytes`), `pnpm lint`
+(exit 0; only pre-existing `max-lines-per-function` warnings), `pnpm build` (tsc +
+vite, exit 0). ADR `0052-client-backups.md`.
+- **FSD built:** entity `backup` (server-mirroring types, `backupKeys`, one
+  repository, hooks split runs/settings/places/restore/oauth, error helpers);
+  features `set-backup-passphrase`, `edit-backup-schedule`, `run-backup`,
+  `manage-backup-place` (PlaceCard + Telegram/OAuth config + write-only
+  `SecretField`), `restore-backup` (red `RestoreDialog` + `UploadRestoreCard`);
+  widgets `backup-places`, `backup-runs`, `restore-overlay`; page `pages/backups`;
+  nav item under Admin. `shared/api/http.ts` gained `uploadRaw` (raw `.mbk` body),
+  `downloadBlob` (authed binary), `onMaintenance`; new `shared/lib/
+  maintenance.store.ts`, `save-blob.ts`, `formatBytes`. i18n namespace `backups`
+  (en + uz, Uzbek written to the glossary) + `nav.backups`.
+- **Walk-through — all SEEN in Chrome (my server :3143 / client :5197, throwaway
+  DB `mobile_erp_backup_web`)** except where noted: unreadable-passphrase state;
+  set passphrase (→ "set"); back up now (run "Done", green LOCAL mark,
+  download/restore/delete appear; old file-missing runs show only Delete);
+  download via page fetch → file is `MBK1` + a small plaintext header then
+  AES-GCM, no `CREATE TABLE`/`INSERT`/`PGDMP` (not readable text); delete
+  (confirm dialog); change a customer name in `psql` then **restore from the
+  list** → reverted to the backup's value; the wait overlay (reached its "sign in
+  again" phase — the restore is ~150 ms so the spinner phase was too brief to
+  screenshot, but the overlay covered the whole screen); signed out → clean
+  /login; sign in via the form; name is back (verified in DB); **upload** the
+  downloaded `.mbk` and restore → staged card shows the manifest date+size, the
+  restore replaced the DB with the uploaded file's contents (verified in DB);
+  **Telegram** card (bot token write-only, chat id, the private-chat/no-delete
+  note; chat id = a store alert chat → refusal `BACKUP_CHAT_IS_STAFF_CHAT`); the
+  cashier is blocked (403 page, nav item hidden). **NOT seen:** real Telegram
+  (no bot/chat); real Drive/OneDrive (no OAuth apps — redirect URI shown + copy,
+  Connect disabled with "set the client id and secret first", i.e. the "no client
+  id" case is pre-empted, not an after-click toast); the 390-px layout
+  **in-browser** (the Chrome extension viewport is locked at 1728 and
+  `resize_window` did not reflow it) — verified responsive in code instead (cards
+  `md:grid-cols-2`, places `sm:grid-cols-2`, runs table `overflow-x-auto`, dialogs
+  full-width bottom sheets below 640).
+- **Server gap:** none blocking. `GET /backups/:id/download` doesn't CORS-expose
+  `Content-Disposition`, so the client names the saved file from the run's
+  `fileName` (handled; no server change).
+- **Decisions:** own page (too big for a Settings section); secrets never read
+  back (UI shows presence/status only); the restore overlay is app-mounted and
+  the 401 auto-redirect is suppressed during maintenance so the "sign in again"
+  message survives; the upload path was driven by injecting the fetched bytes as a
+  `File` into the hidden input (the native file picker is a blocking dialog) — the
+  real stage + restore endpoints ran.
+
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
   database, and a look at one backup file to confirm it is unreadable without the key.
