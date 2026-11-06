@@ -9,6 +9,6 @@ import { ImageStorageService } from './image-storage.service.js';
   imports: [ProductCategoriesModule],
   controllers: [DeviceModelsController],
   providers: [DeviceModelsService, DeviceModelsRepository, ImageStorageService],
-  exports: [DeviceModelsService],
+  exports: [DeviceModelsService, ImageStorageService],
 })
 export class DeviceModelsModule {}
