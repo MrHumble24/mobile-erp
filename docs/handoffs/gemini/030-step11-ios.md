@@ -1,6 +1,6 @@
 # 030 — Step 11 on the iPhone app: bonus points, printing settings, buy-back refusals
 
-Status: done · Owner: Gemini (Antigravity) · Depends on: nothing
+Status: merged · Owner: Gemini (Antigravity)
 
 ## Why
 Step 11 is on the server and the website (ADR 0043, 0044, 0047). The phone apps have none of
@@ -163,3 +163,7 @@ Fill the Result section of `docs/handoffs/gemini/030-step11-ios.md` in THIS work
      customer: the answer is dropped unless the customer is still the same.
 - Noted, not changed: `Shared/Kit/KitSelfCheck.swift` calls the till's planner self-check (a
   shared file reaching up into a feature); `PosReceiptSheet.swift` is 281 lines, close to 300.
+- 2026-11-07: merged at the user's word ("merge i will test"). `main` was merged in first and
+  the build passes. Still NOT seen running by Claude: the user tests it on a phone. If a
+  step from the Android live try (handoff 017) behaves differently on iOS, that is a bug here.
+
