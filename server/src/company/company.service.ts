@@ -107,4 +107,37 @@ export class CompanyService {
       decimals: profile.currencyDecimals,
     };
   }
+
+  async getManifest() {
+    const profile = await this.repo.getProfile();
+    const name = profile.name || 'ERP';
+    return {
+      name,
+      short_name: name,
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#ffffff',
+      theme_color: '#ffffff',
+      icons: profile.logoFile
+        ? [
+            {
+              src: `/uploads/${profile.logoFile}`,
+              sizes: '192x192 512x512',
+              type: 'image/png',
+            },
+          ]
+        : [
+            {
+              src: '/pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: '/pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+    };
+  }
 }

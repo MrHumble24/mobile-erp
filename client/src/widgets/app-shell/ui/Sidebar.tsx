@@ -1,6 +1,7 @@
 import { useLocation } from "react-router"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
+import { useBranding } from "@/entities/company"
 import { useI18n } from "@/shared/i18n"
 import { Link } from "@/shared/ui/link"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/shared/ui/tooltip"
@@ -13,20 +14,28 @@ import {
 } from "../model/navigation"
 
 function SidebarBrand({ collapsed }: { collapsed: boolean }) {
+  const { data: branding } = useBranding()
+  const name = branding?.name || "ERP"
+  const initial = name.charAt(0).toUpperCase() || "E"
+
   return (
     <div className={cn(SHELL_BAR_HEIGHT, "px-4 border-b border-[#e8e8e8] flex items-center gap-2.5 shrink-0")}>
-      <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs">
-        M
+      <div className="size-8 rounded-full bg-[#6647f0] flex items-center justify-center font-display font-bold text-sm text-white shrink-0 shadow-xs overflow-hidden">
+        {branding?.logoUrl ? (
+          <img src={branding.logoUrl} alt={name} className="size-full object-cover" />
+        ) : (
+          initial
+        )}
       </div>
       {!collapsed && (
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h1 className="font-display text-sm font-bold leading-tight tracking-tight text-[#090c1d] truncate">
-              Malika ERP
+              {name}
             </h1>
             <span className="size-1.5 rounded-full bg-[#00c07a]" />
           </div>
-          <p className="text-[10px] text-[#838383] truncate font-medium">Boshqaruv paneli</p>
+          <p className="text-[10px] text-[#838383] truncate font-medium">ERP</p>
         </div>
       )}
     </div>
@@ -151,10 +160,11 @@ function SidebarSectionGroup({
 }
 
 function SidebarFooter({ collapsed }: { collapsed: boolean }) {
+  const { data: branding } = useBranding()
   if (collapsed) return null
   return (
     <div className="p-3 border-t border-[#e8e8e8] bg-[#f8f9fa] shrink-0 text-[10px] text-[#838383] flex items-center justify-between">
-      <span>Malika v1.2</span>
+      <span>{branding?.name || "ERP"} v1.2</span>
       <span className="font-mono bg-white border border-[#d4d4d4] px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
     </div>
   )

@@ -2,6 +2,7 @@ import { useLocation } from "react-router"
 import { PanelLeftClose, PanelLeftOpen, Search, ShoppingCart } from "lucide-react"
 import { useAuthStore } from "@/features/auth"
 import { StorePicker } from "@/features/switch-store"
+import { useBranding } from "@/entities/company"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
@@ -21,6 +22,7 @@ interface AppShellHeaderProps {
 function HeaderBreadcrumbs() {
   const { t } = useI18n()
   const location = useLocation()
+  const { data: branding } = useBranding()
   const currentItem = ALL_NAV_ITEMS.find(
     (item) => item.to === location.pathname || (item.to !== "/" && location.pathname.startsWith(item.to))
   )
@@ -28,7 +30,7 @@ function HeaderBreadcrumbs() {
   return (
     <div className="flex items-center gap-2 text-xs font-medium text-[#838383] min-w-0">
       <span className="hidden sm:inline hover:text-[#202020] transition-colors truncate">
-        Malika ERP
+        {branding?.name || "ERP"}
       </span>
       {currentItem && (
         <>

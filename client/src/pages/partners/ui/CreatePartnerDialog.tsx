@@ -30,7 +30,7 @@ function PartnerBasicInputs({
         <Input
           value={shopName}
           onChange={(e) => setShopName(e.target.value)}
-          placeholder="Malika B-12"
+          placeholder="Store B-12"
           required
         />
       </div>

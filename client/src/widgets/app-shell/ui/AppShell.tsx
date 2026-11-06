@@ -6,12 +6,15 @@ import { AdminCommandPalette } from "./AdminCommandPalette"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { useSyncEngine } from "@/entities/sync"
 
-const COLLAPSED_STORAGE_KEY = "malika_erp_sidebar_collapsed"
+const COLLAPSED_STORAGE_KEY = "erp_sidebar_collapsed"
 
 function useSidebarState() {
   const [collapsed, setCollapsed] = React.useState<boolean>(() => {
     try {
-      return localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true"
+      return (
+        localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true" ||
+        localStorage.getItem("malika_erp_sidebar_collapsed") === "true"
+      )
     } catch {
       return false
     }

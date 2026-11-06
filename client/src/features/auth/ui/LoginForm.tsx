@@ -1,5 +1,6 @@
 import { useForm, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useBranding } from "@/entities/company"
 import { useI18n } from "@/shared/i18n"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -83,6 +84,7 @@ function PasswordField({
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const { t } = useI18n()
+  const { data: branding } = useBranding()
   const loginMutation = useLogin()
 
   const form = useForm<LoginFormValues>({
@@ -98,9 +100,16 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <Card className="w-full max-w-md shadow-[var(--shadow-lg)] border border-[#e8e8e8] bg-white rounded-[20px]">
-      <CardHeader className="text-center">
+      <CardHeader className="text-center space-y-2">
+        {branding?.logoUrl && (
+          <div className="flex justify-center mb-1">
+            <img src={branding.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
+          </div>
+        )}
         <CardTitle className="text-2xl font-bold tracking-tight">{t("auth.loginTitle")}</CardTitle>
-        <CardDescription className="text-muted-foreground">{t("auth.loginSubtitle")}</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          {t("auth.loginSubtitle", { shopName: branding?.name || "ERP" })}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

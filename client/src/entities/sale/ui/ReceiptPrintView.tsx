@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Printer, Copy, Check } from "lucide-react"
+import { useBranding } from "@/entities/company"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { unitCode } from "@/shared/lib/unit-code"
@@ -35,9 +36,16 @@ function BarcodeVisual({ value }: { value: string }) {
 
 function ChequeHeader({ soldAt }: { soldAt: string }) {
   const { t } = useI18n()
+  const { data: branding } = useBranding()
+  const storeName = branding?.name || t("pos.storeName")
   return (
     <div className="text-center pb-2.5 border-b-2 border-dashed border-black/30 space-y-0.5">
-      <p className="font-black text-sm uppercase tracking-wider">{t("pos.storeName")}</p>
+      {branding?.logoUrl && (
+        <div className="flex justify-center mb-1">
+          <img src={branding.logoUrl} alt="Logo" className="h-8 w-auto object-contain grayscale" />
+        </div>
+      )}
+      <p className="font-black text-sm uppercase tracking-wider">{storeName}</p>
       <p className="text-[10px] text-black/75 font-medium">{t("pos.storeLocation")}</p>
       <p className="text-[10px] text-black/60">{new Date(soldAt).toLocaleString()}</p>
     </div>
@@ -218,7 +226,6 @@ export function ReceiptPaper({ receipt }: { receipt: ReceiptView }) {
       <BarcodeVisual value={primaryImei} />
       <div className="pt-1 text-center text-[9px] text-black/70 space-y-0.5">
         <p className="font-medium">{t("pos.thankYou")}</p>
-        <p className="text-[8px] text-black/50">www.malika-erp.uz</p>
       </div>
     </div>
   )
