@@ -12,8 +12,10 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
   `useWarrantyLookup`, `useCreateSale`, `useReturnSale`.
 - `warrantyRemainingDays(endsAt)` — whole days of cover left, ceil, floored at 0
   (mirrors the server's `remainingWarrantyDays`; cross-package, cannot be shared).
-- Receipt helpers: `ReceiptPrintView`, `useSaleReceipts`, `formatReceiptText`,
-  `combineReceipts`, `receiptBonusLines`.
+- Receipt helpers: `ReceiptPrintView`, `ReceiptPaper`, `useSaleReceipts`,
+  `formatReceiptText`, `combineReceipts`, `receiptBonusLines`. The receipt UI lives
+  in `ui/receipt/` (one component per file); `ReceiptPrintView` and `ReceiptPaper`
+  take `paperWidthMm` + `canPrint` from the caller, never reading settings themselves.
 
 ## Invariants
 
@@ -35,8 +37,12 @@ Sale business object: types, query keys, repository, data hooks, receipt views.
   receipt points lines: "Paid with points" (spent > 0, with a minus, before the
   payments) and "Points earned" (earned > 0, near the bottom). `combineReceipts`
   sums both fields. Points use `formatNumber`, never `formatMoney`.
+- `ReceiptView.store` is the shop identity (`{name, address, phone}`, each nullable) and
+  `ReceiptView.footer` is the free-text receipt footer; both come from the server
+  receipt and are printed as-is (`store` in the header, `footer` under "thank you").
 - `useReturnSale` invalidates `saleKeys.all` (list + stats + detail) and device lists.
-- Components never import the repository; only hooks do.
+- Components never import the repository; only hooks do. Printing switches come from
+  `entities/settings`'s `usePrintSettings`, not from this slice.
 
 ## Never
 

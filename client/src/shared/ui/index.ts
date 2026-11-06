@@ -1,6 +1,7 @@
 export * from "./asset-image"
 export * from "./badge"
 export * from "./barcode-input"
+export * from "./barcode-visual"
 export * from "./button"
 export * from "./file-picker"
 export * from "./card"
