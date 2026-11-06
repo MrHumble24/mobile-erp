@@ -31,4 +31,3 @@ test("formatBytes: scales to KB/MB/GB, nullish → -", () => {
   assert.equal(formatBytes(null), "-")
   assert.equal(formatBytes(undefined), "-")
 })
-})

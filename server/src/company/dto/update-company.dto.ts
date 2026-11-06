@@ -7,6 +7,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsSessionDuration, IsSupportedTimeZone } from './validators.js';
 
 export class UpdateCompanyDto {
   @IsOptional()
@@ -38,6 +39,7 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
+  @IsSupportedTimeZone()
   timeZone?: string;
 
   @IsOptional()
@@ -75,5 +77,6 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
+  @IsSessionDuration()
   sessionDuration?: string;
 }

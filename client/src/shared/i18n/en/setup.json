@@ -72,5 +72,6 @@
   "summaryModules": "Enabled Modules",
   "summaryTheme": "Visual Theme",
   "errorRequired": "Please fill in all required fields",
-  "errorInvalidCode": "Invalid setup code. Please check server logs."
+  "errorInvalidCode": "Invalid setup code. Please check server logs.",
+  "errorRateLimited": "Too many invalid setup code attempts. Please wait 15 minutes before trying again."
 }

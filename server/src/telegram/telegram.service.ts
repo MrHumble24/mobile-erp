@@ -104,7 +104,9 @@ export class TelegramService {
         },
       );
       if (!res.ok) {
-        this.logger.warn(`Telegram sendMessage failed with status ${res.status}`);
+        this.logger.warn(
+          `Telegram sendMessage failed with status ${res.status}`,
+        );
       }
     } catch {
       this.logger.warn('Telegram sendMessage request failed');

@@ -72,5 +72,6 @@
   "summaryModules": "Yoqilgan modullar",
   "summaryTheme": "Ko'rinish mavzusi",
   "errorRequired": "Iltimos, barcha majburiy maydonlarni to'ldiring",
-  "errorInvalidCode": "Sozlash kodi noto'g'ri. Iltimos, server konsolini tekshiring."
+  "errorInvalidCode": "Sozlash kodi noto'g'ri. Iltimos, server konsolini tekshiring.",
+  "errorRateLimited": "Noto'g'ri urinishlar juda ko'p bo'ldi. Iltimos, 15 daqiqa kuting."
 }

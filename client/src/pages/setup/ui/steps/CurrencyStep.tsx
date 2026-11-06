@@ -1,4 +1,13 @@
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui"
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  TimeZoneSelect,
+} from "@/shared/ui"
 import { useI18n } from "@/shared/i18n"
 import type { WizardState, WizardUpdate } from "./types"
 
@@ -115,10 +124,10 @@ export function CurrencyStep({ state, update, onNext, onBack }: Props) {
         </div>
         <div className="space-y-1.5">
           <label className="text-xs font-semibold">{t("setup.timeZone")}</label>
-          <Input
+          <TimeZoneSelect
             value={state.company.timeZone || "Asia/Tashkent"}
-            onChange={(e) =>
-              update((p) => ({ ...p, company: { ...p.company, timeZone: e.target.value } }))
+            onChange={(tz) =>
+              update((p) => ({ ...p, company: { ...p.company, timeZone: tz } }))
             }
           />
         </div>

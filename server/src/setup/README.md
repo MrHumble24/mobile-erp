@@ -20,6 +20,7 @@ On boot when `needsSetup` is true, prints the generated setup code once to STDOU
 
 If the owner loses credentials after setup, use `pnpm bootstrap:admin` from the
 server host to restore administrative access via environment variables.
+Setup opens again if the users table is ever emptied, and a new code is made then.
 
 ## Must never
 

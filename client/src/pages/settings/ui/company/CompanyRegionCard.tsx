@@ -10,6 +10,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  TimeZoneSelect,
 } from "@/shared/ui"
 import { useI18n } from "@/shared/i18n"
 import type { CompanyProfile, UpdateCompanyProfileDto } from "@/entities/company"
@@ -114,10 +115,10 @@ export function CompanyRegionCard({
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-semibold">{t("settings.timeZone")}</label>
-            <Input
+            <TimeZoneSelect
               value={timeZone}
               disabled={disabled}
-              onChange={(e) => onChange({ timeZone: e.target.value })}
+              onChange={(tz) => onChange({ timeZone: tz })}
             />
           </div>
           <div className="space-y-1.5">

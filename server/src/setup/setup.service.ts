@@ -7,7 +7,7 @@ import {
   Logger,
   OnApplicationBootstrap,
 } from '@nestjs/common';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import {
   existsSync,
   readFileSync,
@@ -42,16 +42,19 @@ export class SetupService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     const userCount = await this.prisma.user.count();
     if (userCount === 0) {
-      const code = this.getOrCreateSetupCode();
-      this.logger.warn(
-        `========================================================`,
-      );
-      this.logger.warn(`INITIAL SETUP REQUIRED`);
-      this.logger.warn(`One-time setup code: ${code}`);
-      this.logger.warn(`Open the web console to complete first-boot setup.`);
-      this.logger.warn(
-        `========================================================`,
-      );
+      const filePath = this.getSetupCodePath();
+      if (!existsSync(filePath)) {
+        const code = this.generateAndSaveSetupCode();
+        this.logger.warn(
+          `========================================================`,
+        );
+        this.logger.warn(`INITIAL SETUP REQUIRED`);
+        this.logger.warn(`One-time setup code: ${code}`);
+        this.logger.warn(`Open the web console to complete first-boot setup.`);
+        this.logger.warn(
+          `========================================================`,
+        );
+      }
     }
   }
 
@@ -60,15 +63,30 @@ export class SetupService implements OnApplicationBootstrap {
     return join(this.dataDir, 'setup-code.txt');
   }
 
-  getOrCreateSetupCode(): string {
+  generateAndSaveSetupCode(): string {
     const filePath = this.getSetupCodePath();
-    if (existsSync(filePath)) {
-      const existing = readFileSync(filePath, 'utf8').trim();
-      if (existing) return existing;
-    }
-    const code = randomBytes(4).toString('hex').toUpperCase();
-    writeFileSync(filePath, code, { mode: 0o600, encoding: 'utf8' });
+    const code = randomBytes(16).toString('hex').toUpperCase();
+    const hash = createHash('sha256').update(code).digest('hex');
+    writeFileSync(filePath, hash, { mode: 0o600, encoding: 'utf8' });
     return code;
+  }
+
+  verifySetupCode(candidateCode?: string): boolean {
+    const filePath = this.getSetupCodePath();
+    if (!existsSync(filePath) || !candidateCode) return false;
+    const storedHash = readFileSync(filePath, 'utf8').trim();
+    const candidate = candidateCode.trim().toUpperCase();
+    const candidateHash = createHash('sha256').update(candidate).digest('hex');
+    try {
+      const storedBuf = Buffer.from(storedHash, 'hex');
+      const candBuf = Buffer.from(candidateHash, 'hex');
+      return (
+        storedBuf.length === candBuf.length &&
+        timingSafeEqual(storedBuf, candBuf)
+      );
+    } catch {
+      return false;
+    }
   }
 
   async getStatus(): Promise<{ needsSetup: boolean }> {
@@ -235,8 +253,7 @@ export class SetupService implements OnApplicationBootstrap {
 
     this.checkRateLimit();
 
-    const expectedCode = this.getOrCreateSetupCode();
-    if (!dto.code || dto.code.trim().toUpperCase() !== expectedCode) {
+    if (!this.verifySetupCode(dto.code)) {
       this.failedAttempts.push(Date.now());
       throw new BadRequestException('Invalid setup code');
     }

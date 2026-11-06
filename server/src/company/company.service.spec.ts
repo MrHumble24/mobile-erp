@@ -3,7 +3,13 @@ import { CompanyService } from './company.service.js';
 
 describe('CompanyService', () => {
   let service: CompanyService;
-  let mockRepo: any;
+  let mockRepo: {
+    hasUsers: jest.Mock;
+    getProfile: jest.Mock;
+    listThemes: jest.Mock;
+    findTheme: jest.Mock;
+    updateProfile: jest.Mock;
+  };
 
   beforeEach(() => {
     mockRepo = {
@@ -99,5 +105,13 @@ describe('CompanyService', () => {
     expect(mockRepo.updateProfile).toHaveBeenCalledWith(
       expect.objectContaining({ themeCode: 'obsidian', name: 'New Name' }),
     );
+  });
+
+  it('falls back to default 12h session duration on invalid stored value (C1)', async () => {
+    mockRepo.getProfile.mockResolvedValue({ sessionDuration: 'invalid-val' });
+    expect(await service.getSessionDuration()).toBe('12h');
+
+    mockRepo.getProfile.mockResolvedValue({ sessionDuration: '24h' });
+    expect(await service.getSessionDuration()).toBe('24h');
   });
 });

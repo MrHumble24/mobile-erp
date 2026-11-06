@@ -1,13 +1,15 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { CompanyRepository } from './company.repository.js';
 import { UpdateCompanyDto } from './dto/update-company.dto.js';
 import { detectLogoMime } from './lib/logo-file.js';
+import { isValidSessionDuration } from './lib/session-duration.js';
 
 @Injectable()
 export class CompanyService {
+  private readonly logger = new Logger(CompanyService.name);
   private readonly uploadsDir = process.env.UPLOADS_DIR?.trim() || './uploads';
 
   constructor(private readonly repo: CompanyRepository) {}
@@ -93,7 +95,20 @@ export class CompanyService {
 
   async getSessionDuration(): Promise<string> {
     const profile = await this.repo.getProfile();
-    return profile.sessionDuration || process.env.JWT_EXPIRES_IN || '12h';
+    const raw = profile.sessionDuration;
+    if (raw && isValidSessionDuration(raw)) {
+      return raw;
+    }
+    if (raw) {
+      this.logger.warn(
+        `Stored session duration "${raw}" is invalid; falling back to default 12h`,
+      );
+    }
+    const envVal = process.env.JWT_EXPIRES_IN?.trim();
+    if (envVal && isValidSessionDuration(envVal)) {
+      return envVal;
+    }
+    return '12h';
   }
 
   async getTimeZone(): Promise<string> {

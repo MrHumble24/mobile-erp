@@ -48,7 +48,7 @@ export function OwnerStep({ state, update, onNext, onBack }: Props) {
             onChange={(e) =>
               update((p) => ({ ...p, owner: { ...p.owner, firstName: e.target.value } }))
             }
-            placeholder="Abdulboriy"
+            placeholder="Alex"
           />
         </div>
         <div className="space-y-1.5">
@@ -58,7 +58,7 @@ export function OwnerStep({ state, update, onNext, onBack }: Props) {
             onChange={(e) =>
               update((p) => ({ ...p, owner: { ...p.owner, lastName: e.target.value } }))
             }
-            placeholder="Malikov"
+            placeholder="Smith"
           />
         </div>
       </div>

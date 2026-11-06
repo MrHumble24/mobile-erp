@@ -4,7 +4,9 @@ import { TelegramService } from './telegram.service.js';
 function build(
   telegramChatId: string | null,
   secretToken: string | null = null,
-  secretState: 'set' | 'missing' | 'unreadable' = secretToken ? 'set' : 'missing',
+  secretState: 'set' | 'missing' | 'unreadable' = secretToken
+    ? 'set'
+    : 'missing',
 ) {
   const settings = {
     get: jest.fn().mockResolvedValue({ telegramChatId }),
@@ -69,7 +71,9 @@ describe('TelegramService.send', () => {
 
   it('C5: does not leak bot token or raw url in logs or error messages', async () => {
     fetchMock.mockRejectedValue(
-      new Error('fetch failed: https://api.telegram.org/botsecret-token/sendMessage'),
+      new Error(
+        'fetch failed: https://api.telegram.org/botsecret-token/sendMessage',
+      ),
     );
     const { service } = build('chat-1', 'secret-token');
 

@@ -3,7 +3,7 @@ import {
   ConflictException,
   HttpStatus,
 } from '@nestjs/common';
-import { rmSync, existsSync } from 'node:fs';
+import { rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SetupService } from './setup.service.js';
 
@@ -101,8 +101,26 @@ describe('SetupService', () => {
     expect(await service.getStatus()).toEqual({ needsSetup: false });
   });
 
+  it('generates secure 32-char setup code, stores only SHA-256 hash, and compares in constant time (C3)', () => {
+    const code = service.generateAndSaveSetupCode();
+    expect(code).toHaveLength(32);
+    expect(code).toMatch(/^[0-9A-F]{32}$/);
+
+    const filePath = service.getSetupCodePath();
+    const stored = readFileSync(filePath, 'utf8').trim();
+    // Stored content is a 64-char SHA-256 hex string, NOT the plain code
+    expect(stored).toHaveLength(64);
+    expect(stored).not.toEqual(code);
+
+    // Matching code passes constant time check
+    expect(service.verifySetupCode(code)).toBe(true);
+    expect(service.verifySetupCode(code.toLowerCase())).toBe(true);
+    // Wrong code fails
+    expect(service.verifySetupCode('WRONG_CODE_HERE')).toBe(false);
+  });
+
   it('rejects wrong setup code and rate limits repeated failures', async () => {
-    service.getOrCreateSetupCode();
+    service.generateAndSaveSetupCode();
     const badDto: any = {
       code: 'WRONG123',
       owner: {
@@ -128,7 +146,7 @@ describe('SetupService', () => {
   });
 
   it('completes setup once and only once, returning token without secrets', async () => {
-    const validCode = service.getOrCreateSetupCode();
+    const validCode = service.generateAndSaveSetupCode();
     const setupDto: any = {
       code: validCode,
       owner: {

@@ -38,7 +38,7 @@ export class CompanyController {
   @RequirePermissions('settings.manage')
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { files: 1, fileSize: 8 * 1024 * 1024 },
+      limits: { files: 1, fileSize: 2 * 1024 * 1024 },
     }),
   )
   uploadLogo(@UploadedFile() file?: UploadedLogo) {
