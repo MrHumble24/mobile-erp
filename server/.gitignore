@@ -66,8 +66,9 @@ graphify.db
 graphify-cache/
 
 
-# Database backups (scripts/backup-db.sh, backups module)
-backups/
+# Encrypted backup files written at runtime (BACKUPS_DIR). Anchored to the
+# server root so it never swallows the src/backups module.
+/backups/
 
 # Server-only state outside the DB: master key, session gate (DATA_DIR)
-data/
+/data/

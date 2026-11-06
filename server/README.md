@@ -21,6 +21,11 @@ pnpm prisma generate
 | `BOOTSTRAP_ADMIN_EMAIL`   | First-admin email, used only by `bootstrap:admin`   |
 | `BOOTSTRAP_ADMIN_PASSWORD`| First-admin password                                |
 | `UPLOADS_DIR`             | Where product pictures are stored (default `./uploads`, git-ignored, created on start). **On Railway point this at a mounted volume** — a plain directory is wiped on every deploy and the pictures vanish (ADR 0031). |
+| `DATA_DIR`                | Server-only state outside the DB: the secrets **master key** and the session cutoff file (default `./data`, git-ignored, owner-only). **On Railway: a mounted volume, or set `APP_MASTER_KEY`** — else the key is regenerated each deploy and every secret becomes unreadable (ADR 0051). |
+| `APP_MASTER_KEY`          | Overrides `DATA_DIR/master.key`: base64 or hex, exactly 32 bytes. Seals all secrets (backup passphrase, provider tokens). Lose it = secrets unrecoverable. |
+| `BACKUPS_DIR`             | Where encrypted `*.mbk` backups are written (default `./backups`, git-ignored, never served over HTTP). On Railway use a mounted volume for an on-server copy. |
+| `BACKUP_PASSPHRASE`       | Fallback backup passphrase. Prefer setting it in-app (Settings → Backups, stored encrypted); env is used only when no in-app passphrase is set. Lose it = every backup unrecoverable. |
+| `PG_BIN_DIR`              | Optional directory holding `pg_dump`/`pg_restore` when they are not on `PATH`. |
 
 ## First-run sequence (order matters)
 
@@ -48,6 +53,33 @@ ADR 0031 are read; the Samsung colour/memory and picture files are skipped.
 (`theapplewiki.com`) under **CC BY-SA**; it must be credited. The lookup answer
 carries this in `source` ({ name, license }). The IMEI TAC list is from
 `github.com/MoazEb/tac-database` (MIT).
+
+## Backups & restore (ADR 0051)
+
+Managed in-app (Settings → Backups): scheduled or manual, encrypted `*.mbk`
+files holding the whole database **and** the uploads, sent to storage providers
+(server disk now; Telegram / Drive / OneDrive follow). Permissions `backup.read`
+/ `backup.manage` / `backup.restore` (owner only by default).
+
+- **Deploy needs.** `pg_dump` and `pg_restore` must be on the server, a major
+  version **≥** the managed Postgres (a backup refuses an older client). Railway
+  gets them from `server/nixpacks.toml` (`postgresql_17`); elsewhere install the
+  Postgres client or set `PG_BIN_DIR`.
+- **Keep safe forever:** the backup passphrase **and** the master key
+  (`DATA_DIR/master.key` or `APP_MASTER_KEY`). Both are needed to open a backup
+  on a new server. The app never shows either again.
+- **Open a backup by hand** (no app, no database — the escape hatch):
+
+  ```bash
+  BACKUP_PASSPHRASE=... pnpm tsx scripts/open-backup.ts path/to/backup.mbk ./out
+  # → ./out/database.dump  (pg_restore --clean --if-exists -d <db> ./out/database.dump)
+  # → ./out/uploads.tar    (tar -xf into UPLOADS_DIR)
+  ```
+
+  The passphrase is the one set in-app (or `BACKUP_PASSPHRASE`); the master key is
+  not needed here (the file carries its own salt). Restoring onto a brand-new
+  server is: create the database, run the two commands above, then
+  `pnpm prisma migrate deploy`.
 
 ## Run & test
 
