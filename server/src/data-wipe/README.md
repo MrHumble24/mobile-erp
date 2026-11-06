@@ -25,16 +25,22 @@ limited 3/min) → `{shopName, password, understood:true, contacts, catalog}`.
 
 ## Order of work
 
-confirm (shop name + caller password + "I understand") → refuse if a backup,
-restore or erase is running (409) → safety backup via `BackupsService` (stop if
-no passphrase / it fails: nothing erased) → maintenance + erase (one
-transaction) → end every session → leave maintenance → record + Telegram.
-Catalog pictures are deleted after commit (the shop logo is never touched).
+take the destructive latch (`DestructiveLockService`, synchronously, before any
+await) → confirm (shop name + caller password + "I understand") → refuse if a
+backup, restore or erase is running (409) → safety backup via `BackupsService`,
+then `verifyBackup` it opens (stop if no passphrase / it fails / it will not
+open: nothing erased) → maintenance + erase (one transaction) → end every
+session → leave maintenance → record (best-effort past the commit) + Telegram.
+Catalog pictures are deleted after commit (the shop logo is never touched). A
+run left RUNNING by a crash becomes FAILED at boot (`onModuleInit`). An offline
+mutation queued before this erase is refused by the sync push
+(`MUTATION_BEFORE_RESET`), so another till cannot replay into the clean shop.
 
 ## Must never
 
 - Take a table name, path or SQL fragment from a request.
 - Erase users, roles, branches, settings, secrets, backups or the system
   lookups/reference lists (KEPT).
-- Run without a safety backup, or leave maintenance on after a crash (the
-  transaction covers the data; the recovery marker covers the switch).
+- Run without a verified safety backup, or overlap with a restore (the shared
+  latch forbids it), or leave maintenance on after a crash (the transaction
+  covers the data; the recovery marker covers the switch).

@@ -37,6 +37,17 @@ app, company-wide, with strong warnings — built on the backup feature.
   no passphrase or it fails) → maintenance + erase → end sessions → record +
   best-effort Telegram. The erase is atomic; the restore recovery marker guards
   the maintenance switch across a crash. New permission `data.wipe` (ADMIN only).
+- **One latch for destructive ops** (`DestructiveLockService`): an erase and a
+  restore take it synchronously before any `await`, so they can never overlap on
+  the database; a manual/scheduled backup stands down while it is held (the
+  safety backup inside an erase/restore bypasses it). This is a rule, not a
+  convenience — the old per-op flags left a window during the safety backup.
+- **The safety backup is verified** (opened + checksums) before anything is
+  erased, by the run id `startBackup` returns — not "the newest run".
+- **Offline mutations older than the reset are refused.** The sync push drops
+  any mutation whose `occurredAt` is before the last erase/restore (the session
+  cutoff moment), code `MUTATION_BEFORE_RESET`; the web client drops it from its
+  queue and, on any post-maintenance sign-in, clears cart/offline caches/queue.
 
 ## Consequences
 - The only undo is restoring the safety backup made first.

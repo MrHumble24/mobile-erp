@@ -2,7 +2,9 @@
 
 The danger zone: erase the shop's data from the website (ADR 0057). Builds on
 the same parts as restore; the shared "please wait" overlay (widgets/restore-
-overlay) handles the wipe mode.
+overlay) handles the wipe mode and, on any post-maintenance sign-in (erase or
+restore), clears the cart, offline caches and sync queue so a stale mutation
+cannot replay into the clean shop (the server also refuses older mutations).
 
 ## Public API (`index.ts`)
 

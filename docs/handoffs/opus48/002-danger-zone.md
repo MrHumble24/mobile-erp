@@ -152,5 +152,47 @@ Fill the Result section below. Report only what you ran and saw yourself; if you
   (users/branches/settings) is explicitly out of scope (needs the setup wizard,
   handoff 024/026). No `graphify-out` committed (gitignored); graph updated in
   server/, client/, root.
+- **Uzbek copy:** all Uzbek strings here (the `backups` i18n keys and the
+  `telegram/messages.ts` `dataWiped` notice) were written by me (Claude) from the
+  glossary and should be reviewed by a native speaker / Gemini.
+
+## Fix round (after the audit, 2026-11-06)
+
+Six audit items addressed. Commits on top of the merge `d4bde59`: `271ae70d`
+(S1, on its own) and `e77e070a` (the rest grouped).
+
+- **S1 (serious) — erase and restore could overlap.** New
+  `common/runtime/destructive-lock.service.ts`: one process-wide latch taken
+  synchronously (before any await) by both the erase (`DataWipeService.wipe`)
+  and the restore (`RestoreService.restore`), released in `finally`. A manual/
+  scheduled backup stands down while it is held; the safety backup inside an
+  erase/restore passes `bypassLock`. The erase also refuses while a plain backup
+  runs, and a plain backup refuses during either. Tests: `destructive-lock
+  .service.spec`, plus "refused while the other holds the latch" in
+  `data-wipe.service.spec` and `restore.service.spec`, and "a plain backup
+  stands down / the inner safety backup bypasses it" in `backups.service.spec`.
+- **M1 — stale offline queue replay.** Server: `SessionGateService.cutoffSec()`
+  exposes the reset moment; `SyncService.push` drops a mutation whose
+  `occurredAt` is before it with `MUTATION_BEFORE_RESET` (tests in
+  `sync.service.spec`). Web: `RestoreOverlay.signIn` clears cart + offline caches
+  + queue on any post-maintenance sign-in (erase or restore); `drain.ts` drops a
+  `MUTATION_BEFORE_RESET` rejection instead of keeping it (test in `drain.spec`).
+- **M2 — unchecked safety backup.** `BackupsService.verifyBackup(runId)` opens
+  the file (header, passphrase, checksums) via `openBackupFile`;
+  `makeSafetyBackup` verifies it, using the id `startBackup` now returns, and
+  refuses with `DATA_WIPE_SAFETY_BACKUP_FAILED` if it will not open (test: "erases
+  nothing when the safety backup will not open").
+- **L1** — the post-commit audit write is best-effort (`recordOutcome`), so a
+  committed erase is never a 500 and cleanup + notice still run (test).
+- **L2** — `DataWipeService.onModuleInit` marks a stale RUNNING run FAILED at boot.
+- **L3** — `e2e-support.copyFromSource` refuses a non-test source DB and removes
+  its temp dump (shared by `test:wipe` and `test:restore`).
+- **Record "who"** now shows the performer's email (resolved in `listRuns`),
+  verified in the browser; the past-erases list renders under the card.
+
+Gate re-run: server `build` ✓, `test` 118 suites / 669 tests ✓, `lint` 0 errors,
+`test:restore` PASS, `test:wipe` PASS; web `test` 92 ✓, `lint` 0 errors, `build`
+✓. Browser: re-confirmed the past-erases record shows (date, who = owner@malika.uz,
+what, 487 rows, status). Graph updated in server/, client/, root.
 
 ## Check by Claude
