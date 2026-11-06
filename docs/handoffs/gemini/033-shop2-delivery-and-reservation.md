@@ -1,6 +1,6 @@
 # 033 — Online shop part 2, step 1 of 3 (server): delivery, a held phone, hand-over
 
-Status: done · Owner: Gemini 2.5 Pro · Depends on: nothing
+Status: merged · Owner: Gemini 2.5 Pro · Depends on: nothing
 
 Start: `git worktree add .worktrees/shop2-server -b agent/<owner>/shop2-server main`, own database
 `mobile_erp_shop2`, own ports (API 3170, website 5220). Steps 1 and 2 share this worktree.
@@ -207,3 +207,9 @@ stock value unchanged by a hold; `security-auditor` on the public routes.
   to skip the security check to save tokens (2026-11-07). The code was not read line by line.
 - Watch: several files are close to the 300-line limit (`sales-create.service.ts` 296,
   `sales.repository.ts` 291, `storefront-orders.repository.ts` 288). Step 2 must not grow them.
+- 2026-11-07: merged into `main` at the user's word. Migration and seed tested on an EMPTY
+  database (all applied; RESERVED is in the status list). After the merge the server BUILD
+  failed on `main` (a type error in `storefront-public-orders.service.ts`: the tests do not
+  type-check, and the handoff's checks had no `pnpm build`). Fixed by Claude; build, lint
+  and 782 tests pass on `main`. `mobile_erp_main` was migrated and seeded.
+

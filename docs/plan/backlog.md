@@ -22,8 +22,7 @@ part 2 is used with real customers or real money.
 | What | Handoff | Notes |
 |---|---|---|
 | Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Given to Gemini on 2026-11-07 (worktree `.worktrees/factory-reset`), with Claude's defaults in its "Decided" table. Own reset test and a security audit before merging. |
-| Online shop part 2: delivery, a held phone, hand-over (server) | `docs/handoffs/gemini/033` | Written 2026-11-07, not handed out. The user chose: Payme and Click as adapters, delivery configurable, pay on receipt allowed. The rest of its "Decided" table is Claude's defaults. |
-| Online shop part 2: Payme and Click (server) | `docs/handoffs/gemini/034` | After 033, same worktree. Security audit before merging. A real payment needs the shop's merchant accounts. |
+| Online shop part 2: Payme and Click (server) | `docs/handoffs/gemini/034` | Being built 2026-11-07 in `.worktrees/shop2-server`. Step 1 (033: delivery, held phone, hand-over) is MERGED. Security audit before merging. A real payment needs the shop's merchant accounts. |
 | Online shop part 2: website screens | `docs/handoffs/gemini/035` | After 033 and 034 are merged. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
