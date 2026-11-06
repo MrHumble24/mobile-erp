@@ -196,3 +196,27 @@ Gate re-run: server `build` ✓, `test` 118 suites / 669 tests ✓, `lint` 0 err
 what, 487 rows, status). Graph updated in server/, client/, root.
 
 ## Check by Claude
+- 2026-11-06: built by one `opus48` agent (cut off once by a network error and resumed), then a
+  security audit (0 critical, 1 serious, 2 medium, 3 low), one fix round, and merged.
+- Claude's own tests on throwaway copies of the test data, with their own data, backup and
+  upload folders, counting every table before and after: no extras → the 487 rows of the ALWAYS
+  group gone, contacts (20) and catalog (70) unchanged; restore of the safety backup → every
+  table back to its count; both extras → all erasable tables empty; users, stores, settings and
+  role permissions intact every time; no readable passphrase → refused; a cashier → 403 on all
+  routes; two erases at once → one runs, one 409; no secret and no error in the log. In a
+  browser: the card, the dialog with live counts (487, 507 with contacts), the button off until
+  the three confirmations, a wrong password refused, and a real erase through the screen ending
+  on "data erased, signed out, a safety backup was made".
+- After the fix round: an erase and a restore fired at the same moment → one accepted, the other
+  409, nothing stuck; a plain backup and an erase at the same moment → one accepted, the other
+  409; an action queued before the erase and pushed afterwards → rejected `MUTATION_BEFORE_RESET`
+  and nothing written. Gate on the joined branch: server 118 suites / 669 tests, lint 0 errors,
+  `test:wipe` and `test:restore` pass; website 98 tests, lint 0 errors, build passes; an empty
+  database migrates and seeds, `data.wipe` goes to ADMIN only.
+- Not seen by Claude: the list of past erases on the screen (the builder saw it), the wait
+  screen while an erase is still running, a damaged safety backup stopping the erase (unit test
+  only), pictures removed from disk when the catalog is erased.
+- The Uzbek texts (the `backups` keys and the Telegram notice) were written by the builder and
+  need a native check.
+- When a table is added to the schema later, the classification test fails until the table is
+  put in a group: the storefront and setup branches will hit this when they are merged.
