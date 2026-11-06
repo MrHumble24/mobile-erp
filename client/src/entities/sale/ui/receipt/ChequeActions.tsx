@@ -9,9 +9,11 @@ import type { ReceiptView } from "../../model/sale.types"
 export function ChequeActions({
   receipt,
   onNewSale,
+  canPrint,
 }: {
   receipt: ReceiptView
   onNewSale?: () => void
+  canPrint: boolean
 }) {
   const { t } = useI18n()
   const [copied, setCopied] = React.useState(false)
@@ -29,10 +31,12 @@ export function ChequeActions({
 
   return (
     <div className="print:hidden flex flex-wrap items-center justify-center gap-2 w-full max-w-[320px]">
-      <Button onClick={() => window.print()} className="flex-1 min-w-[130px] h-9 gap-1.5 text-xs font-semibold rounded-full">
-        <Printer className="size-4" />
-        <span>{t("pos.printCheque")}</span>
-      </Button>
+      {canPrint && (
+        <Button onClick={() => window.print()} className="flex-1 min-w-[130px] h-9 gap-1.5 text-xs font-semibold rounded-full">
+          <Printer className="size-4" />
+          <span>{t("pos.printCheque")}</span>
+        </Button>
+      )}
       <Button variant="outline" onClick={handleCopy} className="flex-1 min-w-[130px] h-9 gap-1.5 text-xs font-semibold rounded-full">
         {copied ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
         <span>{copied ? t("common.yes") : t("pos.copyCheque")}</span>
