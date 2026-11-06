@@ -11,7 +11,8 @@ Updated by Claude when something is added, started or finished. Last update: 202
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Written 2026-11-06, not handed out, owner not assigned (a strong model only). Its "Decided" table is the user's to change first. |
+| Factory reset: back to the setup wizard | `docs/handoffs/opus48/003` | Given to Gemini on 2026-11-07 (worktree `.worktrees/factory-reset`), with Claude's defaults in its "Decided" table. Own reset test and a security audit before merging. |
+| Android: split three files at the size limit (no change in behaviour) | `docs/handoffs/opencode/018` | Written 2026-11-07, worktree `.worktrees/opencode-android-splits`. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
