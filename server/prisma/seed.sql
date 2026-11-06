@@ -105,7 +105,9 @@ ON CONFLICT (name) DO NOTHING;
 -- Cash/card ledger lookups (ADR 0024). Accounts are added as rows over time.
 INSERT INTO cash_accounts (code, label, "sortOrder") VALUES
   ('CASH', 'Cash', 10),
-  ('CARD', 'Card', 20)
+  ('CARD', 'Card', 20),
+  ('PAYME', 'Payme', 30),
+  ('CLICK', 'Click', 40)
 ON CONFLICT (code) DO NOTHING;
 
 -- 2a seeds the manual + transfer types; 2b adds the automatic ones (posted by
@@ -209,7 +211,8 @@ INSERT INTO permissions (code, resource, action, description) VALUES
   ('backup.read',          'backup',      'read',      'View backups, places and settings'),
   ('backup.manage',        'backup',      'manage',    'Make, download, delete backups and change settings'),
   ('backup.restore',       'backup',      'restore',   'Restore the whole system from a backup'),
-  ('data.wipe',            'data',        'wipe',      'Erase the shop''s data (danger zone)')
+  ('data.wipe',            'data',        'wipe',      'Erase the shop''s data (danger zone)'),
+  ('payment.refund',       'payment',     'refund',    'Mark an online payment refunded')
 ON CONFLICT (code) DO UPDATE SET description = EXCLUDED.description;
 
 -- Backup lookups (handoff 023). Mirrored in the backups migration.
@@ -238,6 +241,25 @@ INSERT INTO backup_provider_statuses (code, label, "sortOrder", "isActive") VALU
   ('NEEDS_RECONNECT','Needs reconnecting',2,true),
   ('ERROR','Error',3,true)
 ON CONFLICT (code) DO NOTHING;
+
+-- Online payments lookups (ADR 0063).
+INSERT INTO online_payment_providers (code, label, "isActive", "sortOrder") VALUES
+  ('PAYME', 'Payme', true, 10),
+  ('CLICK', 'Click', true, 20)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO online_payment_statuses (code, label, "isTerminal", "sortOrder") VALUES
+  ('CREATED', 'Created', false, 10),
+  ('PAID', 'Paid', false, 20),
+  ('CANCELLED', 'Cancelled', true, 30),
+  ('REFUND_DUE', 'Refund Due', false, 40),
+  ('REFUNDED', 'Refunded', true, 50)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO online_payment_provider_configs (id, provider_code, is_enabled, is_test_mode, settings, updated_at) VALUES
+  (gen_random_uuid()::text, 'PAYME', false, true, '{}'::jsonb, CURRENT_TIMESTAMP),
+  (gen_random_uuid()::text, 'CLICK', false, true, '{}'::jsonb, CURRENT_TIMESTAMP)
+ON CONFLICT (provider_code) DO NOTHING;
 
 -- Roles ----------------------------------------------------------------------
 INSERT INTO roles (code, name, description, "isSystem", "updatedAt") VALUES

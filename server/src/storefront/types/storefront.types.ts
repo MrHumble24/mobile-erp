@@ -35,6 +35,7 @@ export type StorefrontConfigView =
       deliveryFreeFrom: string | null;
       deliveryNote: string | null;
       deliveryZones: StorefrontDeliveryZoneView[];
+      paymentProviders: { code: string; label: string }[];
     };
 
 export interface StorefrontProductCard {
@@ -117,8 +118,22 @@ export interface StorefrontOrderListItem {
   handledAt: Date | null;
   handledByName: string | null;
   saleId: string | null;
+  payment: StorefrontOrderPaymentView | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface StorefrontOrderPaymentView {
+  id: string;
+  providerCode: string;
+  providerLabel?: string;
+  statusCode: string;
+  statusLabel?: string;
+  amount: string;
+  paidAt: Date | null;
+  cancelledAt: Date | null;
+  refundedAt: Date | null;
+  createdAt: Date;
 }
 
 export interface StorefrontOrderStatusHistoryView {

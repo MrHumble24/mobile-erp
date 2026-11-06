@@ -132,6 +132,21 @@ the server's own public origin (the callback host); in dev it is `http://localho
   the app, then **Connect**. (Microsoft rotates the refresh token on each refresh;
   the app seals the new one automatically, so OneDrive stays connected.)
 
+## Online payment gateways (Payme & Click)
+
+Online payments for storefront orders require the company currency to be `UZS` (ADR 0063). Secrets are encrypted via `SecretsService` (`payment.<provider>.key`).
+
+- **Payme (Merchant API):**
+  - **Endpoint / Callback URL:** `PUBLIC_URL` + `/online-payments/callback/payme`
+  - **Auth:** HTTP Basic Auth `Paycom:<merchant_key>`
+  - **Settings (`settings` JSON):** `{"merchantId": "<your-payme-merchant-id>"}`
+  - **Secret:** Merchant key from Paycom Business cabinet (`POST /online-payments/configs/PAYME/secret`)
+- **Click (Shop API):**
+  - **Prepare & Complete URL:** `PUBLIC_URL` + `/online-payments/callback/click`
+  - **Signature:** MD5 hash of `click_trans_id + service_id + SECRET_KEY + merchant_trans_id + [merchant_prepare_id] + amount + action + sign_time`
+  - **Settings (`settings` JSON):** `{"serviceId": "<click-service-id>", "merchantId": "<click-merchant-id>"}`
+  - **Secret:** Secret key from Click Merchant account (`POST /online-payments/configs/CLICK/secret`)
+
 ## Run & test
 
 ```bash
