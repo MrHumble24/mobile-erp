@@ -170,10 +170,6 @@ export class BackupsRepository {
     });
   }
 
-  latestRestoreRun() {
-    return this.prisma.restoreRun.findFirst({ orderBy: { startedAt: 'desc' } });
-  }
-
   // --- targets --------------------------------------------------------------
   createTarget(runId: string, providerCode: string, statusCode: string) {
     return this.prisma.backupTarget.create({
@@ -213,46 +209,6 @@ export class BackupsRepository {
     return this.prisma.backupProvider.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  // --- restore runs ---------------------------------------------------------
-  createRestoreRun(data: {
-    performedById: string;
-    sourceRunId: string | null;
-    sourceLabel: string;
-  }) {
-    return this.prisma.restoreRun.create({
-      data: { ...data, statusCode: RUN_STATUS.RUNNING },
-    });
-  }
-
-  /**
-   * Record a restore's outcome. Upsert, not update: a successful restore
-   * replaces the whole database — including the RUNNING row written before it —
-   * so on success we re-insert the audit row; on a rolled-back failure the row
-   * survived and we update it.
-   */
-  upsertRestoreOutcome(
-    id: string,
-    base: {
-      performedById: string;
-      sourceRunId: string | null;
-      sourceLabel: string;
-    },
-    status: 'SUCCESS' | 'FAILED',
-    extra: { safetyRunId?: string; error?: string } = {},
-  ) {
-    return this.prisma.restoreRun.upsert({
-      where: { id },
-      create: {
-        id,
-        ...base,
-        statusCode: status,
-        finishedAt: new Date(),
-        ...extra,
-      },
-      update: { statusCode: status, finishedAt: new Date(), ...extra },
     });
   }
 

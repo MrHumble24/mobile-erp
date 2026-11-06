@@ -9,8 +9,9 @@ import type { Readable } from 'node:stream';
 import { SecretsService } from '../secrets/secrets.service.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsRepository } from './backups.repository.js';
-import { BackupTooLargeError, backupDestination } from './lib/backup-config.js';
+import { BackupTooLargeError } from './lib/backup-config.js';
 import { UpdateBackupSettingsDto } from './dto/update-backup-settings.dto.js';
+import { ProviderDestination } from './providers/provider-destination.js';
 import { StorageRegistry } from './storage/storage.registry.js';
 import {
   BACKUP_FILE_MISSING,
@@ -36,6 +37,7 @@ export class BackupsService {
     private readonly runner: BackupRunner,
     private readonly registry: StorageRegistry,
     private readonly secrets: SecretsService,
+    private readonly destination: ProviderDestination,
   ) {}
 
   isRunning(): boolean {
@@ -69,7 +71,25 @@ export class BackupsService {
 
   async listRuns(): Promise<BackupRunView[]> {
     const runs = await this.repo.listRuns();
-    return runs.map((r) => toRunView(r));
+    return runs.map((r) => this.toRunView(r));
+  }
+
+  /** A provider can serve a downloadable copy right now. */
+  private canDownload(providerCode: string): boolean {
+    return (
+      this.registry.has(providerCode) &&
+      this.registry.get(providerCode).capabilities.download
+    );
+  }
+
+  private toRunView(run: NonNullable<RunWithTargets>): BackupRunView {
+    const downloadable = run.targets.some(
+      (t) => t.statusCode === 'UPLOADED' && this.canDownload(t.providerCode),
+    );
+    const partlyFailed =
+      run.statusCode === 'SUCCESS' &&
+      run.targets.some((t) => t.statusCode === 'FAILED');
+    return { ...toRunView(run), partlyFailed, downloadable };
   }
 
   async getSettings(): Promise<BackupSettingsView> {
@@ -112,27 +132,30 @@ export class BackupsService {
     });
   }
 
-  /** Open a backup's encrypted file for download (as-is). */
+  /** Open a backup's encrypted file for download. LOCAL first, then any remote
+   * place that can download — so a backup kept only on Drive still restores. */
   async download(
     id: string,
   ): Promise<{ stream: Readable; name: string; size: number }> {
     const run = await this.requireRun(id);
-    const target = run.targets.find(
+    const usable = run.targets.filter(
       (t) =>
         t.statusCode === 'UPLOADED' &&
+        t.remoteRef &&
         this.registry.has(t.providerCode) &&
-        t.remoteRef,
+        this.registry.get(t.providerCode).capabilities.download,
     );
+    const target = usable.find((t) => t.providerCode === 'LOCAL') ?? usable[0];
     if (!target?.remoteRef || !run.fileName) {
       throw new NotFoundException({
         code: BACKUP_FILE_MISSING,
-        message: 'No downloadable copy of this backup is on the server',
+        message: 'No downloadable copy of this backup is available',
       });
     }
     const adapter = this.registry.get(target.providerCode);
     const stream = await adapter.download(
       { ref: target.remoteRef },
-      backupDestination(target.providerCode),
+      await this.destination.resolve(target.providerCode),
     );
     return { stream, name: run.fileName, size: Number(run.sizeBytes ?? 0) };
   }
@@ -147,7 +170,7 @@ export class BackupsService {
       try {
         await adapter.remove(
           { ref: target.remoteRef },
-          backupDestination(target.providerCode),
+          await this.destination.resolve(target.providerCode),
         );
       } catch (err) {
         this.logger.warn(
@@ -170,7 +193,9 @@ export class BackupsService {
   }
 }
 
-function toRunView(run: NonNullable<RunWithTargets>): BackupRunView {
+type BaseRunView = Omit<BackupRunView, 'partlyFailed' | 'downloadable'>;
+
+function toRunView(run: NonNullable<RunWithTargets>): BaseRunView {
   return {
     id: run.id,
     triggeredById: run.triggeredById,

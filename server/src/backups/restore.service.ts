@@ -15,6 +15,7 @@ import { StoresService } from '../stores/stores.service.js';
 import { BackupRunner } from './backup-runner.js';
 import { BackupsRepository } from './backups.repository.js';
 import { BackupsService } from './backups.service.js';
+import { RestoreRepository } from './restore.repository.js';
 import { makeStaging, uploadsDir } from './lib/backup-config.js';
 import { knownMigrations } from './lib/backup-manifest.js';
 import { openBackupFile } from './lib/mbk-format.js';
@@ -53,6 +54,7 @@ export class RestoreService {
 
   constructor(
     private readonly repo: BackupsRepository,
+    private readonly restoreRepo: RestoreRepository,
     private readonly backups: BackupsService,
     private readonly runner: BackupRunner,
     private readonly restoreRunner: RestoreRunner,
@@ -66,7 +68,7 @@ export class RestoreService {
   }
 
   async status(): Promise<RestoreStatusView> {
-    const last = await this.repo.latestRestoreRun();
+    const last = await this.restoreRepo.latestRestoreRun();
     return {
       restoring: this.restoring,
       needsManualRecovery: this.recovery.needsManualRecovery(),
@@ -132,7 +134,7 @@ export class RestoreService {
       sourceRunId,
       sourceLabel: label,
     };
-    const record = await this.repo.createRestoreRun(base);
+    const record = await this.restoreRepo.createRestoreRun(base);
 
     const outcome = { safetyRunId: undefined as string | undefined };
     let failure: Error | undefined;
@@ -188,7 +190,7 @@ export class RestoreService {
     failure: Error | undefined,
   ): Promise<void> {
     try {
-      await this.repo.upsertRestoreOutcome(
+      await this.restoreRepo.upsertRestoreOutcome(
         id,
         base,
         failure ? 'FAILED' : 'SUCCESS',

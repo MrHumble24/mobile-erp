@@ -13,6 +13,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { IMAGE_URL_PREFIX } from './common/lib/image-url.js';
+import { corsOrigins } from './common/lib/origins.js';
 
 /**
  * Serves product pictures: public, read-only, cross-origin (the web client runs
@@ -44,18 +45,10 @@ async function bootstrap() {
 
   // Production serves the client same-origin, so CORS stays off unless CORS_ORIGINS
   // lists browser origins. Dev defaults to the Vite origins so no .env edit is needed.
-  const corsOrigins = (
-    process.env.CORS_ORIGINS ??
-    (process.env.NODE_ENV === 'production'
-      ? 'https://luminous-gratitude-production-50bf.up.railway.app'
-      : 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174')
-  )
-    .split(',')
-    .map((o) => o.trim())
-    .filter(Boolean);
-  if (corsOrigins.length > 0) {
+  const origins = corsOrigins();
+  if (origins.length > 0) {
     app.enableCors({
-      origin: corsOrigins,
+      origin: origins,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       allowedHeaders: ['Authorization', 'Content-Type', 'X-Store-Id'],
     });

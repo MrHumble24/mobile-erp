@@ -8,11 +8,13 @@ function make(over: {
   manualRecovery?: boolean;
 }) {
   const repo = {
-    createRestoreRun: jest.fn().mockResolvedValue({ id: 'r1' }),
-    upsertRestoreOutcome: jest.fn().mockResolvedValue(undefined),
     listRuns: jest
       .fn()
       .mockResolvedValue([{ id: 'safety', fileName: 's.mbk' }]),
+  };
+  const restoreRepo = {
+    createRestoreRun: jest.fn().mockResolvedValue({ id: 'r1' }),
+    upsertRestoreOutcome: jest.fn().mockResolvedValue(undefined),
     latestRestoreRun: jest.fn().mockResolvedValue(null),
   };
   const backups = { startBackup: jest.fn(), download: jest.fn() };
@@ -35,6 +37,7 @@ function make(over: {
   };
   const svc = new RestoreService(
     repo as never,
+    restoreRepo as never,
     backups as never,
     runner as never,
     restoreRunner as never,
@@ -42,7 +45,7 @@ function make(over: {
     auth as never,
     recovery as never,
   );
-  return { svc, repo, backups };
+  return { svc, repo, restoreRepo, backups };
 }
 
 const req = (shopName: string): RestoreRequest => ({
@@ -55,11 +58,11 @@ const req = (shopName: string): RestoreRequest => ({
 
 describe('RestoreService confirmation', () => {
   it('rejects a wrong shop name before touching anything', async () => {
-    const { svc, repo, backups } = make({ storeName: 'Malika Bazaar' });
+    const { svc, restoreRepo, backups } = make({ storeName: 'Malika Bazaar' });
     await expect(svc.restore(req('Wrong Shop'))).rejects.toMatchObject({
       response: { code: RESTORE_CONFIRM_FAILED },
     });
-    expect(repo.createRestoreRun).not.toHaveBeenCalled();
+    expect(restoreRepo.createRestoreRun).not.toHaveBeenCalled();
     expect(backups.startBackup).not.toHaveBeenCalled();
   });
 
@@ -71,10 +74,10 @@ describe('RestoreService confirmation', () => {
   });
 
   it('refuses to start while manual recovery is pending (RESTORE_RUNNING)', async () => {
-    const { svc, repo } = make({ manualRecovery: true });
+    const { svc, restoreRepo } = make({ manualRecovery: true });
     await expect(svc.restore(req('Malika Bazaar'))).rejects.toMatchObject({
       response: { code: 'RESTORE_RUNNING' },
     });
-    expect(repo.createRestoreRun).not.toHaveBeenCalled();
+    expect(restoreRepo.createRestoreRun).not.toHaveBeenCalled();
   });
 });

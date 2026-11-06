@@ -1,6 +1,5 @@
 import { promises as fsp } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { Destination } from '../storage/backup-storage.js';
 
 /** The data folder for server-only state (same as secrets/app-key). */
 function dataDir(): string {
@@ -44,13 +43,4 @@ export class BackupTooLargeError extends Error {
         'reduce data/uploads or raise BACKUP_MAX_PAYLOAD_BYTES',
     );
   }
-}
-
-/**
- * Placement config + secret for a provider. LOCAL needs nothing. Remote
- * providers (Telegram, Drive, OneDrive) resolve their own config + secret when
- * they are added — each extends this without a switch on the LOCAL path.
- */
-export function backupDestination(code: string): Destination {
-  return { config: { providerCode: code }, secret: undefined };
 }

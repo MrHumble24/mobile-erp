@@ -7,11 +7,9 @@ import { FORMAT_VERSION, sha256File } from './lib/backup-manifest.js';
 import { createBackupFile } from './lib/mbk-format.js';
 import { assertPgTools } from './lib/pg-tools.js';
 import { BackupsRepository } from './backups.repository.js';
-import {
-  backupDestination,
-  makeStaging,
-  uploadsDir,
-} from './lib/backup-config.js';
+import { makeStaging, uploadsDir } from './lib/backup-config.js';
+import { ProviderDestination } from './providers/provider-destination.js';
+import { ProvidersService } from './providers/providers.service.js';
 import { StorageRegistry } from './storage/storage.registry.js';
 import {
   BACKUP_NO_PASSPHRASE,
@@ -32,6 +30,8 @@ export class BackupRunner {
     private readonly registry: StorageRegistry,
     private readonly secrets: SecretsService,
     private readonly telegram: TelegramService,
+    private readonly providers: ProvidersService,
+    private readonly destination: ProviderDestination,
   ) {}
 
   /** Resolve the passphrase: the readable secret first, then the env fallback.
@@ -121,30 +121,33 @@ export class BackupRunner {
     const { size } = await fsp.stat(tempFile);
     const checksum = await sha256File(tempFile);
 
-    const uploaded = await this.sendEverywhere(runId, {
+    const codes = await this.providers.enabledCodes();
+    const localOk = await this.sendEverywhere(runId, codes, {
       path: tempFile,
       name,
       sizeBytes: size,
     });
-    if (uploaded === 0) throw new Error('No storage place accepted the backup');
+    // The run succeeds when the on-server (LOCAL) copy was written. A failed
+    // remote place makes it "partly failed" (visible per target), never failed.
+    if (!localOk) throw new Error('The on-server backup (LOCAL) failed');
 
     await this.repo.finishRun(runId, {
       fileName: name,
       sizeBytes: BigInt(size),
       checksum,
     });
-    for (const code of this.registry.codes()) {
-      await this.applyRetention(code, keepLast);
-    }
+    for (const code of codes) await this.applyRetention(code, keepLast);
   }
 
-  /** Attempt every registered place; one row per place. Returns how many took it. */
+  /** Send to each place (LOCAL + switched-on remotes); one row per place.
+   * Returns whether LOCAL succeeded. */
   private async sendEverywhere(
     runId: string,
+    codes: string[],
     file: { path: string; name: string; sizeBytes: number },
-  ): Promise<number> {
-    let ok = 0;
-    for (const code of this.registry.codes()) {
+  ): Promise<boolean> {
+    let localOk = false;
+    for (const code of codes) {
       const target = await this.repo.createTarget(
         runId,
         code,
@@ -152,12 +155,16 @@ export class BackupRunner {
       );
       try {
         const adapter = this.registry.get(code);
-        const ref = await adapter.upload(file, backupDestination(code));
+        const ref = await adapter.upload(
+          file,
+          await this.destination.resolve(code),
+        );
         await this.repo.updateTarget(target.id, {
           statusCode: TARGET_STATUS.UPLOADED,
           remoteRef: ref.ref,
         });
-        ok += 1;
+        await this.providers.recordResult(code, true);
+        if (code === 'LOCAL') localOk = true;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         this.logger.warn(`Upload to ${code} failed: ${message}`);
@@ -165,24 +172,22 @@ export class BackupRunner {
           statusCode: TARGET_STATUS.FAILED,
           error: message,
         });
+        await this.providers.recordResult(code, false, err);
       }
     }
-    return ok;
+    return localOk;
   }
 
   /** Keep the newest `keepLast` per place; delete older where the place allows. */
   private async applyRetention(code: string, keepLast: number): Promise<void> {
     const adapter = this.registry.get(code);
     if (!adapter.capabilities.delete) return;
+    const dest = await this.destination.resolve(code);
     const targets = await this.repo.uploadedTargets(code);
     for (const target of targets.slice(keepLast)) {
       try {
-        if (target.remoteRef) {
-          await adapter.remove(
-            { ref: target.remoteRef },
-            backupDestination(code),
-          );
-        }
+        if (target.remoteRef)
+          await adapter.remove({ ref: target.remoteRef }, dest);
         await this.repo.deleteTarget(target.id);
       } catch (err) {
         this.logger.warn(`Retention delete on ${code} failed: ${String(err)}`);

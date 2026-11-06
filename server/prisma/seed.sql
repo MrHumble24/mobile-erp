@@ -208,6 +208,13 @@ INSERT INTO backup_providers (code, label, "sortOrder", "isActive") VALUES
   ('ONEDRIVE','Microsoft OneDrive',3,true)
 ON CONFLICT (code) DO NOTHING;
 
+INSERT INTO backup_provider_statuses (code, label, "sortOrder", "isActive") VALUES
+  ('NEVER_USED','Never used',0,true),
+  ('OK','OK',1,true),
+  ('NEEDS_RECONNECT','Needs reconnecting',2,true),
+  ('ERROR','Error',3,true)
+ON CONFLICT (code) DO NOTHING;
+
 -- Roles ----------------------------------------------------------------------
 INSERT INTO roles (code, name, description, "isSystem", "updatedAt") VALUES
   ('ADMIN',   'Store Owner',       'Full access',                         true, now()),

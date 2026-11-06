@@ -30,7 +30,14 @@ describe('BackupsService', () => {
       get: () => ({ capabilities: { delete: true, maxPartBytes: null } }),
     } as unknown as StorageRegistry;
     const secrets = { set: jest.fn() } as unknown as SecretsService;
-    return new BackupsService(repo, runner as BackupRunner, registry, secrets);
+    const destination = { resolve: jest.fn() } as never;
+    return new BackupsService(
+      repo,
+      runner as BackupRunner,
+      registry,
+      secrets,
+      destination,
+    );
   }
 
   it('refuses a second backup while one runs (BACKUP_RUNNING)', async () => {
@@ -73,5 +80,45 @@ describe('BackupsService', () => {
     });
     await expect(svc.startBackup('u1')).rejects.toThrow('boom');
     expect(svc.isRunning()).toBe(false);
+  });
+
+  it('downloads from a remote place when the backup is only there', async () => {
+    const run = {
+      fileName: 'backup.mbk',
+      sizeBytes: 10n,
+      targets: [
+        { providerCode: 'LOCAL', statusCode: 'FAILED', remoteRef: null },
+        {
+          providerCode: 'TELEGRAM',
+          statusCode: 'UPLOADED',
+          remoteRef: 'tg-ref',
+        },
+      ],
+    };
+    const repo = {
+      getRun: jest.fn().mockResolvedValue(run),
+    } as unknown as BackupsRepository;
+    const download = jest.fn().mockResolvedValue('a-stream');
+    const registry = {
+      has: () => true,
+      get: () => ({ capabilities: { download: true }, download }),
+    } as unknown as StorageRegistry;
+    const destination = {
+      resolve: jest.fn().mockResolvedValue({ config: {}, secret: {} }),
+    } as never;
+    const svc = new BackupsService(
+      repo,
+      {} as BackupRunner,
+      registry,
+      {} as SecretsService,
+      destination,
+    );
+
+    const out = await svc.download('id');
+    expect(out.stream).toBe('a-stream');
+    expect(download).toHaveBeenCalledWith(
+      { ref: 'tg-ref' },
+      { config: {}, secret: {} },
+    );
   });
 });

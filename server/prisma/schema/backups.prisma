@@ -44,6 +44,7 @@ model BackupProvider {
   isActive  Boolean @default(true)
 
   targets BackupTarget[]
+  config  BackupProviderConfig?
 
   @@map("backup_providers")
 }

@@ -19,7 +19,7 @@ manual, encrypted, sent to several places, restorable.
   (owner-only, exclusive-created; `APP_MASTER_KEY` overrides), never in the DB.
   A secret reads as set / missing / **unreadable** (wrong key → clear 400, not 500).
 - **Storage is an adapter** (`BackupStorage`): one DI array, no switch. A
-  provider = one file + one module line + one lookup row. `LOCAL` ships.
+  provider = one file + one module line + one lookup row (ADR 0056 adds three).
 - **pg tools** spawn with an argv array, never a shell; the password is in the
   child env; stderr is logged server-side, never returned (Railway: `nixpacks`).
   The runs table is reconciled against LOCAL files at boot and after a restore.

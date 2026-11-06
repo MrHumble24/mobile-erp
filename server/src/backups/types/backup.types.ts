@@ -13,7 +13,25 @@ export const MAINTENANCE = 'MAINTENANCE';
 
 export const BACKUP_PASSPHRASE_SECRET = 'backup.passphrase';
 
+// Provider management (PART 3/4)
+export const PROVIDER_NOT_FOUND = 'PROVIDER_NOT_FOUND';
+export const PROVIDER_NOT_AVAILABLE = 'PROVIDER_NOT_AVAILABLE';
+export const PROVIDER_NOT_CONFIGURED = 'PROVIDER_NOT_CONFIGURED';
+export const PROVIDER_LOCAL_LOCKED = 'PROVIDER_LOCAL_LOCKED';
+export const PROVIDER_NOT_CONNECTED = 'PROVIDER_NOT_CONNECTED';
+export const BACKUP_CHAT_IS_STAFF_CHAT = 'BACKUP_CHAT_IS_STAFF_CHAT';
+export const OAUTH_STATE_INVALID = 'OAUTH_STATE_INVALID';
+export const OAUTH_NOT_SUPPORTED = 'OAUTH_NOT_SUPPORTED';
+export const OAUTH_RETURN_URL_INVALID = 'OAUTH_RETURN_URL_INVALID';
+
 export type PassphraseStatus = 'set' | 'missing' | 'unreadable';
+
+export const PROVIDER_STATUS = {
+  OK: 'OK',
+  NEEDS_RECONNECT: 'NEEDS_RECONNECT',
+  ERROR: 'ERROR',
+  NEVER_USED: 'NEVER_USED',
+} as const;
 
 export const RUN_STATUS = {
   RUNNING: 'RUNNING',
@@ -45,6 +63,12 @@ export interface BackupRunView {
   migrationName: string | null;
   status: string;
   error: string | null;
+  /** A SUCCESS run where at least one place failed (visible per target). */
+  partlyFailed: boolean;
+  /** Any place still holds a fetchable copy (LOCAL file present, or a remote
+   * that can download). False once every copy is gone — the LOCAL target also
+   * reads FAILED with "file missing on the server". */
+  downloadable: boolean;
   targets: BackupTargetView[];
 }
 

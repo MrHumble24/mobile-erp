@@ -28,6 +28,10 @@ pnpm prisma generate
 | `BACKUP_MAX_PAYLOAD_BYTES`| Largest backup payload (dump + uploads) before encryption (default 32 GiB, well under the AES-GCM limit); a bigger payload is refused with `BACKUP_TOO_LARGE`. |
 | `BACKUP_MAX_UPLOAD_BYTES` | Largest restore upload accepted (default 2 GiB). |
 | `PG_BIN_DIR`              | Optional directory holding `pg_dump`/`pg_restore` when they are not on `PATH`. |
+| `PUBLIC_URL`              | The server's own public origin, used for the OAuth callback address (ADR 0056). On Railway set it to the app's URL; in dev it defaults to `http://localhost:<PORT>`. |
+| `TELEGRAM_BOT_TOKEN`      | Fallback Telegram bot token for backups (also set in-app). Missing → the place is "not set up". |
+| `GOOGLE_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Google OAuth client for the Drive place (also set in-app). |
+| `MICROSOFT_OAUTH_CLIENT_ID` / `_SECRET` | Fallback Microsoft OAuth client for the OneDrive place (also set in-app). |
 
 ## First-run sequence (order matters)
 
@@ -91,6 +95,34 @@ marker in `DATA_DIR`. Restore the latest safety `.mbk` by hand (open it, then
   not needed here (the file carries its own salt). Restoring onto a brand-new
   server is: create the database, run the two commands above, then
   `pnpm prisma migrate deploy`.
+
+### Storage places (Telegram, Google Drive, OneDrive — ADR 0056)
+
+Off-machine copies, set up in-app (Settings → Backups → Places). LOCAL is always
+on; the others are off until set up and tested. Secrets are set through
+write-only routes (env fallback: `TELEGRAM_BOT_TOKEN`, `GOOGLE_OAUTH_CLIENT_ID`/
+`_SECRET`, `MICROSOFT_OAUTH_CLIENT_ID`/`_SECRET`). OAuth needs `PUBLIC_URL` set to
+the server's own public origin (the callback host); in dev it is `http://localhost:<PORT>`.
+
+- **Telegram.** In Telegram, create a **new private channel or chat** for backups
+  (not the staff alert group — the app refuses a chat that equals a shop alert
+  chat). Add your bot to it and make it an admin. Find the chat id (e.g. forward a
+  message to `@userinfobot`, or `getUpdates`). In the app set the bot token and the
+  chat id, then **Test**. Parts stay in the chat (no delete).
+- **Google Drive.** Google Cloud Console → **APIs & Services**. Enable the
+  **Google Drive API**. **OAuth consent screen** → External, add yourself as a
+  test user. **Credentials → Create OAuth client ID → Web application**. Under
+  *Authorized redirect URIs* paste the address shown by
+  `GET /backups/oauth/GOOGLE_DRIVE/redirect-uri` (it is `PUBLIC_URL` +
+  `/backups/oauth/GOOGLE_DRIVE/callback`). Scope is `drive.file` (app-made files
+  only). Put the client id + secret in the app, then **Connect**.
+- **OneDrive.** Azure Portal → **App registrations → New registration**
+  (accounts of your type). **Authentication → Add a platform → Web**, redirect URI
+  = the address from `GET /backups/oauth/ONEDRIVE/redirect-uri`. **Certificates &
+  secrets** → new client secret. **API permissions** → Microsoft Graph delegated
+  `Files.ReadWrite.AppFolder` + `offline_access`. Put the client id + secret in
+  the app, then **Connect**. (Microsoft rotates refresh tokens; an occasional
+  reconnect may be needed.)
 
 ## Run & test
 
