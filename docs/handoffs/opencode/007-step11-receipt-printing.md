@@ -1,6 +1,6 @@
 # 007 — Step 11, part 5 of 7: receipt printing follows the settings
 
-Status: done · Owner: OpenCode (Big Pickle) · Depends on: 006 (merged)
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: 006 (merged)
 
 ## Why
 Part 5 of the step 11 website work. The Settings page (part 1) has "Print receipts" and a paper
@@ -111,3 +111,12 @@ Fill the Result section of `docs/handoffs/opencode/007-step11-receipt-printing.m
   - No new i18n keys were needed; no raw key was added to the screen.
 
 ## Check by Claude
+- 2026-11-06: checked and merged. Committed in the order asked (split first), report accurate.
+  Tests 84 pass, lint 0 errors, build passes. It read the server and used the real field name
+  `footer` where the handoff wrongly said `receiptFooter`.
+- Seen in a browser on a real sale: the header is the store's own name ("MAIN STORE"), no
+  "Malika" anywhere on the receipt; with 58 mm the paper has `data-paper="58"` and is 219 px
+  wide, with 80 mm `data-paper="80"` and 302 px; with printing off there is no Print button and
+  "Copy for Telegram" stays. Settings were put back to on / 58 mm.
+- Not seen: a real print preview (clicking Print opens a dialog that blocks the browser tools),
+  the automatic print after a sale, the Telegram text.
