@@ -8,6 +8,16 @@ Updated by Claude when something is added, started or finished. Last update: 202
 - Merged 2026-11-06 as well: the Uzbek pass (031) and the till and dialogs at phone width (032).
 - Merged on 2026-11-06: the online storefront, first-boot setup with company profile and themes, the danger zone, branches on the phone apps (027), dark themes switched on (028), online orders on the phone apps (029), OpenCode 010 to 013. Gemini and OpenCode ran out of their limits that day; 028 and 029 were finished by Claude builder agents.
 
+## Owed checks (skipped to save tokens; do them when the Claude limit resets)
+The user decided on 2026-11-07 to skip these for now. They must be done before the online shop
+part 2 is used with real customers or real money.
+- **Security check of online shop part 2**, all three steps (`docs/handoffs/gemini/033`, `034`, `035`):
+  run `security-auditor` on the whole diff. Step 2 (Payme and Click) matters most: strangers
+  send it messages about money.
+- **Claude's own test of the payment calls** on a throwaway database: wrong proof, changed
+  amount, the same call twice, paying twice, cancel after hand-over.
+- **A line-by-line read of step 1** (held phone, hand-over as a sale). Only its tests were run.
+
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
