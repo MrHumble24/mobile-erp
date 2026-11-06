@@ -68,7 +68,7 @@ Read `CLAUDE.md`, every file in `.agent/rules/`, `docs/decisions/0056`, `0054`, 
 
 8. Docs: ADR `docs/decisions/0063-online-payments.md` (at most 40 lines), a README for the module (what it owns, routes, never-do list, how to add a provider in five lines), and in `server/README.md` the steps a shop follows to connect each provider (which address to give the provider as the callback, which fields to copy). Then `graphify update .`.
 
-Checks, real last lines pasted: `cd server && pnpm lint && pnpm test && pnpm test:shop2 && pnpm test:payments && pnpm test:wipe && pnpm test:restore`. Migration on an EMPTY database and on a copy of a filled one. You have no merchant account: say plainly that no real provider was called.
+Checks, real last lines pasted: `cd server && pnpm build && pnpm lint && pnpm test && pnpm test:shop2 && pnpm test:payments && pnpm test:wipe && pnpm test:restore`. Migration on an EMPTY database and on a copy of a filled one. You have no merchant account: say plainly that no real provider was called.
 
 Commit by path. Do not edit `client/**`, `mobile/**`, `docs/PRD.md`, `docs/plan/*`, `.agent/rules/*`, `.claude/*`. Fill the Result section of this file with the route table for the website, set Status to done, commit it.
 === END ===
