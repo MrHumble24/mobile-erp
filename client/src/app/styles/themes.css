@@ -90,3 +90,21 @@
   --ring: #88c0d0;
   --surface-card: #2e3440;
 }
+
+/* Theme preview swatch. The Tailwind `--color-*` tokens are substituted once at
+   :root, so a nested [data-theme] alone cannot repaint `bg-background` etc.
+   Re-bind the semantic tokens on the swatch itself (where [data-theme] already
+   overrode the raw vars) so the preview paints from its own theme's palette. */
+.theme-swatch {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}

@@ -17,12 +17,13 @@ function Card({
     pumice: "bg-muted text-foreground border border-border",
     ember: "bg-card text-foreground border border-border",
     plasma: "bg-primary/5 text-foreground border border-primary/20",
-    dark: "bg-card text-card-foreground border border-border",
+    dark: "bg-primary text-primary-foreground border border-primary",
   }[variant]
 
   return (
     <div
       data-slot="card"
+      data-variant={variant}
       className={cn(
         "rounded-[16px] p-6 shadow-[var(--shadow-xs)] transition-all",
         variantStyles,
@@ -48,7 +49,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"h3">) {
     <h3
       data-slot="card-title"
       className={cn(
-        "font-display text-lg sm:text-xl font-bold tracking-tight text-foreground",
+        "font-display text-lg sm:text-xl font-bold tracking-tight text-inherit",
         className
       )}
       {...props}
@@ -61,7 +62,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="card-description"
       className={cn(
-        "font-body text-sm font-normal text-muted-foreground leading-normal",
+        "font-body text-sm font-normal text-muted-foreground [div[data-variant=dark]_&]:text-primary-foreground/75 leading-normal",
         className
       )}
       {...props}
@@ -84,7 +85,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center pt-4 font-body text-xs font-medium text-muted-foreground",
+        "flex items-center pt-4 font-body text-xs font-medium text-muted-foreground [div[data-variant=dark]_&]:text-primary-foreground/75",
         className
       )}
       {...props}

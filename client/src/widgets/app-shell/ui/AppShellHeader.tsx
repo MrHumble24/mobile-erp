@@ -133,7 +133,7 @@ export function AppShellHeader({
         <Button
           variant="ghost"
           size="icon"
-          className="size-9 rounded-full shrink-0 text-muted-foreground hover:bg-black/[0.04]"
+          className="size-9 rounded-full shrink-0 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
           onClick={onToggleSidebar}
           aria-label={t("nav.toggle")}
           aria-expanded={!collapsed}

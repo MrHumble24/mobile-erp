@@ -32,7 +32,7 @@ function StatusResult({ device }: { device: DeviceDetailView }) {
   const { t } = useI18n()
   const msg = statusMessage(device, t)
   return (
-    <Card className="border-amber-300 bg-amber-50/60">
+    <Card className="border-amber-300 bg-amber-500/10">
       <CardContent className="p-4 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-semibold text-sm">
@@ -51,7 +51,7 @@ function StatusResult({ device }: { device: DeviceDetailView }) {
 function NotFoundResult({ imei }: { imei: string }) {
   const { t } = useI18n()
   return (
-    <Card className="border-rose-300 bg-rose-50/60">
+    <Card className="border-rose-300 bg-rose-500/10">
       <CardContent className="p-4 space-y-2">
         <div className="flex items-center gap-2 font-semibold text-sm">
           <PackageSearch className="size-4 text-rose-600" />

@@ -79,7 +79,7 @@ export function UserMenu() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 h-9 px-2.5 rounded-full hover:bg-black/[0.04] transition-colors cursor-pointer select-none outline-none border-none bg-transparent">
+        <DropdownMenuTrigger className="flex items-center gap-2 h-9 px-2.5 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer select-none outline-none border-none bg-transparent">
           <UserTriggerContent name={user.profile?.fullName} email={user.email} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">

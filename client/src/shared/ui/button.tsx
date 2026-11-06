@@ -16,7 +16,7 @@ const buttonVariants = cva(
         pillOutline:
           "bg-transparent text-foreground border border-border rounded-full hover:bg-muted active:scale-[0.99] shadow-none",
         ghost:
-          "bg-transparent text-foreground rounded-full font-medium hover:bg-black/[0.04] active:scale-[0.99] border-none shadow-none",
+          "bg-transparent text-foreground rounded-full font-medium hover:bg-accent hover:text-accent-foreground active:scale-[0.99] border-none shadow-none",
         destructive:
           "bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 active:scale-[0.99] border-none shadow-none",
         link:

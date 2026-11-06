@@ -127,7 +127,7 @@ export function OrderDetailSheet({
 
             {/* Linked Sale */}
             {order.saleId && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs flex items-center justify-between">
                 <span className="text-emerald-800 font-medium flex items-center gap-1.5">
                   <CheckCircle2 className="size-4 text-emerald-600" />
                   {t("orders.saleLink")}

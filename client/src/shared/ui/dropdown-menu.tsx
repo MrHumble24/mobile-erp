@@ -43,7 +43,7 @@ function DropdownMenuItem({
       className={cn(
         "relative flex cursor-pointer select-none items-center gap-2.5 rounded-[8px] px-3 py-2 text-sm font-body outline-none transition-colors",
         variant === "destructive"
-          ? "text-destructive hover:bg-rose-50 focus:bg-rose-50"
+          ? "text-destructive hover:bg-rose-500/10 focus:bg-rose-500/10"
           : "text-foreground hover:bg-muted focus:bg-muted",
         className
       )}

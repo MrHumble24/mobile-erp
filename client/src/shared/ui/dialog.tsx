@@ -30,7 +30,7 @@ function DialogBackdrop({
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
-        "fixed inset-0 z-50 bg-background/80 backdrop-blur-xl backdrop-saturate-200 bottomsheet-backdrop",
+        "fixed inset-0 z-50 bg-black/35 backdrop-blur-xl backdrop-saturate-200 bottomsheet-backdrop",
         className
       )}
       {...props}

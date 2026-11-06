@@ -122,7 +122,7 @@ export function QuantityCartLine({
       </LinePriceSection>
 
       {overStock && (
-        <div className="flex items-center gap-2 rounded-[10px] border border-amber-300 bg-amber-50/60 p-2 text-xs text-amber-700">
+        <div className="flex items-center gap-2 rounded-[10px] border border-amber-300 bg-amber-500/10 p-2 text-xs text-amber-700">
           <AlertTriangle className="size-3.5 shrink-0" />
           <span>{t("catalog.belowZero")}</span>
         </div>

@@ -1,5 +1,6 @@
 import { Button } from "@/shared/ui"
 import { useI18n } from "@/shared/i18n"
+import { useThemes } from "@/entities/company"
 import type { WizardState, WizardUpdate } from "./types"
 
 interface Props {
@@ -9,13 +10,28 @@ interface Props {
   onBack: () => void
 }
 
+const FALLBACK_CODES = ["caldera", "sand", "obsidian", "nord"]
+
+const THEME_I18N_KEYS: Record<string, { name: string; desc: string }> = {
+  caldera: { name: "setup.themeCalderaName", desc: "setup.themeCalderaDesc" },
+  sand: { name: "setup.themeSandName", desc: "setup.themeSandDesc" },
+  obsidian: { name: "setup.themeObsidianName", desc: "setup.themeObsidianDesc" },
+  nord: { name: "setup.themeNordName", desc: "setup.themeNordDesc" },
+}
+
 export function ThemeStep({ state, update, onNext, onBack }: Props) {
   const { t } = useI18n()
+  const { data: serverThemes } = useThemes()
 
-  const themes = [
-    { code: "caldera", name: t("setup.themeCalderaName"), desc: t("setup.themeCalderaDesc"), bg: "#f8f9fa", fg: "#202020", primary: "#202020" },
-    { code: "sand", name: t("setup.themeSandName"), desc: t("setup.themeSandDesc"), bg: "#f7f5f0", fg: "#262320", primary: "#383129" },
-  ]
+  const codes =
+    serverThemes && serverThemes.length > 0 ? serverThemes.map((th) => th.code) : FALLBACK_CODES
+  const themes = codes
+    .filter((code) => THEME_I18N_KEYS[code])
+    .map((code) => ({
+      code,
+      name: t(THEME_I18N_KEYS[code].name),
+      desc: t(THEME_I18N_KEYS[code].desc),
+    }))
 
   const currentTheme = state.company.themeCode || "caldera"
 
@@ -41,26 +57,24 @@ export function ThemeStep({ state, update, onNext, onBack }: Props) {
               variant="ghost"
               aria-pressed={isSelected}
               onClick={() => selectTheme(th.code)}
-              className={`h-auto w-full flex-col items-stretch justify-start gap-0 whitespace-normal rounded-[16px] border-2 border-solid bg-card p-6 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
+              className={`h-auto w-full flex-col items-stretch justify-start gap-3 whitespace-normal rounded-[16px] border-2 border-solid bg-card p-6 text-left font-normal tracking-normal shadow-none transition-all focus-visible:ring-2 focus-visible:ring-ring ${
                 isSelected ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
               }`}
             >
-              <div className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold text-sm">{th.name}</div>
-                  {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
-                </div>
-                <div
-                  className="h-12 rounded-lg border p-2 flex items-center justify-between"
-                  style={{ backgroundColor: th.bg, color: th.fg, borderColor: th.fg + "20" }}
-                >
-                  <span className="text-xs font-medium">{t("setup.themePreviewText")}</span>
-                  <div className="h-5 px-2 rounded-full text-[10px] font-semibold flex items-center justify-center" style={{ backgroundColor: th.primary, color: th.bg }}>
-                    {t("setup.themePreviewAction")}
-                  </div>
-                </div>
-                <div className="text-[11px] text-muted-foreground">{th.desc}</div>
+              <div className="flex items-center justify-between">
+                <div className="font-semibold text-sm">{th.name}</div>
+                {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
               </div>
+              <div
+                data-theme={th.code}
+                className="theme-swatch h-12 w-full rounded-lg border border-border bg-background text-foreground p-2 flex items-center justify-between"
+              >
+                <span className="text-xs font-medium">{t("setup.themePreviewText")}</span>
+                <div className="h-5 px-2 rounded-full text-[10px] font-semibold flex items-center justify-center bg-primary text-primary-foreground">
+                  {t("setup.themePreviewAction")}
+                </div>
+              </div>
+              {th.desc && <div className="text-[11px] text-muted-foreground">{th.desc}</div>}
             </Button>
           )
         })}

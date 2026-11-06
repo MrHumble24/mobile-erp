@@ -120,7 +120,7 @@ export function StorefrontOrderModal({
 
         {success ? (
           <div className="py-6 text-center space-y-4">
-            <div className="size-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+            <div className="size-12 rounded-full bg-emerald-500/15 text-emerald-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="size-6" />
             </div>
             <div className="space-y-1">
@@ -207,7 +207,7 @@ export function StorefrontOrderModal({
             </div>
 
             {errorMessage && (
-              <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 text-xs">
                 {errorMessage}
               </div>
             )}

@@ -8,7 +8,9 @@ export class BrandingController {
 
   @Get()
   @Public()
-  @Header('Cache-Control', 'public, max-age=60')
+  // no-cache = ask every time (cheap, the ETag answers 304). A max-age kept the
+  // old name, theme and language on screen for a minute after setup or a change.
+  @Header('Cache-Control', 'no-cache')
   getBranding() {
     return this.companyService.getBranding();
   }
