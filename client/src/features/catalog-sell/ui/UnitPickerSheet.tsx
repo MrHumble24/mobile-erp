@@ -48,7 +48,7 @@ export function UnitPickerSheet({ open, entry, units, onClose, onPick }: UnitPic
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   {u.gradeCode && <Badge variant="outline" size="sm">{u.gradeCode}</Badge>}
-                  <span className="text-sm font-bold text-primary">{formatMoney(u.targetPrice)}</span>
+                  <span className="text-sm font-bold text-primary shrink-0 whitespace-nowrap tabular-nums">{formatMoney(u.targetPrice)}</span>
                 </span>
               </Button>
             )

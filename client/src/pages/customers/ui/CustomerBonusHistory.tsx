@@ -52,7 +52,7 @@ export function CustomerBonusHistory({ history }: { history: BonusHistoryRow[] }
             )}
           </div>
           <span
-            className={`shrink-0 text-sm font-semibold tabular-nums ${
+            className={`shrink-0 text-sm font-semibold tabular-nums whitespace-nowrap ${
               Number(row.amount) > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
             }`}
           >

@@ -69,16 +69,16 @@ export function UnitPriceSection({ device }: { device: DeviceDetailView }) {
         {levels.map((l) => {
           const res = resolved?.[l.code as keyof typeof resolved]
           return (
-            <div key={l.code} className="flex items-center gap-3">
-              <Label className="w-24 shrink-0 text-xs">{levelLabel(l.code, t, l.label)}</Label>
+            <div key={l.code} className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <Label className="w-20 sm:w-24 shrink-0 text-xs truncate">{levelLabel(l.code, t, l.label)}</Label>
               <Input
                 type="number"
                 min={0}
-                className="h-9 flex-1"
+                className="h-9 flex-1 min-w-[4rem]"
                 value={cells[l.code] ?? ""}
                 onChange={(e) => setCells((c) => ({ ...c, [l.code]: e.target.value }))}
               />
-              <span className="w-28 shrink-0 text-right text-xs text-muted-foreground">
+              <span className="shrink-0 text-right text-xs text-muted-foreground whitespace-nowrap tabular-nums font-mono">
                 {res == null ? t("pricing.noPrice") : formatMoney(res)}
               </span>
             </div>

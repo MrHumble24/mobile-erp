@@ -17,7 +17,7 @@ export function CustomerBoughtList({ customerId }: { customerId: string }) {
       {items.map((p) => (
         <div
           key={p.id}
-          className="flex items-center justify-between rounded-[12px] border border-border bg-muted p-2.5"
+          className="flex items-center justify-between gap-2 min-w-0 rounded-[12px] border border-border bg-muted p-2.5"
         >
           <div className="min-w-0">
             <p className="text-sm font-semibold truncate">{p.unit.model.brand} {p.unit.model.name}</p>
@@ -26,7 +26,7 @@ export function CustomerBoughtList({ customerId }: { customerId: string }) {
             </p>
           </div>
           {p.pricePaid != null && (
-            <span className="shrink-0 font-mono text-sm font-semibold">{formatMoney(p.pricePaid)}</span>
+            <span className="shrink-0 font-mono text-sm font-semibold whitespace-nowrap tabular-nums">{formatMoney(p.pricePaid)}</span>
           )}
         </div>
       ))}

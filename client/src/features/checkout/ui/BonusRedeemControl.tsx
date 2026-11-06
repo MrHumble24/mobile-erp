@@ -53,13 +53,13 @@ export function BonusRedeemControl() {
 
   return (
     <div className="space-y-2 rounded-[10px] border border-border bg-muted p-2.5">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{t("pos.bonusBalance")}</span>
-        <span className="font-medium">{formatNumber(bonus.balance)}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+        <span className="text-muted-foreground truncate">{t("pos.bonusBalance")}</span>
+        <span className="font-medium shrink-0 whitespace-nowrap tabular-nums">{formatNumber(bonus.balance)}</span>
       </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{t("pos.bonusMax")}</span>
-        <span className="font-medium">{formatNumber(max)}</span>
+      <div className="flex items-center justify-between gap-2 min-w-0 text-xs">
+        <span className="text-muted-foreground truncate">{t("pos.bonusMax")}</span>
+        <span className="font-medium shrink-0 whitespace-nowrap tabular-nums">{formatNumber(max)}</span>
       </div>
       <div className="flex items-center gap-2">
         <Input

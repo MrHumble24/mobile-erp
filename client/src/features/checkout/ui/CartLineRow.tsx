@@ -46,7 +46,7 @@ export function CartLineRow({
         </p>
         {code && <p className="truncate font-mono text-[11px] text-muted-foreground">{code}</p>}
       </div>
-      <span className="shrink-0 text-sm font-bold">{formatMoney(lineFinalPrice(line, level))}</span>
+      <span className="shrink-0 text-sm font-bold whitespace-nowrap tabular-nums">{formatMoney(lineFinalPrice(line, level))}</span>
       <Popover>
         <PopoverTrigger
           render={

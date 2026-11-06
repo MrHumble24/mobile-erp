@@ -77,24 +77,24 @@ function SplitRows({
   return (
     <div className="space-y-2 rounded-[12px] border border-border bg-muted p-3">
       {accounts.map((a) => (
-        <div key={a.accountCode} className="flex items-center justify-between gap-3">
-          <Label className="mb-0">{accountLabel(a.accountCode, a.label, t)}</Label>
+        <div key={a.accountCode} className="flex items-center justify-between gap-3 min-w-0">
+          <Label className="mb-0 min-w-0 truncate">{accountLabel(a.accountCode, a.label, t)}</Label>
           <Input
             type="number"
             min={0}
             value={partAmount(parts, a.accountCode) || ""}
             onChange={(e) => setAmount(a.accountCode, Number(e.target.value) || 0)}
-            className="h-9 w-32 font-mono"
+            className="h-9 w-32 sm:w-36 shrink-0 font-mono"
           />
         </div>
       ))}
       <div
-        className={`flex items-center justify-between pt-1 text-sm ${
+        className={`flex items-center justify-between gap-2 min-w-0 pt-1 text-sm ${
           remaining === 0 ? "text-muted-foreground" : "text-destructive font-semibold"
         }`}
       >
-        <span>{t("balance.splitRemaining")}</span>
-        <span className="font-mono">{formatMoney(remaining)}</span>
+        <span className="min-w-0 truncate">{t("balance.splitRemaining")}</span>
+        <span className="shrink-0 font-mono whitespace-nowrap tabular-nums">{formatMoney(remaining)}</span>
       </div>
       {remaining !== 0 && (
         <p className="text-xs text-destructive">{t("balance.errorSplitTotal")}</p>

@@ -20,20 +20,20 @@ function LedgerEntryRow({ entry }: { entry: LedgerEntry }) {
   const changeNum = Number(entry.change)
   return (
     <div className="p-3.5 border border-border rounded-[14px] bg-muted space-y-1.5 text-sm shadow-[var(--shadow-xs)]">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2 min-w-0">
         <Badge variant={isConsignment ? "violet" : "mint"}>
           {isConsignment ? t("partners.kindConsignment") : t("partners.kindPayment")}
         </Badge>
-        <span className={`font-mono font-bold ${changeNum > 0 ? "text-amber-600" : "text-emerald-600"}`}>
+        <span className={`font-mono font-bold shrink-0 whitespace-nowrap tabular-nums ${changeNum > 0 ? "text-amber-600" : "text-emerald-600"}`}>
           {changeNum > 0 ? `+${formatMoney(changeNum)}` : formatMoney(changeNum)}
         </span>
       </div>
-      <div className="flex justify-between text-xs text-muted-foreground pt-1">
-        <span>
+      <div className="flex justify-between items-center gap-2 min-w-0 text-xs text-muted-foreground pt-1">
+        <span className="min-w-0 truncate">
           {formatDateTime(entry.at)}
           {entry.accountCode && ` · ${accountLabel(entry.accountCode, undefined, t)}`}
         </span>
-        <span>{t("partners.runningBalance")}: {formatMoney(entry.runningBalance)}</span>
+        <span className="shrink-0 whitespace-nowrap tabular-nums">{t("partners.runningBalance")}: {formatMoney(entry.runningBalance)}</span>
       </div>
       {entry.notes && (
         <div className="text-xs text-muted-foreground italic bg-muted border border-border p-2 rounded-[10px]">

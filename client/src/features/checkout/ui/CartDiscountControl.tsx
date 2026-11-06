@@ -80,7 +80,7 @@ export function CartDiscountControl({ canDiscountUnlimited }: CartDiscountContro
       {presets.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {presets.map((p) => (
-            <Button key={p} type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={() => apply(p)}>
+            <Button key={p} type="button" variant="outline" size="sm" className="h-7 text-xs whitespace-nowrap tabular-nums" onClick={() => apply(p)}>
               {mode === "PERCENT" ? `${p}%` : formatMoney(p)}
             </Button>
           ))}

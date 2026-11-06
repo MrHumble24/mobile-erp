@@ -76,14 +76,14 @@ export function PlanBuilder({ draft }: { draft: Draft }) {
         onRemove={draft.removeInstalment}
       />
       <div
-        className={`flex items-center justify-between rounded-[10px] border p-2.5 text-sm ${
+        className={`flex items-center justify-between gap-2 min-w-0 rounded-[10px] border p-2.5 text-sm ${
           draft.remainingCents === 0
             ? "border-border text-muted-foreground"
             : "border-destructive/40 text-destructive font-semibold"
         }`}
       >
-        <span>{t("credit.planRemaining")}</span>
-        <span className="font-mono">{formatMoney(remaining)}</span>
+        <span className="truncate">{t("credit.planRemaining")}</span>
+        <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">{formatMoney(remaining)}</span>
       </div>
       {draft.hasPastDue && <p className="text-xs text-destructive">{t("credit.errorPastDue")}</p>}
     </div>
