@@ -4,21 +4,20 @@ Work that is agreed but not started. One line each; the detail is in the file it
 Updated by Claude when something is added, started or finished. Last update: 2026-11-06.
 
 ## In progress now (not backlog, listed so nothing is counted twice)
-- Step 11 on the website, in parts through OpenCode: receipt printing (`docs/handoffs/opencode/007`).
-- Online storefront, server and website: `docs/handoffs/gemini/022` (written, waiting to be given to Gemini).
-- Backup and restore: `docs/handoffs/gemini/023-backup-and-restore.md`. Started 2026-11-06 with Opus 4.8, Claude orchestrating. Parts 1 and 2 (backup on the server, restore) first; then Telegram, Google Drive and OneDrive, and the website screen.
+- Step 11 on the website, in parts through OpenCode: parts 1 to 5 merged; price tags is next (`docs/handoffs/opencode/008`).
+- Online storefront, server and website: `docs/handoffs/gemini/022`. Gemini reports it done (branch `agent/gemini/storefront`); waiting for Claude's check.
+- First-boot setup, in-app configuration, branding and themes: `docs/handoffs/gemini/024`. Given to Gemini by the user; Gemini reports it done (branch `agent/gemini/setup`); waiting for Claude's check. It built its own secrets store at the same time as the backup work did; the two must be joined into one before both are merged.
+- Backup and restore: `docs/handoffs/gemini/023-backup-and-restore.md`. Started 2026-11-06 with Opus 4.8, Claude orchestrating. Parts 1 and 2 (backup on the server, restore) are built and tested by Claude on a throwaway database; a security check is running and one round of fixes follows. Then Telegram, Google Drive and OneDrive, then the website screen.
 
 ## Ready to start (a handoff is written)
 | What | Handoff | Notes |
 |---|---|---|
-| First-boot setup, in-app configuration, shop branding (logo, name, currency, time zone) and themes | `docs/handoffs/gemini/024-onboarding-branding-themes.md` | Asked 2026-11-06. Five parts, large. Its Part 1 reuses the secrets store that the backup work builds. The theme part first has to replace about 485 colors typed into the pages. |
 | Uzbek text for offline sync | `docs/handoffs/gemini/013` | Old, small. |
 | Exact Samsung colors and memory from GSMArena | `docs/handoffs/gemini/016` | The site blocked this computer once; try again slowly. |
 
 ## Agreed, handoff not written yet
 | What | Depends on | Notes |
 |---|---|---|
-| Step 11 website: price tags (part 6) | part 5 merged | OpenCode 008. |
 | Step 11 website: buy-back messages and the ADR for the step (part 7) | part 6 merged | OpenCode 009. |
 | Uzbek for all the English text added by step 11 on the website | part 7 merged | For Gemini, one pass. |
 | Branches on the phone apps (store picker, the store sent with every request) | nothing | Until then a user of two stores gets an error on the phones. |

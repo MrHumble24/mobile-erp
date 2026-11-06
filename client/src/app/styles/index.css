@@ -288,8 +288,17 @@
     box-shadow: none !important;
     border: none !important;
   }
+  .printable-cheque[data-paper="80"] {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    page: receipt-80;
+  }
   @page {
     size: 58mm auto;
+    margin: 0;
+  }
+  @page receipt-80 {
+    size: 80mm auto;
     margin: 0;
   }
 }
