@@ -301,4 +301,23 @@
     size: 80mm auto;
     margin: 0;
   }
+  .printable-tags,
+  .printable-tags * {
+    visibility: visible !important;
+  }
+  /* The sheet is a direct child of <body> (a portal). While it is there, nothing
+     else is laid out, so the labels flow over as many pages as they need. */
+  body:has(> .printable-tags) > :not(.printable-tags) {
+    display: none !important;
+  }
+  .printable-tags {
+    display: grid !important;
+    position: static !important;
+    width: 100% !important;
+    page: price-tags;
+  }
+  @page price-tags {
+    size: A4;
+    margin: 8mm;
+  }
 }

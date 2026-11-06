@@ -95,5 +95,11 @@
   "editCustomsFee": "Bojxona to'lovini tahrirlash",
   "customsFeeSaved": "Bojxona to'lovi saqlandi",
   "customsCode": "Bojxona kodi",
-  "customsCodeHint": "Bojxonada ushbu model qanday yozilishi"
+  "customsCodeHint": "Bojxonada ushbu model qanday yozilishi",
+  "priceTags": "Price tags",
+  "priceTagsSelectAll": "Select all",
+  "priceTagsClear": "Clear",
+  "priceTagsSelected": "{count} selected",
+  "priceTagsPrint": "Print",
+  "priceTagsEmpty": "No items on this page"
 }
