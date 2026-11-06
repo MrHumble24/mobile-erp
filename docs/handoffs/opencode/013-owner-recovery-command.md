@@ -1,6 +1,6 @@
 # 013 — A way back in for a locked-out owner: `pnpm reset-password`
 
-Status: open · Owner: OpenCode (Big Pickle) · Depends on: nothing
+Status: merged · Owner: OpenCode (Big Pickle) · Depends on: nothing
 
 ## Why
 A shop's owner who forgets the password has no way back in. The READMEs and ADR 0053 say
@@ -53,12 +53,18 @@ Fill the Result section of `docs/handoffs/opencode/013-owner-recovery-command.md
 === END ===
 
 ## Result (OpenCode fills)
-- Model used:
-- Commits:
-- Files changed:
-- How old sessions are ended (one user or everyone), and where that is in the code:
-- The four outputs of the real try, and the proof the new password works:
-- `pnpm build`, `pnpm test`, `pnpm lint` (last lines):
-- Not done / skipped / failed:
+- OpenCode ran out of its limit before committing or writing this section. The code and the
+  docs were on disk, complete. Claude finished the handoff (see below).
 
 ## Check by Claude
+- 2026-11-06: finished, checked and merged. OpenCode's code was right as it stood: the command
+  reads `RESET_EMAIL` and `RESET_PASSWORD`, uses the website's password rule through one shared
+  constant, sets the hash, switches the account on again, ends everyone's sessions (the app has
+  one shop-wide cutoff, `SessionGateService.endAllSessions`), gives no role.
+- One change by Claude: the input check moved from `src/common/lib` to `src/users/lib`
+  (`common` holds nothing that knows about users).
+- Real try by Claude on a throwaway database (admin made, then switched off): no variables,
+  a 5-character password and an unknown email each exit 1 and change nothing; the good run
+  prints one line, the account is active again, the new password verifies and the old one does
+  not. Server build, 734 tests, lint 0 errors.
+- Not seen: a sign-in through the website after the reset.
