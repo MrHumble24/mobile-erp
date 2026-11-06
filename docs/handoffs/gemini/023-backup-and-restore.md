@@ -195,6 +195,37 @@ The earlier "safety-row wiped by restore" gap is now handled by T2 reconcile.
 Still single-instance only (the maintenance switch + markers are in-process;
 documented in ADR 0051 and the README).
 
+## PART 3 + PART 4 (2026-11-06, commit `b0fd859`)
+Storage providers (ADR 0056). Gate green (`pnpm build` + `pnpm test` 638/638 +
+`pnpm lint` 0 errors) and `pnpm test:restore` still passes all four scenarios.
+Two fold-ins done: run view gains `downloadable` + `partlyFailed` (a LOCAL target
+whose file is gone reads FAILED "file missing"); `backups.repository.ts` split
+(restore audit → `restore.repository.ts`).
+- PART 3 **Telegram**: file sent in ≤19 MB parts, joined + checksum-verified on
+  download; `delete:false`; backup chat ≠ a shop alert chat.
+- PART 4 **Drive** (`drive.file`) + **OneDrive** (`Files.ReadWrite.AppFolder`):
+  OAuth 2 + PKCE, resumable/session chunked upload with chunk retry, revoked
+  login → NEEDS_RECONNECT.
+- Routes: `GET /backups/places`; `PUT /places/:code/enabled|settings|secret`
+  (write-only); `POST /places/:code/test|disconnect`; OAuth `GET
+  /backups/oauth/:code/start|callback|redirect-uri`.
+- Seen live on my own server/DB: places list (LOCAL locked+on; the rest off,
+  not-configured, with capabilities incl Telegram's 19 MB part cap); redirect-uri
+  is the **server** origin; an untrusted `returnTo` → 400 `OAUTH_RETURN_URL_
+  INVALID`; LOCAL off → 403; enable a not-connected place → 409; set bot token →
+  204; set a chat → `connected:true`; **no secret in any answer**.
+- Tests (fast, no network, fake HTTP servers): Telegram 45 MB split/join byte-
+  for-byte, dropped chunk retried, revoked login, OAuth state + open-redirect
+  rules, partly-failed run with LOCAL intact, retention per place, restore from a
+  remote-only backup.
+- **Not seen with the real Telegram / Google / Microsoft services** — no outbound
+  access from here; adapters were built to the documented API shapes and tested
+  against faithful fake servers. README has the Google/Microsoft app + Telegram
+  chat setup steps. Microsoft refresh-token rotation is not persisted (occasional
+  reconnect; documented). `secrets` public API (stable, small): `set(name,value)`,
+  `isSet(name)`, `state(name)` → set|missing|unreadable, `read(name)` (server-only;
+  throws on unreadable), `clear(name)`, plus `AppKeyService.getKey()`/`dataDir()`.
+
 ## Check by Claude
 - Before merging: `security-auditor` on the whole diff, a restore tried by Claude on a throwaway
   database, and a look at one backup file to confirm it is unreadable without the key.
