@@ -325,13 +325,11 @@ export function ShopPage() {
                 className="pl-10 pr-9 h-11 rounded-full bg-card border-border/80 text-sm shadow-2xs"
               />
               {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+                <Button type="button" variant="ghost" size="icon" onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="size-3.5" />
-                </button>
+                </Button>
               )}
             </div>
 
@@ -405,30 +403,25 @@ export function ShopPage() {
               <span className="text-xs font-semibold text-muted-foreground mr-1 shrink-0">
                 {t("storefront.filterAllBrands")}:
               </span>
-              <button
-                type="button"
-                onClick={() => setSelectedBrand("ALL")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
+              <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedBrand("ALL")}
+                className={`h-auto rounded-full px-3 py-1 text-xs font-medium shrink-0 ${
                   selectedBrand === "ALL"
                     ? "bg-muted text-foreground font-bold shadow-2xs border border-border"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
                 {t("storefront.allCategories")}
-              </button>
+              </Button>
               {availableBrands.map((brand) => (
-                <button
-                  key={brand}
-                  type="button"
-                  onClick={() => setSelectedBrand(brand)}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer shrink-0 ${
+                <Button key={brand} type="button" variant="ghost" size="sm" onClick={() => setSelectedBrand(brand)}
+                  className={`h-auto rounded-full px-3 py-1 text-xs font-medium shrink-0 ${
                     selectedBrand === brand
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                       : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/50"
                   }`}
                 >
                   {brand}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -439,18 +432,17 @@ export function ShopPage() {
               {t("storefront.productsFound", { count: filteredProducts.length })}
             </span>
             {(search || selectedCategory || selectedBrand !== "ALL" || selectedStore !== "ALL") && (
-              <button
-                type="button"
+              <Button type="button" variant="link" size="sm"
                 onClick={() => {
                   setSearch("")
                   setSelectedCategory(undefined)
                   setSelectedBrand("ALL")
                   setSelectedStore("ALL")
                 }}
-                className="text-primary hover:underline font-semibold cursor-pointer"
+                className="h-auto p-0 font-semibold"
               >
                 {t("storefront.clearFilters")}
-              </button>
+              </Button>
             )}
           </div>
         </div>
