@@ -130,30 +130,36 @@ export function CashFlowTimelineChart({ data, isLoading }: Props) {
           start: Math.max(0, 100 - (30 / Math.max(dates.length, 1)) * 100),
           end: 100,
         },
-        {
-          type: "slider",
-          bottom: 0,
-          height: 18,
-          borderColor: "transparent",
-          backgroundColor: "rgba(255, 255, 255, 0.03)",
-          fillerColor: "rgba(16, 185, 129, 0.15)",
-          handleStyle: {
-            color: "#10b981",
-            borderColor: "rgba(255, 255, 255, 0.2)",
-          },
-          moveHandleStyle: {
-            color: "rgba(255, 255, 255, 0.2)",
-          },
-          textStyle: { color: "#64748b", fontSize: 10 },
-          dataBackground: {
-            lineStyle: { color: "#10b981", width: 1 },
-            areaStyle: { color: "rgba(16, 185, 129, 0.1)" },
-          },
-          selectedDataBackground: {
-            lineStyle: { color: "#10b981" },
-            areaStyle: { color: "rgba(16, 185, 129, 0.2)" },
-          },
-        },
+        // The bottom slider is navigation noise for a handful of days; show it
+        // only once one screen of days overflows the chart.
+        ...(dates.length > 20
+          ? [
+              {
+                type: "slider",
+                bottom: 0,
+                height: 18,
+                borderColor: "transparent",
+                backgroundColor: "rgba(255, 255, 255, 0.03)",
+                fillerColor: "rgba(16, 185, 129, 0.15)",
+                handleStyle: {
+                  color: "#10b981",
+                  borderColor: "rgba(255, 255, 255, 0.2)",
+                },
+                moveHandleStyle: {
+                  color: "rgba(255, 255, 255, 0.2)",
+                },
+                textStyle: { color: "#64748b", fontSize: 10 },
+                dataBackground: {
+                  lineStyle: { color: "#10b981", width: 1 },
+                  areaStyle: { color: "rgba(16, 185, 129, 0.1)" },
+                },
+                selectedDataBackground: {
+                  lineStyle: { color: "#10b981" },
+                  areaStyle: { color: "rgba(16, 185, 129, 0.2)" },
+                },
+              } as const,
+            ]
+          : []),
       ],
       series: [
         {
@@ -239,7 +245,7 @@ export function CashFlowTimelineChart({ data, isLoading }: Props) {
           {t("balance.chartTimeline")}
         </h3>
         <span className="text-xs text-muted-foreground">
-          {t("balance.entriesCount", { count: data.length })}
+          {t("balance.daysCount", { count: data.length })}
         </span>
       </div>
       <div className="h-72 w-full">

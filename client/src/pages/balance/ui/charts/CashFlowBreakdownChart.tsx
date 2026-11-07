@@ -142,7 +142,7 @@ export function CashFlowBreakdownChart({ items, isLoading }: Props) {
     <div className="rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-semibold tracking-tight text-foreground">
-          {t("balance.chartBreakdown")}
+          {t(direction === "out" ? "balance.breakdownOut" : "balance.breakdownIn")}
         </h3>
         <div className="flex items-center rounded-lg border border-border bg-muted/30 p-0.5">
           <Button

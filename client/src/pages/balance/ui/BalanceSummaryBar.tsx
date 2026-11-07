@@ -45,7 +45,7 @@ export function BalanceSummaryBar({ balances, stats, isLoading }: Props) {
       <div className="relative overflow-hidden rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-muted-foreground">
-            {t("balance.total")}
+            {t("balance.totalBalance")}
           </span>
           <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Wallet className="size-4" />
@@ -130,8 +130,13 @@ export function BalanceSummaryBar({ balances, stats, isLoading }: Props) {
               : "—"}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            {stats ? t("balance.operationsCount") + `: ${stats.transactionCount}` : ""}
+            {stats ? `${t("balance.operationsCount")}: ${stats.transactionCount}` : ""}
           </p>
+          {stats && Number(stats.opening) !== 0 && (
+            <p className="mt-0.5 text-xs text-muted-foreground/80">
+              {t("balance.netFlowHint")}
+            </p>
+          )}
         </div>
       </div>
     </div>

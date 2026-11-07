@@ -27,10 +27,12 @@ import {
   userName,
 } from "./HistoryRowCells"
 
-/** Sum of one direction's rows, from signed amounts. Redacted rows are skipped. */
+/** Sum of one direction's rows, from signed amounts. Redacted rows are skipped,
+ *  and so are OPENING rows — a starting snapshot is not money movement. */
 function sumDirection(items: LedgerTransaction[], dir: LedgerDirection): number {
   return items.reduce((sum, tx) => {
-    if (tx.amount == null || transactionDirection(tx) !== dir) return sum
+    if (tx.amount == null || tx.typeCode === "OPENING") return sum
+    if (transactionDirection(tx) !== dir) return sum
     return sum + Number(tx.amount)
   }, 0)
 }
@@ -149,6 +151,7 @@ function HistoryFooter({ items, total }: { items: LedgerTransaction[]; total: nu
   const { t } = useI18n()
   const isWholeSet = items.length >= total
   const hiddenCount = items.filter((tx) => tx.amount == null).length
+  const openingCount = items.filter((tx) => tx.typeCode === "OPENING").length
 
   const inSum = Math.abs(sumDirection(items, "in"))
   const outSum = Math.abs(sumDirection(items, "out"))
@@ -174,11 +177,13 @@ function HistoryFooter({ items, total }: { items: LedgerTransaction[]; total: nu
         </TableCell>
         <TableCell colSpan={2} />
       </TableRow>
-      {hiddenCount > 0 && (
+      {(hiddenCount > 0 || openingCount > 0) && (
         <TableRow>
           <TableCell colSpan={8} className="border-0 pt-0">
             <span className="text-xs italic text-muted-foreground font-normal">
-              {t("balance.footerHidden")}
+              {hiddenCount > 0 && t("balance.footerHidden")}
+              {hiddenCount > 0 && openingCount > 0 && " • "}
+              {openingCount > 0 && t("balance.footerOpening")}
             </span>
           </TableCell>
         </TableRow>

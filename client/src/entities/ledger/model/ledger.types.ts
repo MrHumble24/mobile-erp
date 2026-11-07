@@ -141,6 +141,9 @@ export interface LedgerStatsSummary {
   transactionCount: number
   inCount: number
   outCount: number
+  /** Net of OPENING rows in the period — a starting snapshot, excluded from the
+   *  values above, so the flows stay flows. */
+  opening: string
 }
 
 export interface LedgerTimelinePoint {

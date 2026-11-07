@@ -19,6 +19,9 @@ export interface StatsRow {
 /**
  * Fold ledger rows into totals, a daily timeline and per-type / per-account
  * breakdowns. Cost-type rows are skipped for a caller without the cost permission.
+ * OPENING rows are the account's starting snapshot, not money movement in the
+ * period: they stay out of the inflow / outflow / net figures and the timeline /
+ * breakdowns, and surface on their own as `summary.opening`.
  */
 export function aggregateStats(
   rows: StatsRow[],
@@ -26,6 +29,7 @@ export function aggregateStats(
 ): LedgerStats {
   let totalIn = new Prisma.Decimal(0);
   let totalOut = new Prisma.Decimal(0);
+  let openingTotal = new Prisma.Decimal(0);
   let inCount = 0;
   let outCount = 0;
 
@@ -64,6 +68,12 @@ export function aggregateStats(
     const numAmt = Number(amt);
     const isPositive = numAmt > 0;
     const absAmt = Math.abs(numAmt);
+
+    // A starting snapshot is neither period income nor expense.
+    if (row.typeCode === 'OPENING') {
+      openingTotal = openingTotal.plus(amt);
+      continue;
+    }
 
     if (isPositive) {
       totalIn = totalIn.plus(amt);
@@ -166,6 +176,7 @@ export function aggregateStats(
       transactionCount: inCount + outCount,
       inCount,
       outCount,
+      opening: openingTotal.toFixed(2),
     },
     timeline,
     byType,

@@ -89,6 +89,9 @@ export interface LedgerStatsSummary {
   transactionCount: number;
   inCount: number;
   outCount: number;
+  /** Net of OPENING rows in the period (2-dp string). Excluded from the values
+   *  above: a starting snapshot is not money movement. */
+  opening: string;
 }
 
 export interface LedgerTimelinePoint {

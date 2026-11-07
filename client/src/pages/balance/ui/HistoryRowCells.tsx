@@ -23,13 +23,17 @@ export function Dash() {
 }
 
 /** Type chip tinted by flow direction: money in reads green with a down-left
- *  arrow, money out red with an up-right one, transfer with arrow-right-left. */
+ *  arrow, money out red with an up-right one, transfer with arrow-right-left.
+ *  An OPENING snapshot is neither — a neutral chip, no direction arrow. */
 export function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
   const { t } = useI18n()
   const direction = transactionDirection(tx)
   const isTransfer = tx.typeCode === "TRANSFER"
+  const isOpening = tx.typeCode === "OPENING"
 
-  const variant: BadgeProps["variant"] = isTransfer
+  const variant: BadgeProps["variant"] = isOpening
+    ? "mercury"
+    : isTransfer
     ? "outline"
     : direction === "in"
     ? "emerald"
@@ -37,7 +41,9 @@ export function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
     ? "destructive"
     : "outline"
 
-  const Icon: LucideIcon | null = isTransfer
+  const Icon: LucideIcon | null = isOpening
+    ? null
+    : isTransfer
     ? ArrowRightLeft
     : direction === "in"
     ? ArrowDownLeft
@@ -45,7 +51,7 @@ export function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
     ? ArrowUpRight
     : null
 
-  const dirKey = direction === "in" ? "balance.dirIn" : direction === "out" ? "balance.dirOut" : null
+  const dirKey = isOpening ? null : direction === "in" ? "balance.dirIn" : direction === "out" ? "balance.dirOut" : null
   const typeKey = typeI18nKey(tx.typeCode)
 
   return (

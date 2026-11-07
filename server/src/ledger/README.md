@@ -38,6 +38,10 @@ payments / purchases / overhead post rows automatically.
   `amount: null` on cost-type rows (`PURCHASE`/`OVERHEAD`/`DEVICE_EXPENSE`/
   `CUSTOMS`/`CUSTOMER_PURCHASE`/`REPAIR_OUTSIDE`, listed in `COST_TYPE_CODES`) —
   ADR 0028/0039/0040; balances are not redacted.
+- `GET /ledger/stats` — period totals (`totalIn`/`totalOut`/`netFlow`), the daily
+  timeline and per-type / per-account breakdowns (`balance.read`). OPENING rows
+  are a starting snapshot, not movement: they stay out of every number above and
+  surface on their own as `summary.opening`.
 - `POST /ledger/transactions` — one manual entry (`balance.manage`).
 - `POST /ledger/transfers` — two rows, one transaction (`balance.manage`).
 - `LedgerService.post(entry, tx?)` — the single write primitive. 2b modules
