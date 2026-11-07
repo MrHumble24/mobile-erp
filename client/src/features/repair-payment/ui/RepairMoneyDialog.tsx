@@ -7,7 +7,7 @@ import {
   useAddRepairPayment,
   useRefundRepair,
   useOutsideRepairPayment,
-  repairErrorKey,
+  repairMutationError,
 } from "@/entities/repair"
 import { AccountSelect } from "@/entities/ledger"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
@@ -105,12 +105,12 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
           onOpenChange(false)
         },
         onError: (err: Error) => {
-          const key = repairErrorKey(err)
-          if (key) return toast.error(t(key))
+          const result = repairMutationError(err, t)
+          if (result.queued) return toast.success(result.message)
           if (err instanceof HttpError && err.statusCode === 400) {
             return toast.error(t(errorKey))
           }
-          toast.error(err.message || t("common.error"))
+          toast.error(result.message)
         },
       }
     )

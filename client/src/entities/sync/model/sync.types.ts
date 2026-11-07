@@ -1,9 +1,17 @@
-/** The four queue types; exactly the server's handler-registry keys. */
+/** Queue types; exactly the server's handler-registry keys. */
 export const MUTATION_TYPES = {
   saleCreate: "sale.create",
   consignmentCreate: "consignment.create",
   consignmentSettle: "consignment.settle",
   consignmentReturn: "consignment.return",
+  repairCreate: "repair.create",
+  repairUpdate: "repair.update",
+  repairStatus: "repair.status",
+  repairPayment: "repair.payment",
+  repairRefund: "repair.refund",
+  repairOutside: "repair.outside",
+  repairPartAdd: "repair.part.add",
+  repairPartRemove: "repair.part.remove",
 } as const
 
 export type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES]

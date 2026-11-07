@@ -31,5 +31,11 @@ import { RepairsWriteRepository } from './repairs.write.repository.js';
     RepairsRepository,
     RepairsWriteRepository,
   ],
+  exports: [
+    RepairIdempotency,
+    RepairsService,
+    RepairsMoneyService,
+    RepairsPartsService,
+  ],
 })
 export class RepairsModule {}

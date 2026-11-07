@@ -148,5 +148,6 @@
   "ticketLabel": "Ticket",
   "shareTicket": "Share ticket",
   "linkCopied": "Link copied",
-  "shareFailed": "Couldn't share"
+  "shareFailed": "Couldn't share",
+  "queuedOffline": "Offline — the change was queued and will be sent when you're back online"
 }

@@ -24,7 +24,7 @@ export {
   isTerminal,
 } from "./lib/repair-status"
 export { leftToPay, isOwed, isOverpaid } from "./lib/repair-math"
-export { repairErrorKey } from "./lib/repair-error"
+export { repairErrorKey, RepairQueuedError, repairMutationError } from "./lib/repair-error"
 export { repairKeys } from "./api/repair.keys"
 export { repairRepository } from "./api/repair.repository"
 export { useRepairs, useRepair, useRepairReport } from "./model/use-repairs"

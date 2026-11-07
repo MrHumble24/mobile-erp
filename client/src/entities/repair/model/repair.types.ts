@@ -133,6 +133,8 @@ export interface CreateRepairDto {
   outsideMasterPhone?: string
   outsideCost?: number
   receivedAt?: string
+  /** Idempotency key, also used by the offline outbox replay. */
+  clientMutationId?: string
 }
 
 /** `null` clears a nullable field on edit; omitting it leaves it unchanged. */
@@ -149,21 +151,25 @@ export interface UpdateRepairDto {
   outsideMasterName?: string | null
   outsideMasterPhone?: string | null
   outsideCost?: number | null
+  clientMutationId?: string
 }
 
 export interface ChangeStatusDto {
   toStatusCode: string
   note?: string
+  clientMutationId?: string
 }
 
 export interface AddPartDto {
   modelId: string
   quantity: number
+  clientMutationId?: string
 }
 
 export interface RepairMoneyDto {
   amount: number
   accountCode: string
+  clientMutationId?: string
 }
 
 export interface RepairListFilters {

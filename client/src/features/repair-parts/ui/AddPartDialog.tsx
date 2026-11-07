@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import { useCatalog } from "@/entities/catalog"
-import { useAddRepairPart, repairErrorKey } from "@/entities/repair"
+import { useAddRepairPart, repairMutationError } from "@/entities/repair"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
@@ -54,8 +54,9 @@ function AddPartForm({ repairId, onDone }: { repairId: string; onDone: () => voi
           onDone()
         },
         onError: (err: Error) => {
-          const key = repairErrorKey(err)
-          toast.error(key ? t(key) : err.message || t("common.error"))
+          const { message, queued } = repairMutationError(err, t)
+          if (queued) toast.success(message)
+          else toast.error(message)
         },
       }
     )

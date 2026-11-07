@@ -3,7 +3,7 @@ import { useI18n } from "@/shared/i18n"
 import {
   allowedMoves,
   useChangeRepairStatus,
-  repairErrorKey,
+  repairMutationError,
   type RepairView,
 } from "@/entities/repair"
 import { useAuthStore } from "@/features/auth"
@@ -87,8 +87,9 @@ export function RepairStatusActions({ repair }: { repair: RepairView }) {
       {
         onSuccess: () => toast.success(t("repairs.statusChanged")),
         onError: (err: Error) => {
-          const key = repairErrorKey(err)
-          toast.error(key ? t(key) : err.message || t("common.error"))
+          const { message, queued } = repairMutationError(err, t)
+          if (queued) toast.success(message)
+          else toast.error(message)
         },
       }
     )

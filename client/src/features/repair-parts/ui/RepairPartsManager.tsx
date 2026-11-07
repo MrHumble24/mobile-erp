@@ -5,7 +5,7 @@ import { formatMoney } from "@/shared/lib/format"
 import { useAuthStore } from "@/features/auth"
 import {
   useRemoveRepairPart,
-  repairErrorKey,
+  repairMutationError,
   type RepairPartView,
   type RepairView,
 } from "@/entities/repair"
@@ -48,8 +48,9 @@ function PartRow({
             remove.mutate(part.id, {
               onSuccess: () => toast.success(t("repairs.partRemoved")),
               onError: (err: Error) => {
-                const key = repairErrorKey(err)
-                toast.error(key ? t(key) : err.message || t("common.error"))
+                const { message, queued } = repairMutationError(err, t)
+                if (queued) toast.success(message)
+                else toast.error(message)
               },
             })
           }

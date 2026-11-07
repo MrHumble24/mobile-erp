@@ -1,7 +1,7 @@
 import * as React from "react"
 import { AlertTriangle } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { useChangeRepairStatus, repairErrorKey } from "@/entities/repair"
+import { useChangeRepairStatus, repairMutationError } from "@/entities/repair"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { Label } from "@/shared/ui/label"
@@ -39,8 +39,9 @@ function StatusMoveBody(props: StatusMoveDialogProps) {
           onOpenChange(false)
         },
         onError: (err: Error) => {
-          const key = repairErrorKey(err)
-          toast.error(key ? t(key) : err.message || t("common.error"))
+          const { message, queued } = repairMutationError(err, t)
+          if (queued) toast.success(message)
+          else toast.error(message)
         },
       }
     )

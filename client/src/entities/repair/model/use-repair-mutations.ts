@@ -1,14 +1,18 @@
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query"
+import { isNetworkError } from "@/shared/api/http"
+import { enqueueMutation, MUTATION_TYPES, type MutationType } from "@/entities/sync"
 import { customerKeys } from "@/entities/customer"
 import { ledgerKeys } from "@/entities/ledger"
 import { stockKeys } from "@/entities/stock"
 import { repairRepository } from "../api/repair.repository"
 import { repairKeys } from "../api/repair.keys"
+import { RepairQueuedError } from "../lib/repair-error"
 import type {
   AddPartDto,
   ChangeStatusDto,
   CreateRepairDto,
   RepairMoneyDto,
+  RepairView,
   UpdateRepairDto,
 } from "./repair.types"
 
@@ -24,11 +28,35 @@ function invalidateMoney(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: ledgerKeys.all })
 }
 
+/** Every repair write carries an idempotency key. On a transport failure it is
+ *  queued for replay instead of being lost; the caller sees RepairQueuedError. */
+async function runRepairWrite<T extends object>(
+  type: MutationType,
+  repairId: string | undefined,
+  dto: T,
+  send: (body: T & { clientMutationId: string }) => Promise<RepairView>
+): Promise<RepairView> {
+  const id = (dto as { clientMutationId?: string }).clientMutationId ?? crypto.randomUUID()
+  const body = { ...dto, clientMutationId: id }
+  try {
+    return await send(body)
+  } catch (err) {
+    if (!isNetworkError(err)) throw err
+    await enqueueMutation({
+      id,
+      type,
+      payload: { ...body, ...(repairId ? { repairId } : {}) } as unknown as Record<string, unknown>,
+    })
+    throw new RepairQueuedError()
+  }
+}
+
 /** Create a new repair ticket (`repair.manage`). */
 export function useCreateRepair() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateRepairDto) => repairRepository.create(dto),
+    mutationFn: (dto: CreateRepairDto) =>
+      runRepairWrite(MUTATION_TYPES.repairCreate, undefined, dto, (body) => repairRepository.create(body)),
     onSuccess: () => invalidateTicket(qc),
   })
 }
@@ -37,7 +65,8 @@ export function useCreateRepair() {
 export function useUpdateRepair(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: UpdateRepairDto) => repairRepository.update(id, dto),
+    mutationFn: (dto: UpdateRepairDto) =>
+      runRepairWrite(MUTATION_TYPES.repairUpdate, id, dto, (body) => repairRepository.update(id, body)),
     onSuccess: () => invalidateTicket(qc),
   })
 }
@@ -46,7 +75,8 @@ export function useUpdateRepair(id: string) {
 export function useChangeRepairStatus(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: ChangeStatusDto) => repairRepository.changeStatus(id, dto),
+    mutationFn: (dto: ChangeStatusDto) =>
+      runRepairWrite(MUTATION_TYPES.repairStatus, id, dto, (body) => repairRepository.changeStatus(id, body)),
     onSuccess: () => invalidateTicket(qc),
   })
 }
@@ -55,7 +85,8 @@ export function useChangeRepairStatus(id: string) {
 export function useAddRepairPart(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: AddPartDto) => repairRepository.addPart(id, dto),
+    mutationFn: (dto: AddPartDto) =>
+      runRepairWrite(MUTATION_TYPES.repairPartAdd, id, dto, (body) => repairRepository.addPart(id, body)),
     onSuccess: () => {
       invalidateTicket(qc)
       qc.invalidateQueries({ queryKey: stockKeys.all })
@@ -63,11 +94,24 @@ export function useAddRepairPart(id: string) {
   })
 }
 
-/** Return a part to stock (`repair.manage`). */
+/** Return a part to stock (`repair.manage`). Removed parts are idempotent by
+ *  nature, but offline removal is still queued so it is not silently lost. */
 export function useRemoveRepairPart(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (partId: string) => repairRepository.removePart(id, partId),
+    mutationFn: async (partId: string) => {
+      try {
+        return await repairRepository.removePart(id, partId)
+      } catch (err) {
+        if (!isNetworkError(err)) throw err
+        await enqueueMutation({
+          id: crypto.randomUUID(),
+          type: MUTATION_TYPES.repairPartRemove,
+          payload: { repairId: id, partId },
+        })
+        throw new RepairQueuedError()
+      }
+    },
     onSuccess: () => {
       invalidateTicket(qc)
       qc.invalidateQueries({ queryKey: stockKeys.all })
@@ -79,7 +123,8 @@ export function useRemoveRepairPart(id: string) {
 export function useAddRepairPayment(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: RepairMoneyDto) => repairRepository.addPayment(id, dto),
+    mutationFn: (dto: RepairMoneyDto) =>
+      runRepairWrite(MUTATION_TYPES.repairPayment, id, dto, (body) => repairRepository.addPayment(id, body)),
     onSuccess: () => invalidateMoney(qc),
   })
 }
@@ -88,7 +133,8 @@ export function useAddRepairPayment(id: string) {
 export function useRefundRepair(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: RepairMoneyDto) => repairRepository.refund(id, dto),
+    mutationFn: (dto: RepairMoneyDto) =>
+      runRepairWrite(MUTATION_TYPES.repairRefund, id, dto, (body) => repairRepository.refund(id, body)),
     onSuccess: () => invalidateMoney(qc),
   })
 }
@@ -97,7 +143,8 @@ export function useRefundRepair(id: string) {
 export function useOutsideRepairPayment(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (dto: RepairMoneyDto) => repairRepository.outsidePayment(id, dto),
+    mutationFn: (dto: RepairMoneyDto) =>
+      runRepairWrite(MUTATION_TYPES.repairOutside, id, dto, (body) => repairRepository.outsidePayment(id, body)),
     onSuccess: () => invalidateMoney(qc),
   })
 }

@@ -148,5 +148,6 @@
   "ticketLabel": "Chipta",
   "shareTicket": "Chiptani ulashish",
   "linkCopied": "Havola nusxalandi",
-  "shareFailed": "Ulashib bo'lmadi"
+  "shareFailed": "Ulashib bo'lmadi",
+  "queuedOffline": "Internet yo'q — o'zgarish navbatga qo'yildi, ulanish bilan yuboriladi"
 }
