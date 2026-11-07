@@ -33,6 +33,8 @@ model Shipment {
   paymentAccountCode String      @default("CASH")
   paymentAccount     CashAccount @relation(fields: [paymentAccountCode], references: [code])
   notes         String?
+  /// Won-to-dollar exchange rate at batch import (e.g. 1.3). Locked at intake.
+  exchangeRate  Decimal?    @db.Decimal(14, 4)
   createdById   String
   createdBy     User     @relation(fields: [createdById], references: [id])
   createdAt     DateTime @default(now())

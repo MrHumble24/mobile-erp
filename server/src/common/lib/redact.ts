@@ -5,6 +5,8 @@
  */
 export const COST_KEYS = [
   'acquisitionCost',
+  'acquisitionCostOriginal',
+  'exchangeRate',
   'landedCost',
   'landedCostSnapshot',
   'unitExpense',
