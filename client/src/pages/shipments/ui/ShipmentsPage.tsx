@@ -1,10 +1,11 @@
 import * as React from "react"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { useShipments, type ShipmentView } from "@/entities/shipment"
 import { useSuppliers } from "@/entities/supplier"
 import { IntakeShipmentDialog } from "@/features/intake-shipment"
+import { ImportShipmentDialog } from "@/features/import-shipment"
 import { SupplierPanel } from "@/features/manage-supplier"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
@@ -31,7 +32,19 @@ function useShipmentMaps(shipments: ShipmentView[], suppliers: { id: string; nam
   return { suppliersMap, shipmentCounts }
 }
 
-function ShipmentsHeader({ count, canManage, onNew }: { count?: number; canManage: boolean; onNew: () => void }) {
+function ShipmentsHeader({
+  count,
+  canManage,
+  canImport,
+  onNew,
+  onImport,
+}: {
+  count?: number
+  canManage: boolean
+  canImport: boolean
+  onNew: () => void
+  onImport: () => void
+}) {
   const { t } = useI18n()
   return (
     <PageHeader
@@ -42,29 +55,64 @@ function ShipmentsHeader({ count, canManage, onNew }: { count?: number; canManag
         ) : undefined
       }
       actions={
-        canManage ? (
-          <Button onClick={onNew} size="sm" className="gap-1.5">
-            <Plus className="size-4" />
-            {t("shipments.newShipment")}
-          </Button>
-        ) : undefined
+        <div className="flex items-center gap-2">
+          {canImport && (
+            <Button onClick={onImport} variant="outline" size="sm" className="gap-1.5">
+              <Upload className="size-4" />
+              {t("shipments.importFromFile")}
+            </Button>
+          )}
+          {canManage && (
+            <Button onClick={onNew} size="sm" className="gap-1.5">
+              <Plus className="size-4" />
+              {t("shipments.newShipment")}
+            </Button>
+          )}
+        </div>
       }
     />
   )
 }
 
+function useShipmentDialogs() {
+  const [intakeShipmentId, setIntakeShipmentId] = React.useState<string | null>(null)
+  const [intakeOpen, setIntakeOpen] = React.useState(false)
+  const [importOpen, setImportOpen] = React.useState(false)
+
+  const handleNew = () => {
+    setIntakeShipmentId(null)
+    setIntakeOpen(true)
+  }
+
+  const handleImportSuccess = (shipmentId: string) => {
+    setIntakeShipmentId(shipmentId)
+    setIntakeOpen(true)
+  }
+
+  return { intakeShipmentId, intakeOpen, setIntakeOpen, importOpen, setImportOpen, handleNew, handleImportSuccess }
+}
+
 export function ShipmentsPage() {
   const { t } = useI18n()
   const [tab, setTab] = useUrlTab<ShipmentTab>("shipments", { validTabs: SHIPMENT_TABS })
-  const canManage = useAuthStore((s) => s.hasPermission("shipment.manage"))
+  const hasPermission = useAuthStore((s) => s.hasPermission)
+  const canManage = hasPermission("shipment.manage")
+  const canImport = canManage && hasPermission("device.create")
+
   const { data: shipments, isLoading } = useShipments()
   const { data: suppliers } = useSuppliers()
-  const [newOpen, setNewOpen] = React.useState(false)
+  const { intakeShipmentId, intakeOpen, setIntakeOpen, importOpen, setImportOpen, handleNew, handleImportSuccess } = useShipmentDialogs()
   const { suppliersMap, shipmentCounts } = useShipmentMaps(shipments || [], suppliers || [])
 
   return (
     <div className="space-y-6">
-      <ShipmentsHeader count={shipments?.length} canManage={canManage} onNew={() => setNewOpen(true)} />
+      <ShipmentsHeader
+        count={shipments?.length}
+        canManage={canManage}
+        canImport={canImport}
+        onNew={handleNew}
+        onImport={() => setImportOpen(true)}
+      />
       <Tabs value={tab} onValueChange={(val) => setTab(val as ShipmentTab)}>
         <TabsList>
           <TabsTrigger value="shipments">{t("shipments.title")}</TabsTrigger>
@@ -81,7 +129,8 @@ export function ShipmentsPage() {
           <SupplierPanel canManage={canManage} shipmentCounts={shipmentCounts} />
         </TabsContent>
       </Tabs>
-      <IntakeShipmentDialog open={newOpen} onOpenChange={setNewOpen} existingShipmentId={null} />
+      <IntakeShipmentDialog open={intakeOpen} onOpenChange={setIntakeOpen} existingShipmentId={intakeShipmentId} />
+      <ImportShipmentDialog open={importOpen} onOpenChange={setImportOpen} onSuccess={handleImportSuccess} />
     </div>
   )
 }

@@ -10,6 +10,8 @@ export interface ShipmentView {
   deviceCount: number
   /** Account the purchase + per-phone expense money left from; fixed at creation. */
   paymentAccountCode: string
+  /** Currency exchange rate (e.g. 1.3 for KRW -> USD); cost-restricted. */
+  exchangeRate?: string | null
   /** Sum of its phones' expenses; absent for callers without cost permission. */
   unitExpenseTotal?: string
   /** Sum of its phones' customs fees; absent for callers without cost permission. */

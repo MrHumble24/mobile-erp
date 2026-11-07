@@ -50,6 +50,18 @@ export function DeviceCostSection({
 
   return (
     <div className="space-y-3 rounded-[16px] border border-border bg-muted p-4 text-sm shadow-[var(--shadow-xs)]">
+      {device.acquisitionCostOriginal != null && (
+        <CostRow
+          label={t("inventory.acquisitionCostOriginal")}
+          value={String(device.acquisitionCostOriginal)}
+        />
+      )}
+      {device.exchangeRate != null && (
+        <CostRow
+          label={t("inventory.exchangeRate")}
+          value={String(device.exchangeRate)}
+        />
+      )}
       <CostRow
         label={t("inventory.unitExpense")}
         value={formatMoney(device.unitExpense ?? 0)}

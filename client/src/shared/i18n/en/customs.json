@@ -33,5 +33,8 @@
   "wentDown": "Down",
   "unchanged": "Same",
   "newItem": "New",
-  "unmatchedShort": "No fee"
+  "unmatchedShort": "No fee",
+  "fromFile": "From file",
+  "loadedFromFile": "Loaded {count} rows from file",
+  "model": "Model"
 }

@@ -19,6 +19,10 @@ export interface DeviceView {
   modelId: string
   specs: DeviceSpecs
   acquisitionCost?: string
+  /** Original supplier cost before exchange rate (cost-restricted). */
+  acquisitionCostOriginal?: string | null
+  /** Exchange rate from shipment if imported (cost-restricted). */
+  exchangeRate?: string | null
   /** Customs fee stamped at intake; cost-restricted (absent without permission). */
   customsFee?: string
   /** Per-phone expense; cost-restricted. */
