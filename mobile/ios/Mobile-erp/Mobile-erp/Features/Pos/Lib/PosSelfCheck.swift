@@ -7,6 +7,7 @@ enum PosSelfCheck {
     static let ran: Void = {
         checkPayload()
         checkMixedTotals()
+        checkCustomer()
     }()
 
     private static func keys(_ p: SaleCreatePayload) -> Set<String> {
@@ -57,6 +58,13 @@ enum PosSelfCheck {
         assert(subtotal == Decimal(1_470_000))
         // Selling 3 of 2 in stock warns, never blocks.
         assert(pieces.exceedsStock)
+    }
+
+    private static func checkCustomer() {
+        let existing = PosCartCustomer(id: "uuid-123", name: "Existing", phone: "+998901234567")
+        assert(existing.id != nil && !existing.id!.isEmpty)
+        let inline = PosCartCustomer(id: nil, name: "New Inline", phone: "+998901234567")
+        assert(inline.id == nil)
     }
 
     private static let demoDevice = ScannedDevice(
