@@ -16,6 +16,8 @@ Supplier shipments arrive with batch sheets (`Приход документ.xlsx
 - **UI & UX**: Added "From file" button to customs price list and "Import from file" modal to Shipments page with preview table, row-level problem/warning badges, and Uzbek/English localization.
 
 ## Consequences
+- The `reference_catalog` migration shipped alongside creates the two lookup tables that `reference.prisma` had without a migration (`IF NOT EXISTS`: live databases got them by `db push`).
+- `docs/reference/excel/Расстаможка цены.xlsx` is the client's real list; the batch sheet there is a synthetic copy of the real one's shape (the real one holds a person's name and a live IMEI).
 - Eliminates manual data entry errors and automates landed cost math.
 - Guarantees all-or-nothing atomicity so invalid sheets never produce partial shipments.
 - Strict adherence to module anatomy, FSD, file size (<= 300 lines) and function size (<= 50 lines).

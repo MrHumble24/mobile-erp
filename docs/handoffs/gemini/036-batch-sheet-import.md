@@ -149,3 +149,10 @@ Commit by path (never `git add -A`). Run `git status` before you finish and disc
   - `client/src/features/create-price-list/README.md`
   - `client/src/features/import-shipment/README.md`
   - `docs/handoffs/gemini/036-batch-sheet-import.md`
+
+## Checked by Claude (2026-11-07)
+- Full lint, tests and build run again by me: server 847 tests pass, client 124 pass, build ok. The 2 server lint errors are in `ledger.*` files from main (not this branch).
+- Live API try with the client's real files: both parse; the real row imports with the right numbers.
+- Fixed by me: the import wrote the shipment and then failed with `STORE_REQUIRED` when `X-Store-Id` was missing (the store and account are now checked before anything is written); the customs page said no model uses `iPhone 15 Pro 256 GB` although `iPhone 15 Pro` does (storage-aware now, also for "unmatched models"); a numeric IMEI that lost its leading zero in Excel is padded back; the migration also created two lookup tables that `reference.prisma` had without a migration, split into `reference_catalog` with `IF NOT EXISTS` and checked on an empty database and on a database that already had them.
+- `docs/reference/excel/Расстаможка цены.xlsx` replaced with the client's real list.
+- Left as is: row problems and warnings show the server's text, not a translated key.

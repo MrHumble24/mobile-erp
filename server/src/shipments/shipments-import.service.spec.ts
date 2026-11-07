@@ -57,7 +57,9 @@ function build(customsFees: Map<string, number> = new Map()) {
     currentStoreId: jest.fn().mockResolvedValue('store-1'),
     currentStoreIds: jest.fn().mockResolvedValue(['store-1']),
   } as unknown as StoresService;
-  const ledger = {} as unknown as LedgerService;
+  const ledger = {
+    activeAccountCodes: jest.fn().mockResolvedValue(['CASH', 'CASH_USD']),
+  } as unknown as LedgerService;
   const stock = {
     purchaseTotalsByShipment: jest.fn().mockResolvedValue(new Map()),
   } as unknown as StockService;

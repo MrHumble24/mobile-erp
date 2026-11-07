@@ -14,6 +14,15 @@ export function normalizeCustomsKey(raw: string): string {
 }
 
 /**
+ * The normalised key without a trailing storage token:
+ * "iPhone 15 Pro 256 GB" -> "IPHONE 15 PRO". A list row with storage is
+ * "used" by a model whose code equals this base.
+ */
+export function baseCustomsKey(raw: string): string {
+  return normalizeCustomsKey(raw).replace(/\s+\d+(GB|TB)$/, '');
+}
+
+/**
  * Two-step lookup for customs fees:
  * 1. Try customsCode + " " + storage (if storage is provided)
  * 2. Try customsCode alone

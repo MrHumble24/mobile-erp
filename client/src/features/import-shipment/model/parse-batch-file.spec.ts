@@ -53,3 +53,12 @@ test("parseBatchRows throws when required headers are missing", () => {
     /Invalid batch sheet: missing required headers/
   )
 })
+
+test("pads a numeric IMEI that lost its leading zero in Excel", () => {
+  const rows = [
+    ["Модель", "Имей", "Расход", "Цена"],
+    ["iPhone 13 Pro Max 256 GB", 13339414137676, 70, 550],
+  ]
+  const [r] = parseBatchRows(rows as never)
+  assert.equal(r.imei, "013339414137676")
+})

@@ -1,4 +1,8 @@
-import { matchCustomsFee, normalizeCustomsKey } from './customs-match.js';
+import {
+  baseCustomsKey,
+  matchCustomsFee,
+  normalizeCustomsKey,
+} from './customs-match.js';
 
 describe('normalizeCustomsKey', () => {
   it('upper-cases and collapses whitespace', () => {
@@ -42,5 +46,13 @@ describe('matchCustomsFee', () => {
     expect(matchCustomsFee(feeMap, null, '256GB')).toBe(0);
     expect(matchCustomsFee(feeMap, '', '256GB')).toBe(0);
     expect(matchCustomsFee(feeMap, 'NonExistentModel', '256GB')).toBe(0);
+  });
+});
+
+describe('baseCustomsKey', () => {
+  it('drops a trailing storage token', () => {
+    expect(baseCustomsKey('iPhone 15 Pro 256 GB')).toBe('IPHONE 15 PRO');
+    expect(baseCustomsKey('S24 Ultra')).toBe('S24 ULTRA');
+    expect(baseCustomsKey('Tab 1 TB')).toBe('TAB');
   });
 });

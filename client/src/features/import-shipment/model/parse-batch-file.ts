@@ -79,6 +79,13 @@ function parseIntNumber(val: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined
 }
 
+/** Excel stores an IMEI as a number and drops a leading zero; pad it back. */
+function parseImei(val: unknown): string | undefined {
+  if (val == null || val === "") return undefined
+  if (typeof val === "number") return String(val).padStart(15, "0")
+  return String(val).replace(/\s+/g, "") || undefined
+}
+
 export function parseBatchRows(rows: (string | number | boolean | Date | null)[][]): ImportShipmentRow[] {
   const headerInfo = findHeaderRow(rows)
   if (!headerInfo) {
@@ -98,11 +105,10 @@ export function parseBatchRows(rows: (string | number | boolean | Date | null)[]
     }
 
     const modelName = String(row[cols.modelCol] ?? "").trim()
-    const imei = String(row[cols.imeiCol] ?? "").replace(/\s+/g, "")
+    const imei = parseImei(row[cols.imeiCol]) ?? ""
     if (!modelName && !imei) continue
 
-    const imei2Raw = cols.imei2Col !== -1 ? row[cols.imei2Col] : null
-    const imei2 = imei2Raw ? String(imei2Raw).replace(/\s+/g, "") : undefined
+    const imei2 = cols.imei2Col !== -1 ? parseImei(row[cols.imei2Col]) : undefined
 
     const price = parseNumber(row[cols.priceCol]) ?? 0
     const expense = (cols.expenseCol !== -1 ? parseNumber(row[cols.expenseCol]) : 0) ?? 0

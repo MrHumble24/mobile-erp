@@ -94,13 +94,7 @@ export class ShipmentsService {
   async create(dto: CreateShipmentDto, userId: string): Promise<ShipmentView> {
     await this.suppliers.get(dto.supplierId);
     const paymentAccountCode = dto.paymentAccountCode ?? 'CASH';
-    if (
-      !(await this.ledger.activeAccountCodes()).includes(paymentAccountCode)
-    ) {
-      throw new BadRequestException(
-        `Unknown or inactive account ${paymentAccountCode}`,
-      );
-    }
+    await this.assertAccount(paymentAccountCode);
     return this.repo.create({
       storeId: await this.stores.currentStoreId(),
       supplierId: dto.supplierId,
@@ -174,6 +168,15 @@ export class ShipmentsService {
       user,
     );
     await this.suppliers.get(dto.supplierId);
+    await this.assertAccount(dto.paymentAccountCode);
+    // Resolve the store before anything is written: a multi-store user
+    // without X-Store-Id must fail here, not after the transaction.
+    const storeIds = await this.stores.currentStoreIds();
+    if (!storeIds.includes(dto.storeId)) {
+      throw new BadRequestException(
+        `Store ${dto.storeId} is not the current store of this user`,
+      );
+    }
     const allModels = await this.models.list();
     const allImeis = dto.rows.flatMap((r) =>
       [r.imei, r.imei2].filter((x): x is string => !!x),
@@ -272,6 +275,12 @@ export class ShipmentsService {
   private loadModels(devices: RegisterDeviceDto[]): Promise<DeviceModelView[]> {
     const ids = [...new Set(devices.map((d) => d.modelId))];
     return Promise.all(ids.map((id) => this.models.get(id)));
+  }
+
+  private async assertAccount(code: string): Promise<void> {
+    if (!(await this.ledger.activeAccountCodes()).includes(code)) {
+      throw new BadRequestException(`Unknown or inactive account ${code}`);
+    }
   }
 
   private async require(id: string): Promise<ShipmentView> {
