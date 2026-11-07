@@ -37,7 +37,7 @@ describe('SaleCreateHandler (offline replay by serial)', () => {
     const dto = Object.assign(new CreateSaleDto(), { serialNumber: 'SN-1' });
     // The sync service calls findExisting before apply; the sale service itself
     // is idempotent on clientMutationId (asserted in sales.service.spec).
-    const existing = await handler.findExisting(ctx, dto);
+    const existing = await handler.findExisting(ctx);
     expect(existing).toMatchObject({ id: 'sale-prev' });
   });
 

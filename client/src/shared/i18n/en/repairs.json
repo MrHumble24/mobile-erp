@@ -66,8 +66,6 @@
   "noParts": "No parts added",
   "partAdded": "Part added",
   "partRemoved": "Part removed",
-  "partUnitCost": "Unit cost",
-  "partLineCost": "Line cost",
   "paymentsTitle": "Payments",
   "takePayment": "Take a payment",
   "refund": "Refund",
@@ -113,7 +111,6 @@
   "searchHint": "Ticket number, IMEI or customer",
   "allStatuses": "All statuses",
   "imeiOptional": "IMEI (optional)",
-  "serialOptional": "Serial number (optional)",
   "ownMaster": "Our master",
   "outsideMaster": "Outside master",
   "selectMaster": "Choose a master",
@@ -155,5 +152,6 @@
   "deviceLookingUp": "Checking inventory…",
   "linkedDevice": "Linked to a stock device",
   "unlinkDevice": "Unlink",
-  "createFromDevice": "Open repair ticket"
+  "createFromDevice": "Open repair ticket",
+  "reportTitle": "Repairs report"
 }

@@ -41,7 +41,8 @@ Eight checkpoints:
    `repair.outside`, `repair.part.add`, `repair.part.remove`).
 6. **CP6 — Owner notifications, digest and till shortcut.** Telegram owner
    notifications on repair events, a repair income/profit line in the daily
-   closing report + digest, a share/copy ticket action, a POS shortcut.
+   closing report + digest, a POS shortcut. (The share/copy ticket action
+   shipped earlier with CP3's printable-ticket navigation.)
 7. **CP7 — Documentation.** PRD repairs section, ADR 0040/0042 amendments,
    stale README / i18n cleanup, status labels.
 8. **CP8 — Verification & backlog.** Full verification, plan-table update and

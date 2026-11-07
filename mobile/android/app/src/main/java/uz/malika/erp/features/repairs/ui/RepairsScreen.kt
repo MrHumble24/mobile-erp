@@ -119,7 +119,7 @@ private fun RepairReportCard(report: uz.malika.erp.features.repairs.data.RepairR
         Spacer(Modifier.height(Tokens.Space.rowV))
         ReportRow(t("repairs.income", null), report.income, mono)
         report.partsCost?.let { ReportRow(t("repairs.partsCost", null), it, mono) }
-        report.outsideCost?.let { ReportRow(t("repairs.outsidePaid", null), it, mono) }
+        report.outsideCost?.let { ReportRow(t("repairs.reportOutsideCost", null), it, mono) }
         report.profit?.let { ReportRow(t("repairs.profit", null), it, mono) }
     }
 }

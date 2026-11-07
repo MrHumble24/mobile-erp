@@ -1,6 +1,7 @@
 import { ConflictException } from '@nestjs/common';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import type { StoresService } from '../stores/stores.service.js';
+import type { MutationDto } from './dto/push.dto.js';
 import { SyncHandlerRegistry } from './handlers/handler-registry.js';
 import { SyncRepository } from './sync.repository.js';
 import { SyncService } from './sync.service.js';
@@ -57,7 +58,7 @@ const mutation = {
   occurredAt: '2026-11-01T00:00:00.000Z',
 };
 
-function pushOne(service: SyncService, user = caller(), m = mutation) {
+function pushOne(service: SyncService, user = caller(), m: MutationDto = mutation) {
   return service
     .push(user, { terminalId: 't-1', mutations: [m] })
     .then((r) => r.results[0]);

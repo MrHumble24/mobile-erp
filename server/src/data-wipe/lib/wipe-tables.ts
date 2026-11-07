@@ -35,6 +35,8 @@ export const ALWAYS_TABLES = [
   'repair_parts',
   'repair_payments',
   'repair_status_history',
+  // idempotency keys for repair writes (CP2) are shop data, erased with the rest
+  'repair_mutations',
   'repairs',
   'device_status_history',
   'sync_conflicts',

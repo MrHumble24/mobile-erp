@@ -66,8 +66,6 @@
   "noParts": "Qismlar qo'shilmagan",
   "partAdded": "Qism qo'shildi",
   "partRemoved": "Qism o'chirildi",
-  "partUnitCost": "Dona tannarxi",
-  "partLineCost": "Jami tannarx",
   "paymentsTitle": "To'lovlar",
   "takePayment": "To'lov qabul qilish",
   "refund": "Qaytarish",
@@ -113,7 +111,6 @@
   "searchHint": "Chipta raqami, IMEI yoki mijoz",
   "allStatuses": "Barcha holatlar",
   "imeiOptional": "IMEI (ixtiyoriy)",
-  "serialOptional": "Seriya raqami (ixtiyoriy)",
   "ownMaster": "O'z ustamiz",
   "outsideMaster": "Tashqi usta",
   "selectMaster": "Ustani tanlang",
@@ -155,5 +152,6 @@
   "deviceLookingUp": "Inventar tekshirilmoqda…",
   "linkedDevice": "Ombordagi qurilmaga ulangan",
   "unlinkDevice": "Ulanishni olib tashlash",
-  "createFromDevice": "Ta'mir chiptasi ochish"
+  "createFromDevice": "Ta'mir chiptasi ochish",
+  "reportTitle": "Ta'mirlar hisoboti"
 }

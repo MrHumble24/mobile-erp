@@ -37,6 +37,24 @@ list, so unrelated in-progress work never enters a repairs commit.
 | 7 | done | PRD repairs section, ADR amendments (mobile online-only, free-text fallback), stale README/i18n cleanup, status labels | `docs(repairs): PRD, ADR amendments and copy cleanup` |
 | 8 | pending | Full verification (`tsc`, `oxlint`, client + server tests, build), update this table, list mobile backlog with exact files | `chore(repairs): final verification and backlog` |
 
+## Accepted remaining gaps (documented, not silently dropped)
+
+- **Warranty claims**: `underWarranty` is displayed but there is no
+  warranty-claim / free-repair rule and no link from a returning customer to
+  the original ticket. Requires a product decision on what a warranty repair
+  means; the data model already has `warrantyDays` + `givenBackAt`.
+- **Mobile parity (deferred)**: iOS/Android still lack edit ticket
+  (`PATCH /repairs/:id`), printable/shareable ticket, and the customer-detail
+  repairs list. Exact files are listed in ADR 0067. iOS copy uses key names
+  that do not resolve to the bundled `repairs` namespace; the two wrong report
+  keys were fixed in CP8. Mobile simulator verification was not available.
+- **Dead i18n keys**: only 3 keys (`partUnitCost`, `partLineCost`,
+  `serialOptional`) were truly unused across all three clients and were
+  removed. The other 26 keys flagged by a web-only scan are used by mobile.
+- **Pre-existing tsc spec-fixture errors** (5, in `reports.service.spec.ts`,
+  `sale-create.handler.spec.ts`, `sync.service.spec.ts`) are baseline and were
+  left untouched; no new typecheck errors were introduced by this work.
+
 ## Out of scope / needs external input
 
 - SMS gateway or customer Telegram chat IDs (no such channel exists in the
@@ -61,6 +79,12 @@ list, so unrelated in-progress work never enters a repairs commit.
   clean, `pnpm test` 142/142. Note: `client/package.json`'s test list also
   carries the two previously-added customs specs from the uncommitted customs
   work; it is committed together with the repair specs.
+- CP2 follow-up: full server suite (152 suites / 909 tests) exposed that the new
+  `repair_mutations` table was missing from the danger-zone wipe classification;
+  added to `ALWAYS_TABLES`. Full suite green afterwards.
+- CP7 follow-up: fixed the two wrong mobile report keys, added the missing
+  `repairs.reportTitle` key, removed the 3 i18n keys unused across all clients,
+  and corrected two pre-existing sync spec-fixture typecheck errors.
 - CP4: optional `Repair.deviceId` FK + migration applied; server validates the
   device belongs to the active store; client form has a debounced IMEI lookup
   that links + prefills, and a DEFECTIVE device drawer can launch a prefilled
