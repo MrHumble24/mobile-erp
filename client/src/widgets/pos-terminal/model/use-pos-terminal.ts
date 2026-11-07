@@ -121,10 +121,6 @@ export function usePosTerminal() {
     onToggleMode: () => setMode((m) => (m === "sale" ? "nasiya" : "sale")),
   })
 
-  React.useEffect(() => {
-    focusScanner()
-  }, [])
-
   return {
     mode,
     setMode,

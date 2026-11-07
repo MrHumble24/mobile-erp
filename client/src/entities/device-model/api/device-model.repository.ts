@@ -35,4 +35,18 @@ export const deviceModelRepository = {
   removeImage: async (id: string): Promise<DeviceModelView> => {
     return http<DeviceModelView>(`/device-models/${id}/image`, { method: "DELETE" })
   },
+
+  uploadColorImage: async (id: string, color: string, file: File): Promise<DeviceModelView> => {
+    return uploadFile<DeviceModelView>(
+      `/device-models/${id}/colors/${encodeURIComponent(color)}/image`,
+      file
+    )
+  },
+
+  removeColorImage: async (id: string, color: string): Promise<DeviceModelView> => {
+    return http<DeviceModelView>(
+      `/device-models/${id}/colors/${encodeURIComponent(color)}/image`,
+      { method: "DELETE" }
+    )
+  },
 }

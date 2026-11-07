@@ -24,6 +24,7 @@ fun EnvInfoCard(container: AppContainer, viewed: AppEnv) {
     AppCard(Modifier.fillMaxWidth()) {
         InfoRow("Active base URL", container.devConfig.currentBaseUrl)
         InfoRow("Viewing", viewed.name.lowercase())
+        InfoRow("HTTP cache", if (container.devConfig.isHttpCacheEnabled) "enabled" else "disabled (no-cache)")
         InfoRow("App version", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
         InfoRow("Build type", if (BuildConfig.DEBUG) "debug" else "release")
         InfoRow("Terminal id", container.terminalId.get(), mono = true)

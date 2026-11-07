@@ -20,6 +20,8 @@ export interface DeviceModelView {
   salePrice: string | null;
   /** Public URL of the product picture, or null when it has none (ADR 0031). */
   imageUrl: string | null;
+  /** Optional map of color name -> public image URL (ADR 0031 extension). */
+  colorImages: Record<string, string>;
   attributes: AttributeDef[];
   createdAt: Date;
   updatedAt: Date;

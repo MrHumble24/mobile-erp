@@ -46,7 +46,7 @@ struct ScannerField: View {
             if !text.isEmpty {
                 Button {
                     text = ""
-                    focused = true
+                    if autoFocus { focused = true }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Tokens.muted)
@@ -93,7 +93,7 @@ struct ScannerField: View {
     private func submit(_ raw: String) {
         let code = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         text = ""
-        focused = true
+        if autoFocus { focused = true }
         guard !code.isEmpty else { return }
         let now = Date()
         if code == lastCode, let last = lastAt, now.timeIntervalSince(last) < Self.dedupeWindow {

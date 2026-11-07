@@ -63,6 +63,7 @@ export const CONTACTS_TABLES = ['customers', 'partners', 'suppliers'] as const;
  * price tied to a device, so it dies with the device (ALWAYS).
  */
 export const CATALOG_TABLES = [
+  'device_model_color_images',
   'stock_alert_rules',
   'ref_model_links',
   'product_prices',

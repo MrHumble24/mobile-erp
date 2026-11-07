@@ -15,6 +15,11 @@ function build() {
     kindIsActive: jest.fn().mockResolvedValue(true),
     countUnits: jest.fn().mockResolvedValue(0),
     imageFileName: jest.fn().mockResolvedValue(null),
+    colorImageFileName: jest.fn().mockResolvedValue(null),
+    setColorImage: jest
+      .fn()
+      .mockImplementation((id, color, f) => ({ id, color, imageFileName: f })),
+    removeColorImage: jest.fn().mockImplementation((id) => ({ id })),
     create: jest.fn().mockImplementation((d) => ({ id: 'm1', ...d })),
     update: jest.fn().mockImplementation((id, d) => ({ id, ...d })),
   };
@@ -132,5 +137,31 @@ describe('DeviceModelsService image', () => {
     await service.removeImage('m1');
     expect(repo.update).toHaveBeenCalledWith('m1', { imageFileName: null });
     expect(images.remove).toHaveBeenCalledWith('old.png');
+  });
+});
+
+describe('DeviceModelsService color image', () => {
+  it('setColorImage writes the new file, saves color mapping, deletes old file', async () => {
+    const { service, repo, images } = build();
+    repo.colorImageFileName.mockResolvedValue('old-color.jpg');
+    await service.setColorImage('m1', 'Black', png);
+    expect(images.save).toHaveBeenCalledWith(png, 'png');
+    expect(repo.setColorImage).toHaveBeenCalledWith('m1', 'Black', 'new.png');
+    expect(images.remove).toHaveBeenCalledWith('old-color.jpg');
+  });
+
+  it('setColorImage rejects empty color', async () => {
+    const { service } = build();
+    await expect(service.setColorImage('m1', '   ', png)).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('removeColorImage deletes color image and removes file', async () => {
+    const { service, repo, images } = build();
+    repo.colorImageFileName.mockResolvedValue('color.png');
+    await service.removeColorImage('m1', 'Black');
+    expect(repo.removeColorImage).toHaveBeenCalledWith('m1', 'Black');
+    expect(images.remove).toHaveBeenCalledWith('color.png');
   });
 });

@@ -67,6 +67,7 @@ export interface StorefrontProductCard {
 }
 
 export interface StorefrontProductDetail extends StorefrontProductCard {
+  colorImages?: Record<string, string>
   variants: StorefrontVariantView[]
 }
 

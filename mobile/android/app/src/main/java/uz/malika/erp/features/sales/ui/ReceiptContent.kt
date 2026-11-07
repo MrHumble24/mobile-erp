@@ -28,6 +28,7 @@ import uz.malika.erp.shared.lib.formatMoney
 import uz.malika.erp.shared.lib.parseMoney
 import uz.malika.erp.shared.payments.ui.accountLabel
 import uz.malika.erp.shared.ui.AppCard
+import uz.malika.erp.shared.ui.BarcodeVisual
 import uz.malika.erp.ui.theme.MonoFamily
 import uz.malika.erp.ui.theme.Tokens
 
@@ -87,6 +88,8 @@ fun ReceiptPaper(data: ReceiptData, t: Translate) {
             KvRow(row.left, row.right ?: "")
         }
         data.warrantyUntil?.let { KvRow(t("pos.warrantyUntil", null), it) }
+        val primaryCode = data.items.firstOrNull { it.code.isNotBlank() }?.code ?: data.receiptId.take(15)
+        BarcodeVisual(value = primaryCode)
         Spacer(Modifier.height(8.dp))
         Text(t("pos.thankYou", null), style = mono.copy(textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())
         Text(t("pos.warrantyNotice", null), style = mono.copy(fontSize = 11.sp, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth())

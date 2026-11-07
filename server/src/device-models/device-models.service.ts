@@ -129,6 +129,42 @@ export class DeviceModelsService {
     return view;
   }
 
+  /**
+   * Sets or replaces the picture for a specific color of a model.
+   * Validates bytes (JPEG/PNG/WebP, <= 2 MB), saves to disk, upserts DB row,
+   * and deletes previous file if present.
+   */
+  async setColorImage(
+    id: string,
+    color: string,
+    buffer: Buffer | undefined,
+  ): Promise<DeviceModelView> {
+    const trimmedColor = color?.trim();
+    if (!trimmedColor) {
+      throw new BadRequestException('Color cannot be empty');
+    }
+    await this.require(id);
+    const ext = assertValidImage(buffer);
+    const previous = await this.repo.colorImageFileName(id, trimmedColor);
+    const fileName = await this.images.save(buffer!, ext);
+    const view = await this.repo.setColorImage(id, trimmedColor, fileName);
+    await this.images.remove(previous);
+    return view;
+  }
+
+  /** Removes the picture for a specific color of a model. */
+  async removeColorImage(id: string, color: string): Promise<DeviceModelView> {
+    const trimmedColor = color?.trim();
+    if (!trimmedColor) {
+      throw new BadRequestException('Color cannot be empty');
+    }
+    await this.require(id);
+    const previous = await this.repo.colorImageFileName(id, trimmedColor);
+    const view = await this.repo.removeColorImage(id, trimmedColor);
+    await this.images.remove(previous);
+    return view;
+  }
+
   private async assertKind(kindCode: string): Promise<void> {
     if (!(await this.repo.kindIsActive(kindCode))) {
       throw new BadRequestException(`Unknown or inactive kind ${kindCode}`);

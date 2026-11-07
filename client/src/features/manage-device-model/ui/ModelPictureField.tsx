@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react"
 import { ImagePlus, Trash2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { toast } from "@/shared/ui/sonner"
@@ -18,12 +19,38 @@ function serverMessage(t: (k: string) => string, err: { statusCode?: number; mes
   return err?.message || t("common.error")
 }
 
-/** Shows the model's picture and lets the admin upload, replace or remove it. */
-export function ModelPictureField({ model }: { model: DeviceModelView }) {
+/** Shows the model's main picture and lets the admin upload, replace or remove it. */
+export function ModelPictureField({
+  model,
+  stagedFile,
+  onStagedFileChange,
+}: {
+  model?: DeviceModelView | null
+  stagedFile?: File | null
+  onStagedFileChange?: (file: File | null) => void
+}) {
   const { t } = useI18n()
   const upload = useUploadDeviceModelImage()
   const remove = useRemoveDeviceModelImage()
+  const [localPreview, setLocalPreview] = useState<string | null>(null)
   const busy = upload.isPending || remove.isPending
+
+  const stagedUrl = useMemo(() => {
+    if (!stagedFile) return null
+    return URL.createObjectURL(stagedFile)
+  }, [stagedFile])
+
+  useEffect(() => {
+    return () => {
+      if (stagedUrl) URL.revokeObjectURL(stagedUrl)
+    }
+  }, [stagedUrl])
+
+  useEffect(() => {
+    return () => {
+      if (localPreview) URL.revokeObjectURL(localPreview)
+    }
+  }, [localPreview])
 
   const onFile = (file: File) => {
     if (!(ACCEPTED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
@@ -34,39 +61,67 @@ export function ModelPictureField({ model }: { model: DeviceModelView }) {
       toast.error(t("catalog.errorPictureSize"))
       return
     }
-    upload.mutate(
-      { id: model.id, file },
-      {
-        onSuccess: () => toast.success(t("catalog.pictureSaved")),
-        onError: (err: { statusCode?: number; message?: string }) => toast.error(serverMessage(t, err)),
-      }
-    )
+
+    const preview = URL.createObjectURL(file)
+    setLocalPreview(preview)
+
+    if (model) {
+      upload.mutate(
+        { id: model.id, file },
+        {
+          onSuccess: () => toast.success(t("catalog.pictureSaved")),
+          onError: (err: { statusCode?: number; message?: string }) => {
+            setLocalPreview(null)
+            toast.error(serverMessage(t, err))
+          },
+        }
+      )
+    } else if (onStagedFileChange) {
+      onStagedFileChange(file)
+    }
   }
 
-  const onRemove = () =>
-    remove.mutate(model.id, {
-      onSuccess: () => toast.success(t("catalog.pictureRemoved")),
-      onError: (err: { message?: string }) => toast.error(err?.message || t("common.error")),
-    })
+  const onRemove = () => {
+    setLocalPreview(null)
+    if (model) {
+      remove.mutate(model.id, {
+        onSuccess: () => toast.success(t("catalog.pictureRemoved")),
+        onError: (err: { message?: string }) => toast.error(err?.message || t("common.error")),
+      })
+    } else if (onStagedFileChange) {
+      onStagedFileChange(null)
+    }
+  }
+
+  const displayBlob = localPreview || stagedUrl
+  const hasImage = Boolean(displayBlob || model?.imageUrl)
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">{t("catalog.picture")}</p>
+      <p className="text-sm font-medium">{t("catalog.mainPicture")}</p>
       <div className="flex items-start gap-3">
-        <AssetImage
-          path={model.imageUrl}
-          alt={model.name}
-          className="size-20 shrink-0 rounded-[12px] border border-border"
-        />
+        {displayBlob ? (
+          <img
+            src={displayBlob}
+            alt={model?.name ?? "Model preview"}
+            className="size-20 shrink-0 rounded-[12px] border border-border object-cover"
+          />
+        ) : (
+          <AssetImage
+            path={model?.imageUrl ?? null}
+            alt={model?.name ?? ""}
+            className="size-20 shrink-0 rounded-[12px] border border-border"
+          />
+        )}
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             <FilePicker accept={ACCEPTED_IMAGE_TYPES.join(",")} disabled={busy} onPick={onFile}>
               <Button type="button" variant="outline" size="sm" disabled={busy} className="gap-1.5">
                 <ImagePlus className="size-4" />
-                {model.imageUrl ? t("catalog.replacePicture") : t("catalog.uploadPicture")}
+                {hasImage ? t("catalog.replacePicture") : t("catalog.uploadPicture")}
               </Button>
             </FilePicker>
-            {model.imageUrl && (
+            {hasImage && (
               <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={onRemove} className="gap-1.5 text-destructive">
                 <Trash2 className="size-4" />
                 {t("catalog.removePicture")}

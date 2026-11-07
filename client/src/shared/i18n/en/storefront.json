@@ -100,5 +100,7 @@
   "openHours": "Daily 09:00 - 20:00",
   "storeLocationTitle": "Our location",
   "storeLocationDesc": "Tashkent, Malika electronics market, Store A-14",
-  "storeOpenStatus": "Open now"
+  "storeOpenStatus": "Open now",
+  "pickupToday": "Available for pickup today",
+  "clickToEnlarge": "Click to enlarge"
 }

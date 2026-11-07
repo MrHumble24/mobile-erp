@@ -105,7 +105,10 @@ struct ReceiptSheet: View {
             if let w = r.warranty, let endsAt = w.endsAt {
                 row(i18n.t("pos.warrantyUntil"), SaleDate.day(endsAt))
             }
-            Text(i18n.t("pos.thankYou")).font(.mono(11)).padding(.top, 6)
+            let primaryCode = (r.items.first(where: { !$0.unitCode.isEmpty })?.unitCode) ?? String(r.saleId.prefix(15))
+            BarcodeVisual(value: primaryCode)
+                .padding(.top, 6)
+            Text(i18n.t("pos.thankYou")).font(.mono(11)).padding(.top, 2)
             Text(i18n.t("pos.warrantyNotice")).font(.mono(9)).foregroundStyle(Tokens.muted)
             if let footer = r.footer?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
                 Text(footer).font(.mono(11)).foregroundStyle(Tokens.muted).padding(.top, 4)

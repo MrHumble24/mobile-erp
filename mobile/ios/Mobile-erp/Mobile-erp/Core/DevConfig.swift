@@ -42,6 +42,7 @@ enum DevHost {
 @Observable
 final class DevConfig {
     var env: AppEnv
+    var isHttpCacheEnabled: Bool
     /// Per-env user override; absent/empty ⇒ use the auto/default URL.
     private var overrides: [AppEnv: String]
 
@@ -76,11 +77,13 @@ final class DevConfig {
     private enum Keys {
         static let env = "dev_env"
         static func override(_ env: AppEnv) -> String { "dev_url_\(env.rawValue)" }
+        static let httpCacheEnabled = "dev_http_cache_enabled"
     }
 
-    init(env: AppEnv, overrides: [AppEnv: String]) {
+    init(env: AppEnv, overrides: [AppEnv: String], isHttpCacheEnabled: Bool = false) {
         self.env = env
         self.overrides = overrides
+        self.isHttpCacheEnabled = isHttpCacheEnabled
     }
 
     /// Reads the persisted config, falling back to defaults.
@@ -90,7 +93,17 @@ final class DevConfig {
         for e in AppEnv.allCases {
             if let v = store.string(forKey: Keys.override(e)), !v.isEmpty { overrides[e] = v }
         }
-        return DevConfig(env: env, overrides: overrides)
+        let isHttpCacheEnabled = store.bool(forKey: Keys.httpCacheEnabled)
+        return DevConfig(env: env, overrides: overrides, isHttpCacheEnabled: isHttpCacheEnabled)
+    }
+
+    /// Toggles HTTP network cache. Clears URLCache when turning off.
+    func setHttpCacheEnabled(_ enabled: Bool, store: UserDefaults = .standard) {
+        self.isHttpCacheEnabled = enabled
+        store.set(enabled, forKey: Keys.httpCacheEnabled)
+        if !enabled {
+            URLCache.shared.removeAllCachedResponses()
+        }
     }
 
     /// Switches the active environment and persists it.

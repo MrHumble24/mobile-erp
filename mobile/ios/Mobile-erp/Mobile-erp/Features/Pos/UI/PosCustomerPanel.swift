@@ -18,7 +18,7 @@ struct PosCustomerPanel: View {
                     .font(.ui(.heading))
                     .foregroundStyle(Tokens.text)
                 levelControl
-                if let customer = cart.customer {
+                if let customer = cart.customer, let id = customer.id, !id.isEmpty {
                     attached(customer)
                 } else {
                     Button {
@@ -31,12 +31,24 @@ struct PosCustomerPanel: View {
                     .buttonStyle(.pillSecondary)
                     Toggle(i18n.t("pos.newCustomer"), isOn: $addNew.animation())
                         .font(.ui(.body))
+                        .onChange(of: addNew) { _, isNew in
+                            if !isNew && cart.customer?.id == nil {
+                                cart.detachCustomer()
+                                model.clearBonus()
+                            }
+                        }
                     if addNew { newCustomerFields }
                 }
             }
         }
+        .onAppear {
+            if cart.customer != nil && cart.customer?.id == nil {
+                addNew = true
+            }
+        }
         .sheet(isPresented: $showSearch) {
             PosCustomerSearchSheet(model: model) { hit in
+                addNew = false
                 model.attachCustomer(hit)
                 showSearch = false
             }

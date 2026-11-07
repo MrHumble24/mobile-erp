@@ -100,5 +100,7 @@
   "openHours": "Har kuni 09:00 - 20:00",
   "storeLocationTitle": "Bizning manzilimiz",
   "storeLocationDesc": "Toshkent sh., Shayxontohur t., Malika elektronika bozori, A-14 do'kon",
-  "storeOpenStatus": "Do'kon ochiq"
+  "storeOpenStatus": "Do'kon ochiq",
+  "pickupToday": "Bugun olib ketish mumkin",
+  "clickToEnlarge": "Kattalashtirish"
 }

@@ -28,7 +28,10 @@ struct AppShell: View {
                 }
                 #if DEBUG
                 // Screenshot helper: `-open home|pos|sales|inventory|shipments|qc|consignments|partners|customers|expenses|balance|purchases|repairs|reports|customs|users|settings|more`.
-                if let open = UserDefaults.standard.string(forKey: "open"),
+                let args = ProcessInfo.processInfo.arguments
+                let openArg = UserDefaults.standard.string(forKey: "open")
+                    ?? (args.firstIndex(of: "-open").flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil })
+                if let open = openArg,
                    let id = ["home": "dashboard", "pos": "pos", "sales": "sales",
                              "inventory": "inventory", "stock": "stock", "shipments": "shipments", "qc": "qc",
                              "consignments": "consignments", "partners": "partners", "customers": "customers", "expenses": "expenses", "balance": "balance", "credits": "credits", "purchases": "purchases", "repairs": "repairs", "shifts": "shifts", "users": "users", "reports": "reports", "customs": "customs", "settings": "settings",

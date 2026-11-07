@@ -72,4 +72,25 @@ export class DeviceModelsController {
   removeImage(@Param('id') id: string) {
     return this.models.removeImage(id);
   }
+
+  @Post(':id/colors/:color/image')
+  @RequirePermissions('device.update')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { files: 1, fileSize: MAX_IMAGE_BYTES * 4 },
+    }),
+  )
+  setColorImage(
+    @Param('id') id: string,
+    @Param('color') color: string,
+    @UploadedFile() file?: UploadedImage,
+  ) {
+    return this.models.setColorImage(id, color, file?.buffer);
+  }
+
+  @Delete(':id/colors/:color/image')
+  @RequirePermissions('device.update')
+  removeColorImage(@Param('id') id: string, @Param('color') color: string) {
+    return this.models.removeColorImage(id, color);
+  }
 }

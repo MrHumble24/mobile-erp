@@ -56,13 +56,16 @@ export async function buildUnitProductCards(
       priceFrom = await resolveMinUnitPrice(m, mUnits, pricing);
     }
 
+    const imageFileName =
+      m.imageFileName || m.colorImages?.[0]?.imageFileName || null;
+
     cards.push({
       modelId: m.id,
       brand: m.brand,
       name: m.name,
       categoryId: m.categoryId,
       categoryName: m.category?.name ?? null,
-      imageUrl: buildImageUrl(m.imageFileName),
+      imageUrl: buildImageUrl(imageFileName),
       priceFrom,
       inStock: mUnits.length,
       stores: availableStores,
@@ -99,13 +102,16 @@ export async function buildQuantityProductCards(
       priceFrom = await resolveProductPrice(m, pricing);
     }
 
+    const imageFileName =
+      m.imageFileName || m.colorImages?.[0]?.imageFileName || null;
+
     cards.push({
       modelId: m.id,
       brand: m.brand,
       name: m.name,
       categoryId: m.categoryId,
       categoryName: m.category?.name ?? null,
-      imageUrl: buildImageUrl(m.imageFileName),
+      imageUrl: buildImageUrl(imageFileName),
       priceFrom,
       inStock: totalStock,
       stores: availableStores,
@@ -147,6 +153,17 @@ function groupUnitsByVariant(
   }
 
   return groups;
+}
+
+function extractColorImages(model: PublicModelRow): Record<string, string> {
+  const map: Record<string, string> = {};
+  if (Array.isArray(model.colorImages)) {
+    for (const item of model.colorImages) {
+      const url = buildImageUrl(item.imageFileName);
+      if (url) map[item.color] = url;
+    }
+  }
+  return map;
 }
 
 export async function buildUnitProductDetail(
@@ -197,6 +214,7 @@ export async function buildUnitProductDetail(
     categoryId: model.categoryId,
     categoryName: model.category?.name ?? null,
     imageUrl: buildImageUrl(model.imageFileName),
+    colorImages: extractColorImages(model),
     priceFrom: minPrice !== null ? minPrice.toFixed(2) : null,
     inStock: units.length,
     stores: cardStores,
@@ -244,6 +262,7 @@ export async function buildQuantityProductDetail(
     categoryId: model.categoryId,
     categoryName: model.category?.name ?? null,
     imageUrl: buildImageUrl(model.imageFileName),
+    colorImages: extractColorImages(model),
     priceFrom: price,
     inStock: totalStock,
     stores: cardStores,

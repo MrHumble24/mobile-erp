@@ -70,12 +70,21 @@ final class ProductImageLoader: Sendable {
     }
 
     func image(for url: URL) async -> UIImage? {
-        if let cached = memory.object(forKey: url as NSURL) { return cached }
+        let isCacheEnabled = UserDefaults.standard.bool(forKey: "dev_http_cache_enabled")
+        if isCacheEnabled, let cached = memory.object(forKey: url as NSURL) { return cached }
         var request = URLRequest(url: url)
-        request.cachePolicy = .returnCacheDataElseLoad
+        if !isCacheEnabled {
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.setValue("no-cache, no-store", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        } else {
+            request.cachePolicy = .returnCacheDataElseLoad
+        }
         guard let (data, _) = try? await session.data(for: request),
               let image = UIImage(data: data) else { return nil }
-        memory.setObject(image, forKey: url as NSURL)
+        if isCacheEnabled {
+            memory.setObject(image, forKey: url as NSURL)
+        }
         return image
     }
 }

@@ -168,7 +168,7 @@ fun IntakeDeviceForm(
                 Column {
                     Text(t("catalog.serialNumber", null), style = MaterialTheme.typography.labelLarge)
                     Spacer(Modifier.height(Tokens.Space.rowV))
-                    ScannerField(onScan = ::onSerialScan, placeholder = t("catalog.serialNumberHint", null))
+                    ScannerField(onScan = ::onSerialScan, placeholder = t("catalog.serialNumberHint", null), autofocus = true)
                     SlotHint(serial, serialError)
                 }
             } else {
@@ -180,7 +180,7 @@ fun IntakeDeviceForm(
                         onDualChange = { dualSim = it; if (!it) { imei2 = ""; slot2Error = null } },
                     )
                     Spacer(Modifier.height(Tokens.Space.rowV))
-                    ScannerField(onScan = ::fillNextSlot, placeholder = t("shipments.scanImei", null))
+                    ScannerField(onScan = ::fillNextSlot, placeholder = t("shipments.scanImei", null), autofocus = true)
                     SlotHint(imei1, slot1Error)
                     if (dualSim) {
                         Spacer(Modifier.height(Tokens.Space.section))

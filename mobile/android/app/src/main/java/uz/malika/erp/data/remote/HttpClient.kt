@@ -49,6 +49,7 @@ object HttpClient {
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(baseUrlInterceptor(devConfig))
+            .addInterceptor(cacheControlInterceptor(devConfig))
             .addInterceptor(authInterceptor(secure, authEvents, activeStoreId, storeEvents))
             .addInterceptor(networkLogInterceptor()) // last: logs the final request
             .build()
@@ -72,6 +73,35 @@ object HttpClient {
             .port(configured.port)
             .build()
         chain.proceed(original.newBuilder().url(url).build())
+    }
+
+    /**
+     * Prevents caching unless explicitly turned on globally ([devConfig.isHttpCacheEnabled])
+     * or per-request with the `X-Allow-Cache: true` header.
+     */
+    private fun cacheControlInterceptor(devConfig: DevConfigStore) = Interceptor { chain ->
+        val original = chain.request()
+        val explicitCache = original.header("X-Allow-Cache")?.equals("true", ignoreCase = true) == true
+        val allowCache = devConfig.isHttpCacheEnabled || explicitCache
+
+        val reqBuilder = original.newBuilder()
+        reqBuilder.removeHeader("X-Allow-Cache")
+
+        if (!allowCache) {
+            reqBuilder.header("Cache-Control", "no-cache, no-store")
+            reqBuilder.header("Pragma", "no-cache")
+        }
+
+        val response = chain.proceed(reqBuilder.build())
+
+        if (!allowCache) {
+            response.newBuilder()
+                .header("Cache-Control", "no-cache, no-store, must-revalidate")
+                .header("Pragma", "no-cache")
+                .build()
+        } else {
+            response
+        }
     }
 
     private fun authInterceptor(

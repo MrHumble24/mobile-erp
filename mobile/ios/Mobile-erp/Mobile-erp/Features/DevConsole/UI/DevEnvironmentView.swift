@@ -21,6 +21,7 @@ struct DevEnvironmentView: View {
             urlSection
             if viewed == .development { hostSection }
             testSection
+            cacheSection
             if viewed != config.env { switchSection }
             appInfoSection
         }
@@ -112,6 +113,19 @@ struct DevEnvironmentView: View {
             }
         } footer: {
             Text("Switching clears the session and returns to the login screen.")
+        }
+    }
+
+    private var cacheSection: some View {
+        Section {
+            Toggle("Enable HTTP Cache", isOn: Binding(
+                get: { config.isHttpCacheEnabled },
+                set: { config.setHttpCacheEnabled($0) }
+            ))
+        } header: {
+            Text("HTTP Network Cache")
+        } footer: {
+            Text("Disabled by default. When off, all requests bypass local cache and send no-cache headers.")
         }
     }
 

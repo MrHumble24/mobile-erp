@@ -62,6 +62,7 @@ export class StorefrontCatalogRepository {
         category: { select: { id: true, name: true } },
         imageFileName: true,
         salePrice: true,
+        colorImages: { select: { color: true, imageFileName: true }, take: 1 },
       },
       orderBy: [{ brand: 'asc' }, { name: 'asc' }, { id: 'asc' }],
       skip: (filter.page - 1) * filter.pageSize,

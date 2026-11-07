@@ -40,5 +40,6 @@ class SecureStore(context: Context) {
         const val DEV_OVERRIDE_PROD = "dev_override_prod"
         const val DEV_OVERRIDE_STAGING = "dev_override_staging"
         const val DEV_OVERRIDE_DEV = "dev_override_dev"
+        const val DEV_HTTP_CACHE_ENABLED = "dev_http_cache_enabled"
     }
 }

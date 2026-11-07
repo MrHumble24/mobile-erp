@@ -5,11 +5,12 @@ import SwiftUI
 struct RootView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.scenePhase) private var scenePhase
+    @State private var isColdStarting = true
 
     var body: some View {
         Group {
-            if container.session.isRestoring {
-                LoadingView()
+            if isColdStarting || container.session.isRestoring {
+                SplashView()
             } else if let user = container.session.user {
                 let resolved = StoreManager.resolveActiveStore(
                     stores: user.stores,
@@ -36,8 +37,11 @@ struct RootView: View {
             #if DEBUG
             await container.devAutoSignIn()
             #endif
-            container.bootstrap()
+            await container.bootstrap()
             await refreshPermissions()
+            withAnimation(.easeOut(duration: 0.28)) {
+                isColdStarting = false
+            }
         }
         // A permission granted/revoked server-side applies on the next foreground,
         // no sign-out needed (phone apps previously read permissions at sign-in only).

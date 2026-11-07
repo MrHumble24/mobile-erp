@@ -144,6 +144,29 @@ struct PosView: View {
             model.mode = .catalog
             Task { await model.debugSellCatalog(arg, container: container) }
         }
+        if KitDebugLaunch.consume("posReceipt") != nil {
+            let sale = CompletedSale(
+                receiptId: "fcf24e1e-f2f0-4d5a-baa7-e0cac0a9a8f7",
+                imei: "005190321084976",
+                imei2: nil,
+                serialNumber: nil,
+                modelLabel: "Apple iPhone 15 Pro",
+                quantity: nil,
+                unitPrice: nil,
+                salePrice: "1200",
+                soldAt: Date(),
+                cashier: "Admin",
+                warrantyDays: 14,
+                warrantyEndsAt: Calendar.current.date(byAdding: .day, value: 14, to: Date()),
+                customerName: "Travis Reilly",
+                pending: false,
+                listPrice: nil,
+                discountAmount: nil,
+                priceLevelCode: nil,
+                bonusSpent: nil
+            )
+            model.completed = [sale]
+        }
     }
     #endif
 }

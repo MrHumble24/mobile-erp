@@ -20,6 +20,8 @@ export {
   useUpdateDeviceModel,
   useUploadDeviceModelImage,
   useRemoveDeviceModelImage,
+  useUploadDeviceModelColorImage,
+  useRemoveDeviceModelColorImage,
 } from "./model/use-device-models"
 export { DynamicSpecFields, type SpecFieldProblem } from "./ui/DynamicSpecFields"
 export { UsedUnitFields } from "./ui/UsedUnitFields"

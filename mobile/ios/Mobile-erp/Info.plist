@@ -24,5 +24,16 @@
 		<string>Onest.ttf</string>
 		<string>SometypeMono.ttf</string>
 	</array>
+
+	<!-- Native Launch Screen: Warm Card ground background and centered logo -->
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>LaunchBackground</string>
+		<key>UIImageName</key>
+		<string>LaunchLogo</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { deviceModelRepository } from "../api/device-model.repository"
 import { deviceModelKeys } from "../api/device-model.keys"
-import type { CreateDeviceModelDto, UpdateDeviceModelDto } from "./device-model.types"
+import type { CreateDeviceModelDto, DeviceModelView, UpdateDeviceModelDto } from "./device-model.types"
 
 export function useDeviceModels() {
   return useQuery({
@@ -43,7 +43,10 @@ export function useUploadDeviceModelImage() {
   return useMutation({
     mutationFn: ({ id, file }: { id: string; file: File }) =>
       deviceModelRepository.uploadImage(id, file),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DeviceModelView[]>(deviceModelKeys.lists(), (old) =>
+        old ? old.map((m) => (m.id === updated.id ? updated : m)) : [updated]
+      )
       queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
     },
   })
@@ -53,7 +56,38 @@ export function useRemoveDeviceModelImage() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deviceModelRepository.removeImage(id),
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DeviceModelView[]>(deviceModelKeys.lists(), (old) =>
+        old ? old.map((m) => (m.id === updated.id ? updated : m)) : [updated]
+      )
+      queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
+    },
+  })
+}
+
+export function useUploadDeviceModelColorImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, color, file }: { id: string; color: string; file: File }) =>
+      deviceModelRepository.uploadColorImage(id, color, file),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DeviceModelView[]>(deviceModelKeys.lists(), (old) =>
+        old ? old.map((m) => (m.id === updated.id ? updated : m)) : [updated]
+      )
+      queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
+    },
+  })
+}
+
+export function useRemoveDeviceModelColorImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, color }: { id: string; color: string }) =>
+      deviceModelRepository.removeColorImage(id, color),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<DeviceModelView[]>(deviceModelKeys.lists(), (old) =>
+        old ? old.map((m) => (m.id === updated.id ? updated : m)) : [updated]
+      )
       queryClient.invalidateQueries({ queryKey: deviceModelKeys.lists() })
     },
   })

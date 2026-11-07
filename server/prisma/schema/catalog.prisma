@@ -82,6 +82,7 @@ model DeviceModel {
   repairParts    RepairPart[]
   transferLines  StockTransferLine[]
   storefrontOrders StorefrontOrder[]
+  colorImages    DeviceModelColorImage[]
 
   @@unique([brand, name])
   @@unique([barcode])
@@ -89,4 +90,19 @@ model DeviceModel {
   @@index([categoryId])
   @@index([modelCode])
   @@map("device_models")
+}
+
+/// Per-color product picture on disk (ADR 0031 extension).
+/// Null/no row = falls back to DeviceModel.imageFileName.
+model DeviceModelColorImage {
+  id            String      @id @default(uuid())
+  modelId       String
+  model         DeviceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  color         String
+  imageFileName String
+  createdAt     DateTime    @default(now())
+
+  @@unique([modelId, color])
+  @@index([modelId])
+  @@map("device_model_color_images")
 }

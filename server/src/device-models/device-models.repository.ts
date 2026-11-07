@@ -22,11 +22,19 @@ interface ModelRow {
   salePrice: Prisma.Decimal | null;
   imageFileName: string | null;
   attributes: unknown;
+  colorImages?: { color: string; imageFileName: string }[] | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 function toView(row: ModelRow): DeviceModelView {
+  const colorImages: Record<string, string> = {};
+  if (Array.isArray(row.colorImages)) {
+    for (const item of row.colorImages) {
+      const url = buildImageUrl(item.imageFileName);
+      if (url) colorImages[item.color] = url;
+    }
+  }
   return {
     id: row.id,
     brand: row.brand,
@@ -39,6 +47,7 @@ function toView(row: ModelRow): DeviceModelView {
     customsCode: row.customsCode,
     salePrice: row.salePrice === null ? null : row.salePrice.toFixed(2),
     imageUrl: buildImageUrl(row.imageFileName),
+    colorImages,
     attributes: (row.attributes ?? []) as AttributeDef[],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -52,13 +61,17 @@ export class DeviceModelsRepository {
 
   async findAll(): Promise<DeviceModelView[]> {
     const rows = await this.prisma.deviceModel.findMany({
+      include: { colorImages: true },
       orderBy: [{ brand: 'asc' }, { name: 'asc' }],
     });
     return rows.map(toView);
   }
 
   async findById(id: string): Promise<DeviceModelView | null> {
-    const row = await this.prisma.deviceModel.findUnique({ where: { id } });
+    const row = await this.prisma.deviceModel.findUnique({
+      where: { id },
+      include: { colorImages: true },
+    });
     return row ? toView(row) : null;
   }
 
@@ -85,6 +98,41 @@ export class DeviceModelsRepository {
     return row?.imageFileName ?? null;
   }
 
+  /** The stored picture file name for a color (to delete on replace/remove). */
+  async colorImageFileName(
+    modelId: string,
+    color: string,
+  ): Promise<string | null> {
+    const row = await this.prisma.deviceModelColorImage.findUnique({
+      where: { modelId_color: { modelId, color } },
+      select: { imageFileName: true },
+    });
+    return row?.imageFileName ?? null;
+  }
+
+  async setColorImage(
+    modelId: string,
+    color: string,
+    imageFileName: string,
+  ): Promise<DeviceModelView> {
+    await this.prisma.deviceModelColorImage.upsert({
+      where: { modelId_color: { modelId, color } },
+      create: { modelId, color, imageFileName },
+      update: { imageFileName },
+    });
+    return (await this.findById(modelId))!;
+  }
+
+  async removeColorImage(
+    modelId: string,
+    color: string,
+  ): Promise<DeviceModelView> {
+    await this.prisma.deviceModelColorImage.deleteMany({
+      where: { modelId, color },
+    });
+    return (await this.findById(modelId))!;
+  }
+
   async create(input: DeviceModelInput): Promise<DeviceModelView> {
     const row = await this.prisma.deviceModel.create({
       data: {
@@ -98,6 +146,7 @@ export class DeviceModelsRepository {
         salePrice: input.salePrice ?? null,
         attributes: input.attributes as unknown as Prisma.InputJsonValue,
       },
+      include: { colorImages: true },
     });
     return toView(row);
   }
@@ -121,6 +170,7 @@ export class DeviceModelsRepository {
             ? undefined
             : (patch.attributes as unknown as Prisma.InputJsonValue),
       },
+      include: { colorImages: true },
     });
     return toView(row);
   }

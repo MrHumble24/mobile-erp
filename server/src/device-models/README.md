@@ -28,9 +28,13 @@ devices may have). Validation of that schema lives in `lib/attribute-schema.ts`.
   ≤ 2 MB; stores it under `UPLOADS_DIR` with a random name, points the model at
   it and deletes the previous file. 400 on a non-image/empty, 413 over 2 MB.
 - `DELETE /:id/image` — removes the picture and deletes the file (`device.update`).
+- `POST /:id/colors/:color/image` — multipart, one field `file` (`device.update`).
+  Sets or replaces the optional picture for a specific color variant (ADR 0066).
+- `DELETE /:id/colors/:color/image` — removes the color picture and deletes the
+  file (`device.update`).
 
-Every model response carries `imageUrl` (the `/uploads/...` path to fetch, or
-null) — the file name itself (`imageFileName`) stays internal (ADR 0031).
+Every model response carries `imageUrl` and `colorImages` (map of color -> `/uploads/...` URL)
+— the file names themselves stay internal (ADR 0031, ADR 0066).
 Pictures are served public + read-only + cross-origin from `/uploads` (mounted
 in `main.ts`), so an `<img>` on another origin loads them with no token. File
 I/O and the magic-byte check live in `image-storage.service.ts` /

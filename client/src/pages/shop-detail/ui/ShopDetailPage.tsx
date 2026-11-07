@@ -1,16 +1,24 @@
 import * as React from "react"
 import { useParams } from "react-router"
-import { ArrowLeft, MapPin, Store, PackageX } from "lucide-react"
+import { ArrowLeft, ShoppingBag, Store, PackageX } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { useBranding } from "@/entities/company"
-import { useStorefrontConfig, useStorefrontProduct, type StorefrontVariantView } from "@/entities/storefront"
+import {
+  useStorefrontConfig,
+  useStorefrontProduct,
+  type StorefrontVariantView,
+} from "@/entities/storefront"
 import { StorefrontHeader } from "@/widgets/storefront-header"
 import { StorefrontOrderModal } from "@/features/storefront-order"
-import { AssetImage } from "@/shared/ui/asset-image"
 import { Button } from "@/shared/ui/button"
-import { Skeleton } from "@/shared/ui/skeleton"
 import { Link } from "@/shared/ui/link"
+
+import { ProductGallery } from "./ProductGallery"
+import { ProductVariantSelector } from "./ProductVariantSelector"
+import { ProductStoreAvailability } from "./ProductStoreAvailability"
+import { ProductTrustBadges } from "./ProductTrustBadges"
+import { ShopDetailSkeleton } from "./ShopDetailSkeleton"
 
 export function ShopDetailPage() {
   const { modelId } = useParams<{ modelId: string }>()
@@ -23,22 +31,7 @@ export function ShopDetailPage() {
   const [orderModalOpen, setOrderModalOpen] = React.useState(false)
 
   if (configLoading || productLoading) {
-    return (
-      <div className="min-h-screen bg-muted">
-        <div className="h-16 border-b border-border bg-card" />
-        <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-          <Skeleton className="h-8 w-32 rounded-full" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Skeleton className="aspect-square rounded-2xl" />
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-24 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <ShopDetailSkeleton />
   }
 
   if (!config?.enabled) {
@@ -86,6 +79,12 @@ export function ShopDetailPage() {
   const variants = product.variants ?? []
   const selectedVariant: StorefrontVariantView | undefined = variants[selectedVariantIndex] ?? variants[0]
 
+  const activePriceNum = selectedVariant?.price
+    ? Number(selectedVariant.price)
+    : product.priceFrom
+      ? Number(product.priceFrom)
+      : null
+
   const priceDisplay =
     config.showPrices && selectedVariant?.price
       ? formatMoney(selectedVariant.price)
@@ -93,9 +92,37 @@ export function ShopDetailPage() {
         ? `${t("storefront.fromPrice")} ${formatMoney(product.priceFrom)}`
         : t("storefront.ask")
 
+  const monthlyInstallment =
+    config.showPrices && activePriceNum && activePriceNum > 0
+      ? Math.round(activePriceNum / 12)
+      : null
+
   const availableStores = selectedVariant?.stores
-    ? selectedVariant.stores.filter((st) => st.count > 0).map((st) => ({ id: st.id, name: st.name }))
+    ? selectedVariant.stores.filter((st) => st.count > 0).map((st) => ({ id: st.id, name: st.name, count: st.count }))
     : product.stores.map((st) => ({ id: st.id, name: st.name }))
+
+  const selectedVariantColor = typeof selectedVariant?.specs?.color === "string" ? selectedVariant.specs.color : undefined
+  const fallbackColorImage = product.colorImages ? Object.values(product.colorImages)[0] : null
+  const activeImageUrl =
+    (selectedVariantColor && product.colorImages?.[selectedVariantColor]) ||
+    product.imageUrl ||
+    fallbackColorImage
+
+  const fullProductName =
+    product.brand && !product.name.toLowerCase().startsWith(product.brand.toLowerCase())
+      ? `${product.brand} ${product.name}`
+      : product.name
+
+  const handleSelectColor = (colorName: string) => {
+    const targetIdx = variants.findIndex(
+      (v) => typeof v.specs?.color === "string" && v.specs.color.toLowerCase() === colorName.toLowerCase()
+    )
+    if (targetIdx !== -1) {
+      setSelectedVariantIndex(targetIdx)
+    }
+  }
+
+  const isBuyDisabled = availableStores.length === 0 || (selectedVariant && selectedVariant.count <= 0)
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -104,126 +131,130 @@ export function ShopDetailPage() {
         contactTelegram={config.contactTelegram}
       />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6">
-        <Link
-          to="/shop"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors no-underline"
-        >
-          <ArrowLeft className="size-4" />
-          <span>{t("storefront.backToCatalog")}</span>
-        </Link>
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 space-y-6 pb-24 sm:pb-12">
+        {/* Breadcrumb Navigation */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-1 hover:text-foreground transition-colors no-underline font-medium"
+          >
+            <ArrowLeft className="size-3.5" />
+            <span>{t("storefront.catalog")}</span>
+          </Link>
+          <span className="text-border">/</span>
+          {product.categoryName && (
+            <>
+              <span className="hover:text-foreground transition-colors">{product.categoryName}</span>
+              <span className="text-border">/</span>
+            </>
+          )}
+          <span className="text-foreground font-semibold truncate max-w-xs sm:max-w-md">
+            {fullProductName}
+          </span>
+        </nav>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-card p-6 sm:p-8 rounded-[24px] border border-border shadow-[var(--shadow-xs)]">
-          {/* Image */}
-          <div className="aspect-square bg-muted/40 rounded-[20px] flex items-center justify-center p-6 overflow-hidden border border-border/50">
-            <AssetImage
-              path={product.imageUrl}
-              alt={product.name}
-              className="size-full object-contain"
-            />
-          </div>
+        {/* Product Container */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 bg-card p-6 sm:p-8 lg:p-10 rounded-[28px] border border-border shadow-[var(--shadow-xs)]">
+          {/* Left Column: Visual Showcase & Color Thumbnails */}
+          <ProductGallery
+            productName={fullProductName}
+            activeImageUrl={activeImageUrl}
+            colorImages={product.colorImages}
+            selectedColor={selectedVariantColor}
+            onSelectColor={handleSelectColor}
+            inStockCount={selectedVariant?.count ?? product.inStock}
+          />
 
-          {/* Details */}
+          {/* Right Column: Information, Variants & Actions */}
           <div className="flex flex-col justify-between space-y-6">
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Product Title */}
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                  {product.brand}
-                </span>
-                <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight">
-                  {product.name}
+                <h1 className="font-display font-extrabold text-2xl sm:text-3xl lg:text-4xl text-foreground tracking-tight leading-tight">
+                  {fullProductName}
                 </h1>
               </div>
 
-              {/* Price */}
-              <div className="font-mono font-black text-2xl sm:text-3xl text-foreground whitespace-nowrap tabular-nums">
-                {priceDisplay}
+              {/* Price & Installment Badge */}
+              <div className="flex flex-wrap items-baseline gap-3 pb-2 border-b border-border/70">
+                <div className="font-mono font-black text-3xl sm:text-4xl text-foreground tabular-nums tracking-tight">
+                  {priceDisplay}
+                </div>
+                {monthlyInstallment && (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                    {t("storefront.monthlyInstallment", { amount: formatMoney(monthlyInstallment) })}
+                  </span>
+                )}
               </div>
 
-              {/* Variants */}
-              {variants.length > 1 && (
-                <div className="space-y-2 pt-2">
-                  <label className="text-xs font-semibold text-muted-foreground block">
-                    {t("storefront.selectVariant")}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {variants.map((v, idx) => {
-                      const specValues = Object.values(v.specs).filter(Boolean)
-                      const specSummary =
-                        specValues.length > 0
-                          ? specValues.join(" • ")
-                          : product.name || t("storefront.standardVariant") || "Standard"
-                      const isSelected = idx === selectedVariantIndex
-                      return (
-                        <Button
-                          key={idx}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedVariantIndex(idx)}
-                          className="h-auto flex flex-col items-start p-2.5 rounded-xl text-left cursor-pointer"
-                        >
-                          <div className="font-semibold text-xs">{specSummary}</div>
-                          {config.showPrices && v.price && (
-                            <div className="text-[10px] opacity-80 tabular-nums">
-                              {formatMoney(v.price)}
-                            </div>
-                          )}
-                        </Button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* Variant Selector */}
+              <ProductVariantSelector
+                variants={variants}
+                selectedVariantIndex={selectedVariantIndex}
+                onSelectVariantIndex={setSelectedVariantIndex}
+                colorImages={product.colorImages}
+                showPrices={config.showPrices}
+              />
 
-              {/* Stock in branches */}
-              <div className="space-y-2 pt-3 border-t border-border">
-                <div className="text-xs font-semibold text-muted-foreground">
-                  {t("storefront.availableBranches")}
-                </div>
-                <div className="space-y-1.5">
-                  {(selectedVariant?.stores ?? []).map((st) => (
-                    <div
-                      key={st.id}
-                      className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-muted/40 border border-border"
-                    >
-                      <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-                        <MapPin className="size-3.5 text-muted-foreground" />
-                        {st.name}
-                      </span>
-                      <span className="font-semibold text-emerald-500">
-                        {st.count} {t("storefront.unitsCount")}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Store Availability */}
+              <ProductStoreAvailability stores={availableStores} />
+
+              {/* Reassurance & Value Props */}
+              <ProductTrustBadges />
             </div>
 
-            {/* CTA */}
+            {/* Desktop CTA Button */}
             <div className="pt-4">
               <Button
                 size="lg"
                 onClick={() => setOrderModalOpen(true)}
-                disabled={availableStores.length === 0}
-                className="w-full rounded-full h-12 text-sm font-bold shadow-md cursor-pointer hover:scale-101 transition-transform"
+                disabled={isBuyDisabled}
+                className="w-full rounded-2xl h-13 text-sm font-bold shadow-md cursor-pointer hover:scale-[1.01] active:scale-[0.99] transition-transform flex items-center justify-center gap-2"
               >
-                {t("storefront.orderNow")}
+                <ShoppingBag className="size-4.5" />
+                <span>
+                  {t("storefront.orderNow")}
+                  {config.showPrices && activePriceNum ? ` • ${formatMoney(activePriceNum)}` : ""}
+                </span>
               </Button>
             </div>
           </div>
         </div>
       </main>
 
+      {/* Sticky Mobile Bottom Bar */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 bg-card/95 backdrop-blur-md border-t border-border p-3 px-4 flex items-center justify-between gap-3 shadow-lg">
+        <div className="min-w-0">
+          <div className="font-mono font-bold text-lg text-foreground tabular-nums truncate">
+            {priceDisplay}
+          </div>
+          {selectedVariant && (
+            <div className="text-[11px] text-muted-foreground truncate">
+              {Object.values(selectedVariant.specs).filter(Boolean).join(" • ")}
+            </div>
+          )}
+        </div>
+        <Button
+          size="sm"
+          onClick={() => setOrderModalOpen(true)}
+          disabled={isBuyDisabled}
+          className="rounded-xl h-11 px-5 text-xs font-bold shrink-0 shadow-sm cursor-pointer"
+        >
+          <ShoppingBag className="size-4 mr-1.5" />
+          <span>{t("storefront.orderNow")}</span>
+        </Button>
+      </div>
+
+      {/* Order Modal */}
       <StorefrontOrderModal
         open={orderModalOpen}
         onOpenChange={setOrderModalOpen}
         modelId={product.modelId}
-        modelName={product.name}
+        modelName={fullProductName}
         variantSpecs={selectedVariant?.specs}
         availableStores={availableStores}
         shopPhone={config.contactPhone}
-        productPrice={selectedVariant?.price ? Number(selectedVariant.price) : (product.priceFrom ? Number(product.priceFrom) : null)}
+        productPrice={activePriceNum}
       />
     </div>
   )

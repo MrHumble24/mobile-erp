@@ -13,6 +13,7 @@ final class APIClient {
     private let baseURL: () -> URL
     private let token: () -> String?
     private let storeID: () -> String?
+    private let isCacheEnabled: () -> Bool
     private let session: URLSession
 
     /// Set by the container once the Session exists. Fired on a non-login 401.
@@ -25,21 +26,23 @@ final class APIClient {
     init(baseURL: @escaping () -> URL,
          token: @escaping () -> String?,
          storeID: @escaping () -> String? = { nil },
+         isCacheEnabled: @escaping () -> Bool = { false },
          session: URLSession = .shared) {
         self.baseURL = baseURL
         self.token = token
         self.storeID = storeID
+        self.isCacheEnabled = isCacheEnabled
         self.session = session
     }
 
-    func get<T: Decodable>(_ path: String, query: [String: String] = [:]) async throws -> T {
-        let data = try await perform(path, method: "GET", query: query, body: Optional<Int>.none)
+    func get<T: Decodable>(_ path: String, query: [String: String] = [:], allowCache: Bool = false) async throws -> T {
+        let data = try await perform(path, method: "GET", query: query, body: Optional<Int>.none, allowCache: allowCache)
         return try decode(data)
     }
 
     /// Open-ended JSON (the sync feed), parsed with JSONSerialization.
-    func getJSON(_ path: String, query: [String: String] = [:]) async throws -> [String: Any] {
-        let data = try await perform(path, method: "GET", query: query, body: Optional<Int>.none)
+    func getJSON(_ path: String, query: [String: String] = [:], allowCache: Bool = false) async throws -> [String: Any] {
+        let data = try await perform(path, method: "GET", query: query, body: Optional<Int>.none, allowCache: allowCache)
         return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
     }
 
@@ -127,11 +130,13 @@ final class APIClient {
         _ path: String,
         method: String,
         query: [String: String],
-        body: (some Encodable)?
+        body: (some Encodable)?,
+        allowCache: Bool = false
     ) async throws -> Data {
         try await performData(
             path, method: method, query: query,
-            bodyData: body.map { try? JSONEncoder().encode($0) } ?? nil
+            bodyData: body.map { try? JSONEncoder().encode($0) } ?? nil,
+            allowCache: allowCache
         )
     }
 
@@ -140,8 +145,10 @@ final class APIClient {
         method: String,
         query: [String: String],
         bodyData: Data?,
-        contentType: String = "application/json"
+        contentType: String = "application/json",
+        allowCache: Bool = false
     ) async throws -> Data {
+        let cacheAllowed = allowCache || isCacheEnabled()
         var comps = URLComponents(
             url: baseURL().appendingPathComponent(path),
             resolvingAgainstBaseURL: false
@@ -153,6 +160,13 @@ final class APIClient {
         req.timeoutInterval = 15
         req.httpMethod = method
         req.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        if !cacheAllowed {
+            req.cachePolicy = .reloadIgnoringLocalCacheData
+            req.setValue("no-cache, no-store", forHTTPHeaderField: "Cache-Control")
+            req.setValue("no-cache", forHTTPHeaderField: "Pragma")
+        } else {
+            req.cachePolicy = .useProtocolCachePolicy
+        }
         if let token = token(), !token.isEmpty {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
@@ -172,9 +186,9 @@ final class APIClient {
             (data, response) = try await session.data(for: req)
         } catch {
             // Offline / server unreachable: serve the last good GET from the
-            // native URLCache so every read screen keeps working offline.
+            // native URLCache ONLY when cache is explicitly allowed.
             // Writes (non-GET) are never faked — they queue in the outbox.
-            if method == "GET", let cached = URLCache.shared.cachedResponse(for: req) {
+            if cacheAllowed, method == "GET", let cached = URLCache.shared.cachedResponse(for: req) {
                 NetLogStore.shared.finish(logId, status: nil, body: cached.data,
                                           error: "offline: served cached response")
                 AppLog.warn("net", "\(method) \(path) offline — served cached response")
@@ -209,9 +223,9 @@ final class APIClient {
             }
             throw err
         }
-        // Cache successful reads for the offline fallback above. Cleared on
+        // Cache successful reads ONLY when caching is explicitly allowed. Cleared on
         // logout/401 (Session.clear) so one user never sees another's data.
-        if method == "GET", let http {
+        if cacheAllowed, method == "GET", let http {
             URLCache.shared.storeCachedResponse(
                 CachedURLResponse(response: http, data: data), for: req)
         }

@@ -23,6 +23,9 @@ struct Keychain {
         guard let value, let data = value.data(using: .utf8) else {
             delete(key); return
         }
+        #if targetEnvironment(simulator)
+        UserDefaults.standard.set(data, forKey: "sim_keychain_\(key.rawValue)")
+        #endif
         var query = baseQuery(key)
         let attrs: [String: Any] = [kSecValueData as String: data]
         let status = SecItemUpdate(query as CFDictionary, attrs as CFDictionary)
@@ -33,6 +36,9 @@ struct Keychain {
     }
 
     func delete(_ key: Key) {
+        #if targetEnvironment(simulator)
+        UserDefaults.standard.removeObject(forKey: "sim_keychain_\(key.rawValue)")
+        #endif
         SecItemDelete(baseQuery(key) as CFDictionary)
     }
 
@@ -41,10 +47,15 @@ struct Keychain {
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var out: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &out) == errSecSuccess else {
-            return nil
+        let status = SecItemCopyMatching(query as CFDictionary, &out)
+        if status == errSecSuccess, let data = out as? Data {
+            return data
         }
-        return out as? Data
+        #if targetEnvironment(simulator)
+        return UserDefaults.standard.data(forKey: "sim_keychain_\(key.rawValue)")
+        #else
+        return nil
+        #endif
     }
 
     private func baseQuery(_ key: Key) -> [String: Any] {

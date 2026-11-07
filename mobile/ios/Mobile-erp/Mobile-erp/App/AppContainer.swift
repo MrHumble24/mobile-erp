@@ -51,9 +51,14 @@ final class AppContainer {
         let api = APIClient(
             baseURL: { devConfig.baseURL },
             token: { keychain.string(.token) },
-            storeID: { storeManager.activeStoreID }
+            storeID: { storeManager.activeStoreID },
+            isCacheEnabled: { devConfig.isHttpCacheEnabled }
         )
         self.api = api
+
+        if !devConfig.isHttpCacheEnabled {
+            URLCache.shared.removeAllCachedResponses()
+        }
 
         let session = Session(repo: AuthRepository(api: api), keychain: keychain)
         self.session = session
@@ -109,9 +114,10 @@ final class AppContainer {
     }
 
     /// Called once from the root view on appear: sync if already online + signed in.
-    func bootstrap() {
+    func bootstrap() async {
         #if DEBUG
-        runDebugSelfChecks()
+        await devAutoSignIn()
+        await runDebugSelfChecks()
         KitSelfCheck.run()
         #endif
         storeManager.sync(with: session.user)
@@ -130,12 +136,17 @@ final class AppContainer {
     /// reach any screen (then `-open <screen>` lands on it). Reuses the one real
     /// login path; the password is never logged. No-op without both arguments.
     func devAutoSignIn() async {
-        let store = UserDefaults.standard
-        guard let email = store.string(forKey: "devEmail"), !email.isEmpty,
-              let password = store.string(forKey: "devPassword"), !password.isEmpty
-        else { return }
+        let args = ProcessInfo.processInfo.arguments
+        let email = UserDefaults.standard.string(forKey: "devEmail")
+            ?? (args.firstIndex(of: "-devEmail").flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil })
+        let password = UserDefaults.standard.string(forKey: "devPassword")
+            ?? (args.firstIndex(of: "-devPassword").flatMap { $0 + 1 < args.count ? args[$0 + 1] : nil })
+        guard let email, !email.isEmpty, let password, !password.isEmpty else { return }
         devConfig.select(.development)
         await session.login(email: email, password: password)
+        if let firstStore = session.user?.stores.first?.id, storeManager.activeStoreID == nil {
+            storeManager.setActiveStoreID(firstStore)
+        }
     }
     #endif
 }

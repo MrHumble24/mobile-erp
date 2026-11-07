@@ -47,7 +47,7 @@ fun ScannerField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     cameraPermissionMessage: String = "Camera permission needed",
-    autofocus: Boolean = true,
+    autofocus: Boolean = false,
     enableCamera: Boolean = true,
 ) {
     var text by remember { mutableStateOf("") }

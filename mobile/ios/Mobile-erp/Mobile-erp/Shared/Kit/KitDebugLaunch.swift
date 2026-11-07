@@ -11,9 +11,17 @@ enum KitDebugLaunch {
     /// Returns the value once; a reader that cannot map it (`accept` false)
     /// leaves it for the screen that can — several tabs share `openTab`.
     static func consume(_ key: String, accept: (String) -> Bool = { _ in true }) -> String? {
-        guard !consumed.contains(key), let value = UserDefaults.standard.string(forKey: key), accept(value) else { return nil }
+        guard !consumed.contains(key) else { return nil }
+        var value = UserDefaults.standard.string(forKey: key)
+        if value == nil {
+            let args = ProcessInfo.processInfo.arguments
+            if let idx = args.firstIndex(of: "-\(key)"), idx + 1 < args.count {
+                value = args[idx + 1]
+            }
+        }
+        guard let val = value, accept(val) else { return nil }
         consumed.insert(key)
-        return value
+        return val
     }
 }
 #endif

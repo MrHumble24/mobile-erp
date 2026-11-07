@@ -31,6 +31,8 @@ export interface DeviceModelView {
   salePrice: string | null
   /** Server path of the product picture (`/uploads/...`), or null (ADR 0031). */
   imageUrl: string | null
+  /** Optional map of color name -> image URL (ADR 0031 extension). */
+  colorImages?: Record<string, string>
   attributes: AttributeDef[]
   createdAt: string
   updatedAt: string

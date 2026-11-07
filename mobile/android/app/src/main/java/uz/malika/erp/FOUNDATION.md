@@ -139,6 +139,7 @@ Five pieces every feature slice shares. The two bus APIs live on `AppContainer`
   ```
 
 ## Step 11
+- **HTTP Caching disabled by default**: Mobile does not cache HTTP network requests or responses unless explicitly enabled. `HttpClient` attaches `Cache-Control: no-cache, no-store` and `Pragma: no-cache` to every request and response, unless turned on in Dev Console (`devConfig.isHttpCacheEnabled`) or per-request (`X-Allow-Cache: true`).
 Bonus points and receipt printing (ADR 0043/0047/0060) follow the store
 switches: points are formatted with `shared/lib/Points.kt` (`formatPoints`, no
 currency), the till plan is `features/sales/lib/BonusRedeem.kt` on top of the

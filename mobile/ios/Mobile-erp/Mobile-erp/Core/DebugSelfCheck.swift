@@ -5,7 +5,7 @@ import Foundation
 /// expiry, error-envelope decoding). Runs once at launch in DEBUG only — the
 /// lazy stand-in for a full test target. If any of these break, the app traps
 /// here instead of misbehaving in the field.
-func runDebugSelfChecks() {
+func runDebugSelfChecks() async {
     // Money: whole vs. fractional, exact Decimal (never Double).
     assert(MoneyText.format("1250") == "$1,250")
     assert(MoneyText.format("1250.50") == "$1,250.50")
@@ -28,7 +28,7 @@ func runDebugSelfChecks() {
 
     runLoggingSelfChecks()
     runScanTextSelfChecks()
-    runStoreBranchSelfChecks()
+    await runStoreBranchSelfChecks()
 }
 
 /// Ring-buffer cap/order and secret masking for the dev-console logging.
@@ -71,7 +71,7 @@ private func makeJWT(exp: Int) -> String {
 }
 
 /// Unit tests for branch & store rules (Item 2, header, offline queue).
-private func runStoreBranchSelfChecks() {
+private func runStoreBranchSelfChecks() async {
     let s1 = UserStore(id: "s1", name: "Main store")
     let s2 = UserStore(id: "s2", name: "Branch 2")
 
@@ -133,20 +133,14 @@ private func runStoreBranchSelfChecks() {
         session: testSession
     )
 
-    let sem = DispatchSemaphore(value: 0)
-    Task { @MainActor in
-        let _: Empty = try! await testClient.get("/sync/changes")
-        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == "store-test")
+    let _: Empty = try! await testClient.get("/sync/changes")
+    assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == "store-test")
 
-        let _: Empty = try! await testClient.post("/auth/login", body: ["email": "a", "password": "b"])
-        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
+    let _: Empty = try! await testClient.post("/auth/login", body: ["email": "a", "password": "b"])
+    assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
 
-        testStoreID = nil
-        let _: Empty = try! await testClient.get("/sync/changes")
-        assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
-
-        sem.signal()
-    }
-    sem.wait()
+    testStoreID = nil
+    let _: Empty = try! await testClient.get("/sync/changes")
+    assert(TestURLProtocol.lastRequest?.value(forHTTPHeaderField: "X-Store-Id") == nil)
 }
 #endif

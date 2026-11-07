@@ -138,10 +138,14 @@ struct PosReceiptSheet: View {
 
                 dashedDivider
 
+                let primaryCode = !sale.unitCode.isEmpty ? sale.unitCode : String(sale.receiptId.prefix(15))
+                BarcodeVisual(value: primaryCode)
+                    .padding(.top, 4)
+
                 Text(i18n.t("pos.thankYou", default: "Thank you for your purchase!"))
                     .font(.mono(11))
                     .foregroundStyle(Tokens.muted)
-                    .padding(.top, 4)
+                    .padding(.top, 2)
 
                 if let footer = container.storeFlags.receiptFooter?.trimmingCharacters(in: .whitespacesAndNewlines), !footer.isEmpty {
                     Text(footer)

@@ -135,6 +135,7 @@ floating actions / scanner overlay, not everywhere.
 - Sync pull pages `/sync/changes?since=` until `nextSince` is null; push results
   are `applied|duplicate|conflict|rejected` — never silently dropped.
 - **Branch store scoping** (`X-Store-Id` header): injected in `APIClient` for all non-login requests from `StoreManager.activeStoreID`; queued mutations carry their active store (ADR 0058).
+- **HTTP Caching disabled by default**: Mobile does not cache HTTP network requests or responses unless explicitly enabled. All requests send `Cache-Control: no-cache, no-store` and `Pragma: no-cache` with `.reloadIgnoringLocalCacheData`. Local `URLCache` storing and offline response fallback are skipped unless `isHttpCacheEnabled` is turned on in the Dev Console or `allowCache: true` is passed.
 
 ## Logging & the Developer Console
 - **Log an event** with a one-liner at the call site:

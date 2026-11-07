@@ -54,7 +54,7 @@ function ModelsTable({
             <TableRow key={m.id} className="hover:bg-muted transition-colors">
               <TableCell>
                 <AssetImage
-                  path={m.imageUrl}
+                  path={m.imageUrl || Object.values(m.colorImages ?? {})[0] || null}
                   alt={m.name}
                   className="size-10 rounded-[8px] border border-border"
                   iconClassName="size-4"
@@ -157,7 +157,7 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
       )}
 
       <DeviceModelDialog
-        model={dialog.model}
+        model={dialog.model ? models?.find((m) => m.id === dialog.model?.id) ?? dialog.model : null}
         open={dialog.open}
         onOpenChange={(open) => setDialog((s) => ({ ...s, open }))}
         canManagePrices={canManagePrices}

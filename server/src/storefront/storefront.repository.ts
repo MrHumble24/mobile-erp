@@ -25,6 +25,7 @@ export interface PublicModelRow {
   category: { id: string; name: string } | null;
   imageFileName: string | null;
   salePrice: Prisma.Decimal | null;
+  colorImages?: { color: string; imageFileName: string }[];
 }
 
 @Injectable()
@@ -142,6 +143,7 @@ export class StorefrontRepository {
         category: { select: { id: true, name: true } },
         imageFileName: true,
         salePrice: true,
+        colorImages: { select: { color: true, imageFileName: true } },
       },
     });
   }

@@ -1,5 +1,5 @@
-import { ChevronDown } from "lucide-react"
-import { useForm, type UseFormReturn } from "react-hook-form"
+import { useState } from "react"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
 import {
@@ -9,20 +9,21 @@ import {
 } from "@/entities/device-model"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
-import { Input } from "@/shared/ui/input"
-import { Switch } from "@/shared/ui/switch"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form"
+import { Form } from "@/shared/ui/form"
 import { toast } from "@/shared/ui/sonner"
 import {
   deviceModelFormSchema,
   defaultFormAttributes,
+  slugKey,
   toDtoAttributes,
   toFormAttributes,
   type DeviceModelFormValues,
 } from "../model/device-model-form.schema"
+import { uploadStagedModelPictures } from "../lib/upload-model-pictures"
 import { useModelCodeLookup } from "../model/use-model-code-lookup"
 import { AttributeEditor } from "./AttributeEditor"
 import { ModelPictureField } from "./ModelPictureField"
+import { ColorPicturesField } from "./ColorPicturesField"
 import { ModelCodeLookupPanel } from "./ModelCodeLookupPanel"
 import { SimpleSpecFields } from "./SimpleSpecFields"
 import { ProductPriceGrid } from "./ProductPriceGrid"
@@ -33,88 +34,19 @@ import {
   ModelCodeField,
   SalePriceField,
 } from "./ModelCatalogFields"
+import {
+  ModelTextField,
+  CustomsCodeField,
+  ActiveField,
+  ExpandableSection,
+  OptionalSection,
+} from "./ModelDialogSections"
 
-type FormApi = UseFormReturn<DeviceModelFormValues>
-
-function ModelTextField({ form, name, label }: { form: FormApi; name: "brand" | "name"; label: string }) {
-  return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
-          <FormControl>
-            <Input {...field} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+function extractColorOptions(attributes: DeviceModelFormValues["attributes"]): string[] {
+  const colorAttr = attributes.find(
+    (a) => a.key === "color" || slugKey(a.label) === "color"
   )
-}
-
-function CustomsCodeField({ form }: { form: FormApi }) {
-  const { t } = useI18n()
-  return (
-    <FormField
-      control={form.control}
-      name="customsCode"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{t("inventory.customsCode")}</FormLabel>
-          <FormControl>
-            <Input {...field} value={field.value ?? ""} className="font-mono" />
-          </FormControl>
-          <FormDescription>{t("inventory.customsCodeHint")}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  )
-}
-
-function ActiveField({ form }: { form: FormApi }) {
-  const { t } = useI18n()
-  return (
-    <FormField
-      control={form.control}
-      name="isActive"
-      render={({ field }) => (
-        <FormItem className="flex items-center justify-between rounded-[12px] border border-border bg-muted p-3">
-          <FormLabel className="mb-0">{t("inventory.modelActive")}</FormLabel>
-          <FormControl>
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-          </FormControl>
-        </FormItem>
-      )}
-    />
-  )
-}
-
-/** A collapsed disclosure: a one-tap-away group, same shape everywhere. */
-function ExpandableSection({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <details className="group rounded-[12px] border border-border bg-muted px-3">
-      <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-        {label}
-        <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
-      </summary>
-      <div className="space-y-4 pb-3">{children}</div>
-    </details>
-  )
-}
-
-/** The never-needed-at-keying fields, one tap away (`common.optional`). */
-function OptionalSection({ children }: { children: React.ReactNode }) {
-  const { t } = useI18n()
-  return <ExpandableSection label={t("common.optional")}>{children}</ExpandableSection>
+  return colorAttr?.options ?? []
 }
 
 function ModelForm({
@@ -129,7 +61,10 @@ function ModelForm({
   const { t } = useI18n()
   const createMutation = useCreateDeviceModel()
   const updateMutation = useUpdateDeviceModel()
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false)
+  const [stagedMainImage, setStagedMainImage] = useState<File | null>(null)
+  const [stagedColorImages, setStagedColorImages] = useState<Record<string, File>>({})
+
   const savedKeys = new Set((model?.attributes ?? []).map((a) => a.key))
   const form = useForm<DeviceModelFormValues>({
     resolver: zodResolver(deviceModelFormSchema),
@@ -146,19 +81,20 @@ function ModelForm({
       attributes: model ? toFormAttributes(model.attributes) : defaultFormAttributes(),
     },
   })
+
   const isQuantity = form.watch("kindCode") === "QUANTITY"
-  // Code lookup is a create-time aid: a saved model already has its identity.
+  const attributes = useWatch({ control: form.control, name: "attributes" }) ?? []
+  const colorOptions = extractColorOptions(attributes)
   const lookup = useModelCodeLookup(form)
+
+  const isPending = createMutation.isPending || updateMutation.isPending || isUploadingFiles
 
   const handleError = (err: { statusCode?: number; message?: string }, values: DeviceModelFormValues) => {
     if (err?.statusCode === 409) {
-      // Kind change on a model with units (server message mentions "kind").
       if (/kind/i.test(err.message ?? "")) {
         form.setError("kindCode", { message: t("catalog.kindLocked") })
         return
       }
-      // Barcode and name both surface a generic "already exists"; a barcode that
-      // was just entered/changed is the likely culprit, else the (brand, name).
       if (values.barcode.trim() && values.barcode.trim() !== (model?.barcode ?? "")) {
         form.setError("barcode", { message: t("catalog.errorBarcodeExists") })
       } else {
@@ -170,7 +106,7 @@ function ModelForm({
   }
 
   const onSubmit = (values: DeviceModelFormValues) => {
-    const attributes = toDtoAttributes(values.attributes)
+    const dtoAttributes = toDtoAttributes(values.attributes)
     const quantity = values.kindCode === "QUANTITY"
     const parsedPrice = values.salePrice.trim() ? Number(values.salePrice) : null
     const catalog = {
@@ -178,22 +114,41 @@ function ModelForm({
       categoryId: values.categoryId.trim() || null,
       barcode: values.barcode.trim() || null,
       modelCode: values.modelCode.trim() || null,
-      // Customs fees apply to imported units, not accessories counted by quantity.
       customsCode: quantity ? null : values.customsCode.trim() || null,
       salePrice: quantity ? parsedPrice : null,
     }
-    const opts = {
-      onSuccess: (created: DeviceModelView) => {
-        if (!model) lookup.rememberLink(created.id)
-        toast.success(t("common.success"))
-        onDone()
-      },
-      onError: (err: { statusCode?: number; message?: string }) => handleError(err, values),
-    }
+
     if (model) {
-      updateMutation.mutate({ id: model.id, dto: { brand: values.brand, name: values.name, isActive: values.isActive, ...catalog, attributes } }, opts)
+      updateMutation.mutate(
+        { id: model.id, dto: { brand: values.brand, name: values.name, isActive: values.isActive, ...catalog, attributes: dtoAttributes } },
+        {
+          onSuccess: () => {
+            toast.success(t("common.success"))
+            onDone()
+          },
+          onError: (err: { statusCode?: number; message?: string }) => handleError(err, values),
+        }
+      )
     } else {
-      createMutation.mutate({ brand: values.brand, name: values.name, ...catalog, attributes }, opts)
+      createMutation.mutate(
+        { brand: values.brand, name: values.name, ...catalog, attributes: dtoAttributes },
+        {
+          onSuccess: async (created: DeviceModelView) => {
+            lookup.rememberLink(created.id)
+            setIsUploadingFiles(true)
+            try {
+              await uploadStagedModelPictures(created.id, stagedMainImage, stagedColorImages)
+            } catch (err: unknown) {
+              toast.error((err as { message?: string })?.message || t("common.error"))
+            } finally {
+              setIsUploadingFiles(false)
+            }
+            toast.success(t("common.success"))
+            onDone()
+          },
+          onError: (err: { statusCode?: number; message?: string }) => handleError(err, values),
+        }
+      )
     }
   }
 
@@ -230,7 +185,32 @@ function ModelForm({
               <AttributeEditor form={form} savedKeys={savedKeys} />
             </ExpandableSection>
           )}
-          {model && <ModelPictureField model={model} />}
+
+          <div className="space-y-4 pt-1">
+            <ModelPictureField
+              model={model}
+              stagedFile={stagedMainImage}
+              onStagedFileChange={setStagedMainImage}
+            />
+            {!isQuantity && (
+              <ColorPicturesField
+                model={model}
+                colors={colorOptions}
+                stagedColorFiles={stagedColorImages}
+                onStagedColorChange={(color, file) => {
+                  setStagedColorImages((prev) => {
+                    if (!file) {
+                      const next = { ...prev }
+                      delete next[color]
+                      return next
+                    }
+                    return { ...prev, [color]: file }
+                  })
+                }}
+              />
+            )}
+          </div>
+
           {model && canManagePrices && <ProductPriceGrid model={model} />}
         </form>
       </div>

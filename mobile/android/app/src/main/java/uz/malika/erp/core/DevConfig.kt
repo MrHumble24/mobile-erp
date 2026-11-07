@@ -14,6 +14,7 @@ enum class AppEnv { PRODUCTION, STAGING, DEVELOPMENT }
 data class DevConfig(
     val env: AppEnv,
     val overrides: Map<AppEnv, String>,
+    val isHttpCacheEnabled: Boolean = false,
 )
 
 /**
@@ -30,6 +31,7 @@ class DevConfigStore(
     val state: StateFlow<DevConfig> = _state
 
     val currentBaseUrl: String get() = effectiveUrl(_state.value.env)
+    val isHttpCacheEnabled: Boolean get() = _state.value.isHttpCacheEnabled
 
     /** The auto/default URL for an env, ignoring any override. */
     fun defaultUrl(env: AppEnv): String = when (env) {
@@ -63,6 +65,13 @@ class DevConfigStore(
         AppLog.i("env", "override $env = $trimmed")
     }
 
+    /** Toggle HTTP cache. Applies live. */
+    fun setHttpCacheEnabled(enabled: Boolean) {
+        secure.put(SecureStore.Keys.DEV_HTTP_CACHE_ENABLED, enabled.toString())
+        _state.value = _state.value.copy(isHttpCacheEnabled = enabled)
+        AppLog.i("env", "http cache enabled = $enabled")
+    }
+
     /** Drop an env's override, reverting to the auto/default URL. */
     fun resetOverride(env: AppEnv) {
         secure.remove(overrideKey(env))
@@ -84,6 +93,7 @@ class DevConfigStore(
                 secure.get(overrideKey(e))?.takeIf { it.isNotBlank() }?.let { put(e, it) }
             }
         }
-        return DevConfig(env, overrides)
+        val httpCacheEnabled = secure.get(SecureStore.Keys.DEV_HTTP_CACHE_ENABLED)?.toBooleanStrictOrNull() ?: false
+        return DevConfig(env, overrides, httpCacheEnabled)
     }
 }

@@ -19,7 +19,6 @@ export function PosScanner({ scanner }: PosScannerProps) {
     <div className="space-y-3">
       <BarcodeInput
         id={SCANNER_INPUT_ID}
-        autoFocus
         value={scanner.imei}
         onChange={(e) => scanner.setImei(e.target.value)}
         onScan={handleScan}

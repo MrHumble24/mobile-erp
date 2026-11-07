@@ -27,6 +27,13 @@ struct PosCheckoutResultSheet: View {
                 }
             }
             .sheet(item: $receipt) { PosReceiptSheet(sale: $0) }
+            #if DEBUG
+            .task {
+                if KitDebugLaunch.consume("posReceiptDetail") != nil {
+                    receipt = sales.first
+                }
+            }
+            #endif
         }
     }
 
