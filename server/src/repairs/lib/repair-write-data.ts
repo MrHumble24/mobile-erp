@@ -30,6 +30,7 @@ export function toCreateData(
     customerId,
     deviceName: dto.deviceName,
     modelId: dto.modelId,
+    deviceId: dto.deviceId,
     imei: dto.imei,
     serialNumber: dto.serialNumber,
     problem: dto.problem,
@@ -53,6 +54,7 @@ export function toUpdateData(dto: UpdateRepairDto): UpdateTicketData {
   const data: UpdateTicketData = {
     deviceName: dto.deviceName,
     modelId: dto.modelId,
+    deviceId: dto.deviceId,
     imei: dto.imei,
     serialNumber: dto.serialNumber,
     problem: dto.problem,
@@ -63,7 +65,8 @@ export function toUpdateData(dto: UpdateRepairDto): UpdateTicketData {
   if (dto.agreedPrice !== undefined)
     data.agreedPrice = new Prisma.Decimal(dto.agreedPrice);
   if (dto.outsideCost !== undefined)
-    data.outsideCost = new Prisma.Decimal(dto.outsideCost);
+    data.outsideCost =
+      dto.outsideCost === null ? null : new Prisma.Decimal(dto.outsideCost);
   if (dto.masterUserId !== undefined) {
     data.masterUserId = dto.masterUserId;
     data.outsideMasterName = null;

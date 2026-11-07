@@ -43,6 +43,11 @@ export class CreateRepairDto {
   @IsUUID()
   modelId?: string;
 
+  /** Optional link to one of our own stock units (a DEFECTIVE device). */
+  @IsOptional()
+  @IsUUID()
+  deviceId?: string;
+
   @IsOptional()
   @IsString()
   @MaxLength(32)

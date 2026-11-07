@@ -31,10 +31,10 @@ list, so unrelated in-progress work never enters a repairs commit.
 | 1 | done | `server/prisma/seed.repairs-dev.sql` (idempotent): enable flag on both stores, Uzbek status labels, one QUANTITY part model + stock, one demo ticket; run on dev DB | `feat(repairs): dev readiness seed` |
 | 2 | done | Server safety: `Repair.version` optimistic lock, idempotency keys for all writes, terminal guards for refund/outside, `outsideCost` cap, update XOR+FK validation inside tx, customer upsert inside tx, report store-scope fix, unit tests | `fix(repairs): atomic, idempotent, guarded writes` |
 | 3 | done | Client correctness: outsideCost data-loss fix, `repair.manage` gate on status actions, master clear, error/retry states everywhere, settings gate + `REPAIRS_DISABLED` mapping, ticket numbers in dialogs, overpaid copy, pagination, ticket deep links, customer row opens ticket, specs | `fix(repairs): correctness, states and navigation` |
-| 4 | pending | Optional `Repair.deviceId` FK + migration, IMEI lookup in ticket form, device drawer link, defective-device repair action, tests | `feat(repairs): optional inventory device linkage` |
+| 4 | done | Optional `Repair.deviceId` FK + migration, IMEI lookup in ticket form, device drawer link, defective-device repair action, tests | `feat(repairs): optional inventory device linkage` |
 | 5 | done | Web outbox mutation types + queueing on network failure; server sync handlers reusing idempotency keys; specs | `feat(repairs): offline outbox and sync handlers` |
 | 6 | pending | Telegram owner notifications on repair events, repair income/profit line in daily closing report + digest, share/copy ticket action, POS shortcut | `feat(repairs): notifications, digest and till shortcut` |
-| 7 | pending | PRD repairs section, ADR amendments (mobile online-only, free-text fallback), stale README/i18n cleanup, status labels | `docs(repairs): PRD, ADR amendments and copy cleanup` |
+| 7 | done | PRD repairs section, ADR amendments (mobile online-only, free-text fallback), stale README/i18n cleanup, status labels | `docs(repairs): PRD, ADR amendments and copy cleanup` |
 | 8 | pending | Full verification (`tsc`, `oxlint`, client + server tests, build), update this table, list mobile backlog with exact files | `chore(repairs): final verification and backlog` |
 
 ## Out of scope / needs external input
@@ -61,6 +61,10 @@ list, so unrelated in-progress work never enters a repairs commit.
   clean, `pnpm test` 142/142. Note: `client/package.json`'s test list also
   carries the two previously-added customs specs from the uncommitted customs
   work; it is committed together with the repair specs.
+- CP4: optional `Repair.deviceId` FK + migration applied; server validates the
+  device belongs to the active store; client form has a debounced IMEI lookup
+  that links + prefills, and a DEFECTIVE device drawer can launch a prefilled
+  ticket. Verified server 77 tests (incl. sync), client `tsc`/`oxlint`/143 tests.
 - CP5: 8 repair outbox types on the web, every repair write queued on a
   transport failure with a `clientMutationId`, and 8 server sync handlers that
   replay through `RepairIdempotency`. Verified server `jest src/sync/handlers

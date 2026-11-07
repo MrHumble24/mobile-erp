@@ -11,6 +11,7 @@ export interface CreateTicketData {
   customerId: string;
   deviceName: string;
   modelId?: string;
+  deviceId?: string;
   imei?: string;
   serialNumber?: string;
   problem: string;
@@ -28,6 +29,7 @@ export interface CreateTicketData {
 export interface UpdateTicketData {
   deviceName?: string;
   modelId?: string | null;
+  deviceId?: string | null;
   imei?: string | null;
   serialNumber?: string | null;
   problem?: string;

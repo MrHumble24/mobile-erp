@@ -46,6 +46,7 @@ export function toRepairView(
     customer: raw.customer,
     deviceName: raw.deviceName,
     modelId: raw.modelId,
+    deviceId: raw.deviceId ?? null,
     model: raw.model ? `${raw.model.brand} ${raw.model.name}` : null,
     imei: raw.imei,
     serialNumber: raw.serialNumber,

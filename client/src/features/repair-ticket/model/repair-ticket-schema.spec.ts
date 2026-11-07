@@ -16,6 +16,7 @@ function view(patch: Partial<RepairView> = {}): RepairView {
     customer: { id: "c1", name: "Mustafo", phone: "+998900001122" },
     deviceName: "iPhone 12",
     modelId: null,
+    deviceId: null,
     model: null,
     imei: null,
     serialNumber: null,
@@ -86,8 +87,17 @@ test("NONE master mode clears master fields on edit but not on create", () => {
 test("empty optional fields are cleared on edit, omitted on create", () => {
   const update = toUpdateDto(emptyRepairForm())
   assert.equal(update.modelId, null)
+  assert.equal(update.deviceId, null)
   assert.equal(update.imei, null)
   const create = toCreateDto(emptyRepairForm(), { customerId: "c1" })
   assert.equal(create.modelId, undefined)
+  assert.equal(create.deviceId, undefined)
   assert.equal(create.imei, undefined)
+})
+
+test("repairToForm keeps a linked device and toCreateDto sends it", () => {
+  const form = repairToForm(view({ deviceId: "d-1" }))
+  assert.equal(form.deviceId, "d-1")
+  const dto = toCreateDto(form, { customerId: "c1" })
+  assert.equal(dto.deviceId, "d-1")
 })

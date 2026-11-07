@@ -6,6 +6,7 @@ import { Label } from "@/shared/ui/label"
 import { Textarea } from "@/shared/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import type { RepairFormValues } from "../model/repair-ticket-schema"
+import { DeviceLookupField } from "./DeviceLookupField"
 
 type Form = UseFormReturn<RepairFormValues>
 
@@ -101,6 +102,7 @@ export function RepairFields({ form }: { form: Form }) {
   const { t } = useI18n()
   return (
     <div className="space-y-3">
+      <DeviceLookupField form={form} />
       <TextField form={form} name="deviceName" label={t("repairs.deviceName")} />
       <ModelSelect form={form} />
       <div className="grid grid-cols-2 gap-3">

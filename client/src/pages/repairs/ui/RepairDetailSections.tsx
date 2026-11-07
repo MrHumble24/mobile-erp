@@ -52,6 +52,9 @@ export function RepairMeta({ repair }: { repair: RepairView }) {
       {repair.model && <Line label={t("repairs.model")} value={repair.model} />}
       {code && <Line label={repair.imei ? t("repairs.imei") : t("repairs.serial")} value={code} />}
       <Line label={t("repairs.master")} value={masterText(repair, t)} />
+      {repair.deviceId && (
+        <p className="text-xs text-emerald-700 dark:text-emerald-300">{t("repairs.linkedDevice")}</p>
+      )}
       {repair.outsideCost != null && <Line label={t("repairs.outsideCost")} value={formatMoney(repair.outsideCost)} />}
       <div className="pt-1">
         <span className="text-xs text-muted-foreground">{t("repairs.problem")}</span>

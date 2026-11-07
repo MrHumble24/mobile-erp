@@ -149,5 +149,11 @@
   "shareTicket": "Share ticket",
   "linkCopied": "Link copied",
   "shareFailed": "Couldn't share",
-  "queuedOffline": "Offline — the change was queued and will be sent when you're back online"
+  "queuedOffline": "Offline — the change was queued and will be sent when you're back online",
+  "deviceLookupTitle": "Find the device in inventory",
+  "deviceLookupHint": "Enter an IMEI or serial. If found the ticket links to our stock unit; otherwise free text is fine.",
+  "deviceLookingUp": "Checking inventory…",
+  "linkedDevice": "Linked to a stock device",
+  "unlinkDevice": "Unlink",
+  "createFromDevice": "Open repair ticket"
 }

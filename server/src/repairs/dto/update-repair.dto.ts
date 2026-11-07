@@ -54,6 +54,10 @@ export class UpdateRepairDto {
 
   @IsOptional()
   @IsUUID()
+  deviceId?: string | null;
+
+  @IsOptional()
+  @IsUUID()
   masterUserId?: string;
 
   @IsOptional()

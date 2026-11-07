@@ -83,6 +83,8 @@ model Device {
   customerPurchases CustomerPurchase[]
   transferLines     StockTransferLine[]
   storefrontOrders  StorefrontOrder[]
+  /// Optional link when the ticket is for one of our own stock units (CP4).
+  repairs           Repair[] @relation("RepairDevice")
 
   @@index([statusCode])
   @@index([modelId])

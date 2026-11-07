@@ -1,4 +1,3 @@
-import * as React from "react"
 import { useSearchParams } from "react-router"
 import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
@@ -11,6 +10,7 @@ import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { Pagination } from "@/shared/ui/pagination"
 import { useRepairsFilters, type RepairsFiltersState } from "../model/use-repairs-filters"
+import { useNewTicketParams } from "../model/use-new-ticket-params"
 import { RepairsFilters } from "./RepairsFilters"
 import { RepairsTable } from "./RepairsTable"
 import { RepairDetailSheet } from "./RepairDetailSheet"
@@ -57,7 +57,7 @@ export function RepairsPage() {
   const filters = useRepairsFilters()
   const list = useRepairs(filters.queryFilters)
   const [params, setParams] = useSearchParams()
-  const [newOpen, setNewOpen] = React.useState(false)
+  const newTicket = useNewTicketParams()
   const detailId = params.get("ticket")
 
   const setDetailId = (id: string | null) => {
@@ -78,7 +78,7 @@ export function RepairsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PageHeader title={t("repairs.title")} description={t("repairs.pageDescription")} />
         {canManage && (
-          <Button size="sm" className="gap-1.5" onClick={() => setNewOpen(true)}>
+          <Button size="sm" className="gap-1.5" onClick={newTicket.launch}>
             <Plus className="size-4" />
             {t("repairs.newTicket")}
           </Button>
@@ -91,7 +91,11 @@ export function RepairsPage() {
         open={Boolean(detailId)}
         onOpenChange={(o) => !o && setDetailId(null)}
       />
-      <NewRepairDialog open={newOpen} onOpenChange={setNewOpen} />
+      <NewRepairDialog
+        open={newTicket.open}
+        onOpenChange={(o) => !o && newTicket.clear()}
+        initialImei={newTicket.imei}
+      />
     </div>
   )
 }

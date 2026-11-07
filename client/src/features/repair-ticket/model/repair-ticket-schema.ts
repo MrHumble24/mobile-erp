@@ -15,6 +15,8 @@ export const repairFormSchema = z
   .object({
     deviceName: z.string().trim().min(1).max(200),
     modelId: z.string(),
+    /** Resolved from an IMEI scan; empty when the phone is the customer's own. */
+    deviceId: z.string(),
     imei: z.string().max(32),
     serialNumber: z.string().max(64),
     problem: z.string().trim().min(1).max(1000),
@@ -45,6 +47,7 @@ export function emptyRepairForm(): RepairFormValues {
   return {
     deviceName: "",
     modelId: "",
+    deviceId: "",
     imei: "",
     serialNumber: "",
     problem: "",
@@ -66,6 +69,7 @@ export function repairToForm(r: RepairView): RepairFormValues {
   return {
     deviceName: r.deviceName,
     modelId: r.modelId ?? "",
+    deviceId: r.deviceId ?? "",
     imei: r.imei ?? "",
     serialNumber: r.serialNumber ?? "",
     problem: r.problem,
@@ -103,6 +107,7 @@ function sharedFields(v: RepairFormValues, forUpdate: boolean) {
   return {
     deviceName: v.deviceName.trim(),
     modelId: clear(v.modelId),
+    deviceId: clear(v.deviceId),
     imei: clear(v.imei.trim()),
     serialNumber: clear(v.serialNumber.trim()),
     problem: v.problem.trim(),

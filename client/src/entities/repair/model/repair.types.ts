@@ -49,6 +49,8 @@ export interface RepairView {
   customer: { id: string; name: string; phone: string | null }
   deviceName: string
   modelId: string | null
+  /** Optional link to one of our own stock units; null for a customer's phone. */
+  deviceId: string | null
   model: string | null
   imei: string | null
   serialNumber: string | null
@@ -122,6 +124,7 @@ export interface CreateRepairDto {
   customer?: RepairCustomerDto
   deviceName: string
   modelId?: string
+  deviceId?: string
   imei?: string
   serialNumber?: string
   problem: string
@@ -141,6 +144,7 @@ export interface CreateRepairDto {
 export interface UpdateRepairDto {
   deviceName?: string
   modelId?: string | null
+  deviceId?: string | null
   imei?: string | null
   serialNumber?: string | null
   problem?: string

@@ -39,10 +39,13 @@ model Repair {
   store        Store   @relation(fields: [storeId], references: [id])
   customerId   String
   customer     Customer @relation(fields: [customerId], references: [id])
-  /// Free-text phone name; optional link to a catalogue model.
+  /// Free-text phone name; optional link to a catalogue model. `deviceId` ties
+  /// the ticket to one of our own stock units when the phone is ours.
   deviceName   String
   modelId      String?
   model        DeviceModel? @relation(fields: [modelId], references: [id])
+  deviceId     String?
+  device       Device?      @relation("RepairDevice", fields: [deviceId], references: [id])
   imei         String?
   serialNumber String?
   problem      String
@@ -82,6 +85,7 @@ model Repair {
   @@index([customerId])
   @@index([statusCode])
   @@index([imei])
+  @@index([deviceId])
   @@index([receivedAt])
   @@map("repairs")
 }

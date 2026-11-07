@@ -54,7 +54,7 @@ export class RepairsService {
     const replayed = await this.idem.replay(caller, dto.clientMutationId);
     if (replayed) return replayed;
     assertMasterExclusive(dto.masterUserId, dto.outsideMasterName);
-    await this.assertRefsExist(dto.modelId, dto.masterUserId);
+    await this.assertRefsExist(dto.modelId, dto.masterUserId, dto.deviceId);
     const storeId = await this.stores.currentStoreId();
     try {
       const id = await this.createWithNumber(caller, storeId, dto);
@@ -88,7 +88,7 @@ export class RepairsService {
       });
     }
     assertMasterExclusive(dto.masterUserId, dto.outsideMasterName);
-    await this.assertRefsExist(dto.modelId, dto.masterUserId);
+    await this.assertRefsExist(dto.modelId, dto.masterUserId, dto.deviceId);
     const data = toUpdateData(dto);
     return commitMutation(
       this.idem,
@@ -218,11 +218,25 @@ export class RepairsService {
     return id;
   }
 
-  /** Validate referenced catalogue model / master user ids (create + update). */
+  /** Validate referenced catalogue model / master user / stock unit ids
+   *  (create + update). A linked device must belong to the active store. */
   private async assertRefsExist(
     modelId?: string,
     masterUserId?: string,
+    deviceId?: string | null,
   ): Promise<void> {
+    if (deviceId) {
+      const storeId = await this.stores.currentStoreId();
+      const device = await this.prisma.device.findFirst({
+        where: { id: deviceId, storeId },
+        select: { id: true },
+      });
+      if (!device) {
+        throw new BadRequestException(
+          `Device ${deviceId} not found in this store`,
+        );
+      }
+    }
     if (modelId) {
       const model = await this.prisma.deviceModel.findUnique({
         where: { id: modelId },

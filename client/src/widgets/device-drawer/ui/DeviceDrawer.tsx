@@ -1,6 +1,7 @@
-import { Copy, PackageX, Pencil, ShoppingCart } from "lucide-react"
+import { Copy, PackageX, Pencil, ShoppingCart, Wrench } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
+import { useSettings } from "@/entities/settings"
 import { formatMoney, formatDate } from "@/shared/lib/format"
 import { unitCode } from "@/shared/lib/unit-code"
 import {
@@ -11,7 +12,7 @@ import {
   type DeviceView,
 } from "@/entities/device"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
-import { Button } from "@/shared/ui/button"
+import { Button, buttonVariants } from "@/shared/ui/button"
 import { Link } from "@/shared/ui/link"
 import { toast } from "@/shared/ui/sonner"
 import { StatusChangeForm } from "./StatusChangeForm"
@@ -130,12 +131,23 @@ function DrawerActions({
   onSell?: (d: DeviceDetailView) => void
 }) {
   const { t } = useI18n()
+  const settings = useSettings()
   const canInspect = Boolean(onInspect) && INSPECTABLE.has(device.statusCode)
   const canSell = Boolean(onSell) && device.statusCode === "IN_STOCK"
+  const canRepair = useAuthStore((s) => s.hasPermission("repair.manage")) && Boolean(settings.data?.repairsEnabled) && device.statusCode === "DEFECTIVE"
   return (
     <div className="flex items-center justify-between gap-2">
       <DeviceStatusBadge status={device.statusCode} />
       <div className="flex items-center gap-2">
+        {canRepair && (
+          <Link
+            to={`/repairs?new=1&imei=${encodeURIComponent(unitCode(device))}`}
+            className={buttonVariants({ variant: "outline", size: "sm", className: "gap-1.5" })}
+          >
+            <Wrench className="size-3.5" />
+            {t("repairs.createFromDevice")}
+          </Link>
+        )}
         {canSell && (
           <Button size="sm" onClick={() => onSell?.(device)} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white">
             <ShoppingCart className="size-4" />
@@ -154,6 +166,19 @@ function DrawerActions({
   )
 }
 
+interface DrawerBodyProps {
+  device: DeviceDetailView
+  canViewCost: boolean
+  canChangeStatus: boolean
+  canEdit: boolean
+  canEditExpense: boolean
+  canManageCustoms: boolean
+  canManagePrices: boolean
+  onEdit?: (d: DeviceView) => void
+  onInspect?: (d: DeviceDetailView) => void
+  onSell?: (d: DeviceDetailView) => void
+}
+
 function DrawerBody({
   device,
   canViewCost,
@@ -165,18 +190,7 @@ function DrawerBody({
   onEdit,
   onInspect,
   onSell,
-}: {
-  device: DeviceDetailView
-  canViewCost: boolean
-  canChangeStatus: boolean
-  canEdit: boolean
-  canEditExpense: boolean
-  canManageCustoms: boolean
-  canManagePrices: boolean
-  onEdit?: (d: DeviceView) => void
-  onInspect?: (d: DeviceDetailView) => void
-  onSell?: (d: DeviceDetailView) => void
-}) {
+}: DrawerBodyProps) {
   const { t } = useI18n()
   const { data: history } = useDeviceHistory(device.id)
   return (

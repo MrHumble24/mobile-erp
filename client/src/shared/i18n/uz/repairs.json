@@ -149,5 +149,11 @@
   "shareTicket": "Chiptani ulashish",
   "linkCopied": "Havola nusxalandi",
   "shareFailed": "Ulashib bo'lmadi",
-  "queuedOffline": "Internet yo'q — o'zgarish navbatga qo'yildi, ulanish bilan yuboriladi"
+  "queuedOffline": "Internet yo'q — o'zgarish navbatga qo'yildi, ulanish bilan yuboriladi",
+  "deviceLookupTitle": "Qurilmani inventardan topish",
+  "deviceLookupHint": "IMEI yoki seriya raqamini kiriting. Topilsa chipta ombordagi qurilmaga ulanadi, topilmasa oddiy matn kifoya.",
+  "deviceLookingUp": "Inventar tekshirilmoqda…",
+  "linkedDevice": "Ombordagi qurilmaga ulangan",
+  "unlinkDevice": "Ulanishni olib tashlash",
+  "createFromDevice": "Ta'mir chiptasi ochish"
 }

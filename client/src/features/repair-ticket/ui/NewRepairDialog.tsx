@@ -17,14 +17,14 @@ import {
 import { RepairFields } from "./RepairFields"
 import { MasterField } from "./MasterField"
 
-function NewRepairForm({ onDone }: { onDone: () => void }) {
+function NewRepairForm({ onDone, initialImei }: { onDone: () => void; initialImei?: string }) {
   const { t } = useI18n()
   const create = useCreateRepair()
   const [customer, setCustomer] = React.useState<CustomerSelection | null>(null)
   const form = useForm<RepairFormValues>({
     resolver: zodResolver(repairFormSchema),
     mode: "onChange",
-    defaultValues: emptyRepairForm(),
+    defaultValues: { ...emptyRepairForm(), imei: initialImei ?? "" },
   })
   const ready = Boolean(customer) && form.formState.isValid
 
@@ -61,10 +61,12 @@ function NewRepairForm({ onDone }: { onDone: () => void }) {
 export interface NewRepairDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /** Prefilled IMEI when launched from a defective device drawer. */
+  initialImei?: string
 }
 
 /** Take a phone in for repair (`repair.manage`). */
-export function NewRepairDialog({ open, onOpenChange }: NewRepairDialogProps) {
+export function NewRepairDialog({ open, onOpenChange, initialImei }: NewRepairDialogProps) {
   const { t } = useI18n()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,7 +75,7 @@ export function NewRepairDialog({ open, onOpenChange }: NewRepairDialogProps) {
           <DialogTitle>{t("repairs.newTicketTitle")}</DialogTitle>
           <DialogDescription>{t("repairs.newTicketHint")}</DialogDescription>
         </DialogHeader>
-        {open && <NewRepairForm onDone={() => onOpenChange(false)} />}
+        {open && <NewRepairForm initialImei={initialImei} onDone={() => onOpenChange(false)} />}
       </DialogPopup>
     </Dialog>
   )

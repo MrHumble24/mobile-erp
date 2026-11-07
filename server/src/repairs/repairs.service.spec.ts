@@ -40,6 +40,7 @@ function build(raw = rawFixture()) {
     customer: { findUnique: jest.fn().mockResolvedValue({ id: 'cust-1' }) },
     deviceModel: { findUnique: jest.fn().mockResolvedValue({ id: 'm-1' }) },
     user: { findUnique: jest.fn().mockResolvedValue({ id: 'u-2' }) },
+    device: { findFirst: jest.fn().mockResolvedValue({ id: 'd-1' }) },
   };
   const stores = { currentStoreId: jest.fn().mockResolvedValue('store-1') };
   const read = {
@@ -115,6 +116,27 @@ describe('RepairsService.create', () => {
     });
     expect(result).toBe(view);
     expect(writes.createTicket).not.toHaveBeenCalled();
+  });
+
+  it('links a ticket to a stock device in the active store', async () => {
+    const { service, prisma, writes } = build();
+    await service.create(caller, { ...createDto, deviceId: 'd-1' });
+    expect(prisma.device.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'd-1', storeId: 'store-1' } }),
+    );
+    expect(writes.createTicket).toHaveBeenCalledWith(
+      expect.anything(),
+      1,
+      expect.objectContaining({ deviceId: 'd-1' }),
+    );
+  });
+
+  it('refuses a device that is not in the active store', async () => {
+    const { service, prisma } = build();
+    prisma.device.findFirst.mockResolvedValue(null);
+    await expect(
+      service.create(caller, { ...createDto, deviceId: 'd-other' }),
+    ).rejects.toThrow(BadRequestException);
   });
 
   it('replays on a concurrent duplicate create key (P2002)', async () => {
