@@ -22,5 +22,21 @@
   "avgLandedCost": "O'rtacha to'liq tannarx",
   "avgSellingPrice": "O'rtacha sotuv narxi",
   "unitsInStock": "Ombordagi soni",
-  "overdueConsignmentsTitle": "Muddati o'tgan nasiyalar"
+  "overdueConsignmentsTitle": "Muddati o'tgan nasiyalar",
+  "salesTrendTitle": "Savdo va foyda dinamikasi",
+  "salesTrendSubtitle": "Tushum, yalpi foyda va xarajatlar tahlili",
+  "activeShift": "Faol smena",
+  "noActiveShift": "Smena ochilmagan",
+  "tillCash": "Kassadagi naqd",
+  "pendingOrders": "Yangi onlayn buyurtmalar",
+  "allGoodsInStock": "Barcha tovarlar yetarli miqdorda",
+  "noOverdueConsignments": "Muddati o'tgan nasiyalar mavjud emas",
+  "marginPct": "marja",
+  "avgCheck": "O'rtacha chek",
+  "actionPos": "Kassa (POS)",
+  "actionShipment": "Yangi partiya",
+  "actionExpense": "Xarajat",
+  "actionShop": "Onlayn do'kon",
+  "topModels": "Eng ko'p sotilgan modellar",
+  "viewAll": "Barchasini ko'rish"
 }

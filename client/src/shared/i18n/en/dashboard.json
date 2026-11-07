@@ -22,5 +22,21 @@
   "avgLandedCost": "Avg Landed Cost",
   "avgSellingPrice": "Avg Selling Price",
   "unitsInStock": "Units In Stock",
-  "overdueConsignmentsTitle": "Overdue Consignments"
+  "overdueConsignmentsTitle": "Overdue Consignments",
+  "salesTrendTitle": "Sales & Profit Trend",
+  "salesTrendSubtitle": "Revenue, gross profit and expense trajectory",
+  "activeShift": "Active Shift",
+  "noActiveShift": "No Active Shift",
+  "tillCash": "Cash in Register",
+  "pendingOrders": "Pending Online Orders",
+  "allGoodsInStock": "All stock levels are optimal",
+  "noOverdueConsignments": "No overdue consignments",
+  "marginPct": "margin",
+  "avgCheck": "Avg ticket",
+  "actionPos": "Cashier (POS)",
+  "actionShipment": "New Batch",
+  "actionExpense": "Expense",
+  "actionShop": "Storefront",
+  "topModels": "Top Selling Models",
+  "viewAll": "View all"
 }
