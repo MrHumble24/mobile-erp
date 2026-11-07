@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePriceListDto } from './dto/create-price-list.dto.js';
 import { CustomsRepository } from './customs.repository.js';
+import { baseCustomsKey, normalizeCustomsKey } from './lib/customs-match.js';
 import {
   CurrentList,
   CurrentListItem,
@@ -42,13 +43,17 @@ export class CustomsService {
     const prevFees = new Map(
       (previous?.items ?? []).map((i) => [i.customsCode, i.fee.toFixed(2)]),
     );
-    const usedCodes = await this.repo.modelCustomsCodes();
+    const usedKeys = new Set(
+      Array.from(await this.repo.modelCustomsCodes(), normalizeCustomsKey),
+    );
     const items: CurrentListItem[] = current.items.map((i) => ({
       customsCode: i.customsCode,
       description: i.description,
       fee: i.fee.toFixed(2),
       previousFee: prevFees.get(i.customsCode) ?? null,
-      usedByModel: usedCodes.has(i.customsCode),
+      usedByModel:
+        usedKeys.has(normalizeCustomsKey(i.customsCode)) ||
+        usedKeys.has(baseCustomsKey(i.customsCode)),
     }));
     return {
       id: current.id,
@@ -70,13 +75,18 @@ export class CustomsService {
   /** Our models that cannot be stamped: no code, or code missing from current. */
   async unmatchedModels(): Promise<UnmatchedModel[]> {
     const [current] = await this.repo.twoNewest();
-    const listCodes = new Set((current?.items ?? []).map((i) => i.customsCode));
+    const listCodes = new Set(
+      (current?.items ?? []).flatMap((i) => [
+        normalizeCustomsKey(i.customsCode),
+        baseCustomsKey(i.customsCode),
+      ]),
+    );
     const models = await this.repo.activeModels();
     const out: UnmatchedModel[] = [];
     for (const m of models) {
       if (!m.customsCode) {
         out.push({ ...m, reason: 'MISSING_CODE' });
-      } else if (!listCodes.has(m.customsCode)) {
+      } else if (!listCodes.has(normalizeCustomsKey(m.customsCode))) {
         out.push({ ...m, reason: 'CODE_NOT_IN_CURRENT_LIST' });
       }
     }
@@ -89,9 +99,11 @@ export class CustomsService {
    */
   async currentFeeMap(): Promise<Map<string, number>> {
     const [current] = await this.repo.twoNewest();
-    return new Map(
-      (current?.items ?? []).map((i) => [i.customsCode, i.fee.toNumber()]),
-    );
+    const map = new Map<string, number>();
+    for (const item of current?.items ?? []) {
+      map.set(normalizeCustomsKey(item.customsCode), item.fee.toNumber());
+    }
+    return map;
   }
 }
 

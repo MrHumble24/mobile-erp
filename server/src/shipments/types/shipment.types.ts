@@ -8,6 +8,7 @@ export interface ShipmentView {
   shipmentDate: Date;
   expectedCount: number;
   paymentAccountCode: string;
+  exchangeRate?: string | null;
   notes: string | null;
   createdById: string;
   createdAt: Date;
@@ -51,6 +52,7 @@ export interface ShipmentInput {
   shipmentDate: Date;
   expectedCount: number;
   paymentAccountCode: string;
+  exchangeRate?: number;
   notes?: string;
   createdById: string;
 }
@@ -71,6 +73,7 @@ export interface RegisterDeviceInput {
   kindCode: string;
   specs: Record<string, unknown>;
   acquisitionCost: number;
+  acquisitionCostOriginal?: number;
   targetPrice?: number;
   /** Per-phone expense at intake; requires `device.expense` when non-zero. */
   unitExpense?: number;
@@ -88,9 +91,27 @@ export interface RegisteredDeviceView {
   modelId: string;
   kindCode: string;
   acquisitionCost: string;
+  acquisitionCostOriginal?: string | null;
   customsFee: string;
   unitExpense: string;
   landedCost: string;
   targetPrice: string | null;
   statusCode: string;
+}
+
+export interface ImportShipmentWarning {
+  row: number;
+  code: string;
+  detail: string;
+}
+
+export interface ImportShipmentProblem {
+  row: number;
+  code: string;
+  detail: string;
+}
+
+export interface ImportShipmentResultView extends ShipmentView {
+  devices: RegisteredDeviceView[];
+  warnings: ImportShipmentWarning[];
 }

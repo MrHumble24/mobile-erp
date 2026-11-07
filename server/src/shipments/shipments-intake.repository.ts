@@ -7,9 +7,13 @@ import { computeLandedCost } from '../devices/lib/landed-cost.js';
 import { Prisma } from '../generated/client/client.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { deviceData, toRegisteredView } from './lib/shipment-intake.mapper.js';
+import { toShipmentView } from './shipments.repository.js';
 import {
   RegisteredDeviceView,
   RegisterDeviceInput,
+  ShipmentInput,
+  ShipmentView,
 } from './types/shipment.types.js';
 
 type Tx = Prisma.TransactionClient;
@@ -28,13 +32,30 @@ export class ShipmentsIntakeRepository {
     private readonly ledger: LedgerService,
   ) {}
 
+  async findExistingImeis(imeis: string[]): Promise<string[]> {
+    if (imeis.length === 0) return [];
+    const rows = await this.prisma.device.findMany({
+      where: {
+        OR: [{ imei: { in: imeis } }, { imei2: { in: imeis } }],
+      },
+      select: { imei: true, imei2: true },
+    });
+    const found = new Set<string>();
+    for (const r of rows) {
+      if (r.imei) found.add(r.imei);
+      if (r.imei2) found.add(r.imei2);
+    }
+    return [...found];
+  }
+
   async addDevices(
     shipmentId: string,
     inputs: RegisterDeviceInput[],
     userId: string,
     storeId: string,
+    existingTx?: Tx,
   ): Promise<RegisteredDeviceView[]> {
-    return this.prisma.$transaction(async (tx) => {
+    const run = async (tx: Tx) => {
       await this.assertIdentifiersFree(tx, inputs);
       const shipment = await tx.shipment.findUniqueOrThrow({
         where: { id: shipmentId },
@@ -54,6 +75,40 @@ export class ShipmentsIntakeRepository {
         );
       }
       return results;
+    };
+    return existingTx ? run(existingTx) : this.prisma.$transaction(run);
+  }
+
+  async createShipmentWithDevices(
+    shipmentInput: ShipmentInput,
+    deviceInputs: RegisterDeviceInput[],
+    userId: string,
+  ): Promise<{ shipment: ShipmentView; devices: RegisteredDeviceView[] }> {
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.shipment.create({
+        data: {
+          storeId: shipmentInput.storeId,
+          supplierId: shipmentInput.supplierId,
+          shipmentDate: shipmentInput.shipmentDate,
+          expectedCount: shipmentInput.expectedCount,
+          paymentAccountCode: shipmentInput.paymentAccountCode,
+          exchangeRate: shipmentInput.exchangeRate,
+          notes: shipmentInput.notes ?? null,
+          createdById: shipmentInput.createdById,
+        },
+        include: { _count: { select: { devices: true } } },
+      });
+      const devices = await this.addDevices(
+        row.id,
+        deviceInputs,
+        userId,
+        shipmentInput.storeId,
+        tx,
+      );
+      return {
+        shipment: toShipmentView(row, undefined),
+        devices,
+      };
     });
   }
 
@@ -191,58 +246,4 @@ export class ShipmentsIntakeRepository {
     }
     await this.assertSerialsFree(tx, inputs);
   }
-}
-
-function deviceData(
-  input: RegisterDeviceInput,
-  storeId: string,
-  shipmentId: string,
-  landedCost: string,
-  userId: string,
-): Prisma.DeviceUncheckedCreateInput {
-  return {
-    imei: input.imei ?? null,
-    imei2: input.imei2 ?? null,
-    serialNumber: input.serialNumber ?? null,
-    storeId,
-    shipmentId,
-    modelId: input.modelId,
-    specs: input.specs as Prisma.InputJsonValue,
-    acquisitionCost: input.acquisitionCost,
-    customsFee: input.customsFee ?? 0,
-    unitExpense: input.unitExpense ?? 0,
-    unitExpenseNote: input.unitExpenseNote ?? null,
-    landedCost,
-    targetPrice: input.targetPrice ?? null,
-    statusCode: 'IN_STOCK',
-    statusHistory: {
-      create: { toStatusCode: 'IN_STOCK', changedById: userId },
-    },
-  };
-}
-
-function toRegisteredView(
-  device: { id: string; statusCode: string },
-  input: RegisterDeviceInput,
-  customsFee: number,
-  unitExpense: number,
-  landedCost: string,
-): RegisteredDeviceView {
-  return {
-    id: device.id,
-    imei: input.imei ?? null,
-    imei2: input.imei2 ?? null,
-    serialNumber: input.serialNumber ?? null,
-    modelId: input.modelId,
-    kindCode: input.kindCode,
-    acquisitionCost: new Prisma.Decimal(input.acquisitionCost).toFixed(2),
-    customsFee: new Prisma.Decimal(customsFee).toFixed(2),
-    unitExpense: new Prisma.Decimal(unitExpense).toFixed(2),
-    landedCost,
-    targetPrice:
-      input.targetPrice != null
-        ? new Prisma.Decimal(input.targetPrice).toFixed(2)
-        : null,
-    statusCode: device.statusCode,
-  };
 }

@@ -17,6 +17,8 @@
   "condition": "Holati",
   "status": "Holat",
   "acquisitionCost": "Tannarx",
+  "acquisitionCostOriginal": "Boshlang'ich narx",
+  "exchangeRate": "Valyuta kursi",
   "landedCost": "To'liq tannarx",
   "targetPrice": "Mo'ljallangan narx",
   "salePrice": "Sotuv narxi",

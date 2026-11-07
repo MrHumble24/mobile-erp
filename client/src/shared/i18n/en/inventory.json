@@ -17,6 +17,8 @@
   "condition": "Condition",
   "status": "Status",
   "acquisitionCost": "Acquisition Cost",
+  "acquisitionCostOriginal": "Original price",
+  "exchangeRate": "Exchange rate",
   "landedCost": "Landed Cost",
   "targetPrice": "Target Price",
   "salePrice": "Sale Price",

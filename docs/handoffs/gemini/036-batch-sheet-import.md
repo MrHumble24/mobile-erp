@@ -1,6 +1,6 @@
 # 036 — Import the supplier's batch sheet and the customs price list from Excel
 
-Status: open · Owner: Gemini 2.5 Pro · Depends on: `main` at `5c63fe46` or later
+Status: done · Owner: Gemini 2.5 Pro · Depends on: `main` at `5c63fe46` or later
 
 Start: `git worktree add .worktrees/batch-import -b agent/gemini/batch-import main`, own database
 `mobile_erp_batchimport`, own ports (API 3180, website 5230).
@@ -85,7 +85,74 @@ Commit by path (never `git add -A`). Run `git status` before you finish and disc
 
 ## Result (the builder fills)
 - Branch / commits:
+  Branch: `agent/gemini/batch-import`
 - Lint, test and build output (last lines):
+  - Server lint: `npx eslint "src/{shipments,customs}/**/*.ts"` -> 0 errors, 0 warnings.
+  - Server test (`cd server && pnpm test`):
+    ```
+    Test Suites: 146 passed, 146 total
+    Tests:       846 passed, 846 total
+    Snapshots:   0 total
+    Time:        1.835 s, estimated 2 s
+    Ran all test suites.
+    ```
+  - Client test (`cd client && pnpm test`):
+    ```
+    ℹ tests 123
+    ℹ suites 1
+    ℹ pass 123
+    ℹ fail 0
+    ℹ cancelled 0
+    ℹ skipped 0
+    ℹ todo 0
+    ℹ duration_ms 205.074666
+    ```
+  - Client lint: `npx oxlint src/features/import-shipment src/features/create-price-list src/pages/shipments/ui/ShipmentSummary.tsx src/pages/shipments/ui/ShipmentsPage.tsx src/widgets/device-drawer/ui/DeviceCostSection.tsx` -> `Found 0 warnings and 0 errors.`
+  - Client build (`cd client && pnpm build`):
+    ```
+    ✓ built in 7.35s
+    PWA v2.0.0
+    mode      generateSW
+    precache  171 entries (4491.64 KiB)
+    files generated
+      dist/sw.js
+      dist/workbox-9c191d2f.js
+    ```
 - Browser checks a–f (seen / not seen, with numbers):
+  - a. Reference Excel files created under `docs/reference/excel/`: `Расстаможка цены.xlsx` (27 rows) and `Приход документ.xlsx` (merged title row, headers, 3 rows, `Итого` summary row).
+    -> seen: both files present.
+  - b. Upload customs list with "From file" button: 27 rows parsed from file, saved to `/customs/price-lists` (id `2cccdde5-3eba-4db6-80bd-bb0c6186a82f`, itemCount: 27), GET `/customs/price-lists/current` shows 27 items.
+    -> seen (27 rows).
+  - c. Model `iPhone 15 Pro` with code `iPhone 15 Pro`; phone with storage `256GB` (IMEI `350000000000001`) hand scanned in: stamped fee 94.00.
+    -> seen (fee 94).
+  - d. Import batch sheet with 3 problem rows: Row 3 (iPhone 15 Pro 256GB, duplicate IMEI `350000000000002`), Row 4 (nonexistent `Alien Phone 3000 128GB`), Row 5 (duplicate IMEI `350000000000002`). Response 400 Bad Request with 3 row problems: Row 3 `[DUPLICATE_IMEI]`, Row 4 `[MODEL_NOT_FOUND]`, Row 5 `[DUPLICATE_IMEI]`. Devices count before/after: 1 / 1, shipments count before/after: 1 / 1 (nothing written).
+    -> seen (400 with 3 row problems, 0 rows written).
+  - e. Fixed sheet import with rate 1.3: shipment created with `exchangeRate = 1.3`.
+    Phone 1 (`iPhone 15 Pro 256GB`, price 550, expense 70, markup 30, battery 89, defects "scratch on screen"): `acquisitionCostOriginal = 550.00`, `acquisitionCost = 423.08` (550 / 1.3), `customsFee = 70.00`, `unitExpense = 0.00`, `targetPrice = 453.08`, specs: `{ storage: '256GB', batteryHealth: 89, defects: 'scratch on screen' }`.
+    Phone 2 (`S24 Ultra 256GB`, price 600, expense 93, markup 50, battery 95): `acquisitionCostOriginal = 600.00`, `acquisitionCost = 461.54` (600 / 1.3), `customsFee = 93.00`, `unitExpense = 0.00`, `targetPrice = 511.54`, specs: `{ storage: '256GB', batteryHealth: 95 }`.
+    Phone 3 (`Note 20 Ultra 256GB`, price 300, expense 70, markup 40, battery 82, defects "small chip"): `acquisitionCostOriginal = 300.00`, `acquisitionCost = 230.77` (300 / 1.3), `customsFee = 65.00`, `unitExpense = 5.00` (70 - 65), `targetPrice = 270.77`, specs: `{ storage: '256GB', batteryHealth: 82, defects: 'small chip' }`.
+    Ledger rows in `cash_transactions`:
+    `PURCHASE`: -423.08 (P1), -461.54 (P2), -230.77 (P3)
+    `CUSTOMS`: -70.00 (P1), -93.00 (P2), -65.00 (P3)
+    `DEVICE_EXPENSE`: -5.00 (P3)
+    -> seen (`exchangeRate = 1.3`, acquisitionCosts, customsFees, unitExpenses, targetPrices, specs, `PURCHASE`, `CUSTOMS`, `DEVICE_EXPENSE` rows).
+  - f. Import with no customs list match (model `Mystery Phone` with `customsCode = NO_CUSTOMS_CODE`, price 260, expense 40): `acquisitionCost = 200.00`, `customsFee = 0.00`, `unitExpense = 40.00` (whole Расход), `devicesWithoutCustomsFee = 1` (shipment warning).
+    -> seen (fee 0.00, expense 40.00, devicesWithoutCustomsFee 1).
 - What the server or the website is still missing:
+  Nothing.
 - Docs touched:
+  - `docs/decisions/0065-batch-sheet-import.md` (ADR, 21 lines <= 40 lines limit)
+  - `docs/reference/excel/Расстаможка цены.xlsx`
+  - `docs/reference/excel/Приход документ.xlsx`
+  - `server/src/shipments/README.md`
+  - `server/src/customs/README.md`
+  - `client/src/features/create-price-list/README.md`
+  - `client/src/features/import-shipment/README.md`
+  - `docs/handoffs/gemini/036-batch-sheet-import.md`
+
+## Checked by Claude (2026-11-07)
+- Full lint, tests and build run again by me: server 847 tests pass, client 124 pass, build ok. The 2 server lint errors are in `ledger.*` files from main (not this branch).
+- Live API try with the client's real files: both parse; the real row imports with the right numbers.
+- Fixed by me: the import wrote the shipment and then failed with `STORE_REQUIRED` when `X-Store-Id` was missing (the store and account are now checked before anything is written); the customs page said no model uses `iPhone 15 Pro 256 GB` although `iPhone 15 Pro` does (storage-aware now, also for "unmatched models"); a numeric IMEI that lost its leading zero in Excel is padded back; the migration also created two lookup tables that `reference.prisma` had without a migration, split into `reference_catalog` with `IF NOT EXISTS` and checked on an empty database and on a database that already had them.
+- `docs/reference/excel/Расстаможка цены.xlsx` replaced with the client's real list.
+- Left as is: row problems and warnings show the server's text, not a translated key.

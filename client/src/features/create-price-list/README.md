@@ -5,7 +5,8 @@ The one user action "save a new customs price list" (ADR 0027).
 ## Owns
 
 - The new-list dialog: effective date, note, and a field-array of
-  code / description / fee rows with add and remove.
+  code / description / fee rows with add, remove, and browser-side Excel import ("From file").
+- Excel parser (`parse-customs-file.ts`) reading `Модель` and `Цена Расстаможки` into rows.
 - A zod schema that prefills from the current list (`initialValues`), guards a
   non-empty, duplicate-free list before POST (`validateRows`), and maps to the
   `CreatePriceListDto` (`toCreateDto`).

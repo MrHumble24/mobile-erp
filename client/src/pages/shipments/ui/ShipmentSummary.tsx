@@ -35,6 +35,9 @@ function CostRows({
   const { t } = useI18n()
   return (
     <>
+      {shipment.exchangeRate && (
+        <Row label={t("shipments.exchangeRate")} value={String(shipment.exchangeRate)} />
+      )}
       <Row label={t("shipments.unitExpenseTotal")} value={formatMoney(shipment.unitExpenseTotal ?? 0)} />
       <Row label={t("shipments.customsFeeTotal")} value={formatMoney(shipment.customsFeeTotal ?? 0)} />
       <Row label={t("shipments.avgLandedPerUnit")} value={avgLanded == null ? "-" : formatMoney(avgLanded)} />

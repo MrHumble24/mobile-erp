@@ -48,6 +48,8 @@ model Device {
 
   /// Price paid to supplier for this unit.
   acquisitionCost Decimal  @db.Decimal(14, 2)
+  /// Original supplier price in source currency before exchange rate division (e.g. 550 for won).
+  acquisitionCostOriginal Decimal? @db.Decimal(14, 2)
   /// Customs fee, stamped at intake from the current price list via the model's
   /// customsCode and frozen (ADR 0027). A later list never changes it; a hand
   /// fix posts the difference. 0 when no list or no match.
