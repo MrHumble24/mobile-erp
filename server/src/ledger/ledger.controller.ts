@@ -38,7 +38,10 @@ export class LedgerController {
     @CurrentUser() user: AuthenticatedUser,
     @Query() query: LedgerStatsQueryDto,
   ) {
-    return this.ledger.getStats(query, user.permissions.has('device.cost.view'));
+    return this.ledger.getStats(
+      query,
+      user.permissions.has('device.cost.view'),
+    );
   }
 
   @Post('transactions')

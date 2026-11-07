@@ -13,4 +13,3 @@ export class LedgerStatsQueryDto {
   @IsDateString()
   to?: string;
 }
-

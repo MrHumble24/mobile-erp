@@ -288,3 +288,4 @@ export function DashboardSalesChart({ data, isLoading }: DashboardSalesChartProp
     </Card>
   )
 }
+

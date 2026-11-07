@@ -137,7 +137,11 @@ export class LedgerRepository {
       this.prisma.cashTransaction.findMany({
         where,
         include: LIST_INCLUDE,
-        orderBy: [{ [filter.sort]: filter.dir }, { createdAt: filter.dir }, { id: filter.dir }],
+        orderBy: [
+          { [filter.sort]: filter.dir },
+          { createdAt: filter.dir },
+          { id: filter.dir },
+        ],
         skip: (filter.page - 1) * filter.pageSize,
         take: filter.pageSize,
       }),
@@ -212,7 +216,10 @@ export class LedgerRepository {
     let inCount = 0;
     let outCount = 0;
 
-    const timelineMap = new Map<string, { inflow: number; outflow: number; net: number }>();
+    const timelineMap = new Map<
+      string,
+      { inflow: number; outflow: number; net: number }
+    >();
     const typeMap = new Map<
       string,
       {
@@ -254,7 +261,11 @@ export class LedgerRepository {
       }
 
       const dateKey = row.occurredAt.toISOString().slice(0, 10);
-      const point = timelineMap.get(dateKey) ?? { inflow: 0, outflow: 0, net: 0 };
+      const point = timelineMap.get(dateKey) ?? {
+        inflow: 0,
+        outflow: 0,
+        net: 0,
+      };
       if (isPositive) {
         point.inflow += numAmt;
         point.net += numAmt;
@@ -311,7 +322,8 @@ export class LedgerRepository {
       .map((t) => {
         const amtNum = Number(t.amount.toFixed(2));
         const base = t.direction === 'in' ? totalInNum : totalOutNum;
-        const percentage = base > 0 ? Number(((amtNum / base) * 100).toFixed(1)) : 0;
+        const percentage =
+          base > 0 ? Number(((amtNum / base) * 100).toFixed(1)) : 0;
         return {
           typeCode: t.typeCode,
           typeLabel: t.typeLabel,
@@ -323,7 +335,9 @@ export class LedgerRepository {
       })
       .sort((a, b) => b.amount - a.amount);
 
-    const byAccount: LedgerAccountBreakdownItem[] = Array.from(accountMap.values()).map((a) => ({
+    const byAccount: LedgerAccountBreakdownItem[] = Array.from(
+      accountMap.values(),
+    ).map((a) => ({
       accountCode: a.accountCode,
       accountLabel: a.accountLabel,
       inflow: Number(a.inflow.toFixed(2)),
@@ -451,13 +465,27 @@ export class LedgerRepository {
         { note: { contains: q, mode: 'insensitive' } },
         { device: { imei: { contains: q, mode: 'insensitive' } } },
         { device: { model: { name: { contains: q, mode: 'insensitive' } } } },
-        { shipment: { supplier: { name: { contains: q, mode: 'insensitive' } } } },
+        {
+          shipment: {
+            supplier: { name: { contains: q, mode: 'insensitive' } },
+          },
+        },
         { expense: { description: { contains: q, mode: 'insensitive' } } },
         { expense: { vendor: { contains: q, mode: 'insensitive' } } },
-        { expense: { category: { name: { contains: q, mode: 'insensitive' } } } },
+        {
+          expense: { category: { name: { contains: q, mode: 'insensitive' } } },
+        },
         { sale: { customer: { name: { contains: q, mode: 'insensitive' } } } },
-        { partnerPayment: { partner: { shopName: { contains: q, mode: 'insensitive' } } } },
-        { customerPurchase: { customer: { name: { contains: q, mode: 'insensitive' } } } },
+        {
+          partnerPayment: {
+            partner: { shopName: { contains: q, mode: 'insensitive' } },
+          },
+        },
+        {
+          customerPurchase: {
+            customer: { name: { contains: q, mode: 'insensitive' } },
+          },
+        },
       ];
     }
 

@@ -6,4 +6,3 @@ export class LookupSearchQueryDto {
   @MinLength(2)
   q!: string;
 }
-

@@ -7,10 +7,19 @@ export function parseDate(value?: string): Date | undefined {
 
 /** Null the `amount` and `accountRunningBalance` of a cost-type row; leave everything else untouched. */
 export function hideCostAmount<
-  T extends { typeCode: string; amount: unknown; accountRunningBalance?: unknown },
+  T extends {
+    typeCode: string;
+    amount: unknown;
+    accountRunningBalance?: unknown;
+  },
 >(
   row: T,
-): T | (Omit<T, 'amount' | 'accountRunningBalance'> & { amount: null; accountRunningBalance: null }) {
+):
+  | T
+  | (Omit<T, 'amount' | 'accountRunningBalance'> & {
+      amount: null;
+      accountRunningBalance: null;
+    }) {
   return COST_TYPE_CODES.has(row.typeCode)
     ? { ...row, amount: null, accountRunningBalance: null }
     : row;
