@@ -9,6 +9,7 @@ import {
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatNumber } from "@/shared/lib/format"
 import { useProfitReport, useTrendReport, type ProfitReport } from "@/entities/report"
+import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 import { useUrlTab } from "@/shared/lib/hooks/use-url-tab"
 import { DashboardSalesChart } from "./DashboardSalesChart"
@@ -206,11 +207,13 @@ export function DashboardMetrics() {
           {DASHBOARD_PERIODS.map((p) => {
             const isActive = period === p
             return (
-              <button
+              <Button
                 key={p}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setPeriod(p)}
-                className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                className={`h-auto rounded-full px-3.5 py-1 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -222,7 +225,7 @@ export function DashboardMetrics() {
                     : p === "week"
                       ? t("dashboard.periodWeek")
                       : t("dashboard.periodMonth"))}
-              </button>
+              </Button>
             )
           })}
         </div>

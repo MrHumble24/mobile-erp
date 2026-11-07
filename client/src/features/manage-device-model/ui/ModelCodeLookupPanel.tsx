@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { BarcodeInput } from "@/shared/ui/barcode-input"
+import { Button } from "@/shared/ui/button"
 import { Label } from "@/shared/ui/label"
 import type { useModelCodeLookup } from "../model/use-model-code-lookup"
 
@@ -43,11 +44,12 @@ function SearchResultsList({ lookup }: { lookup: Lookup }) {
   return (
     <div className="max-h-56 overflow-y-auto rounded-[10px] border border-border bg-card p-1 shadow-md">
       {searchResults.map((item) => (
-        <button
+        <Button
           key={`${item.brand}-${item.model}-${item.modelCode ?? ""}`}
           type="button"
-          className="flex w-full items-center justify-between gap-2 rounded-[8px] px-2.5 py-2 text-left text-xs transition-colors hover:bg-accent"
+          variant="ghost"
           onClick={() => selectSearchResult(item)}
+          className="h-auto w-full items-center justify-between gap-2 rounded-[8px] px-2.5 py-2 text-left text-xs font-normal transition-colors hover:bg-accent"
         >
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
@@ -72,7 +74,7 @@ function SearchResultsList({ lookup }: { lookup: Lookup }) {
             {item.storageOptions.length > 0 && item.colorOptions.length > 0 && " • "}
             {item.colorOptions.length > 0 && `${item.colorOptions.length} colors`}
           </div>
-        </button>
+        </Button>
       ))}
     </div>
   )

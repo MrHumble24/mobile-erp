@@ -3,6 +3,7 @@ import { Smartphone, Store, User, Calendar } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney } from "@/shared/lib/format"
 import { useProfitBreakdown, type BreakdownGroupBy } from "@/entities/report"
+import { Button } from "@/shared/ui/button"
 import { BreakdownBarChart } from "@/widgets/report-charts"
 import type { ReportTabProps } from "../model/tab-props"
 
@@ -39,11 +40,13 @@ export function SalesTab({ range, onBreakdown }: ReportTabProps) {
           {GROUPS.map(({ key, icon: Icon }) => {
             const isActive = groupBy === key
             return (
-              <button
+              <Button
                 key={key}
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setGroupBy(key)}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+                className={`h-auto items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground font-semibold shadow-xs"
                     : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -51,7 +54,7 @@ export function SalesTab({ range, onBreakdown }: ReportTabProps) {
               >
                 <Icon className="size-3.5" />
                 {t(`reports.group_${key}`)}
-              </button>
+              </Button>
             )
           })}
         </div>
