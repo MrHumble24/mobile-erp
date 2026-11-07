@@ -24,6 +24,7 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "seed:dev": "prisma db execute --file prisma/seed.dev.sql",
+    "seed:repairs-dev": "prisma db execute --file prisma/seed.repairs-dev.sql",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "reset-password": "tsx scripts/reset-password.ts",
     "ref:import": "tsx scripts/ref-import.ts",
