@@ -1,16 +1,17 @@
 # customs
 
-Owns customs price-list versions and the per-phone customs fee rule (ADR 0027).
+Owns customs price-list versions and the per-phone customs fee rule (ADR 0027, ADR 0065).
 A phone's fee is stamped at intake from the current list and frozen; the device
-column and the hand-fix live in `devices`. No Excel upload yet — this is the
-data model + JSON API it will sit on later.
+column and the hand-fix live in `devices`.
 
 ## Owns
 
 - `customs_price_lists` and `customs_price_list_items` (append-only versions;
   never edited or deleted). The current list is the newest `effectiveAt`.
-- `CustomsService.currentFeeMap()` — `customsCode -> fee`, injected by
-  `shipments` to stamp `Device.customsFee` at intake (never the repository).
+- `CustomsService.currentFeeMap()` — normalized key map (`lookupCustomsFeeKey(code, storage)` -> fee),
+  injected by `shipments` to stamp `Device.customsFee` at intake (two-step lookup: `code + storage`
+  fallback `code`).
+- `server/src/customs/lib/customs-match.ts` — pure key normalizer and lookup matching helper.
 
 ## Exposes (REST `/customs/price-lists`)
 

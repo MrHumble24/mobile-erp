@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePriceListDto } from './dto/create-price-list.dto.js';
 import { CustomsRepository } from './customs.repository.js';
+import { normalizeCustomsKey } from './lib/customs-match.js';
 import {
   CurrentList,
   CurrentListItem,
@@ -89,9 +90,11 @@ export class CustomsService {
    */
   async currentFeeMap(): Promise<Map<string, number>> {
     const [current] = await this.repo.twoNewest();
-    return new Map(
-      (current?.items ?? []).map((i) => [i.customsCode, i.fee.toNumber()]),
-    );
+    const map = new Map<string, number>();
+    for (const item of current?.items ?? []) {
+      map.set(normalizeCustomsKey(item.customsCode), item.fee.toNumber());
+    }
+    return map;
   }
 }
 
