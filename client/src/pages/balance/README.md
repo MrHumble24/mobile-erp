@@ -25,3 +25,8 @@ and card money: per-account balances, the total, and the full history of changes
 
 ## Left out
 - No CSV export, no per-column sort UI (history is fixed newest-first).
+
+## Internal structure (history table)
+- `ui/BalanceHistoryTable.tsx` — table shell, rows, and the totals footer.
+- `ui/HistoryRowCells.tsx` — `DirectionBadge`, in/out/running-balance cells, `userName`, `Dash`.
+- `ui/TransactionDetails.tsx` — the per-source context renderer (device/sale/expense/…).
