@@ -31,7 +31,7 @@ function CashierFilter({
     <div className="space-y-1">
       <Label>{t("shifts.cashier")}</Label>
       <Select value={value ?? "all"} onValueChange={(v) => onChange(v === "all" ? undefined : (v ?? undefined))}>
-        <SelectTrigger className="h-10 w-48">
+        <SelectTrigger className="h-10 w-48 sm:w-56">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

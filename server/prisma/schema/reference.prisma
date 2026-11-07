@@ -51,3 +51,38 @@ model ReferenceModelLink {
   @@index([modelId])
   @@map("ref_model_links")
 }
+
+/// Apple hardware model number (A-number, e.g. `A3473`, `A3716`, `A3718`) → device variants.
+/// Loaded from the iPhone/iPad/Mac/Watch/AirPods box-code CSVs.
+model ReferenceAppleModelNumber {
+  id          String  @id @default(uuid())
+  /// Upper-case 5-char A-number (e.g. `A3473`).
+  modelNumber String
+  brand       String
+  model       String
+  color       String?
+  storage     String?
+  ram         String?
+  boxCode     String?
+
+  @@index([modelNumber])
+  @@index([model])
+  @@map("ref_apple_model_numbers")
+}
+
+/// Samsung model code (e.g. `SM-S918B`, `SM-S928B`, `SC-02K`) → brand + model.
+/// Loaded from samsung-model-codes.csv.
+model ReferenceSamsungModelCode {
+  /// Normalised model code, uppercase (e.g. `SM-S918B`).
+  modelCode      String   @id
+  brand          String
+  model          String
+  series         String?
+  codename       String?
+  storageOptions String[]
+  colorOptions   String[]
+
+  @@index([model])
+  @@map("ref_samsung_model_codes")
+}
+

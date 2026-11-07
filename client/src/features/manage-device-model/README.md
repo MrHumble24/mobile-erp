@@ -6,9 +6,29 @@ code, active, spec schema — ADR 0029).
 ## Owns
 - `DeviceModelsPanel` — table (brand, name, kind, category, active) + a category
   filter + "new" button + edit action.
-- `DeviceModelDialog` — shadcn `Form` create/edit. A 409 is routed: a message
+- `DeviceModelDialog` — shadcn `Form` create/edit with a sticky footer (Cancel +
+  Save, pinned while the drawer scrolls). Create is distilled: core fields
+  (brand, name, kind, model code) + storage/color options only; category,
+  barcode, customs code and the active toggle sit behind one "Optional"
+  (`common.optional`) disclosure. Edit keeps the full field set. A 409 is
+  routed: a message
   mentioning "kind" → `catalog.kindLocked` on the kind field; otherwise a
   just-entered/changed barcode → `catalog.errorBarcodeExists`, else duplicate name.
+- `SimpleSpecFields` — spec entry in both modes: chip editors for the storage
+  and color options bound straight to their attribute rows (no label/key/type
+  plumbing); the full `AttributeEditor` schema editor is one disclosure away
+  (`inventory.attrSectionTitle`) in edit mode.
+- Edit mode carries the same distilled shape (core + options, "Optional"
+  collapsed); picture and the price grid stay at the bottom. The sheet is
+  `max-w-5xl` so the price grid has room.
+- `ModelCodeLookupPanel` + `use-model-code-lookup.ts` — "Kod bo'yicha
+  to'ldirish" on create (the same `GET /lookup` box-code lookup intake uses,
+  ADR 0031): a known code fills brand/name (only when empty), the model code
+  (normalized 5-char base; an IMEI never writes it) and the storage/color spec
+  options; an unknown code is a quiet hint and the form stays manual. After a
+  successful create, `rememberLink` teaches the reference→product link (the
+  intake "remember for next time" step) so future shipment lookups of the same
+  code pick this product by itself.
 - `ModelCatalogFields` — Kind select (with hint), Category select (+ "no
   category"), barcode and model-code inputs, and a `SalePriceField`. For a
   QUANTITY product the dialog shows the price per piece (`salePrice`) and hides
@@ -32,6 +52,7 @@ code, active, spec schema — ADR 0029).
   `useUpdateDeviceModel`, `useUploadDeviceModelImage`,
   `useRemoveDeviceModelImage`, `PRODUCT_KINDS`, `productKindLabelKey`.
 - `entities/product-category`: `useProductCategories` (filter + category select).
+- `entities/lookup`: `useLookup` / `useTeachLink` (code lookup + remember).
 - `shared/ui`: `AssetImage` (picture + list thumbnail), `FilePicker` (upload).
 
 ## Must never

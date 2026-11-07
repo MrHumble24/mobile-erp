@@ -32,7 +32,7 @@ export function CashierFilter({
         value={value ?? "all"}
         onValueChange={(v) => onChange(v && v !== "all" ? v : undefined)}
       >
-        <SelectTrigger className="h-10 w-48">
+        <SelectTrigger className="h-10 w-48 sm:w-52">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

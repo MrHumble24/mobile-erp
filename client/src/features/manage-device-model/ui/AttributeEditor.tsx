@@ -5,7 +5,10 @@ import { Button } from "@/shared/ui/button"
 import type { DeviceModelFormValues } from "../model/device-model-form.schema"
 import { AttributeRow } from "./AttributeRow"
 
-/** Spec-schema editor section of the model dialog. */
+/**
+ * Spec-schema editor (label, key, type, required, options) for the edit drawer.
+ * Rendered inside its disclosure — the section title lives on the disclosure.
+ */
 export function AttributeEditor({
   form,
   savedKeys,
@@ -21,10 +24,7 @@ export function AttributeEditor({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-muted-foreground">
-          {t("inventory.attrSectionTitle")}
-        </span>
+      <div className="flex justify-end">
         <Button
           type="button"
           variant="outline"

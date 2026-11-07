@@ -31,7 +31,7 @@ export function PartnersFilters({ filters }: { filters: PartnerFiltersState }) {
       <div className="space-y-1">
         <Label>{t("partners.status")}</Label>
         <Select value={filters.active} onValueChange={(v) => filters.setActive(v as ActiveFilter)}>
-          <SelectTrigger className="h-10 w-40">
+          <SelectTrigger className="h-10 w-48 sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

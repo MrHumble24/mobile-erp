@@ -1,19 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
-import { boxCodeKey, imeiTac } from './lib/code-normalize.js';
+import {
+  appleModelNumber,
+  boxCodeKey,
+  imeiTac,
+  samsungModelCodeKey,
+} from './lib/code-normalize.js';
 import {
   linkKey,
   matchAttributeOption,
   modelMatchKey,
 } from './lib/product-match.js';
-import { LookupRepository } from './lookup.repository.js';
+import {
+  LookupRepository,
+  type SamsungModelCodeRow,
+} from './lookup.repository.js';
 import type {
   LookupMatch,
   LookupProduct,
   LookupReference,
   LookupResult,
+  LookupSearchResult,
   LookupSource,
+  LookupVariant,
 } from './types/lookup.types.js';
 
 const APPLE_SOURCE: LookupSource = {
@@ -23,6 +33,10 @@ const APPLE_SOURCE: LookupSource = {
 const TAC_SOURCE: LookupSource = {
   name: 'tac-database (github.com/MoazEb)',
   license: 'MIT',
+};
+const SAMSUNG_SOURCE: LookupSource = {
+  name: 'Google Play supported devices',
+  license: 'Public',
 };
 
 /**
@@ -39,31 +53,149 @@ export class LookupService {
   async lookup(rawCode: string): Promise<LookupResult> {
     const code = rawCode.trim();
     const tac = imeiTac(code);
-    if (tac) {
-      const row = await this.repo.findTac(tac);
-      if (!row) throw new NotFoundException(`No device known for IMEI ${code}`);
-      const reference: LookupReference = {
-        brand: row.brand,
-        model: row.model,
-        color: null,
-        storage: null,
-        ram: null,
-      };
-      // An IMEI carries no maker model code, so no modelCode match.
-      return this.withProduct(TAC_SOURCE, reference, null);
+    if (tac) return this.lookupTac(tac, code);
+
+    const aNumber = appleModelNumber(code);
+    if (aNumber) {
+      const appleResult = await this.lookupAppleModelNumber(aNumber);
+      if (appleResult) return appleResult;
     }
 
-    const key = boxCodeKey(code);
-    const row = await this.repo.findBoxCode(key);
-    if (!row) throw new NotFoundException(`No device known for code ${code}`);
+    const samsungKey = samsungModelCodeKey(code);
+    const samsungRow = await this.repo.findSamsungModelCode(samsungKey);
+    if (samsungRow) return this.buildSamsungResult(samsungRow);
+
+    const boxKey = boxCodeKey(code);
+    const boxRow = await this.repo.findBoxCode(boxKey);
+    if (boxRow) {
+      const reference: LookupReference = {
+        brand: boxRow.brand,
+        model: boxRow.model,
+        color: boxRow.color,
+        storage: boxRow.storage,
+        ram: boxRow.ram,
+        modelCode: boxKey,
+      };
+      return this.withProduct(APPLE_SOURCE, reference, boxKey);
+    }
+
+    const directSamsung = await this.repo.findSamsungModelCode(
+      code.toUpperCase(),
+    );
+    if (directSamsung) return this.buildSamsungResult(directSamsung);
+
+    throw new NotFoundException(`No device known for code ${code}`);
+  }
+
+  async search(rawQuery: string): Promise<LookupSearchResult[]> {
+    const query = rawQuery.trim();
+    if (query.length < 2) return [];
+
+    const [samsungRows, appleMatches] = await Promise.all([
+      this.repo.searchSamsung(query, 8),
+      this.repo.searchAppleModels(query, 8),
+    ]);
+
+    const appleDetailed = await Promise.all(
+      appleMatches.map(async (m) => {
+        const rows = await this.repo.findAppleModelOptions(m.model);
+        const storageOptions = Array.from(
+          new Set(
+            rows.map((r) => r.storage).filter((s): s is string => Boolean(s)),
+          ),
+        );
+        const colorOptions = Array.from(
+          new Set(
+            rows.map((r) => r.color).filter((c): c is string => Boolean(c)),
+          ),
+        );
+        return {
+          brand: m.brand,
+          model: m.model,
+          modelCode: m.modelNumber,
+          kindCode: /iPad|Mac|Watch/i.test(m.model)
+            ? ('SERIAL' as const)
+            : ('IMEI' as const),
+          storageOptions,
+          colorOptions,
+        };
+      }),
+    );
+
+    const samsungDetailed = samsungRows.map((s) => ({
+      brand: s.brand,
+      model: s.model,
+      series: s.series,
+      modelCode: s.modelCode,
+      kindCode: 'IMEI' as const,
+      storageOptions: s.storageOptions ?? [],
+      colorOptions: s.colorOptions ?? [],
+    }));
+
+    return [...samsungDetailed, ...appleDetailed].slice(0, 10);
+  }
+
+  private async lookupTac(tac: string, code: string): Promise<LookupResult> {
+    const row = await this.repo.findTac(tac);
+    if (!row) throw new NotFoundException(`No device known for IMEI ${code}`);
     const reference: LookupReference = {
       brand: row.brand,
       model: row.model,
-      color: row.color,
-      storage: row.storage,
-      ram: row.ram,
+      color: null,
+      storage: null,
+      ram: null,
     };
-    return this.withProduct(APPLE_SOURCE, reference, key);
+    return this.withProduct(TAC_SOURCE, reference, null);
+  }
+
+  private async lookupAppleModelNumber(
+    aNumber: string,
+  ): Promise<LookupResult | null> {
+    const rows = await this.repo.findAppleModelNumbers(aNumber);
+    if (rows.length === 0) return null;
+    const storageOptions = Array.from(
+      new Set(
+        rows.map((r) => r.storage).filter((s): s is string => Boolean(s)),
+      ),
+    );
+    const colorOptions = Array.from(
+      new Set(rows.map((r) => r.color).filter((c): c is string => Boolean(c))),
+    );
+    const variants: LookupVariant[] = rows.map((r) => ({
+      color: r.color,
+      storage: r.storage,
+      ram: r.ram,
+      boxCode: r.boxCode,
+    }));
+    const reference: LookupReference = {
+      brand: rows[0].brand,
+      model: rows[0].model,
+      color: colorOptions.length === 1 ? colorOptions[0] : null,
+      storage: storageOptions.length === 1 ? storageOptions[0] : null,
+      ram: rows[0].ram,
+      modelNumber: aNumber,
+      modelCode: aNumber,
+      storageOptions,
+      colorOptions,
+      variants,
+    };
+    return this.withProduct(APPLE_SOURCE, reference, aNumber);
+  }
+
+  private buildSamsungResult(row: SamsungModelCodeRow): Promise<LookupResult> {
+    const colors = row.colorOptions ?? [];
+    const storages = row.storageOptions ?? [];
+    const reference: LookupReference = {
+      brand: row.brand,
+      model: row.model,
+      color: colors.length === 1 ? colors[0] : null,
+      storage: storages.length === 1 ? storages[0] : null,
+      ram: null,
+      modelCode: row.modelCode,
+      storageOptions: storages,
+      colorOptions: colors,
+    };
+    return this.withProduct(SAMSUNG_SOURCE, reference, row.modelCode);
   }
 
   /** Stores (or replaces) the shop's link from a reference model to a product. */

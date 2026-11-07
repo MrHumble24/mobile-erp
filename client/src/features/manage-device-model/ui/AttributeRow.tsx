@@ -86,7 +86,7 @@ function TypeField({ form, index, locked }: { form: Form; index: number; locked:
         name={`attributes.${index}.type`}
         render={({ field }) => (
           <Select value={field.value} onValueChange={field.onChange} disabled={locked}>
-            <SelectTrigger className="h-9 w-28"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="text">{t("inventory.attrTypeText")}</SelectItem>
               <SelectItem value="number">{t("inventory.attrTypeNumber")}</SelectItem>

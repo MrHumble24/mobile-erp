@@ -1,5 +1,5 @@
 import { http, HttpError } from "@/shared/api/http"
-import type { LookupResult, TeachLinkDto } from "../model/lookup.types"
+import type { LookupResult, LookupSearchResult, TeachLinkDto } from "../model/lookup.types"
 
 /**
  * Device-code lookup for intake (ADR 0031). GET /lookup?code= resolves a box
@@ -14,6 +14,10 @@ export const lookupRepository = {
       if (err instanceof HttpError && err.statusCode === 404) return null
       throw err
     }
+  },
+
+  search: async (q: string): Promise<LookupSearchResult[]> => {
+    return http<LookupSearchResult[]>("/lookup/search", { params: { q } })
   },
 
   teachLink: async (dto: TeachLinkDto): Promise<void> => {

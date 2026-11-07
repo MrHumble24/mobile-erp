@@ -31,7 +31,7 @@ export function UserFilters({ filters }: { filters: UsersFiltersState }) {
       <div className="space-y-1">
         <Label>{t("users.filterRole")}</Label>
         <Select value={filters.role} onValueChange={(v) => filters.setRole(v ?? "all")}>
-          <SelectTrigger className="h-10 w-44">
+          <SelectTrigger className="h-10 w-48 sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -50,7 +50,7 @@ export function UserFilters({ filters }: { filters: UsersFiltersState }) {
           value={filters.active}
           onValueChange={(v) => filters.setActive(v as UsersFiltersState["active"])}
         >
-          <SelectTrigger className="h-10 w-44">
+          <SelectTrigger className="h-10 w-48 sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

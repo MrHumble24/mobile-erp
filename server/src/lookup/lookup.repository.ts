@@ -9,10 +9,88 @@ interface BoxCodeRow {
   ram: string | null;
 }
 
+export interface AppleModelNumberRow {
+  brand: string;
+  model: string;
+  color: string | null;
+  storage: string | null;
+  ram: string | null;
+  boxCode: string | null;
+}
+
+export interface SamsungModelCodeRow {
+  brand: string;
+  model: string;
+  series: string | null;
+  codename: string | null;
+  modelCode: string;
+  storageOptions: string[];
+  colorOptions: string[];
+}
+
+export interface AppleModelMatch {
+  brand: string;
+  model: string;
+  modelNumber: string;
+}
+
 /** Prisma access for the reference lists and the learned links (ADR 0031). */
 @Injectable()
 export class LookupRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  searchSamsung(query: string, limit = 8): Promise<SamsungModelCodeRow[]> {
+    return this.prisma.referenceSamsungModelCode.findMany({
+      where: {
+        OR: [
+          { model: { contains: query, mode: 'insensitive' } },
+          { series: { contains: query, mode: 'insensitive' } },
+          { modelCode: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      distinct: ['model'],
+      take: limit,
+      select: {
+        brand: true,
+        model: true,
+        series: true,
+        codename: true,
+        modelCode: true,
+        storageOptions: true,
+        colorOptions: true,
+      },
+    });
+  }
+
+  searchAppleModels(query: string, limit = 8): Promise<AppleModelMatch[]> {
+    return this.prisma.referenceAppleModelNumber.findMany({
+      where: {
+        OR: [
+          { model: { contains: query, mode: 'insensitive' } },
+          { modelNumber: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      distinct: ['model'],
+      take: limit,
+      select: {
+        brand: true,
+        model: true,
+        modelNumber: true,
+      },
+    });
+  }
+
+  findAppleModelOptions(
+    model: string,
+  ): Promise<Array<{ storage: string | null; color: string | null }>> {
+    return this.prisma.referenceAppleModelNumber.findMany({
+      where: { model },
+      select: {
+        storage: true,
+        color: true,
+      },
+    });
+  }
 
   findBoxCode(boxCode: string): Promise<BoxCodeRow | null> {
     return this.prisma.referenceAppleBoxCode.findUnique({
@@ -23,6 +101,35 @@ export class LookupRepository {
         color: true,
         storage: true,
         ram: true,
+      },
+    });
+  }
+
+  findAppleModelNumbers(modelNumber: string): Promise<AppleModelNumberRow[]> {
+    return this.prisma.referenceAppleModelNumber.findMany({
+      where: { modelNumber },
+      select: {
+        brand: true,
+        model: true,
+        color: true,
+        storage: true,
+        ram: true,
+        boxCode: true,
+      },
+    });
+  }
+
+  findSamsungModelCode(modelCode: string): Promise<SamsungModelCodeRow | null> {
+    return this.prisma.referenceSamsungModelCode.findUnique({
+      where: { modelCode },
+      select: {
+        brand: true,
+        model: true,
+        series: true,
+        codename: true,
+        modelCode: true,
+        storageOptions: true,
+        colorOptions: true,
       },
     });
   }

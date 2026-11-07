@@ -53,7 +53,7 @@ export function PermissionOverrideRow({
         onValueChange={(v) => onChange(v as OverrideState)}
         disabled={disabled}
       >
-        <SelectTrigger className="h-8 w-28 shrink-0 text-xs">
+        <SelectTrigger className="h-8 w-32 shrink-0 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

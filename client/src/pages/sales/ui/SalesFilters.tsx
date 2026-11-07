@@ -34,7 +34,7 @@ function FilterSelect({
     <div className="space-y-1">
       <Label>{label}</Label>
       <Select value={value} onValueChange={(v) => onChange(v ?? "")}>
-        <SelectTrigger className="h-10 w-44">
+        <SelectTrigger className="h-10 w-48 sm:w-52">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -27,6 +27,11 @@ function model(partial: Partial<DeviceModelView>): DeviceModelView {
 function build(models: DeviceModelView[]) {
   const repo = {
     findBoxCode: jest.fn(),
+    findAppleModelNumbers: jest.fn().mockResolvedValue([]),
+    findSamsungModelCode: jest.fn().mockResolvedValue(null),
+    searchSamsung: jest.fn().mockResolvedValue([]),
+    searchAppleModels: jest.fn().mockResolvedValue([]),
+    findAppleModelOptions: jest.fn().mockResolvedValue([]),
     findTac: jest.fn(),
     findLinkModelId: jest.fn().mockResolvedValue(null),
     upsertLink: jest.fn().mockResolvedValue(undefined),
@@ -68,6 +73,55 @@ describe('LookupService.lookup — resolving the code', () => {
     expect(repo.findTac).toHaveBeenCalledWith('35982437');
     expect(res.reference.brand).toBe('Apple');
     expect(res.source.name).toContain('tac-database');
+  });
+
+  it('resolves an Apple hardware model number (A-number)', async () => {
+    const { service, repo } = build([]);
+    repo.findAppleModelNumbers.mockResolvedValue([
+      {
+        brand: 'Apple',
+        model: 'iPhone 18 Pro Max',
+        color: 'Silver',
+        storage: '256GB',
+        ram: null,
+        boxCode: 'MJW54',
+      },
+      {
+        brand: 'Apple',
+        model: 'iPhone 18 Pro Max',
+        color: 'Black',
+        storage: '512GB',
+        ram: null,
+        boxCode: 'MJW94',
+      },
+    ]);
+    const res = await service.lookup('a3473');
+    expect(repo.findAppleModelNumbers).toHaveBeenCalledWith('A3473');
+    expect(res.reference.model).toBe('iPhone 18 Pro Max');
+    expect(res.reference.modelNumber).toBe('A3473');
+    expect(res.reference.storageOptions).toEqual(['256GB', '512GB']);
+    expect(res.reference.colorOptions).toEqual(['Silver', 'Black']);
+    expect(res.reference.variants).toHaveLength(2);
+  });
+
+  it('resolves a Samsung model code', async () => {
+    const { service, repo } = build([]);
+    repo.findSamsungModelCode.mockResolvedValue({
+      brand: 'Samsung',
+      model: 'Galaxy S23 Ultra',
+      series: 'S',
+      codename: 'dm3q',
+      modelCode: 'SM-S918B',
+      storageOptions: ['256GB', '512GB', '1TB'],
+      colorOptions: ['Phantom Black', 'Green'],
+    });
+    const res = await service.lookup('sm-s918b/ds');
+    expect(repo.findSamsungModelCode).toHaveBeenCalledWith('SM-S918B');
+    expect(res.reference.brand).toBe('Samsung');
+    expect(res.reference.model).toBe('Galaxy S23 Ultra');
+    expect(res.reference.storageOptions).toEqual(['256GB', '512GB', '1TB']);
+    expect(res.reference.colorOptions).toEqual(['Phantom Black', 'Green']);
+    expect(res.source.name).toContain('Google Play');
   });
 
   it('404s when neither list knows the code', async () => {
@@ -160,5 +214,59 @@ describe('LookupService.learnLink', () => {
       'Galaxy S23',
       'p1',
     );
+  });
+});
+
+describe('LookupService.search', () => {
+  it('returns empty array when query is under 2 chars', async () => {
+    const { service } = build([]);
+    expect(await service.search('a')).toEqual([]);
+    expect(await service.search('  ')).toEqual([]);
+  });
+
+  it('searches both Samsung and Apple reference lists and aggregates options', async () => {
+    const { service, repo } = build([]);
+    repo.searchSamsung.mockResolvedValue([
+      {
+        brand: 'Samsung',
+        model: 'Galaxy S23 Ultra',
+        series: 'S',
+        codename: 'dm3q',
+        modelCode: 'SM-S918B',
+        storageOptions: ['256GB', '512GB'],
+        colorOptions: ['Green', 'Phantom Black'],
+      },
+    ]);
+    repo.searchAppleModels.mockResolvedValue([
+      {
+        brand: 'Apple',
+        model: 'iPhone 15 Pro',
+        modelNumber: 'A3102',
+      },
+    ]);
+    repo.findAppleModelOptions.mockResolvedValue([
+      { storage: '128GB', color: 'Natural Titanium' },
+      { storage: '256GB', color: 'Natural Titanium' },
+    ]);
+
+    const results = await service.search('pro');
+    expect(results).toHaveLength(2);
+    expect(results[0]).toEqual({
+      brand: 'Samsung',
+      model: 'Galaxy S23 Ultra',
+      series: 'S',
+      modelCode: 'SM-S918B',
+      kindCode: 'IMEI',
+      storageOptions: ['256GB', '512GB'],
+      colorOptions: ['Green', 'Phantom Black'],
+    });
+    expect(results[1]).toEqual({
+      brand: 'Apple',
+      model: 'iPhone 15 Pro',
+      modelCode: 'A3102',
+      kindCode: 'IMEI',
+      storageOptions: ['128GB', '256GB'],
+      colorOptions: ['Natural Titanium'],
+    });
   });
 });

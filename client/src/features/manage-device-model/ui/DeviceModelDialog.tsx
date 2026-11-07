@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react"
 import { useForm, type UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
@@ -19,8 +20,11 @@ import {
   toFormAttributes,
   type DeviceModelFormValues,
 } from "../model/device-model-form.schema"
+import { useModelCodeLookup } from "../model/use-model-code-lookup"
 import { AttributeEditor } from "./AttributeEditor"
 import { ModelPictureField } from "./ModelPictureField"
+import { ModelCodeLookupPanel } from "./ModelCodeLookupPanel"
+import { SimpleSpecFields } from "./SimpleSpecFields"
 import { ProductPriceGrid } from "./ProductPriceGrid"
 import {
   KindField,
@@ -60,7 +64,7 @@ function CustomsCodeField({ form }: { form: FormApi }) {
         <FormItem>
           <FormLabel>{t("inventory.customsCode")}</FormLabel>
           <FormControl>
-            <Input {...field} value={field.value ?? ""} />
+            <Input {...field} value={field.value ?? ""} className="font-mono" />
           </FormControl>
           <FormDescription>{t("inventory.customsCodeHint")}</FormDescription>
           <FormMessage />
@@ -86,6 +90,31 @@ function ActiveField({ form }: { form: FormApi }) {
       )}
     />
   )
+}
+
+/** A collapsed disclosure: a one-tap-away group, same shape everywhere. */
+function ExpandableSection({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <details className="group rounded-[12px] border border-border bg-muted px-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+        {label}
+        <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="space-y-4 pb-3">{children}</div>
+    </details>
+  )
+}
+
+/** The never-needed-at-keying fields, one tap away (`common.optional`). */
+function OptionalSection({ children }: { children: React.ReactNode }) {
+  const { t } = useI18n()
+  return <ExpandableSection label={t("common.optional")}>{children}</ExpandableSection>
 }
 
 function ModelForm({
@@ -118,6 +147,8 @@ function ModelForm({
     },
   })
   const isQuantity = form.watch("kindCode") === "QUANTITY"
+  // Code lookup is a create-time aid: a saved model already has its identity.
+  const lookup = useModelCodeLookup(form)
 
   const handleError = (err: { statusCode?: number; message?: string }, values: DeviceModelFormValues) => {
     if (err?.statusCode === 409) {
@@ -152,7 +183,11 @@ function ModelForm({
       salePrice: quantity ? parsedPrice : null,
     }
     const opts = {
-      onSuccess: () => { toast.success(t("common.success")); onDone() },
+      onSuccess: (created: DeviceModelView) => {
+        if (!model) lookup.rememberLink(created.id)
+        toast.success(t("common.success"))
+        onDone()
+      },
       onError: (err: { statusCode?: number; message?: string }) => handleError(err, values),
     }
     if (model) {
@@ -164,28 +199,61 @@ function ModelForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 my-2">
-        <ModelTextField form={form} name="brand" label={t("inventory.brand")} />
-        <ModelTextField form={form} name="name" label={t("inventory.model")} />
-        <KindField form={form} />
-        <CategoryField form={form} />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <BarcodeField form={form} />
-          <ModelCodeField form={form} />
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2">
+        <form
+          id="device-model-form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          {!model && <ModelCodeLookupPanel lookup={lookup} />}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ModelTextField form={form} name="brand" label={t("inventory.brand")} />
+            <ModelTextField form={form} name="name" label={t("inventory.model")} />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <KindField form={form} />
+            <ModelCodeField form={form} />
+          </div>
+          {isQuantity ? (
+            <SalePriceField form={form} />
+          ) : (
+            <SimpleSpecFields form={form} />
+          )}
+          <OptionalSection>
+            <CategoryField form={form} />
+            <BarcodeField form={form} />
+            {!isQuantity && <CustomsCodeField form={form} />}
+            <ActiveField form={form} />
+          </OptionalSection>
+          {model && !isQuantity && (
+            <ExpandableSection label={t("inventory.attrSectionTitle")}>
+              <AttributeEditor form={form} savedKeys={savedKeys} />
+            </ExpandableSection>
+          )}
+          {model && <ModelPictureField model={model} />}
+          {model && canManagePrices && <ProductPriceGrid model={model} />}
+        </form>
+      </div>
+      <div className="-mx-5 -mb-6 shrink-0 border-t border-border bg-card px-5 pb-6 pt-3 sm:-mx-6 sm:px-6">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full sm:w-auto sm:min-w-28"
+            onClick={onDone}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            type="submit"
+            form="device-model-form"
+            className="w-full sm:w-auto sm:min-w-28"
+            disabled={isPending}
+          >
+            {isPending ? t("common.loading") : t("common.save")}
+          </Button>
         </div>
-        {isQuantity ? (
-          <SalePriceField form={form} />
-        ) : (
-          <CustomsCodeField form={form} />
-        )}
-        <ActiveField form={form} />
-        {model && <ModelPictureField model={model} />}
-        {!isQuantity && <AttributeEditor form={form} savedKeys={savedKeys} />}
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? t("common.loading") : t("common.save")}
-        </Button>
-        {model && canManagePrices && <ProductPriceGrid model={model} />}
-      </form>
+      </div>
     </Form>
   )
 }
@@ -204,8 +272,11 @@ export function DeviceModelDialog({
   const { t } = useI18n()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPopup className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogPopup
+        className="sm:max-w-5xl max-h-[90vh]"
+        contentClassName="flex flex-col overflow-hidden"
+      >
+        <DialogHeader className="shrink-0">
           <DialogTitle>{model ? t("inventory.editModel") : t("inventory.newModel")}</DialogTitle>
         </DialogHeader>
         {open && (

@@ -34,7 +34,18 @@ function Select<Value, Multiple extends boolean | undefined = false>({
   )
 }
 const SelectGroup = SelectPrimitive.Group
-const SelectValue = SelectPrimitive.Value
+
+function SelectValue({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  return (
+    <SelectPrimitive.Value
+      className={cn("block truncate text-left min-w-0 flex-1 whitespace-nowrap", className)}
+      {...props}
+    />
+  )
+}
 
 function SelectTrigger({
   className,
@@ -44,14 +55,14 @@ function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none",
+        "flex h-10 w-full items-center justify-between gap-2.5 rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shadow-none select-none text-left min-w-0",
         className
       )}
       {...props}
     >
       {children}
-      <SelectPrimitive.Icon>
-        <ChevronDown className="size-4 stroke-[2] text-muted-foreground" />
+      <SelectPrimitive.Icon className="shrink-0 flex items-center justify-center">
+        <ChevronDown className="size-4 stroke-[2] text-muted-foreground shrink-0" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -72,7 +83,7 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           className={cn(
-            "z-[100] min-w-44 overflow-hidden rounded-[12px] bg-card text-foreground p-1 border border-border outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
+            "z-[100] min-w-[var(--anchor-width,12rem)] overflow-hidden rounded-[12px] bg-card text-foreground p-1 border border-border outline-none shadow-[var(--shadow-subtle-2)] flex flex-col gap-0.5 transition-all",
             className
           )}
         >
@@ -93,14 +104,14 @@ function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "relative flex cursor-pointer select-none items-center justify-between rounded-[8px] px-3 py-2 text-sm font-body text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted data-[selected]:bg-primary/10 data-[selected]:text-primary data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
+        "relative flex cursor-pointer select-none items-center justify-between gap-2 rounded-[8px] px-3 py-2 text-sm font-body text-foreground outline-none transition-colors hover:bg-muted focus:bg-muted data-[selected]:bg-primary/10 data-[selected]:text-primary data-[selected]:font-semibold disabled:pointer-events-none disabled:opacity-40",
         className
       )}
       {...props}
     >
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator>
-        <Check className="size-4 stroke-[2.5] text-primary" />
+      <SelectPrimitive.ItemText className="truncate text-left min-w-0 flex-1">{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemIndicator className="shrink-0 flex items-center justify-center">
+        <Check className="size-4 stroke-[2.5] text-primary shrink-0" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )

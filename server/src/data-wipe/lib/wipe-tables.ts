@@ -103,6 +103,8 @@ export const KEPT_TABLES = [
   'secrets',
   // phone reference lists (free public lists, not our inventory)
   'ref_apple_box_codes',
+  'ref_apple_model_numbers',
+  'ref_samsung_model_codes',
   'ref_imei_tacs',
   // lookups the system needs to work
   'device_statuses',

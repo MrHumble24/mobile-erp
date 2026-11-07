@@ -4,6 +4,14 @@ export interface LookupSource {
   license: string;
 }
 
+/** What the reference list knows about individual variants (e.g. for Apple A-numbers). */
+export interface LookupVariant {
+  color: string | null;
+  storage: string | null;
+  ram: string | null;
+  boxCode: string | null;
+}
+
 /** What the reference list knows about the code. */
 export interface LookupReference {
   brand: string;
@@ -11,6 +19,11 @@ export interface LookupReference {
   color: string | null;
   storage: string | null;
   ram: string | null;
+  modelNumber?: string | null;
+  modelCode?: string | null;
+  storageOptions?: string[];
+  colorOptions?: string[];
+  variants?: LookupVariant[];
 }
 
 /** How our catalog product was found (in resolution order). */
@@ -32,4 +45,14 @@ export interface LookupResult {
   source: LookupSource;
   reference: LookupReference;
   product: LookupProduct | null;
+}
+
+export interface LookupSearchResult {
+  brand: string;
+  model: string;
+  series?: string | null;
+  modelCode?: string | null;
+  kindCode: 'IMEI' | 'SERIAL' | 'QUANTITY';
+  storageOptions: string[];
+  colorOptions: string[];
 }

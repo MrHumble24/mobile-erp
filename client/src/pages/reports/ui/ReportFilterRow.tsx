@@ -20,7 +20,7 @@ export function ReportFilterRow({ range }: { range: ReportRange }) {
           value={range.preset}
           onValueChange={(v) => range.setPreset(v as (typeof RANGE_PRESETS)[number])}
         >
-          <SelectTrigger className="h-10 w-48">
+          <SelectTrigger className="h-10 w-48 sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

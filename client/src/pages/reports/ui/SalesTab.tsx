@@ -33,7 +33,7 @@ export function SalesTab({ range, onBreakdown }: ReportTabProps) {
       <div className="space-y-1">
         <Label>{t("reports.breakdownBy")}</Label>
         <Select value={groupBy} onValueChange={(v) => setGroupBy(v as BreakdownGroupBy)}>
-          <SelectTrigger className="h-10 w-48">
+          <SelectTrigger className="h-10 w-48 sm:w-56">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

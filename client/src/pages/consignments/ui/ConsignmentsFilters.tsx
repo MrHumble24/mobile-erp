@@ -35,7 +35,7 @@ function DateRange({ filters }: { filters: ConsignmentFiltersState }) {
       <div className="space-y-1">
         <Label>{t("reports.period")}</Label>
         <Select value={filters.preset} onValueChange={(v) => filters.setPreset(v as DatePreset)}>
-          <SelectTrigger className="h-10 w-40">
+          <SelectTrigger className="h-10 w-48 sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -79,7 +79,7 @@ export function ConsignmentsFilters({ filters }: { filters: ConsignmentFiltersSt
       <div className="space-y-1">
         <Label>{t("consignments.filterStatus")}</Label>
         <Select value={filters.status} onValueChange={(v) => filters.setStatus(v as StatusFilter)}>
-          <SelectTrigger className="h-10 w-44">
+          <SelectTrigger className="h-10 w-48 sm:w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

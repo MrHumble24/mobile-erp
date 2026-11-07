@@ -106,7 +106,7 @@ export function BarcodeField({ form }: { form: FormApi }) {
         <FormItem>
           <FormLabel>{t("catalog.barcode")}</FormLabel>
           <FormControl>
-            <Input {...field} value={field.value ?? ""} />
+            <Input {...field} value={field.value ?? ""} className="font-mono" />
           </FormControl>
           <FormDescription>{t("catalog.barcodeHint")}</FormDescription>
           <FormMessage />
@@ -146,7 +146,7 @@ export function ModelCodeField({ form }: { form: FormApi }) {
         <FormItem>
           <FormLabel>{t("catalog.modelCode")}</FormLabel>
           <FormControl>
-            <Input {...field} value={field.value ?? ""} />
+            <Input {...field} value={field.value ?? ""} className="font-mono" />
           </FormControl>
           <FormDescription>{t("catalog.modelCodeHint")}</FormDescription>
           <FormMessage />

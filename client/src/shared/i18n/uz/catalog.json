@@ -79,13 +79,13 @@
   "errorPictureSize": "Rasm hajmi 2 MB dan katta",
   "pictureSaved": "Rasm saqlandi",
   "pictureRemoved": "Rasm o'chirildi",
-  "boxCode": "IMEI yoki qutidagi kod",
-  "boxCodeHint": "Masalan, iPhone qutisidagi MU793",
+  "boxCode": "Model nomi, seriya yoki kodi bo'yicha qidirish",
+  "boxCodeHint": "Masalan, S23 Ultra, iPhone 16, A3473 yoki SM-S918B",
   "lookupFound": "Topildi: {model}",
   "lookupNotFound": "Ushbu kod ro'yxatda topilmadi",
   "lookupFill": "Kod bo'yicha to'ldirish",
   "lookupPickProduct": "Bu qaysi mahsulotimiz?",
   "lookupRemember": "Keyingi safar uchun eslab qolish",
   "lookupRemembered": "Eslab qolindi",
-  "dataCredit": "Apple model kodlari: The Apple Wiki, CC BY-SA"
+  "dataCredit": "Qurilma ma'lumotlari: The Apple Wiki (CC BY-SA), Google Play"
 }

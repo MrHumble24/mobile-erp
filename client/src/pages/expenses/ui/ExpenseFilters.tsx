@@ -25,7 +25,7 @@ function FilterSelect({
   value,
   options,
   onChange,
-  width = "w-44",
+  width = "w-48 sm:w-52",
 }: {
   label: string
   value: string
@@ -160,7 +160,7 @@ export function ExpenseFilters({
         label={t("expenses.sortLabel")}
         value={filters.sort}
         onChange={(v) => filters.setSort(v as SortValue)}
-        width="w-48"
+        width="w-48 sm:w-52"
         options={[
           { value: "incurredAt:desc", label: t("expenses.sortNewest") },
           { value: "incurredAt:asc", label: t("expenses.sortOldest") },

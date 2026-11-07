@@ -79,13 +79,13 @@
   "errorPictureSize": "The picture is larger than 2 MB",
   "pictureSaved": "Picture saved",
   "pictureRemoved": "Picture removed",
-  "boxCode": "IMEI or code on the box",
-  "boxCodeHint": "For example MU793 on an iPhone box",
+  "boxCode": "Search by model name, series or code",
+  "boxCodeHint": "For example S23 Ultra, iPhone 16, A3473 or SM-S918B",
   "lookupFound": "Found: {model}",
   "lookupNotFound": "This code is not in the lists",
   "lookupFill": "Fill in from the code",
   "lookupPickProduct": "Which of our products is this?",
   "lookupRemember": "Remember for next time",
   "lookupRemembered": "Remembered",
-  "dataCredit": "Apple model codes: The Apple Wiki, CC BY-SA"
+  "dataCredit": "Device reference data: The Apple Wiki (CC BY-SA), Google Play"
 }

@@ -56,12 +56,12 @@ function DialogPopup({
   return (
     <DialogPortal>
       <DialogBackdrop />
-      <DrawerPrimitive.Viewport className="fixed inset-0 z-50 flex items-end justify-center sm:p-4">
+      <DrawerPrimitive.Viewport className="fixed inset-0 z-50 flex items-end justify-center sm:px-4 sm:pt-4">
         <DrawerPrimitive.Popup
           className={cn(
             "relative z-50 flex flex-col bg-card text-foreground shadow-[var(--shadow-xl)] border border-border outline-none overscroll-contain",
             "w-full rounded-t-[24px] max-h-[88vh]",
-            "sm:max-w-xl sm:rounded-[24px]",
+            "sm:max-w-xl",
             "bottomsheet-popup",
             className
           )}

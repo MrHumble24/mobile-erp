@@ -31,7 +31,7 @@ export interface ComboboxProps {
 }
 
 const TRIGGER_CLASS =
-  "flex h-10 w-full items-center justify-between rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+  "flex h-10 w-full items-center justify-between gap-2.5 rounded-[9px] bg-background px-3.5 text-sm font-body text-foreground border border-input outline-none transition-all focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer select-none text-left min-w-0"
 
 function ComboboxItems({
   options,
@@ -128,7 +128,7 @@ export function Combobox({
   return (
     <Popover open={open} onOpenChange={(next: boolean) => (next ? setOpen(true) : close())}>
       <PopoverTrigger disabled={disabled} className={cn(TRIGGER_CLASS, className)}>
-        <span className={cn("truncate", !selected && "text-muted-foreground")}>
+        <span className={cn("truncate text-left min-w-0 flex-1 whitespace-nowrap", !selected && "text-muted-foreground")}>
           {selected ? selected.label : placeholder}
         </span>
         <ChevronDown className="size-4 shrink-0 stroke-[2] text-muted-foreground" />

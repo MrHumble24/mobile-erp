@@ -1,4 +1,33 @@
-import { boxCodeKey, imeiTac } from './code-normalize.js';
+import {
+  appleModelNumber,
+  boxCodeKey,
+  imeiTac,
+  samsungModelCodeKey,
+} from './code-normalize.js';
+
+describe('appleModelNumber', () => {
+  it('matches A followed by 4 digits, upper-cased', () => {
+    expect(appleModelNumber('a3473')).toBe('A3473');
+    expect(appleModelNumber(' A3716 ')).toBe('A3716');
+    expect(appleModelNumber('A3718')).toBe('A3718');
+  });
+
+  it('returns null for non-A numbers', () => {
+    expect(appleModelNumber('MU793')).toBeNull();
+    expect(appleModelNumber('A12')).toBeNull();
+    expect(appleModelNumber('A12345')).toBeNull();
+    expect(appleModelNumber('SM-S918B')).toBeNull();
+  });
+});
+
+describe('samsungModelCodeKey', () => {
+  it('normalizes Samsung model codes, uppercase, stripping suffixes', () => {
+    expect(samsungModelCodeKey('sm-s918b/ds')).toBe('SM-S918B');
+    expect(samsungModelCodeKey('SM-S918B')).toBe('SM-S918B');
+    expect(samsungModelCodeKey('sms918b')).toBe('SM-S918B');
+    expect(samsungModelCodeKey('sc-02k')).toBe('SC-02K');
+  });
+});
 
 describe('boxCodeKey', () => {
   it('strips the region suffix, spaces and case: mu793ll/a → MU793', () => {

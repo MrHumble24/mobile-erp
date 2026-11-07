@@ -89,7 +89,7 @@ function CategoryFilter({ value, onChange }: { value: string; onChange: (v: stri
   const { data: categories } = useProductCategories()
   return (
     <Select value={value} onValueChange={(v) => onChange(v ?? ALL_CATEGORIES)}>
-      <SelectTrigger className="h-9 w-full sm:w-52 bg-card border-border shadow-[var(--shadow-xs)]">
+      <SelectTrigger className="h-9 w-full sm:w-60 bg-card border-border shadow-[var(--shadow-xs)]">
         <SelectValue placeholder={t("catalog.allCategories")} />
       </SelectTrigger>
       <SelectContent>
@@ -128,7 +128,7 @@ export function DeviceModelsPanel({ canManagePrices = false }: { canManagePrices
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="relative w-full sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
