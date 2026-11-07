@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,9 +9,7 @@ import { isUniqueViolation } from '../common/lib/prisma-errors.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CustomsService } from '../customs/customs.service.js';
 import { DeviceModelsService } from '../device-models/device-models.service.js';
-import { validateSpecs } from '../device-models/lib/attribute-schema.js';
 import type { DeviceModelView } from '../device-models/types/device-model.types.js';
-import { assertUnitKind, normalizeSerial } from '../devices/lib/unit-code.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { StockService } from '../stock/stock.service.js';
 import type { PurchasedLineView } from '../stock/types/stock.types.js';
@@ -23,12 +20,20 @@ import {
   TelegramEvents,
 } from '../telegram/events/telegram-events.js';
 import { CreateShipmentDto } from './dto/create-shipment.dto.js';
+import { ImportShipmentDto } from './dto/import-shipment.dto.js';
 import {
   RegisterDeviceDto,
   RegisterDevicesDto,
 } from './dto/register-devices.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
 import { RegisterItemsDto } from './dto/register-items.dto.js';
+import { validateAndPrepareBatchImport } from './lib/batch-import-validator.js';
+import {
+  assertExpensePermission,
+  assertKindRules,
+  assertSpecs,
+} from './lib/shipment-intake-validation.js';
+import { stampCustomsFees } from './lib/shipment-stamp-fees.js';
 import {
   str,
   sumLineTotals,
@@ -38,6 +43,7 @@ import { ShipmentsIntakeRepository } from './shipments-intake.repository.js';
 import { ShipmentsQuantityRepository } from './shipments-quantity.repository.js';
 import { ShipmentsRepository } from './shipments.repository.js';
 import {
+  ImportShipmentResultView,
   RegisteredDeviceView,
   RegisterDeviceInput,
   ShipmentDetailView,
@@ -122,10 +128,14 @@ export class ShipmentsService {
   ): Promise<RegisteredDeviceView[]> {
     const shipment = await this.require(id);
     const models = await this.loadModels(dto.devices);
-    this.assertKindRules(dto.devices, models);
-    this.assertSpecs(dto.devices, models);
-    this.assertExpensePermission(dto.devices, user);
-    const inputs = await this.stampCustomsFees(dto.devices, models);
+    assertKindRules(dto.devices, models);
+    assertSpecs(dto.devices, models);
+    assertExpensePermission(
+      dto.devices.some((d) => (d.unitExpense ?? 0) !== 0),
+      user,
+    );
+    const feeByCode = await this.customs.currentFeeMap();
+    const inputs = stampCustomsFees(dto.devices, models, feeByCode);
     const registered = await this.register(id, inputs, user.id);
     // Best-effort notification; must never fail an intake.
     void this.announce(
@@ -155,41 +165,73 @@ export class ShipmentsService {
     return this.quantity.purchase(id, dto.items, user.id);
   }
 
-  /** Stamp each device with the current list's fee for its model's customsCode. */
-  private async stampCustomsFees(
-    devices: RegisterDeviceDto[],
-    models: DeviceModelView[],
-  ): Promise<RegisterDeviceInput[]> {
-    const byModel = new Map(models.map((m) => [m.id, m]));
-    const feeByCode = await this.customs.currentFeeMap();
-    return devices.map((d) => {
-      const model = byModel.get(d.modelId)!;
-      const code = model.customsCode;
-      const customsFee = code ? (feeByCode.get(code) ?? 0) : 0;
-      return {
-        ...d,
-        kindCode: model.kindCode,
-        serialNumber: d.serialNumber
-          ? normalizeSerial(d.serialNumber)
-          : undefined,
-        customsFee,
-      };
-    });
+  private async validateImport(
+    dto: ImportShipmentDto,
+    user: AuthenticatedUser,
+  ) {
+    assertExpensePermission(
+      dto.rows.some((r) => r.expense > 0),
+      user,
+    );
+    await this.suppliers.get(dto.supplierId);
+    const allModels = await this.models.list();
+    const allImeis = dto.rows.flatMap((r) =>
+      [r.imei, r.imei2].filter((x): x is string => !!x),
+    );
+    const existingImeis = await this.intake.findExistingImeis(allImeis);
+    const feeMap = await this.customs.currentFeeMap();
+
+    const result = validateAndPrepareBatchImport(
+      dto.rows,
+      dto.exchangeRate,
+      allModels,
+      new Set(existingImeis),
+      feeMap,
+    );
+
+    if (result.problems.length > 0) {
+      throw new BadRequestException({
+        message: 'Import failed validation',
+        problems: result.problems,
+      });
+    }
+
+    return { ...result, allModels };
   }
 
-  /**
-   * Per-kind intake rules (kind comes from the model, ADR 0029):
-   * QUANTITY is not stocked as a unit; an IMEI unit needs an `imei` and no
-   * `serialNumber`; a SERIAL unit needs a `serialNumber` and no `imei`/`imei2`.
-   */
-  private assertKindRules(
-    devices: RegisterDeviceDto[],
-    models: DeviceModelView[],
-  ): void {
-    const kindById = new Map(models.map((m) => [m.id, m.kindCode]));
-    for (const d of devices) {
-      assertUnitKind(kindById.get(d.modelId) ?? 'IMEI', d);
-    }
+  async importShipment(
+    dto: ImportShipmentDto,
+    user: AuthenticatedUser,
+  ): Promise<ImportShipmentResultView> {
+    const { deviceInputs, warnings, allModels } = await this.validateImport(
+      dto,
+      user,
+    );
+
+    const { shipment, devices } = await this.intake.createShipmentWithDevices(
+      {
+        storeId: dto.storeId,
+        supplierId: dto.supplierId,
+        shipmentDate: new Date(dto.shipmentDate),
+        expectedCount: dto.rows.length,
+        paymentAccountCode: dto.paymentAccountCode,
+        exchangeRate: dto.exchangeRate,
+        notes: dto.notes,
+        createdById: user.id,
+      },
+      deviceInputs,
+      user.id,
+    );
+
+    void this.announce(
+      dto.supplierId,
+      shipment.id,
+      devices.length,
+      allModels.filter((m) => deviceInputs.some((d) => d.modelId === m.id)),
+    ).catch(() => undefined);
+
+    const fresh = await this.require(shipment.id);
+    return { ...fresh, devices, warnings };
   }
 
   private async register(
@@ -230,36 +272,6 @@ export class ShipmentsService {
   private loadModels(devices: RegisterDeviceDto[]): Promise<DeviceModelView[]> {
     const ids = [...new Set(devices.map((d) => d.modelId))];
     return Promise.all(ids.map((id) => this.models.get(id)));
-  }
-
-  /** Strict per-unit spec validation against each model's attribute schema. */
-  private assertSpecs(
-    devices: RegisterDeviceDto[],
-    models: DeviceModelView[],
-  ): void {
-    const attrsById = new Map(models.map((m) => [m.id, m.attributes]));
-    const problems = devices.flatMap((d) =>
-      validateSpecs(attrsById.get(d.modelId) ?? [], d.specs).map((p) => ({
-        imei: d.imei ?? d.serialNumber ?? null,
-        ...p,
-      })),
-    );
-    if (problems.length > 0) {
-      throw new BadRequestException({ message: 'Invalid specs', problems });
-    }
-  }
-
-  /** A non-zero unitExpense at intake needs the `device.expense` permission. */
-  private assertExpensePermission(
-    devices: RegisterDeviceDto[],
-    user: AuthenticatedUser,
-  ): void {
-    const wantsExpense = devices.some((d) => (d.unitExpense ?? 0) !== 0);
-    if (wantsExpense && !user.permissions.has('device.expense')) {
-      throw new ForbiddenException(
-        'device.expense permission required to set a unit expense',
-      );
-    }
   }
 
   private async require(id: string): Promise<ShipmentView> {

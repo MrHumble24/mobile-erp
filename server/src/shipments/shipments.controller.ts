@@ -3,6 +3,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreateShipmentDto } from './dto/create-shipment.dto.js';
+import { ImportShipmentDto } from './dto/import-shipment.dto.js';
 import { RegisterDevicesDto } from './dto/register-devices.dto.js';
 import { RegisterItemsDto } from './dto/register-items.dto.js';
 import { UpdateShipmentDto } from './dto/update-shipment.dto.js';
@@ -31,6 +32,15 @@ export class ShipmentsController {
     @Body() dto: CreateShipmentDto,
   ) {
     return this.shipments.create(dto, user.id);
+  }
+
+  @Post('import')
+  @RequirePermissions('shipment.manage', 'device.create')
+  importShipment(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ImportShipmentDto,
+  ) {
+    return this.shipments.importShipment(dto, user);
   }
 
   @Patch(':id')

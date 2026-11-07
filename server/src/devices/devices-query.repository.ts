@@ -99,6 +99,7 @@ export class DevicesQueryRepository {
           select: { id: true, brand: true, name: true, kindCode: true },
         },
         status: { select: { code: true, label: true } },
+        shipment: { select: { exchangeRate: true } },
         inspections: {
           orderBy: { inspectedAt: 'desc' },
           take: 1,
@@ -108,7 +109,10 @@ export class DevicesQueryRepository {
     });
     if (!row) return null;
     return {
-      ...toDeviceView(row),
+      ...toDeviceView({
+        ...row,
+        exchangeRate: row.shipment?.exchangeRate ?? null,
+      }),
       model: row.model,
       status: row.status,
       latestInspection: row.inspections[0] ?? null,

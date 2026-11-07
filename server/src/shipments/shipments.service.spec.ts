@@ -24,6 +24,11 @@ function build(
   } as unknown as ShipmentsRepository;
   const intakeRepo = {
     addDevices: jest.fn().mockResolvedValue([]),
+    findExistingImeis: jest.fn().mockResolvedValue([]),
+    createShipmentWithDevices: jest.fn().mockResolvedValue({
+      shipment: { id: 'ship-new', supplierId: 'sup-1', exchangeRate: '1.3000' },
+      devices: [],
+    }),
   } as unknown as ShipmentsIntakeRepository;
   const quantityRepo = {
     purchase: jest.fn().mockResolvedValue([]),
@@ -185,6 +190,26 @@ describe('ShipmentsService.addDevices customs stamping', () => {
     await service.addDevices('ship-1', intake(), user(['device.create']));
     const [, inputs] = (intakeRepo.addDevices as jest.Mock).mock.calls[0];
     expect(inputs[0].customsFee).toBe(55);
+  });
+
+  it('stamps customs fee matching model code + storage', async () => {
+    const { service, intakeRepo } = build(new Map([['C1 256GB', 94]]));
+    await service.addDevices(
+      'ship-1',
+      {
+        devices: [
+          {
+            imei: '111111111111111',
+            modelId: 'm1',
+            specs: { storage: '256GB' },
+            acquisitionCost: 300,
+          },
+        ],
+      },
+      user(['device.create']),
+    );
+    const [, inputs] = (intakeRepo.addDevices as jest.Mock).mock.calls[0];
+    expect(inputs[0].customsFee).toBe(94);
   });
 
   it('stamps 0 when the model code is absent from the current list', async () => {

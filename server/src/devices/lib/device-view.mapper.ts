@@ -10,6 +10,8 @@ export interface DeviceScalarRow {
   modelId: string;
   specs: unknown;
   acquisitionCost: { toString(): string };
+  acquisitionCostOriginal?: { toString(): string } | null;
+  exchangeRate?: { toString(): string } | null;
   customsFee: { toString(): string };
   unitExpense: { toString(): string };
   unitExpenseNote: string | null;
@@ -33,6 +35,10 @@ export function toDeviceView(row: DeviceScalarRow): DeviceView {
     modelId: row.modelId,
     specs: (row.specs ?? {}) as Record<string, unknown>,
     acquisitionCost: row.acquisitionCost.toString(),
+    acquisitionCostOriginal: row.acquisitionCostOriginal
+      ? row.acquisitionCostOriginal.toString()
+      : null,
+    exchangeRate: row.exchangeRate ? row.exchangeRate.toString() : null,
     customsFee: row.customsFee.toString(),
     unitExpense: row.unitExpense.toString(),
     unitExpenseNote: row.unitExpenseNote,

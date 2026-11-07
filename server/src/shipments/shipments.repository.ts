@@ -116,8 +116,9 @@ export class ShipmentsRepository {
   }
 }
 
-interface ShipmentRow {
+export interface ShipmentRow {
   id: string;
+  storeId?: string;
   supplierId: string;
   shipmentDate: Date;
   expectedCount: number;
@@ -126,10 +127,11 @@ interface ShipmentRow {
   createdById: string;
   createdAt: Date;
   updatedAt: Date;
+  exchangeRate?: { toString(): string } | null;
   _count: { devices: number };
 }
 
-function toShipmentView(
+export function toShipmentView(
   row: ShipmentRow,
   totals: ShipmentTotals | undefined,
 ): ShipmentView {
@@ -140,6 +142,7 @@ function toShipmentView(
     shipmentDate: row.shipmentDate,
     expectedCount: row.expectedCount,
     paymentAccountCode: row.paymentAccountCode,
+    exchangeRate: row.exchangeRate ? row.exchangeRate.toString() : null,
     notes: row.notes,
     createdById: row.createdById,
     createdAt: row.createdAt,

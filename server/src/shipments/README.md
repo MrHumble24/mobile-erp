@@ -20,6 +20,18 @@ expense of its own (ADR 0026, supersedes ADR 0006): each phone carries its own
   `paymentAccountCode` (default CASH, must be active) is **fixed after creation**
   and is the account every purchase + per-device expense posts against. Response
   carries `paymentAccountCode`.
+- `POST /import` — atomic import of a supplier batch sheet `{ supplierId,
+  shipmentDate, paymentAccountCode, exchangeRate, notes?, rows: [{ row, modelName,
+  imei, imei2?, price, expense, markup, batteryHealth?, defects? }] }`
+  (`shipment.manage` and `device.create`, ADR 0065). Validates every row; resolves
+  models by name or customs code; extracts storage spec; calculates acquisition cost
+  via `price / exchangeRate` (stored in `acquisitionCostOriginal` and `acquisitionCost`),
+  customs fee via `min(expense, fee)`, `unitExpense = expense - customsFee`, and
+  `targetPrice = acquisitionCost + markup`. In one transaction, creates the shipment
+  with `exchangeRate` and registers all units and ledger rows (`PURCHASE`, `CUSTOMS`,
+  `DEVICE_EXPENSE`). Returns `{ ...shipment, devices, warnings }`. Any row validation
+  failure rejects the entire request with 400 and structured `{ problems: [{ row,
+  code, detail }] }`.
 - `PATCH /:id` — edit `shipmentDate`/`expectedCount`/`notes` only (not
   `paymentAccountCode`); posts no ledger row (`shipment.manage`).
 - `POST /:id/devices` — register one or many units
