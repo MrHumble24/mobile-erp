@@ -94,5 +94,16 @@
   "allMetrics": "All",
   "customsTab": "Customs fees",
   "pointsEarned": "Points earned",
-  "pointsSpent": "Points spent"
+  "pointsSpent": "Points spent",
+  "formulaExplainer": "Simple math: Gross profit = Revenue − COGS. Net income = Gross profit − Expenses.",
+  "avgCheck": "Avg ticket",
+  "marginPct": "margin",
+  "netMargin": "Net margin",
+  "pctOfRevenue": "{pct}% of revenue",
+  "clickToInspect": "Details",
+  "secondaryMetrics": "Secondary metrics (COGS, refunds, discounts)",
+  "navGroupFinance": "Finance & Profit",
+  "navGroupDebt": "Debt & Nasiya",
+  "navGroupInventory": "Stock & Pricing",
+  "activeDateRange": "Active period"
 }

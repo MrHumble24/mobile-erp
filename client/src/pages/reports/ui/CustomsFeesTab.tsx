@@ -1,47 +1,118 @@
 import * as React from "react"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import ReactECharts from "echarts-for-react"
+import type { EChartsOption } from "echarts"
 import { useI18n } from "@/shared/i18n"
 import { formatDate, formatMoney } from "@/shared/lib/format"
 import { useCurrentPriceList, useFeeHistory, type FeeHistoryPoint } from "@/entities/customs"
 import { ChartCard } from "@/widgets/report-charts"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/shared/ui/chart"
 import { Label } from "@/shared/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 
-const compact = (v: number): string =>
-  new Intl.NumberFormat("en-US", { notation: "compact" }).format(v)
+function FeeECharts({ data }: { data: FeeHistoryPoint[] }) {
+  const { t } = useI18n()
 
-function FeeLineChart({ data, config }: { data: FeeHistoryPoint[]; config: ChartConfig }) {
-  const points = data.map((p) => ({ effectiveAt: p.effectiveAt, fee: Number(p.fee) }))
+  const option = React.useMemo<EChartsOption>(() => {
+    const dates = data.map((d) => d.effectiveAt)
+    const fees = data.map((d) => Number(d.fee))
+
+    return {
+      tooltip: {
+        trigger: "axis",
+        backgroundColor: "rgba(18, 24, 38, 0.96)",
+        borderColor: "rgba(255, 255, 255, 0.12)",
+        borderWidth: 1,
+        padding: [10, 14],
+        textStyle: { color: "#f1f5f9", fontSize: 12 },
+        formatter: (params: unknown) => {
+          const items = Array.isArray(params) ? params : [params]
+          if (items.length === 0) return ""
+          const first = items[0] as { dataIndex: number }
+          const idx = first?.dataIndex ?? 0
+          const item = data[idx]
+          if (!item) return ""
+
+          return `
+            <div style="font-weight: 600; margin-bottom: 6px; color: #f8fafc; font-size: 13px;">
+              ${formatDate(item.effectiveAt)}
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 12px;">
+              <span style="color: #cbd5e1;">${t("customs.fee")}:</span>
+              <span style="font-family: monospace; font-weight: 700; color: #38bdf8;">${formatMoney(item.fee)}</span>
+            </div>
+          `
+        },
+      },
+      grid: {
+        left: "3%",
+        right: "3%",
+        bottom: "10%",
+        top: "10%",
+        containLabel: true,
+      },
+      xAxis: {
+        type: "category",
+        data: dates,
+        axisLine: { lineStyle: { color: "rgba(255, 255, 255, 0.12)" } },
+        axisLabel: {
+          color: "#94a3b8",
+          fontSize: 11,
+          formatter: (v: string) => formatDate(v),
+        },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: "value",
+        axisLine: { show: false },
+        splitLine: {
+          lineStyle: { color: "rgba(255, 255, 255, 0.06)", type: "dashed" },
+        },
+        axisLabel: {
+          color: "#64748b",
+          fontSize: 11,
+          formatter: (v: number) => {
+            if (Math.abs(v) >= 1_000) return `$${(v / 1_000).toFixed(0)}k`
+            return `$${v}`
+          },
+        },
+      },
+      series: [
+        {
+          name: t("customs.fee"),
+          type: "line",
+          step: "end",
+          data: fees,
+          symbol: "circle",
+          symbolSize: 6,
+          itemStyle: { color: "#38bdf8" },
+          lineStyle: { width: 2.5, color: "#38bdf8" },
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: "rgba(56, 189, 248, 0.2)" },
+                { offset: 1, color: "rgba(56, 189, 248, 0.0)" },
+              ],
+            },
+          },
+        },
+      ],
+    }
+  }, [data, t])
+
   return (
-    <ChartContainer config={config} className="aspect-auto h-[300px] w-full">
-      <LineChart data={points} margin={{ left: 4, right: 16, top: 8 }}>
-        <CartesianGrid vertical={false} stroke="#e8e8e8" />
-        <XAxis
-          dataKey="effectiveAt"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          tickFormatter={(v) => formatDate(String(v))}
-        />
-        <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={compact} />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              labelFormatter={(l) => formatDate(String(l))}
-              valueFormatter={(v) => formatMoney(v)}
-            />
-          }
-        />
-        <Line dataKey="fee" type="stepAfter" stroke="var(--color-fee)" strokeWidth={2} dot />
-      </LineChart>
-    </ChartContainer>
+    <div className="h-[300px] w-full">
+      <ReactECharts
+        option={option}
+        style={{ height: "100%", width: "100%" }}
+        opts={{ renderer: "svg" }}
+        notMerge
+      />
+    </div>
   )
 }
 
@@ -94,7 +165,6 @@ export function CustomsFeesTab() {
   const [code, setCode] = React.useState("")
   const selected = code || codes[0] || ""
   const history = useFeeHistory(selected || null)
-  const config: ChartConfig = { fee: { label: t("customs.fee"), color: "var(--chart-1)" } }
   const data = history.data ?? []
 
   return (
@@ -111,7 +181,7 @@ export function CustomsFeesTab() {
           headers: ["effectiveAt", "fee"],
           rows: data.map((p) => [p.effectiveAt, Math.round(Number(p.fee))]),
         }}
-        chart={<FeeLineChart data={data} config={config} />}
+        chart={<FeeECharts data={data} />}
         table={<FeeTable data={data} />}
       />
     </div>

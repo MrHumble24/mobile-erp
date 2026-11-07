@@ -94,5 +94,16 @@
   "allMetrics": "Barchasi",
   "customsTab": "Bojxona to'lovlari",
   "pointsEarned": "Yig'ilgan ballar",
-  "pointsSpent": "Ishlatilgan ballar"
+  "pointsSpent": "Ishlatilgan ballar",
+  "formulaExplainer": "Oddiy hisob-kitob: Yalpi foyda = Tushum − Tannarx. Sof foyda = Yalpi foyda − Magazin xarajatlari.",
+  "avgCheck": "O'rtacha chek",
+  "marginPct": "marja",
+  "netMargin": "Sof marja",
+  "pctOfRevenue": "tushumning {pct}% qismi",
+  "clickToInspect": "Tafsilotlar",
+  "secondaryMetrics": "Qo'shimcha ko'rsatkichlar (tannarx, qaytarishlar, chegirmalar)",
+  "navGroupFinance": "Moliya & Foyda",
+  "navGroupDebt": "Qarzlar & Nasiya",
+  "navGroupInventory": "Ombor & Narxlar",
+  "activeDateRange": "Tanlangan davr"
 }

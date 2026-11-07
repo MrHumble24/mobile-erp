@@ -1,5 +1,17 @@
 import * as React from "react"
 import { useNavigate } from "react-router"
+import {
+  BarChart3,
+  TrendingUp,
+  Receipt,
+  Handshake,
+  CreditCard,
+  Package,
+  Tags,
+  CheckCircle2,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { ReportAllStoresProvider } from "@/entities/report"
@@ -26,6 +38,19 @@ import { ClosingTab } from "./ClosingTab"
 import { CustomsFeesTab } from "./CustomsFeesTab"
 import { RepairsReportTab } from "./RepairsReportTab"
 
+const TAB_ICONS: Record<ReportTab, React.ComponentType<{ className?: string }>> = {
+  overview: BarChart3,
+  sales: TrendingUp,
+  expenses: Receipt,
+  nasiya: Handshake,
+  credit: CreditCard,
+  inventory: Package,
+  pricing: Tags,
+  closing: CheckCircle2,
+  customs: ShieldCheck,
+  repairs: Wrench,
+}
+
 export function ReportsPage() {
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -50,7 +75,7 @@ export function ReportsPage() {
           description={t("reports.subtitle")}
           actions={
             canSeeAll ? (
-              <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs">
+              <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs shadow-xs">
                 <Switch
                   id="all-stores-reports"
                   checked={allStores}
@@ -63,34 +88,75 @@ export function ReportsPage() {
             ) : undefined
           }
         />
-        {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && tab !== "credit" && (
-          <ReportFilterRow range={range} />
-        )}
 
         <Tabs value={tab} onValueChange={setTab}>
+          {/* Restructured tab navigation with icons */}
           <div className="overflow-x-auto pb-1">
-            <TabsList className="inline-flex w-auto">
-              {tabs.map((value) => (
-                <TabsTrigger key={value} value={value}>
-                  {value === "customs"
+            <TabsList className="inline-flex h-auto w-auto gap-1 p-1 bg-muted/40 border border-border/60 rounded-[14px]">
+              {tabs.map((value) => {
+                const Icon = TAB_ICONS[value]
+                const label =
+                  value === "customs"
                     ? t("reports.customsTab")
                     : value === "repairs"
                       ? t("repairs.reportTab")
-                      : t(`reports.tab_${value}`)}
-                </TabsTrigger>
-              ))}
+                      : t(`reports.tab_${value}`)
+
+                return (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-[10px] data-[state=active]:shadow-xs transition-all cursor-pointer"
+                  >
+                    {Icon && <Icon className="size-3.5" />}
+                    <span>{label}</span>
+                  </TabsTrigger>
+                )
+              })}
             </TabsList>
           </div>
-          <TabsContent value="overview" className="mt-5"><OverviewTab {...props} /></TabsContent>
-          <TabsContent value="sales" className="mt-5"><SalesTab {...props} /></TabsContent>
-          <TabsContent value="expenses" className="mt-5"><ExpensesTab {...props} /></TabsContent>
-          <TabsContent value="nasiya" className="mt-5"><NasiyaTab {...props} /></TabsContent>
-          <TabsContent value="credit" className="mt-5"><CreditReportTab /></TabsContent>
-          <TabsContent value="inventory" className="mt-5"><InventoryTab {...props} /></TabsContent>
-          <TabsContent value="pricing" className="mt-5"><PricingTab {...props} /></TabsContent>
-          <TabsContent value="closing" className="mt-5"><ClosingTab {...props} /></TabsContent>
-          {canReadCustoms && <TabsContent value="customs" className="mt-5"><CustomsFeesTab /></TabsContent>}
-          {repairsOn && <TabsContent value="repairs" className="mt-5"><RepairsReportTab range={range} /></TabsContent>}
+
+          {/* Date range filter banner (only for tabs with date ranges) */}
+          {tab !== "inventory" && tab !== "pricing" && tab !== "customs" && tab !== "credit" && (
+            <div className="mt-4">
+              <ReportFilterRow range={range} />
+            </div>
+          )}
+
+          <TabsContent value="overview" className="mt-5">
+            <OverviewTab {...props} />
+          </TabsContent>
+          <TabsContent value="sales" className="mt-5">
+            <SalesTab {...props} />
+          </TabsContent>
+          <TabsContent value="expenses" className="mt-5">
+            <ExpensesTab {...props} />
+          </TabsContent>
+          <TabsContent value="nasiya" className="mt-5">
+            <NasiyaTab {...props} />
+          </TabsContent>
+          <TabsContent value="credit" className="mt-5">
+            <CreditReportTab />
+          </TabsContent>
+          <TabsContent value="inventory" className="mt-5">
+            <InventoryTab {...props} />
+          </TabsContent>
+          <TabsContent value="pricing" className="mt-5">
+            <PricingTab {...props} />
+          </TabsContent>
+          <TabsContent value="closing" className="mt-5">
+            <ClosingTab {...props} />
+          </TabsContent>
+          {canReadCustoms && (
+            <TabsContent value="customs" className="mt-5">
+              <CustomsFeesTab />
+            </TabsContent>
+          )}
+          {repairsOn && (
+            <TabsContent value="repairs" className="mt-5">
+              <RepairsReportTab range={range} />
+            </TabsContent>
+          )}
         </Tabs>
 
         <ReportBreakdownSheet
