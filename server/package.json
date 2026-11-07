@@ -32,6 +32,7 @@
     "test:wipe": "tsx scripts/wipe.e2e.ts",
     "test:shop2": "NODE_OPTIONS='--experimental-vm-modules' jest --config ./test/jest-e2e.json test/shop2.e2e-spec.ts --runInBand",
     "test:payments": "NODE_OPTIONS='--experimental-vm-modules' jest --config ./test/jest-e2e.json test/payments.e2e-spec.ts --runInBand",
+    "test:reset": "tsx scripts/reset.e2e.ts",
     "graphify": "graphify update ."
   },
   "dependencies": {

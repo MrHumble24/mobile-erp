@@ -5,15 +5,16 @@ import {
   CATALOG_TABLES,
   CONTACTS_TABLES,
   tablesToErase,
+  tablesToReset,
   type WipeOptions,
 } from './lib/wipe-tables.js';
 import type { WipePreview, WipeRunView } from './types/data-wipe.types.js';
 
 const RUNNING = 'RUNNING';
 
-/** All Prisma access for the data wipe. Table names come only from the
- * wipe-tables constants — never from a request — so no identifier in any SQL
- * string below is attacker-controlled. */
+/** All Prisma access for the data wipe and factory reset. Table names come only
+ * from compile-time constants — never from a request — so no identifier in any
+ * SQL string is attacker-controlled. */
 @Injectable()
 export class DataWipeRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -69,8 +70,49 @@ export class DataWipeRepository {
     );
   }
 
+  /**
+   * Delete everything a factory reset erases, in FK-safe order and without
+   * CASCADE. Only the safety backup run (if provided) is spared in backup_runs.
+   * If any statement throws, Postgres rolls back — nothing is erased.
+   */
+  async reset(safetyRunId: string | null): Promise<Record<string, number>> {
+    const tables = tablesToReset();
+    return this.prisma.$transaction(
+      async (tx) => {
+        const counts: Record<string, number> = {};
+        for (const table of tables) {
+          counts[table] = await tx.$executeRawUnsafe(`DELETE FROM "${table}"`);
+        }
+        await tx.$executeRawUnsafe(
+          `INSERT INTO "stores" ("id", "name", "updatedAt") VALUES (gen_random_uuid(), 'Main store', now())`,
+        );
+        await tx.$executeRawUnsafe(
+          `INSERT INTO "company_profiles" ("id", "name", "themeCode", "defaultLanguage", "timeZone", "currencyCode", "currencySign", "currencySignPosition", "currencyDecimals", "sessionDuration", "updatedAt")
+           VALUES ('default', 'Malika ERP', 'caldera', 'uz', 'Asia/Tashkent', 'USD', '$', 'before', 2, '12h', now())`,
+        );
+        await tx.$executeRawUnsafe(
+          `INSERT INTO "storefront_settings" ("id", "enabled", "showPrices", "categoryIds", "updatedAt")
+           VALUES (1, false, true, '[]'::jsonb, now())`,
+        );
+        if (safetyRunId) {
+          counts['backup_runs'] = await tx.$executeRawUnsafe(
+            `DELETE FROM "backup_runs" WHERE "id" != $1`,
+            safetyRunId,
+          );
+        } else {
+          counts['backup_runs'] = await tx.$executeRawUnsafe(
+            `DELETE FROM "backup_runs"`,
+          );
+        }
+        return counts;
+      },
+      { timeout: 120_000, maxWait: 15_000 },
+    );
+  }
+
   createRun(data: {
     performedById: string;
+    performedByName?: string;
     contacts: boolean;
     catalog: boolean;
     safetyRunId: string | null;
@@ -104,9 +146,8 @@ export class DataWipeRepository {
       orderBy: { startedAt: 'desc' },
       take,
     });
-    // Resolve the performer's email for display (performedById is a plain string,
-    // not an FK — the users it points at survive the erase, but may be deleted
-    // later, so a missing one is fine).
+    // Resolve the performer's email for display. If the user was erased by a
+    // factory reset, performedByName preserves their identity as text.
     const ids = [...new Set(runs.map((r) => r.performedById))];
     const users = await this.prisma.user.findMany({
       where: { id: { in: ids } },
@@ -116,7 +157,8 @@ export class DataWipeRepository {
     return runs.map((r) => ({
       id: r.id,
       performedById: r.performedById,
-      performedByEmail: emailById.get(r.performedById) ?? null,
+      performedByEmail:
+        r.performedByName ?? emailById.get(r.performedById) ?? null,
       contacts: r.contacts,
       catalog: r.catalog,
       safetyRunId: r.safetyRunId,

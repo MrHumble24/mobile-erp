@@ -104,6 +104,13 @@ marker in `DATA_DIR`. Restore the latest safety `.mbk` by hand (open it, then
   server is: create the database, run the two commands above, then
   `pnpm prisma migrate deploy`.
 
+### Danger zone: erase data & factory reset (ADR 0057, 0061)
+
+Settings → Backups → Danger zone:
+- **Erase shop data** (`POST /data-wipe`, `data.wipe`): wipes operational tables (ALWAYS, and optionally CONTACTS and CATALOG). Preserves users, branches, settings, and backups.
+- **Factory reset** (`POST /data-wipe/reset`, `data.reset`): erases all data, accounts, branches, settings, secrets, and uploads. Returns the system to the first-boot setup wizard (`/setup`) with a newly generated setup code in server logs.
+Both operations take an unskippable verified safety backup before modifying the database.
+
 ### Storage places (Telegram, Google Drive, OneDrive — ADR 0056)
 
 Off-machine copies, set up in-app (Settings → Backups → Places). LOCAL is always

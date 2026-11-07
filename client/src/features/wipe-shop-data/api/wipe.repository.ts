@@ -1,5 +1,6 @@
 import { http } from "@/shared/api/http"
 import type {
+  ResetRequestDto,
   WipePreview,
   WipeRequestDto,
   WipeRunView,
@@ -13,4 +14,6 @@ export const wipeRepository = {
   runs: () => http<WipeRunView[]>("/data-wipe/runs"),
   erase: (dto: WipeRequestDto) =>
     http<{ ok: true }>("/data-wipe", { method: "POST", body: dto }),
+  reset: (dto: ResetRequestDto) =>
+    http<{ ok: true }>("/data-wipe/reset", { method: "POST", body: dto }),
 }

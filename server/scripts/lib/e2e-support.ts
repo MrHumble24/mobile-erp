@@ -105,7 +105,7 @@ export function assertTestSource(url: string): void {
   const name = new URL(url).pathname.replace(/^\//, '');
   const allowed =
     /^mbk_/.test(name) ||
-    /_(wipe|test|shop\d*)$/.test(name) ||
+    /_(wipe|test|reset|shop\d*)$/.test(name) ||
     name === process.env.E2E_ALLOW_SOURCE;
   if (!allowed) {
     throw new Error(

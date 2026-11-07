@@ -5,6 +5,9 @@ import {
   CATALOG_TABLES,
   CONTACTS_TABLES,
   KEPT_TABLES,
+  NEVER_ERASED_TABLES,
+  RESET_ERASED_KEPT_TABLES,
+  RESET_TABLES,
 } from './wipe-tables.js';
 
 /** Every `@@map("name")` table name declared in the Prisma schema. */
@@ -52,7 +55,7 @@ describe('wipe-tables classification', () => {
     expect(unknown).toEqual([]);
   });
 
-  it('never erases a kept table', () => {
+  it('never erases a kept table during a data wipe', () => {
     const erased = new Set<string>([
       ...groups.always,
       ...groups.contacts,
@@ -60,5 +63,46 @@ describe('wipe-tables classification', () => {
     ]);
     const keptErased = groups.kept.filter((t) => erased.has(t));
     expect(keptErased).toEqual([]);
+  });
+
+  it('labels every KEPT table as either reset-erased or never-erased (no unlabelled tables)', () => {
+    const resetKept = new Set<string>(RESET_ERASED_KEPT_TABLES);
+    const neverErased = new Set<string>(NEVER_ERASED_TABLES);
+    const unlabelled: string[] = [];
+    const doubleLabelled: string[] = [];
+
+    for (const table of KEPT_TABLES) {
+      const isReset = resetKept.has(table);
+      const isNever = neverErased.has(table);
+      if (!isReset && !isNever) unlabelled.push(table);
+      if (isReset && isNever) doubleLabelled.push(table);
+    }
+
+    expect(unlabelled).toEqual([]);
+    expect(doubleLabelled).toEqual([]);
+    expect(KEPT_TABLES.length).toBe(
+      RESET_ERASED_KEPT_TABLES.length + NEVER_ERASED_TABLES.length,
+    );
+  });
+
+  it('partitions every schema table into reset-erased or never-erased', () => {
+    const resetSet = new Set<string>(RESET_TABLES);
+    const neverSet = new Set<string>(NEVER_ERASED_TABLES);
+    const misplaced: string[] = [];
+
+    for (const table of everyTable) {
+      const inReset = resetSet.has(table);
+      const inNever = neverSet.has(table);
+      if (inReset === inNever) {
+        misplaced.push(
+          `${table}: inReset=${inReset}, inNever=${inNever} (must be in exactly one)`,
+        );
+      }
+    }
+
+    expect(misplaced).toEqual([]);
+    expect(everyTable.length).toBe(
+      RESET_TABLES.length + NEVER_ERASED_TABLES.length,
+    );
   });
 });

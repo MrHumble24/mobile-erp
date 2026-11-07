@@ -7,12 +7,15 @@ import {
   OnModuleInit,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { promises as fsp } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { AuthService } from '../auth/auth.service.js';
 import { DestructiveLockService } from '../common/runtime/destructive-lock.service.js';
 import { RecoveryService } from '../common/runtime/recovery.service.js';
 import { ImageStorageService } from '../device-models/image-storage.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { BackupsService } from '../backups/backups.service.js';
+import { SetupService } from '../setup/setup.service.js';
 import { TelegramService } from '../telegram/telegram.service.js';
 import { dataWiped } from '../telegram/messages.js';
 import { DataWipeRepository } from './data-wipe.repository.js';
@@ -26,20 +29,15 @@ import {
   type WipePreview,
   type WipeRunView,
   type WipeStatusView,
+  type WipeRequest,
+  type ResetRequest,
 } from './types/data-wipe.types.js';
 
-export interface WipeRequest {
-  performedById: string;
-  email: string;
-  shopName: string;
-  password: string;
-  contacts: boolean;
-  catalog: boolean;
-}
+export type { WipeRequest, ResetRequest };
 
-/** Orchestrates an all-or-nothing erase. Step order mirrors restore (ADR 0057):
- * confirm → refuse if busy → safety backup → maintenance + erase → end
- * sessions → record + Telegram. Holds the one-at-a-time wipe lock. */
+/** Orchestrates an all-or-nothing erase or factory reset. Step order mirrors
+ * restore (ADR 0057, 0061): confirm → refuse if busy → safety backup →
+ * maintenance + erase → end sessions → leave maintenance → record + Telegram. */
 @Injectable()
 export class DataWipeService implements OnModuleInit {
   private readonly logger = new Logger(DataWipeService.name);
@@ -54,11 +52,9 @@ export class DataWipeService implements OnModuleInit {
     private readonly images: ImageStorageService,
     private readonly telegram: TelegramService,
     private readonly lock: DestructiveLockService,
+    private readonly setup: SetupService,
   ) {}
 
-  /** A run left RUNNING by a crash between createRun and the commit becomes
-   * FAILED at boot (the erase itself never half-committed — the transaction
-   * rolled back), so no row sits RUNNING for ever. */
   async onModuleInit(): Promise<void> {
     await this.repo.markStaleRunsFailed();
   }
@@ -73,8 +69,9 @@ export class DataWipeService implements OnModuleInit {
 
   async status(): Promise<WipeStatusView> {
     const last = await this.repo.latestRun();
+    const held = this.lock.heldBy();
     return {
-      wiping: this.lock.heldBy() === 'wipe',
+      wiping: held === 'wipe' || held === 'reset',
       needsManualRecovery: this.recovery.needsManualRecovery(),
       last: last
         ? {
@@ -88,61 +85,105 @@ export class DataWipeService implements OnModuleInit {
   }
 
   async wipe(req: WipeRequest): Promise<void> {
-    // Busy checks + latch are taken synchronously, before any await, so an erase
-    // and a restore (which shares the latch) can never both proceed to write the
-    // same database. A plain backup running blocks the erase here; the latch
-    // blocks a plain backup from starting while this runs (BackupsService).
     this.assertNotBusy();
     if (!this.lock.tryAcquire('wipe')) {
       throw new ConflictException({
         code: DATA_WIPE_RUNNING,
-        message: 'A restore or erase is already running',
+        message: 'A backup, restore, erase or reset is already running',
       });
     }
     try {
       await this.confirm(req.shopName, req.email, req.password);
-      await this.run(req);
+      await this.runWipe(req);
     } finally {
       this.lock.release();
     }
   }
 
-  private async run(req: WipeRequest): Promise<void> {
-    await this.assertPassphraseSet();
-    // Catalog picture names must be read before the rows go.
-    const images = req.catalog ? await this.repo.catalogImageFileNames() : [];
-    const safetyRunId = await this.makeSafetyBackup(req.performedById);
+  async reset(req: ResetRequest): Promise<void> {
+    this.assertNotBusy();
+    if (!this.lock.tryAcquire('reset')) {
+      throw new ConflictException({
+        code: DATA_WIPE_RUNNING,
+        message: 'A backup, restore, erase or reset is already running',
+      });
+    }
+    try {
+      if (req.sentence !== 'erase everything') {
+        throw new BadRequestException({
+          code: DATA_WIPE_CONFIRM_FAILED,
+          message: 'The confirmation sentence must be "erase everything"',
+        });
+      }
+      await this.confirm(req.shopName, req.email, req.password);
+      await this.runReset(req);
+    } finally {
+      this.lock.release();
+    }
+  }
 
-    const record = await this.repo.createRun({
+  private async runWipe(req: WipeRequest): Promise<void> {
+    const images = req.catalog ? await this.repo.catalogImageFileNames() : [];
+    await this.executeDestructiveRun({
       performedById: req.performedById,
+      email: req.email,
       contacts: req.contacts,
       catalog: req.catalog,
+      opName: 'Data wipe',
+      action: (safetyRunId) =>
+        this.runner.perform({
+          contacts: req.contacts,
+          catalog: req.catalog,
+          safetyRunId,
+        }),
+    });
+    if (req.catalog) await this.removeImages(images);
+    await this.notify(req);
+  }
+
+  private async runReset(req: ResetRequest): Promise<void> {
+    await this.executeDestructiveRun({
+      performedById: req.performedById,
+      email: req.email,
+      contacts: true,
+      catalog: true,
+      opName: 'Factory reset',
+      action: (safetyRunId) => this.runner.performReset({ safetyRunId }),
+    });
+    await this.clearUploadsDir();
+    this.setup.prepareSetupAfterReset();
+    await this.notify({ ...req, contacts: true, catalog: true });
+  }
+
+  private async executeDestructiveRun(params: {
+    performedById: string;
+    email: string;
+    contacts: boolean;
+    catalog: boolean;
+    opName: string;
+    action: (safetyRunId: string) => Promise<Record<string, number>>;
+  }): Promise<void> {
+    await this.assertPassphraseSet();
+    const safetyRunId = await this.makeSafetyBackup(params.performedById);
+    const record = await this.repo.createRun({
+      performedById: params.performedById,
+      performedByName: params.email,
+      contacts: params.contacts,
+      catalog: params.catalog,
       safetyRunId,
     });
 
     let counts: Record<string, number> = {};
     let failure: Error | undefined;
     try {
-      counts = await this.runner.perform({
-        contacts: req.contacts,
-        catalog: req.catalog,
-        safetyRunId,
-      });
+      counts = await params.action(safetyRunId);
     } catch (err) {
       failure = err instanceof Error ? err : new Error(String(err));
-      this.logger.error(`Data wipe failed: ${failure.message}`);
+      this.logger.error(`${params.opName} failed: ${failure.message}`);
     }
 
-    // Record the outcome. Past the committed erase this is best-effort: a write
-    // failure here must not turn a successful, irreversible erase into a 500 or
-    // leave the picture cleanup and notice unreachable.
     await this.recordOutcome(record.id, failure, counts);
     if (failure) throw failure;
-
-    // Only after the erase committed: drop the catalog pictures (never a logo —
-    // only the names collected above), then notify the shop.
-    if (req.catalog) await this.removeImages(images);
-    await this.notify(req);
   }
 
   private async recordOutcome(
@@ -161,7 +202,6 @@ export class DataWipeService implements OnModuleInit {
     }
   }
 
-  /** Shop name typed exactly + the caller's own password, both re-checked. */
   private async confirm(
     shopName: string,
     email: string,
@@ -182,7 +222,8 @@ export class DataWipeService implements OnModuleInit {
     if (
       this.backups.isRunning() ||
       this.recovery.needsManualRecovery() ||
-      this.recovery.restoreInProgress()
+      this.recovery.restoreInProgress() ||
+      this.lock.isHeld()
     ) {
       throw new ConflictException({
         code: DATA_WIPE_RUNNING,
@@ -194,24 +235,17 @@ export class DataWipeService implements OnModuleInit {
   private async assertPassphraseSet(): Promise<void> {
     const { passphraseStatus } = await this.backups.getSettings();
     if (passphraseStatus === 'set') return;
+    const unreadable = passphraseStatus === 'unreadable';
     throw new BadRequestException({
-      code:
-        passphraseStatus === 'unreadable'
-          ? DATA_WIPE_PASSPHRASE_UNREADABLE
-          : DATA_WIPE_NO_PASSPHRASE,
-      message:
-        passphraseStatus === 'unreadable'
-          ? 'The stored backup passphrase cannot be read on this server; set it again'
-          : 'Set the backup passphrase first so a safety backup can be made',
+      code: unreadable
+        ? DATA_WIPE_PASSPHRASE_UNREADABLE
+        : DATA_WIPE_NO_PASSPHRASE,
+      message: unreadable
+        ? 'The stored backup passphrase cannot be read on this server; set it again'
+        : 'Set the backup passphrase first so a safety backup can be made',
     });
   }
 
-  /**
-   * Make the safety backup and prove it actually opens (header, passphrase,
-   * manifest checksums) before anything is erased. A failure here throws — so
-   * nothing is erased, and the only undo path is known to work. Uses the run id
-   * `startBackup` returned, never "the newest run in the list".
-   */
   private async makeSafetyBackup(performedById: string): Promise<string> {
     const safetyRunId = await this.backups.startBackup(performedById, {
       bypassLock: true,
@@ -236,9 +270,18 @@ export class DataWipeService implements OnModuleInit {
     }
   }
 
-  /** Best-effort: the data is already erased, so a notice failure (e.g. no
-   * store context for the chat id on a company-wide call) must never surface as
-   * a failed wipe. */
+  private async clearUploadsDir(): Promise<void> {
+    const dir = resolve(process.env.UPLOADS_DIR?.trim() || './uploads');
+    try {
+      const files = await fsp.readdir(dir);
+      for (const file of files) {
+        await fsp.rm(join(dir, file), { recursive: true, force: true });
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to clear uploads directory: ${String(err)}`);
+    }
+  }
+
   private async notify(req: WipeRequest): Promise<void> {
     try {
       await this.telegram.send(

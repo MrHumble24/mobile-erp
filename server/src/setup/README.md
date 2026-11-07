@@ -21,7 +21,7 @@ On boot when `needsSetup` is true, prints the generated setup code once to STDOU
 If the owner forgets the password after setup, run `pnpm reset-password` from the
 server host with `RESET_EMAIL` and `RESET_PASSWORD`; it reactivates the account
 and ends all sessions. `pnpm bootstrap:admin` only creates the FIRST admin.
-Setup opens again if the users table is ever emptied, and a new code is made then.
+Setup opens again if the users table is ever emptied (such as after a factory reset, ADR 0061), and a new code is generated and logged immediately without requiring a server restart.
 
 ## Must never
 

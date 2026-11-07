@@ -1,14 +1,19 @@
 /**
- * Table-group classification for the data wipe (ADR 0057).
+ * Table-group classification for the data wipe and factory reset (ADR 0057, 0061).
  *
- * Every `@@map` table in the Prisma schema belongs to exactly ONE group here.
- * `wipe-tables.spec.ts` reads the schema and fails if any table is in no group
- * or in two — so a table added later must be classified before the build passes.
+ * Every `@@map` table in the Prisma schema belongs to exactly ONE group here:
+ *   - Plain erase: ALWAYS, plus opt-in CONTACTS and CATALOG. KEPT is untouched.
+ *   - Factory reset: ALWAYS, CONTACTS, CATALOG and RESET_ERASED_KEPT.
+ *     NEVER_ERASED tables are untouched (except older backup runs outside the
+ *     safety backup).
+ *
+ * `wipe-tables.spec.ts` reads the schema and fails if any table is unclassified,
+ * double-classified, or if any KEPT table lacks a reset label.
  *
  * Table names are compile-time string literals in THIS file and nowhere else:
- * nothing from a request ever names a table. The ALWAYS and CATALOG lists are in
- * FK-safe delete order (children before parents) so the erase runs in one
- * transaction with no `CASCADE` (a cascade could reach a KEPT table).
+ * nothing from a request ever names a table. The lists are in FK-safe delete
+ * order (children before parents) so the erase runs in one transaction with no
+ * CASCADE (a cascade could reach a kept table).
  */
 
 /** Everything the shop did. Erased on every wipe. Children-before-parents. */
@@ -68,39 +73,45 @@ export const CATALOG_TABLES = [
 ] as const;
 
 /**
- * Never erased: accounts, roles and permissions, branches, all settings, the
- * backup log + settings + provider config, secrets, the lists the system needs
- * to work (statuses, types, price levels, cash/card accounts, product kinds),
- * the user-managed expense-category list, the phone reference lists, and the
- * record of who erased what.
+ * Kept during a plain data wipe, but ERASED by a factory reset (returns system
+ * to first-boot setup wizard). Children-before-parents.
  */
-export const KEPT_TABLES = [
-  // identity, access, branches, settings
-  'users',
+export const RESET_ERASED_KEPT_TABLES = [
+  'session_gate',
+  'user_roles',
+  'user_permissions',
+  'user_stores',
   'user_profiles',
+  'users',
+  'store_settings',
+  'stores',
+  'company_profiles',
+  'restore_runs',
+  'backup_targets',
+  'backup_provider_configs',
+  'backup_oauth_states',
+  'backup_settings',
+  'secrets',
+  'storefront_settings',
+] as const;
+
+/**
+ * NEVER erased by any operation: roles, permissions, system lookups, reference
+ * lists, and the two exceptions from the Decided table (safety backup run in
+ * backup_runs, and reset record in data_wipe_runs).
+ */
+export const NEVER_ERASED_TABLES = [
+  // access control & roles (seeded in seed.sql)
   'roles',
   'permissions',
   'role_permissions',
-  'user_roles',
-  'user_permissions',
-  'session_gate',
-  'user_stores',
-  'stores',
-  'store_settings',
-  'company_profiles',
+  // themes
   'themes',
-  // backups + secrets
+  // backup lookups
   'backup_run_statuses',
   'backup_target_statuses',
   'backup_providers',
-  'backup_settings',
-  'backup_runs',
-  'backup_targets',
-  'restore_runs',
-  'backup_provider_configs',
   'backup_provider_statuses',
-  'backup_oauth_states',
-  'secrets',
   // phone reference lists (free public lists, not our inventory)
   'ref_apple_box_codes',
   'ref_apple_model_numbers',
@@ -131,8 +142,27 @@ export const KEPT_TABLES = [
   'online_payment_provider_configs',
   // user-managed list (configured once, like an account; seeded in seed.sql)
   'expense_categories',
-  // the record of who erased what
+  // Exception 1: safety backup run row
+  'backup_runs',
+  // Exception 2: reset audit run row
   'data_wipe_runs',
+] as const;
+
+/**
+ * Kept during a plain data wipe (ADR 0057).
+ * Combined from RESET_ERASED_KEPT_TABLES and NEVER_ERASED_TABLES.
+ */
+export const KEPT_TABLES = [
+  ...RESET_ERASED_KEPT_TABLES,
+  ...NEVER_ERASED_TABLES,
+] as const;
+
+/** All tables completely deleted by a factory reset, in FK-safe order. */
+export const RESET_TABLES = [
+  ...ALWAYS_TABLES,
+  ...CONTACTS_TABLES,
+  ...CATALOG_TABLES,
+  ...RESET_ERASED_KEPT_TABLES,
 ] as const;
 
 export interface WipeOptions {
@@ -147,6 +177,11 @@ export function tablesToErase(opts: WipeOptions): string[] {
     ...(opts.contacts ? CONTACTS_TABLES : []),
     ...(opts.catalog ? CATALOG_TABLES : []),
   ];
+}
+
+/** All tables completely deleted by a factory reset, in FK-safe order. */
+export function tablesToReset(): string[] {
+  return [...RESET_TABLES];
 }
 
 /** Every table named by any group (for the classification test). */
