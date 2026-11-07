@@ -6,6 +6,8 @@ Reusable recharts blocks for the reports and dashboard pages, built on
 ## Exposes
 
 - `TrendChart` — 3-series area (revenue, gross profit, expenses), one y-axis.
+  Internals: `ui/EChartsTrend.tsx` (the ECharts canvas), `ui/TrendTable.tsx`
+  (the table toggle view), `lib/build-trend-option.ts` (pure ECharts option builder).
 - `BreakdownBarChart` — single-measure horizontal bars, top-N + "Other",
   optional per-bar sequential colors, click-to-drill via `onSelect`.
 - `ChartCard` — Card shell with chart/table toggle, CSV export, and

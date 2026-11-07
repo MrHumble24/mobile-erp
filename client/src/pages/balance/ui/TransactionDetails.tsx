@@ -1,10 +1,7 @@
 import { Smartphone } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import type { LedgerTransaction } from "@/entities/ledger"
-
-function Dash() {
-  return <span className="text-sm text-muted-foreground/40 font-mono">—</span>
-}
+import { type LedgerTransaction } from "@/entities/ledger"
+import { Dash } from "./HistoryRowCells"
 
 /**
  * Rich source context renderer:

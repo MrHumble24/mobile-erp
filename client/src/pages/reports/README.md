@@ -34,3 +34,7 @@ With `store.all`, an All stores switch sends `X-Store-Id: all` across report rea
 
 - Call `useQuery`/HTTP directly, or format money outside `shared/lib/format`
   (`formatMoney` = USD $).
+
+## Internal structure
+- `ui/OverviewTab.tsx` — the overview tab shell (hooks + chart composition).
+- `ui/ExecutiveMetrics.tsx` — the P&L hero tiles + secondary metric cards.

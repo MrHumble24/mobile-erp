@@ -1,6 +1,7 @@
 import { Calendar } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { formatDate } from "@/shared/lib/format"
+import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import { RANGE_PRESETS, type ReportRange } from "../model/use-report-range"
@@ -15,18 +16,20 @@ export function ReportFilterRow({ range }: { range: ReportRange }) {
         {RANGE_PRESETS.map((p) => {
           const isActive = range.preset === p
           return (
-            <button
+            <Button
               key={p}
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => range.setPreset(p)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+              className={`h-auto rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 isActive
                   ? "bg-primary text-primary-foreground shadow-xs font-semibold"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               {t(`reports.preset_${p}`)}
-            </button>
+            </Button>
           )
         })}
       </div>

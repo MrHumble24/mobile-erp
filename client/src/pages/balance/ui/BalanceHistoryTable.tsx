@@ -1,8 +1,13 @@
 import * as React from "react"
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { formatMoney, formatNumber } from "@/shared/lib/format"
-import { transactionDirection, type LedgerDirection, type LedgerTransaction } from "@/entities/ledger"
+import { formatMoney, formatDateTime, formatNumber } from "@/shared/lib/format"
+import {
+  accountI18nKey,
+  transactionDirection,
+  type LedgerDirection,
+  type LedgerTransaction,
+} from "@/entities/ledger"
 import {
   Table,
   TableBody,
@@ -12,8 +17,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/table"
-import { HistoryRow } from "./HistoryRow"
 import { TransactionDetailSheet } from "./TransactionDetailSheet"
+import { TransactionDetails } from "./TransactionDetails"
+import {
+  DirectionBadge,
+  InCell,
+  OutCell,
+  RunningBalanceCell,
+  userName,
+} from "./HistoryRowCells"
 
 /** Sum of one direction's rows, from signed amounts. Redacted rows are skipped. */
 function sumDirection(items: LedgerTransaction[], dir: LedgerDirection): number {
@@ -21,6 +33,46 @@ function sumDirection(items: LedgerTransaction[], dir: LedgerDirection): number 
     if (tx.amount == null || transactionDirection(tx) !== dir) return sum
     return sum + Number(tx.amount)
   }, 0)
+}
+
+function HistoryRow({
+  tx,
+  onClick,
+}: {
+  tx: LedgerTransaction
+  onClick: () => void
+}) {
+  const { t } = useI18n()
+  const accountKey = accountI18nKey(tx.accountCode)
+  const direction = transactionDirection(tx)
+
+  return (
+    <TableRow
+      onClick={onClick}
+      className="cursor-pointer transition-colors hover:bg-muted/40"
+    >
+      <TableCell className="text-xs text-muted-foreground whitespace-nowrap font-mono">
+        {formatDateTime(tx.occurredAt)}
+      </TableCell>
+      <TableCell>
+        <DirectionBadge tx={tx} />
+      </TableCell>
+      <TableCell className="text-xs font-medium">
+        <span className="rounded bg-muted/60 px-2 py-0.5 text-muted-foreground">
+          {accountKey ? t(accountKey) : tx.account.label}
+        </span>
+      </TableCell>
+      <TableCell>
+        <TransactionDetails tx={tx} />
+      </TableCell>
+      <InCell direction={direction} amount={tx.amount ?? ""} />
+      <OutCell direction={direction} amount={tx.amount} hiddenLabel={t("balance.amountHidden")} />
+      <RunningBalanceCell runningBalance={tx.accountRunningBalance} />
+      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+        {userName(tx.createdBy)}
+      </TableCell>
+    </TableRow>
+  )
 }
 
 export function BalanceHistoryTable({

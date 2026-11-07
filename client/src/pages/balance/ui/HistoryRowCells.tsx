@@ -1,9 +1,8 @@
 import type { LucideIcon } from "lucide-react"
 import { ArrowDownLeft, ArrowRightLeft, ArrowUpRight } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { formatMoney, formatDateTime } from "@/shared/lib/format"
+import { formatMoney } from "@/shared/lib/format"
 import {
-  accountI18nKey,
   typeI18nKey,
   transactionDirection,
   type LedgerDirection,
@@ -11,18 +10,21 @@ import {
   type LedgerUserRef,
 } from "@/entities/ledger"
 import { Badge, type BadgeProps } from "@/shared/ui/badge"
-import { TableCell, TableRow } from "@/shared/ui/table"
-import { TransactionDetails } from "./TransactionDetails"
+import { TableCell } from "@/shared/ui/table"
 
-function userName(user: LedgerUserRef | null): string {
+export function userName(user: LedgerUserRef | null): string {
   if (!user) return "—"
   if (!user.profile) return user.email
   return [user.profile.firstName, user.profile.lastName].filter(Boolean).join(" ") || user.email
 }
 
+export function Dash() {
+  return <span className="text-sm text-muted-foreground/40 font-mono">—</span>
+}
+
 /** Type chip tinted by flow direction: money in reads green with a down-left
  *  arrow, money out red with an up-right one, transfer with arrow-right-left. */
-function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
+export function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
   const { t } = useI18n()
   const direction = transactionDirection(tx)
   const isTransfer = tx.typeCode === "TRANSFER"
@@ -55,11 +57,7 @@ function DirectionBadge({ tx }: { tx: LedgerTransaction }) {
   )
 }
 
-function Dash() {
-  return <span className="text-sm text-muted-foreground/40 font-mono">—</span>
-}
-
-function InCell({ direction, amount }: { direction: LedgerDirection; amount: string }) {
+export function InCell({ direction, amount }: { direction: LedgerDirection; amount: string }) {
   if (direction !== "in") {
     return (
       <TableCell className="text-right whitespace-nowrap">
@@ -76,7 +74,7 @@ function InCell({ direction, amount }: { direction: LedgerDirection; amount: str
   )
 }
 
-function OutCell({
+export function OutCell({
   direction,
   amount,
   hiddenLabel,
@@ -102,7 +100,7 @@ function OutCell({
   )
 }
 
-function RunningBalanceCell({
+export function RunningBalanceCell({
   runningBalance,
 }: {
   runningBalance?: string | null
@@ -126,45 +124,5 @@ function RunningBalanceCell({
         {formatMoney(balNum)}
       </span>
     </TableCell>
-  )
-}
-
-export function HistoryRow({
-  tx,
-  onClick,
-}: {
-  tx: LedgerTransaction
-  onClick: () => void
-}) {
-  const { t } = useI18n()
-  const accountKey = accountI18nKey(tx.accountCode)
-  const direction = transactionDirection(tx)
-
-  return (
-    <TableRow
-      onClick={onClick}
-      className="cursor-pointer transition-colors hover:bg-muted/40"
-    >
-      <TableCell className="text-xs text-muted-foreground whitespace-nowrap font-mono">
-        {formatDateTime(tx.occurredAt)}
-      </TableCell>
-      <TableCell>
-        <DirectionBadge tx={tx} />
-      </TableCell>
-      <TableCell className="text-xs font-medium">
-        <span className="rounded bg-muted/60 px-2 py-0.5 text-muted-foreground">
-          {accountKey ? t(accountKey) : tx.account.label}
-        </span>
-      </TableCell>
-      <TableCell>
-        <TransactionDetails tx={tx} />
-      </TableCell>
-      <InCell direction={direction} amount={tx.amount ?? ""} />
-      <OutCell direction={direction} amount={tx.amount} hiddenLabel={t("balance.amountHidden")} />
-      <RunningBalanceCell runningBalance={tx.accountRunningBalance} />
-      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-        {userName(tx.createdBy)}
-      </TableCell>
-    </TableRow>
   )
 }
