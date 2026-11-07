@@ -98,7 +98,7 @@ export function ShopDetailPage() {
     : product.stores.map((st) => ({ id: st.id, name: st.name }))
 
   return (
-    <div className="min-h-screen bg-muted flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <StorefrontHeader
         contactPhone={config.contactPhone}
         contactTelegram={config.contactTelegram}
@@ -113,9 +113,9 @@ export function ShopDetailPage() {
           <span>{t("storefront.backToCatalog")}</span>
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-card p-5 sm:p-8 rounded-3xl border border-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 bg-card p-6 sm:p-8 rounded-[24px] border border-border shadow-[var(--shadow-xs)]">
           {/* Image */}
-          <div className="aspect-square bg-muted rounded-2xl flex items-center justify-center p-6 overflow-hidden">
+          <div className="aspect-square bg-muted/40 rounded-[20px] flex items-center justify-center p-6 overflow-hidden border border-border/50">
             <AssetImage
               path={product.imageUrl}
               alt={product.name}
@@ -127,16 +127,16 @@ export function ShopDetailPage() {
           <div className="flex flex-col justify-between space-y-6">
             <div className="space-y-4">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">
                   {product.brand}
                 </span>
-                <h1 className="font-display font-bold text-2xl sm:text-3xl text-foreground">
+                <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-foreground tracking-tight">
                   {product.name}
                 </h1>
               </div>
 
               {/* Price */}
-              <div className="font-display font-bold text-2xl sm:text-3xl text-foreground whitespace-nowrap tabular-nums">
+              <div className="font-mono font-black text-2xl sm:text-3xl text-foreground whitespace-nowrap tabular-nums">
                 {priceDisplay}
               </div>
 
@@ -161,7 +161,7 @@ export function ShopDetailPage() {
                           variant={isSelected ? "default" : "outline"}
                           size="sm"
                           onClick={() => setSelectedVariantIndex(idx)}
-                          className="h-auto flex flex-col items-start p-2 rounded-xl text-left"
+                          className="h-auto flex flex-col items-start p-2.5 rounded-xl text-left cursor-pointer"
                         >
                           <div className="font-semibold text-xs">{specSummary}</div>
                           {config.showPrices && v.price && (
@@ -185,13 +185,13 @@ export function ShopDetailPage() {
                   {(selectedVariant?.stores ?? []).map((st) => (
                     <div
                       key={st.id}
-                      className="flex items-center justify-between text-xs p-2 rounded-lg bg-muted border border-border"
+                      className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-muted/40 border border-border"
                     >
                       <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
                         <MapPin className="size-3.5 text-muted-foreground" />
                         {st.name}
                       </span>
-                      <span className="font-semibold text-emerald-600">
+                      <span className="font-semibold text-emerald-500">
                         {st.count} {t("storefront.unitsCount")}
                       </span>
                     </div>
@@ -206,7 +206,7 @@ export function ShopDetailPage() {
                 size="lg"
                 onClick={() => setOrderModalOpen(true)}
                 disabled={availableStores.length === 0}
-                className="w-full rounded-2xl h-12 text-sm font-semibold shadow-md"
+                className="w-full rounded-full h-12 text-sm font-bold shadow-md cursor-pointer hover:scale-101 transition-transform"
               >
                 {t("storefront.orderNow")}
               </Button>
