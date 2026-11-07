@@ -7,11 +7,15 @@ import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
 import { LedgerQueryDto } from './dto/ledger-query.dto.js';
 import { LedgerStatsQueryDto } from './dto/ledger-stats-query.dto.js';
 import { TransferDto } from './dto/transfer.dto.js';
+import { LedgerWriteService } from './ledger-write.service.js';
 import { LedgerService } from './ledger.service.js';
 
 @Controller('ledger')
 export class LedgerController {
-  constructor(private readonly ledger: LedgerService) {}
+  constructor(
+    private readonly ledger: LedgerService,
+    private readonly writes: LedgerWriteService,
+  ) {}
 
   @Get('accounts')
   accounts() {
@@ -50,12 +54,12 @@ export class LedgerController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateLedgerEntryDto,
   ) {
-    return this.ledger.createEntry(user.id, dto);
+    return this.writes.createEntry(user.id, dto);
   }
 
   @Post('transfers')
   @RequirePermissions('balance.manage')
   transfer(@CurrentUser() user: AuthenticatedUser, @Body() dto: TransferDto) {
-    return this.ledger.transfer(user.id, dto);
+    return this.writes.transfer(user.id, dto);
   }
 }

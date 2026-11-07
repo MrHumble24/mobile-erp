@@ -129,8 +129,8 @@ export const NEVER_ERASED_TABLES = [
   'bonus_transaction_types',
   'product_kinds',
   'price_levels',
-  // the shop page's own settings and its order statuses (handoff 022, 033)
-  'storefront_settings',
+  // the shop page's order statuses and lookups (handoff 022, 033); its
+  // settings row is erased by a factory reset (RESET_ERASED_KEPT_TABLES)
   'storefront_order_statuses',
   'delivery_pricing_modes',
   'storefront_fulfillment_methods',

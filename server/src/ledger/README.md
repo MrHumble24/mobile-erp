@@ -46,7 +46,7 @@ payments / purchases / overhead post rows automatically.
   `LedgerPost` (signed amount + at most one source id); no module ever injects
   `LedgerRepository`.
 - `LedgerService.salePayments / expenseAccounts / partnerPaymentAccounts /
-  customerPurchaseAccounts / activeAccountCodes` — derived reads 2b modules use
+customerPurchaseAccounts / activeAccountCodes` — derived reads 2b modules use
   to shape their responses and validate caller-supplied accounts.
 - `LedgerService.shiftRows(userId, from, to)` / `shiftDifferences(shiftIds)` —
   the shift report's raw input (a cashier's cash rows in a window) and the net
@@ -71,3 +71,8 @@ payments / purchases / overhead post rows automatically.
 - Acquisition-cost edit and device-delete posters are specified in ADR 0025 but
   dormant (no such path exists yet). The Telegram balance digest (2c) is done:
   `digestBalances` above.
+
+## Files (split 2026-11-07 to keep every file under 300 lines)
+- `ledger.service.ts` — balances, digests, account lookups, list and stats reads, and `post` (the one write primitive other modules use).
+- `ledger-write.service.ts` — the owner's manual entries and transfers (`POST /ledger/transactions`, `/ledger/transfers`).
+- `ledger.repository.ts` — all Prisma access; `lib/ledger-list-include.ts` holds the list relations, `lib/ledger-stats.ts` the pure stats aggregation.
