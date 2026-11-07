@@ -144,12 +144,53 @@ markup, battery `Емкость` 73, `Недостатки` (defects).
   a planned markup per phone, battery health and defects at purchase
   (we have them in QC).
 
-Questions for the client (2026-11-07):
-1. Is `Расход` 70 the customs fee, or another expense, or both added?
-2. Do they want to type the won price and the rate, or only dollars?
-3. Should the system **import this batch sheet** (one row per phone)
-   instead of scanning each IMEI? That is a second upload.
-4. Is `Наценка` the planned sale price, or just a note?
+Client answers (2026-11-07):
+1. `Расход` = customs fee **and** other costs, one number.
+2. They type the won price and the rate of that day; the system divides
+   and locks the dollar cost.
+3. **Yes.** They want to upload the batch sheet they get by email and
+   skip manual scanning.
+4. `Наценка` is flexible until the buyer agrees; then the agreed amount
+   is fixed. (Our sale already locks the final price.)
+5. Samsung will now also be listed by storage, like iPhone.
+
+### Change 12 — import the batch sheet (Приход)
+
+Decided from the answers above. Defaults marked *(mine)* still need the
+user's OK.
+
+- New upload on the Shipments page: "New shipment from file". Needs
+  `shipments.manage`. Form: file, supplier, store, account, **rate**
+  (typed as in the sheet, e.g. `1.3`).
+- One row = one phone. Read: `Модель`, `Имей`, `Имей 2`, `Расход`,
+  `Цена`, `Наценка`, `Емкость`, `Недостатки`. Ignore the rest (their
+  code, who registered, qty, dollars, total: all computed or theirs).
+- Supplier price: `acquisitionCost = Цена / rate`. The won price and
+  the rate are kept: `exchangeRate` on the shipment, `acquisitionCostOriginal`
+  on the phone *(mine)*. Rate is per upload, never edited after.
+- `Расход` is split *(mine)*: `customsFee` = fee from the current
+  customs list for that model; `unitExpense = Расход − customsFee`. No
+  list or no match: `customsFee 0`, `unitExpense = Расход`, the usual
+  warning. `Расход` smaller than the list fee: `customsFee = Расход`,
+  `unitExpense 0`, row flagged.
+- `Наценка`: `targetPrice = acquisitionCost + Наценка`. The till offers
+  it; the cashier changes it; the sale locks the final price. Nothing
+  new to build.
+- `Емкость`, `Недостатки`: one QC inspection per row with
+  `batteryHealth` and `notes` *(mine)*. No new fields.
+- Storage: parsed from the model name (`256 GB`) into `specs.storage`.
+- Model match: the sheet's `Модель` text is matched the **same way as
+  the customs list** (one helper): `customsCode + storage` first, then
+  `customsCode` alone. Unmatched model or duplicate IMEI: the upload
+  stops and lists the rows. Nothing is half-imported.
+- Ledger: same rows as a hand scan-in (PURCHASE, CUSTOMS,
+  DEVICE_EXPENSE), from the shipment's account.
+- Mobile apps: not in the first version; the owner uploads on the web.
+
+Change 2 update: Samsung now carries storage too, so the customs match
+is `customsCode + storage` first, then `customsCode` alone (old lists).
+The customs list upload (`Модель`, `Цена Расстаможки`) is built on top
+of ADR 0027 with the same helper.
 
 ### Change 3 — expense per phone inside a shipment
 
