@@ -135,19 +135,20 @@ export interface CreateRepairDto {
   receivedAt?: string
 }
 
+/** `null` clears a nullable field on edit; omitting it leaves it unchanged. */
 export interface UpdateRepairDto {
   deviceName?: string
-  modelId?: string
-  imei?: string
-  serialNumber?: string
+  modelId?: string | null
+  imei?: string | null
+  serialNumber?: string | null
   problem?: string
   agreedPrice?: number
   warrantyDays?: number
-  notes?: string
-  masterUserId?: string
-  outsideMasterName?: string
-  outsideMasterPhone?: string
-  outsideCost?: number
+  notes?: string | null
+  masterUserId?: string | null
+  outsideMasterName?: string | null
+  outsideMasterPhone?: string | null
+  outsideCost?: number | null
 }
 
 export interface ChangeStatusDto {

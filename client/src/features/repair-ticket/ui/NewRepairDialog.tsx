@@ -2,7 +2,7 @@ import * as React from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
-import { useCreateRepair } from "@/entities/repair"
+import { useCreateRepair, repairErrorKey } from "@/entities/repair"
 import { CustomerPicker, type CustomerSelection } from "@/entities/customer"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
@@ -35,7 +35,10 @@ function NewRepairForm({ onDone }: { onDone: () => void }) {
         toast.success(t("common.success"))
         onDone()
       },
-      onError: (err: Error) => toast.error(err.message || t("common.error")),
+      onError: (err: Error) => {
+        const key = repairErrorKey(err)
+        toast.error(key ? t(key) : err.message || t("common.error"))
+      },
     })
   }
 

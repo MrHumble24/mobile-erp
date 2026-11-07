@@ -42,6 +42,8 @@ function useMoneyMutation(mode: RepairMoneyMode, repairId: string) {
 
 export interface RepairMoneyDialogProps {
   repairId: string
+  /** Human ticket number shown instead of a UUID fragment. */
+  ticketNumber?: number
   mode: RepairMoneyMode
   /** Client-side ceiling (payment = owed, refund = paid); omit for no cap. */
   cap?: number
@@ -53,11 +55,13 @@ function AmountField({
   amount,
   cap,
   exceeds,
+  errorKey,
   onChange,
 }: {
   amount: number
   cap?: number
   exceeds: boolean
+  errorKey: string
   onChange: (n: number) => void
 }) {
   const { t } = useI18n()
@@ -75,7 +79,7 @@ function AmountField({
       {exceeds && (
         <p className="flex items-center gap-1.5 text-xs text-destructive">
           <AlertTriangle className="size-3.5" />
-          {t("repairs.errorAboveOutstanding")}
+          {t(errorKey)}
         </p>
       )}
     </div>
@@ -90,6 +94,7 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
   const [accountCode, setAccountCode] = React.useState("CASH")
   const exceeds = cap != null && toCents(amount) > toCents(cap)
   const invalid = amount <= 0 || exceeds
+  const errorKey = mode === "payment" ? "repairs.errorAboveOutstanding" : "repairs.errorAboveCap"
 
   const submit = () =>
     mutation.mutate(
@@ -103,7 +108,7 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
           const key = repairErrorKey(err)
           if (key) return toast.error(t(key))
           if (err instanceof HttpError && err.statusCode === 400) {
-            return toast.error(t("repairs.errorAboveOutstanding"))
+            return toast.error(t(errorKey))
           }
           toast.error(err.message || t("common.error"))
         },
@@ -118,7 +123,7 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
           <span className="font-mono font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(cap)}</span>
         </div>
       )}
-      <AmountField amount={amount} cap={cap} exceeds={exceeds} onChange={setAmount} />
+      <AmountField amount={amount} cap={cap} exceeds={exceeds} errorKey={errorKey} onChange={setAmount} />
       <div className="space-y-1">
         <Label>{t("balance.paidWith")}</Label>
         <AccountSelect value={accountCode} onValueChange={setAccountCode} />
@@ -134,13 +139,14 @@ function MoneyBody({ repairId, mode, cap, onOpenChange }: RepairMoneyDialogProps
  *  The body mounts fresh on open so the amount resets to the cap each time. */
 export function RepairMoneyDialog(props: RepairMoneyDialogProps) {
   const { t } = useI18n()
-  const { repairId, mode, open, onOpenChange } = props
+  const { ticketNumber, mode, open, onOpenChange } = props
+  const label = ticketNumber != null ? `#${ticketNumber}` : t("repairs.ticketLabel")
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{t(CONFIG[mode].title)}</DialogTitle>
-          <DialogDescription>#{repairId.slice(0, 8).toUpperCase()}</DialogDescription>
+          <DialogDescription>{label}</DialogDescription>
         </DialogHeader>
         {open && <MoneyBody {...props} />}
       </DialogPopup>

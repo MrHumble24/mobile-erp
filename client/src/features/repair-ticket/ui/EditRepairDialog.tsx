@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useI18n } from "@/shared/i18n"
-import { useUpdateRepair, type RepairView } from "@/entities/repair"
+import { useUpdateRepair, repairErrorKey, type RepairView } from "@/entities/repair"
 import { Dialog, DialogPopup, DialogHeader, DialogTitle, DialogDescription } from "@/shared/ui/dialog"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
@@ -29,7 +29,10 @@ function EditRepairForm({ repair, onDone }: { repair: RepairView; onDone: () => 
         toast.success(t("common.success"))
         onDone()
       },
-      onError: (err: Error) => toast.error(err.message || t("common.error")),
+      onError: (err: Error) => {
+        const key = repairErrorKey(err)
+        toast.error(key ? t(key) : err.message || t("common.error"))
+      },
     })
   }
 

@@ -54,6 +54,7 @@ export function RepairMoneyActions({ repair }: { repair: RepairView }) {
       {mode && (
         <RepairMoneyDialog
           repairId={repair.id}
+          ticketNumber={repair.ticketNumber}
           mode={mode}
           cap={caps[mode]}
           open={mode !== null}

@@ -51,13 +51,17 @@ function Device({ repair }: { repair: RepairView }) {
 
 function Money({ repair }: { repair: RepairView }) {
   const { t } = useI18n()
+  const outstanding = Number(repair.outstanding)
   return (
     <div className="space-y-0.5 border-b border-black/20 py-3 text-sm">
       <Row label={t("repairs.agreedPrice")} value={formatMoney(repair.agreedPrice)} strong />
       <Row label={t("repairs.paid")} value={formatMoney(repair.paid)} />
-      <Row label={t("repairs.leftToPay")} value={formatMoney(repair.outstanding)} />
       <Row
-        label={t("repairs.warrantyDays")}
+        label={outstanding < 0 ? t("repairs.overpaid") : t("repairs.leftToPay")}
+        value={formatMoney(Math.abs(outstanding))}
+      />
+      <Row
+        label={t("repairs.warrantyPeriod")}
         value={repair.warrantyDays > 0 ? String(repair.warrantyDays) : "—"}
       />
     </div>

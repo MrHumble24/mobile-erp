@@ -40,5 +40,7 @@
   "created": "Yaratilgan",
   "loadMore": "Yana yuklash",
   "clear": "Tozalash",
-  "offline": "Oflayn"
+  "offline": "Oflayn",
+  "forbiddenTitle": "403 — Ruxsat etilmagan",
+  "forbiddenBody": "Ushbu sahifani ko'rish uchun ruxsat berilmagan."
 }

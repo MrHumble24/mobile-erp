@@ -2,11 +2,11 @@ import * as React from "react"
 import { useI18n } from "@/shared/i18n"
 import {
   allowedMoves,
-  isOwed,
   useChangeRepairStatus,
   repairErrorKey,
   type RepairView,
 } from "@/entities/repair"
+import { useAuthStore } from "@/features/auth"
 import { Button } from "@/shared/ui/button"
 import { toast } from "@/shared/ui/sonner"
 import { StatusMoveDialog } from "./StatusMoveDialog"
@@ -29,10 +29,12 @@ function moveVariant(code: string): "default" | "outline" | "destructive" {
 
 function NoteDialogs({
   repairId,
+  ticketNumber,
   dialog,
   onClose,
 }: {
   repairId: string
+  ticketNumber: number
   dialog: NoteMove | null
   onClose: () => void
 }) {
@@ -41,6 +43,7 @@ function NoteDialogs({
     <>
       <StatusMoveDialog
         repairId={repairId}
+        ticketNumber={ticketNumber}
         toStatusCode="CANCELLED"
         title={t("repairs.cancelTitle")}
         reasonLabel={t("repairs.cancelReason")}
@@ -52,6 +55,7 @@ function NoteDialogs({
       />
       <StatusMoveDialog
         repairId={repairId}
+        ticketNumber={ticketNumber}
         toStatusCode="GIVEN_BACK"
         title={t("repairs.giveBackTitle")}
         reasonLabel={t("repairs.giveBackReason")}
@@ -69,10 +73,11 @@ function NoteDialogs({
  *  hand-over open a reason dialog; other moves post directly. */
 export function RepairStatusActions({ repair }: { repair: RepairView }) {
   const { t } = useI18n()
+  const canManage = useAuthStore((s) => s.hasPermission("repair.manage"))
   const change = useChangeRepairStatus(repair.id)
   const [dialog, setDialog] = React.useState<NoteMove | null>(null)
   const moves = allowedMoves(repair.statusCode)
-  const owed = isOwed(repair.agreedPrice, repair.paid)
+  const owed = Number(repair.outstanding) > 0
 
   const onMove = (code: string) => {
     if (code === "CANCELLED") return setDialog("CANCELLED")
@@ -89,6 +94,7 @@ export function RepairStatusActions({ repair }: { repair: RepairView }) {
     )
   }
 
+  if (!canManage) return <p className="text-xs text-muted-foreground">{t("repairs.noPermissionStatus")}</p>
   if (moves.length === 0) return null
 
   return (
@@ -98,7 +104,12 @@ export function RepairStatusActions({ repair }: { repair: RepairView }) {
           {t(MOVE_LABEL[code] ?? code)}
         </Button>
       ))}
-      <NoteDialogs repairId={repair.id} dialog={dialog} onClose={() => setDialog(null)} />
+      <NoteDialogs
+        repairId={repair.id}
+        ticketNumber={repair.ticketNumber}
+        dialog={dialog}
+        onClose={() => setDialog(null)}
+      />
     </div>
   )
 }

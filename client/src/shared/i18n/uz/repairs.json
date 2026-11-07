@@ -132,5 +132,21 @@
   "report": "Hisobot",
   "ledgerPayment": "Ta'mirlash to'lovi",
   "ledgerOutside": "Tashqi usta",
-  "moveRepairUse": "Ta'mirlashda ishlatilgan"
+  "moveRepairUse": "Ta'mirlashda ishlatilgan",
+  "loadError": "Ma'lumotlarni yuklab bo'lmadi",
+  "loadErrorHint": "Internetni tekshirib, qayta urinib ko'ring.",
+  "disabledTitle": "Ta'mirlar o'chirilgan",
+  "settingsLink": "Sozlamalarga o'tish",
+  "outsideCostHidden": "Bu summani ko'rish uchun ruxsat yo'q. Saqlashda u o'zgarmaydi.",
+  "errorVersionConflict": "Chipta boshqa joyda o'zgardi. Yangilab, qayta urinib ko'ring.",
+  "errorAboveCap": "Summa ruxsat etilgan miqdordan oshdi",
+  "noResults": "Qidiruv bo'yicha hech narsa topilmadi",
+  "clearSearch": "Qidiruvni tozalash",
+  "noPermissionStatus": "Holatni o'zgartirish uchun ruxsat yo'q",
+  "noQuantityProducts": "Omborda miqdoriy tovar yo'q",
+  "warrantyPeriod": "Kafolat muddati (kun)",
+  "ticketLabel": "Chipta",
+  "shareTicket": "Chiptani ulashish",
+  "linkCopied": "Havola nusxalandi",
+  "shareFailed": "Ulashib bo'lmadi"
 }

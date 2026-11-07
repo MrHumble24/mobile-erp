@@ -132,5 +132,21 @@
   "report": "Report",
   "ledgerPayment": "Repair payment",
   "ledgerOutside": "Outside master",
-  "moveRepairUse": "Used in a repair"
+  "moveRepairUse": "Used in a repair",
+  "loadError": "Couldn't load the data",
+  "loadErrorHint": "Check your connection and try again.",
+  "disabledTitle": "Repairs are off",
+  "settingsLink": "Open Settings",
+  "outsideCostHidden": "You don't have permission to see this amount. Saving won't change it.",
+  "errorVersionConflict": "This ticket changed elsewhere. Refresh and try again.",
+  "errorAboveCap": "Amount exceeds the allowed maximum",
+  "noResults": "No tickets match this search",
+  "clearSearch": "Clear search",
+  "noPermissionStatus": "You don't have permission to change the status",
+  "noQuantityProducts": "No quantity products in stock",
+  "warrantyPeriod": "Warranty (days)",
+  "ticketLabel": "Ticket",
+  "shareTicket": "Share ticket",
+  "linkCopied": "Link copied",
+  "shareFailed": "Couldn't share"
 }

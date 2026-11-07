@@ -15,7 +15,10 @@ export function useRepairs(filters: RepairListFilters) {
 export function useRepair(id: string | null) {
   return useQuery({
     queryKey: repairKeys.detail(id ?? ""),
-    queryFn: () => repairRepository.get(id as string),
+    queryFn: () => {
+      if (!id) throw new Error("A repair id is required")
+      return repairRepository.get(id)
+    },
     enabled: Boolean(id),
   })
 }

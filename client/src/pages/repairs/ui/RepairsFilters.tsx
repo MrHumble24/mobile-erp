@@ -14,24 +14,31 @@ const TABS: { value: RepairStatusTab; labelKey: string }[] = [
   { value: "CANCELLED", labelKey: "repairs.statusCancelled" },
 ]
 
+function StatusTabs({ filters }: { filters: RepairsFiltersState }) {
+  const { t } = useI18n()
+  return (
+    <div className="flex flex-wrap gap-2">
+      {TABS.map((tab) => (
+        <Button
+          key={tab.value}
+          type="button"
+          size="sm"
+          variant={filters.status === tab.value ? "default" : "outline"}
+          onClick={() => filters.setStatus(tab.value)}
+        >
+          {t(tab.labelKey)}
+        </Button>
+      ))}
+    </div>
+  )
+}
+
 export function RepairsFilters({ filters }: { filters: RepairsFiltersState }) {
   const { t } = useI18n()
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {TABS.map((tab) => (
-            <Button
-              key={tab.value}
-              type="button"
-              size="sm"
-              variant={filters.status === tab.value ? "default" : "outline"}
-              onClick={() => filters.setStatus(tab.value)}
-            >
-              {t(tab.labelKey)}
-            </Button>
-          ))}
-        </div>
+        <StatusTabs filters={filters} />
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -55,6 +62,12 @@ export function RepairsFilters({ filters }: { filters: RepairsFiltersState }) {
           <Button type="button" variant="ghost" size="sm" className="gap-1.5" onClick={filters.clearDates}>
             <X className="size-3.5" />
             {t("repairs.clearDates")}
+          </Button>
+        )}
+        {filters.hasFilters && (
+          <Button type="button" variant="ghost" size="sm" className="gap-1.5" onClick={filters.clearAll}>
+            <X className="size-3.5" />
+            {t("repairs.clearSearch")}
           </Button>
         )}
       </div>

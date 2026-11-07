@@ -1,18 +1,19 @@
 import { useNavigate } from "react-router"
 import { useI18n } from "@/shared/i18n"
 import { formatMoney, formatDate } from "@/shared/lib/format"
-import { useRepairs, RepairStatusBadge } from "@/entities/repair"
+import { useRepairs, RepairStatusBadge, RepairLoadError } from "@/entities/repair"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
 
-/** This customer's repair tickets, shown on their detail; a row jumps to the
- *  repairs page. Rendered only when repairs are enabled (see the caller). */
+/** This customer's repair tickets, shown on their detail; a row opens that
+ *  exact ticket on the repairs page. Rendered only when repairs are enabled. */
 export function CustomerRepairsList({ customerId }: { customerId: string }) {
   const { t } = useI18n()
   const navigate = useNavigate()
-  const { data, isLoading } = useRepairs({ customerId, page: 1, pageSize: 20 })
+  const { data, isLoading, isError, refetch } = useRepairs({ customerId, page: 1, pageSize: 20 })
 
   if (isLoading) return <Skeleton className="h-20 rounded-[12px]" />
+  if (isError) return <RepairLoadError onRetry={() => void refetch()} compact />
   if (!data || data.items.length === 0) {
     return <p className="text-xs text-muted-foreground">{t("repairs.noTickets")}</p>
   }
@@ -24,7 +25,7 @@ export function CustomerRepairsList({ customerId }: { customerId: string }) {
           key={r.id}
           type="button"
           variant="outline"
-          onClick={() => navigate("/repairs")}
+          onClick={() => navigate(`/repairs?ticket=${encodeURIComponent(r.id)}`)}
           className="flex h-auto w-full items-center justify-between gap-3 rounded-[10px] border-border bg-card p-2.5 text-left text-sm font-normal min-w-0"
         >
           <span className="min-w-0">

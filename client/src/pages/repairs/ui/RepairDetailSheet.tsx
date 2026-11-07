@@ -3,7 +3,7 @@ import { useNavigate } from "react-router"
 import { Pencil, Printer } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
-import { useRepair, RepairStatusBadge, type RepairView } from "@/entities/repair"
+import { useRepair, RepairStatusBadge, RepairLoadError, type RepairView } from "@/entities/repair"
 import { EditRepairDialog } from "@/features/repair-ticket"
 import { RepairStatusActions } from "@/features/repair-status"
 import { RepairPartsManager } from "@/features/repair-parts"
@@ -56,8 +56,9 @@ function DetailHeader({ repair }: { repair: RepairView }) {
 }
 
 function DetailBody({ repairId }: { repairId: string }) {
-  const { data: repair, isLoading } = useRepair(repairId)
-  if (isLoading || !repair) return <Skeleton className="h-64 rounded-[14px]" />
+  const { data: repair, isLoading, isError, refetch } = useRepair(repairId)
+  if (isLoading) return <Skeleton className="h-64 rounded-[14px]" />
+  if (isError || !repair) return <RepairLoadError onRetry={() => void refetch()} compact />
   return (
     <div className="space-y-6">
       <DetailHeader repair={repair} />
@@ -86,7 +87,7 @@ export function RepairDetailSheet({
       <SheetPopup side="right" className="space-y-6 overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{t("repairs.detailTitle")}</SheetTitle>
-          <SheetDescription>{t("repairs.pageDescription")}</SheetDescription>
+          <SheetDescription>{t("repairs.ticket")}</SheetDescription>
         </SheetHeader>
         {repairId && <DetailBody repairId={repairId} />}
       </SheetPopup>

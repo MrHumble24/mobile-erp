@@ -13,31 +13,34 @@ const NO_MODEL = "__none__"
 
 function ModelSelect({ form }: { form: Form }) {
   const { t } = useI18n()
-  const { data: models } = useDeviceModels()
+  const { data: models, isError } = useDeviceModels()
   return (
-    <Controller
-      control={form.control}
-      name="modelId"
-      render={({ field }) => (
-        <div className="space-y-1">
-          <Label>{t("repairs.modelOptional")}</Label>
-          <Select
-            value={field.value || NO_MODEL}
-            onValueChange={(v) => field.onChange(!v || v === NO_MODEL ? "" : v)}
-          >
-            <SelectTrigger className="h-10"><SelectValue placeholder={t("repairs.selectModel")} /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NO_MODEL}>{t("repairs.noModel")}</SelectItem>
-              {(models ?? []).map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.brand} {m.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-    />
+    <div className="space-y-1">
+      <Controller
+        control={form.control}
+        name="modelId"
+        render={({ field }) => (
+          <>
+            <Label>{t("repairs.modelOptional")}</Label>
+            <Select
+              value={field.value || NO_MODEL}
+              onValueChange={(v) => field.onChange(!v || v === NO_MODEL ? "" : v)}
+            >
+              <SelectTrigger className="h-10"><SelectValue placeholder={t("repairs.selectModel")} /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NO_MODEL}>{t("repairs.noModel")}</SelectItem>
+                {(models ?? []).map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.brand} {m.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
+      />
+      {isError && <p className="text-xs text-destructive">{t("repairs.loadError")}</p>}
+    </div>
   )
 }
 

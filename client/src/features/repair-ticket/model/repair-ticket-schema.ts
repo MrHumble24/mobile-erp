@@ -26,6 +26,9 @@ export const repairFormSchema = z
     outsideMasterName: z.string().max(200),
     outsideMasterPhone: z.string().max(32),
     outsideCost: z.number().min(0).max(1_000_000_000),
+    /** True when the server hid the real cost (no `device.cost.view`). Never
+     *  send a guessed 0 back on edit — omit the field entirely instead. */
+    outsideCostHidden: z.boolean(),
   })
   .superRefine((v, ctx) => {
     if (v.masterMode === "OWN" && !v.masterUserId) {
@@ -53,6 +56,7 @@ export function emptyRepairForm(): RepairFormValues {
     outsideMasterName: "",
     outsideMasterPhone: "",
     outsideCost: 0,
+    outsideCostHidden: false,
   }
 }
 
@@ -72,31 +76,39 @@ export function repairToForm(r: RepairView): RepairFormValues {
     masterUserId: r.master?.kind === "OWN" ? r.master.userId : "",
     outsideMasterName: r.master?.kind === "OUTSIDE" ? r.master.name : "",
     outsideMasterPhone: r.master?.kind === "OUTSIDE" ? (r.master.phone ?? "") : "",
-    outsideCost: r.outsideCost ? Number(r.outsideCost) : 0,
+    outsideCost: r.outsideCost == null ? 0 : Number(r.outsideCost),
+    outsideCostHidden: r.outsideCost == null,
   }
 }
 
-/** The fields shared by create and edit (everything but the customer). */
-function sharedFields(v: RepairFormValues) {
+/** The fields shared by create and edit (everything but the customer).
+ *  On edit, empty optional fields become null so the server actually clears
+ *  them; on create they are simply omitted. */
+function sharedFields(v: RepairFormValues, forUpdate: boolean) {
+  const clear = <T,>(value: T | "" | undefined): T | null | undefined =>
+    value ? value : forUpdate ? null : undefined
   const master =
     v.masterMode === "OWN"
       ? { masterUserId: v.masterUserId }
       : v.masterMode === "OUTSIDE"
         ? {
             outsideMasterName: v.outsideMasterName.trim(),
-            outsideMasterPhone: v.outsideMasterPhone.trim() || undefined,
-            outsideCost: Number(v.outsideCost) || 0,
+            outsideMasterPhone: clear(v.outsideMasterPhone.trim()),
+            // Hidden cost: never overwrite the server's value with a guess.
+            ...(v.outsideCostHidden ? {} : { outsideCost: Number(v.outsideCost) || 0 }),
           }
-        : {}
+        : forUpdate
+          ? { masterUserId: null, outsideMasterName: null, outsideMasterPhone: null }
+          : {}
   return {
     deviceName: v.deviceName.trim(),
-    modelId: v.modelId || undefined,
-    imei: v.imei.trim() || undefined,
-    serialNumber: v.serialNumber.trim() || undefined,
+    modelId: clear(v.modelId),
+    imei: clear(v.imei.trim()),
+    serialNumber: clear(v.serialNumber.trim()),
     problem: v.problem.trim(),
     agreedPrice: Number(v.agreedPrice),
     warrantyDays: Number(v.warrantyDays),
-    notes: v.notes.trim() || undefined,
+    notes: clear(v.notes.trim()),
     ...master,
   }
 }
@@ -107,9 +119,9 @@ function customerPart(c: CustomerSelection): Pick<CreateRepairDto, "customerId" 
 }
 
 export function toCreateDto(v: RepairFormValues, customer: CustomerSelection): CreateRepairDto {
-  return { ...customerPart(customer), ...sharedFields(v) }
+  return { ...customerPart(customer), ...sharedFields(v, false) }
 }
 
 export function toUpdateDto(v: RepairFormValues): UpdateRepairDto {
-  return sharedFields(v)
+  return sharedFields(v, true)
 }

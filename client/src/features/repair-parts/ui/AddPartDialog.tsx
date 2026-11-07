@@ -11,7 +11,7 @@ import { toast } from "@/shared/ui/sonner"
 
 function ProductSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const { t } = useI18n()
-  const { data: catalog } = useCatalog()
+  const { data: catalog, isError, isLoading } = useCatalog()
   // Parts come out of quantity stock only (server rule).
   const products = (catalog ?? []).filter((p) => p.kindCode === "QUANTITY")
   return (
@@ -27,6 +27,13 @@ function ProductSelect({ value, onChange }: { value: string; onChange: (v: strin
           ))}
         </SelectContent>
       </Select>
+      {isError ? (
+        <p className="text-xs text-destructive">{t("repairs.loadError")}</p>
+      ) : (
+        !isError && !isLoading && products.length === 0 && (
+          <p className="text-xs text-muted-foreground">{t("repairs.noQuantityProducts")}</p>
+        )
+      )}
     </div>
   )
 }
@@ -76,19 +83,22 @@ function AddPartForm({ repairId, onDone }: { repairId: string; onDone: () => voi
 
 export interface AddPartDialogProps {
   repairId: string
+  /** Human ticket number shown instead of a UUID fragment. */
+  ticketNumber?: number
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 /** Take a quantity product out of stock for the ticket (`repair.manage`). */
-export function AddPartDialog({ repairId, open, onOpenChange }: AddPartDialogProps) {
+export function AddPartDialog({ repairId, ticketNumber, open, onOpenChange }: AddPartDialogProps) {
   const { t } = useI18n()
+  const label = ticketNumber != null ? `#${ticketNumber}` : t("repairs.ticketLabel")
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{t("repairs.addPartTitle")}</DialogTitle>
-          <DialogDescription>#{repairId.slice(0, 8).toUpperCase()}</DialogDescription>
+          <DialogDescription>{label}</DialogDescription>
         </DialogHeader>
         {open && <AddPartForm repairId={repairId} onDone={() => onOpenChange(false)} />}
       </DialogPopup>

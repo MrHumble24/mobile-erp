@@ -39,4 +39,5 @@ export {
   useOutsideRepairPayment,
 } from "./model/use-repair-mutations"
 export { RepairStatusBadge } from "./ui/RepairStatusBadge"
+export { RepairLoadError } from "./ui/RepairLoadError"
 export { RepairTicketPaper, type RepairTicketStore } from "./ui/RepairTicketPaper"

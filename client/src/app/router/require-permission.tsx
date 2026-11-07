@@ -20,10 +20,8 @@ export function RequirePermission({ permission }: RequirePermissionProps) {
   if (!allowed) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <h2 className="text-xl font-bold tracking-tight text-destructive">403 — Ruxsat etilmagan</h2>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          {t("common.error")}: Ushbu sahifani ko'rish uchun ruxsat berilmagan.
-        </p>
+        <h2 className="text-xl font-bold tracking-tight text-destructive">{t("common.forbiddenTitle")}</h2>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md">{t("common.forbiddenBody")}</p>
       </div>
     )
   }

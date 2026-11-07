@@ -27,10 +27,10 @@ list, so unrelated in-progress work never enters a repairs commit.
 
 | CP | Status | Scope | Commit |
 |----|--------|-------|--------|
-| 0 | done | This plan + baseline | `docs(repairs): completion plan and checkpoints` |
+| 0 | done | This plan + baseline | shipped with CP1 (`e6669d71`) |
 | 1 | done | `server/prisma/seed.repairs-dev.sql` (idempotent): enable flag on both stores, Uzbek status labels, one QUANTITY part model + stock, one demo ticket; run on dev DB | `feat(repairs): dev readiness seed` |
 | 2 | pending | Server safety: `Repair.version` optimistic lock, idempotency keys for payments/parts, terminal guards for refund/outside, `outsideCost` cap, update XOR+FK validation inside tx, customer upsert inside tx, report store-scope fix, unit tests | `fix(repairs): atomic, idempotent, guarded writes` |
-| 3 | pending | Client correctness: outsideCost data-loss fix, `repair.manage` gate on status actions, master clear, error/retry states everywhere, settings gate + `REPAIRS_DISABLED` mapping, ticket numbers in dialogs, overpaid copy, pagination, ticket deep links, customer row opens ticket, specs | `fix(repairs): correctness, states and navigation` |
+| 3 | done | Client correctness: outsideCost data-loss fix, `repair.manage` gate on status actions, master clear, error/retry states everywhere, settings gate + `REPAIRS_DISABLED` mapping, ticket numbers in dialogs, overpaid copy, pagination, ticket deep links, customer row opens ticket, specs | `fix(repairs): correctness, states and navigation` |
 | 4 | pending | Optional `Repair.deviceId` FK + migration, IMEI lookup in ticket form, device drawer link, defective-device repair action, tests | `feat(repairs): optional inventory device linkage` |
 | 5 | pending | Web outbox mutation types + queueing on network failure; server sync handlers reusing idempotency keys; specs | `feat(repairs): offline outbox and sync handlers` |
 | 6 | pending | Telegram owner notifications on repair events, repair income/profit line in daily closing report + digest, share/copy ticket action, POS shortcut | `feat(repairs): notifications, digest and till shortcut` |
@@ -53,3 +53,7 @@ list, so unrelated in-progress work never enters a repairs commit.
 - CP1: seed script added, `pnpm seed:repairs-dev` run twice on `mobile_erp_main`
   (idempotent). Verified: both stores enabled, 5 Uzbek status labels, 1 QUANTITY
   model with 2 stock movements, 1 RECEIVED demo ticket with its history row.
+- CP3: client correctness pass complete. Verified `tsc --noEmit` clean, `oxlint`
+  clean, `pnpm test` 142/142. Note: `client/package.json`'s test list also
+  carries the two previously-added customs specs from the uncommitted customs
+  work; it is committed together with the repair specs.

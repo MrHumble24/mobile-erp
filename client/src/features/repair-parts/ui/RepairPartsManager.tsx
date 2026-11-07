@@ -88,7 +88,12 @@ export function RepairPartsManager({ repair }: { repair: RepairView }) {
           ))}
         </div>
       )}
-      <AddPartDialog repairId={repair.id} open={addOpen} onOpenChange={setAddOpen} />
+      <AddPartDialog
+        repairId={repair.id}
+        ticketNumber={repair.ticketNumber}
+        open={addOpen}
+        onOpenChange={setAddOpen}
+      />
     </div>
   )
 }

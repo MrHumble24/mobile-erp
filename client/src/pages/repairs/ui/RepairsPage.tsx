@@ -1,31 +1,77 @@
 import * as React from "react"
-import { Navigate } from "react-router"
+import { useSearchParams } from "react-router"
 import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
 import { useSettings } from "@/entities/settings"
-import { useRepairs } from "@/entities/repair"
+import { useRepairs, RepairLoadError } from "@/entities/repair"
 import { NewRepairDialog } from "@/features/repair-ticket"
 import { PageHeader } from "@/shared/ui/page-header"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
-import { useRepairsFilters } from "../model/use-repairs-filters"
+import { Pagination } from "@/shared/ui/pagination"
+import { useRepairsFilters, type RepairsFiltersState } from "../model/use-repairs-filters"
 import { RepairsFilters } from "./RepairsFilters"
 import { RepairsTable } from "./RepairsTable"
 import { RepairDetailSheet } from "./RepairDetailSheet"
+import { RepairsDisabled } from "./RepairsDisabled"
+
+type ListQuery = ReturnType<typeof useRepairs>
+
+function RepairsResults({
+  list,
+  filters,
+  onOpen,
+}: {
+  list: ListQuery
+  filters: RepairsFiltersState
+  onOpen: (id: string) => void
+}) {
+  const { t } = useI18n()
+  if (list.isLoading) return <Skeleton className="h-96 rounded-[16px]" />
+  if (list.isError) return <RepairLoadError onRetry={() => void list.refetch()} />
+  return (
+    <>
+      <RepairsTable
+        repairs={list.data?.items ?? []}
+        onOpen={onOpen}
+        hasFilters={filters.hasFilters}
+        onClear={filters.clearAll}
+      />
+      <Pagination
+        page={filters.page}
+        pageSize={filters.pageSize}
+        total={list.data?.total ?? 0}
+        rangeLabel={(from, to, total) => t("inventory.pageRange", { from, to, total })}
+        onPageChange={filters.setPage}
+        onPageSizeChange={filters.setPageSize}
+      />
+    </>
+  )
+}
 
 export function RepairsPage() {
   const { t } = useI18n()
-  const { data: settings, isLoading: settingsLoading } = useSettings()
+  const settings = useSettings()
   const canManage = useAuthStore((s) => s.hasPermission("repair.manage"))
   const filters = useRepairsFilters()
-  const { data, isLoading } = useRepairs(filters.queryFilters)
-  const [detailId, setDetailId] = React.useState<string | null>(null)
+  const list = useRepairs(filters.queryFilters)
+  const [params, setParams] = useSearchParams()
   const [newOpen, setNewOpen] = React.useState(false)
+  const detailId = params.get("ticket")
 
-  // Repairs is an optional feature; stay out entirely when it is off.
-  if (settingsLoading) return <Skeleton className="h-96 rounded-[16px]" />
-  if (settings && !settings.repairsEnabled) return <Navigate to="/" replace />
+  const setDetailId = (id: string | null) => {
+    setParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (id) next.set("ticket", id)
+      else next.delete("ticket")
+      return next
+    }, { replace: true })
+  }
+
+  if (settings.isLoading) return <Skeleton className="h-96 rounded-[16px]" />
+  if (settings.isError) return <RepairLoadError onRetry={() => void settings.refetch()} />
+  if (!settings.data?.repairsEnabled) return <RepairsDisabled />
 
   return (
     <div className="space-y-6">
@@ -39,11 +85,7 @@ export function RepairsPage() {
         )}
       </div>
       <RepairsFilters filters={filters} />
-      {isLoading ? (
-        <Skeleton className="h-96 rounded-[16px]" />
-      ) : (
-        <RepairsTable repairs={data?.items ?? []} onOpen={setDetailId} />
-      )}
+      <RepairsResults list={list} filters={filters} onOpen={setDetailId} />
       <RepairDetailSheet
         repairId={detailId}
         open={Boolean(detailId)}

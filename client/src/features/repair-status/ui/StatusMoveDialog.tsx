@@ -10,6 +10,8 @@ import { toast } from "@/shared/ui/sonner"
 
 export interface StatusMoveDialogProps {
   repairId: string
+  /** Human ticket number shown instead of a UUID fragment. */
+  ticketNumber?: number
   toStatusCode: string
   title: string
   reasonLabel: string
@@ -65,13 +67,15 @@ function StatusMoveBody(props: StatusMoveDialogProps) {
 /** A status move that needs a note: cancelling, or an owed hand-over. The body
  *  mounts fresh on open, so the note always starts empty. */
 export function StatusMoveDialog(props: StatusMoveDialogProps) {
-  const { title, repairId, open, onOpenChange } = props
+  const { t } = useI18n()
+  const { title, ticketNumber, open, onOpenChange } = props
+  const label = ticketNumber != null ? `#${ticketNumber}` : t("repairs.ticketLabel")
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>#{repairId.slice(0, 8).toUpperCase()}</DialogDescription>
+          <DialogDescription>{label}</DialogDescription>
         </DialogHeader>
         {open && <StatusMoveBody {...props} />}
       </DialogPopup>

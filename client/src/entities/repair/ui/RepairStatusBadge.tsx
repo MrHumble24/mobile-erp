@@ -14,6 +14,5 @@ export function RepairStatusBadge({
   const { t } = useI18n()
   const key = statusI18nKey(statusCode)
   const label = key ? t(key) : (statusLabel ?? statusCode)
-  // Badge's variant union is wide; the mapping only ever returns valid names.
-  return <Badge variant={statusVariant(statusCode) as "default"}>{label}</Badge>
+  return <Badge variant={statusVariant(statusCode)}>{label}</Badge>
 }

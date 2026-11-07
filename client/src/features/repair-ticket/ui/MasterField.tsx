@@ -25,30 +25,34 @@ function modeLabelKey(mode: MasterMode): string {
 
 function OwnMaster({ form }: { form: Form }) {
   const { t } = useI18n()
-  const { data: users } = useUsers()
+  const { data: users, isError } = useUsers()
   return (
-    <Controller
-      control={form.control}
-      name="masterUserId"
-      render={({ field }) => (
-        <div className="space-y-1">
-          <Label>{t("repairs.masterUser")}</Label>
-          <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? "")}>
-            <SelectTrigger className="h-10"><SelectValue placeholder={t("repairs.masterUser")} /></SelectTrigger>
-            <SelectContent>
-              {(users ?? []).map((u) => (
-                <SelectItem key={u.id} value={u.id}>{userName(u)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-    />
+    <div className="space-y-1">
+      <Controller
+        control={form.control}
+        name="masterUserId"
+        render={({ field }) => (
+          <>
+            <Label>{t("repairs.masterUser")}</Label>
+            <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? "")}>
+              <SelectTrigger className="h-10"><SelectValue placeholder={t("repairs.masterUser")} /></SelectTrigger>
+              <SelectContent>
+                {(users ?? []).map((u) => (
+                  <SelectItem key={u.id} value={u.id}>{userName(u)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
+      />
+      {isError && <p className="text-xs text-destructive">{t("repairs.loadError")}</p>}
+    </div>
   )
 }
 
 function OutsideMaster({ form }: { form: Form }) {
   const { t } = useI18n()
+  const costHidden = form.watch("outsideCostHidden")
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
@@ -73,22 +77,26 @@ function OutsideMaster({ form }: { form: Form }) {
           )}
         />
       </div>
-      <Controller
-        control={form.control}
-        name="outsideCost"
-        render={({ field }) => (
-          <div className="space-y-1">
-            <Label>{t("repairs.outsideCost")}</Label>
-            <Input
-              type="number"
-              min={0}
-              value={field.value}
-              onChange={(e) => field.onChange(Number(e.target.value))}
-              className="h-10 text-base font-bold"
-            />
-          </div>
-        )}
-      />
+      {costHidden ? (
+        <p className="text-xs text-muted-foreground">{t("repairs.outsideCostHidden")}</p>
+      ) : (
+        <Controller
+          control={form.control}
+          name="outsideCost"
+          render={({ field }) => (
+            <div className="space-y-1">
+              <Label>{t("repairs.outsideCost")}</Label>
+              <Input
+                type="number"
+                min={0}
+                value={field.value}
+                onChange={(e) => field.onChange(Number(e.target.value))}
+                className="h-10 text-base font-bold"
+              />
+            </div>
+          )}
+        />
+      )}
     </div>
   )
 }

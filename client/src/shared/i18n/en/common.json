@@ -40,5 +40,7 @@
   "created": "Created",
   "loadMore": "Load more",
   "clear": "Clear",
-  "offline": "Offline"
+  "offline": "Offline",
+  "forbiddenTitle": "403 — Forbidden",
+  "forbiddenBody": "You don't have permission to view this page."
 }
