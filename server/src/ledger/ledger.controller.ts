@@ -5,6 +5,7 @@ import { RequirePermissions } from '../common/decorators/require-permissions.dec
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
 import { LedgerQueryDto } from './dto/ledger-query.dto.js';
+import { LedgerStatsQueryDto } from './dto/ledger-stats-query.dto.js';
 import { TransferDto } from './dto/transfer.dto.js';
 import { LedgerService } from './ledger.service.js';
 
@@ -29,6 +30,15 @@ export class LedgerController {
   @RequirePermissions('balance.read')
   list(@CurrentUser() user: AuthenticatedUser, @Query() query: LedgerQueryDto) {
     return this.ledger.list(query, user.permissions.has('device.cost.view'));
+  }
+
+  @Get('stats')
+  @RequirePermissions('balance.read')
+  stats(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query() query: LedgerStatsQueryDto,
+  ) {
+    return this.ledger.getStats(query, user.permissions.has('device.cost.view'));
   }
 
   @Post('transactions')

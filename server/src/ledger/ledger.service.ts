@@ -9,6 +9,7 @@ import { Prisma } from '../generated/client/client.js';
 import { StoresService } from '../stores/stores.service.js';
 import { CreateLedgerEntryDto } from './dto/create-ledger-entry.dto.js';
 import { LedgerQueryDto } from './dto/ledger-query.dto.js';
+import { LedgerStatsQueryDto } from './dto/ledger-stats-query.dto.js';
 import { TransferDto } from './dto/transfer.dto.js';
 import { LedgerRepository } from './ledger.repository.js';
 import { hideCostAmount, parseDate, sumMap } from './lib/ledger-shaping.js';
@@ -21,6 +22,7 @@ import {
   type DigestBalances,
   type LedgerPost,
   type LedgerSourceField,
+  type LedgerStats,
   type ShiftRowNet,
 } from './types/ledger.types.js';
 
@@ -207,6 +209,8 @@ export class LedgerService {
       storeId: await this.stores.currentStoreId(),
       accountCode: query.accountCode,
       typeCode: query.typeCode,
+      direction: query.direction,
+      search: query.search,
       from: parseDate(query.from),
       to: parseDate(query.to),
       sort: query.sort ?? 'occurredAt',
@@ -216,6 +220,22 @@ export class LedgerService {
     });
     const shaped = canViewCost ? items : items.map(hideCostAmount);
     return { items: shaped, total, page, pageSize };
+  }
+
+  async getStats(
+    query: LedgerStatsQueryDto,
+    canViewCost = true,
+  ): Promise<LedgerStats> {
+    const storeId = await this.stores.currentStoreId();
+    return this.repo.getStats(
+      storeId,
+      {
+        accountCode: query.accountCode,
+        from: parseDate(query.from),
+        to: parseDate(query.to),
+      },
+      canViewCost,
+    );
   }
 
   async createEntry(createdById: string, dto: CreateLedgerEntryDto) {

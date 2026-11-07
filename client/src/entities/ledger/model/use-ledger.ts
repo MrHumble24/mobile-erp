@@ -4,6 +4,7 @@ import { ledgerKeys } from "../api/ledger.keys"
 import type {
   CreateLedgerEntryDto,
   LedgerFilters,
+  LedgerStatsFilters,
   LedgerTransferDto,
 } from "./ledger.types"
 
@@ -21,12 +22,20 @@ export function useLedgerTransactions(filters?: LedgerFilters) {
   })
 }
 
+export function useLedgerStats(filters?: LedgerStatsFilters) {
+  return useQuery({
+    queryKey: ledgerKeys.stats(filters),
+    queryFn: () => ledgerRepository.stats(filters),
+  })
+}
+
 function useLedgerWriteOptions() {
   const queryClient = useQueryClient()
   return {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ledgerKeys.balances() })
       queryClient.invalidateQueries({ queryKey: ledgerKeys.transactions() })
+      queryClient.invalidateQueries({ queryKey: [...ledgerKeys.all, "stats"] })
     },
   }
 }

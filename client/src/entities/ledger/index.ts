@@ -10,6 +10,12 @@ export type {
   LedgerTransactionPage,
   LedgerSortField,
   LedgerFilters,
+  LedgerStats,
+  LedgerStatsSummary,
+  LedgerTimelinePoint,
+  LedgerTypeBreakdownItem,
+  LedgerAccountBreakdownItem,
+  LedgerStatsFilters,
   LedgerEntryType,
   CreateLedgerEntryDto,
   LedgerTransferDto,
@@ -20,6 +26,7 @@ export { ledgerKeys } from "./api/ledger.keys"
 export {
   useLedgerBalances,
   useLedgerTransactions,
+  useLedgerStats,
   useCreateLedgerEntry,
   useLedgerTransfer,
 } from "./model/use-ledger"
@@ -30,6 +37,7 @@ export {
   typeI18nKey,
   KNOWN_TYPE_CODES,
 } from "./lib/ledger-labels"
+export { transactionDirection, type LedgerDirection } from "./lib/ledger-direction"
 export { AccountSelect, type AccountSelectProps } from "./ui/AccountSelect"
 export {
   PaymentMethodField,

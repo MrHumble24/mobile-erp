@@ -72,12 +72,54 @@ export interface LedgerFilter {
   storeId: string;
   accountCode?: string;
   typeCode?: string;
+  direction?: 'in' | 'out' | 'all';
+  search?: string;
   from?: Date;
   to?: Date;
   sort: LedgerSortField;
   dir: 'asc' | 'desc';
   page: number;
   pageSize: number;
+}
+
+export interface LedgerStatsSummary {
+  totalIn: string;
+  totalOut: string;
+  netFlow: string;
+  transactionCount: number;
+  inCount: number;
+  outCount: number;
+}
+
+export interface LedgerTimelinePoint {
+  date: string;
+  inflow: number;
+  outflow: number;
+  net: number;
+}
+
+export interface LedgerTypeBreakdownItem {
+  typeCode: string;
+  typeLabel: string;
+  direction: 'in' | 'out';
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+export interface LedgerAccountBreakdownItem {
+  accountCode: string;
+  accountLabel: string;
+  inflow: number;
+  outflow: number;
+  net: number;
+}
+
+export interface LedgerStats {
+  summary: LedgerStatsSummary;
+  timeline: LedgerTimelinePoint[];
+  byType: LedgerTypeBreakdownItem[];
+  byAccount: LedgerAccountBreakdownItem[];
 }
 
 /** A single money column linking a cash row back to what moved it. */

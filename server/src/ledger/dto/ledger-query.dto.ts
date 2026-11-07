@@ -21,6 +21,14 @@ export class LedgerQueryDto {
   typeCode?: string;
 
   @IsOptional()
+  @IsIn(['in', 'out', 'all'])
+  direction?: 'in' | 'out' | 'all';
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
   @IsDateString()
   from?: string;
 

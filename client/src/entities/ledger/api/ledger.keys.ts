@@ -1,4 +1,4 @@
-import type { LedgerFilters } from "../model/ledger.types"
+import type { LedgerFilters, LedgerStatsFilters } from "../model/ledger.types"
 
 export const ledgerKeys = {
   all: ["ledger"] as const,
@@ -8,4 +8,6 @@ export const ledgerKeys = {
   transactions: () => [...ledgerKeys.all, "transactions"] as const,
   transactionList: (filters?: LedgerFilters) =>
     [...ledgerKeys.transactions(), filters] as const,
+  stats: (filters?: LedgerStatsFilters) =>
+    [...ledgerKeys.all, "stats", filters] as const,
 }

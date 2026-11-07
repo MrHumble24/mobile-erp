@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router"
 import { presetDates, type RangePreset } from "@/shared/lib/date-range"
 import { localDayEnd, localDayStart } from "@/shared/lib/local-date"
-import type { LedgerFilters } from "@/entities/ledger"
+import type { LedgerFilters, LedgerStatsFilters } from "@/entities/ledger"
 
 const DEFAULT_PRESET: RangePreset = "30d"
 const DEFAULT_PAGE_SIZE = 50
@@ -12,6 +12,8 @@ export interface BalanceFiltersState {
   toDate: string
   accountCode?: string
   typeCode?: string
+  direction?: "in" | "out" | "all"
+  search?: string
   page: number
   pageSize: number
   setPreset: (p: RangePreset) => void
@@ -19,10 +21,13 @@ export interface BalanceFiltersState {
   setToDate: (d: string) => void
   setAccountCode: (code?: string) => void
   setTypeCode: (code?: string) => void
+  setDirection: (dir?: "in" | "out" | "all") => void
+  setSearch: (q?: string) => void
   setPage: (p: number) => void
   setPageSize: (n: number) => void
   reset: () => void
   queryFilters: LedgerFilters
+  statsFilters: LedgerStatsFilters
 }
 
 /** URL-backed balance history filters + pagination. The page's single source of filters. */
@@ -48,18 +53,31 @@ export function useBalanceFilters(): BalanceFiltersState {
   const { fromDate, toDate } = presetDates(preset, params.get("from") ?? "", params.get("to") ?? "")
   const accountCode = params.get("account") ?? undefined
   const typeCode = params.get("type") ?? undefined
+  const direction = (params.get("dir") as "in" | "out" | "all" | null) ?? undefined
+  const search = params.get("q") ?? undefined
   const page = Number(params.get("page") ?? "1")
   const pageSize = Number(params.get("size") ?? String(DEFAULT_PAGE_SIZE))
+
+  const from = localDayStart(fromDate)
+  const to = localDayEnd(toDate)
 
   const queryFilters: LedgerFilters = {
     accountCode,
     typeCode,
-    from: localDayStart(fromDate),
-    to: localDayEnd(toDate),
+    direction: direction === "all" ? undefined : direction,
+    search: search?.trim() || undefined,
+    from,
+    to,
     sort: "occurredAt",
     dir: "desc",
     page,
     pageSize,
+  }
+
+  const statsFilters: LedgerStatsFilters = {
+    accountCode,
+    from,
+    to,
   }
 
   return {
@@ -68,6 +86,8 @@ export function useBalanceFilters(): BalanceFiltersState {
     toDate,
     accountCode,
     typeCode,
+    direction,
+    search,
     page,
     pageSize,
     setPreset: (p) => patch(p === "custom" ? { preset: p } : { preset: p, from: null, to: null }),
@@ -75,9 +95,12 @@ export function useBalanceFilters(): BalanceFiltersState {
     setToDate: (d) => patch({ preset: "custom", to: d }),
     setAccountCode: (code) => patch({ account: code ?? null }),
     setTypeCode: (code) => patch({ type: code ?? null }),
+    setDirection: (dir) => patch({ dir: dir === "all" || !dir ? null : dir }),
+    setSearch: (q) => patch({ q: q ?? null }),
     setPage: (p) => patch({ page: String(p) }, false),
     setPageSize: (n) => patch({ size: String(n) }),
     reset: () => setParams({}, { replace: true }),
     queryFilters,
+    statsFilters,
   }
 }

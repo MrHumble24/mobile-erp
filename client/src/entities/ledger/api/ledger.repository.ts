@@ -4,6 +4,8 @@ import type {
   LedgerAccountOption,
   LedgerBalances,
   LedgerFilters,
+  LedgerStats,
+  LedgerStatsFilters,
   LedgerTransactionPage,
   LedgerTransferDto,
   Money,
@@ -57,6 +59,12 @@ export const ledgerRepository = {
 
   list: async (filters?: LedgerFilters): Promise<LedgerTransactionPage> => {
     return http<LedgerTransactionPage>("/ledger/transactions", {
+      params: filters as Record<string, string | number | boolean | undefined>,
+    })
+  },
+
+  stats: async (filters?: LedgerStatsFilters): Promise<LedgerStats> => {
+    return http<LedgerStats>("/ledger/stats", {
       params: filters as Record<string, string | number | boolean | undefined>,
     })
   },
