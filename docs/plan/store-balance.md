@@ -33,9 +33,10 @@ show that balance and every change to it.
 
 ## Waiting on
 
-- [ ] **Customs Excel file** — asked the client on 2026-11-04. When it
-  arrives, share it here and check the columns against the proposal in
-  Change 2. Do not build the upload before seeing it.
+- [x] **Customs Excel file** — received 2026-11-07 (`Расстаможка
+  цены.xlsx`, plus `Приход документ.xlsx`, the client's own batch sheet).
+  Findings under "The real files" below. Upload not built yet (ADR 0027
+  left room for it).
 - [x] **cloudshop.ru MD document** — received 2026-11-04 at
   `~/Downloads/project-management-materials/CloudShop Features Guide.md`.
   Read. Findings are in "What we take from CloudShop" below.
@@ -113,6 +114,42 @@ Questions for the client:
    (Assumed yes.)
 4. Shipment overhead stays as a separate field for shipping and other
    costs? (Assumed yes.)
+
+#### The real files (2026-11-07)
+
+`Расстаможка цены.xlsx` — one sheet, two columns, 27 rows:
+`Модель` | `Цена Расстаможки` (whole dollars). Examples:
+`iPhone 15 Pro 128 GB` 94, `iPhone 15 Pro 256 GB` 94, `S24 Ultra` 93,
+`Note 20 Ultra` 65. No codes, no dates, no storage for Samsung.
+- iPhone rows carry storage; every storage pair has the **same fee**.
+  Samsung rows are model only.
+- So the match is "model + storage" for iPhone and "model" for Samsung.
+  Our `DeviceModel` has no storage (storage is a spec on the unit).
+- Proposal: upload stores each row exactly as written. At intake, look
+  up `customsCode` first, then `customsCode + storage` (spaces ignored,
+  `256GB` = `256 GB`). Admin sets `customsCode = "iPhone 15 Pro"` once.
+  No new column. If a later list prices storages differently, the same
+  rule already handles it.
+- The fee column is dollars. The list has no date; the upload date is
+  `effectiveAt`.
+
+`Приход документ.xlsx` — the client's batch sheet today. Title
+"Покупка новой партии Корея". Columns: their model code
+(`AIP13 Pro Max-256G`), model name, IMEI, IMEI 2, who registered,
+`Расход` 70 $, qty, price 550 (thousand won), `В долларах` = price /
+1.3 (the won rate), `Наценка` 30 $, `Итого` = dollars + expense +
+markup, battery `Емкость` 73, `Недостатки` (defects).
+- Confirms Change 3: one expense number per phone.
+- New things we do not have: supplier price in **won with a rate**,
+  a planned markup per phone, battery health and defects at purchase
+  (we have them in QC).
+
+Questions for the client (2026-11-07):
+1. Is `Расход` 70 the customs fee, or another expense, or both added?
+2. Do they want to type the won price and the rate, or only dollars?
+3. Should the system **import this batch sheet** (one row per phone)
+   instead of scanning each IMEI? That is a second upload.
+4. Is `Наценка` the planned sale price, or just a note?
 
 ### Change 3 — expense per phone inside a shipment
 
