@@ -18,7 +18,8 @@ only.** **No passcode / pattern / ID field anywhere, by design.**
   the server with a DEBUG self-check (`RepairStatusSelfCheck`).
 - `RepairError` (`Lib/`): maps the server codes (REPAIRS_DISABLED,
   REPAIR_ILLEGAL_MOVE / TERMINAL / BALANCE_OWED / NOT_OUTSIDE, NO_OPEN_SHIFT) to
-  readable messages (English fallbacks; the `repairs` namespace may not be bundled).
+  readable messages (the `repairs` namespace is now bundled; a few keys still
+  use English `default:` fallbacks — see i18n below).
 - `RepairsListModel` / `NewRepairDraft` (`Model/`).
 - `RepairsModule`: the More-tab screen (`repair.read` + `repairsEnabled`).
 - UI (`UI/`): list, new-ticket sheet, detail + sections, status sheet, parts
@@ -34,6 +35,17 @@ only.** **No passcode / pattern / ID field anywhere, by design.**
 
 ## i18n
 
-The `repairs` namespace is added by the web later; until then every key uses an
-English `default:` fallback (never Uzbek). All keys are listed in the build
-report for reconciliation.
+The web `repairs` namespace is now bundled in both locales and Uzbek-complete
+(`client/src/shared/i18n/{uz,en}/repairs.json`); it is no longer an
+English-only fallback. The iOS slice still references several key names that
+are not in that namespace (e.g. `repairs.reportTitle`, `repairs.useRange`,
+`repairs.status_<CODE>`, `repairs.newTitle`, `repairs.createTicket`,
+`repairs.onlineOnly`, `repairs.createdToast`, `repairs.deviceNamePlaceholder`),
+so those labels keep their English `default:` fallbacks. The wrong report key
+is `repairs.reportTitle` — it does not exist in `repairs` (it belongs to
+`credit.reportTitle`); the report title / rows should use `reportTab` /
+`reportIncome` / `reportPartsCost` / `reportOutsideCost` / `reportProfit`.
+Reconcile these key names for full Uzbek parity (see `mobile/ios/SCREENS.md`).
+
+Remaining mobile parity gaps: edit ticket, print/share ticket, customer repair
+list, and the iOS key mismatch above.

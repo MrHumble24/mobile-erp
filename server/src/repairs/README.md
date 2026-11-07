@@ -36,5 +36,15 @@ ledger; stock parts flow through `StockService`. Nothing derivable is stored.
 
 ## Open questions
 
-- Ticket numbers are retried on a race (single-shop). Printing/receipt layout is
-  the client's; the server returns everything a ticket needs.
+- Ticket-number race: resolved — numbers are retried on the unique index and
+  all writes are version-locked (`Repair.version`). Printing/receipt layout
+  stays client-side; the server returns everything a ticket needs.
+- Idempotency / version: every mutation carries a `repair_mutations` key and
+  the expected `Repair.version`; a mismatch is a 409 and a replay returns the
+  recorded result (`RepairIdempotency.findRepairIdByKey` / `replay` / `record`).
+- Offline outbox: web writes that fail on transport are queued with a
+  `clientMutationId` and replayed by the sync handlers through the same keys;
+  native mobile repairs stay online-only.
+- Sync handlers (8): `repair.create`, `repair.update`, `repair.status`,
+  `repair.payment`, `repair.refund`, `repair.outside`, `repair.part.add`,
+  `repair.part.remove`.

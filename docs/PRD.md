@@ -164,6 +164,16 @@ flowchart TD
     * Operational expenses logged
     * Total outstanding consignment balances ("Nasiya")
 
+#### Module 7: Repairs (Change 13)
+* **Optional per-store flag**: `StoreSettings.repairsEnabled` (off by default). While off the module is invisible everywhere (nav, routes, report tab, customer detail) and every `/repairs` route refuses **403 `REPAIRS_DISABLED`**.
+* **Ticket**: a per-store sequential number; a customer (id or inline name + phone); free-text phone with optional model / IMEI / serial; problem; agreed price; warranty days typed on the ticket; and exactly one master — the shop's own (`masterUserId`) **XOR** an outside one (name, phone, cost), derived from whichever field is set.
+* **Status machine**: `RECEIVED` → `IN_REPAIR` → `READY` → `GIVEN_BACK`, plus terminal `CANCELLED` (both `GIVEN_BACK` and `CANCELLED` are terminal). Illegal moves → **409 `REPAIR_ILLEGAL_MOVE`**; writing to a terminal ticket → **409 `REPAIR_TERMINAL`**; an owed hand-over requires a reason (**409 `REPAIR_BALANCE_OWED`**).
+* **Parts**: QUANTITY stock products via `StockService` as a signed `REPAIR_USE` movement (out on add, back in on remove, freezing average cost).
+* **Money**: payments, refunds (negative, capped at net paid) and outside-master payments post to the ledger (`REPAIR_PAYMENT` / `REPAIR_OUTSIDE`) in the same transaction, with an open-shift gate when shifts are enabled.
+* **Derived figures**: nothing derivable is stored — paid, outstanding, parts cost, profit and the warranty window are computed on read; parts / outside / profit are redacted (null) without `device.cost.view`.
+* **Printable ticket, share link & reports tab**: a client-built ticket paper can be printed or shared as a link; a repairs report tab shows income, parts cost, outside cost and profit for a date range.
+* **Access & offline**: `repair.read` / `repair.manage` / `repair.payment` are ADMIN-only (cashiers only via explicit user permission overrides). Web writes that fail on transport queue in an offline outbox and replay through server sync handlers; native mobile repairs remain online-only.
+
 ---
 
 ### 5. Technical Architecture & Non-Functional Requirements

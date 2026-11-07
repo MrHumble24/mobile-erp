@@ -74,7 +74,9 @@ plain-HTTP LAN servers work. Dev users: `owner@malika.uz` / `cashier@malika.uz` 
 ## i18n
 UI strings are read straight from the web client (`client/src/shared/i18n`), mapped
 into assets by `app/build.gradle.kts` — a single source, never copied here. Default
-locale is Uzbek, falling back to English.
+locale is Uzbek, falling back to English. The `repairs` namespace ships from that
+same source in both locales (Uzbek-complete); there is no local
+`assets/en/repairs.json`.
 
 ## Theme
 The **Warm Card** design system is the source of truth in `DESIGN.md` (repo root)

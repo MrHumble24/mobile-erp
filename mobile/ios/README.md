@@ -69,7 +69,11 @@ works everywhere, including the simulator.
 ## i18n
 Translations are **not** copied here. A build-phase script bundles
 `client/src/shared/i18n/{uz,en}` verbatim into the app at build time (single
-source). Edit copy in the web client; it flows to iOS on the next build.
+source). Edit copy in the web client; it flows to iOS on the next build. The
+`repairs` namespace is now bundled and Uzbek-complete (no longer an
+English-only fallback); the iOS repairs slice still references a few key names
+that are not in that namespace, so those labels keep English `default:`
+fallbacks. See [SCREENS.md](SCREENS.md) for the remaining mobile parity gaps.
 
 ## Theme — Warm Card
 The app ships the **Warm Card** design system (ADR 0022). Single source of

@@ -569,8 +569,23 @@ refreshes `storeFlags` so the tab appears/disappears at once. The
 `REPAIR_PAYMENT` / `REPAIR_OUTSIDE` ledger-type labels are in `BalanceFormat`;
 `REPAIR_USE` stock movements show the server's own label.
 
-Deliberately deferred: the ticket **edit** form (`PATCH /repairs/:id`) — not in
-the handoff's detail list; create + status + parts + money + report cover it.
+Remaining mobile parity gaps vs the web (tracked in the repairs backlog):
+- **Edit ticket** — no `PATCH /repairs/:id` form; create + status + parts +
+  money + report cover the slice.
+- **Print / share ticket** — no printable `RepairTicketPaper` or share/copy
+  link on iOS or Android.
+- **Customer repair list** — no per-customer repairs section in customer detail.
+- **iOS key mismatch** — the bundled `repairs` namespace uses keys such as
+  `reportTab`, `reportIncome`, `reportPartsCost`, `reportOutsideCost`,
+  `reportProfit`, `statusReceived` and `newTicketTitle`, but several iOS labels
+  still reference names that are not in it (`repairs.reportTitle`,
+  `repairs.useRange`, `repairs.status_<CODE>`, `repairs.newTitle`,
+  `repairs.createTicket`, `repairs.onlineOnly`, `repairs.createdToast`,
+  `repairs.deviceNamePlaceholder`), so those keep English `default:` fallbacks.
+  The wrong report key is `repairs.reportTitle` — it does not exist in
+  `repairs` (it belongs to `credit.reportTitle`); the report title / rows should
+  use `reportTab` / `reportIncome` / `reportPartsCost` / `reportOutsideCost` /
+  `reportProfit`.
 
 DEBUG args: `-open repairs`, `-openNewRepair 1` (new ticket), `-openRepair 1`
 (first ticket's detail), `-openRepairReport 1` (report).
@@ -583,6 +598,10 @@ Customer detail gains bonus points summary, transaction history and point adjust
 
 ## i18n (Steps 9 & 10)
 
-`purchases` is bundled from the web (English in both locales). `repairs` is not
-in the client yet, so every `repairs.*` key uses an English `default:` fallback
-until the web adds the namespace; the keys are listed in the build report.
+`purchases` is bundled from the web (English in both locales). The `repairs`
+namespace is now bundled from the web too and is Uzbek-complete in both locales
+(`client/src/shared/i18n/{uz,en}/repairs.json`), so it no longer needs an
+English `default:` fallback. The iOS repairs slice still references a handful
+of key names that are not in that namespace (see the iOS key mismatch in the
+Repairs section above), so those specific labels continue to fall back to
+English.

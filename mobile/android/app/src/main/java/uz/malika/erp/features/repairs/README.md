@@ -34,6 +34,13 @@ nav hiding by a setting would need app/shell changes beyond this slice.)
 - `features/sales` for the customer picker + the users list (own-master picker).
 
 ## i18n
-The `repairs` namespace is kept here as an Android-local asset
-(`assets/en/repairs.json`, English) until the web client adds it to
-`client/src/shared/i18n`; then it is reconciled and this copy removed.
+The `repairs` namespace is not an Android-local asset. Like every namespace it
+comes from the web client `client/src/shared/i18n` (both `uz` and `en`,
+Uzbek-complete), mapped into assets by `app/build.gradle.kts`; there is no
+`assets/en/repairs.json`. Note the report card labels the outside-cost figure
+with `repairs.outsidePaid` ("Paid to master") while the namespace defines the
+report-specific `reportOutsideCost` ("Outside cost"); the other report keys are
+`reportIncome`, `reportPartsCost` and `reportProfit`.
+
+Remaining mobile parity gaps: edit ticket, print/share ticket, customer repair
+list, and the iOS key mismatch (see `mobile/ios/SCREENS.md`).

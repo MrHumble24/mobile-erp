@@ -40,3 +40,25 @@ slept, so the recommended option is taken.
 - No passcode/pattern, passport or ID-document column exists, by design.
 - Ticket numbers race (single-shop, retried). The closing Telegram digest
   already covers repairs (their ledger rows sum into the balance).
+
+## Amendments (2026-11-08)
+
+Hardening pass (see `docs/plan/repairs-completion.md` and ADR 0067). These
+amend the Decision above; the original feature shape is unchanged.
+
+- `Repair.version` optimistic lock and `repair_mutations` idempotency keys guard
+  every write; the sync handlers replay through those keys
+  (`RepairIdempotency.findRepairIdByKey` / `replay` / `record`).
+- Terminal guards now cover refund and outside payments too, and `outsideCost`
+  is capped. Master XOR / FK validation and the customer upsert run inside the
+  create transaction; the repair report is store-scoped.
+- The web client gained an offline outbox (8 repair mutation types) and the
+  server 8 matching sync handlers reusing the same idempotency keys.
+- Accepted exception: native mobile repairs remain **ONLINE ONLY** — a native
+  offline store for tickets is out of scope.
+- Accepted exception: free-text phone is kept when no inventory device matches;
+  a ticket is not forced onto a catalog device.
+- `repair.read` / `repair.manage` / `repair.payment` stay **ADMIN-only**;
+  cashiers get access only via explicit user permission overrides.
+- Customer SMS/Telegram messaging requires an external provider (none ships);
+  what ships are owner Telegram notifications and a printable/shareable ticket.
