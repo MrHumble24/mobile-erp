@@ -159,10 +159,21 @@ export class LedgerRepository {
   }
 
   /** Signed sum of one type's rows for a store in [from, to] (ADR 0040 report). */
-  async sumType(storeId: string, typeCode: string, from?: Date, to?: Date) {
+  sumType(storeId: string, typeCode: string, from?: Date, to?: Date) {
+    return this.sumTypeForStores([storeId], typeCode, from, to);
+  }
+
+  /** Like `sumType`, but scoped to several stores (the repairs report uses the
+   * same store set as its income / parts figures, including "all stores"). */
+  async sumTypeForStores(
+    storeIds: string[],
+    typeCode: string,
+    from?: Date,
+    to?: Date,
+  ) {
     const { _sum } = await this.prisma.cashTransaction.aggregate({
       where: {
-        storeId,
+        storeId: storeIds.length === 1 ? storeIds[0] : { in: storeIds },
         typeCode,
         occurredAt: from || to ? { gte: from, lte: to } : undefined,
       },

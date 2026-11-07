@@ -11,4 +11,10 @@ export class ChangeStatusDto {
   @IsString()
   @MaxLength(500)
   note?: string;
+
+  /** Client-generated key; a retried submit replays instead of writing twice. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  clientMutationId?: string;
 }

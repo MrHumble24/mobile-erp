@@ -71,4 +71,10 @@ export class UpdateRepairDto {
   @Min(0)
   @Max(1_000_000_000)
   outsideCost?: number;
+
+  /** Client-generated key; a retried submit replays instead of writing twice. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  clientMutationId?: string;
 }

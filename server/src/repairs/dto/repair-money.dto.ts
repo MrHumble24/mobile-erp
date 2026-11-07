@@ -1,4 +1,11 @@
-import { IsNumber, IsPositive, IsString, Max } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Max,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * A repair money movement: a customer payment, a refund, or an outside-master
@@ -13,4 +20,10 @@ export class RepairMoneyDto {
 
   @IsString()
   accountCode!: string;
+
+  /** Client-generated key; a retried submit replays instead of writing twice. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  clientMutationId?: string;
 }

@@ -67,11 +67,15 @@ model Repair {
   receivedAt   DateTime     @default(now())
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  /// Optimistic-lock counter. Every write bumps it under a `version = expected`
+  /// guard so concurrent submits on one ticket cannot both commit.
+  version      Int          @default(1)
 
   parts            RepairPart[]
   payments         RepairPayment[]
   statusHistory    RepairStatusHistory[]
   cashTransactions CashTransaction[]
+  mutations        RepairMutation[]
 
   @@unique([storeId, ticketNumber])
   @@index([storeId])
@@ -142,4 +146,20 @@ model RepairPayment {
   @@index([repairId])
   @@index([occurredAt])
   @@map("repair_payments")
+}
+
+/// Idempotency ledger for repair writes: a client-supplied mutation key maps to
+/// the ticket it created/mutated. A retried (or concurrent duplicate) submit
+/// finds the key and replays the ticket view instead of writing twice. The row
+/// is inserted in the same transaction as the write it belongs to.
+model RepairMutation {
+  id               String   @id @default(uuid())
+  clientMutationId String   @unique
+  repairId         String
+  repair           Repair   @relation(fields: [repairId], references: [id], onDelete: Cascade)
+  kind             String
+  createdAt        DateTime @default(now())
+
+  @@index([repairId])
+  @@map("repair_mutations")
 }

@@ -6,11 +6,14 @@ import {
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
 import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { Prisma } from '../generated/client/client.js';
+import { LedgerRepairReadService } from '../ledger/ledger-repair-read.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { ShiftsService } from '../shifts/shifts.service.js';
 import { StoresService } from '../stores/stores.service.js';
 import { RepairMoneyDto } from './dto/repair-money.dto.js';
+import { commitMutation } from './lib/repair-mutation.js';
 import { isTerminal } from './lib/repair-status.js';
+import { RepairIdempotency } from './repair-idempotency.service.js';
 import { RepairsReadService } from './repairs-read.service.js';
 import { RepairsWriteRepository } from './repairs.write.repository.js';
 import { REPAIR_TERMINAL } from './repairs.service.js';
@@ -31,6 +34,8 @@ export class RepairsMoneyService {
     private readonly ledger: LedgerService,
     private readonly shifts: ShiftsService,
     private readonly stores: StoresService,
+    private readonly ledgerRepair: LedgerRepairReadService,
+    private readonly idem: RepairIdempotency,
   ) {}
 
   /** A customer payment (deposit or hand-over). Capped at the amount still owed. */
@@ -40,13 +45,10 @@ export class RepairsMoneyService {
     dto: RepairMoneyDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     const raw = await this.read.require(id);
-    if (isTerminal(raw.statusCode)) {
-      throw new ConflictException({
-        code: REPAIR_TERMINAL,
-        message: 'A given-back or cancelled ticket takes no more payments',
-      });
-    }
+    this.assertOpen(raw);
     await this.requireActiveAccount(dto.accountCode);
     await this.shifts.assertCanSell(caller);
     const amount = new Prisma.Decimal(dto.amount);
@@ -56,8 +58,14 @@ export class RepairsMoneyService {
         `Payment ${amount.toFixed(2)} exceeds the ${owed.toFixed(2)} still owed`,
       );
     }
-    await this.postPayment(caller, id, dto.accountCode, amount);
-    return this.read.get(caller, id);
+    return commitMutation(
+      this.idem,
+      this.read,
+      caller,
+      dto.clientMutationId,
+      id,
+      () => this.postPayment(caller, id, dto, amount, raw.version, 'payment'),
+    );
   }
 
   /** Refund money taken (e.g. on cancel). Capped at net paid, as ADR 0028. */
@@ -67,7 +75,10 @@ export class RepairsMoneyService {
     dto: RepairMoneyDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     const raw = await this.read.require(id);
+    this.assertOpen(raw);
     await this.requireActiveAccount(dto.accountCode);
     await this.shifts.assertCanSell(caller);
     const paid = paidOf(raw);
@@ -76,8 +87,22 @@ export class RepairsMoneyService {
     }
     const requested = new Prisma.Decimal(dto.amount);
     const refund = requested.greaterThan(paid) ? paid : requested;
-    await this.postPayment(caller, id, dto.accountCode, refund.negated());
-    return this.read.get(caller, id);
+    return commitMutation(
+      this.idem,
+      this.read,
+      caller,
+      dto.clientMutationId,
+      id,
+      () =>
+        this.postPayment(
+          caller,
+          id,
+          dto,
+          refund.negated(),
+          raw.version,
+          'refund',
+        ),
+    );
   }
 
   /** Pay the outside master: money out, linked to the ticket. No business row. */
@@ -87,7 +112,10 @@ export class RepairsMoneyService {
     dto: RepairMoneyDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     const raw = await this.read.require(id);
+    this.assertOpen(raw);
     if (!raw.outsideMasterName) {
       throw new ConflictException({
         code: REPAIR_NOT_OUTSIDE,
@@ -96,46 +124,89 @@ export class RepairsMoneyService {
     }
     await this.requireActiveAccount(dto.accountCode);
     await this.shifts.assertCanSell(caller);
-    const storeId = await this.stores.currentStoreId();
     const amount = new Prisma.Decimal(dto.amount);
-    await this.writes.transaction((tx) =>
-      this.ledger.post(
-        {
-          storeId,
-          accountCode: dto.accountCode,
-          typeCode: 'REPAIR_OUTSIDE',
-          amount: amount.negated(),
-          occurredAt: new Date(),
-          repairId: id,
-          createdById: caller.id,
-        },
-        tx,
-      ),
+    await this.assertWithinOutsideCap(raw, id, amount);
+    const storeId = await this.stores.currentStoreId();
+    return commitMutation(
+      this.idem,
+      this.read,
+      caller,
+      dto.clientMutationId,
+      id,
+      () =>
+        this.writes.transaction(async (tx) => {
+          await this.writes.bumpVersion(tx, id, raw.version);
+          await this.ledger.post(
+            {
+              storeId,
+              accountCode: dto.accountCode,
+              typeCode: 'REPAIR_OUTSIDE',
+              amount: amount.negated(),
+              occurredAt: new Date(),
+              repairId: id,
+              createdById: caller.id,
+            },
+            tx,
+          );
+          await this.idem.record(tx, dto.clientMutationId, id, 'outside');
+        }),
     );
-    return this.read.get(caller, id);
+  }
+
+  /** Cap an outside payment at max(outsideCost − already paid outside, 0). */
+  private async assertWithinOutsideCap(
+    raw: RepairRaw,
+    id: string,
+    amount: Prisma.Decimal,
+  ): Promise<void> {
+    if (!raw.outsideCost) return;
+    const alreadyPaid =
+      (await this.ledgerRepair.outsidePaid([id])).get(id) ?? ZERO;
+    const remaining = raw.outsideCost.minus(alreadyPaid);
+    const cap = remaining.greaterThan(ZERO) ? remaining : ZERO;
+    if (amount.greaterThan(cap)) {
+      throw new BadRequestException(
+        `Outside payment ${amount.toFixed(2)} exceeds the ${cap.toFixed(2)} still owed to the outside master`,
+      );
+    }
+  }
+
+  private assertOpen(raw: RepairRaw): void {
+    if (isTerminal(raw.statusCode)) {
+      throw new ConflictException({
+        code: REPAIR_TERMINAL,
+        message: 'A given-back or cancelled ticket takes no more payments',
+      });
+    }
   }
 
   /** One repair payment row + its single REPAIR_PAYMENT ledger row, atomically. */
   private async postPayment(
     caller: AuthenticatedUser,
     repairId: string,
-    accountCode: string,
+    dto: RepairMoneyDto,
     amount: Prisma.Decimal,
+    version: number,
+    kind: string,
   ): Promise<void> {
     const storeId = await this.stores.currentStoreId();
     const occurredAt = new Date();
     await this.writes.transaction(async (tx: PrismaTx) => {
-      const paymentId = await this.writes.createPayment(tx, {
-        repairId,
-        accountCode,
-        amount,
-        receivedById: caller.id,
-        occurredAt,
-      });
+      const paymentId = await this.writes.createPayment(
+        tx,
+        {
+          repairId,
+          accountCode: dto.accountCode,
+          amount,
+          receivedById: caller.id,
+          occurredAt,
+        },
+        version,
+      );
       await this.ledger.post(
         {
           storeId,
-          accountCode,
+          accountCode: dto.accountCode,
           typeCode: 'REPAIR_PAYMENT',
           amount,
           occurredAt,
@@ -144,6 +215,7 @@ export class RepairsMoneyService {
         },
         tx,
       );
+      await this.idem.record(tx, dto.clientMutationId, repairId, kind);
     });
   }
 

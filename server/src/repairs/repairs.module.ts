@@ -4,6 +4,7 @@ import { SettingsModule } from '../settings/settings.module.js';
 import { ShiftsModule } from '../shifts/shifts.module.js';
 import { StockModule } from '../stock/stock.module.js';
 import { StoresModule } from '../stores/stores.module.js';
+import { RepairIdempotency } from './repair-idempotency.service.js';
 import { RepairsController } from './repairs.controller.js';
 import { RepairsMoneyService } from './repairs-money.service.js';
 import { RepairsPartsService } from './repairs-parts.service.js';
@@ -22,6 +23,7 @@ import { RepairsWriteRepository } from './repairs.write.repository.js';
   ],
   controllers: [RepairsController],
   providers: [
+    RepairIdempotency,
     RepairsService,
     RepairsReadService,
     RepairsMoneyService,

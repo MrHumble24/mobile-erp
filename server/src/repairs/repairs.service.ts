@@ -3,22 +3,29 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { isUniqueViolation } from '../common/lib/prisma-errors.js';
+import {
+  isUniqueViolation,
+  uniqueViolationFields,
+} from '../common/lib/prisma-errors.js';
 import { resolveCustomerId } from '../common/lib/resolve-customer.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { StoresService } from '../stores/stores.service.js';
-import { CreateRepairDto } from './dto/create-repair.dto.js';
 import { ChangeStatusDto } from './dto/change-status.dto.js';
+import { CreateRepairDto } from './dto/create-repair.dto.js';
 import { UpdateRepairDto } from './dto/update-repair.dto.js';
+import { commitMutation, replayDuplicate } from './lib/repair-mutation.js';
 import { isLegalMove, isTerminal } from './lib/repair-status.js';
-import { RepairsReadService } from './repairs-read.service.js';
 import {
-  RepairsWriteRepository,
-  type CreateTicketData,
-  type UpdateTicketData,
-} from './repairs.write.repository.js';
+  assertMasterExclusive,
+  toCreateData,
+  toUpdateData,
+} from './lib/repair-write-data.js';
+import { RepairIdempotency } from './repair-idempotency.service.js';
+import { RepairsReadService } from './repairs-read.service.js';
+import { RepairsWriteRepository } from './repairs.write.repository.js';
 import type { RepairView } from './types/repair.types.js';
 
 const ZERO = new Prisma.Decimal(0);
@@ -36,6 +43,7 @@ export class RepairsService {
     private readonly stores: StoresService,
     private readonly read: RepairsReadService,
     private readonly writes: RepairsWriteRepository,
+    private readonly idem: RepairIdempotency,
   ) {}
 
   async create(
@@ -43,13 +51,25 @@ export class RepairsService {
     dto: CreateRepairDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     assertMasterExclusive(dto.masterUserId, dto.outsideMasterName);
-    const customerId = await this.resolveCustomer(dto);
-    if (dto.modelId) await this.assertModelExists(dto.modelId);
-    const base = this.toCreateData(caller.id, customerId, dto);
-    base.storeId = await this.stores.currentStoreId();
-    const id = await this.createWithNumber(base);
-    return this.read.get(caller, id);
+    await this.assertRefsExist(dto.modelId, dto.masterUserId);
+    const storeId = await this.stores.currentStoreId();
+    try {
+      const id = await this.createWithNumber(caller, storeId, dto);
+      return this.read.get(caller, id);
+    } catch (error) {
+      const dup = await replayDuplicate(
+        error,
+        this.idem,
+        this.read,
+        caller,
+        dto.clientMutationId,
+      );
+      if (dup) return dup;
+      throw error;
+    }
   }
 
   async update(
@@ -58,6 +78,8 @@ export class RepairsService {
     dto: UpdateRepairDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     const raw = await this.read.require(id);
     if (isTerminal(raw.statusCode)) {
       throw new ConflictException({
@@ -65,8 +87,21 @@ export class RepairsService {
         message: 'A given-back or cancelled ticket cannot be edited',
       });
     }
-    await this.writes.updateDetails(id, this.toUpdateData(dto));
-    return this.read.get(caller, id);
+    assertMasterExclusive(dto.masterUserId, dto.outsideMasterName);
+    await this.assertRefsExist(dto.modelId, dto.masterUserId);
+    const data = toUpdateData(dto);
+    return commitMutation(
+      this.idem,
+      this.read,
+      caller,
+      dto.clientMutationId,
+      id,
+      () =>
+        this.writes.transaction(async (tx) => {
+          await this.writes.updateDetails(tx, id, data, raw.version);
+          await this.idem.record(tx, dto.clientMutationId, id, 'update');
+        }),
+    );
   }
 
   async changeStatus(
@@ -75,6 +110,8 @@ export class RepairsService {
     dto: ChangeStatusDto,
   ): Promise<RepairView> {
     await this.read.assertEnabled();
+    const replayed = await this.idem.replay(caller, dto.clientMutationId);
+    if (replayed) return replayed;
     const raw = await this.read.require(id);
     const from = raw.statusCode;
     if (!isLegalMove(from, dto.toStatusCode)) {
@@ -85,17 +122,26 @@ export class RepairsService {
     }
     if (dto.toStatusCode === 'GIVEN_BACK')
       this.assertCanGiveBack(raw, dto.note);
-    await this.writes.transaction((tx) =>
-      this.writes.changeStatus(
-        tx,
-        id,
-        from,
-        dto.toStatusCode,
-        caller.id,
-        dto.note,
-      ),
+    return commitMutation(
+      this.idem,
+      this.read,
+      caller,
+      dto.clientMutationId,
+      id,
+      () =>
+        this.writes.transaction(async (tx) => {
+          await this.writes.changeStatus(
+            tx,
+            id,
+            from,
+            dto.toStatusCode,
+            caller.id,
+            dto.note,
+            raw.version,
+          );
+          await this.idem.record(tx, dto.clientMutationId, id, 'status');
+        }),
     );
-    return this.read.get(caller, id);
   }
 
   /** Giving back with money still owed needs a reason (ADR 0040). */
@@ -116,26 +162,45 @@ export class RepairsService {
     }
   }
 
-  private async createWithNumber(base: CreateTicketData): Promise<string> {
-    // ponytail: ticket numbers race under concurrency; the unique index rejects
-    // a clash and we retry a few times. Fine at single-shop volume.
+  private async createWithNumber(
+    caller: AuthenticatedUser,
+    storeId: string,
+    dto: CreateRepairDto,
+  ): Promise<string> {
+    // Ticket numbers race under concurrency; the unique index rejects a clash
+    // and we retry. The customer upsert and the mutation key share this tx, so
+    // neither is left behind when ticket creation fails / a duplicate key wins.
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         return await this.writes.transaction(async (tx) => {
-          const number = await this.writes.nextTicketNumber(tx, base.storeId);
-          return this.writes.createTicket(tx, number, base);
+          const customerId = await this.resolveCustomer(tx, dto);
+          const number = await this.writes.nextTicketNumber(tx, storeId);
+          const base = toCreateData(caller.id, customerId, storeId, dto);
+          const id = await this.writes.createTicket(tx, number, base);
+          await this.idem.record(tx, dto.clientMutationId, id, 'create');
+          return id;
         });
       } catch (error) {
-        if (isUniqueViolation(error) && attempt < 2) continue;
+        // A clash on the mutation key means a concurrent duplicate already
+        // committed — let it propagate for replay. A ticket-number clash is
+        // the only unique violation we retry locally.
+        const keyClash = uniqueViolationFields(error).some((field) =>
+          field.includes('clientMutationId'),
+        );
+        if (isUniqueViolation(error) && !keyClash && attempt < 2) continue;
         throw error;
       }
     }
     throw new ConflictException('Could not allocate a ticket number, retry');
   }
 
-  private async resolveCustomer(dto: CreateRepairDto): Promise<string> {
+  /** Resolve the customer inside the write transaction (no orphan customer). */
+  private async resolveCustomer(
+    tx: PrismaTx,
+    dto: CreateRepairDto,
+  ): Promise<string> {
     if (dto.customerId) {
-      const found = await this.prisma.customer.findUnique({
+      const found = await tx.customer.findUnique({
         where: { id: dto.customerId },
         select: { id: true },
       });
@@ -144,9 +209,7 @@ export class RepairsService {
       }
       return found.id;
     }
-    const id = await resolveCustomerId(this.prisma, {
-      inlineCustomer: dto.customer,
-    });
+    const id = await resolveCustomerId(tx, { inlineCustomer: dto.customer });
     if (!id) {
       throw new BadRequestException(
         'A ticket needs a customer: customerId or a name (and phone)',
@@ -155,77 +218,24 @@ export class RepairsService {
     return id;
   }
 
-  private async assertModelExists(modelId: string): Promise<void> {
-    const model = await this.prisma.deviceModel.findUnique({
-      where: { id: modelId },
-      select: { id: true },
-    });
-    if (!model) throw new BadRequestException(`Model ${modelId} not found`);
-  }
-
-  private toCreateData(
-    receivedById: string,
-    customerId: string,
-    dto: CreateRepairDto,
-  ): CreateTicketData {
-    return {
-      storeId: '', // filled below
-      customerId,
-      deviceName: dto.deviceName,
-      modelId: dto.modelId,
-      imei: dto.imei,
-      serialNumber: dto.serialNumber,
-      problem: dto.problem,
-      agreedPrice: new Prisma.Decimal(dto.agreedPrice),
-      warrantyDays: dto.warrantyDays,
-      notes: dto.notes,
-      masterUserId: dto.masterUserId,
-      outsideMasterName: dto.outsideMasterName,
-      outsideMasterPhone: dto.outsideMasterPhone,
-      outsideCost:
-        dto.outsideCost === undefined
-          ? undefined
-          : new Prisma.Decimal(dto.outsideCost),
-      receivedById,
-      receivedAt: dto.receivedAt ? new Date(dto.receivedAt) : new Date(),
-    };
-  }
-
-  private toUpdateData(dto: UpdateRepairDto): UpdateTicketData {
-    const data: UpdateTicketData = {
-      deviceName: dto.deviceName,
-      modelId: dto.modelId,
-      imei: dto.imei,
-      serialNumber: dto.serialNumber,
-      problem: dto.problem,
-      warrantyDays: dto.warrantyDays,
-      notes: dto.notes,
-      outsideMasterPhone: dto.outsideMasterPhone,
-    };
-    if (dto.agreedPrice !== undefined)
-      data.agreedPrice = new Prisma.Decimal(dto.agreedPrice);
-    if (dto.outsideCost !== undefined)
-      data.outsideCost = new Prisma.Decimal(dto.outsideCost);
-    // Switching master side keeps the XOR: setting one clears the other.
-    if (dto.masterUserId !== undefined) {
-      data.masterUserId = dto.masterUserId;
-      data.outsideMasterName = null;
+  /** Validate referenced catalogue model / master user ids (create + update). */
+  private async assertRefsExist(
+    modelId?: string,
+    masterUserId?: string,
+  ): Promise<void> {
+    if (modelId) {
+      const model = await this.prisma.deviceModel.findUnique({
+        where: { id: modelId },
+        select: { id: true },
+      });
+      if (!model) throw new BadRequestException(`Model ${modelId} not found`);
     }
-    if (dto.outsideMasterName !== undefined) {
-      data.outsideMasterName = dto.outsideMasterName;
-      data.masterUserId = null;
+    if (masterUserId) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: masterUserId },
+        select: { id: true },
+      });
+      if (!user) throw new BadRequestException(`Master ${masterUserId} not found`);
     }
-    return data;
-  }
-}
-
-function assertMasterExclusive(
-  masterUserId?: string,
-  outsideMasterName?: string,
-): void {
-  if (masterUserId && outsideMasterName) {
-    throw new BadRequestException(
-      'A ticket has one master: an own master or an outside one, not both',
-    );
   }
 }

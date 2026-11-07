@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import type { PrismaTx } from '../common/types/prisma-tx.js';
 import { Prisma } from '../generated/client/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+
+/** The code clients watch for when a concurrent write beat us to this ticket. */
+export const REPAIR_VERSION_CONFLICT = 'REPAIR_VERSION_CONFLICT';
 
 export interface CreateTicketData {
   storeId: string;
@@ -38,7 +41,8 @@ export interface UpdateTicketData {
 }
 
 /** Prisma writes for repairs. The service drives the transaction so a payment /
- * part and its ledger / stock row commit atomically. */
+ * part and its ledger / stock row commit atomically. Every write bumps the
+ * ticket `version` under an optimistic-lock guard. */
 @Injectable()
 export class RepairsWriteRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -79,20 +83,50 @@ export class RepairsWriteRepository {
     return repair.id;
   }
 
-  updateDetails(id: string, data: UpdateTicketData): Promise<unknown> {
-    return this.prisma.repair.update({ where: { id }, data });
+  /**
+   * Optimistic lock: bump `version` (and apply any repair-row data) only while
+   * the row still has the version the caller read. A zero count means another
+   * write committed first — refuse so no overpay / illegal status move slips in.
+   */
+  async bumpVersion(
+    tx: PrismaTx,
+    id: string,
+    expectedVersion: number,
+    data: Prisma.RepairUncheckedUpdateManyInput = {},
+  ): Promise<void> {
+    const { count } = await tx.repair.updateMany({
+      where: { id, version: expectedVersion },
+      data: { ...data, version: { increment: 1 } },
+    });
+    if (count === 0) {
+      throw new ConflictException({
+        code: REPAIR_VERSION_CONFLICT,
+        message: 'The repair changed concurrently; reload the ticket and retry',
+      });
+    }
   }
 
-  /** Move the ticket and append the audit row, atomically. */
+  /** Edit the ticket's own fields, guarded by its version. */
+  async updateDetails(
+    tx: PrismaTx,
+    id: string,
+    data: UpdateTicketData,
+    expectedVersion: number,
+  ): Promise<void> {
+    await this.bumpVersion(tx, id, expectedVersion, data);
+  }
+
+  /** Move the ticket and append the audit row, atomically (guarded). */
   async changeStatus(
     tx: PrismaTx,
     id: string,
     from: string,
     to: string,
     changedById: string,
-    note?: string,
+    note: string | undefined,
+    expectedVersion: number,
   ): Promise<void> {
-    await tx.repair.update({ where: { id }, data: { statusCode: to } });
+    await this.bumpVersion(tx, id, expectedVersion, { statusCode: to });
     await tx.repairStatusHistory.create({
       data: {
         repairId: id,
@@ -113,13 +147,21 @@ export class RepairsWriteRepository {
       unitCostSnapshot: Prisma.Decimal;
       addedById: string;
     },
+    expectedVersion: number,
   ): Promise<string> {
+    await this.bumpVersion(tx, data.repairId, expectedVersion);
     const part = await tx.repairPart.create({ data, select: { id: true } });
     return part.id;
   }
 
-  async deletePart(tx: PrismaTx, id: string): Promise<void> {
-    await tx.repairPart.delete({ where: { id } });
+  async deletePart(
+    tx: PrismaTx,
+    partId: string,
+    repairId: string,
+    expectedVersion: number,
+  ): Promise<void> {
+    await this.bumpVersion(tx, repairId, expectedVersion);
+    await tx.repairPart.delete({ where: { id: partId } });
   }
 
   async createPayment(
@@ -131,11 +173,35 @@ export class RepairsWriteRepository {
       receivedById: string;
       occurredAt: Date;
     },
+    expectedVersion: number,
   ): Promise<string> {
+    await this.bumpVersion(tx, data.repairId, expectedVersion);
     const payment = await tx.repairPayment.create({
       data,
       select: { id: true },
     });
     return payment.id;
+  }
+
+  /** The ticket a client mutation key already produced, for replay / dedupe. */
+  async findMutationRepairId(key: string): Promise<string | null> {
+    const row = await this.prisma.repairMutation.findUnique({
+      where: { clientMutationId: key },
+      select: { repairId: true },
+    });
+    return row?.repairId ?? null;
+  }
+
+  /** Insert a mutation key inside the write's transaction; a duplicate (P2002)
+   * is left to propagate so the service can replay the committed ticket. */
+  async recordMutation(
+    tx: PrismaTx,
+    key: string,
+    repairId: string,
+    kind: string,
+  ): Promise<void> {
+    await tx.repairMutation.create({
+      data: { clientMutationId: key, repairId, kind },
+    });
   }
 }

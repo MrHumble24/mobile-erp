@@ -85,7 +85,7 @@ export class RepairsReadService {
     const [income, parts, outside] = await Promise.all([
       this.repo.sumPayments(storeIds, from, to),
       this.repo.partsInRange(storeIds, from, to),
-      this.ledgerRepair.outsideSum(from, to),
+      this.ledgerRepair.outsideSum(from, to, storeIds),
     ]);
     const partsCost = parts.reduce(
       (s, p) => s.plus(p.unitCostSnapshot.times(p.quantity)),
