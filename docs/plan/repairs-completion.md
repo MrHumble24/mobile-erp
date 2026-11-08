@@ -35,7 +35,7 @@ list, so unrelated in-progress work never enters a repairs commit.
 | 5 | done | Web outbox mutation types + queueing on network failure; server sync handlers reusing idempotency keys; specs | `feat(repairs): offline outbox and sync handlers` |
 | 6 | done | Telegram owner notifications on repair events, repair income/profit line in daily closing report + digest, share/copy ticket action, POS shortcut | `feat(repairs): notifications, digest and till shortcut` |
 | 7 | done | PRD repairs section, ADR amendments (mobile online-only, free-text fallback), stale README/i18n cleanup, status labels | `docs(repairs): PRD, ADR amendments and copy cleanup` |
-| 8 | pending | Full verification (`tsc`, `oxlint`, client + server tests, build), update this table, list mobile backlog with exact files | `chore(repairs): final verification and backlog` |
+| 8 | done | Full verification (`tsc`, `oxlint`, client + server tests, build), update this table, list mobile backlog with exact files | `chore(repairs): final verification and backlog` |
 
 ## Accepted remaining gaps (documented, not silently dropped)
 
@@ -85,6 +85,12 @@ list, so unrelated in-progress work never enters a repairs commit.
 - CP7 follow-up: fixed the two wrong mobile report keys, added the missing
   `repairs.reportTitle` key, removed the 3 i18n keys unused across all clients,
   and corrected two pre-existing sync spec-fixture typecheck errors.
+- CP8: final verification. Server: 153 suites / 915 tests, no typecheck errors
+  in repairs/sync/telegram/data-wipe. Client: `tsc --noEmit` clean, 143/143
+  tests, `oxlint` clean on every repairs-owned file, `vite build` succeeds.
+  Dev DB: 38 migrations applied, `repairs.version`, `repairs.deviceId` and
+  `repair_mutations` present; seed rows intact. The 40 remaining server tsc
+  errors are pre-existing spec-fixture mismatches in unrelated modules.
 - CP6: 3 owner Telegram events (create / ready / given-back) emitted from the
   controller, repair income + profit lines in the per-store closing digest, a
   repair shortcut on the POS page gated by flag + permission. Also split the two
