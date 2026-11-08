@@ -26,7 +26,7 @@ final class I18n {
     init(store: UserDefaults = .standard) {
         self.locale = store.string(forKey: Self.localeKey) ?? Self.defaultLocale
         var loaded: [String: [String: [String: String]]] = [:]
-        for locale in ["uz", "en"] {
+        for locale in ["uz", "en", "ru"] {
             var byNS: [String: [String: String]] = [:]
             for ns in Self.namespaces {
                 byNS[ns] = Self.loadNamespace(locale: locale, ns: ns)

@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Plus } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
 import { useAuthStore } from "@/features/auth"
@@ -7,19 +6,20 @@ import {
   usePriceListVersions,
   useUnmatchedModels,
 } from "@/entities/customs"
-import { CreatePriceListDialog } from "@/features/create-price-list"
 import { PageHeader } from "@/shared/ui/page-header"
-import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
+import { buttonVariants } from "@/shared/ui/button"
+import { Link } from "@/shared/ui/link"
 import { CurrentListTable } from "./CurrentListTable"
 import { VersionsList } from "./VersionsList"
 import { UnmatchedModelsList } from "./UnmatchedModelsList"
+import { CustomsEmptyState, CustomsInlineError, CustomsLoadError } from "./CustomsStates"
 
 export function CustomsPage() {
   const { t } = useI18n()
-  const canManage = useAuthStore((s) => s.hasPermission("customs.manage"))
-  const [createOpen, setCreateOpen] = React.useState(false)
-
+  const hasPermission = useAuthStore((s) => s.hasPermission)
+  const canManage = hasPermission("customs.manage")
+  const canManageModels = hasPermission("device.update")
   const current = useCurrentPriceList()
   const versions = usePriceListVersions()
   const unmatched = useUnmatchedModels()
@@ -31,31 +31,37 @@ export function CustomsPage() {
         description={t("customs.pageDescription")}
         actions={
           canManage ? (
-            <Button className="gap-1.5" onClick={() => setCreateOpen(true)}>
+            <Link to="/customs/new" className={buttonVariants({ size: "sm", className: "gap-1.5" })}>
               <Plus className="size-4" />
               {t("customs.newList")}
-            </Button>
+            </Link>
           ) : undefined
         }
       />
 
       {current.isLoading ? (
         <Skeleton className="h-40 w-full rounded-[16px]" />
+      ) : current.isError ? (
+        <CustomsLoadError onRetry={() => void current.refetch()} />
       ) : current.data ? (
         <CurrentListTable list={current.data} />
       ) : (
-        <p className="text-sm text-muted-foreground">{t("customs.emptyList")}</p>
+        <CustomsEmptyState canManage={canManage} />
       )}
 
-      {!unmatched.isLoading && <UnmatchedModelsList models={unmatched.data ?? []} />}
+      {unmatched.isError ? (
+        <CustomsInlineError onRetry={() => void unmatched.refetch()} />
+      ) : (
+        !unmatched.isLoading && (
+          <UnmatchedModelsList models={unmatched.data ?? []} canManageModels={canManageModels} />
+        )
+      )}
 
-      {!versions.isLoading && <VersionsList versions={versions.data ?? []} />}
-
-      <CreatePriceListDialog
-        current={current.data ?? null}
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-      />
+      {versions.isError ? (
+        <CustomsInlineError onRetry={() => void versions.refetch()} />
+      ) : (
+        !versions.isLoading && <VersionsList versions={versions.data ?? []} />
+      )}
     </div>
   )
 }

@@ -14,13 +14,23 @@ export function AppInitializer({ children }: { children: React.ReactNode }) {
     }
 
     const savedLocale = localStorage.getItem("erp_locale")
-    if (!savedLocale && (branding.defaultLanguage === "uz" || branding.defaultLanguage === "en")) {
+    if (!savedLocale && (branding.defaultLanguage === "uz" || branding.defaultLanguage === "en" || branding.defaultLanguage === "ru")) {
       useI18nStore.getState().setLocale(branding.defaultLanguage as Locale)
     }
 
     const savedTheme = localStorage.getItem("erp_theme")
-    if (!savedTheme && branding.themeCode) {
-      document.documentElement.setAttribute("data-theme", branding.themeCode)
+    const themeToApply = savedTheme || branding.themeCode || "caldera"
+    document.documentElement.setAttribute("data-theme", themeToApply)
+
+    const themeColors: Record<string, string> = {
+      caldera: "#ffffff",
+      obsidian: "#0f1117",
+      sand: "#fcfaf6",
+      nord: "#2e3440",
+    }
+    const themeMeta = document.querySelector('meta[name="theme-color"]')
+    if (themeMeta) {
+      themeMeta.setAttribute("content", themeColors[themeToApply] || "#863bff")
     }
 
     if (branding.name) {

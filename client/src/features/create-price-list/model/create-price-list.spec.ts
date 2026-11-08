@@ -1,7 +1,7 @@
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { validateRows, toCreateDto } from "./create-price-list.schema.ts"
-import { parseCustomsRows } from "./parse-customs-file.ts"
+import { parseCustomsRows, CustomsFileError } from "./parse-customs-file.ts"
 import { feeChangeOf } from "../../../entities/customs/model/customs.types.ts"
 
 test("validateRows rejects an empty list", () => {
@@ -61,14 +61,18 @@ test("parseCustomsRows parses valid excel rows into PriceListRows", () => {
   assert.deepEqual(parsed[3], { customsCode: "Note 20 Ultra", description: "", fee: "65" })
 })
 
-test("parseCustomsRows throws clear error when headers are missing or wrong", () => {
+test("parseCustomsRows throws a typed, translatable error when headers are missing or wrong", () => {
   const badRows = [
     ["Wrong Header", "Another Header"],
     ["iPhone 15", 94],
   ]
   assert.throws(
     () => parseCustomsRows(badRows),
-    /Invalid file format: expected headers "Модель" and "Цена Расстаможки"/
+    (err: unknown) => err instanceof CustomsFileError && err.code === "bad-format"
+  )
+  assert.throws(
+    () => parseCustomsRows([["Модель", "Цена Расстаможки"]]),
+    (err: unknown) => err instanceof CustomsFileError && err.code === "empty"
   )
 })
 

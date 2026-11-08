@@ -1,12 +1,15 @@
 // ---------------------------------------------------------------------------
-// Customer credit, the Islamic way (Change 6, ADR 0035). A walk-in named
-// customer takes the goods now and pays the agreed price in parts. NO INTEREST,
-// no late fee, no penalty — there is deliberately no such column anywhere here.
+// Customer credit, the Islamic way (Change 6, ADR 0035; margin ADR 0068). A
+// walk-in named customer takes the goods now and pays ONE agreed price in parts.
+// NO INTEREST, no late fee, no penalty — there is deliberately no such column
+// anywhere here. A fixed margin disclosed up front (Murabaha) is allowed: it is
+// part of the agreed price, frozen at creation, and never grows.
 //
 // Nothing derivable is stored: the agreed total is Σ sale prices of the
 // credit's not-returned sales, paid is Σ payments, outstanding = agreed − paid,
 // and "settled" is outstanding ≤ 0 (no status column). The arithmetic lives in
-// one pure function (credits/lib/credit-math.ts).
+// one pure function (credits/lib/credit-math.ts). The margin is folded into
+// those sale prices at checkout, so returns lower the debt by their share too.
 // ---------------------------------------------------------------------------
 
 /// One credit agreement covering a cart of sales (a phone and a case can share
@@ -22,6 +25,11 @@ model CustomerCredit {
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   note        String?
+  /// One fixed, disclosed margin agreed up front (ADR 0068), default 0 = the
+  /// classic interest-free instalment sale. Frozen: never grows, never a late
+  /// fee. Folded into the credit's Sale.salePrice rows so the derived standing,
+  /// returns and the credit-limit gate stay correct. Kept for disclosure only.
+  markupAmount Decimal  @default(0) @db.Decimal(14, 2)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

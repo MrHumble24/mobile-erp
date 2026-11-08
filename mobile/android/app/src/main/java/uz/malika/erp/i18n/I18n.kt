@@ -17,7 +17,7 @@ private val NAMESPACES = listOf(
     "expenses", "inventory", "nav", "orders", "partners", "pos", "pricing", "purchases", "qc",
     "reports", "repairs", "sales", "settings", "shifts", "shipments", "stores", "users",
 )
-private val LOCALES = listOf("uz", "en")
+private val LOCALES = listOf("uz", "en", "ru")
 const val DEFAULT_LOCALE = "uz"
 
 /** locale → namespace → key → value. */

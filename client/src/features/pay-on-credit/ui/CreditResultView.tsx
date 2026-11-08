@@ -16,6 +16,18 @@ export function CreditResultView({ credit, onDone }: { credit: CreditView; onDon
         <p className="text-base font-semibold">{t("credit.created")}</p>
       </div>
       <div className="space-y-1 rounded-[12px] border border-border bg-muted p-3 text-sm">
+        {Number(credit.markupAmount) > 0 && (
+          <>
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <span className="text-muted-foreground truncate">{t("credit.cashPrice")}</span>
+              <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">{formatMoney(credit.cashPrice)}</span>
+            </div>
+            <div className="flex justify-between items-center gap-2 min-w-0">
+              <span className="text-muted-foreground truncate">{t("credit.markup")}</span>
+              <span className="font-mono shrink-0 whitespace-nowrap tabular-nums">+ {formatMoney(credit.markupAmount)}</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between items-center gap-2 min-w-0">
           <span className="text-muted-foreground truncate">{t("credit.agreedTotal")}</span>
           <span className="font-mono font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(credit.agreedTotal)}</span>

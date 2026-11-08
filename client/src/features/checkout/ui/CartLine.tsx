@@ -1,8 +1,7 @@
-import { Trash2 } from "lucide-react"
 import { useI18n } from "@/shared/i18n"
-import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
+import { cn } from "@/shared/lib/utils"
 import type { LevelCode } from "@/entities/pricing"
 import { DeviceCard } from "./DeviceCard"
 import { PriceGuidance } from "./PriceGuidance"
@@ -16,6 +15,7 @@ export interface CartLineProps {
   minMarginPercent: number
   canOverridePrice: boolean
   canDiscountUnlimited: boolean
+  embedded?: boolean
 }
 
 function WarrantyAndNotes({ line }: { line: UnitCartLine }) {
@@ -23,24 +23,24 @@ function WarrantyAndNotes({ line }: { line: UnitCartLine }) {
   const setLineWarranty = useCartStore((s) => s.setLineWarranty)
   const setLineNotes = useCartStore((s) => s.setLineNotes)
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2.5">
       <div className="space-y-1">
-        <Label>{t("pos.warrantyDays")}</Label>
+        <Label className="text-xs font-medium text-muted-foreground">{t("pos.warrantyDays")}</Label>
         <Input
           type="number"
           min={0}
           value={line.warrantyDays}
           onChange={(e) => setLineWarranty(line.lineId, Number(e.target.value))}
-          className="h-10"
+          className="h-9 text-sm"
         />
       </div>
       <div className="space-y-1">
-        <Label>{t("common.notes")}</Label>
+        <Label className="text-xs font-medium text-muted-foreground">{t("common.notes")}</Label>
         <Input
           value={line.notes}
           onChange={(e) => setLineNotes(line.lineId, e.target.value)}
           placeholder="..."
-          className="h-10"
+          className="h-9 text-sm"
         />
       </div>
     </div>
@@ -55,13 +55,13 @@ function TypedPrice({ line, canViewCost, minMarginPercent }: Pick<CartLineProps,
   return (
     <div className="space-y-2">
       <div className="space-y-1">
-        <Label>{t("pos.salePrice")}</Label>
+        <Label className="text-xs font-medium text-muted-foreground">{t("pos.salePrice")}</Label>
         <Input
           type="number"
           min={0}
           value={line.salePrice || ""}
           onChange={(e) => setLinePrice(line.lineId, Number(e.target.value))}
-          className="h-11 text-lg font-bold"
+          className="h-10 text-base font-bold tabular-nums"
         />
       </div>
       <PriceGuidance
@@ -85,27 +85,18 @@ export function CartLine({
   minMarginPercent,
   canOverridePrice,
   canDiscountUnlimited,
+  embedded = false,
 }: CartLineProps) {
   const { t } = useI18n()
   const removeLine = useCartStore((s) => s.removeLine)
 
   return (
-    <div className="rounded-[16px] border border-border bg-card p-3 shadow-[var(--shadow-xs)] space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <DeviceCard device={line.device} />
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-red-600 shrink-0"
-          onClick={() => removeLine(line.lineId)}
-          aria-label={t("pos.removeLine")}
-        >
-          <Trash2 className="size-4" />
-        </Button>
-      </div>
+    <div className={cn("space-y-3", !embedded && "rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]")}>
+      <DeviceCard
+        device={line.device}
+        onRemove={() => removeLine(line.lineId)}
+        removeLabel={t("pos.removeLine")}
+      />
       <WarrantyAndNotes line={line} />
       <LinePriceSection
         line={line}

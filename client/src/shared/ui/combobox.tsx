@@ -25,6 +25,8 @@ export interface ComboboxProps {
   emptyText?: string
   disabled?: boolean
   className?: string
+  /** Accessible name for the trigger when the placeholder alone lacks context. */
+  ariaLabel?: string
   /** When set, offers a "create <query>" row for labels not in `options`. */
   allowCreate?: boolean
   onCreate?: (label: string) => void
@@ -112,6 +114,7 @@ export function Combobox({
   emptyText,
   disabled,
   className,
+  ariaLabel,
   allowCreate = false,
   onCreate,
 }: ComboboxProps) {
@@ -127,7 +130,7 @@ export function Combobox({
 
   return (
     <Popover open={open} onOpenChange={(next: boolean) => (next ? setOpen(true) : close())}>
-      <PopoverTrigger disabled={disabled} className={cn(TRIGGER_CLASS, className)}>
+      <PopoverTrigger disabled={disabled} aria-label={ariaLabel} className={cn(TRIGGER_CLASS, className)}>
         <span className={cn("truncate text-left min-w-0 flex-1 whitespace-nowrap", !selected && "text-muted-foreground")}>
           {selected ? selected.label : placeholder}
         </span>

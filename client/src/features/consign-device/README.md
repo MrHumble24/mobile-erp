@@ -16,7 +16,11 @@ One action: hand one or more in-stock devices to a partner on consignment.
   create endpoint once per row, sequentially, each with its own
   `clientMutationId`, so a retry never double-writes a partial batch.
 - `ui/ConsignDeviceForm.tsx` — partner select + device rows + shared fields.
-- `ui/ConsignDeviceRow.tsx` — one scannable device row.
+- `ui/ConsignDeviceRow.tsx` — one scannable device row with a debounced
+  inventory lookup (`use-consign-lookup.ts`, GET `/devices/by-imei`, the same
+  store scoping the write uses): resolves the model card + status badge,
+  warns when the unit is not IN_STOCK or missing, and prefills the agreed
+  price with the unit's PARTNER list price.
 
 ## Offline
 

@@ -1,3 +1,4 @@
+import { Prisma } from '../../generated/client/client.js';
 import { CreateSaleDto } from '../../sales/dto/create-sale.dto.js';
 import type { CreditRaw } from '../credits.repository.js';
 import type { CreditLineDto } from '../dto/create-credit.dto.js';
@@ -51,8 +52,13 @@ export function toCreditView(
   raw: CreditRaw,
   standing: CreditStanding,
 ): CreditView {
+  // The margin is a disclosed part of the agreed price, never growth on top of
+  // it: cashPrice + markupAmount = agreedTotal. Both are frozen at creation.
+  const markup = raw.markupAmount ?? new Prisma.Decimal(0);
   return {
     id: raw.id,
+    cashPrice: standing.agreedTotal.minus(markup).toFixed(2),
+    markupAmount: markup.toFixed(2),
     customer: raw.customer,
     createdBy: { id: raw.createdBy.id, name: fullName(raw.createdBy.profile) },
     note: raw.note,

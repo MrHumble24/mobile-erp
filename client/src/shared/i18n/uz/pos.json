@@ -99,5 +99,8 @@
   "tradeInErrorNoCustomer": "Trade-in qabul qilish uchun mijozni tanlang",
   "tradeInErrorOffline": "Trade-in faqat onlayn rejimda qabul qilinadi",
   "tradeInErrorExceedsSale": "Trade-in qiymati savdo summasidan qimmat",
-  "openRepairs": "Ta'mir chiptalari"
+  "openRepairs": "Ta'mir chiptalari",
+  "fullscreen": "To'liq ekran",
+  "fullscreenExit": "Ekrandan chiqish",
+  "exit": "Kassadan chiqish"
 }

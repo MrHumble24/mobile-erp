@@ -1,0 +1,17 @@
+{
+  "install": "Ilovani o'rnatish",
+  "installTitle": "ERP ilovasini o'rnatish",
+  "installDescription": "Ilovani kompyuter yoki telefoningizga o'rnatib, internet yo'qligida ham tezkor foydalaning.",
+  "installSuccess": "Ilova muvaffaqiyatli o'rnatildi!",
+  "iosInstallTitle": "iOS qurilmasiga o'rnatish",
+  "iosInstallStep1": "Safari pastidagi 'Ulashish' tugmasini bosing",
+  "iosInstallStep2": "Menyudan 'Bosh ekranga qo'shish'ni tanlang",
+  "iosInstallStep3": "Yuqori burchakdagi 'Qo'shish' tugmasini bosing",
+  "updateAvailable": "Yangi versiya mavjud",
+  "updateDescription": "Ilovaning yangi versiyasi yuklandi. Yangilash uchun tugmani bosing.",
+  "updateNow": "Yangilash",
+  "offlineReady": "Ilova oflayn ishlashga tayyor",
+  "dismiss": "Yopish",
+  "installed": "O'rnatilgan"
+}
+

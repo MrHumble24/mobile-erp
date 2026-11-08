@@ -47,6 +47,8 @@ export class SalesCreditService {
     dto: CreateSaleDto,
     ctx: CreditLineContext,
     tx: PrismaTx,
+    /** The line's share of one disclosed, fixed Murabaha margin (ADR 0068). */
+    markupShare: Prisma.Decimal = new Prisma.Decimal(0),
   ): Promise<CheckedOutLine> {
     dto.customerId = ctx.customerId;
     const customer = await this.reads.customerPricing(ctx.customerId);
@@ -60,9 +62,18 @@ export class SalesCreditService {
         ctx,
         tx,
         customer,
+        markupShare,
       );
     }
-    return this.unitLine(caller, dto, target.code, ctx, tx, customer);
+    return this.unitLine(
+      caller,
+      dto,
+      target.code,
+      ctx,
+      tx,
+      customer,
+      markupShare,
+    );
   }
 
   private async unitLine(
@@ -75,6 +86,7 @@ export class SalesCreditService {
       priceLevelCode: string;
       standingDiscountPercent: Prisma.Decimal;
     } | null,
+    markupShare: Prisma.Decimal,
   ): Promise<CheckedOutLine> {
     const device = await this.reads.findDeviceByImei(code, ctx.storeId);
     if (!device) throw new NotFoundException(`Device ${code} not found`);
@@ -84,6 +96,9 @@ export class SalesCreditService {
       );
     }
     const pricing = await this.pricing.forUnit(caller, dto, device, customer);
+    // Priced as an ordinary CASH sale first; the disclosed margin is then part
+    // of the single agreed price on this Sale row (never a second, growing fee).
+    const salePrice = pricing.salePrice.plus(markupShare);
     const days = dto.warrantyDays ?? (await this.reads.defaultWarrantyDays());
     const soldAt = new Date();
     const saleId = await this.checkout.checkout(
@@ -91,7 +106,7 @@ export class SalesCreditService {
         storeId: ctx.storeId,
         deviceId: device.id,
         expectedVersion: device.version,
-        salePrice: pricing.salePrice,
+        salePrice,
         landedCostSnapshot: device.landedCost,
         listPriceSnapshot: pricing.listPriceSnapshot,
         priceLevelCode: pricing.priceLevelCode,
@@ -109,7 +124,7 @@ export class SalesCreditService {
       },
       tx,
     );
-    return { saleId, salePrice: pricing.salePrice };
+    return { saleId, salePrice };
   }
 
   private async quantityLine(
@@ -123,23 +138,25 @@ export class SalesCreditService {
       priceLevelCode: string;
       standingDiscountPercent: Prisma.Decimal;
     } | null,
+    markupShare: Prisma.Decimal,
   ): Promise<CheckedOutLine> {
     await this.stock.assertQuantityModel(modelId);
-    const salePrice = await this.reads.modelSalePrice(modelId);
+    const modelSalePrice = await this.reads.modelSalePrice(modelId);
     const pricing = await this.pricing.forQuantity(
       caller,
       dto,
       modelId,
       quantity,
-      salePrice,
+      modelSalePrice,
       customer,
     );
+    const salePrice = pricing.salePrice.plus(markupShare);
     const saleId = await this.checkout.checkoutQuantity(
       {
         storeId: ctx.storeId,
         modelId,
         quantity,
-        salePrice: pricing.salePrice,
+        salePrice,
         listPriceSnapshot: pricing.listPriceSnapshot,
         priceLevelCode: pricing.priceLevelCode,
         soldById: caller.id,
@@ -151,6 +168,6 @@ export class SalesCreditService {
       },
       tx,
     );
-    return { saleId, salePrice: pricing.salePrice };
+    return { saleId, salePrice };
   }
 }

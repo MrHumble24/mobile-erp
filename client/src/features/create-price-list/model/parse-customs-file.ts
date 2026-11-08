@@ -1,6 +1,17 @@
 import readXlsxFile from "read-excel-file/universal"
 import type { PriceListRow } from "./create-price-list.schema.ts"
 
+/** Stable codes so the caller can show a translated, actionable error. */
+export class CustomsFileError extends Error {
+  readonly code: "bad-format" | "empty"
+
+  constructor(code: "bad-format" | "empty") {
+    super(code)
+    this.name = "CustomsFileError"
+    this.code = code
+  }
+}
+
 function isModelHeader(val: string): boolean {
   return val.toLowerCase().replace(/\s+/g, " ").includes("модель")
 }
@@ -33,7 +44,7 @@ export function parseCustomsRows(rows: (string | number | boolean | Date | null)
   }
 
   if (headerRowIndex === -1 || modelCol === -1 || feeCol === -1) {
-    throw new Error('Invalid file format: expected headers "Модель" and "Цена Расстаможки"')
+    throw new CustomsFileError("bad-format")
   }
 
   const items: PriceListRow[] = []
@@ -55,7 +66,7 @@ export function parseCustomsRows(rows: (string | number | boolean | Date | null)
   }
 
   if (items.length === 0) {
-    throw new Error("No data rows found in price list file")
+    throw new CustomsFileError("empty")
   }
 
   return items

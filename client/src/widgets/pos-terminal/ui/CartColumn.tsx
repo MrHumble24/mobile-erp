@@ -10,30 +10,25 @@ import {
   TotalsPanel,
   TradeInSection,
   useCartStore,
-  useCartTenderPlan,
-  toCreditLines,
 } from "@/features/checkout"
-import { CreditDialog } from "@/features/pay-on-credit"
 import type { usePosTerminal } from "../model/use-pos-terminal"
 
 type Pos = ReturnType<typeof usePosTerminal>
 
-/** The "sell on credit" entry point + its dialog, wired to the live cart. */
+/** The "sell on credit" entry point: navigates to the dedicated installment
+ *  page so the down payment, plan and review have room to breathe. */
 function CreditSell({ pos }: { pos: Pos }) {
   const { t } = useI18n()
   const lines = useCartStore((s) => s.lines)
-  const level = useCartStore((s) => s.priceLevelCode)
-  const customer = useCartStore((s) => s.customer)
-  const dueTotal = useCartTenderPlan().amountToPay
 
   return (
     <>
       <Button
         type="button"
         variant="outline"
-        className="h-11 w-full gap-2 font-semibold"
+        className="h-11 w-full gap-2 font-semibold border-foreground/25 bg-card"
         disabled={lines.length === 0 || pos.noOpenShift || pos.hasTradeIn}
-        onClick={() => pos.setCreditOpen(true)}
+        onClick={pos.navigateToCredit}
       >
         <HandCoins className="size-4" />
         {t("credit.payOnCredit")}
@@ -41,17 +36,6 @@ function CreditSell({ pos }: { pos: Pos }) {
       {pos.hasTradeIn && (
         <p className="text-xs text-muted-foreground">{t("purchases.tradeInNoCredit")}</p>
       )}
-      <CreditDialog
-        open={pos.creditOpen}
-        onOpenChange={pos.setCreditOpen}
-        lines={toCreditLines(lines, level)}
-        dueTotal={dueTotal}
-        customerId={customer?.id}
-        customerName={customer?.name}
-        customerPhone={customer?.phone}
-        offline={!pos.online}
-        onSold={pos.resetCart}
-      />
     </>
   )
 }

@@ -33,8 +33,8 @@ export function StorefrontHeader({
   const [orderIdInput, setOrderIdInput] = React.useState("")
 
   const toggleLocale = () => {
-    const next: Locale = locale === "uz" ? "en" : "uz"
-    setLocale(next)
+    const cycle: Record<Locale, Locale> = { uz: "ru", ru: "en", en: "uz" }
+    setLocale(cycle[locale] || "uz")
   }
 
   const handleTrackSubmit = (e: React.FormEvent) => {

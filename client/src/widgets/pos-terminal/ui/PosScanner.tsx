@@ -24,7 +24,7 @@ export function PosScanner({ scanner }: PosScannerProps) {
         onScan={handleScan}
         onClear={scanner.clear}
         placeholder={t("catalog.scanCode")}
-        className="h-12 text-base"
+        className="h-14 text-lg"
       />
       {scanner.scanResult && <ScanResultCard result={scanner.scanResult} />}
     </div>

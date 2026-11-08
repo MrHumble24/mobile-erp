@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import("@/pages/login"))
 const SetupWizardPage = lazy(() => import("@/pages/setup"))
 const DashboardPage = lazy(() => import("@/pages/dashboard"))
 const PosPage = lazy(() => import("@/pages/pos"))
+const PosCreditPage = lazy(() => import("@/pages/pos-credit"))
 const InventoryPage = lazy(() => import("@/pages/inventory"))
 const StockPage = lazy(() => import("@/pages/stock"))
 const ShipmentsPage = lazy(() => import("@/pages/shipments"))
@@ -30,6 +31,9 @@ const PartnersPage = lazy(() => import("@/pages/partners"))
 const ExpensesPage = lazy(() => import("@/pages/expenses"))
 const BalancePage = lazy(() => import("@/pages/balance"))
 const CustomsPage = lazy(() => import("@/pages/customs"))
+const CreatePriceListPage = lazy(() =>
+  import("@/pages/customs").then((m) => ({ default: m.CreatePriceListPage }))
+)
 const ReportsPage = lazy(() => import("@/pages/reports"))
 const StoresPage = lazy(() => import("@/pages/stores"))
 const TransfersPage = lazy(() => import("@/pages/transfers"))
@@ -57,6 +61,7 @@ function ProtectedRoutes() {
         <Route index element={<DashboardPage />} />
         <Route element={<RequirePermission permission="sale.create" />}>
           <Route path="/pos" element={<PosPage />} />
+          <Route path="/pos/credit" element={<PosCreditPage />} />
         </Route>
         <Route element={<RequirePermission permission="device.read" />}>
           <Route path="/inventory" element={<InventoryPage />} />
@@ -99,6 +104,9 @@ function ProtectedRoutes() {
         </Route>
         <Route element={<RequirePermission permission="balance.read" />}>
           <Route path="/balance" element={<BalancePage />} />
+        </Route>
+        <Route element={<RequirePermission permission="customs.manage" />}>
+          <Route path="/customs/new" element={<CreatePriceListPage />} />
         </Route>
         <Route element={<RequirePermission permission="customs.read" />}>
           <Route path="/customs" element={<CustomsPage />} />

@@ -61,13 +61,14 @@ export function CartLineRow({
             </Button>
           }
         />
-        <PopoverContent align="end" className="w-80 max-w-[90vw] p-0">
+        <PopoverContent align="end" className="w-[390px] sm:w-[410px] max-w-[calc(100vw-1.5rem)] p-4 shadow-[var(--shadow-lg)]">
           {line.kind === "quantity" ? (
             <QuantityCartLine
               line={line}
               level={level}
               canOverridePrice={canOverridePrice}
               canDiscountUnlimited={canDiscountUnlimited}
+              embedded
             />
           ) : (
             <CartLine
@@ -77,6 +78,7 @@ export function CartLineRow({
               minMarginPercent={minMarginPercent}
               canOverridePrice={canOverridePrice}
               canDiscountUnlimited={canDiscountUnlimited}
+              embedded
             />
           )}
         </PopoverContent>

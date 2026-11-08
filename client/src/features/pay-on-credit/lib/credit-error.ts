@@ -14,5 +14,6 @@ export function creditErrorKey(err: unknown): string | null {
   if (m.includes("disabled") || m.includes("switched off") || m.includes("turned off"))
     return "credit.errorDisabled"
   if (m.includes("phone")) return "credit.needsCustomer"
+  if (m.includes("agreed margin cannot exceed")) return "credit.errorMarkup"
   return null
 }

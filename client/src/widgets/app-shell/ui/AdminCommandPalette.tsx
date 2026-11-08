@@ -140,13 +140,13 @@ function CommandQuickActionsGroup({
       <CommandPosItem onSelect={() => onNavigate("/pos")} />
       <CommandExpenseItem onSelect={() => onNavigate("/expenses")} />
       <CommandItem
-        value="Tilni o'zgartirish Switch Language UZ EN"
+        value="Tilni o'zgartirish Switch Language Сменить язык UZ RU EN"
         onSelect={onToggleLocale}
         className="flex items-center gap-2.5 px-3 py-2 text-xs rounded-full cursor-pointer hover:bg-muted data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground"
       >
         <Languages className="w-4 h-4 text-primary shrink-0" />
         <span className="font-medium">
-          Tilni almashtirish ({currentLocale === "uz" ? "O'zbekcha -> English" : "English -> O'zbekcha"})
+          Tilni almashtirish / Сменить язык ({currentLocale === "uz" ? "O'zbekcha" : currentLocale === "ru" ? "Русский" : "English"})
         </span>
       </CommandItem>
       <CommandItem
@@ -172,7 +172,8 @@ export function AdminCommandPalette({ open, onOpenChange }: AdminCommandPaletteP
   }
 
   const handleToggleLocale = () => {
-    setLocale(locale === "uz" ? "en" : "uz")
+    const cycle: Record<Locale, Locale> = { uz: "ru", ru: "en", en: "uz" }
+    setLocale(cycle[locale] || "uz")
     onOpenChange(false)
   }
 

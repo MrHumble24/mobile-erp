@@ -49,6 +49,7 @@
 | Aging | Omborda turgan muddat | Tovar omborda necha kundan beri turganligi |
 | Cart | Savat | Kassadagi xarid qilinayotgan tovarlar ro'yxati |
 | Margin | Marja | Sotuv narxi va tannarx orasidagi foyda foizi |
+| Agreed Margin / Markup (Murabaha) | Kelishilgan ustama | Muddatli to'lovda naqd narxiga oldindan kelishilgan, bir martalik qo'shimcha; keyin oshmaydi, foiz emas |
 | Walk-in | Oddiy xaridor | Ro'yxatdan o'tmagan bir martalik xaridor |
 | Cheque / Receipt | Chek | Savdo cheki / to'lov kvitansiyasi |
 | Shortcut | Tezkor tugma | Klaviatura orqali tezkor amallar |

@@ -30,6 +30,7 @@ import uzTransfers from "./uz/transfers.json"
 import uzUsers from "./uz/users.json"
 import uzStorefront from "./uz/storefront.json"
 import uzOrders from "./uz/orders.json"
+import uzPwa from "./uz/pwa.json"
 
 import enAuth from "./en/auth.json"
 import enBackups from "./en/backups.json"
@@ -62,8 +63,42 @@ import enTransfers from "./en/transfers.json"
 import enUsers from "./en/users.json"
 import enStorefront from "./en/storefront.json"
 import enOrders from "./en/orders.json"
+import enPwa from "./en/pwa.json"
 
-export type Locale = "uz" | "en"
+import ruAuth from "./ru/auth.json"
+import ruBackups from "./ru/backups.json"
+import ruBalance from "./ru/balance.json"
+import ruCatalog from "./ru/catalog.json"
+import ruCommon from "./ru/common.json"
+import ruConsignments from "./ru/consignments.json"
+import ruCredit from "./ru/credit.json"
+import ruCustoms from "./ru/customs.json"
+import ruCustomers from "./ru/customers.json"
+import ruDashboard from "./ru/dashboard.json"
+import ruExpenses from "./ru/expenses.json"
+import ruInventory from "./ru/inventory.json"
+import ruNav from "./ru/nav.json"
+import ruPartners from "./ru/partners.json"
+import ruPos from "./ru/pos.json"
+import ruPricing from "./ru/pricing.json"
+import ruPurchases from "./ru/purchases.json"
+import ruQc from "./ru/qc.json"
+import ruReports from "./ru/reports.json"
+import ruRepairs from "./ru/repairs.json"
+import ruSales from "./ru/sales.json"
+import ruSettings from "./ru/settings.json"
+import ruSetup from "./ru/setup.json"
+import ruShifts from "./ru/shifts.json"
+import ruShipments from "./ru/shipments.json"
+import ruStores from "./ru/stores.json"
+import ruSync from "./ru/sync.json"
+import ruTransfers from "./ru/transfers.json"
+import ruUsers from "./ru/users.json"
+import ruStorefront from "./ru/storefront.json"
+import ruOrders from "./ru/orders.json"
+import ruPwa from "./ru/pwa.json"
+
+export type Locale = "uz" | "en" | "ru"
 
 const translations: Record<Locale, Record<string, Record<string, string>>> = {
   uz: {
@@ -98,6 +133,7 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     users: uzUsers,
     storefront: uzStorefront,
     orders: uzOrders,
+    pwa: uzPwa,
   },
   en: {
     auth: enAuth,
@@ -131,6 +167,41 @@ const translations: Record<Locale, Record<string, Record<string, string>>> = {
     users: enUsers,
     storefront: enStorefront,
     orders: enOrders,
+    pwa: enPwa,
+  },
+  ru: {
+    auth: ruAuth,
+    backups: ruBackups,
+    balance: ruBalance,
+    catalog: ruCatalog,
+    common: ruCommon,
+    consignments: ruConsignments,
+    credit: ruCredit,
+    customs: ruCustoms,
+    customers: ruCustomers,
+    dashboard: ruDashboard,
+    expenses: ruExpenses,
+    inventory: ruInventory,
+    nav: ruNav,
+    partners: ruPartners,
+    pos: ruPos,
+    pricing: ruPricing,
+    purchases: ruPurchases,
+    qc: ruQc,
+    reports: ruReports,
+    repairs: ruRepairs,
+    sales: ruSales,
+    settings: ruSettings,
+    setup: ruSetup,
+    shifts: ruShifts,
+    shipments: ruShipments,
+    stores: ruStores,
+    sync: ruSync,
+    transfers: ruTransfers,
+    users: ruUsers,
+    storefront: ruStorefront,
+    orders: ruOrders,
+    pwa: ruPwa,
   },
 }
 
@@ -155,7 +226,7 @@ export function translate(key: string, locale: Locale = "uz", params?: Record<st
   const parts = key.split(".")
   if (parts.length < 2) return key
   const [namespace, stringKey] = parts
-  const bundle = translations[locale]?.[namespace] || translations.uz[namespace]
+  const bundle = translations[locale]?.[namespace] || translations.uz[namespace] || translations.en[namespace]
   const text = bundle?.[stringKey] ?? key
   return formatString(text, params)
 }

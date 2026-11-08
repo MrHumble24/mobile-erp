@@ -24,6 +24,8 @@ export class CreditsWriteRepository {
       createdById: string;
       note?: string;
       clientKey?: string;
+      /** One disclosed, fixed margin (ADR 0068); default 0 server-side. */
+      markupAmount?: Prisma.Decimal;
     },
   ): Promise<string> {
     const credit = await tx.customerCredit.create({

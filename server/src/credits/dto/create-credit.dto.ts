@@ -114,6 +114,21 @@ export class CreateCreditDto {
   @MaxLength(500)
   note?: string;
 
+  /**
+   * One fixed, DISCLOSED margin agreed up front (ADR 0068). Optional, default
+   * 0 = the classic interest-free instalment sale. Never interest, never a late
+   * fee, frozen at creation: the agreed price never grows afterwards.
+   *
+   * Lines stay at their normal CASH price. The server adds this margin to the
+   * resolved prices, folds it into the credit's Sale rows, and requires the
+   * down payment + instalments to equal cash price + margin.
+   */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(1_000_000_000)
+  markupAmount?: number;
+
   /** Idempotency key from the till, like a sale's clientMutationId. */
   @IsOptional()
   @IsString()

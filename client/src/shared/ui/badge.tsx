@@ -16,7 +16,7 @@ const badgeVariants = cva(
         blue:
           "bg-primary text-primary-foreground border-none shadow-none",
         amber:
-          "bg-amber-500/15 text-amber-700 border border-amber-500/30 shadow-none",
+          "bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-none",
         violet:
           "bg-primary/10 text-primary border border-primary/20 shadow-none",
         emerald:

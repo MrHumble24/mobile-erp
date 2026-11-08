@@ -1,0 +1,17 @@
+{
+  "install": "Install App",
+  "installTitle": "Install ERP App",
+  "installDescription": "Install the app on your computer or phone for quick access and offline reliability.",
+  "installSuccess": "App installed successfully!",
+  "iosInstallTitle": "Install on iOS",
+  "iosInstallStep1": "Tap the 'Share' button at the bottom of Safari",
+  "iosInstallStep2": "Scroll down and tap 'Add to Home Screen'",
+  "iosInstallStep3": "Tap 'Add' in the top right corner",
+  "updateAvailable": "New update available",
+  "updateDescription": "A new version of the app is available. Click to refresh and apply.",
+  "updateNow": "Update now",
+  "offlineReady": "App is ready to work offline",
+  "dismiss": "Dismiss",
+  "installed": "Installed"
+}
+

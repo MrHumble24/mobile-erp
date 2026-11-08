@@ -23,6 +23,7 @@ import {
   validateDownPayments,
 } from './lib/credit-validation.js';
 import { toSaleDto } from './lib/credit-mapper.js';
+import { distributeMarkup } from './lib/credit-markup.js';
 import type { CreditView } from './types/credit.types.js';
 
 interface CreateCreditTx {
@@ -32,6 +33,8 @@ interface CreateCreditTx {
   downPayments: { accountCode: string; amount: Prisma.Decimal }[];
   instalmentsTotal: Prisma.Decimal;
   downTotal: Prisma.Decimal;
+  /** One disclosed, fixed margin agreed up front (ADR 0068). */
+  markup: Prisma.Decimal;
   limit: Prisma.Decimal | null;
   now: Date;
 }
@@ -81,6 +84,18 @@ export class CreditsService {
     );
     const accounts = await this.ledger.activeAccountCodes();
     const downPayments = validateDownPayments(dto.payments ?? [], accounts);
+    const markup = new Prisma.Decimal(dto.markupAmount ?? 0);
+    // The margin is a disclosed part of the price, never more than the goods
+    // themselves: this also keeps cashPrice = agreedTotal − margin non-negative.
+    const cashClaim = dto.lines.reduce(
+      (s, l) => s.plus(new Prisma.Decimal(l.salePrice)),
+      ZERO,
+    );
+    if (markup.greaterThan(cashClaim)) {
+      throw new BadRequestException(
+        'Agreed margin cannot exceed the cash price',
+      );
+    }
     const ctx: CreateCreditTx = {
       dto,
       caller,
@@ -91,6 +106,7 @@ export class CreditsService {
         ZERO,
       ),
       downTotal: downPayments.reduce((s, p) => s.plus(p.amount), ZERO),
+      markup,
       limit: this.effectiveLimit(
         customer.creditLimit,
         settings.defaultCreditLimit,
@@ -124,6 +140,7 @@ export class CreditsService {
       createdById: caller.id,
       note: dto.note,
       clientKey: dto.clientKey,
+      markupAmount: ctx.markup,
     });
     const cartTotal = await this.checkoutLines(tx, ctx, id);
     assertPlanAddsUp(ctx.instalmentsTotal, ctx.downTotal, cartTotal);
@@ -154,20 +171,30 @@ export class CreditsService {
     return id;
   }
 
-  /** Check out every credit-cart line (no SALE rows) and sum the cart total. */
+  /**
+   * Check out every credit-cart line (no SALE ledger rows) and sum the AGREED
+   * cart total = Σ cash prices + the disclosed margin. Each line is still
+   * priced by the normal cash checkout first (so no `sale.price.override` is
+   * needed), then the server folds its share of the margin into the Sale row.
+   */
   private async checkoutLines(
     tx: PrismaTx,
     ctx: CreateCreditTx,
     creditId: string,
   ): Promise<Prisma.Decimal> {
     const { dto, caller, storeId } = ctx;
+    const shares = distributeMarkup(
+      dto.lines.map((l) => new Prisma.Decimal(l.salePrice)),
+      ctx.markup,
+    );
     let cartTotal = ZERO;
-    for (const line of dto.lines) {
+    for (let i = 0; i < dto.lines.length; i++) {
       const checked = await this.salesCredit.checkoutLine(
         caller,
-        toSaleDto(line),
+        toSaleDto(dto.lines[i]),
         { creditId, storeId, customerId: dto.customerId },
         tx,
+        shares[i],
       );
       cartTotal = cartTotal.plus(checked.salePrice);
     }

@@ -10,6 +10,7 @@ import type { StockScanProduct } from "@/entities/stock"
 import type { CatalogEntry, CatalogUnit } from "@/entities/catalog"
 import { useCurrentShift } from "@/entities/shift"
 import { useCartStore, isLineBlocked, isPaymentBlocked, useCartTenderPlan, useTradeInStore } from "@/features/checkout"
+import { useNavigate } from "react-router"
 import { usePosScanner, focusScanner } from "./use-pos-scanner"
 import { usePosShortcuts } from "./use-pos-shortcuts"
 import { usePosCheckout } from "./use-pos-checkout"
@@ -54,7 +55,13 @@ export function usePosTerminal() {
 
   const [mode, setMode] = React.useState<PosMode>("sale")
   const [customerOpen, setCustomerOpen] = React.useState(false)
-  const [creditOpen, setCreditOpen] = React.useState(false)
+  const navigate = useNavigate()
+
+  /** Open the dedicated, full-screen installment page. The cart stays in the
+   *  persisted store so nothing is lost across the navigation. */
+  const navigateToCredit = React.useCallback(() => {
+    navigate("/pos/credit")
+  }, [navigate])
   const inputMode = usePosPrefsStore((s) => s.inputMode)
   const setInputMode = usePosPrefsStore((s) => s.setInputMode)
 
@@ -127,6 +134,9 @@ export function usePosTerminal() {
     inputMode,
     setInputMode,
     priceLevelCode,
+    lines,
+    customer,
+    dueTotal: tenderPlan.amountToPay,
     scanner,
     excludeUnitIds,
     onPickUnit,
@@ -143,8 +153,7 @@ export function usePosTerminal() {
     canTradeIn,
     hasTradeIn,
     online,
-    creditOpen,
-    setCreditOpen,
+    navigateToCredit,
     resetCart,
     consign,
     shiftsEnabled,

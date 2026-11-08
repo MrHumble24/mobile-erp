@@ -39,8 +39,8 @@ export function LinePriceSection({
     <div className="space-y-2">
       {hasList && (
         <div className="flex items-center justify-between gap-2 min-w-0 text-sm">
-          <span className="text-muted-foreground truncate">{t("pricing.listPrice")}</span>
-          <span className="font-semibold shrink-0 whitespace-nowrap tabular-nums">{formatMoney(fromCents(listCents))}</span>
+          <span className="text-xs font-medium text-muted-foreground truncate">{t("pricing.listPrice")}</span>
+          <span className="font-semibold text-sm shrink-0 whitespace-nowrap tabular-nums">{formatMoney(fromCents(listCents))}</span>
         </div>
       )}
       {showTyped && children}
@@ -49,12 +49,12 @@ export function LinePriceSection({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 gap-1 text-xs text-muted-foreground"
+          className="h-7 px-1.5 text-xs text-muted-foreground hover:text-foreground gap-1.5 -ml-1.5"
           onClick={() => setLineOverride(line.lineId, !line.overrideActive)}
           title={t("pricing.priceOverrideHint")}
         >
           <Pencil className="size-3" />
-          {line.overrideActive ? t("pricing.listPrice") : t("pricing.priceOverride")}
+          <span>{line.overrideActive ? t("pricing.listPrice") : t("pricing.priceOverride")}</span>
         </Button>
       )}
       <DiscountControl line={line} level={level} canDiscountUnlimited={canDiscountUnlimited} />

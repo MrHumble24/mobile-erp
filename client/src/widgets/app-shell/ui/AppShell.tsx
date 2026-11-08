@@ -5,8 +5,22 @@ import { Sidebar } from "./Sidebar"
 import { AdminCommandPalette } from "./AdminCommandPalette"
 import { useI18n, type Locale } from "@/shared/i18n"
 import { useSyncEngine } from "@/entities/sync"
+import { PwaUpdateToast } from "@/features/pwa"
 
 const COLLAPSED_STORAGE_KEY = "erp_sidebar_collapsed"
+
+/**
+ * Routes that render without the app chrome (sidebar, header, page padding and
+ * the scrolling <main>). The till is a focused terminal: it owns the whole
+ * viewport. Declarative <Routes> has no `useMatches`, so opt-in is by pathname.
+ */
+const CHROMELESS_ROUTE_PREFIXES = ["/pos"]
+
+function isChromelessRoute(pathname: string): boolean {
+  return CHROMELESS_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+}
 
 function useSidebarState() {
   const [collapsed, setCollapsed] = React.useState<boolean>(() => {
@@ -101,9 +115,20 @@ export function AppShell() {
   }, [location.pathname, setMobileOpen])
 
   const toggleLocale = React.useCallback(() => {
-    const next: Locale = locale === "uz" ? "en" : "uz"
-    setLocale(next)
+    const cycle: Record<Locale, Locale> = { uz: "ru", ru: "en", en: "uz" }
+    setLocale(cycle[locale] || "uz")
   }, [locale, setLocale])
+
+  // Full-bleed, no scroll: the page manages its own bounded layout. The sync
+  // engine and global shortcuts above still run — only the chrome is dropped.
+  if (isChromelessRoute(location.pathname)) {
+    return (
+      <div className="h-dvh w-full overflow-hidden bg-muted text-foreground antialiased">
+        <Outlet />
+        <AdminCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-muted text-foreground antialiased">
@@ -131,6 +156,7 @@ export function AppShell() {
       </div>
 
       <AdminCommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      <PwaUpdateToast />
     </div>
   )
 }

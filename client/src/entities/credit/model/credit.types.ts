@@ -33,10 +33,16 @@ export interface CreditTenderDto {
 
 export interface CreateCreditDto {
   customerId: string
+  /** Priced at the normal CASH price — the server adds the disclosed margin. */
   lines: CreditLineDto[]
   /** Down payment taken now (cash/card/split). May be empty. */
   payments?: CreditTenderDto[]
   instalments: CreditInstalmentDto[]
+  /**
+   * One fixed, disclosed margin agreed up front (ADR 0068). Optional, 0 = the
+   * classic interest-free sale. Folded into the agreed price once, never grows.
+   */
+  markupAmount?: number
   note?: string
   /** Idempotency key from the till. */
   clientKey?: string
@@ -83,6 +89,10 @@ export interface CreditView {
   sales: CreditSaleView[]
   instalments: CreditInstalmentView[]
   payments: CreditPaymentView[]
+  /** Cash price of the goods = agreedTotal − markupAmount (ADR 0068). */
+  cashPrice: string
+  /** One fixed, disclosed margin; "0.00" for an interest-free credit. */
+  markupAmount: string
   agreedTotal: string
   paid: string
   outstanding: string
@@ -127,6 +137,10 @@ export interface CreditContract {
     quantity: number | null
     price: string
   }[]
+  /** Cash price of the goods, before the disclosed margin. */
+  cashPrice: string
+  /** One fixed, disclosed margin agreed up front (ADR 0068). */
+  markupAmount: string
   agreedTotal: string
   downPayment: string
   instalments: { dueDate: string; amount: string }[]

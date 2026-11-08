@@ -23,7 +23,7 @@ export function InstalmentRows({ instalments, onAmount, onDue, onAdd, onRemove }
         const past = isPastDue(row.dueDate)
         return (
           <div key={i} className="flex items-end gap-2">
-            <div className="w-10 shrink-0 pb-2.5 text-xs font-semibold text-muted-foreground">
+            <div className="w-16 shrink-0 whitespace-nowrap pb-2.5 text-xs font-semibold text-muted-foreground">
               {t("credit.instalment", { n: i + 1 })}
             </div>
             <div className="flex-1 space-y-1">

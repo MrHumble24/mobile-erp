@@ -119,7 +119,7 @@ struct AppShell: View {
     }
 }
 
-/// Locale switcher (uz / en), persisted. Stock `Picker` inside the account menu.
+/// Locale switcher (uz / ru / en), persisted. Stock `Picker` inside the account menu.
 struct LocaleMenu: View {
     let i18n: I18n
     var body: some View {
@@ -127,6 +127,7 @@ struct LocaleMenu: View {
                selection: Binding(get: { i18n.locale },
                                   set: { i18n.setLocale($0) })) {
             Text("O'zbekcha").tag("uz")
+            Text("Русский").tag("ru")
             Text("English").tag("en")
         }
     }

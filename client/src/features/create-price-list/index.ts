@@ -1,1 +1,1 @@
-export { CreatePriceListDialog } from "./ui/CreatePriceListDialog"
+export { CreatePriceListForm } from "./ui/CreatePriceListForm"

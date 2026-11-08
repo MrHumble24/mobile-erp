@@ -6,6 +6,22 @@ import { Badge } from "@/shared/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table"
 import { FeeChangeBadge } from "./FeeChangeBadge"
 
+function ListTableHead() {
+  const { t } = useI18n()
+  return (
+    <TableHeader>
+      <TableRow>
+        <TableHead>{t("customs.customsCode")}</TableHead>
+        <TableHead>{t("customs.description")}</TableHead>
+        <TableHead className="text-right">{t("customs.fee")}</TableHead>
+        <TableHead className="text-right">{t("customs.previousFee")}</TableHead>
+        <TableHead>{t("customs.change")}</TableHead>
+        <TableHead>{t("customs.linkedColumn")}</TableHead>
+      </TableRow>
+    </TableHeader>
+  )
+}
+
 export function CurrentListTable({ list }: { list: CurrentPriceList }) {
   const { t } = useI18n()
   return (
@@ -17,18 +33,12 @@ export function CurrentListTable({ list }: { list: CurrentPriceList }) {
           {list.note ? ` · ${list.note}` : ""}
         </span>
       </div>
+      <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
+        {t("customs.linkedHint")}
+      </p>
       <div className="rounded-[16px] border border-border bg-card overflow-hidden shadow-[var(--shadow-xs)]">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("customs.customsCode")}</TableHead>
-              <TableHead>{t("customs.description")}</TableHead>
-              <TableHead className="text-right">{t("customs.fee")}</TableHead>
-              <TableHead className="text-right">{t("customs.previousFee")}</TableHead>
-              <TableHead>{t("customs.change")}</TableHead>
-              <TableHead>{t("customs.usedByModel")}</TableHead>
-            </TableRow>
-          </TableHeader>
+          <ListTableHead />
           <TableBody>
             {list.items.map((item) => (
               <TableRow key={item.customsCode}>
@@ -43,10 +53,10 @@ export function CurrentListTable({ list }: { list: CurrentPriceList }) {
                   {item.usedByModel ? (
                     <Badge variant="mint" className="gap-1">
                       <Check className="size-3" />
-                      {t("customs.usedByModel")}
+                      {t("common.yes")}
                     </Badge>
                   ) : (
-                    <span className="text-xs text-muted-foreground">{t("customs.notUsed")}</span>
+                    <span className="text-xs text-muted-foreground">{t("common.no")}</span>
                   )}
                 </TableCell>
               </TableRow>

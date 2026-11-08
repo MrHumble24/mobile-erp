@@ -16,6 +16,12 @@ export function CreditTotals({ credit }: { credit: CreditView }) {
     [t("credit.outstanding"), formatMoney(credit.outstanding)],
     [t("credit.overdueAmount"), formatMoney(credit.overdueAmount)],
   ]
+  if (Number(credit.markupAmount) > 0) {
+    rows.unshift(
+      [t("credit.cashPrice"), formatMoney(credit.cashPrice)],
+      [t("credit.markup"), `+ ${formatMoney(credit.markupAmount)}`]
+    )
+  }
   return (
     <div className="grid grid-cols-2 gap-2.5">
       {rows.map(([label, value]) => (

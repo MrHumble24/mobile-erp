@@ -179,6 +179,45 @@ describe('CreditsService.create', () => {
       expect(call[0].typeCode).toBe('CREDIT_PAYMENT');
     }
   });
+
+  it('folds a disclosed margin into the agreed total and stores it (ADR 0068)', async () => {
+    const { service, salesCredit, writes } = build({ lineTotals: [D(300)] });
+    // Mirror the real checkout: the resolved price is cash + this line's share.
+    salesCredit.checkoutLine.mockReset();
+    salesCredit.checkoutLine.mockImplementation(
+      async (
+        _caller: unknown,
+        line: { salePrice: number },
+        _ctx: unknown,
+        _tx: unknown,
+        share?: Prisma.Decimal,
+      ) => ({ saleId: 's', salePrice: D(line.salePrice).plus(share ?? D(0)) }),
+    );
+    await service.create(
+      caller,
+      dto({
+        markupAmount: 30,
+        payments: [{ accountCode: 'CASH', amount: 100 }],
+        instalments: [
+          { dueDate: future(), amount: 115 },
+          { dueDate: future(), amount: 115 },
+        ],
+      }),
+    );
+    // 300 cash + 30 margin = 330; down 100 + plan 230 = 330 → balanced.
+    const stored = writes.createCredit.mock.calls[0][1] as {
+      markupAmount: Prisma.Decimal;
+    };
+    expect(stored.markupAmount.toFixed(2)).toBe('30.00');
+    expect(salesCredit.checkoutLine.mock.calls[0][4].toFixed(2)).toBe('30.00');
+  });
+
+  it('rejects a margin larger than the cash price', async () => {
+    const { service } = build();
+    await expect(
+      service.create(caller, dto({ markupAmount: 301 })),
+    ).rejects.toThrow(/margin cannot exceed the cash price/);
+  });
 });
 
 describe('CreditsService later payments', () => {

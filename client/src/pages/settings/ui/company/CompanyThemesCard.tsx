@@ -29,6 +29,16 @@ export function CompanyThemesCard({
   const handleSelectTheme = (code: string) => {
     onChange({ themeCode: code })
     document.documentElement.setAttribute("data-theme", code)
+    const themeColors: Record<string, string> = {
+      caldera: "#ffffff",
+      obsidian: "#0f1117",
+      sand: "#fcfaf6",
+      nord: "#2e3440",
+    }
+    const themeMeta = document.querySelector('meta[name="theme-color"]')
+    if (themeMeta) {
+      themeMeta.setAttribute("content", themeColors[code] || "#863bff")
+    }
   }
 
   return (

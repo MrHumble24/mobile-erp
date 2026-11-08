@@ -14,6 +14,7 @@ import {
   type NavSection,
 } from "../model/navigation"
 import { AssetImage } from "@/shared/ui"
+import { PwaInstallButton } from "@/features/pwa"
 
 function SidebarBrand({ collapsed }: { collapsed: boolean }) {
   const { data: branding } = useBranding()
@@ -194,9 +195,12 @@ function SidebarFooter({ collapsed }: { collapsed: boolean }) {
   const { data: branding } = useBranding()
   if (collapsed) return null
   return (
-    <div className="p-3 border-t border-border bg-muted shrink-0 text-[10px] text-muted-foreground flex items-center justify-between">
-      <span>{branding?.name || "ERP"} v1.2</span>
-      <span className="font-mono bg-muted border border-border px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
+    <div className="p-3 border-t border-border bg-muted/60 shrink-0 text-[10px] text-muted-foreground flex flex-col gap-2">
+      <PwaInstallButton className="w-full h-8 text-[11px]" />
+      <div className="flex items-center justify-between">
+        <span>{branding?.name || "ERP"} v1.2</span>
+        <span className="font-mono bg-muted border border-border px-1.5 py-0.5 rounded">⌘B / ⌘K</span>
+      </div>
     </div>
   )
 }

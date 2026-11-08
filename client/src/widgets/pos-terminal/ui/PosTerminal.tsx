@@ -1,78 +1,71 @@
-import { CheckoutReceiptModal } from "@/features/checkout"
-import { CatalogBrowser } from "@/features/catalog-sell"
+import * as React from "react"
 import { ShiftBar } from "@/features/manage-shift"
-import { ModeSwitch } from "./ModeSwitch"
-import { InputModeSwitch } from "./InputModeSwitch"
-import { ShortcutsHelp } from "./ShortcutsHelp"
+import { PosTopBar } from "./PosTopBar"
+import { PosWorkPane } from "./PosWorkPane"
+import { PosTillPane } from "./PosTillPane"
 import { PosScanner } from "./PosScanner"
-import { ProductSearch } from "./ProductSearch"
-import { SessionPanel } from "./SessionPanel"
 import { NasiyaPanel } from "./NasiyaPanel"
 import { CartBar } from "./CartBar"
-import { CartColumn } from "./CartColumn"
 import { usePosTerminal } from "../model/use-pos-terminal"
+import { useFullscreen } from "../model/use-fullscreen"
 
+/** Partner consignment keeps its own, deliberately quiet canvas. */
+function NasiyaView({ pos }: { pos: ReturnType<typeof usePosTerminal> }) {
+  return (
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+      <div className="shrink-0 rounded-[16px] border border-border bg-card p-4 shadow-[var(--shadow-xs)]">
+        <PosScanner scanner={pos.scanner} />
+      </div>
+      <NasiyaPanel
+        open={pos.consign.open}
+        onOpenChange={pos.consign.setOpen}
+        initialImei={pos.consign.imei}
+        initialAgreedPrice={pos.consign.price}
+        partnerPriceUsed={pos.consign.partnerPrice}
+      />
+    </section>
+  )
+}
+
+/**
+ * The till fills the whole viewport: one slim bar, a bounded work area and a
+ * checkout column whose totals never leave the screen. Nothing here scrolls the
+ * page. Selling on credit navigates to the dedicated /pos/credit page.
+ */
 export function PosTerminal() {
   const pos = usePosTerminal()
-  const catalogSale = pos.inputMode === "catalog" && pos.mode === "sale"
+  const fullscreen = useFullscreen()
+
+  // Navigating away must not leave the browser stuck in kiosk fullscreen.
+  const { exit: exitFullscreen } = fullscreen
+  React.useEffect(() => {
+    return () => {
+      void exitFullscreen()
+    }
+  }, [exitFullscreen])
 
   return (
-    <div className="space-y-5">
-      {pos.shiftsEnabled && <ShiftBar />}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <ModeSwitch mode={pos.mode} onModeChange={pos.setMode} />
-          <InputModeSwitch mode={pos.inputMode} onModeChange={pos.setInputMode} />
+    <div className="flex h-full flex-col overflow-hidden bg-muted">
+      {pos.shiftsEnabled && (
+        <div className="shrink-0 px-3 pt-3 sm:px-4">
+          <ShiftBar />
         </div>
-        <ShortcutsHelp />
-      </div>
-
-      {catalogSale ? (
-        // Grid on the left (own scroll), a pinned cart column on the right whose
-        // lines scroll while totals + checkout stay in view (ADR 0034 fix).
-        <div className="grid grid-cols-1 gap-5 lg:h-[calc(100vh-190px)] lg:grid-cols-[1fr_380px]">
-          <div className="min-h-0 lg:overflow-y-auto lg:pr-1">
-            <CatalogBrowser
-              level={pos.priceLevelCode}
-              excludeUnitIds={pos.excludeUnitIds}
-              onPickUnit={pos.onPickUnit}
-              onPickQuantity={pos.onPickQuantity}
-            />
-          </div>
-          <aside className="min-h-0 lg:h-full">
-            <CartColumn pos={pos} pinned />
-          </aside>
-          <CartBar pos={pos} />
-        </div>
-      ) : (
-        <>
-          <PosScanner scanner={pos.scanner} />
-          {pos.mode === "sale" && <ProductSearch />}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2">
-              {pos.mode === "sale" ? (
-                <CartColumn pos={pos} />
-              ) : (
-                <NasiyaPanel
-                  open={pos.consign.open}
-                  onOpenChange={pos.consign.setOpen}
-                  initialImei={pos.consign.imei}
-                  initialAgreedPrice={pos.consign.price}
-                  partnerPriceUsed={pos.consign.partnerPrice}
-                />
-              )}
-            </div>
-            <SessionPanel soldById={pos.me} onOpenReceipt={(id) => pos.openReceipt([id])} />
-          </div>
-        </>
       )}
 
-      <CheckoutReceiptModal
-        saleIds={pos.saleIds}
-        open={pos.receiptOpen}
-        onOpenChange={pos.setReceiptOpen}
-        onNewSale={pos.handleNewSale}
-      />
+      <PosTopBar pos={pos} fullscreen={fullscreen} />
+
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 pb-20 sm:p-4 lg:flex-row lg:gap-4 lg:overflow-hidden lg:pb-4">
+        {pos.mode === "nasiya" ? (
+          <NasiyaView pos={pos} />
+        ) : (
+          <>
+            <PosWorkPane pos={pos} />
+            <PosTillPane pos={pos} />
+          </>
+        )}
+      </div>
+
+      <CartBar pos={pos} />
     </div>
   )
 }

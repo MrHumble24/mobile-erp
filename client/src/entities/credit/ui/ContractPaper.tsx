@@ -65,6 +65,10 @@ function Totals({ contract }: { contract: CreditContract }) {
   const { t } = useI18n()
   return (
     <div className="space-y-0.5 border-b border-black/20 py-3 text-sm">
+      <Row label={t("credit.cashPrice")} value={formatMoney(contract.cashPrice)} />
+      {Number(contract.markupAmount) > 0 && (
+        <Row label={t("credit.markup")} value={`+ ${formatMoney(contract.markupAmount)}`} />
+      )}
       <Row label={t("credit.agreedTotal")} value={formatMoney(contract.agreedTotal)} strong />
       <Row label={t("credit.downPayment")} value={formatMoney(contract.downPayment)} />
     </div>

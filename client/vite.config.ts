@@ -17,10 +17,14 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: false,
+      devOptions: {
+        enabled: true,
+      },
       workbox: {
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api/],
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        navigateFallbackDenylist: [/^\/api/, /^\/uploads/],
+        globPatterns: ['**/*.{js,css,html,svg,woff2,png,ico,webmanifest}'],
+        cleanupOutdatedCaches: true,
       },
     }),
   ],

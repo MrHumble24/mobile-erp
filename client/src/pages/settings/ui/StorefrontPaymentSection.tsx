@@ -15,21 +15,23 @@ export function StorefrontPaymentSection({
   if (isLoading) {
     return (
       <Section
-        title={t("settings.sectionOnlinePayments")}
-        description={t("settings.sectionOnlinePaymentsDesc")}
+        title={t("settings.sectionPaymentProviders")}
+        description={t("settings.sectionPaymentProvidersDesc")}
       >
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
+        <div className="p-4 space-y-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
       </Section>
     )
   }
 
   return (
     <Section
-      title={t("settings.sectionOnlinePayments")}
-      description={t("settings.sectionOnlinePaymentsDesc")}
+      title={t("settings.sectionPaymentProviders")}
+      description={t("settings.sectionPaymentProvidersDesc")}
     >
-      <div className="space-y-4">
+      <div className="p-4 space-y-4">
         {providers && providers.length > 0 ? (
           providers.map((p) => (
             <PaymentProviderCard
@@ -39,8 +41,8 @@ export function StorefrontPaymentSection({
             />
           ))
         ) : (
-          <div className="p-3 text-center text-xs text-muted-foreground">
-            {t("settings.noProvidersFound")}
+          <div className="p-6 text-center text-xs text-muted-foreground">
+            {t("settings.noPaymentProviders")}
           </div>
         )}
       </div>

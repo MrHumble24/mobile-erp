@@ -54,6 +54,9 @@ data class CreditView(
     val sales: List<CreditSaleView> = emptyList(),
     val instalments: List<CreditInstalmentView> = emptyList(),
     val payments: List<CreditPaymentView> = emptyList(),
+    /** ADR 0068: cash price + one disclosed margin = the fixed agreed price. */
+    val cashPrice: String = "0",
+    val markupAmount: String = "0",
     val agreedTotal: String = "0",
     val paid: String = "0",
     val outstanding: String = "0",
@@ -112,6 +115,9 @@ data class CreditContract(
     val store: CreditContractStore = CreditContractStore(),
     val customer: CreditCustomerRef = CreditCustomerRef(),
     val goods: List<CreditContractGood> = emptyList(),
+    /** ADR 0068: the disclosed cash-price / margin breakdown. */
+    val cashPrice: String = "0",
+    val markupAmount: String = "0",
     val agreedTotal: String = "0",
     val downPayment: String = "0",
     val instalments: List<CreditContractInstalment> = emptyList(),

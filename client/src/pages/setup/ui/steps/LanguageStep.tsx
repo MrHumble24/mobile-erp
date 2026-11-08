@@ -31,7 +31,7 @@ export function LanguageStep({ state, update, onNext }: Props) {
         <p className="text-sm text-muted-foreground">{t("setup.subtitle")}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card
           className={`cursor-pointer transition-all border-2 ${
             currentLang === "uz" ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
@@ -44,6 +44,21 @@ export function LanguageStep({ state, update, onNext }: Props) {
               <div className="text-xs text-muted-foreground">Lotin alifbosida</div>
             </div>
             {currentLang === "uz" && <div className="h-3 w-3 rounded-full bg-primary" />}
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`cursor-pointer transition-all border-2 ${
+            currentLang === "ru" ? "border-primary shadow-xs" : "border-border hover:border-muted-foreground/30"
+          }`}
+          onClick={() => chooseLanguage("ru")}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-base">Русский</div>
+              <div className="text-xs text-muted-foreground">Интерфейс на русском</div>
+            </div>
+            {currentLang === "ru" && <div className="h-3 w-3 rounded-full bg-primary" />}
           </CardContent>
         </Card>
 

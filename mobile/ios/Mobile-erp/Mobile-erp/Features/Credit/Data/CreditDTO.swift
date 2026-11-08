@@ -105,6 +105,9 @@ struct CreditView: Decodable, Identifiable {
     let sales: [CreditSaleView]
     let instalments: [CreditInstalmentView]
     let payments: [CreditPaymentView]
+    /// ADR 0068: cash price + one disclosed margin = the fixed agreed price.
+    let cashPrice: String?
+    let markupAmount: String?
     let agreedTotal: String
     let paid: String
     let outstanding: String
@@ -173,6 +176,9 @@ struct CreditContract: Decodable {
     let store: CreditContractStore
     let customer: CreditContractCustomer
     let goods: [CreditContractGood]
+    /// ADR 0068: the disclosed cash-price / margin breakdown.
+    let cashPrice: String?
+    let markupAmount: String?
     let agreedTotal: String
     let downPayment: String
     let instalments: [CreditContractInstalment]

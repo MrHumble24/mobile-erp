@@ -1,0 +1,26 @@
+{
+  "title": "Магазины",
+  "subtitle": "Управление филиалами и торговыми точками",
+  "newStore": "Новый магазин",
+  "editStore": "Редактировать магазин",
+  "storeName": "Название магазина",
+  "namePlaceholder": "например, Филиал 2",
+  "address": "Адрес",
+  "addressPlaceholder": "например, ТЦ Малика, C-42",
+  "phone": "Телефон",
+  "status": "Статус",
+  "statusActive": "Активен",
+  "statusInactive": "Неактивен",
+  "deactivate": "Деактивировать",
+  "confirmDeactivate": "Вы уверены, что хотите деактивировать магазин {name}?",
+  "deactivated": "Магазин деактивирован",
+  "saved": "Магазин успешно сохранен",
+  "noStores": "Магазины не найдены",
+  "chooseStore": "Выберите магазин",
+  "chooseStoreSubtitle": "Выберите филиал для продолжения",
+  "activeStore": "Текущий магазин",
+  "switchStore": "Сменить магазин",
+  "storeRequired": "Пожалуйста, выберите магазин",
+  "storeForbidden": "У вас нет доступа к этому магазину"
+}
+

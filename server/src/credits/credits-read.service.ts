@@ -18,8 +18,9 @@ import type {
 
 const ZERO = new Prisma.Decimal(0);
 const CONTRACT_TERMS =
-  'Interest-free (Islamic) instalment sale. The agreed price is fixed and ' +
-  'never increases. No interest, late fee or penalty is charged for paying late.';
+  'Islamic (Murabaha) instalment sale: the cash price plus ONE disclosed, ' +
+  'agreed margin form a single fixed price (ADR 0068). The agreed price never ' +
+  'increases. No interest, late fee or penalty is charged for paying late.';
 
 /** Read model for customer credit: all derived with `credit-math.ts`. */
 @Injectable()
@@ -157,6 +158,7 @@ export class CreditsReadService {
     const downPayment = raw.payments
       .filter((p) => p.occurredAt <= raw.createdAt)
       .reduce((s, p) => s.plus(p.amount), new Prisma.Decimal(0));
+    const markup = raw.markupAmount ?? ZERO;
     return {
       creditId: raw.id,
       createdAt: raw.createdAt,
@@ -172,6 +174,8 @@ export class CreditsReadService {
           price: s.salePrice.toFixed(2),
         };
       }),
+      cashPrice: standing.agreedTotal.minus(markup).toFixed(2),
+      markupAmount: markup.toFixed(2),
       agreedTotal: standing.agreedTotal.toFixed(2),
       downPayment: downPayment.toFixed(2),
       instalments: raw.instalments.map((i) => ({

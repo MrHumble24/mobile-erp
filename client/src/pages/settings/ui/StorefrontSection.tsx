@@ -110,7 +110,7 @@ export function StorefrontSection({ disabled }: { disabled: boolean }) {
       title={t("settings.sectionStorefront")}
       description={t("settings.sectionStorefrontDesc")}
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="p-4 sm:p-5 space-y-5">
         <StorefrontUrlBanner />
         <StorefrontToggles
           enabled={enabled}

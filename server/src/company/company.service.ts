@@ -136,16 +136,28 @@ export class CompanyService {
     return {
       name,
       short_name: name,
+      description: 'Mobile ERP - Savdo, kassa va inventar boshqaruvi tizimi',
+      id: '/',
       start_url: '/',
+      scope: '/',
       display: 'standalone',
-      background_color: '#ffffff',
-      theme_color: '#ffffff',
+      orientation: 'any',
+      background_color: '#0f1117',
+      theme_color: '#863bff',
+      categories: ['business', 'productivity', 'finance'],
       icons: profile.logoFile
         ? [
             {
               src: `/uploads/${profile.logoFile}`,
               sizes: '192x192 512x512',
               type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/pwa-maskable-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ]
         : [
@@ -153,11 +165,19 @@ export class CompanyService {
               src: '/pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
+              purpose: 'any',
             },
             {
               src: '/pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: '/pwa-maskable-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ],
     };
