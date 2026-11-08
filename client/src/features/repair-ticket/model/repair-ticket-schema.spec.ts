@@ -8,6 +8,13 @@ import {
   type RepairFormValues,
 } from "./repair-ticket-schema.ts"
 import type { RepairView } from "../../../entities/repair/model/repair.types.ts"
+import type { CustomerSelection } from "../../../entities/customer/index.ts"
+
+const existingCustomer: CustomerSelection = {
+  customerId: "c1",
+  name: "Mustafo",
+  phone: null,
+}
 
 function view(patch: Partial<RepairView> = {}): RepairView {
   return {
@@ -79,7 +86,7 @@ test("NONE master mode clears master fields on edit but not on create", () => {
   const update = toUpdateDto(emptyRepairForm())
   assert.equal(update.masterUserId, null)
   assert.equal(update.outsideMasterName, null)
-  const create = toCreateDto(emptyRepairForm(), { customerId: "c1" })
+  const create = toCreateDto(emptyRepairForm(), existingCustomer)
   assert.equal("masterUserId" in create, false)
   assert.equal(create.customerId, "c1")
 })
@@ -89,7 +96,7 @@ test("empty optional fields are cleared on edit, omitted on create", () => {
   assert.equal(update.modelId, null)
   assert.equal(update.deviceId, null)
   assert.equal(update.imei, null)
-  const create = toCreateDto(emptyRepairForm(), { customerId: "c1" })
+  const create = toCreateDto(emptyRepairForm(), existingCustomer)
   assert.equal(create.modelId, undefined)
   assert.equal(create.deviceId, undefined)
   assert.equal(create.imei, undefined)
@@ -98,6 +105,6 @@ test("empty optional fields are cleared on edit, omitted on create", () => {
 test("repairToForm keeps a linked device and toCreateDto sends it", () => {
   const form = repairToForm(view({ deviceId: "d-1" }))
   assert.equal(form.deviceId, "d-1")
-  const dto = toCreateDto(form, { customerId: "c1" })
+  const dto = toCreateDto(form, existingCustomer)
   assert.equal(dto.deviceId, "d-1")
 })

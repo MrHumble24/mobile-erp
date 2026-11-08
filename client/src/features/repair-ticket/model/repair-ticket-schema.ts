@@ -85,37 +85,39 @@ export function repairToForm(r: RepairView): RepairFormValues {
   }
 }
 
-/** The fields shared by create and edit (everything but the customer).
- *  On edit, empty optional fields become null so the server actually clears
- *  them; on create they are simply omitted. */
-function sharedFields(v: RepairFormValues, forUpdate: boolean) {
-  const clear = <T,>(value: T | "" | undefined): T | null | undefined =>
-    value ? value : forUpdate ? null : undefined
-  const master =
-    v.masterMode === "OWN"
-      ? { masterUserId: v.masterUserId }
-      : v.masterMode === "OUTSIDE"
-        ? {
-            outsideMasterName: v.outsideMasterName.trim(),
-            outsideMasterPhone: clear(v.outsideMasterPhone.trim()),
-            // Hidden cost: never overwrite the server's value with a guess.
-            ...(v.outsideCostHidden ? {} : { outsideCost: Number(v.outsideCost) || 0 }),
-          }
-        : forUpdate
-          ? { masterUserId: null, outsideMasterName: null, outsideMasterPhone: null }
-          : {}
+function commonFields(v: RepairFormValues) {
   return {
     deviceName: v.deviceName.trim(),
-    modelId: clear(v.modelId),
-    deviceId: clear(v.deviceId),
-    imei: clear(v.imei.trim()),
-    serialNumber: clear(v.serialNumber.trim()),
     problem: v.problem.trim(),
     agreedPrice: Number(v.agreedPrice),
     warrantyDays: Number(v.warrantyDays),
-    notes: clear(v.notes.trim()),
-    ...master,
   }
+}
+
+/** On create, empty optional fields are omitted (never sent as null). */
+function createMaster(v: RepairFormValues) {
+  if (v.masterMode === "OWN") return { masterUserId: v.masterUserId }
+  if (v.masterMode === "OUTSIDE")
+    return {
+      outsideMasterName: v.outsideMasterName.trim(),
+      ...(v.outsideMasterPhone.trim() ? { outsideMasterPhone: v.outsideMasterPhone.trim() } : {}),
+      // Hidden cost: never overwrite the server's value with a guess.
+      ...(v.outsideCostHidden ? {} : { outsideCost: Number(v.outsideCost) || 0 }),
+    }
+  return {}
+}
+
+/** On edit, empty optional fields become null so the server actually clears
+ *  them; NONE mode explicitly unlinks any existing master. */
+function updateMaster(v: RepairFormValues) {
+  if (v.masterMode === "OWN") return { masterUserId: v.masterUserId }
+  if (v.masterMode === "OUTSIDE")
+    return {
+      outsideMasterName: v.outsideMasterName.trim(),
+      outsideMasterPhone: v.outsideMasterPhone.trim() || null,
+      ...(v.outsideCostHidden ? {} : { outsideCost: Number(v.outsideCost) || 0 }),
+    }
+  return { masterUserId: null, outsideMasterName: null, outsideMasterPhone: null }
 }
 
 function customerPart(c: CustomerSelection): Pick<CreateRepairDto, "customerId" | "customer"> {
@@ -124,9 +126,29 @@ function customerPart(c: CustomerSelection): Pick<CreateRepairDto, "customerId" 
 }
 
 export function toCreateDto(v: RepairFormValues, customer: CustomerSelection): CreateRepairDto {
-  return { ...customerPart(customer), ...sharedFields(v, false) }
+  const imei = v.imei.trim()
+  const serial = v.serialNumber.trim()
+  const notes = v.notes.trim()
+  return {
+    ...customerPart(customer),
+    ...commonFields(v),
+    ...(v.modelId ? { modelId: v.modelId } : {}),
+    ...(v.deviceId ? { deviceId: v.deviceId } : {}),
+    ...(imei ? { imei } : {}),
+    ...(serial ? { serialNumber: serial } : {}),
+    ...(notes ? { notes } : {}),
+    ...createMaster(v),
+  }
 }
 
 export function toUpdateDto(v: RepairFormValues): UpdateRepairDto {
-  return sharedFields(v, true)
+  return {
+    ...commonFields(v),
+    modelId: v.modelId || null,
+    deviceId: v.deviceId || null,
+    imei: v.imei.trim() || null,
+    serialNumber: v.serialNumber.trim() || null,
+    notes: v.notes.trim() || null,
+    ...updateMaster(v),
+  }
 }

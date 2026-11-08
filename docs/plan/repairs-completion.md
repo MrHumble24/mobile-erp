@@ -85,6 +85,11 @@ list, so unrelated in-progress work never enters a repairs commit.
 - CP7 follow-up: fixed the two wrong mobile report keys, added the missing
   `repairs.reportTitle` key, removed the 3 i18n keys unused across all clients,
   and corrected two pre-existing sync spec-fixture typecheck errors.
+- CP8 build pass: `pnpm build` succeeds for server (prisma generate + nest build),
+  client (`tsc -b` + vite build), Android (`:app:assembleDebug`) and iOS
+  (`xcodebuild -scheme Mobile-erp -sdk iphonesimulator`). The client build
+  exposed 3 spec-fixture / DTO typing issues that `tsc --noEmit` missed; fixed in
+  the repair-ticket schema + its spec and the untracked customs spec.
 - CP8: final verification. Server: 153 suites / 915 tests, no typecheck errors
   in repairs/sync/telegram/data-wipe. Client: `tsc --noEmit` clean, 143/143
   tests, `oxlint` clean on every repairs-owned file, `vite build` succeeds.
