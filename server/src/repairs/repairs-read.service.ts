@@ -74,6 +74,29 @@ export class RepairsReadService {
     };
   }
 
+  /** Repair income + profit for the owner-only closing digest. Uses the same
+   *  store scope as the report so multi-store digests never hit the single-store
+   *  gate. */
+  async repairDailySummary(
+    storeIds: string[],
+    from: Date,
+    to: Date,
+  ): Promise<{ income: number; profit: number }> {
+    const [income, parts, outside] = await Promise.all([
+      this.repo.sumPayments(storeIds, from, to),
+      this.repo.partsInRange(storeIds, from, to),
+      this.ledgerRepair.outsideSum(from, to, storeIds),
+    ]);
+    const partsCost = parts.reduce(
+      (s, p) => s.plus(p.unitCostSnapshot.times(p.quantity)),
+      ZERO,
+    );
+    return {
+      income: income.toNumber(),
+      profit: income.minus(partsCost).minus(outside).toNumber(),
+    };
+  }
+
   async report(
     caller: AuthenticatedUser,
     query: RepairReportQueryDto,

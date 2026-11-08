@@ -3,6 +3,7 @@ import { ConsignmentsModule } from '../consignments/consignments.module.js';
 import { CreditsModule } from '../credits/credits.module.js';
 import { LedgerModule } from '../ledger/ledger.module.js';
 import { PartnersModule } from '../partners/partners.module.js';
+import { RepairsModule } from '../repairs/repairs.module.js';
 import { ReportsModule } from '../reports/reports.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
 import { StockAlertRulesModule } from '../stock-alert-rules/stock-alert-rules.module.js';
@@ -22,6 +23,7 @@ import { TelegramController } from './telegram.controller.js';
     LedgerModule,
     CreditsModule,
     StoresModule,
+    RepairsModule,
   ],
   controllers: [TelegramController],
   providers: [TelegramService, TelegramListener, TelegramCron],

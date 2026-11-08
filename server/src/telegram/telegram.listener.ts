@@ -8,6 +8,9 @@ import { TelegramService } from './telegram.service.js';
 import {
   ConsignmentCreatedEvent,
   PartnerPaymentReceivedEvent,
+  RepairCreatedEvent,
+  RepairGivenBackEvent,
+  RepairReadyEvent,
   SaleCreatedEvent,
   ShipmentDevicesRegisteredEvent,
   TelegramEvents,
@@ -68,6 +71,21 @@ export class TelegramListener {
   @OnEvent(TelegramEvents.partnerPaymentReceived)
   onPayment(e: PartnerPaymentReceivedEvent): Promise<void> {
     return this.run(() => this.telegram.send(messages.paymentReceived(e)));
+  }
+
+  @OnEvent(TelegramEvents.repairCreated)
+  onRepairCreated(e: RepairCreatedEvent): Promise<void> {
+    return this.run(() => this.telegram.send(messages.repairCreated(e)));
+  }
+
+  @OnEvent(TelegramEvents.repairReady)
+  onRepairReady(e: RepairReadyEvent): Promise<void> {
+    return this.run(() => this.telegram.send(messages.repairReady(e)));
+  }
+
+  @OnEvent(TelegramEvents.repairGivenBack)
+  onRepairGivenBack(e: RepairGivenBackEvent): Promise<void> {
+    return this.run(() => this.telegram.send(messages.repairGivenBack(e)));
   }
 
   private async checkLowStock(): Promise<void> {

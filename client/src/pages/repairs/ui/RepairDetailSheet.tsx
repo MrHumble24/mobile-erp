@@ -11,8 +11,11 @@ import { RepairMoneyActions } from "@/features/repair-payment"
 import { Sheet, SheetPopup, SheetHeader, SheetTitle, SheetDescription } from "@/shared/ui/sheet"
 import { Button } from "@/shared/ui/button"
 import { Skeleton } from "@/shared/ui/skeleton"
-import { RepairMoneySummary, RepairMeta, RepairWarranty } from "./RepairDetailSections"
-import { RepairPaymentsList, RepairHistory } from "./RepairDetailActivity"
+import { RepairMoneySummary } from "./RepairMoneySummary"
+import { RepairMeta } from "./RepairMeta"
+import { RepairWarranty } from "./RepairWarranty"
+import { RepairPaymentsList } from "./RepairPaymentsList"
+import { RepairHistory } from "./RepairHistory"
 
 function DetailHeader({ repair }: { repair: RepairView }) {
   const { t } = useI18n()

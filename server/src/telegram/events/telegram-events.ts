@@ -4,6 +4,9 @@ export const TelegramEvents = {
   saleCreated: 'sale.created',
   consignmentCreated: 'consignment.created',
   partnerPaymentReceived: 'partner.payment-received',
+  repairCreated: 'repair.created',
+  repairReady: 'repair.ready',
+  repairGivenBack: 'repair.given-back',
 } as const;
 
 export class ShipmentDevicesRegisteredEvent {
@@ -39,5 +42,29 @@ export class PartnerPaymentReceivedEvent {
   constructor(
     readonly partner: string,
     readonly amount: number,
+  ) {}
+}
+
+/** Owner alerts for the repair desk (no customer messaging channel exists). */
+export class RepairCreatedEvent {
+  constructor(
+    readonly ticketNumber: number,
+    readonly customerName: string,
+    readonly deviceName: string,
+  ) {}
+}
+
+export class RepairReadyEvent {
+  constructor(
+    readonly ticketNumber: number,
+    readonly deviceName: string,
+  ) {}
+}
+
+export class RepairGivenBackEvent {
+  constructor(
+    readonly ticketNumber: number,
+    readonly deviceName: string,
+    readonly amountOwed: number,
   ) {}
 }

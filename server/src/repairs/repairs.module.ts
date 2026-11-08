@@ -34,6 +34,7 @@ import { RepairsWriteRepository } from './repairs.write.repository.js';
   exports: [
     RepairIdempotency,
     RepairsService,
+    RepairsReadService,
     RepairsMoneyService,
     RepairsPartsService,
   ],

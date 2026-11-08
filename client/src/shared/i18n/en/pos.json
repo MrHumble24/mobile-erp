@@ -98,5 +98,6 @@
   "tradeInErrorForbidden": "You do not have permission to take a trade-in",
   "tradeInErrorNoCustomer": "Choose a customer to take a trade-in",
   "tradeInErrorOffline": "A trade-in can only be taken online",
-  "tradeInErrorExceedsSale": "The trade-in is worth more than the sale"
+  "tradeInErrorExceedsSale": "The trade-in is worth more than the sale",
+  "openRepairs": "Repair tickets"
 }

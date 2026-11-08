@@ -50,6 +50,34 @@ export function paymentReceived(p: {
   return `💰 To'lov qabul qilindi (${p.partner}): ${money(p.amount)}`;
 }
 
+export function repairCreated(p: {
+  ticketNumber: number;
+  customerName: string;
+  deviceName: string;
+}): string {
+  return (
+    `🔧 Yangi ta'mir chiptasi #${p.ticketNumber}\n` +
+    `Mijoz: ${p.customerName}\n` +
+    `Qurilma: ${p.deviceName}`
+  );
+}
+
+export function repairReady(p: {
+  ticketNumber: number;
+  deviceName: string;
+}): string {
+  return `✅ Tayyor: #${p.ticketNumber} (${p.deviceName}). Mijozga xabar bering.`;
+}
+
+export function repairGivenBack(p: {
+  ticketNumber: number;
+  deviceName: string;
+  amountOwed: number;
+}): string {
+  const owed = p.amountOwed > 0 ? `\nQolgan qarz: ${money(p.amountOwed)}` : '';
+  return `📦 Topshirildi: #${p.ticketNumber} (${p.deviceName})${owed}`;
+}
+
 export function lowStock(
   rows: {
     modelId: string;
@@ -98,6 +126,9 @@ export interface DigestStoreBlock {
   revenue: number;
   netProfit: number;
   expenses: number;
+  /** Repair income / profit for the day (owner-only digest). */
+  repairIncome?: number;
+  repairProfit?: number;
   balances: {
     accounts: DigestBalanceLine[];
     openingTotal: string;
@@ -118,6 +149,9 @@ function formatStoreBlock(s: DigestStoreBlock): string {
     `  Tushum: ${money(s.revenue)}\n` +
     `  Sof foyda: ${money(s.netProfit)}\n` +
     `  Xarajatlar: ${money(s.expenses)}\n` +
+    (s.repairIncome != null
+      ? `  Ta'mir tushumi: ${money(s.repairIncome)}\n  Ta'mir foydasi: ${money(s.repairProfit ?? 0)}\n`
+      : '') +
     `  Balans:\n${bLines.join('\n')}`
   );
 }

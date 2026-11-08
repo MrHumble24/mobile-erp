@@ -98,5 +98,6 @@
   "tradeInErrorForbidden": "Sizda trade-in qabul qilish uchun ruxsat yo'q",
   "tradeInErrorNoCustomer": "Trade-in qabul qilish uchun mijozni tanlang",
   "tradeInErrorOffline": "Trade-in faqat onlayn rejimda qabul qilinadi",
-  "tradeInErrorExceedsSale": "Trade-in qiymati savdo summasidan qimmat"
+  "tradeInErrorExceedsSale": "Trade-in qiymati savdo summasidan qimmat",
+  "openRepairs": "Ta'mir chiptalari"
 }

@@ -11,6 +11,13 @@ import {
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { RequirePermissions } from '../common/decorators/require-permissions.decorator.js';
 import type { AuthenticatedUser } from '../common/types/authenticated-user.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  RepairCreatedEvent,
+  RepairGivenBackEvent,
+  RepairReadyEvent,
+  TelegramEvents,
+} from '../telegram/events/telegram-events.js';
 import { AddPartDto } from './dto/add-part.dto.js';
 import { ChangeStatusDto } from './dto/change-status.dto.js';
 import { CreateRepairDto } from './dto/create-repair.dto.js';
@@ -22,6 +29,7 @@ import { RepairsMoneyService } from './repairs-money.service.js';
 import { RepairsPartsService } from './repairs-parts.service.js';
 import { RepairsReadService } from './repairs-read.service.js';
 import { RepairsService } from './repairs.service.js';
+import type { RepairView } from './types/repair.types.js';
 
 @Controller('repairs')
 export class RepairsController {
@@ -30,15 +38,25 @@ export class RepairsController {
     private readonly read: RepairsReadService,
     private readonly money: RepairsMoneyService,
     private readonly parts: RepairsPartsService,
+    private readonly events: EventEmitter2,
   ) {}
 
   @Post()
   @RequirePermissions('repair.manage')
-  create(
+  async create(
     @CurrentUser() caller: AuthenticatedUser,
     @Body() dto: CreateRepairDto,
   ) {
-    return this.repairs.create(caller, dto);
+    const view = await this.repairs.create(caller, dto);
+    this.events.emit(
+      TelegramEvents.repairCreated,
+      new RepairCreatedEvent(
+        view.ticketNumber,
+        view.customer.name,
+        view.deviceName,
+      ),
+    );
+    return view;
   }
 
   @Get()
@@ -74,12 +92,34 @@ export class RepairsController {
 
   @Post(':id/status')
   @RequirePermissions('repair.manage')
-  changeStatus(
+  async changeStatus(
     @CurrentUser() caller: AuthenticatedUser,
     @Param('id') id: string,
     @Body() dto: ChangeStatusDto,
   ) {
-    return this.repairs.changeStatus(caller, id, dto);
+    const view = await this.repairs.changeStatus(caller, id, dto);
+    this.emitStatusEvent(view);
+    return view;
+  }
+
+  /** Owner alerts on the two milestones a shop manager wants to hear about. */
+  private emitStatusEvent(view: RepairView): void {
+    if (view.statusCode === 'READY') {
+      this.events.emit(
+        TelegramEvents.repairReady,
+        new RepairReadyEvent(view.ticketNumber, view.deviceName),
+      );
+    }
+    if (view.statusCode === 'GIVEN_BACK') {
+      this.events.emit(
+        TelegramEvents.repairGivenBack,
+        new RepairGivenBackEvent(
+          view.ticketNumber,
+          view.deviceName,
+          Number(view.outstanding),
+        ),
+      );
+    }
   }
 
   @Post(':id/parts')

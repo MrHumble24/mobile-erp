@@ -6,6 +6,7 @@ import { ConsignmentsService } from '../consignments/consignments.service.js';
 import { CreditsReadService } from '../credits/credits-read.service.js';
 import { LedgerService } from '../ledger/ledger.service.js';
 import { PartnersService } from '../partners/partners.service.js';
+import { RepairsReadService } from '../repairs/repairs-read.service.js';
 import { ReportsService } from '../reports/reports.service.js';
 import { SettingsService } from '../settings/settings.service.js';
 import { runWithStoreSelection } from '../stores/lib/store-context.js';
@@ -30,6 +31,7 @@ export class TelegramCron {
     private readonly stores: StoresService,
     private readonly company: CompanyService,
     private readonly maintenance: MaintenanceService,
+    private readonly repairsRead: RepairsReadService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
@@ -112,13 +114,21 @@ export class TelegramCron {
           const closing = await this.reports.dailyClosing({});
           digestDate = closing.date;
           const dayStart = new Date(`${closing.date}T00:00:00.000Z`);
+          const dayEnd = new Date(`${closing.date}T23:59:59.999Z`);
           const balances = await this.ledger.digestBalances(dayStart);
+          const repair = await this.repairsRead.repairDailySummary(
+            [store.id],
+            dayStart,
+            dayEnd,
+          );
           storeBlocks.push({
             storeName: store.name,
             unitsSold: closing.unitsSold,
             revenue: closing.revenue,
             netProfit: closing.grossProfit,
             expenses: closing.expenses,
+            repairIncome: repair.income,
+            repairProfit: repair.profit,
             balances,
           });
           dueStoreIds.push(store.id);

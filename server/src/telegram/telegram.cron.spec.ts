@@ -56,6 +56,9 @@ describe('TelegramCron.closingDigest (R1)', () => {
       stores as never,
       company as never,
       { isActive: () => false } as never,
+      {
+        repairDailySummary: jest.fn().mockResolvedValue({ income: 250, profit: 80 }),
+      } as never,
     );
 
     // Call closingDigest outside of any store context
@@ -65,6 +68,8 @@ describe('TelegramCron.closingDigest (R1)', () => {
     const sentMessage = telegram.send.mock.calls[0][0];
     expect(sentMessage).toContain('Store 1');
     expect(sentMessage).toContain('Store 2');
+    expect(sentMessage).toContain("Ta'mir tushumi");
+    expect(sentMessage).toContain("Ta'mir foydasi");
 
     expect(settings.markDigestSent).toHaveBeenCalledTimes(2);
     expect(reports.dailyClosing).toHaveBeenCalledTimes(2);

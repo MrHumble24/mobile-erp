@@ -33,7 +33,7 @@ list, so unrelated in-progress work never enters a repairs commit.
 | 3 | done | Client correctness: outsideCost data-loss fix, `repair.manage` gate on status actions, master clear, error/retry states everywhere, settings gate + `REPAIRS_DISABLED` mapping, ticket numbers in dialogs, overpaid copy, pagination, ticket deep links, customer row opens ticket, specs | `fix(repairs): correctness, states and navigation` |
 | 4 | done | Optional `Repair.deviceId` FK + migration, IMEI lookup in ticket form, device drawer link, defective-device repair action, tests | `feat(repairs): optional inventory device linkage` |
 | 5 | done | Web outbox mutation types + queueing on network failure; server sync handlers reusing idempotency keys; specs | `feat(repairs): offline outbox and sync handlers` |
-| 6 | pending | Telegram owner notifications on repair events, repair income/profit line in daily closing report + digest, share/copy ticket action, POS shortcut | `feat(repairs): notifications, digest and till shortcut` |
+| 6 | done | Telegram owner notifications on repair events, repair income/profit line in daily closing report + digest, share/copy ticket action, POS shortcut | `feat(repairs): notifications, digest and till shortcut` |
 | 7 | done | PRD repairs section, ADR amendments (mobile online-only, free-text fallback), stale README/i18n cleanup, status labels | `docs(repairs): PRD, ADR amendments and copy cleanup` |
 | 8 | pending | Full verification (`tsc`, `oxlint`, client + server tests, build), update this table, list mobile backlog with exact files | `chore(repairs): final verification and backlog` |
 
@@ -85,6 +85,12 @@ list, so unrelated in-progress work never enters a repairs commit.
 - CP7 follow-up: fixed the two wrong mobile report keys, added the missing
   `repairs.reportTitle` key, removed the 3 i18n keys unused across all clients,
   and corrected two pre-existing sync spec-fixture typecheck errors.
+- CP6: 3 owner Telegram events (create / ready / given-back) emitted from the
+  controller, repair income + profit lines in the per-store closing digest, a
+  repair shortcut on the POS page gated by flag + permission. Also split the two
+  multi-component repair detail files into six single-component files (FSD rule).
+  Verified full server 153 suites / 915 tests, client `tsc`/`oxlint`/143 tests
+  and `vite build`.
 - CP4: optional `Repair.deviceId` FK + migration applied; server validates the
   device belongs to the active store; client form has a debounced IMEI lookup
   that links + prefills, and a DEFECTIVE device drawer can launch a prefilled
